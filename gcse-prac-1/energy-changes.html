@@ -1,0 +1,634 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Energy Changes Walkthrough</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: step rail on top, picture beside instructions, question and mistake cards below. Single light (projector) theme by choice. */
+:root{
+  --paper:#f7f1e6; --panel:#fffdf8; --ink:#2b2118; --muted:#6e5d4c;
+  --brown:#6b4226; --brown-2:#8a5a36; --line:#e2d5c0; --soft:#f1e7d6;
+  --good:#2f7a3d; --good-bg:#e5f2e3; --bad:#a3322a; --bad-bg:#f8e3df; --amber:#a86a12;
+  --display:"Charter","Bitstream Charter","Sitka Text",Cambria,Georgia,serif;
+  --body:"Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,Menlo,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5}
+.wrap{max-width:1180px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;border-bottom:2px solid var(--brown);padding-bottom:12px}
+h1{font-family:var(--display);font-size:clamp(1.5rem,3.4vw,2.2rem);margin:0;color:var(--brown);text-wrap:balance;line-height:1.15}
+.sub{margin:4px 0 0;color:var(--muted);font-size:.95rem}
+.score{font-family:var(--mono);font-size:.9rem;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:6px 10px;color:var(--brown);white-space:nowrap}
+.rail{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0}
+.rail button{font:600 .85rem var(--body);border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:999px;padding:6px 12px;cursor:pointer}
+.rail button.on{background:var(--brown);color:#fff;border-color:var(--brown)}
+.rail button.done:not(.on){border-color:var(--good);color:var(--good)}
+.rail button:focus-visible,.opt:focus-visible,.nav button:focus-visible,.pred button:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.stage{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:820px){.stage{grid-template-columns:1fr}}
+.pic{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px}
+.pic svg{width:100%;height:auto;display:block}
+.eyebrow{font:700 .75rem var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--brown-2);margin:0}
+h2{font-family:var(--display);font-size:1.55rem;margin:2px 0 8px;line-height:1.2;text-wrap:balance}
+.how{margin:0 0 10px;padding-left:20px}
+.how li{margin-bottom:4px}
+.why{background:var(--soft);border-radius:8px;padding:10px 12px;font-size:.95rem;margin:0}
+.why b{color:var(--brown)}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px}
+@media (max-width:820px){.cards{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;min-width:0}
+.card h3{font:700 .8rem var(--body);letter-spacing:.07em;text-transform:uppercase;margin:0 0 6px;color:var(--brown)}
+.card.mistake{border-top:4px solid var(--bad)}
+.card.mcq{border-top:4px solid var(--brown)}
+.q{font-weight:600;margin:0 0 10px}
+.opts{display:grid;gap:8px}
+.opt{text-align:left;font:inherit;font-size:.95rem;background:#fff;border:1.5px solid var(--line);border-radius:8px;padding:9px 12px;cursor:pointer;color:var(--ink)}
+.opt:hover:not(:disabled){border-color:var(--brown-2)}
+.opt:disabled{cursor:default}
+.opt.right{background:var(--good-bg);border-color:var(--good)}
+.opt.wrong{background:var(--bad-bg);border-color:var(--bad)}
+.fb{margin:10px 0 0;font-size:.93rem;padding:9px 12px;border-radius:8px;background:var(--soft)}
+.fb.ok{background:var(--good-bg)}.fb.no{background:var(--bad-bg)}
+.pred{display:flex;flex-wrap:wrap;gap:8px}
+.pred button{flex:1 1 110px;font:600 .9rem var(--body);border:1.5px solid var(--line);background:#fff;border-radius:8px;padding:9px 8px;cursor:pointer;color:var(--ink)}
+.pred button.right{background:var(--good-bg);border-color:var(--good)}
+.pred button.wrong{background:var(--bad-bg);border-color:var(--bad)}
+.effect{display:inline-block;font:700 .8rem var(--mono);padding:2px 8px;border-radius:4px;background:var(--bad);color:#fff;margin-right:6px}
+.nav{display:flex;justify-content:space-between;gap:10px;margin-top:20px}
+.nav button{font:600 .95rem var(--body);background:var(--brown);color:#fff;border:0;border-radius:8px;padding:10px 18px;cursor:pointer}
+.nav button.ghost{background:transparent;color:var(--brown);border:1.5px solid var(--brown)}
+.nav button:disabled{opacity:.35;cursor:default}
+.summary .card{margin-bottom:14px}
+.summary h4{font:700 .8rem var(--body);letter-spacing:.07em;text-transform:uppercase;color:var(--brown-2);margin:22px 0 8px}
+.qnum{font-family:var(--mono);color:var(--brown-2);margin-right:6px}
+.tag{font:700 .7rem var(--body);letter-spacing:.05em;text-transform:uppercase;background:var(--soft);color:var(--brown);border-radius:4px;padding:2px 6px;margin-left:6px;vertical-align:2px}
+.final{background:var(--brown);color:#fff;border-radius:10px;padding:16px 18px;margin-top:8px}
+.final b{font-family:var(--display);font-size:1.3rem}
+.evals{display:grid;gap:10px;margin:0 0 6px}
+.eval{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--amber);border-radius:0 8px 8px 0;padding:10px 14px}
+.eval b{color:var(--brown)}
+sub,sup{line-height:0}
+@media (prefers-reduced-motion:no-preference){.fadein{animation:f .25s ease-out}@keyframes f{from{opacity:.4;transform:translateY(4px)}to{opacity:1;transform:none}}}
+.methods{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 0}
+.methods button,.alt button{font:600 .95rem var(--body);border:1.5px solid var(--brown);background:var(--panel);color:var(--brown);border-radius:8px;padding:9px 14px;cursor:pointer}
+.methods button.on,.alt button.on{background:var(--brown);color:#fff}
+.alt{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}.alt button{font-size:.85rem;padding:6px 11px}
+.methods button:focus-visible,.alt button:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+</style>
+
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Energy Changes Walkthrough</h1>
+      <p class="sub">AQA GCSE Chemistry RP4 (Combined Science RP10) · three methods</p><p class="sub" id="msub"></p>
+    </div>
+    <div class="score" id="score">Score 0 / 0</div>
+  </header>
+  <div class="methods" id="methods" role="group" aria-label="Method"></div>
+  <nav class="rail" id="rail" aria-label="Steps"></nav>
+  <main id="main"></main>
+</div>
+
+<script>
+/* ---------- drawing helpers (viewBox 400 x 320) ---------- */
+const C={glass:"#5a4632",thio:"#e8f0f4",acid:"#cde4f1",sulfur:"#efe2a2",water:"#bcd9ec",ink:"#2b2118",red:"#a3322a",brown:"#6b4226",muted:"#6e5d4c",wood:"#c9b28f",steel:"#8a8f96",good:"#2f7a3d"};
+let uid=0;
+const T=(x,y,s,o={})=>`<text x="${x}" y="${y}" font-family="Segoe UI,system-ui,sans-serif" font-size="${o.size||11.5}" font-weight="${o.w||500}" fill="${o.fill||C.ink}" text-anchor="${o.a||'start'}">${s}</text>`;
+const lead=(x1,y1,x2,y2,col)=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${col||C.muted}" stroke-width="1"/><circle cx="${x2}" cy="${y2}" r="2" fill="${col||C.muted}"/>`;
+function lbl(x,y,lines,tx,ty,o={}){
+  const wd=Math.max(...lines.map(l=>l.length))*6.1;
+  const sx=o.lx??(tx>x+wd?x+wd+4:x-4);
+  let s=tx!=null?lead(sx,o.ly??(y-4),tx,ty,o.col):"";
+  lines.forEach((l,i)=>s+=T(x,y+i*14,l,{a:o.a,w:i?400:(o.w||600),fill:o.col&&!i?o.col:C.ink}));
+  return s;
+}
+function flask(cx,by,liq,frac,o={}){
+  const id="fk"+(uid++);
+  const p=`M${cx-11},${by-112} L${cx-11},${by-72} L${cx-48},${by-6} Q${cx-50},${by} ${cx-43},${by} L${cx+43},${by} Q${cx+50},${by} ${cx+48},${by-6} L${cx+11},${by-72} L${cx+11},${by-112}`;
+  const h=frac*70;
+  let s=`<defs><clipPath id="${id}"><path d="${p} Z"/></clipPath></defs>`;
+  s+=`<path d="${p} Z" fill="#fff" fill-opacity=".55"/>`;
+  if(liq)s+=`<rect clip-path="url(#${id})" x="${cx-60}" y="${by-h}" width="120" height="${h}" fill="${liq}" fill-opacity="${o.op??1}"/>`;
+  s+=`<path d="${p}" fill="none" stroke="${C.glass}" stroke-width="1.8"/><path d="M${cx-14},${by-112} L${cx+14},${by-112}" stroke="${C.glass}" stroke-width="2"/>`;
+  return s;
+}
+function bench(y){return `<rect x="0" y="${y}" width="400" height="${320-y}" fill="${C.wood}" opacity=".35"/>`;}
+function eye(x,y,rot){return `<g transform="translate(${x},${y}) rotate(${rot||0})"><path d="M-16,0 Q0,-11 16,0 Q0,11 -16,0 Z" fill="#fff" stroke="${C.ink}" stroke-width="1.4"/><circle cx="4" cy="0" r="4.5" fill="${C.brown}"/><circle cx="5" cy="-1" r="1.6" fill="#fff"/></g>`;}
+function cyl(cx,by,h,frac,col){
+  const w=24,top=by-h,id="cy"+(uid++);
+  let s=`<rect x="${cx-34}" y="${by-6}" width="68" height="6" rx="2" fill="#fff" stroke="${C.glass}" stroke-width="1.4"/>`;
+  s+=`<defs><clipPath id="${id}"><rect x="${cx-w/2}" y="${top}" width="${w}" height="${h-6}"/></clipPath></defs>`;
+  s+=`<rect clip-path="url(#${id})" x="${cx-w/2}" y="${by-6-(h-6)*frac}" width="${w}" height="${(h-6)*frac}" fill="${col}"/>`;
+  s+=`<path d="M${cx-w/2},${top} L${cx-w/2},${by-6} L${cx+w/2},${by-6} L${cx+w/2},${top} M${cx-w/2-4},${top-2} L${cx-w/2},${top+3}" fill="none" stroke="${C.glass}" stroke-width="1.6"/>`;
+  for(let i=1;i<10;i++){const y=by-6-i*(h-14)/10;s+=`<line x1="${cx-w/2}" y1="${y}" x2="${cx-w/2+(i%5?5:10)}" y2="${y}" stroke="${C.glass}" stroke-width=".8"/>`;}
+  return s;
+}
+function btube(cx,top,len,col,frac,o={}){
+  const w=22,id="bt"+(uid++),bot=top+len;
+  const p=`M${cx-w/2},${top} L${cx-w/2},${bot-w/2} A${w/2},${w/2} 0 0 0 ${cx+w/2},${bot-w/2} L${cx+w/2},${top}`;
+  let s=`<defs><clipPath id="${id}"><path d="${p} Z"/></clipPath></defs><path d="${p} Z" fill="#fff" fill-opacity=".55"/>`;
+  if(col)s+=`<rect clip-path="url(#${id})" x="${cx-w}" y="${bot-len*frac}" width="${w*2}" height="${len*frac}" fill="${col}"/>`;
+  s+=`<path d="${p}" fill="none" stroke="${C.glass}" stroke-width="1.6"/>`;
+  return s;
+}
+function thermo(x,top,bot,frac){
+  const lv=bot-(bot-top-14)*frac;
+  return `<rect x="${x-3}" y="${top}" width="6" height="${bot-top}" rx="3" fill="#f6f3ee" stroke="#8a8a8a" stroke-width="1"/><circle cx="${x}" cy="${bot}" r="5" fill="${C.red}"/><rect x="${x-1.2}" y="${lv}" width="2.4" height="${bot-lv}" fill="${C.red}"/>`;
+}
+function stopwatch(cx,cy,txt){
+  return `<rect x="${cx-5}" y="${cy-36}" width="10" height="8" rx="2" fill="${C.steel}"/><circle cx="${cx}" cy="${cy}" r="28" fill="#fff" stroke="${C.brown}" stroke-width="3"/>`+T(cx,cy+6,txt,{a:"middle",size:16,w:700,fill:C.brown});
+}
+function paper(cx,y){
+  return `<path d="M${cx-92},${y} L${cx+78},${y} L${cx+92},${y+16} L${cx-78},${y+16} Z" fill="#fff" stroke="#bfb3a1"/>`;
+}
+function topView(cx,cy,r,cloud,o={}){ // looking down through the flask at the cross
+  const id="tv"+(uid++);
+  let s=`<defs><clipPath id="${id}"><circle cx="${cx}" cy="${cy}" r="${r}"/></clipPath></defs><circle cx="${cx}" cy="${cy}" r="${r}" fill="#fff" stroke="${C.brown}" stroke-width="2"/>`;
+  s+=`<g clip-path="url(#${id})"><path d="M${cx-r*.5},${cy-r*.5} L${cx+r*.5},${cy+r*.5} M${cx+r*.5},${cy-r*.5} L${cx-r*.5},${cy+r*.5}" stroke="#111" stroke-width="${r*.16}" stroke-linecap="round"/>`;
+  s+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="${C.sulfur}" fill-opacity="${cloud}"/></g>`;
+  if(o.label)s+=T(cx,cy+r+16,o.label,{a:"middle",size:10.5,fill:C.muted});
+  return s;
+}
+function bath(x,by,w,h,o={}){
+  let s=`<rect x="${x}" y="${by-h*0.82}" width="${w}" height="${h*0.82}" fill="${C.water}" fill-opacity=".55"/>`;
+  s+=`<path d="M${x},${by-h} L${x},${by} L${x+w},${by} L${x+w},${by-h}" fill="none" stroke="${C.glass}" stroke-width="2"/>`;
+  return s;
+}
+function arrow(x1,y1,x2,y2){const a=Math.atan2(y2-y1,x2-x1),h=9;return `<path d="M${x1},${y1} L${x2},${y2} M${x2},${y2} L${x2-h*Math.cos(a-.4)},${y2-h*Math.sin(a-.4)} M${x2},${y2} L${x2-h*Math.cos(a+.4)},${y2-h*Math.sin(a+.4)}" fill="none" stroke="${C.brown}" stroke-width="2" stroke-dasharray="${o_dash}"/>`;}
+let o_dash="5 4";
+const svg=inner=>`<svg viewBox="0 0 400 320" role="img" xmlns="http://www.w3.org/2000/svg">${inner}</svg>`;
+
+/* ---------- extra apparatus helpers ---------- */
+C.mantle="#5b544d";C.ice="#ffffff";C.solid="#f4f1ea";C.org="#f3e7b8";C.aq="#cfe3f0";C.uv="#7b5cc4";
+function beaker(x,by,w,h,col,frac,text){
+  const id="bk"+(uid++),p=`M${x},${by-h} L${x},${by} L${x+w},${by} L${x+w},${by-h}`;
+  let s=`<defs><clipPath id="${id}"><path d="${p} Z"/></clipPath></defs><path d="${p} Z" fill="#fff" fill-opacity=".55"/>`;
+  if(col)s+=`<rect clip-path="url(#${id})" x="${x}" y="${by-h*frac}" width="${w}" height="${h*frac}" fill="${col}"/>`;
+  s+=`<path d="M${x-4},${by-h-2} L${x},${by-h+2}" stroke="${C.glass}" stroke-width="1.6"/><path d="${p}" fill="none" stroke="${C.glass}" stroke-width="1.6"/>`;
+  if(text)s+=T(x+w/2,by+14,text,{a:"middle",size:10.5,fill:C.muted});
+  return s;
+}
+function iceBath(x,by,w,h){let s=beaker(x,by,w,h,C.water,.7);
+  for(let i=0;i<Math.floor(w/16);i++){const xx=x+6+i*16,yy=by-h*.7+6+(i%2)*14;s+=`<rect x="${xx}" y="${yy}" width="10" height="10" rx="2" fill="#fff" stroke="#b8cbd6" transform="rotate(${(i*23)%40-20} ${xx+5} ${yy+5})"/>`;}
+  return s;}
+function rbf(cx,cy,r,col,frac,o={}){
+  const id="rb"+(uid++),nw=o.nw||9,nt=cy-r-(o.neck??34),sq=Math.sqrt(r*r-nw*nw);
+  let s=`<defs><clipPath id="${id}"><circle cx="${cx}" cy="${cy}" r="${r}"/></clipPath></defs><circle cx="${cx}" cy="${cy}" r="${r}" fill="#fff" fill-opacity=".6"/>`;
+  if(col)s+=`<rect clip-path="url(#${id})" x="${cx-r}" y="${cy+r-2*r*frac}" width="${2*r}" height="${2*r*frac}" fill="${col}"/>`;
+  if(o.granules)[[-10,r-8],[4,r-6],[14,r-10]].forEach(([dx,dy])=>s+=`<circle cx="${cx+dx}" cy="${cy+dy}" r="2.6" fill="#fff" stroke="#8a8a8a" stroke-width=".7"/>`);
+  s+=`<path d="M${cx-nw},${nt} L${cx-nw},${cy-sq} A${r},${r} 0 1 0 ${cx+nw},${cy-sq} L${cx+nw},${nt}" fill="none" stroke="${C.glass}" stroke-width="1.8"/>`;
+  return s;
+}
+function mantle(cx,cy,r){return `<path d="M${cx-r-10},${cy-4} L${cx-r-10},${cy+r*.3} Q${cx-r-10},${cy+r+16} ${cx},${cy+r+16} Q${cx+r+10},${cy+r+16} ${cx+r+10},${cy+r*.3} L${cx+r+10},${cy-4} Z" fill="${C.mantle}"/><rect x="${cx-r-18}" y="${cy+r+12}" width="${2*r+36}" height="12" rx="3" fill="#47413b"/>`;}
+function condenserV(cx,top,bot){
+  return `<rect x="${cx-14}" y="${top+18}" width="28" height="${bot-top-36}" rx="4" fill="${C.water}" fill-opacity=".55" stroke="${C.glass}" stroke-width="1.6"/>
+  <path d="M${cx-6},${top} L${cx-6},${bot} M${cx+6},${top} L${cx+6},${bot}" stroke="${C.glass}" stroke-width="1.6"/>
+  <path d="M${cx+14},${bot-30} l14,0 M${cx+14},${top+30} l14,0" stroke="${C.glass}" stroke-width="3"/>`
+  +T(cx+32,bot-26,"water in",{size:10,fill:"#2f6fb8",w:600})+T(cx+32,top+34,"water out",{size:10,fill:"#2f6fb8",w:600});
+}
+function condenserSlope(x1,y1,x2,y2){
+  const a=Math.atan2(y2-y1,x2-x1)*180/Math.PI,len=Math.hypot(x2-x1,y2-y1);
+  return `<g transform="translate(${x1},${y1}) rotate(${a})"><rect x="22" y="-13" width="${len-44}" height="26" rx="4" fill="${C.water}" fill-opacity=".55" stroke="${C.glass}" stroke-width="1.6"/>
+  <path d="M0,-5 L${len},-5 M0,5 L${len},5" stroke="${C.glass}" stroke-width="1.6"/>
+  <path d="M36,-13 l0,-12 M${len-36},13 l0,12" stroke="${C.glass}" stroke-width="3"/></g>`;
+}
+function stillHead(cx,top,armY,armTo){ // vertical tube with side arm
+  return `<path d="M${cx-7},${top+60} L${cx-7},${top} M${cx+7},${top+60} L${cx+7},${armY+6} M${cx+7},${armY-6} L${cx+7},${top}" stroke="${C.glass}" stroke-width="1.8" fill="none"/>
+  <path d="M${cx+7},${armY-6} L${armTo[0]},${armTo[1]-5} M${cx+7},${armY+6} L${armTo[0]},${armTo[1]+5}" stroke="${C.glass}" stroke-width="1.8"/>`;
+}
+function sepFunnel(cx,top,layers,o={}){ // layers bottom→top: [colour, height]
+  const id="sf"+(uid++),b0=top+22,b1=top+150;
+  const body=`M${cx-6},${b0} C${cx-56},${b0+40} ${cx-60},${b1-30} ${cx-8},${b1} L${cx+8},${b1} C${cx+60},${b1-30} ${cx+56},${b0+40} ${cx+6},${b0} Z`;
+  let s=`<defs><clipPath id="${id}"><path d="${body}"/></clipPath></defs><path d="${body}" fill="#fff" fill-opacity=".6"/>`;
+  let y=b1;layers.forEach(([c,h])=>{s+=`<rect clip-path="url(#${id})" x="${cx-60}" y="${y-h}" width="120" height="${h}" fill="${c}"/>`;y-=h;});
+  s+=`<path d="${body}" fill="none" stroke="${C.glass}" stroke-width="1.8"/>`;
+  s+=`<path d="M${cx-6},${b0} L${cx-6},${top} M${cx+6},${b0} L${cx+6},${top}" stroke="${C.glass}" stroke-width="1.8"/>`;
+  if(o.stopper!==false)s+=`<rect x="${cx-9}" y="${top-14}" width="18" height="16" rx="3" fill="#d9d2c4" stroke="${C.glass}" stroke-width="1.3"/>`;
+  s+=`<path d="M${cx-3},${b1} L${cx-3},${b1+60} M${cx+3},${b1} L${cx+3},${b1+60}" stroke="${C.glass}" stroke-width="1.6"/>`;
+  s+=`<rect x="${cx-8}" y="${b1+14}" width="16" height="12" rx="2" fill="#d9d2c4" stroke="${C.glass}" stroke-width="1.3"/>`;
+  s+=o.open?`<rect x="${cx-2.5}" y="${b1+8}" width="5" height="24" rx="2" fill="${C.brown}"/>`:`<rect x="${cx-18}" y="${b1+17.5}" width="36" height="5" rx="2" fill="${C.brown}"/>`;
+  if(o.ring)s+=`<ellipse cx="${cx}" cy="${b1-4}" rx="30" ry="6" fill="none" stroke="${C.steel}" stroke-width="3"/><rect x="${cx+30}" y="${b1-6}" width="${o.ring}" height="4" fill="${C.steel}"/>`;
+  return s;
+}
+function buchner(cx,by,o={}){
+  let s=flask(cx,by,null,0);
+  s+=`<path d="M${cx+11},${by-96} L${cx+44},${by-104} L${cx+80},${by-104}" fill="none" stroke="${C.glass}" stroke-width="5"/>`;
+  s+=`<path d="M${cx+80},${by-104} L${cx+120},${by-104}" stroke="#555" stroke-width="7" stroke-linecap="round"/>`;
+  s+=`<rect x="${cx-13}" y="${by-120}" width="26" height="12" rx="3" fill="#3d3a38"/>`;
+  s+=`<path d="M${cx-40},${by-170} L${cx-40},${by-138} L${cx-8},${by-128} L${cx-6},${by-104} L${cx+6},${by-104} L${cx+8},${by-128} L${cx+40},${by-138} L${cx+40},${by-170}" fill="#fff" fill-opacity=".7" stroke="${C.glass}" stroke-width="1.8"/>`;
+  s+=`<line x1="${cx-38}" y1="${by-142}" x2="${cx+38}" y2="${by-142}" stroke="#9a8a76" stroke-width="2"/>`;
+  if(o.crystals)for(let i=0;i<26;i++){const xx=cx-34+(i*7)%68,yy=by-146-(i%3)*3;s+=`<rect x="${xx}" y="${yy}" width="4" height="3" fill="${C.solid}" stroke="#bfb7a6" stroke-width=".5"/>`;}
+  return s;
+}
+function balance(cx,by,reading){
+  return `<rect x="${cx-70}" y="${by-44}" width="140" height="44" rx="6" fill="#e9e3d8" stroke="${C.glass}" stroke-width="1.4"/>
+  <rect x="${cx-34}" y="${by-34}" width="68" height="22" rx="3" fill="#24302a"/>${T(cx,by-18,reading,{a:"middle",size:13,w:700,fill:"#cfe3c9"})}
+  <rect x="${cx-50}" y="${by-52}" width="100" height="8" rx="2" fill="#bdb4a6"/>`;
+}
+function mpApp(cx,by,reading,o={}){
+  let s=`<rect x="${cx-80}" y="${by-96}" width="160" height="96" rx="8" fill="#e9e3d8" stroke="${C.glass}" stroke-width="1.5"/>`;
+  s+=`<rect x="${cx+6}" y="${by-80}" width="64" height="24" rx="3" fill="#24302a"/>`+T(cx+38,by-63,reading,{a:"middle",size:13,w:700,fill:"#cfe3c9"});
+  s+=`<circle cx="${cx-40}" cy="${by-50}" r="16" fill="#dfe8ee" stroke="${C.glass}" stroke-width="1.5"/>`+T(cx-40,by-24,"viewer",{a:"middle",size:9.5,fill:C.muted});
+  s+=`<rect x="${cx-22}" y="${by-150}" width="6" height="64" rx="2" fill="#fff" stroke="${C.glass}" stroke-width="1.2"/><rect x="${cx-21}" y="${by-96}" width="4" height="8" fill="${o.melted?'#f6efd8':C.solid}" stroke="#bfb7a6" stroke-width=".4"/>`;
+  s+=`<rect x="${cx-26}" y="${by-100}" width="14" height="6" fill="#47413b"/>`;
+  return s;
+}
+function spatula(x,y){return `<path d="M${x},${y} L${x+70},${y-20}" stroke="${C.steel}" stroke-width="4" stroke-linecap="round"/><ellipse cx="${x-4}" cy="${y+1}" rx="9" ry="5" fill="${C.steel}"/><ellipse cx="${x-4}" cy="${y-2}" rx="6" ry="3" fill="${C.solid}"/>`;}
+function dropper(cx,top,col){return `<ellipse cx="${cx}" cy="${top}" rx="7" ry="11" fill="#3d3a38"/><path d="M${cx-4},${top+9} L${cx-4},${top+50} L${cx},${top+60} L${cx+4},${top+50} L${cx+4},${top+9} Z" fill="${col||'#eef4f7'}" stroke="${C.glass}" stroke-width="1.2"/>`;}
+function tlcPlate(x,y,w,h,o={}){ // o.base: baseline height from bottom; o.front: distance base→front (px); spots: {lx,d,col,r,ry,streak}
+  const yb=y+h-(o.base??22);
+  let s=`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#fbfbf7" stroke="#a9a08f" stroke-width="1.2"/>`;
+  if(o.uv)s=`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#e7f3d9" stroke="#a9a08f" stroke-width="1.2"/>`;
+  if(o.solvent)s+=`<rect x="${x}" y="${yb-o.solvent}" width="${w}" height="${y+h-yb+o.solvent}" fill="#dfeaf2" opacity=".6"/>`;
+  s+=`<line x1="${x+6}" y1="${yb}" x2="${x+w-6}" y2="${yb}" stroke="#777" stroke-width="1" ${o.ink?'stroke="#2a52c4" stroke-width="1.6"':''}/>`;
+  if(o.front!=null)s+=`<line x1="${x+4}" y1="${yb-o.front}" x2="${x+w-4}" y2="${yb-o.front}" stroke="#777" stroke-width="1" stroke-dasharray="4 3"/>`;
+  (o.spots||[]).forEach(p=>{const rx=p.r||5,ry=p.ry||rx*.8;
+    if(p.streak)s+=`<rect x="${x+p.lx-rx}" y="${yb-p.d}" width="${2*rx}" height="${p.d}" rx="${rx}" fill="${p.col}" opacity=".45"/>`;
+    s+=`<ellipse cx="${x+p.lx}" cy="${yb-p.d}" rx="${rx}" ry="${ry}" fill="${p.col}" ${p.ring?`stroke="#555" stroke-width="1"`:''}/>`;});
+  (o.labels||[]).forEach(([lx,t])=>s+=T(x+lx,yb+13,t,{a:"middle",size:9.5,fill:C.muted,w:600}));
+  return s;
+}
+function tank(x,by,w,h,depth,o={}){
+  let s=`<rect x="${x}" y="${by-depth}" width="${w}" height="${depth}" fill="#cfe3f0" opacity=".8"/>`;
+  s+=`<path d="M${x},${by-h} L${x},${by} L${x+w},${by} L${x+w},${by-h}" fill="none" stroke="${C.glass}" stroke-width="1.8"/>`;
+  if(o.lid!==false)s+=`<rect x="${x-6}" y="${by-h-8}" width="${w+12}" height="8" rx="3" fill="#d9d2c4" stroke="${C.glass}" stroke-width="1.3"/>`;
+  return s;
+}
+function uvLamp(x,y,w){return `<rect x="${x}" y="${y}" width="${w}" height="24" rx="5" fill="#3d3a38"/><rect x="${x+8}" y="${y+18}" width="${w-16}" height="6" fill="${C.uv}"/><path d="M${x+10},${y+26} L${x-6},${y+90} L${x+w+6},${y+90} L${x+w-10},${y+26} Z" fill="${C.uv}" opacity=".12"/>`+T(x+w/2,y+15,"UV lamp",{a:"middle",size:10.5,fill:"#fff",w:700});}
+
+/* ---------- extra helpers: volumetric glass, electrochemistry, mini graphs ---------- */
+C.starch="#1d2547";C.iodine="#c9862a";C.cuso4="#4a90d9";C.znso4="#eef3f6";C.zinc="#a9afb5";C.copper="#c0703a";C.silver="#d8dde2";
+function burette(cx,top,len,col,level){
+  const lv=top+(level??0.1)*len,w=14;
+  let s=`<rect x="${cx-w/2}" y="${lv}" width="${w}" height="${top+len-lv}" fill="${col}"/><rect x="${cx-w/2}" y="${top}" width="${w}" height="${len}" fill="none" stroke="${C.glass}" stroke-width="1.6"/>`;
+  for(let i=0;i<=10;i++){const y=top+6+i*(len-12)/10;s+=`<line x1="${cx-w/2}" y1="${y}" x2="${cx-w/2+(i%5?4:8)}" y2="${y}" stroke="${C.glass}" stroke-width=".8"/>`;}
+  const b=top+len;
+  s+=`<rect x="${cx-6}" y="${b}" width="12" height="12" rx="2" fill="#d9d2c4" stroke="${C.glass}" stroke-width="1.2"/><rect x="${cx-16}" y="${b+4}" width="32" height="4" rx="2" fill="${C.brown}"/>`;
+  s+=`<path d="M${cx-3},${b+12} L${cx-1},${b+34} L${cx+1},${b+34} L${cx+3},${b+12} Z" fill="${col}" stroke="${C.glass}" stroke-width="1.2"/>`;
+  return s;
+}
+function pipette(cx,top,col,o={}){
+  const bulbY=top+80,tip=top+170;
+  let s=`<rect x="${cx-2.5}" y="${top+20}" width="5" height="${bulbY-20-top-20}" fill="${col}"/><ellipse cx="${cx}" cy="${bulbY}" rx="12" ry="24" fill="${col}"/><path d="M${cx-2.5},${bulbY+22} L${cx-2.5},${tip-10} L${cx-1},${tip} L${cx+1},${tip} L${cx+2.5},${tip-10} L${cx+2.5},${bulbY+22} Z" fill="${col}"/>`;
+  s+=`<path d="M${cx-2.5},${top} L${cx-2.5},${bulbY-22} M${cx+2.5},${top} L${cx+2.5},${bulbY-22} M${cx-2.5},${bulbY+22} L${cx-2.5},${tip-10} L${cx-1},${tip} M${cx+2.5},${bulbY+22} L${cx+2.5},${tip-10} L${cx+1},${tip}" stroke="${C.glass}" stroke-width="1.3" fill="none"/><ellipse cx="${cx}" cy="${bulbY}" rx="12" ry="24" fill="none" stroke="${C.glass}" stroke-width="1.5"/><line x1="${cx-5}" y1="${top+30}" x2="${cx+5}" y2="${top+30}" stroke="${C.red}" stroke-width="1.3"/>`;
+  if(o.filler)s+=`<rect x="${cx-4}" y="${top-12}" width="8" height="14" fill="#3d3a38"/><circle cx="${cx}" cy="${top-28}" r="16" fill="#b2392f"/>`;
+  return s;
+}
+function voltmeter(cx,cy,reading,o={}){
+  return `<rect x="${cx-48}" y="${cy-30}" width="96" height="60" rx="8" fill="#e9e3d8" stroke="${C.glass}" stroke-width="1.5"/><rect x="${cx-34}" y="${cy-20}" width="68" height="24" rx="3" fill="#24302a"/>`
+   +T(cx,cy-3,reading,{a:"middle",size:14,w:700,fill:"#cfe3c9"})+T(cx,cy+22,o.label||"V (high resistance)",{a:"middle",size:9.5,fill:C.muted})
+   +`<circle cx="${cx-30}" cy="${cy+32}" r="4" fill="#222"/><circle cx="${cx+30}" cy="${cy+32}" r="4" fill="#c0392b"/>`;
+}
+function electrode(x,top,bot,col,o={}){return `<rect x="${x-6}" y="${top}" width="12" height="${bot-top}" fill="${col}" stroke="#6e6a64" stroke-width="1"/>`+(o.oxide?`<rect x="${x-6}" y="${top+40}" width="12" height="${bot-top-40}" fill="#7f7a70" opacity=".55"/>`:'');}
+function saltBridge(x1,x2,y,drop,o={}){return `<path d="M${x1},${y+drop} L${x1},${y} L${x2},${y} L${x2},${y+drop}" fill="none" stroke="${o.dry?'#e8e0cc':'#e6dbb5'}" stroke-width="12" stroke-linejoin="round"/><path d="M${x1},${y+drop} L${x1},${y} L${x2},${y} L${x2},${y+drop}" fill="none" stroke="#b7a983" stroke-width="1" stroke-dasharray="3 3"/>`;}
+function wire(pts,col){return `<path d="M${pts.map(p=>p.join(',')).join(' L')}" fill="none" stroke="${col||'#333'}" stroke-width="2"/>`;}
+function miniGraph(o){ // o: x0,y0 (box), w,h, xr:[a,b], yr:[a,b], pts, line:[[x,y],[x,y]], xl, yl, xt:[...], yt:[...]
+  const X=v=>o.x+(v-o.xr[0])/(o.xr[1]-o.xr[0])*o.w, Y=v=>o.y+o.h-(v-o.yr[0])/(o.yr[1]-o.yr[0])*o.h;
+  let s=`<rect x="${o.x}" y="${o.y}" width="${o.w}" height="${o.h}" fill="#fffdf8" stroke="${C.ink}"/>`;
+  (o.xt||[]).forEach(v=>s+=`<line x1="${X(v)}" y1="${o.y}" x2="${X(v)}" y2="${o.y+o.h}" stroke="#efe3cf"/>`+T(X(v),o.y+o.h+13,o.xf?o.xf(v):v,{a:"middle",size:9.5,fill:C.muted}));
+  (o.yt||[]).forEach(v=>s+=`<line x1="${o.x}" y1="${Y(v)}" x2="${o.x+o.w}" y2="${Y(v)}" stroke="#efe3cf"/>`+T(o.x-5,Y(v)+3,o.yf?o.yf(v):v,{a:"end",size:9.5,fill:C.muted}));
+  if(o.line)s+=`<line x1="${X(o.line[0][0])}" y1="${Y(o.line[0][1])}" x2="${X(o.line[1][0])}" y2="${Y(o.line[1][1])}" stroke="#2f6fb8" stroke-width="2"/>`;
+  (o.pts||[]).forEach(([x,y])=>s+=`<path d="M${X(x)-4},${Y(y)-4} l8,8 m0,-8 l-8,8" stroke="${C.brown}" stroke-width="2"/>`);
+  if(o.xl)s+=T(o.x+o.w/2,o.y+o.h+30,o.xl,{a:"middle",size:11});
+  if(o.yl)s+=`<g transform="translate(${o.x-38},${o.y+o.h/2}) rotate(-90)">${T(0,0,o.yl,{a:"middle",size:11})}</g>`;
+  return s;
+}
+
+/* ---------- GCSE helpers: polystyrene cup calorimeter, tables ---------- */
+function polyCup(cx,by,frac,o={}){ // cup sits inside a beaker; rim at by-100
+  const id="pc"+(uid++),top=by-100,p=`M${cx-36},${top} L${cx-26},${by} L${cx+26},${by} L${cx+36},${top}`;
+  let s=beaker(cx-54,by+6,108,78,null,0);
+  s+=`<defs><clipPath id="${id}"><path d="${p} Z"/></clipPath></defs><path d="${p} Z" fill="#fbfaf4"/>`;
+  s+=`<rect clip-path="url(#${id})" x="${cx-40}" y="${by-100*frac}" width="80" height="${100*frac}" fill="${o.col||C.acid}"/>`;
+  s+=`<path d="${p}" fill="none" stroke="#b9b2a4" stroke-width="5" stroke-linejoin="round"/><path d="${p}" fill="none" stroke="#8f887a" stroke-width="1"/>`;
+  if(o.lid)s+=`<rect x="${cx-44}" y="${top-8}" width="88" height="8" rx="3" fill="#ece7dc" stroke="#9c9387" stroke-width="1.2"/>`;
+  if(o.therm)s+=thermo(cx+10,top-80,by-14,o.therm);
+  if(o.read)s+=`<rect x="${cx+28}" y="${top-78}" width="70" height="26" rx="4" fill="#fff" stroke="#d7c8b0"/>`+T(cx+63,top-60,o.read,{a:"middle",size:13,w:700,fill:C.brown});
+  return s;
+}
+function table(x,y,cols,rows,w,o={}){
+  const rh=o.rh||22;let s=`<rect x="${x}" y="${y}" width="${w.reduce((a,b)=>a+b,0)}" height="${rh*(rows.length+1)+6}" rx="6" fill="#fff" stroke="#d7c8b0"/>`;
+  let cx=x;cols.forEach((c,j)=>{s+=T(cx+w[j]/2,y+16,c,{a:"middle",size:10.5,w:700,fill:C.brown});cx+=w[j];});
+  rows.forEach((r,i)=>{let xx=x;const yy=y+16+(i+1)*rh;s+=`<line x1="${x+6}" y1="${yy-15}" x2="${x+w.reduce((a,b)=>a+b,0)-6}" y2="${yy-15}" stroke="#eadfcb"/>`;
+    r.forEach((c,j)=>{s+=T(xx+w[j]/2,yy,c,{a:"middle",size:11,w:(o.bold&&o.bold(i,j))?700:500,fill:(o.hi&&o.hi(i,j))?C.red:C.ink});xx+=w[j];});});
+  return s;
+}
+const VOL=[0,5,10,15,20,25,30,35,40],R1=[20.0,22.4,24.5,27.0,29.1,31.6,33.1,32.5,31.6],R2=[20.0,22.2,24.7,26.8,29.3,31.4,33.3,32.7,31.6];
+const MEAN=R1.map((v,i)=>((v+R2[i])/2).toFixed(1));
+
+/* ---------- pictures ---------- */
+const neutPics=[
+ ()=>svg(bench(300)+cyl(90,296,170,.6,C.acid)+polyCup(270,290,.0)
+   +lbl(14,40,["Measure 30 cm³ of","dilute hydrochloric acid"],92,140,{lx:110,ly:60})
+   +lbl(232,90,["Polystyrene cup","in a beaker"],250,200,{lx:262,ly:110})
+   +arrow(130,180,210,200)),
+ ()=>svg(bench(300)+polyCup(200,290,.42,{lid:1,therm:.25,read:"20.0 °C"})
+   +lbl(14,60,["Lid with a hole","for the thermometer"],158,182,{lx:100,ly:80})
+   +lbl(14,250,["30 cm³ HCl(aq)"],176,268,{lx:100,ly:246})),
+ ()=>svg(bench(300)+cyl(70,296,140,.18,C.thio)+polyCup(230,290,.5,{lid:1,therm:.42,read:"22.4 °C"})
+   +lbl(14,40,["Add 5 cm³ of sodium","hydroxide solution"],70,150,{lx:60,ly:60})
+   +lbl(110,104,["Stir, then record the","highest temperature"])
+   +arrow(100,190,180,200)),
+ ()=>svg(table(40,24,["NaOH added / cm³","Highest temp / °C"],VOL.map((v,i)=>[v,R1[i].toFixed(1)]),[160,160],{rh:25,hi:(i)=>i===6})
+   +T(200,306,"Rises while acid is left to react, then falls",{a:"middle",size:11,w:600,fill:C.muted})),
+ ()=>svg(table(24,24,["NaOH / cm³","Run 1 / °C","Run 2 / °C","Mean / °C"],VOL.map((v,i)=>[v,R1[i].toFixed(1),R2[i].toFixed(1),MEAN[i]]),[80,88,88,96],{rh:25,bold:(i,j)=>j===3})),
+ ()=>svg(miniGraph({x:62,y:22,w:316,h:230,xr:[0,40],yr:[18,36],xt:[0,10,20,30,40],yt:[18,22,26,30,34],
+     pts:VOL.map((v,i)=>[v,+MEAN[i]]),line:[[0,20],[34,35.6]],xl:"Volume of NaOH added / cm³",yl:"Highest temperature / °C"})
+   +(()=>{const X=v=>62+v/40*316,Y=v=>22+230-(v-18)/18*230;return `<line x1="${X(22)}" y1="${Y(35.2)}" x2="${X(40)}" y2="${Y(31.6)}" stroke="#2f6fb8" stroke-width="2"/><line x1="${X(29.7)}" y1="${Y(33.7)}" x2="${X(29.7)}" y2="${Y(18)}" stroke="${C.red}" stroke-dasharray="4 3"/><line x1="${X(0)}" y1="${Y(33.7)}" x2="${X(29.7)}" y2="${Y(33.7)}" stroke="${C.red}" stroke-dasharray="4 3"/><circle cx="${X(29.7)}" cy="${Y(33.7)}" r="4" fill="${C.red}"/>`+T(X(39),Y(23),"lines cross at",{a:"end",size:10.5,w:700,fill:C.red})+T(X(39),Y(23)+15,"29.7 cm³ and 33.7 °C",{a:"end",size:10.5,w:700,fill:C.red})})())
+];
+const NEUTLAB={higher:"Larger temperature rise",lower:"Smaller temperature rise",none:"No effect"};
+const NEUTASK="What is the effect on the temperature rise measured?";
+const neutSteps=[
+ {t:"Set up the cup",how:["Stand a polystyrene cup inside a 250 cm³ glass beaker.","Use a measuring cylinder to measure 30 cm³ of dilute hydrochloric acid (2 mol/dm³).","Pour the acid into the cup."],
+  why:"Polystyrene is a good thermal insulator, so less energy is transferred to the surroundings. The beaker stops the cup falling over.",
+  q:{q:"Why is a polystyrene cup used instead of a glass beaker?",o:["It is a good insulator, so less energy is lost to the surroundings","It reacts with the acid to release heat","It is easier to read the volume","Glass would melt"],a:0,e:"Glass conducts heat much better than polystyrene."},
+  m:{t:"The acid is put in a glass beaker with no polystyrene cup.",fx:"lower",e:"More energy is transferred to the surroundings through the glass, so the temperature rise is <b>smaller</b>."}},
+ {t:"Measure the start temperature",how:["Put a lid on the cup and push the thermometer through the hole.","Wait until the reading is steady.","Record the temperature to the nearest 0.1 °C if you can."],
+  why:"The temperature change is the highest temperature minus this starting temperature, so it must be the true temperature of the acid.",
+  q:{q:"Why do you wait until the thermometer reading is steady?",o:["So it shows the true starting temperature of the acid","So the acid starts to react","To let the acid warm up to room temperature","So the lid fits properly"],a:0,e:"A thermometer takes a short time to reach the temperature of the liquid."},
+  ask:"What is the effect on the readings?",lab:{higher:"Less precise",lower:"More precise",none:"No effect"},
+  m:{t:"A thermometer that only reads to the nearest 1 °C is used.",fx:"higher",e:"Each reading is <b>less precise</b>, so small differences between results are harder to see. A digital thermometer reading to 0.1 °C is better."}},
+ {t:"Add the alkali",how:["Use a measuring cylinder to add 5 cm³ of sodium hydroxide solution (2 mol/dm³).","Put the lid back on and stir gently with the thermometer.","Record the <b>highest</b> temperature reached."],
+  why:"Neutralisation is <b>exothermic</b>: energy is transferred to the surroundings, so the temperature rises. The lid reduces heat loss; stirring makes the temperature the same throughout.",
+  q:{q:"Why is the mixture stirred?",o:["So the acid and alkali mix and react, and the temperature is the same throughout","To cool the mixture down","To stop the reaction","So the lid stays on"],a:0,e:"Without stirring, the thermometer may sit in a part of the mixture that has not fully reacted."},
+  m:{t:"The lid is left off the cup.",fx:"lower",e:"More energy is lost from the surface of the liquid, so the highest temperature, and the temperature rise, are <b>smaller</b>."}},
+ {t:"Keep adding 5 cm³ portions",how:["Add another 5 cm³ of sodium hydroxide, stir and record the highest temperature.","Carry on until you have added 40 cm³ in total.","Record each result in a table."],
+  why:"The temperature rises while there is still acid to react. Once all the acid is neutralised, extra alkali does not react: it just adds cooler liquid, so the temperature falls.",
+  q:{q:"Why does the temperature fall after about 30 cm³ of sodium hydroxide has been added?",o:["All the acid has reacted, so the extra cooler alkali cools the mixture","The reaction becomes endothermic","The sodium hydroxide starts to boil","The thermometer stops working"],a:0,e:"Energy is also still being lost to the surroundings."},
+  m:{t:"Each temperature is read straight after adding the alkali, before it stops rising.",fx:"lower",e:"The mixture has not reached its highest temperature, so each recorded temperature, and the rise, are <b>too small</b>."}},
+ {t:"Repeat and find means",how:["Rinse and dry the cup.","Repeat the whole experiment.","Calculate the mean highest temperature for each volume, leaving out any anomalous results."],
+  why:"Repeating checks that the results are <b>repeatable</b> and helps you spot anomalies. Means reduce the effect of random errors.",
+  q:{q:"Why is the experiment repeated?",o:["To check the results are repeatable and to spot anomalous results","To make the results more accurate by using more acid","To change the independent variable","Because the first run always fails"],a:0,e:"If the repeats are close together, the results are repeatable."},
+  m:{t:"The same measuring cylinder is used for the acid and the alkali without rinsing it.",fx:"lower",e:"Some acid and alkali react inside the cylinder instead of in the cup, so the temperature rise measured is <b>smaller</b>."}},
+ {t:"Plot the graph",how:["Plot highest temperature (y-axis) against volume of sodium hydroxide added (x-axis).","Draw a straight line of best fit through the rising points and another through the falling points.","Where the lines cross shows the volume needed to neutralise the acid and the maximum temperature."],
+  why:"Here the lines cross at 29.7 cm³ and 33.7 °C, so the maximum temperature rise is 33.7 − 20.0 = 13.7 °C.",
+  q:{q:"What does the point where the two lines cross show?",o:["The volume of alkali that exactly neutralises the acid, and the maximum temperature","The temperature of the room","The volume of acid used","The point where the reaction started"],a:0,e:"At this point all the acid has just reacted."},
+  m:{t:"The experiment is repeated using acid and alkali that are both twice as concentrated (4 mol/dm³).",fx:"higher",e:"More particles react in the same volume, so more energy is released and the temperature rise is <b>larger</b>."}}
+];
+const neutSummary=[
+ {q:"What is an exothermic reaction?",o:["A reaction that transfers energy to the surroundings, so the temperature rises","A reaction that takes in energy from the surroundings","A reaction that needs a catalyst","A reaction that only happens when heated"],a:0,e:"Neutralisation and combustion are exothermic."},
+ {q:"Which of these is an endothermic reaction?",o:["Citric acid reacting with sodium hydrogencarbonate","Hydrochloric acid reacting with sodium hydroxide","Magnesium burning in air","Methane burning"],a:0,e:"The temperature falls, so energy is taken in from the surroundings."},
+ {q:"In this investigation, what is the independent variable?",o:["The volume of sodium hydroxide added","The highest temperature","The volume of hydrochloric acid","The type of cup"],a:0,e:"It is the variable you change."},
+ {q:"Which is a control variable?",o:["The volume and concentration of the hydrochloric acid","The highest temperature","The volume of sodium hydroxide added","The temperature change"],a:0,e:"Control variables are kept the same so the test is fair."},
+ {q:"The start temperature is 20.0 °C and the maximum temperature from the graph is 33.7 °C. What is the temperature rise?",o:["13.7 °C","33.7 °C","53.7 °C","20.0 °C"],a:0,e:"Temperature rise = maximum − start."},
+ {q:"Why is the measured temperature rise usually less than the true value?",o:["Some energy is lost to the surroundings through the cup, lid and air","The thermometer adds heat","The acid is too dilute to react","The lid traps too much heat"],a:0,e:"No insulation is perfect."},
+ {q:"How could the method be improved to reduce heat loss further?",o:["Use two polystyrene cups, one inside the other, with a lid","Use a glass beaker","Remove the lid","Stir more slowly"],a:0,e:"A double cup adds more insulation."},
+ {q:"In the reaction profile for an exothermic reaction, where are the products?",o:["Lower in energy than the reactants","Higher in energy than the reactants","At the same energy as the reactants","At the top of the activation energy hump"],a:0,e:"The difference is the energy released to the surroundings."},
+ {q:"Why are two straight lines of best fit drawn, instead of one curve through every point?",o:["The temperature rises steadily until neutralisation, then falls steadily, so the lines show where the maximum really is","Because there are two runs","To make the graph look neater","Because one line is for acid and one for alkali"],a:0,e:"Extrapolating both lines finds the maximum even if no reading was taken exactly at that volume."}
+];
+const neutEvals=[
+ ["Insulate","Polystyrene cup in a beaker, with a lid, to reduce energy transfer to the surroundings."],
+ ["Read the highest temperature","Stir, then wait for the temperature to stop rising before recording."],
+ ["Control variables","Same volume and concentration of acid, same cup, same starting temperature, same portions of alkali."],
+ ["Repeat and average","Check repeatability, leave out anomalies, and calculate means."],
+ ["Use the graph","Two straight lines of best fit; where they cross gives the neutralisation volume and maximum temperature."],
+ ["Temperature rise is usually lower than expected","Energy is lost to the surroundings and to the cup and thermometer."],
+ ["Precision","A thermometer reading to 0.1 °C gives more precise readings than one reading to 1 °C."],
+ ["Hazards","Dilute hydrochloric acid and sodium hydroxide are irritants (2 mol/dm³ sodium hydroxide is corrosive). Wear eye protection."]
+];
+
+/* ---------- solid added to a solution ---------- */
+function boat(x,y,col,o={}){ // small weighing boat with a pile of solid
+  let s=`<path d="M${x-18},${y-10} L${x+18},${y-10} L${x+13},${y} L${x-13},${y} Z" fill="#fff" stroke="#9c9387" stroke-width="1.2"/>`;
+  s+=`<path d="M${x-11},${y-10} Q${x},${y-20} ${x+11},${y-10} Z" fill="${col}" stroke="${o.edge||'#8a8a8a'}" stroke-width=".6"/>`;
+  if(o.label)s+=T(x,y+13,o.label,{a:"middle",size:9.5,fill:C.muted});
+  return s;
+}
+function settled(cx,by,col,n,o={}){let s="";for(let i=0;i<n;i++)s+=`<circle cx="${cx-22+((i*17)%44)}" cy="${by-5-((i*7)%5)}" r="${o.r||2.2}" fill="${col}"/>`;return s;}
+function fizz(cx,by,n){let s="";for(let i=0;i<n;i++)s+=`<circle cx="${cx-20+((i*19)%40)}" cy="${by-8-((i*23)%34)}" r="2.4" fill="#fff" fill-opacity=".8" stroke="#5f7d8c" stroke-width=".8"/>`;return s;}
+function twoLineGraph(o,pts,l1,l2,cx,cy,lines,lab){
+  const g={X:v=>o.x+(v-o.xr[0])/(o.xr[1]-o.xr[0])*o.w,Y:v=>o.y+o.h-(v-o.yr[0])/(o.yr[1]-o.yr[0])*o.h};
+  let s=miniGraph(Object.assign({},o,{pts,line:l1}));
+  s+=`<line x1="${g.X(l2[0][0])}" y1="${g.Y(l2[0][1])}" x2="${g.X(l2[1][0])}" y2="${g.Y(l2[1][1])}" stroke="#2f6fb8" stroke-width="2"/>`;
+  s+=`<line x1="${g.X(cx)}" y1="${g.Y(cy)}" x2="${g.X(cx)}" y2="${g.Y(o.yr[0])}" stroke="${C.red}" stroke-dasharray="4 3"/><line x1="${g.X(o.xr[0])}" y1="${g.Y(cy)}" x2="${g.X(cx)}" y2="${g.Y(cy)}" stroke="${C.red}" stroke-dasharray="4 3"/><circle cx="${g.X(cx)}" cy="${g.Y(cy)}" r="4" fill="${C.red}"/>`;
+  lines.forEach((t,i)=>s+=T(g.X(lab[0]),g.Y(lab[1])+i*15,t,{a:lab[2]||"end",size:10.5,w:700,fill:C.red}));
+  return s;
+}
+
+/* exothermic: zinc powder + copper(II) sulfate solution */
+C.zn="#8d949b";C.cuppt="#b8653a";
+const ZM=[0,0.2,0.4,0.6,0.8,1.0,1.2,1.4,1.6],ZT=[20.0,25.4,30.6,35.9,41.0,40.9,40.4,39.9,39.4];
+const exoPics=[
+ ()=>svg(bench(300)+cyl(70,296,170,.55,C.cuso4)+polyCup(220,290,0)+[0,1,2,3].map(i=>boat(300+(i%2)*44,140+Math.floor(i/2)*40,C.zn)).join("")
+   +lbl(14,40,["25 cm³ copper sulfate","solution, 0.50 mol/dm³"],74,150,{lx:100,ly:62})
+   +lbl(276,70,["0.20 g portions","of zinc powder"])),
+ ()=>svg(bench(300)+polyCup(200,290,.42,{lid:1,therm:.25,read:"20.0 °C",col:C.cuso4})
+   +lbl(14,60,["Wait for a","steady reading"],196,140,{lx:104,ly:72})),
+ ()=>svg(bench(300)+polyCup(200,290,.42,{lid:1,therm:.5,read:"25.4 °C",col:"#78a9dc"})+settled(200,288,C.cuppt,10)+boat(70,150,C.zn,{label:"0.20 g Zn"})+arrow(96,160,150,186)
+   +lbl(14,250,["Pink-brown","copper forms"],180,284,{lx:86,ly:256})
+   +T(200,316,"Zn(s) + CuSO₄(aq) → ZnSO₄(aq) + Cu(s)",{a:"middle",size:11,w:700,fill:C.brown})),
+ ()=>svg(bench(300)+polyCup(200,290,.42,{lid:1,therm:.82,read:"40.9 °C",col:"#eef1f2"})+settled(200,288,C.cuppt,12)+settled(206,284,C.zn,10,{r:1.8})
+   +lbl(14,60,["Blue colour has gone:","all the Cu²⁺ has reacted"],170,236,{lx:132,ly:82})
+   +lbl(14,250,["Grey zinc is","left over"],184,282,{lx:84,ly:256})),
+ ()=>svg(twoLineGraph({x:62,y:22,w:316,h:230,xr:[0,1.6],yr:[16,44],xt:[0,0.4,0.8,1.2,1.6],yt:[16,20,24,28,32,36,40,44],xf:v=>v.toFixed(1),xl:"Mass of zinc added / g",yl:"Highest temperature / °C"},
+   ZM.map((m,i)=>[m,ZT[i]]),[[0,20],[0.909,44]],[[0.55,42.0],[1.6,39.4]],0.81,41.4,["reaction stops at","0.81 g, 41.4 °C"],[1.58,30])),
+ ()=>svg(table(52,24,["Zinc added / g","Highest temp / °C"],ZM.map((m,i)=>[m.toFixed(1),ZT[i].toFixed(1)]),[148,148],{rh:25,hi:i=>i===4})
+   +T(200,306,"Rises while copper sulfate is left; then zinc is in excess",{a:"middle",size:11,w:600,fill:C.muted}))
+];
+const EXOLAB={higher:"Larger temperature rise",lower:"Smaller temperature rise",none:"No effect"};
+const exoSteps=[
+ {t:"Set up the cup and solid",how:["Measure 25 cm³ of copper(II) sulfate solution (0.50 mol/dm³) into a polystyrene cup inside a beaker.","Weigh out eight 0.20 g portions of zinc powder onto weighing boats.","Put a lid on the cup."],
+  why:"The cup and lid insulate the mixture, so less energy is lost to the surroundings. Adding the zinc in small, equal portions lets you find the mass at which the reaction stops.",
+  q:{q:"Why is the zinc added in small, equal portions?",o:["So you can find the mass at which the temperature stops rising","So the reaction happens faster","So no copper forms","To make the solution blue"],a:0,e:"Smaller portions give more points near where the reaction stops."},
+  m:{t:"A glass beaker is used with no polystyrene cup.",fx:"lower",e:"More energy is transferred to the surroundings through the glass, so the temperature rise is <b>smaller</b>."}},
+ {t:"Measure the start temperature",how:["Put the thermometer through the hole in the lid.","Stir and wait until the reading is steady.","Record the starting temperature."],
+  why:"Every temperature change is measured from this reading.",
+  q:{q:"Why do you wait for a steady reading?",o:["So it is the true starting temperature of the solution","So the zinc starts to react","So the solution warms up","So the lid fits"],a:0,e:"The thermometer takes a short time to match the liquid."},
+  ask:"What is the effect on the readings?",lab:{higher:"Less precise",lower:"More precise",none:"No effect"},
+  m:{t:"A thermometer reading only to the nearest 1 °C is used.",fx:"higher",e:"Each reading is <b>less precise</b>. A digital thermometer reading to 0.1 °C is better."}},
+ {t:"Add the first portion",how:["Tip in 0.20 g of zinc powder and replace the lid.","Stir all the time.","Record the <b>highest</b> temperature reached."],
+  why:"Zinc displaces copper from copper sulfate. The reaction is <b>exothermic</b>, so the temperature rises. Stirring keeps the powder in contact with the solution.",
+  q:{q:"Which observation shows that a reaction is happening?",o:["The blue colour fades and a pink-brown solid forms","The solution turns green","The zinc floats","Bubbles of oxygen form"],a:0,e:"Copper is pink-brown; zinc sulfate solution is colourless."},
+  m:{t:"The mixture is not stirred, so the zinc sits in a heap at the bottom.",fx:"lower",e:"The zinc reacts slowly, so energy leaks away before the highest temperature is reached. The rise is <b>smaller</b>."}},
+ {t:"Keep adding portions",how:["Add the next 0.20 g portion, stir and record the highest temperature.","Carry on until 1.60 g has been added.","Note when the blue colour disappears and grey zinc is left over."],
+  why:"While there is copper sulfate left, each portion of zinc reacts and the temperature rises. Once all the copper sulfate has reacted, extra zinc has nothing to react with, so the temperature stops rising and slowly falls as energy is lost.",
+  q:{q:"Why does the temperature stop rising after about 0.8 g of zinc?",o:["All the copper sulfate has reacted, so extra zinc does not react","The zinc has all been used up","The reaction becomes endothermic","The thermometer has reached its maximum"],a:0,e:"After this point the zinc is in excess."},
+  m:{t:"Zinc granules are used instead of zinc powder.",fx:"lower",e:"Granules have a smaller surface area, so the reaction is slower and more energy is lost while it happens. The rise is <b>smaller</b>."}},
+ {t:"Plot the graph",how:["Plot highest temperature (y-axis) against mass of zinc added (x-axis).","Draw a straight line through the rising points and another through the points after the peak.","Where they cross is where the reaction stops."],
+  why:"The lines cross at 0.81 g and 41.4 °C. This is the mass of zinc that exactly reacts with all the copper sulfate. The maximum temperature rise is 41.4 − 20.0 = 21.4 °C.",
+  q:{q:"What does the point where the two lines cross show?",o:["The mass of zinc that just reacts with all the copper sulfate, and the maximum temperature","The mass of copper formed","The start temperature","The point where the zinc starts to react"],a:0,e:"Before this point copper sulfate is in excess; after it, zinc is in excess."},
+  ask:"Where does the graph stop rising?",lab:{higher:"At a larger mass",lower:"At a smaller mass",none:"At the same mass"},
+  m:{t:"The experiment is repeated with 1.0 mol/dm³ copper sulfate.",fx:"higher",e:"There is twice as much copper sulfate to react, so the temperature keeps rising until about 1.6 g of zinc: <b>a larger mass</b>, and a larger maximum rise."}},
+ {t:"Use the results",how:["Read the mass of zinc where the reaction stops: 0.81 g.","Work out the maximum temperature rise: 21.4 °C.","Higher tier: check against the calculation. 25 cm³ of 0.50 mol/dm³ CuSO₄ = 0.0125 mol, which reacts with 0.0125 × 65 = 0.81 g of zinc."],
+  why:"The mass from the graph matches the mass calculated from the balanced equation, because 1 mol of zinc reacts with 1 mol of copper sulfate.",
+  q:{q:"Higher tier: 25 cm³ of 0.50 mol/dm³ copper sulfate contains 0.0125 mol. What mass of zinc (Ar = 65) reacts with it?",tag:"Higher",o:["0.81 g","1.63 g","0.41 g","8.1 g"],a:0,e:"Zn and CuSO₄ react 1 : 1, so 0.0125 × 65 = 0.81 g."},
+  ask:"What is the effect on the mass where the reaction seems to stop?",lab:{higher:"Larger mass",lower:"Smaller mass",none:"No effect"},
+  m:{t:"Some zinc powder stays stuck to each weighing boat.",fx:"higher",e:"Less zinc goes into the cup than you record, so the reaction seems to stop at a <b>larger mass</b> than it really does."}}
+];
+const exoSummary=[
+ {q:"Is the reaction between zinc and copper sulfate exothermic or endothermic?",o:["Exothermic: the temperature rises","Endothermic: the temperature falls","Neither: the temperature does not change","Endothermic: the temperature rises"],a:0,e:"Energy is transferred to the surroundings."},
+ {q:"What type of reaction is Zn + CuSO₄ → ZnSO₄ + Cu?",o:["Displacement","Neutralisation","Thermal decomposition","Combustion"],a:0,e:"A more reactive metal displaces a less reactive one."},
+ {q:"In this investigation, what is the independent variable?",o:["The mass of zinc added","The highest temperature","The volume of copper sulfate","The type of cup"],a:0,e:"It is what you change."},
+ {q:"How can you tell from the mixture that the reaction has stopped?",o:["The blue colour has gone and grey zinc is left over","The mixture turns blue","Bubbles start","The copper disappears"],a:0,e:"All the Cu²⁺ ions have reacted."},
+ {q:"After the reaction stops, why does the temperature fall slowly?",o:["No more energy is released, and energy is lost to the surroundings","The reaction is now endothermic","The zinc absorbs heat","The lid stops working"],a:0,e:"The line after the peak slopes gently down."},
+ {q:"Why are straight lines of best fit drawn rather than joining the points?",o:["The point where the lines cross shows where the reaction stops, even between readings","There are too many points","To make the graph look neater","Because the readings are wrong"],a:0,e:"Extrapolation finds the true end point."},
+ {q:"Why is the measured maximum rise smaller than the theoretical value?",o:["Energy is lost to the surroundings","Too much zinc is used","The copper sulfate is too concentrated","The thermometer adds heat"],a:0,e:"No insulation is perfect."}
+];
+const exoEvals=[
+ ["Insulate","Polystyrene cup with a lid, inside a beaker."],
+ ["Small, equal portions of powder","Powder reacts quickly; small portions give more points near the end."],
+ ["Stir and record the highest temperature","Keeps the zinc in contact with the solution."],
+ ["The reaction stops when copper sulfate runs out","Blue colour gone, grey zinc left over, temperature stops rising."],
+ ["Two straight lines of best fit","Where they cross: mass of zinc that just reacts, and the maximum temperature."],
+ ["Higher tier: compare with the calculation","0.0125 mol CuSO₄ reacts with 0.0125 mol Zn = 0.81 g."],
+ ["Hazards","Zinc powder is flammable: no flames. Copper sulfate is harmful. The mixture gets hot. Wear eye protection."]
+];
+
+/* endothermic: sodium hydrogencarbonate + citric acid solution */
+const EM=[0,0.5,1.0,1.5,2.0,2.5,3.0,3.5,4.0,4.5,5.0],ET=[20.0,18.6,17.2,15.8,14.4,13.0,11.6,11.3,11.5,11.7,11.9];
+const endoPics=[
+ ()=>svg(bench(300)+cyl(70,296,170,.55,C.acid)+polyCup(220,290,0)+[0,1,2,3].map(i=>boat(300+(i%2)*44,140+Math.floor(i/2)*40,"#fbfbf7",{edge:"#bfb7a6"})).join("")
+   +lbl(14,40,["25 cm³ citric acid","solution, 0.50 mol/dm³"],74,150,{lx:100,ly:62})
+   +lbl(276,70,["0.50 g portions","of sodium","hydrogencarbonate"])),
+ ()=>svg(bench(300)+polyCup(200,290,.42,{lid:1,therm:.25,read:"20.0 °C"})
+   +lbl(14,60,["Wait for a","steady reading"],196,140,{lx:104,ly:72})),
+ ()=>svg(bench(300)+polyCup(200,290,.42,{lid:1,therm:.17,read:"18.6 °C"})+fizz(200,288,12)+boat(70,150,"#fbfbf7",{label:"0.50 g NaHCO₃",edge:"#bfb7a6"})+arrow(96,160,150,186)
+   +lbl(14,250,["Fizzing:","CO₂ given off"],176,262,{lx:72,ly:256})),
+ ()=>svg(bench(300)+polyCup(200,290,.42,{lid:1,therm:.06,read:"11.3 °C"})+settled(200,288,"#fbfbf7",14,{r:2.6})+settled(200,288,"#d8d2c5",6,{r:1.2})
+   +lbl(14,60,["No more fizzing:","all the acid has reacted"],170,236,{lx:150,ly:82})
+   +lbl(14,250,["White solid","is left over"],186,282,{lx:82,ly:256})),
+ ()=>svg(twoLineGraph({x:62,y:22,w:316,h:230,xr:[0,5],yr:[8,22],xt:[0,1,2,3,4,5],yt:[8,10,12,14,16,18,20,22],xl:"Mass of sodium hydrogencarbonate added / g",yl:"Lowest temperature / °C"},
+   EM.map((m,i)=>[m,ET[i]]),[[0,20],[4.1,8.52]],[[2.2,10.78],[5,11.9]],3.16,11.16,["reaction stops at","3.2 g, 11.2 °C"],[4.9,16])),
+ ()=>svg(table(52,14,["NaHCO₃ added / g","Lowest temp / °C"],EM.map((m,i)=>[m.toFixed(1),ET[i].toFixed(1)]),[148,148],{rh:23,hi:i=>i===7})
+   +T(200,310,"Falls while acid is left; then slowly warms back up",{a:"middle",size:11,w:600,fill:C.muted}))
+];
+const ENDOLAB={higher:"Larger temperature fall",lower:"Smaller temperature fall",none:"No effect"};
+const ENDOASK="What is the effect on the temperature fall measured?";
+const endoSteps=[
+ {t:"Set up the cup and solid",how:["Measure 25 cm³ of citric acid solution (0.50 mol/dm³) into a polystyrene cup inside a beaker.","Weigh out ten 0.50 g portions of sodium hydrogencarbonate.","Put a lid on the cup."],
+  why:"In an endothermic reaction the mixture takes in energy, so it gets colder. The cup and lid stop it warming up again from the surroundings too quickly.",
+  q:{q:"In this endothermic reaction, what does the lid do?",o:["It reduces energy transferred from the surroundings into the mixture","It keeps the gas in","It makes the reaction faster","It keeps the mixture warm"],a:0,e:"Insulation works in both directions."},
+  m:{t:"The lid is left off the cup.",fx:"lower",e:"More energy flows in from the surroundings, so the mixture does not get as cold. The fall is <b>smaller</b>."}},
+ {t:"Measure the start temperature",how:["Put the thermometer through the hole in the lid.","Stir and wait until the reading is steady.","Record the starting temperature."],
+  why:"Every temperature change is measured from this reading.",
+  q:{q:"Why do you wait for a steady reading?",o:["So it is the true starting temperature of the solution","So the acid reacts","So the solution cools down","So the lid fits"],a:0,e:"The thermometer takes a short time to match the liquid."},
+  m:{t:"The thermometer is lifted out of the liquid each time to read it.",fx:"lower",e:"The thermometer warms towards room temperature in the air, so each reading is too warm and the fall is <b>smaller</b>."}},
+ {t:"Add the first portion",how:["Tip in 0.50 g of sodium hydrogencarbonate and replace the lid quickly.","Stir until the fizzing stops.","Record the <b>lowest</b> temperature reached."],
+  why:"Sodium hydrogencarbonate reacts with citric acid to give carbon dioxide. The reaction is <b>endothermic</b>: it takes in energy from the surroundings, so the temperature falls.",
+  q:{q:"How do you know this reaction is endothermic?",o:["The temperature of the mixture falls","Bubbles of gas form","The solid dissolves","The temperature rises"],a:0,e:"Energy is taken in from the surroundings."},
+  m:{t:"The temperature is read straight after adding the solid, before it stops falling.",fx:"lower",e:"The mixture has not reached its lowest temperature, so the fall recorded is <b>smaller</b>."}},
+ {t:"Keep adding portions",how:["Add the next 0.50 g portion, stir and record the lowest temperature.","Carry on until 5.0 g has been added.","Note when adding more solid gives no more fizzing."],
+  why:"While there is acid left, each portion reacts and the temperature falls. Once all the acid has reacted, extra solid just sits there, and the mixture slowly warms up from the surroundings.",
+  q:{q:"How can you tell the reaction has stopped?",o:["Adding more solid causes no fizzing and the solid is left over","The mixture starts fizzing more","The mixture turns cloudy","The temperature falls faster"],a:0,e:"All the citric acid has been used up."},
+  ask:"What is the effect on finding where the reaction stops?",lab:{higher:"Less precise",lower:"More precise",none:"No effect"},
+  m:{t:"The solid is added in 1.0 g portions instead of 0.50 g.",fx:"higher",e:"There are fewer points near the end of the reaction, so the mass where it stops is found <b>less precisely</b>."}},
+ {t:"Plot the graph",how:["Plot lowest temperature (y-axis) against mass of sodium hydrogencarbonate added (x-axis).","Draw a straight line through the falling points and another through the points after the lowest temperature.","Where the lines cross is where the reaction stops."],
+  why:"The lines cross at about 3.2 g and 11.2 °C. This is the mass that just reacts with all the citric acid. The maximum temperature fall is 20.0 − 11.2 = 8.8 °C.",
+  q:{q:"Why does the temperature rise slightly after 3.2 g?",o:["The reaction has stopped, so the mixture slowly gains energy from the surroundings","The reaction becomes exothermic","The extra solid releases heat","The thermometer is warming the mixture"],a:0,e:"Nothing is reacting to take in energy any more."},
+  ask:"Where does the graph stop falling?",lab:{higher:"At a larger mass",lower:"At a smaller mass",none:"At the same mass"},
+  m:{t:"The experiment is repeated with citric acid half as concentrated (0.25 mol/dm³).",fx:"lower",e:"There is half as much acid to react, so the reaction stops at about 1.6 g: <b>a smaller mass</b>, with a smaller temperature fall."}},
+ {t:"Use the results",how:["Read the mass of solid where the reaction stops: about 3.2 g.","Work out the maximum temperature fall: 8.8 °C.","Compare with other groups and look for anomalous results."],
+  why:"If the same solution is used, every group should find the reaction stopping at about the same mass. A very different mass suggests a measuring error.",
+  q:{q:"From the graph, about what mass of sodium hydrogencarbonate reacts with all the citric acid?",o:["3.2 g","5.0 g","11.2 g","0.5 g"],a:0,e:"Read the x value where the lines cross."},
+  ask:"What is the effect on the mass where the reaction seems to stop?",lab:{higher:"Larger mass",lower:"Smaller mass",none:"No effect"},
+  m:{t:"Some solid stays stuck to each weighing boat.",fx:"higher",e:"Less solid goes into the cup than you record, so the reaction seems to stop at a <b>larger mass</b>."}}
+];
+const endoSummary=[
+ {q:"What is an endothermic reaction?",o:["A reaction that takes in energy from the surroundings, so the temperature falls","A reaction that gives out energy","A reaction that needs a flame","A reaction with no temperature change"],a:0,e:"Thermal decomposition is also endothermic."},
+ {q:"Which gas is given off when sodium hydrogencarbonate reacts with citric acid?",o:["Carbon dioxide","Hydrogen","Oxygen","Chlorine"],a:0,e:"Hydrogencarbonates react with acids like carbonates."},
+ {q:"What is the dependent variable?",o:["The lowest temperature","The mass of solid added","The volume of citric acid","The size of the cup"],a:0,e:"It is what you measure."},
+ {q:"Which is a control variable?",o:["The volume and concentration of the citric acid","The mass of solid added","The lowest temperature","The temperature change"],a:0,e:"Keep these the same for a fair test."},
+ {q:"In the reaction profile for an endothermic reaction, where are the products?",o:["Higher in energy than the reactants","Lower in energy than the reactants","At the same energy","Below the starting line"],a:0,e:"Energy has been taken in."},
+ {q:"The start temperature is 20.0 °C and the lowest is 11.2 °C. What is the temperature change?",o:["A fall of 8.8 °C","A rise of 8.8 °C","A fall of 31.2 °C","A fall of 11.2 °C"],a:0,e:"20.0 − 11.2 = 8.8"},
+ {q:"Why is the measured temperature fall smaller than it should be?",o:["Energy is transferred into the mixture from the surroundings","Too much solid is added","The thermometer is too cold","The gas cools the mixture"],a:0,e:"Insulation slows this down but does not stop it."}
+];
+const endoEvals=[
+ ["Insulate","Polystyrene cup with a lid: stops energy flowing in from the surroundings too quickly."],
+ ["Record the lowest temperature","Stir until the fizzing stops and the temperature stops falling."],
+ ["The reaction stops when the acid runs out","No more fizzing, solid left over, temperature stops falling."],
+ ["Two straight lines of best fit","Where they cross: mass that just reacts, and the lowest temperature."],
+ ["After the end point the temperature rises slowly","Energy flows in from the warmer surroundings."],
+ ["Small portions improve precision","More points near the end point."],
+ ["Hazards","Citric acid is an irritant. The mixture froths: do not overfill the cup. Wear eye protection."]
+];
+
+/* ---------- methods ---------- */
+const METHODS={
+ neut:{name:"Acid + alkali",sub:"Hydrochloric acid + sodium hydroxide · volume of alkali added",steps:neutSteps,pics:neutPics,summary:neutSummary,evals:neutEvals,deflab:NEUTLAB,defask:NEUTASK},
+ exo:{name:"Solid added: temperature rise",sub:"Zinc powder + copper sulfate solution · mass of solid added · exothermic",steps:exoSteps,pics:exoPics,summary:exoSummary,evals:exoEvals,deflab:EXOLAB,defask:NEUTASK},
+ endo:{name:"Solid added: temperature fall",sub:"Sodium hydrogencarbonate + citric acid solution · mass of solid added · endothermic",steps:endoSteps,pics:endoPics,summary:endoSummary,evals:endoEvals,deflab:ENDOLAB,defask:ENDOASK}
+};
+let steps,pics,summary,evals,DEFLAB=NEUTLAB,DEFASK=NEUTASK;
+
+/* ---------- state & render ---------- */
+const ST={};let M,S;
+function view(s){return s.alts?Object.assign({},s,s.alts[S.alt]):s;}
+function methodBar(){const b=document.querySelector("#methods");b.innerHTML="";Object.entries(METHODS).forEach(([k,d])=>{const x=document.createElement("button");x.textContent=d.name;x.setAttribute("aria-pressed",k===M);if(k===M)x.classList.add("on");x.onclick=()=>{useMethod(k);render();};b.appendChild(x);});}
+function useMethod(k){M=k;const d=METHODS[k];steps=d.steps;pics=d.pics;summary=d.summary;evals=d.evals;if(d.deflab)DEFLAB=d.deflab;if(d.defask)DEFASK=d.defask;S=ST[k]||(ST[k]={cur:0,ans:{},att:0,right:0,alt:0});document.querySelector("#msub").textContent=d.sub;methodBar();}
+const $=s=>document.querySelector(s);
+function shuffleOrder(n,seed){const a=[...Array(n).keys()];let x=seed*9301+49297;for(let i=n-1;i>0;i--){x=(x*9301+49297)%233280;const j=Math.floor(x/233280*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function updScore(){$("#score").textContent=`Score ${S.right} / ${S.att}`;}
+function rail(){
+  const r=$("#rail");r.innerHTML="";
+  steps.forEach((s,i)=>{const b=document.createElement("button");b.textContent=`${i+1}. ${s.t}`;if(i===S.cur)b.classList.add("on");if(S.ans["q"+i]!==undefined&&S.ans["m"+i]!==undefined)b.classList.add("done");b.onclick=()=>go(i);r.appendChild(b);});
+  const b=document.createElement("button");b.textContent="Evaluation & quiz";if(S.cur===steps.length)b.classList.add("on");b.onclick=()=>go(steps.length);r.appendChild(b);
+}
+function mcqHTML(key,item,seed){
+  const ord=shuffleOrder(item.o.length,seed);
+  const done=S.ans[key];
+  let h=`<div class="opts">`;
+  ord.forEach(k=>{let cls="";if(done!==undefined){if(k===item.a)cls="right";else if(k===done)cls="wrong";}
+    h+=`<button class="opt ${cls}" data-key="${key}" data-k="${k}" ${done!==undefined?"disabled":""}>${item.o[k]}</button>`;});
+  h+=`</div>`;
+  if(done!==undefined)h+=`<p class="fb ${done===item.a?'ok':'no'}">${done===item.a?"Correct. ":"Not quite. "}${item.e}</p>`;
+  return h;
+}
+function render(){
+  rail();updScore();
+  const m=$("#main");
+  if(S.cur===steps.length){renderSummary();return;}
+  const s=view(steps[S.cur]),i=S.cur,md=S.ans["m"+i],lab=s.lab||DEFLAB;
+  m.innerHTML=`<div class="fadein">
+   <div class="stage">
+     <div class="pic">${pics[i]()}</div>
+     <div>
+       <p class="eyebrow">Step ${i+1} of ${steps.length}</p>
+       <h2>${s.t}</h2>${s.alts?`<div class="alt" role="group" aria-label="Apparatus">${s.alts.map((a,k)=>`<button data-alt="${k}" class="${k===S.alt?"on":""}" aria-pressed="${k===S.alt}">${a.label}</button>`).join("")}</div>`:""}
+       <ul class="how">${s.how.map(x=>`<li>${x}</li>`).join("")}</ul>
+       <p class="why"><b>Why: </b>${s.why}</p>
+     </div>
+   </div>
+   <div class="cards">
+     <section class="card mcq"><h3>Check your understanding</h3><p class="q">${s.q.q}</p>${mcqHTML("q"+i,s.q,i+3)}</section>
+     <section class="card mistake"><h3>Potential mistake</h3><p class="q">${s.m.t}</p>
+       <p style="margin:0 0 8px;color:var(--muted);font-size:.9rem">${s.ask||DEFASK}</p>
+       <div class="pred">${["higher","lower","none"].map(f=>{let c="";if(md!==undefined){if(f===s.m.fx)c="right";else if(f===md)c="wrong";}return `<button data-m="${i}" data-f="${f}" class="${c}" ${md!==undefined?"disabled":""}>${lab[f]}</button>`;}).join("")}</div>
+       ${md!==undefined?`<p class="fb ${md===s.m.fx?'ok':'no'}"><span class="effect">${lab[s.m.fx]}</span>${s.m.e}</p>`:""}
+     </section>
+   </div>
+   <div class="nav"><button class="ghost" id="prev" ${i===0?"disabled":""}>← Previous</button><button id="next">${i===steps.length-1?"Evaluation & quiz →":"Next step →"}</button></div>
+  </div>`;
+  $("#prev").onclick=()=>go(i-1);$("#next").onclick=()=>go(i+1);
+  bind();
+}
+function renderSummary(){
+  const m=$("#main");
+  let h=`<div class="fadein summary"><p class="eyebrow">Evaluation</p><h2>Common exam points</h2><div class="evals">${evals.map(([a,b])=>`<div class="eval"><b>${a}.</b> ${b}</div>`).join("")}</div>`;
+  h+=`<h4>Summary questions</h4>`;
+  summary.forEach((q,j)=>{h+=`<section class="card mcq"><p class="q"><span class="qnum">Q${j+1}</span>${q.q}${q.tag?`<span class="tag">${q.tag}</span>`:""}</p>${mcqHTML("s"+j,q,j+11)}</section>`;});
+  const answered=summary.filter((q,j)=>S.ans["s"+j]!==undefined).length;
+  if(answered===summary.length){const sc=summary.filter((q,j)=>S.ans["s"+j]===q.a).length;h+=`<div class="final"><b>Summary quiz: ${sc} / ${summary.length}</b><br>Whole walkthrough: ${S.right} / ${S.att} correct first time.</div>`;}
+  h+=`<div class="nav"><button class="ghost" id="prev">← Back to step ${steps.length}</button><button id="restart">Start again</button></div></div>`;
+  m.innerHTML=h;
+  $("#prev").onclick=()=>go(steps.length-1);
+  $("#restart").onclick=()=>{S.ans={};S.att=0;S.right=0;go(0);};
+  bind();
+}
+function bind(){
+  document.querySelectorAll(".alt button").forEach(b=>b.onclick=()=>{const k=+b.dataset.alt;if(k===S.alt)return;S.alt=k;delete S.ans["q"+S.cur];delete S.ans["m"+S.cur];render();});
+  document.querySelectorAll(".opt:not(:disabled)").forEach(b=>b.onclick=()=>{
+    const key=b.dataset.key,k=+b.dataset.k;S.ans[key]=k;S.att++;
+    const item=key[0]==="q"?view(steps[+key.slice(1)]).q:summary[+key.slice(1)];
+    if(k===item.a)S.right++;render();
+  });
+  document.querySelectorAll(".pred button:not(:disabled)").forEach(b=>b.onclick=()=>{
+    const i=+b.dataset.m,f=b.dataset.f;S.ans["m"+i]=f;S.att++;if(f===view(steps[i]).m.fx)S.right++;render();
+  });
+}
+function go(i){S.cur=Math.max(0,Math.min(steps.length,i));render();window.scrollTo({top:0,behavior:"smooth"});}
+document.addEventListener("keydown",e=>{if(e.target.tagName==="BUTTON"&&(e.key===" "||e.key==="Enter"))return;if(e.key==="ArrowRight")go(S.cur+1);if(e.key==="ArrowLeft")go(S.cur-1);});
+useMethod(Object.keys(METHODS)[0]);render();
+</script>
+
+</body></html>
