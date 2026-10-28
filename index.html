@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mr Jarvis' Chemistry Page</title>
+<meta name="description" content="GCSE and A-level chemistry: required practicals, virtual labs, revision quizzes and topic walkthroughs.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#14213d; --ink-soft:#4a5571; --muted:#8a92a8;
+    --bg:#f5f6fa; --card:#ffffff; --line:#e2e5ee;
+    --gcse:#0e8a8c; --gcse-soft:#e3f4f4;
+    --alevel:#6b3fb6; --alevel-soft:#efe8fa;
+    --accent:var(--gcse); --accent-soft:var(--gcse-soft);
+    --radius:14px;
+  }
+  body[data-level="alevel"]{ --accent:var(--alevel); --accent-soft:var(--alevel-soft); }
+
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{ margin:0; background:var(--bg); color:var(--ink);
+        font:16px/1.55 Inter, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  a{ color:inherit; }
+
+  /* ---------- Header ---------- */
+  header.hero{
+    background:var(--ink); color:#fff; position:relative; overflow:hidden;
+    padding:56px 20px 0;
+  }
+  header.hero::before{
+    content:""; position:absolute; inset:0; opacity:.09;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='97' viewBox='0 0 56 97'%3E%3Cpath d='M28 0l28 16.2v32.3L28 64.7 0 48.5V16.2zM28 97V64.7' fill='none' stroke='%23fff' stroke-width='1.5'/%3E%3C/svg%3E");
+    background-size:56px 97px;
+  }
+  header.hero::after{
+    content:""; position:absolute; right:-120px; top:-120px; width:420px; height:420px;
+    border-radius:50%; background:var(--accent); opacity:.35; filter:blur(60px);
+    transition:background .4s;
+  }
+  .wrap{ max-width:1100px; margin:0 auto; position:relative; z-index:1; }
+  .eyebrow{ text-transform:uppercase; letter-spacing:.14em; font-size:.78rem; font-weight:600; opacity:.75; margin:0 0 10px; }
+  h1{ font-family:Fraunces, Georgia, serif; font-weight:700; font-size:clamp(2.1rem, 5vw, 3.4rem);
+      line-height:1.1; margin:0 0 12px; }
+  .tagline{ font-size:1.1rem; opacity:.85; max-width:620px; margin:0 0 36px; }
+
+  .level-switch{ display:flex; gap:8px; }
+  .level-btn{
+    appearance:none; border:0; cursor:pointer; font:inherit; font-weight:600; font-size:1.05rem;
+    padding:14px 28px; border-radius:12px 12px 0 0; color:#fff;
+    background:rgba(255,255,255,.1); transition:background .2s, color .2s;
+  }
+  .level-btn:hover{ background:rgba(255,255,255,.18); }
+  .level-btn[aria-selected="true"]{ background:var(--bg); color:var(--ink); }
+  .level-btn .dot{ display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:8px; vertical-align:1px; }
+  .level-btn[data-level="gcse"] .dot{ background:var(--gcse); }
+  .level-btn[data-level="alevel"] .dot{ background:#a07ce0; }
+
+  /* ---------- Main ---------- */
+  main{ padding:36px 20px 60px; }
+  .level-intro{ display:flex; flex-wrap:wrap; align-items:baseline; gap:6px 14px; margin-bottom:22px; }
+  .level-intro h2{ font-family:Fraunces, Georgia, serif; font-size:1.9rem; margin:0; }
+  .level-intro p{ margin:0; color:var(--ink-soft); }
+
+  .cat-nav{ display:grid; grid-template-columns:repeat(4, 1fr); gap:14px; margin-bottom:48px; }
+  .cat-tile{
+    appearance:none; text-align:left; font:inherit; color:inherit; cursor:pointer;
+    background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+    padding:18px; display:flex; flex-direction:column; gap:10px;
+    transition:transform .15s, box-shadow .15s, border-color .15s;
+  }
+  .cat-tile:hover{ transform:translateY(-3px); box-shadow:0 10px 24px rgba(20,33,61,.08); border-color:var(--accent); }
+  .icon{ width:44px; height:44px; border-radius:11px; background:var(--accent-soft); color:var(--accent);
+         display:grid; place-items:center; }
+  .icon svg{ width:24px; height:24px; }
+  .cat-tile strong{ font-size:1rem; line-height:1.3; }
+  .cat-tile small{ color:var(--muted); font-size:.85rem; }
+
+  section.cat{ margin-bottom:52px; scroll-margin-top:20px; }
+  .cat-head{ display:flex; align-items:center; gap:14px; margin-bottom:6px; }
+  .cat-head h3{ font-family:Fraunces, Georgia, serif; font-size:1.5rem; margin:0; }
+  .cat-blurb{ color:var(--ink-soft); margin:0 0 20px 58px; }
+
+  /* cards */
+  .grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:14px; }
+  .card{
+    display:flex; flex-direction:column; gap:6px; text-decoration:none;
+    background:var(--card); border:1px solid var(--line); border-left:4px solid var(--accent);
+    border-radius:var(--radius); padding:16px 18px; position:relative;
+    transition:transform .15s, box-shadow .15s;
+  }
+  a.card:hover{ transform:translateY(-3px); box-shadow:0 10px 24px rgba(20,33,61,.09); }
+  a.card::after{ content:"→"; position:absolute; right:16px; top:14px; color:var(--accent); font-weight:700; }
+  .card .code{ font-size:.75rem; font-weight:700; letter-spacing:.06em; color:var(--accent); }
+  .card .title{ font-weight:600; padding-right:22px; line-height:1.35; }
+  .card .desc{ font-size:.9rem; color:var(--ink-soft); }
+  .tag{ align-self:flex-start; font-size:.72rem; font-weight:600; padding:2px 8px; border-radius:20px;
+        background:#fff4e0; color:#9a5b00; }
+  .card.soon{ border-left-color:var(--line); border-style:dashed; border-left-style:solid; background:transparent; }
+  .card.soon .title{ color:var(--ink-soft); }
+  .card.soon .code{ color:var(--muted); }
+  .soon-pill{ font-size:.72rem; font-weight:600; color:var(--muted); background:#eceef4; padding:2px 8px; border-radius:20px; align-self:flex-start; }
+
+  /* topics */
+  .group-label{ font-size:.78rem; font-weight:700; text-transform:uppercase; letter-spacing:.12em;
+                color:var(--accent); margin:22px 0 10px; }
+  .group-label:first-child{ margin-top:0; }
+  .topics{ display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:10px; }
+  details.topic, div.topic{
+    background:var(--card); border:1px solid var(--line); border-radius:12px;
+  }
+  div.topic{ background:transparent; border-style:dashed; }
+  .topic summary, div.topic .row{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:13px 16px; font-weight:600; list-style:none;
+  }
+  .topic summary{ cursor:pointer; }
+  .topic summary::-webkit-details-marker{ display:none; }
+  .topic summary::before{
+    content:""; flex:none; width:8px; height:8px; border-right:2px solid var(--accent); border-bottom:2px solid var(--accent);
+    transform:rotate(-45deg); transition:transform .2s; margin-right:4px;
+  }
+  details[open].topic summary::before{ transform:rotate(45deg); }
+  .topic summary .name{ flex:1; }
+  div.topic .row{ color:var(--ink-soft); font-weight:500; }
+  .count{ flex:none; font-size:.75rem; font-weight:700; color:var(--accent); background:var(--accent-soft);
+          padding:2px 9px; border-radius:20px; }
+  .topic ul{ list-style:none; margin:0; padding:0 10px 10px; }
+  .topic li a{ display:flex; justify-content:space-between; gap:10px; padding:9px 12px; border-radius:8px;
+               text-decoration:none; color:var(--ink-soft); }
+  .topic li a:hover{ background:var(--accent-soft); color:var(--ink); }
+  .topic li a::after{ content:"→"; color:var(--accent); }
+
+  .empty{ border:1px dashed var(--line); border-radius:var(--radius); padding:28px; text-align:center; color:var(--muted); }
+
+  footer{ border-top:1px solid var(--line); padding:26px 20px; color:var(--muted); font-size:.88rem; }
+  footer .wrap{ display:flex; flex-wrap:wrap; justify-content:space-between; gap:8px; }
+
+  @media (max-width:820px){ .cat-nav{ grid-template-columns:repeat(2, 1fr); } }
+  @media (max-width:520px){
+    header.hero{ padding-top:40px; }
+    .level-btn{ flex:1; padding:12px 10px; }
+    .cat-blurb{ margin-left:0; }
+    .topics{ grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body data-level="gcse">
+
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">AQA Chemistry</p>
+    <h1>Mr Jarvis' Chemistry Page</h1>
+    <p class="tagline">Required practicals, virtual labs, revision quizzes and topic walkthroughs for GCSE and A-level chemistry.</p>
+    <div class="level-switch" role="tablist">
+      <button class="level-btn" role="tab" data-level="gcse"><span class="dot"></span>GCSE</button>
+      <button class="level-btn" role="tab" data-level="alevel"><span class="dot"></span>A-level</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap" id="content"></div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Mr Jarvis · Chemistry</span>
+    <span>Resources are free to use in lessons and for revision.</span>
+  </div>
+</footer>
+
+<script>
+/* =====================================================================
+   EDIT THIS SECTION TO ADD YOUR RESOURCES
+   ---------------------------------------------------------------------
+   • Anything with url: ""  shows as "Coming soon".
+   • To make something live, put its file name in url, e.g.
+       url: "gcse/practicals/making-salts.html"
+   • Quizzes and walkthroughs are listed under a topic. The topic name
+     must match one in the "topics" list exactly, e.g.
+       "3. Quantitative chemistry": [
+         { title: "Moles and mass", url: "gcse/quizzes/moles.html" },
+       ],
+   ===================================================================== */
+const SITE = {
+  gcse: {
+    name: "GCSE",
+    spec: "AQA GCSE Chemistry (8462) and Combined Science: Trilogy (8464)",
+    topics: [
+      "1. Atomic structure and the periodic table",
+      "2. Bonding, structure and properties of matter",
+      "3. Quantitative chemistry",
+      "4. Chemical changes",
+      "5. Energy changes",
+      "6. Rate and extent of chemical change",
+      "7. Organic chemistry",
+      "8. Chemical analysis",
+      "9. Chemistry of the atmosphere",
+      "10. Using resources",
+    ],
+    practicals: [
+      { title: "Making salts", desc: "Prepare a pure, dry sample of a soluble salt from an insoluble oxide or carbonate.", url: "" },
+      { title: "Titration", desc: "Find the reacting volumes of a strong acid and a strong alkali.", tag: "Chemistry only", url: "" },
+      { title: "Electrolysis", desc: "Investigate what forms when aqueous solutions are electrolysed with inert electrodes.", url: "" },
+      { title: "Temperature changes", desc: "Investigate the variables that affect temperature changes in reacting solutions.", url: "" },
+      { title: "Rates of reaction", desc: "How concentration affects rate: gas volume and disappearing-cross methods.", url: "" },
+      { title: "Chromatography", desc: "Separate coloured substances with paper chromatography and calculate Rf values.", url: "" },
+      { title: "Identifying ions", desc: "Flame tests and precipitate tests for positive and negative ions.", tag: "Chemistry only", url: "" },
+      { title: "Water purification", desc: "Analyse water samples and purify them by distillation.", url: "" },
+    ],
+    labs: [
+      // { title: "Virtual titration", desc: "Run a full titration on screen.", url: "gcse/labs/titration.html" },
+    ],
+    quizzes: {
+      // "3. Quantitative chemistry": [ { title: "Moles and mass", url: "gcse/quizzes/moles.html" } ],
+    },
+    walkthroughs: {
+      // "4. Chemical changes": [ { title: "Electrolysis", url: "gcse/walkthroughs/electrolysis.html" } ],
+    },
+  },
+
+  alevel: {
+    name: "A-level",
+    spec: "AQA A-level Chemistry (7405)",
+    topics: [
+      { name: "3.1.1 Atomic structure", group: "Physical chemistry" },
+      { name: "3.1.2 Amount of substance", group: "Physical chemistry" },
+      { name: "3.1.3 Bonding", group: "Physical chemistry" },
+      { name: "3.1.4 Energetics", group: "Physical chemistry" },
+      { name: "3.1.5 Kinetics", group: "Physical chemistry" },
+      { name: "3.1.6 Chemical equilibria and Kc", group: "Physical chemistry" },
+      { name: "3.1.7 Oxidation, reduction and redox equations", group: "Physical chemistry" },
+      { name: "3.1.8 Thermodynamics", group: "Physical chemistry" },
+      { name: "3.1.9 Rate equations", group: "Physical chemistry" },
+      { name: "3.1.10 Equilibrium constant Kp", group: "Physical chemistry" },
+      { name: "3.1.11 Electrode potentials and cells", group: "Physical chemistry" },
+      { name: "3.1.12 Acids and bases", group: "Physical chemistry" },
+      { name: "3.2.1 Periodicity", group: "Inorganic chemistry" },
+      { name: "3.2.2 Group 2, the alkaline earth metals", group: "Inorganic chemistry" },
+      { name: "3.2.3 Group 7, the halogens", group: "Inorganic chemistry" },
+      { name: "3.2.4 Properties of Period 3 elements and their oxides", group: "Inorganic chemistry" },
+      { name: "3.2.5 Transition metals", group: "Inorganic chemistry" },
+      { name: "3.2.6 Reactions of ions in aqueous solution", group: "Inorganic chemistry" },
+      { name: "3.3.1 Introduction to organic chemistry", group: "Organic chemistry" },
+      { name: "3.3.2 Alkanes", group: "Organic chemistry" },
+      { name: "3.3.3 Halogenoalkanes", group: "Organic chemistry" },
+      { name: "3.3.4 Alkenes", group: "Organic chemistry" },
+      { name: "3.3.5 Alcohols", group: "Organic chemistry" },
+      { name: "3.3.6 Organic analysis", group: "Organic chemistry" },
+      { name: "3.3.7 Optical isomerism", group: "Organic chemistry" },
+      { name: "3.3.8 Aldehydes and ketones", group: "Organic chemistry" },
+      { name: "3.3.9 Carboxylic acids and derivatives", group: "Organic chemistry" },
+      { name: "3.3.10 Aromatic chemistry", group: "Organic chemistry" },
+      { name: "3.3.11 Amines", group: "Organic chemistry" },
+      { name: "3.3.12 Polymers", group: "Organic chemistry" },
+      { name: "3.3.13 Amino acids, proteins and DNA", group: "Organic chemistry" },
+      { name: "3.3.14 Organic synthesis", group: "Organic chemistry" },
+      { name: "3.3.15 NMR spectroscopy", group: "Organic chemistry" },
+      { name: "3.3.16 Chromatography", group: "Organic chemistry" },
+    ],
+    practicals: [
+      { code: "RP1", title: "Volumetric solution and titration", desc: "Make up a volumetric solution and carry out an acid–base titration.", url: "" },
+      { code: "RP2", title: "Measuring an enthalpy change", desc: "Calorimetry, heat loss and cooling-curve extrapolation.", url: "" },
+      { code: "RP3", title: "Effect of a variable on rate", desc: "Investigate how concentration or temperature affects rate.", url: "" },
+      { code: "RP4", title: "Identifying ions", desc: "Test-tube reactions for Group 2, halide, ammonium, hydroxide, carbonate and sulfate ions.", url: "" },
+      { code: "RP5", title: "Distillation of a product", desc: "Distil a product from a reaction, e.g. oxidation of an alcohol.", url: "" },
+      { code: "RP6", title: "Organic functional group tests", desc: "Tests for alcohols, aldehydes, alkenes and carboxylic acids.", url: "" },
+      { code: "RP7", title: "Measuring rate of reaction", desc: "Initial rate and continuous monitoring methods.", url: "" },
+      { code: "RP8", title: "EMF of electrochemical cells", desc: "Set up cells and measure their EMF.", url: "" },
+      { code: "RP9", title: "pH curves", desc: "How pH changes when a weak acid reacts with a strong base.", url: "" },
+      { code: "RP10", title: "Preparing pure organic compounds", desc: "Prepare a pure organic solid and a pure organic liquid, and test purity.", url: "" },
+      { code: "RP11", title: "Transition metal ions", desc: "Test-tube reactions to identify transition metal ions in solution.", url: "" },
+      { code: "RP12", title: "Thin-layer chromatography", desc: "Separate species by TLC and calculate Rf values.", url: "" },
+    ],
+    labs: [],
+    quizzes: {},
+    walkthroughs: {},
+  },
+};
+/* ===================== END OF EDITABLE SECTION ===================== */
+
+
+const ICONS = {
+  practicals: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v6L4.6 18.4A2 2 0 0 0 6.3 21.5h11.4a2 2 0 0 0 1.7-3.1L14 9V3"/><path d="M7.5 15h9"/></svg>',
+  labs: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4M10 7v3l-2 3h8l-2-3V7"/></svg>',
+  quizzes: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.4 2.3c-.6.3-.9.9-.9 1.5V14M12 17h.01"/></svg>',
+  walkthroughs: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2V5z"/><path d="M19 19v2H6M8 7h7M8 11h5"/></svg>',
+};
+
+const CATS = [
+  { key: "practicals",   title: "Required practical walkthroughs", blurb: "Step-by-step guides to each AQA required practical: method, results and the exam questions that come with them.", type: "cards" },
+  { key: "labs",         title: "Virtual lab experiments",        blurb: "Interactive experiments you can run on screen, in class or at home.", type: "cards" },
+  { key: "quizzes",      title: "Multiple choice revision quizzes", blurb: "Quick-fire quizzes by topic. Open a topic to see the quizzes inside it.", type: "topics" },
+  { key: "walkthroughs", title: "Topic walkthroughs",             blurb: "Guided explanations that build each topic up from the basics.", type: "topics" },
+];
+
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
+const topicName = t => typeof t === "string" ? t : t.name;
+const topicGroup = t => typeof t === "string" ? "" : (t.group || "");
+
+function liveCount(L, key) {
+  const v = L[key];
+  if (Array.isArray(v)) return v.filter(i => i.url).length;
+  return Object.values(v || {}).reduce((n, arr) => n + arr.filter(i => i.url).length, 0);
+}
+
+function renderCards(items, catTitle) {
+  if (!items.length) return `<div class="empty">${esc(catTitle)} are on the way. Check back soon.</div>`;
+  return `<div class="grid">${items.map(i => {
+    const inner = `
+      ${i.code ? `<span class="code">${esc(i.code)}</span>` : ""}
+      <span class="title">${esc(i.title)}</span>
+      ${i.desc ? `<span class="desc">${esc(i.desc)}</span>` : ""}
+      ${i.tag ? `<span class="tag">${esc(i.tag)}</span>` : ""}
+      ${i.url ? "" : `<span class="soon-pill">Coming soon</span>`}`;
+    return i.url
+      ? `<a class="card" href="${esc(i.url)}">${inner}</a>`
+      : `<div class="card soon">${inner}</div>`;
+  }).join("")}</div>`;
+}
+
+function renderTopics(topics, links) {
+  const known = new Set(topics.map(topicName));
+  const extra = Object.keys(links).filter(k => !known.has(k)).map(k => ({ name: k, group: "Other" }));
+  let html = "", currentGroup = null, open = false;
+  for (const t of [...topics, ...extra]) {
+    const g = topicGroup(t);
+    if (g !== currentGroup) {
+      if (open) html += "</div>";
+      if (g) html += `<div class="group-label">${esc(g)}</div>`;
+      html += `<div class="topics">`;
+      open = true; currentGroup = g;
+    }
+    const items = (links[topicName(t)] || []).filter(i => i.url);
+    html += items.length
+      ? `<details class="topic"><summary><span class="name">${esc(topicName(t))}</span><span class="count">${items.length}</span></summary>
+           <ul>${items.map(i => `<li><a href="${esc(i.url)}">${esc(i.title)}</a></li>`).join("")}</ul></details>`
+      : `<div class="topic"><div class="row"><span>${esc(topicName(t))}</span><span class="soon-pill">Coming soon</span></div></div>`;
+  }
+  if (open) html += "</div>";
+  return html;
+}
+
+function render(level) {
+  if (!SITE[level]) level = "gcse";
+  const L = SITE[level];
+  document.body.dataset.level = level;
+  document.querySelectorAll(".level-btn").forEach(b => b.setAttribute("aria-selected", b.dataset.level === level));
+
+  const nav = CATS.map(c => {
+    const n = liveCount(L, c.key);
+    return `<button class="cat-tile" data-target="${level}-${c.key}">
+      <span class="icon">${ICONS[c.key]}</span>
+      <strong>${esc(c.title)}</strong>
+      <small>${n ? `${n} available` : "Coming soon"}</small>
+    </button>`;
+  }).join("");
+
+  const sections = CATS.map(c => `
+    <section class="cat" id="${level}-${c.key}">
+      <div class="cat-head"><span class="icon">${ICONS[c.key]}</span><h3>${esc(c.title)}</h3></div>
+      <p class="cat-blurb">${esc(c.blurb)}</p>
+      ${c.type === "cards" ? renderCards(L[c.key] || [], c.title) : renderTopics(L.topics, L[c.key] || {})}
+    </section>`).join("");
+
+  document.getElementById("content").innerHTML = `
+    <div class="level-intro"><h2>${esc(L.name)}</h2><p>${esc(L.spec)}</p></div>
+    <nav class="cat-nav">${nav}</nav>
+    ${sections}`;
+
+  document.querySelectorAll(".cat-tile").forEach(t =>
+    t.addEventListener("click", () => document.getElementById(t.dataset.target).scrollIntoView({ behavior: "smooth" })));
+}
+
+function levelFromHash() { return location.hash.replace("#", "") === "a-level" ? "alevel" : "gcse"; }
+
+document.querySelectorAll(".level-btn").forEach(b => b.addEventListener("click", () => {
+  history.replaceState(null, "", b.dataset.level === "alevel" ? "#a-level" : "#gcse");
+  render(b.dataset.level);
+}));
+window.addEventListener("hashchange", () => render(levelFromHash()));
+render(levelFromHash());
+</script>
+</body>
+</html>
