@@ -1,0 +1,457 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>pH Curves and Indicators</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: live pH curve on graph paper beside the step card; questions underneath. Single light (projector) theme by choice. */
+:root{
+  --paper:#f7f1e6; --panel:#fffdf8; --ink:#2b2118; --muted:#6e5d4c;
+  --brown:#6b4226; --brown-2:#8a5a36; --line:#e2d5c0; --soft:#f1e7d6;
+  --good:#2f7a3d; --good-bg:#e5f2e3; --bad:#a3322a; --bad-bg:#f8e3df; --amber:#a86a12; --blue:#2f6fb8;
+  --grid-minor:#efdcc0; --grid-major:#ddbf98;
+  --display:"Charter","Bitstream Charter","Sitka Text",Cambria,Georgia,serif;
+  --body:"Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,Menlo,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5}
+.wrap{max-width:1240px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;border-bottom:2px solid var(--brown);padding-bottom:12px}
+h1{font-family:var(--display);font-size:clamp(1.5rem,3.4vw,2.2rem);margin:0;color:var(--brown);text-wrap:balance;line-height:1.15}
+.sub{margin:4px 0 0;color:var(--muted);font-size:.95rem}
+.score{font-family:var(--mono);font-size:.9rem;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:6px 10px;color:var(--brown);white-space:nowrap}
+.rail{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0}
+.rail button{font:600 .85rem var(--body);border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:999px;padding:6px 12px;cursor:pointer}
+.rail button.on{background:var(--brown);color:#fff;border-color:var(--brown)}
+.rail button.done:not(.on){border-color:var(--good);color:var(--good)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.stage{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:900px){.stage{grid-template-columns:1fr}}
+.stage[hidden],.controls[hidden]{display:none}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;min-width:0}
+.graph svg{width:100%;height:auto;display:block}
+.controls{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;margin-top:10px}
+.lbl{font:700 .72rem var(--body);letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-right:6px}
+.seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--brown);border-radius:7px;overflow:hidden}
+.seg button{border:0;background:#fff;color:var(--brown);font:inherit;font-size:.83rem;padding:5px 9px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--brown)}
+.seg button[aria-pressed="true"]{background:var(--brown);color:#fff}
+.seg button:disabled{opacity:.45;cursor:default}
+.checks{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.88rem}
+.checks label{display:inline-flex;gap:6px;align-items:center;cursor:pointer}
+.slider{display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap}
+.slider input{flex:1 1 220px;accent-color:var(--brown)}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-top:8px}
+.readout div{background:#fff;border:1px solid var(--line);border-radius:6px;padding:6px 8px;min-width:0}
+.readout span{display:block;font:700 .68rem var(--body);text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+.readout b{font-family:var(--mono);font-size:.95rem;font-variant-numeric:tabular-nums}
+.readout .wide{grid-column:1/-1}
+.readout .wide b{font-family:var(--body);font-size:.92rem;font-weight:600}
+.eyebrow{font:700 .75rem var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--brown-2);margin:0}
+h2{font-family:var(--display);font-size:1.5rem;margin:2px 0 8px;line-height:1.2;text-wrap:balance}
+.text p{margin:.45em 0}
+.text ul,.text ol{margin:.35em 0;padding-left:1.25em}
+.text li{margin-bottom:3px}
+.why{background:var(--soft);border-radius:8px;padding:10px 12px;font-size:.95rem;margin:.6em 0}
+.why b{color:var(--brown)}
+.callout{border-left:4px solid var(--amber);background:#fdf1e3;padding:8px 12px;border-radius:0 6px 6px 0;margin:.6em 0;font-size:.95rem}
+.eq{font-family:var(--mono);font-size:.88rem;background:#fff;border:1px solid var(--line);border-radius:6px;padding:8px 10px;overflow-x:auto;margin:.5em 0;line-height:1.8}
+.eq b{color:var(--brown)}
+.ind{border-collapse:collapse;font-size:.88rem;width:100%;margin:.5em 0}
+.ind th,.ind td{border:1px solid var(--line);padding:5px 8px;text-align:left}
+.ind thead th{background:var(--soft)}
+.ok{color:var(--good);font-weight:700}.no{color:var(--bad);font-weight:700}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px}
+@media (max-width:900px){.cards{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-top:4px solid var(--brown);border-radius:10px;padding:14px 16px;min-width:0}
+.card h3{font:700 .8rem var(--body);letter-spacing:.07em;text-transform:uppercase;margin:0 0 6px;color:var(--brown)}
+.q{font-weight:600;margin:0 0 10px}
+.opts{display:grid;gap:8px}
+.opt{text-align:left;font:inherit;font-size:.95rem;background:#fff;border:1.5px solid var(--line);border-radius:8px;padding:9px 12px;cursor:pointer;color:var(--ink)}
+.opt:hover:not(:disabled){border-color:var(--brown-2)}
+.opt:disabled{cursor:default}
+.opt.right{background:var(--good-bg);border-color:var(--good)}
+.opt.wrong{background:var(--bad-bg);border-color:var(--bad)}
+.fb{margin:10px 0 0;font-size:.93rem;padding:9px 12px;border-radius:8px;background:var(--soft)}
+.fb.ok{background:var(--good-bg);color:var(--ink);font-weight:400}.fb.no{background:var(--bad-bg);color:var(--ink);font-weight:400}
+.nav{display:flex;justify-content:space-between;gap:10px;margin-top:20px;flex-wrap:wrap}
+.btn{font:600 .95rem var(--body);background:var(--brown);color:#fff;border:0;border-radius:8px;padding:10px 18px;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--brown);border:1.5px solid var(--brown)}
+.btn:disabled{opacity:.35;cursor:default}
+.summary .card{margin-bottom:14px}
+.qnum{font-family:var(--mono);color:var(--brown-2);margin-right:6px}
+.evals{display:grid;gap:10px;margin:0 0 6px}
+.eval{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--amber);border-radius:0 8px 8px 0;padding:10px 14px}
+.eval b{color:var(--brown)}
+.summary h4{font:700 .8rem var(--body);letter-spacing:.07em;text-transform:uppercase;color:var(--brown-2);margin:22px 0 8px}
+.final{background:var(--brown);color:#fff;border-radius:10px;padding:16px 18px;margin-top:8px}
+.final b{font-family:var(--display);font-size:1.3rem}
+sub,sup{line-height:0}
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>pH Curves and Indicators</h1>
+      <p class="sub">A-level Chemistry Year 2 · titration curves, choosing an indicator, and K<sub>a</sub> from half-neutralisation (includes Required Practical 9)</p>
+    </div>
+    <div class="score" id="score">Score 0 / 0</div>
+  </header>
+  <nav class="rail" id="rail" aria-label="Steps"></nav>
+
+  <div class="stage" id="stage">
+    <section class="panel graph" aria-label="pH curve">
+      <div id="svgwrap"></div>
+      <div class="slider"><span class="lbl" style="margin:0">Volume added</span><input type="range" id="vol" min="0" max="50" step="0.05" value="12.5"></div>
+      <div class="readout">
+        <div><span>Volume added</span><b id="rV">–</b></div>
+        <div><span>pH</span><b id="rpH">–</b></div>
+        <div class="wide"><span>In the flask</span><b id="rFlask">–</b></div>
+      </div>
+      <div class="controls">
+        <div><span class="lbl">Titration</span><span class="seg" id="segPair"></span></div>
+        <div><span class="lbl">Direction</span><span class="seg" id="segDir"><button data-v="b2a">Base added to acid</button><button data-v="a2b">Acid added to base</button></span></div>
+      </div>
+      <div class="controls" id="acidRow" hidden>
+        <div><span class="lbl">Weak acid</span><span class="seg" id="segAcid"></span></div>
+      </div>
+      <div class="controls checks">
+        <label><input type="checkbox" id="cAll"> Show all four curves</label>
+        <label><input type="checkbox" id="cInd"> Indicator ranges</label>
+        <label><input type="checkbox" id="cHalf"> Half-equivalence</label>
+        <label><input type="checkbox" id="cSteep"> Vertical section</label>
+      </div>
+    </section>
+    <section class="panel text" id="text"></section>
+  </div>
+  <div id="below"></div>
+</div>
+
+<script>
+/* ---------- chemistry ---------- */
+const Kw=1e-14, C0=0.100, V0=25.0;
+const ACIDS={
+  eth:{name:'ethanoic acid',f:'CH₃COOH',Ka:1.74e-5},
+  meth:{name:'methanoic acid',f:'HCOOH',Ka:1.78e-4},
+  prop:{name:'propanoic acid',f:'CH₃CH₂COOH',Ka:1.35e-5}
+};
+const PAIRS={
+  SS:{name:'Strong acid + strong base',acid:'HCl',base:'NaOH',ex:'HCl and NaOH',wa:false,wb:false},
+  WS:{name:'Weak acid + strong base',acid:'CH₃COOH',base:'NaOH',ex:'CH₃COOH and NaOH',wa:true,wb:false},
+  SW:{name:'Strong acid + weak base',acid:'HCl',base:'NH₃',ex:'HCl and NH₃',wa:false,wb:true},
+  WW:{name:'Weak acid + weak base',acid:'CH₃COOH',base:'NH₃',ex:'CH₃COOH and NH₃',wa:true,wb:true}
+};
+const KbNH3=1.78e-5;
+const INDS=[
+  {k:'mo',name:'Methyl orange',lo:3.1,hi:4.4,c1:'#d23b2b',c2:'#f0c419',cols:'red → yellow'},
+  {k:'btb',name:'Bromothymol blue',lo:6.0,hi:7.6,c1:'#e2c534',c2:'#2a62b8',cols:'yellow → blue'},
+  {k:'pp',name:'Phenolphthalein',lo:8.3,hi:10.0,c1:'#f4eef2',c2:'#d9358f',cols:'colourless → pink'}
+];
+const SUIT={SS:['mo','btb','pp'],WS:['pp'],SW:['mo'],WW:[]};
+
+function pHof(pair,dir,V,acidKey){
+  const P=PAIRS[pair], Ka=P.wa?ACIDS[acidKey||'eth'].Ka:1e8, KaBH=P.wb?Kw/KbNH3:1e-24;
+  const tot=V0+V, acidV=dir==='b2a'?V0:V, baseV=dir==='b2a'?V:V0;
+  const CA=C0*acidV/tot, CB=C0*baseV/tot;
+  const f=lh=>{const h=10**lh;return h+CB*h/(h+KaBH)-Kw/h-CA*Ka/(Ka+h);};
+  let lo=-14.8,hi=1;for(let i=0;i<70;i++){const m=(lo+hi)/2;if(f(m)>0)hi=m;else lo=m;}
+  return -(lo+hi)/2;
+}
+function curve(pair,dir,acidKey){const pts=[];for(let i=0;i<=1000;i++){const V=i*0.05;pts.push([V,pHof(pair,dir,V,acidKey)]);}return pts;}
+function steepBand(pts){ // pH range around V=25 where |slope| > 1 pH per cm³
+  const i0=500;let a=i0,b=i0;const sl=i=>Math.abs(pts[i+1][1]-pts[i-1][1])/0.1;
+  while(a>1&&sl(a-1)>1)a--;while(b<999&&sl(b+1)>1)b++;
+  const p1=pts[a][1],p2=pts[b][1];return [Math.min(p1,p2),Math.max(p1,p2)];
+}
+
+/* ---------- state ---------- */
+const S={cur:0,pair:'SS',dir:'b2a',acid:'eth',V:12.5,all:false,ind:false,half:false,steep:false,ans:{},att:0,right:0,mys:null,mysN:0};
+const $=s=>document.querySelector(s);
+
+/* ---------- graph ---------- */
+const W=640,H=430,L=54,R=150,T=16,B=50;
+const X=v=>L+v/50*(W-L-R), Y=p=>T+(14-p)/14*(H-T-B);
+const path=pts=>pts.map((p,i)=>(i?'L':'M')+X(p[0]).toFixed(1)+','+Y(Math.max(0,Math.min(14,p[1]))).toFixed(1)).join('');
+const txt=(x,y,s,o={})=>`<text x="${x}" y="${y}" font-family="Segoe UI,system-ui,sans-serif" font-size="${o.size||12}" font-weight="${o.w||500}" fill="${o.fill||'#2b2118'}" text-anchor="${o.a||'start'}">${s}</text>`;
+function names(){
+  const st=steps[S.cur]||{}, P=PAIRS[S.pair], mys=st.mystery;
+  const acidName=P.wa?ACIDS[S.acid].f:'HCl';
+  const acid=mys?'acid':acidName, base=mys?'base':P.base;
+  const flask=S.dir==='b2a'?acid:base, titrant=S.dir==='b2a'?base:acid;
+  return {flask,titrant,acidName};
+}
+function draw(){
+  const st=steps[S.cur]||{};
+  const pts=curve(S.pair,S.dir,S.acid);
+  const n=names();
+  let s=`<rect x="${L}" y="${T}" width="${W-L-R}" height="${H-T-B}" fill="#fffdf8"/>`;
+  for(let v=0;v<=50;v+=1){const maj=v%5===0;s+=`<line x1="${X(v)}" y1="${T}" x2="${X(v)}" y2="${H-B}" stroke="${maj?'#ddbf98':'#f3e6d2'}" stroke-width="${maj?1:.6}"/>`;}
+  for(let p=0;p<=14;p+=0.5){const maj=p%1===0;s+=`<line x1="${L}" y1="${Y(p)}" x2="${W-R}" y2="${Y(p)}" stroke="${maj?'#ddbf98':'#f3e6d2'}" stroke-width="${maj?1:.6}"/>`;}
+  for(let v=0;v<=50;v+=10)s+=txt(X(v),H-B+16,v,{a:'middle',size:11});
+  for(let p=0;p<=14;p+=2)s+=txt(L-7,Y(p)+4,p,{a:'end',size:11});
+  s+=txt((L+W-R)/2,H-12,`Volume of ${n.titrant}(aq) added / cm³`,{a:'middle',size:12.5});
+  s+=`<g transform="translate(16,${(T+H-B)/2}) rotate(-90)">${txt(0,0,'pH',{a:'middle',size:12.5,w:700})}</g>`;
+  s+=`<rect x="${L}" y="${T}" width="${W-L-R}" height="${H-T-B}" fill="none" stroke="#2b2118" stroke-width="1.2"/>`;
+  // indicator bands
+  if(S.ind){INDS.forEach((I,i)=>{const id='g'+I.k;
+    s+=`<defs><linearGradient id="${id}" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="${I.c1}"/><stop offset="1" stop-color="${I.c2}"/></linearGradient></defs>`;
+    s+=`<rect x="${L}" y="${Y(I.hi)}" width="${W-L-R}" height="${Y(I.lo)-Y(I.hi)}" fill="url(#${id})" opacity=".28"/>`;
+    s+=`<rect x="${W-R+6}" y="${Y(I.hi)}" width="12" height="${Y(I.lo)-Y(I.hi)}" fill="url(#${id})" stroke="#9a8a76" stroke-width=".6"/>`;
+    const ok=!st.mystery&&SUIT[S.pair].includes(I.k);
+    s+=txt(W-R+24,(Y(I.hi)+Y(I.lo))/2-2,I.name,{size:11,w:700});
+    s+=txt(W-R+24,(Y(I.hi)+Y(I.lo))/2+12,`pH ${I.lo}–${I.hi}${st.mystery?'':ok?' ✓':' ✗'}`,{size:10.5,fill:st.mystery?'#6e5d4c':ok?'#2f7a3d':'#a3322a',w:600});});}
+  // steep section
+  const band=steepBand(pts);
+  if(S.steep&&S.pair!=='WW'){s+=`<rect x="${X(23.5)}" y="${Y(band[1])}" width="${X(26.5)-X(23.5)}" height="${Y(band[0])-Y(band[1])}" fill="none" stroke="#2f6fb8" stroke-width="1.6" stroke-dasharray="5 4"/>`;
+    s+=txt(X(27),Y(band[1])+12,`vertical section`,{size:11,fill:'#2f6fb8',w:700})+txt(X(27),Y(band[1])+26,`pH ${band[0].toFixed(1)}–${band[1].toFixed(1)}`,{size:11,fill:'#2f6fb8'});}
+  // all four
+  if(S.all){Object.keys(PAIRS).forEach(k=>{if(k===S.pair)return;s+=`<path d="${path(curve(k,S.dir,S.acid))}" fill="none" stroke="#b9a68e" stroke-width="1.6"/>`;
+      const p=curve(k,S.dir,S.acid)[1000][1];s+=txt(W-R+4,Y(p)+4,st.mystery?'':PAIRS[k].ex,{size:10,fill:'#8b7a66'});});}
+  // half equivalence
+  if(S.half){const ph=pHof(S.pair,S.dir,12.5,S.acid);
+    s+=`<line x1="${X(12.5)}" y1="${H-B}" x2="${X(12.5)}" y2="${Y(ph)}" stroke="#a86a12" stroke-width="1.6" stroke-dasharray="5 4"/><line x1="${L}" y1="${Y(ph)}" x2="${X(12.5)}" y2="${Y(ph)}" stroke="#a86a12" stroke-width="1.6" stroke-dasharray="5 4"/>`;
+    s+=`<circle cx="${X(12.5)}" cy="${Y(ph)}" r="5" fill="#a86a12"/>`+txt(X(12.5)+8,Y(ph)-8,`half-equivalence: pH ${ph.toFixed(2)}`,{size:11.5,w:700,fill:'#a86a12'});
+    s+=txt(X(12.5)+4,H-B-6,'12.50',{size:10.5,fill:'#a86a12',w:700});
+    s+=`<line x1="${X(25)}" y1="${H-B}" x2="${X(25)}" y2="${Y(pHof(S.pair,S.dir,25,S.acid))}" stroke="#6e5d4c" stroke-dasharray="2 3"/>`+txt(X(25)+4,H-B-6,'25.00',{size:10.5,fill:'#6e5d4c'});}
+  // main curve
+  s+=`<path d="${path(pts)}" fill="none" stroke="#6b4226" stroke-width="2.6" stroke-linejoin="round"/>`;
+  // annotations
+  if(st.annot&&!st.mystery){const p0=pts[0][1],pe=pHof(S.pair,S.dir,25,S.acid),pf=pts[1000][1];
+    s+=`<circle cx="${X(0)}" cy="${Y(p0)}" r="4.5" fill="#6b4226"/>`+txt(X(0)+8,Y(p0)+(S.dir==='b2a'?-6:16),`start pH ${p0.toFixed(1)}`,{size:11.5,w:700,fill:'#6b4226'});
+    s+=`<circle cx="${X(25)}" cy="${Y(pe)}" r="5" fill="#fff" stroke="#6b4226" stroke-width="2"/>`+txt(X(25)-8,Y(pe)+4,`equivalence: 25.00 cm³, pH ${pe.toFixed(1)}`,{size:11.5,w:700,fill:'#6b4226',a:'end'});
+    s+=txt(X(50)-4,Y(pf)+(S.dir==='b2a'?18:-8),`final pH ${pf.toFixed(1)}`,{size:11.5,w:700,fill:'#6b4226',a:'end'});}
+  // cursor
+  const pv=pHof(S.pair,S.dir,S.V,S.acid);
+  s+=`<line x1="${X(S.V)}" y1="${T}" x2="${X(S.V)}" y2="${H-B}" stroke="#2f6fb8" stroke-width="1" opacity=".5"/><circle cx="${X(S.V)}" cy="${Y(pv)}" r="6" fill="#2f6fb8" stroke="#fff" stroke-width="2"/>`;
+  s+=txt(L+8,T+16,`Flask: 25.0 cm³ of 0.100 mol dm⁻³ ${n.flask}`,{size:11.5,fill:'#6e5d4c'});
+  s+=txt(L+8,T+31,`Burette: 0.100 mol dm⁻³ ${n.titrant}`,{size:11.5,fill:'#6e5d4c'});
+  $('#svgwrap').innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="pH curve">${s}</svg>`;
+  $('#rV').textContent=S.V.toFixed(2)+' cm³';$('#rpH').textContent=pv.toFixed(2);
+  $('#rFlask').textContent=flaskText(st.mystery);
+}
+function flaskText(mys){
+  if(mys)return 'Identify the acid and base from the shape of the curve.';
+  const P=PAIRS[S.pair],a=P.wa?ACIDS[S.acid].f:'HCl',an=P.wa?ACIDS[S.acid].f.replace(/H$/,'⁻').replace('COOH⁻','COO⁻'):'Cl⁻',base=P.base,bh=P.wb?'NH₄⁺':'Na⁺';
+  const V=S.V, b2a=S.dir==='b2a';
+  if(V<0.02)return `${b2a?a:base} only (nothing added yet)`;
+  if(Math.abs(V-25)<0.03)return `Equivalence point: salt solution only (${bh} and ${an})`;
+  const acidXs=b2a?V<25:V>25;
+  if(acidXs){
+    return P.wa?`Buffer: ${a} and ${an} (excess weak acid)`:`Excess strong acid (H⁺) plus salt`;}
+  return P.wb?`Buffer: NH₃ and NH₄⁺ (excess weak base)`:`Excess strong base (OH⁻) plus salt`;
+}
+
+/* ---------- controls ---------- */
+$('#segPair').innerHTML=Object.entries(PAIRS).map(([k,p])=>`<button data-v="${k}">${p.ex}</button>`).join('');
+$('#segAcid').innerHTML=Object.entries(ACIDS).map(([k,a])=>`<button data-v="${k}">${a.f}</button>`).join('');
+function syncControls(){
+  const st=steps[S.cur]||{};
+  [...$('#segPair').children].forEach(b=>{b.setAttribute('aria-pressed',b.dataset.v===S.pair);b.disabled=!!st.lockPair&&b.dataset.v!==S.pair;b.hidden=!!st.mystery;});
+  $('#segPair').parentElement.hidden=!!st.mystery;
+  [...$('#segDir').children].forEach(b=>{b.setAttribute('aria-pressed',b.dataset.v===S.dir);b.disabled=!!st.lockDir&&b.dataset.v!==S.dir;});
+  $('#segDir').parentElement.hidden=!!st.mystery;
+  [...$('#segAcid').children].forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===S.acid));
+  $('#acidRow').hidden=!st.acidPick;
+  $('#cAll').checked=S.all;$('#cInd').checked=S.ind;$('#cHalf').checked=S.half;$('#cSteep').checked=S.steep;
+  $('#vol').value=S.V;
+}
+function segBind(id,key){$(id).onclick=e=>{const b=e.target.closest('button');if(!b||b.disabled)return;S[key]=b.dataset.v;syncControls();draw();renderText();};}
+segBind('#segPair','pair');segBind('#segDir','dir');segBind('#segAcid','acid');
+[['#cAll','all'],['#cInd','ind'],['#cHalf','half'],['#cSteep','steep']].forEach(([id,k])=>$(id).onchange=()=>{S[k]=$(id).checked;draw();});
+$('#vol').oninput=()=>{S.V=+$('#vol').value;draw();};
+
+/* ---------- content ---------- */
+const f2=v=>v.toFixed(2);
+const steps=[
+ {t:'Reading a pH curve',pair:'WS',dir:'b2a',annot:true,steep:true,
+  body:()=>`<p>A pH curve shows how the pH in the flask changes as one solution is added from a burette. Every curve has four features worth reading:</p>
+  <ul><li><b>Start pH:</b> shows what is in the flask and whether it is strong or weak.</li>
+  <li><b>Vertical section:</b> a large change in pH for a very small volume (a drop or two).</li>
+  <li><b>Equivalence point:</b> the middle of the vertical section. Moles of H⁺ added equal moles of OH⁻ (or vice versa). Read the volume from the x-axis.</li>
+  <li><b>Final pH:</b> tends towards the pH of the solution in the burette.</li></ul>
+  <p>Drag the slider to see what is in the flask at each point. Try the other titrations too.</p>`,
+  qs:[{q:'What does the vertical section of a pH curve show?',o:['A large change in pH for a very small volume of solution added','The point where the indicator is added','The region where the solution is a buffer','The volume where the reaction starts'],a:0,e:'Near equivalence, one drop changes the pH by several units. This is why an indicator gives a sharp end point.'},
+      {q:'How is the equivalence volume read from a pH curve?',o:['Read the volume at the middle of the vertical section','Read the volume where pH = 7','Read the volume where the curve starts to rise','Read the volume at the final pH'],a:0,e:'The equivalence point is the mid-point of the vertical section. It is only at pH 7 for a strong acid with a strong base.'}]},
+ {t:'Measuring a pH curve (RP9)',pair:'WS',dir:'b2a',
+  body:()=>`<ol><li><b>Calibrate</b> the pH meter with buffer solutions of known pH (e.g. pH 4, 7 and 10). Rinse the probe with distilled water between each.</li>
+  <li>Pipette 25.0 cm³ of the acid into a beaker and put in the pH probe. Use a magnetic stirrer if you have one.</li>
+  <li>Add the base from a burette, <b>1 cm³ at a time</b>, stirring and recording the pH after each addition.</li>
+  <li>Near the equivalence point, add <b>0.10–0.20 cm³ at a time</b> (a few drops) to capture the vertical section.</li>
+  <li>Continue well past equivalence until the pH levels off. Plot pH against volume.</li></ol>
+  <div class="why"><b>Why small additions near equivalence?</b> The pH changes by several units in less than 1 cm³. Large additions would miss the vertical section, so the equivalence volume could not be found accurately.</div>`,
+  qs:[{q:'Why is the pH meter calibrated with buffer solutions before use?',o:['So its readings match known pH values, making them accurate','To clean the probe','To make the meter read to 2 decimal places','To bring the solutions to the same temperature'],a:0,e:'pH probes drift. Calibrating against buffers of known pH corrects the readings.'},
+      {q:'Why is the base added in smaller portions near the equivalence point?',o:['The pH changes very rapidly there, so small additions are needed to plot the vertical section accurately','To stop the solution getting too hot','So that the indicator has time to change colour','Because the burette is less accurate at higher readings'],a:0,e:'A 1 cm³ portion could jump right across the vertical section and the equivalence volume would be uncertain.'}]},
+ {t:'Strong acid + strong base',pair:'SS',lockPair:true,annot:true,steep:true,
+  body:()=>`<p>Example: <b>HCl(aq) and NaOH(aq)</b>.</p>
+  <ul><li>Starts at <b>pH 1</b> (0.100 mol dm⁻³ HCl is fully dissociated).</li>
+  <li>Long, very steep vertical section from about pH 3 to pH 11.</li>
+  <li>Equivalence point at <b>pH 7</b>: NaCl solution is neutral.</li>
+  <li>Final pH approaches 13 (0.100 mol dm⁻³ NaOH).</li></ul>
+  <div class="eq">H⁺(aq) + OH⁻(aq) → H₂O(l)</div>
+  <p>Switch the direction to see the mirror-image curve when acid is added to the base.</p>`,
+  qs:[{q:'What is the pH of 0.100 mol dm⁻³ HCl at the start of the titration?',o:['1.00','0.10','7.00','2.88'],a:0,e:'HCl is a strong acid, so [H⁺] = 0.100 mol dm⁻³ and pH = −log(0.100) = 1.00.'},
+      {q:'Why is the pH at the equivalence point 7 for HCl with NaOH?',o:['The salt formed, NaCl, does not react with water, so the solution is neutral','All the water has been used up','Both reactants are fully used up, so no ions are left','The indicator changes colour at pH 7'],a:0,e:'Neither Na⁺ nor Cl⁻ reacts with water, so [H⁺] = [OH⁻].'}]},
+ {t:'Weak acid + strong base',pair:'WS',lockPair:true,annot:true,steep:true,
+  body:()=>`<p>Example: <b>CH₃COOH(aq) and NaOH(aq)</b>.</p>
+  <ul><li>Starts at about <b>pH 3</b>: the weak acid is only partially dissociated.</li>
+  <li>A small rise, then a gentle slope: a <b>buffer region</b> of CH₃COOH and CH₃COO⁻.</li>
+  <li>Vertical section from about pH 7 to 11, so the equivalence point is <b>above pH 7</b> (about 8.7).</li>
+  <li>Final pH rises towards 13.</li></ul>
+  <div class="eq">CH₃COOH + OH⁻ → CH₃COO⁻ + H₂O<br>At equivalence: CH₃COO⁻ + H₂O ⇌ CH₃COOH + OH⁻ &nbsp;(so pH &gt; 7)</div>`,
+  qs:[{q:'Why is the pH at the equivalence point above 7 for ethanoic acid with NaOH?',o:['Ethanoate ions react with water to form OH⁻ ions','Excess NaOH is present at equivalence','Ethanoic acid is fully dissociated at equivalence','Sodium ions make the solution alkaline'],a:0,e:'CH₃COO⁻ is the conjugate base of a weak acid. It takes H⁺ from water: CH₃COO⁻ + H₂O ⇌ CH₃COOH + OH⁻.'},
+      {q:'Why does the weak acid curve start at a higher pH than the strong acid curve of the same concentration?',o:['The weak acid is only partially dissociated, so [H⁺] is lower','The weak acid is more dilute','Weak acids contain fewer hydrogen atoms','The weak acid reacts with water to form OH⁻'],a:0,e:'Only a small fraction of CH₃COOH molecules release H⁺, so [H⁺] is much less than 0.100 mol dm⁻³.'}]},
+ {t:'Strong acid + weak base',pair:'SW',lockPair:true,annot:true,steep:true,
+  body:()=>`<p>Example: <b>HCl(aq) and NH₃(aq)</b>.</p>
+  <ul><li>Starts at <b>pH 1</b> (strong acid).</li>
+  <li>Vertical section from about pH 3 to 7, so the equivalence point is <b>below pH 7</b> (about 5.3).</li>
+  <li>After equivalence, excess NH₃ and NH₄⁺ form a buffer, so the pH only levels off at about 9–10.</li></ul>
+  <div class="eq">NH₃ + H⁺ → NH₄⁺<br>At equivalence: NH₄⁺ ⇌ NH₃ + H⁺ &nbsp;(so pH &lt; 7)</div>`,
+  qs:[{q:'Why is the equivalence point below pH 7 for HCl with NH₃?',o:['NH₄⁺ ions release H⁺ ions in solution','Excess HCl is present at equivalence','Chloride ions are acidic','Ammonia is a strong base'],a:0,e:'NH₄⁺ is the conjugate acid of a weak base, so it acts as a weak acid: NH₄⁺ ⇌ NH₃ + H⁺.'},
+      {q:'Why does the pH level off at only about 9–10 after equivalence, rather than near 13?',o:['NH₃ is a weak base, and with NH₄⁺ it forms a buffer','NH₃ evaporates from the flask','The HCl is in excess','The pH meter cannot read above 11'],a:0,e:'Ammonia is only partially protonated, so [OH⁻] stays low. Excess NH₃ with NH₄⁺ also resists pH change.'}]},
+ {t:'Weak acid + weak base',pair:'WW',lockPair:true,annot:true,
+  body:()=>`<p>Example: <b>CH₃COOH(aq) and NH₃(aq)</b>.</p>
+  <ul><li>Starts at about pH 3 and finishes at about pH 9–10.</li>
+  <li><b>No vertical section.</b> There is only a gradual change near equivalence (about pH 7).</li>
+  <li>There are buffer regions on both sides of the equivalence point.</li></ul>
+  <div class="callout">No indicator gives a sharp end point, because the pH changes slowly. The equivalence point is found with a <b>pH meter</b> instead.</div>`,
+  qs:[{q:'Why is no indicator suitable for a weak acid–weak base titration?',o:['There is no vertical section, so the colour would change gradually over several cm³','Indicators react with ammonia','The equivalence point is exactly pH 7','Weak acids and bases do not react with each other'],a:0,e:'An indicator needs a sharp pH change at equivalence to change colour within one drop.'},
+      {q:'How could the equivalence point of a CH₃COOH / NH₃ titration be found?',o:['Use a pH meter and find the point of steepest change on the curve','Use methyl orange','Use phenolphthalein','Use universal indicator and look for green'],a:0,e:'A pH meter records the whole curve, so the equivalence point can be found even without a vertical section.'}]},
+ {t:'Base into acid vs acid into base',pair:'WS',dir:'a2b',annot:true,steep:true,
+  body:()=>`<p>When the acid is in the burette and the base is in the flask, the curve is <b>reversed</b>: it starts high and falls.</p>
+  <ul><li><b>Start pH</b> now tells you about the base: about 13 for NaOH, about 11 for NH₃.</li>
+  <li><b>Final pH</b> tells you about the acid: it falls to about 1.5 for HCl, but levels off at about pH 4.8 for ethanoic acid (an excess CH₃COOH / CH₃COO⁻ buffer).</li>
+  <li>The equivalence point pH does not change: about 8.7 for CH₃COOH / NaOH whichever is in the flask.</li>
+  <li>The indicator colour change is reversed. Phenolphthalein goes from pink to colourless.</li></ul>
+  <p>Switch the titration and direction to compare all eight curves.</p>`,
+  qs:[{q:'A curve starts at pH 13, has a vertical section from pH 11 to 3, and ends near pH 1.5. What was in the flask?',o:['A strong base, with a strong acid added from the burette','A strong acid, with a strong base added from the burette','A weak base, with a strong acid added','A weak acid, with a strong base added'],a:0,e:'Starting at pH 13 means a strong base is in the flask. Ending near pH 1.5 means a strong acid is being added.'},
+      {q:'In a weak acid / strong base titration, the acid is now added to the base. What is the colour change of phenolphthalein at the end point?',o:['Pink to colourless','Colourless to pink','Red to yellow','Yellow to red'],a:0,e:'The flask starts alkaline (pink) and becomes acidic, so the pink colour disappears.'}]},
+ {t:'Identify the titration',mystery:true,
+  body:()=>`<p>Exam questions often show a curve and ask you to <b>suggest an acid and a base</b>. Use the three key readings:</p>
+  <ol><li><b>Start pH:</b> about 1 means a strong acid (about 13 a strong base). About 3 means a weak acid (about 11 a weak base).</li>
+  <li><b>Equivalence point pH:</b> 7 (strong/strong), above 7 (weak acid), below 7 (weak base), or no vertical section (weak/weak).</li>
+  <li><b>Final pH:</b> tells you about the solution in the burette.</li></ol>
+  <p>Answer both questions for this curve, then try another. The curve may be either way round.</p>
+  <p><button class="btn ghost" id="newMys">New curve</button></p>`,
+  qs:'mystery'},
+ {t:'Choosing an indicator',pair:'WS',ind:true,steep:true,
+  body:()=>`<p>The indicator's <b>pH range must lie entirely within the vertical section</b> of the curve. Then it changes colour completely within a drop or two at the equivalence point.</p>
+  <table class="ind"><thead><tr><th>Indicator</th><th>pH range</th><th>Colour (acid → alkali)</th></tr></thead><tbody>
+  ${INDS.map(I=>`<tr><td>${I.name}</td><td>${I.lo}–${I.hi}</td><td>${I.cols}</td></tr>`).join('')}</tbody></table>
+  <table class="ind"><thead><tr><th>Titration</th><th>Vertical section</th><th>Suitable indicator</th></tr></thead><tbody>
+   <tr><td>Strong acid + strong base</td><td>about pH 3–11</td><td>Methyl orange or phenolphthalein</td></tr>
+   <tr><td>Weak acid + strong base</td><td>about pH 7–11</td><td>Phenolphthalein</td></tr>
+   <tr><td>Strong acid + weak base</td><td>about pH 3–7</td><td>Methyl orange</td></tr>
+   <tr><td>Weak acid + weak base</td><td>none</td><td>None: use a pH meter</td></tr></tbody></table>
+  <p>Change the titration to see which bands fit inside the vertical section.</p>`,
+  qs:[{q:'A titration curve has a vertical section from pH 7 to pH 11. Which indicator is suitable?',o:['Phenolphthalein (pH 8.3–10.0)','Methyl orange (pH 3.1–4.4)','Bromothymol blue (pH 6.0–7.6)','Any of these three'],a:0,e:'Only phenolphthalein\'s range lies entirely within pH 7–11.'},
+      {q:'Why is methyl orange unsuitable for titrating ethanoic acid with NaOH?',o:['It changes colour at pH 3.1–4.4, in the buffer region, long before the equivalence point','It is too expensive','It reacts with ethanoic acid','It only works with strong bases'],a:0,e:'In the buffer region the pH rises slowly, so methyl orange would change colour gradually over many cm³, well before equivalence.'}]},
+ {t:'Finding Kₐ from half-equivalence',pair:'WS',dir:'b2a',lockPair:true,lockDir:true,half:true,acidPick:true,
+  body:()=>{const ph=pHof('WS','b2a',12.5,S.acid),ka=10**-ph;return `<p>At <b>half-equivalence</b> (half the equivalence volume, here 12.50 cm³), half of the weak acid has been converted into its salt:</p>
+  <div class="eq">HA + OH⁻ → A⁻ + H₂O &nbsp; so at half-equivalence [HA] = [A⁻]<br>
+  Kₐ = [H⁺][A⁻] / [HA] &nbsp;→&nbsp; <b>Kₐ = [H⁺]</b> &nbsp; and &nbsp; <b>pH = pKₐ</b></div>
+  <ol><li>Read the equivalence volume from the middle of the vertical section: 25.00 cm³.</li>
+  <li>Halve it: 12.50 cm³.</li>
+  <li>Read the pH at 12.50 cm³: <b>${f2(ph)}</b>.</li>
+  <li>Kₐ = 10<sup>−pH</sup> = 10<sup>−${f2(ph)}</sup> = <b>${ka.toExponential(2).replace('e-',' × 10⁻').replace(/(\d+)$/,m=>m.split('').map(d=>'⁰¹²³⁴⁵⁶⁷⁸⁹'[d]).join(''))} mol dm⁻³</b></li></ol>
+  <p>Choose a different weak acid to see how the half-equivalence pH changes.</p>
+  <div class="callout">This works for a <b>weak acid titrated with a strong base</b>. The buffer region is flattest at half-equivalence, which is why the reading is reliable there.</div>`;},
+  qs:[{q:'Why does pH = pKₐ at the half-equivalence point?',o:['Half the HA has become A⁻, so [HA] = [A⁻] and Kₐ = [H⁺]','All the acid has been neutralised','[H⁺] = [OH⁻] at this point','The indicator changes colour here'],a:0,e:'Substituting [HA] = [A⁻] into Kₐ = [H⁺][A⁻]/[HA] cancels the two terms, leaving Kₐ = [H⁺].'},
+      {q:'The pH at half-equivalence for a weak acid titrated with NaOH is 4.20. What is Kₐ?',o:['6.31 × 10⁻⁵ mol dm⁻³','4.20 × 10⁻⁵ mol dm⁻³','1.58 × 10⁴ mol dm⁻³','0.623 mol dm⁻³'],a:0,e:'Kₐ = 10⁻⁴·²⁰ = 6.31 × 10⁻⁵ mol dm⁻³.'}]}
+];
+const evals=[
+ ['The equivalence point is not always pH 7','Only strong acid + strong base gives pH 7. A weak acid gives a salt solution above pH 7; a weak base gives one below pH 7.'],
+ ['Read the equivalence volume from the middle of the vertical section','Not from where pH = 7, and not from where the curve starts to rise.'],
+ ['The equivalence volume depends on moles, not strength','25.0 cm³ of 0.100 mol dm⁻³ HCl and of 0.100 mol dm⁻³ CH₃COOH need the same volume of NaOH.'],
+ ['The indicator range must lie entirely within the vertical section','Saying "the indicator changes colour at the equivalence point" is not enough for the mark.'],
+ ['Weak acid + weak base has no vertical section','No indicator is suitable. Use a pH meter.'],
+ ['Half-equivalence gives pKₐ for a weak acid titrated with a strong base','At half the equivalence volume, [HA] = [A⁻], so pH = pKₐ.'],
+ ['RP9 technique','Calibrate the pH meter with buffers, stir after each addition, rinse the probe with distilled water, and add small volumes near equivalence.']
+];
+const summary=[
+ {q:'A curve starts at pH 2.9, has an equivalence point at pH 8.7, and levels off at pH 12.5. Suggest the acid and base.',o:['Ethanoic acid and sodium hydroxide','Hydrochloric acid and sodium hydroxide','Hydrochloric acid and ammonia','Ethanoic acid and ammonia'],a:0,e:'Start pH 2.9 means a weak acid. Equivalence above 7 and final pH near 13 mean a strong base.'},
+ {q:'A curve starts at pH 11.1, has an equivalence point at pH 5.3, and falls to about pH 1.5. What is in the flask and what is in the burette?',o:['Flask: ammonia; burette: hydrochloric acid','Flask: hydrochloric acid; burette: ammonia','Flask: sodium hydroxide; burette: ethanoic acid','Flask: ethanoic acid; burette: ammonia'],a:0,e:'Starting at pH 11 means a weak base in the flask. Falling to about pH 1.5 means a strong acid is being added. Equivalence below 7 fits a weak base.'},
+ {q:'Which indicator should be used for titrating ammonia with hydrochloric acid?',o:['Methyl orange','Phenolphthalein','Either methyl orange or phenolphthalein','No indicator is suitable'],a:0,e:'The vertical section is about pH 3–7, which contains methyl orange\'s range (3.1–4.4).'},
+ {q:'Which equation explains why the solution at equivalence is acidic for HCl + NH₃?',o:['NH₄⁺(aq) ⇌ NH₃(aq) + H⁺(aq)','Cl⁻(aq) + H₂O(l) ⇌ HCl(aq) + OH⁻(aq)','NH₃(aq) + H₂O(l) ⇌ NH₄⁺(aq) + OH⁻(aq)','H⁺(aq) + OH⁻(aq) → H₂O(l)'],a:0,e:'The ammonium ion is a weak acid and releases H⁺ ions.'},
+ {q:'25.0 cm³ of 0.100 mol dm⁻³ CH₃COOH is titrated with 0.200 mol dm⁻³ NaOH. At what volume of NaOH should the pH be read to find pKₐ?',o:['6.25 cm³','12.50 cm³','25.00 cm³','3.13 cm³'],a:0,e:'Moles of acid = 2.50 × 10⁻³. Equivalence volume = 2.50 × 10⁻³ ÷ 0.200 = 12.50 cm³. Half-equivalence = 6.25 cm³.'},
+ {q:'The pH at half-equivalence is 3.75. What is the Kₐ of the acid?',o:['1.78 × 10⁻⁴ mol dm⁻³','3.75 × 10⁻⁴ mol dm⁻³','5.62 × 10³ mol dm⁻³','1.78 × 10⁻⁸ mol dm⁻³'],a:0,e:'Kₐ = 10⁻³·⁷⁵ = 1.78 × 10⁻⁴ mol dm⁻³. This is methanoic acid.'},
+ {q:'Why does the half-equivalence method not give Kₐ for a strong acid?',o:['A strong acid is fully dissociated, so there is no HA / A⁻ equilibrium and no buffer region','Strong acids have no equivalence point','The pH meter cannot read strong acids','The half-equivalence point is at pH 7'],a:0,e:'Kₐ describes partial dissociation. A strong acid is fully dissociated, so the relationship pH = pKₐ does not apply.'},
+ {q:'Why is only a few drops of indicator used?',o:['Indicators are weak acids, so a large amount would react with the base and affect the end point','Indicators are expensive','More indicator makes the colour change harder to see','The indicator would dilute the solution'],a:0,e:'An indicator is itself a weak acid (HIn). Too much uses up some of the titrant.'},
+ {q:'Which change would make the vertical section of a strong acid–strong base curve shorter?',o:['Using more dilute acid and base','Using more concentrated acid and base','Using a larger volume of acid','Stirring more quickly'],a:0,e:'With more dilute solutions, the start pH is higher and the final pH is lower, so the vertical section covers fewer pH units.'},
+ {q:'A student says: "The equivalence point is where the pH is 7." When is this correct?',o:['Only for a strong acid and a strong base','For all titrations','Only for weak acids','Only when phenolphthalein is used'],a:0,e:'The pH at equivalence depends on the salt formed. It is 7 only when neither ion reacts with water.'}
+];
+
+/* ---------- mystery ---------- */
+function newMystery(){
+  const keys=Object.keys(PAIRS);let p,d;
+  do{p=keys[Math.floor(Math.random()*4)];d=Math.random()<.5?'b2a':'a2b';}while(S.mys&&S.mys.pair===p&&S.mys.dir===d);
+  S.mys={pair:p,dir:d};S.mysN++;S.pair=p;S.dir=d;S.acid='eth';
+}
+function mysteryQs(){
+  const m=S.mys,P=PAIRS[m.pair];
+  const order=['SS','WS','SW','WW'];
+  const q1={q:'Which titration does this curve show?',o:order.map(k=>`${PAIRS[k].name} (e.g. ${PAIRS[k].ex})`),a:order.indexOf(m.pair),
+    e:`${m.dir==='b2a'?'The flask holds the acid: start':'The flask holds the base: start'} pH ${pHof(m.pair,m.dir,0).toFixed(1)}, equivalence pH ${pHof(m.pair,m.dir,25).toFixed(1)}${m.pair==='WW'?' with no vertical section':''}, final pH ${pHof(m.pair,m.dir,50).toFixed(1)}. This fits ${P.name.toLowerCase()}, e.g. ${P.ex}. ${m.dir==='b2a'?'The base was added to the acid.':'The acid was added to the base.'}`};
+  const ans={SS:2,WS:0,SW:1,WW:3}[m.pair];
+  const q2={q:'Which indicator would be suitable for this titration?',o:['Phenolphthalein','Methyl orange','Either methyl orange or phenolphthalein','No indicator is suitable'],a:ans,
+    e:{SS:'The vertical section runs from about pH 3 to 11, so both ranges fit inside it.',WS:'The vertical section is about pH 7–11, which contains phenolphthalein (8.3–10.0).',SW:'The vertical section is about pH 3–7, which contains methyl orange (3.1–4.4).',WW:'There is no vertical section, so use a pH meter.'}[m.pair]};
+  return [q1,q2];
+}
+
+/* ---------- render ---------- */
+function shuffleOrder(n,seed){const a=[...Array(n).keys()];let x=seed*9301+49297;for(let i=n-1;i>0;i--){x=(x*9301+49297)%233280;const j=Math.floor(x/233280*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function mcq(key,item,seed){const done=S.ans[key];
+  let h='<div class="opts">'+shuffleOrder(item.o.length,seed).map(k=>{let c='';if(done!==undefined){if(k===item.a)c='right';else if(k===done)c='wrong';}
+    return `<button class="opt ${c}" data-key="${key}" data-k="${k}" ${done!==undefined?'disabled':''}>${item.o[k]}</button>`;}).join('')+'</div>';
+  if(done!==undefined)h+=`<p class="fb ${done===item.a?'ok':'no'}">${done===item.a?'Correct. ':'Not quite. '}${item.e}</p>`;
+  return h;}
+let ITEMS={};
+function rail(){const r=$('#rail');r.innerHTML='';
+  steps.forEach((s,i)=>{const b=document.createElement('button');b.textContent=`${i+1}. ${s.t}`;if(i===S.cur)b.classList.add('on');
+    if(s.qs!=='mystery'&&s.qs.every((q,j)=>S.ans['q'+i+'_'+j]!==undefined))b.classList.add('done');b.onclick=()=>go(i);r.appendChild(b);});
+  const b=document.createElement('button');b.textContent='Evaluation & quiz';if(S.cur===steps.length)b.classList.add('on');b.onclick=()=>go(steps.length);r.appendChild(b);}
+function renderText(){
+  const st=steps[S.cur];if(!st)return;
+  $('#text').innerHTML=`<p class="eyebrow">Step ${S.cur+1} of ${steps.length}</p><h2>${st.t}</h2>${st.body()}`;
+  const nb=$('#newMys');if(nb)nb.onclick=()=>{newMystery();syncControls();draw();renderBelow();};
+}
+function renderBelow(){
+  ITEMS={};const st=steps[S.cur],i=S.cur;
+  const qs=st.qs==='mystery'?mysteryQs():st.qs;
+  const pre=st.qs==='mystery'?'m'+S.mysN+'_':'q'+i+'_';
+  qs.forEach((q,j)=>ITEMS[pre+j]=q);
+  $('#below').innerHTML=`<div class="cards">${qs.map((q,j)=>`<section class="card"><h3>${st.qs==='mystery'?(j?'Suggest an indicator':'Identify the acid and base'):'Check your understanding'}</h3><p class="q">${q.q}</p>${mcq(pre+j,q,i*7+j+3+(st.qs==='mystery'?S.mysN:0))}</section>`).join('')}</div>
+   <div class="nav"><button class="btn ghost" id="prev" ${i===0?'disabled':''}>← Previous</button><button class="btn" id="next">${i===steps.length-1?'Evaluation & quiz →':'Next step →'}</button></div>`;
+  $('#prev').onclick=()=>go(i-1);$('#next').onclick=()=>go(i+1);
+  $('#score').textContent=`Score ${S.right} / ${S.att}`;rail();
+}
+function renderSummary(){
+  ITEMS={};summary.forEach((q,j)=>ITEMS['s'+j]=q);
+  let h=`<div class="summary"><p class="eyebrow">Evaluation</p><h2>Common exam points</h2><div class="evals">${evals.map(([a,b])=>`<div class="eval"><b>${a}.</b> ${b}</div>`).join('')}</div><h4>Summary questions</h4>`;
+  summary.forEach((q,j)=>h+=`<section class="card"><p class="q"><span class="qnum">Q${j+1}</span>${q.q}</p>${mcq('s'+j,q,j+21)}</section>`);
+  if(summary.every((q,j)=>S.ans['s'+j]!==undefined)){const sc=summary.filter((q,j)=>S.ans['s'+j]===q.a).length;h+=`<div class="final"><b>Summary quiz: ${sc} / ${summary.length}</b><br>Whole walkthrough: ${S.right} / ${S.att} correct first time.</div>`;}
+  h+=`<div class="nav"><button class="btn ghost" id="prev">← Back to step ${steps.length}</button><button class="btn" id="restart">Start again</button></div></div>`;
+  $('#below').innerHTML=h;
+  $('#prev').onclick=()=>go(steps.length-1);$('#restart').onclick=()=>{S.ans={};S.att=0;S.right=0;go(0);};
+  $('#score').textContent=`Score ${S.right} / ${S.att}`;rail();
+}
+$('#below').addEventListener('click',e=>{const b=e.target.closest('.opt');if(!b||b.disabled)return;
+  const key=b.dataset.key,k=+b.dataset.k;S.ans[key]=k;S.att++;if(k===ITEMS[key].a)S.right++;
+  if(S.cur===steps.length)renderSummary();else renderBelow();});
+function go(i){
+  S.cur=Math.max(0,Math.min(steps.length,i));
+  const st=steps[S.cur];
+  $('#stage').hidden=!st;
+  if(!st){renderSummary();window.scrollTo({top:0,behavior:'smooth'});return;}
+  if(st.mystery){if(!S.mys)newMystery();S.pair=S.mys.pair;S.dir=S.mys.dir;S.acid='eth';}
+  else{if(st.pair)S.pair=st.pair;if(st.dir)S.dir=st.dir;if(!st.acidPick)S.acid='eth';}
+  S.ind=!!st.ind;S.half=!!st.half;S.steep=!!st.steep;S.all=false;S.V=st.half?12.5:12.5;
+  syncControls();draw();renderText();renderBelow();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+const _segAcid=$('#segAcid').onclick;
+$('#segAcid').onclick=e=>{_segAcid(e);};
+addEventListener('keydown',e=>{if(e.target.tagName==='INPUT'||e.target.tagName==='BUTTON')return;if(e.key==='ArrowRight')go(S.cur+1);if(e.key==='ArrowLeft')go(S.cur-1);});
+go(0);
+</script>
+
+</body></html>

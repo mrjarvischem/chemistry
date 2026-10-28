@@ -1,0 +1,424 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Propanal Distillation Practical</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: distillation rig on the bench beside a still-head temperature trace; step card underneath drives the lesson. */
+:root{
+  --paper:#f7f1e6; --panel:#fffbf3; --ink:#3b2a1d; --muted:#7a6552; --rule:#e2d4bf;
+  --brown:#7b4a26; --brown-soft:#efe2cf; --orange:#e07a1f; --green:#3f8a4a; --blue:#2f6fb8; --good:#2e7d4f;
+  --warn:#d9822b; --bad:#b23a2b; --grid-minor:#efdcc0; --grid-major:#ddbf98;
+  --f-display:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --f-body:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-data:ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+  color-scheme:light;
+}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
+.wrap{max-width:1280px;margin:0 auto;padding-block:18px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:16px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 20px}
+h1{font-family:var(--f-display);font-size:1.7rem;margin:0;text-wrap:balance;color:var(--brown)}
+h1 small{display:block;font-family:var(--f-body);font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.eqn{font-family:var(--f-data);font-size:.9rem;background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:6px 10px}
+.stage{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:16px}
+@media (max-width:920px){.stage{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:10px;padding:12px;min-width:0}
+.panel h2{font-size:.75rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:0 0 8px;font-weight:700}
+canvas{display:block;width:100%;max-width:100%}
+.controls{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin-top:10px}
+.seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--brown);border-radius:7px;overflow:hidden}
+.seg button{border:0;background:transparent;color:var(--brown);font:inherit;font-size:.85rem;padding:5px 10px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--brown)}
+.seg button[aria-pressed="true"]{background:var(--brown);color:#fff}
+.lbl{font-size:.75rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600;margin-right:6px}
+.step{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+.dots{display:flex;flex-wrap:wrap;gap:6px}
+.dots button{font:inherit;font-size:.8rem;border:1px solid var(--rule);background:#fff;color:var(--muted);border-radius:999px;padding:3px 10px;cursor:pointer}
+.dots button.on{background:var(--brown);border-color:var(--brown);color:#fff}
+.dots button.done{color:var(--brown);border-color:var(--brown)}
+.step h3{font-family:var(--f-display);font-size:1.35rem;margin:2px 0 0;color:var(--brown);text-wrap:balance}
+.body{max-width:80ch}
+.body p{margin:.4em 0}
+.body ul{margin:.3em 0;padding-left:1.2em}
+.callout{border-left:4px solid var(--warn);background:#fdf1e3;padding:8px 12px;border-radius:0 6px 6px 0;margin:.6em 0}
+.callout.ok{border-color:var(--good);background:#eaf5ee}
+.callout.bad{border-color:var(--bad);background:#fbe9e6}
+.nav{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{font:inherit;font-size:.9rem;border:1px solid var(--brown);background:#fff;color:var(--brown);border-radius:7px;padding:7px 14px;cursor:pointer}
+.btn.primary{background:var(--brown);color:#fff}
+.btn:disabled{opacity:.4;cursor:default}
+button:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.spacer{flex:1}
+.cmp{border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:.88rem;margin:.5em 0}
+.cmp th,.cmp td{border:1px solid var(--rule);padding:4px 10px;text-align:left}
+.cmp thead th{background:var(--brown-soft)}
+.tblwrap{overflow-x:auto}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-top:10px}
+.readout div{background:#fff;border:1px solid var(--rule);border-radius:6px;padding:6px 8px}
+.readout span{display:block;font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600}
+.readout b{font-family:var(--f-data);font-size:1rem;font-variant-numeric:tabular-nums}
+.comp{display:flex;height:14px;border-radius:4px;overflow:hidden;border:1px solid var(--rule);margin-top:4px}
+.comp i{display:block;height:100%}
+.ckey{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:.75rem;color:var(--muted);margin-top:4px}
+.ckey i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+.verdict{margin-top:8px;font-size:.88rem}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1><small>AQA Required Practical 5 · Distillation of a product</small>Oxidising propan-1-ol to propanal</h1>
+    <div class="eqn">CH₃CH₂CH₂OH + [O] → CH₃CH₂CHO + H₂O</div>
+  </header>
+
+  <div class="stage">
+    <section class="panel" aria-label="Apparatus">
+      <h2>Bench</h2>
+      <canvas id="app" data-ratio="0.66"></canvas>
+      <div class="controls">
+        <div><span class="lbl">Set-up</span><span class="seg" id="segMode">
+          <button data-v="distil" aria-pressed="true">Distillation</button><button data-v="reflux" aria-pressed="false">Reflux</button></span></div>
+        <div><span class="lbl">Heating</span><span class="seg" id="segHeat">
+          <button data-v="gentle" aria-pressed="true">Gentle</button><button data-v="strong" aria-pressed="false">Too strong</button></span></div>
+        <div><span class="lbl">Thermometer bulb</span><span class="seg" id="segThermo">
+          <button data-v="arm" aria-pressed="true">At side arm</button><button data-v="liquid" aria-pressed="false">In liquid</button><button data-v="high" aria-pressed="false">Too high</button></span></div>
+        <div><span class="lbl">Condenser water</span><span class="seg" id="segWater">
+          <button data-v="bottom" aria-pressed="true">In at bottom</button><button data-v="top" aria-pressed="false">In at top</button></span></div>
+      </div>
+    </section>
+
+    <section class="panel" aria-label="Still-head temperature">
+      <h2>Thermometer reading against time</h2>
+      <canvas id="graph" data-ratio="0.72"></canvas>
+      <div class="readout">
+        <div><span>Time</span><b id="rTime">0.0 min</b></div>
+        <div><span>Thermometer</span><b id="rTemp">20 °C</b></div>
+        <div><span>Distillate</span><b id="rVol">0.0 cm³</b></div>
+      </div>
+      <div id="compBox"></div>
+    </section>
+  </div>
+
+  <section class="panel step" aria-live="polite">
+    <div class="dots" id="dots"></div>
+    <h3 id="stitle"></h3>
+    <div class="body" id="sbody"></div>
+    <div class="nav">
+      <button class="btn" id="back">← Back</button>
+      <span id="action"></span>
+      <span class="spacer"></span>
+      <button class="btn primary" id="next">Next →</button>
+    </div>
+  </section>
+</div>
+
+<script>
+(()=>{
+const S={mode:'distil',heat:'gentle',thermo:'arm',water:'bottom',t:0,target:0,playing:false,step:0};
+const T_END=20, ADD_END=14, BP={al:48,ol:97,acid:141,water:100};
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const lerp=(a,b,f)=>a+(b-a)*f, clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const ss=(x,a,b)=>{const t=clamp((x-a)/(b-a),0,1);return t*t*(3-2*t)};
+function noise(t){return Math.sin(t*7.3)*0.25+Math.sin(t*17.1)*0.15}
+
+// ---- Model ----
+// true temperature of vapour at the side arm (what a correctly placed bulb reads)
+function vapourT(t){
+  if(S.mode==='reflux')return 20;
+  if(S.heat==='gentle'){
+    if(t<ADD_END+0.5)return 20+(BP.al+1-20)*ss(t,1.6,3);
+    return 20+(BP.al+1-20)*Math.exp(-(t-ADD_END-0.5)/2.2);
+  }
+  const rise=20+(52-20)*ss(t,1.2,2.4);
+  if(t<2.4)return rise;
+  return Math.min(88,52+(t-2.4)*4.2);
+}
+function flaskT(t){const bath=S.heat==='gentle'?66:99;return 20+(bath-20)*(1-Math.exp(-t/2.2));}
+function reading(t){
+  if(S.mode==='reflux')return flaskT(t)+noise(t)*0.6;
+  const v=vapourT(t);
+  if(S.thermo==='liquid')return flaskT(t)+noise(t)*0.5;
+  if(S.thermo==='high')return 20+(v-20)*0.55+noise(t)*1.6;
+  return v+noise(t)*0.3;
+}
+function rate(t){ // cm³ per min arriving in receiver
+  if(S.mode==='reflux')return 0;
+  const v=vapourT(t); if(v<40)return 0;
+  let r=S.heat==='gentle'?0.55:0.95;
+  if(t>ADD_END+0.5&&S.heat==='gentle')r*=Math.exp(-(t-ADD_END-0.5)/1.2);
+  if(S.water==='top')r*=0.35;
+  return r;
+}
+function volume(t){let v=0;for(let x=0;x<t;x+=0.05)v+=rate(x)*0.05;return v}
+function composition(){
+  if(S.mode==='reflux')return{acid:0,al:0,ol:0,w:0,flask:true};
+  return S.heat==='gentle'?{al:92,w:7,ol:1,acid:0}:{al:52,w:26,ol:19,acid:3};
+}
+const oxFrac=t=>S.mode==='reflux'?ss(t,0.5,12)*0.85:ss(t,1.8,ADD_END); // dichromate used up
+
+// ---- Canvas helpers ----
+function fit(cv){const dpr=devicePixelRatio||1,w=cv.clientWidth,h=Math.round(w*parseFloat(cv.dataset.ratio));
+  if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);cv.style.height=h+'px';}
+  const ctx=cv.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);return{ctx,w,h};}
+function mix(c1,c2,f){const a=c1.match(/\w\w/g).map(x=>parseInt(x,16)),b=c2.match(/\w\w/g).map(x=>parseInt(x,16));
+  return'rgb('+a.map((v,i)=>Math.round(lerp(v,b[i],f))).join(',')+')'}
+
+// ---- Apparatus ----
+const app=document.getElementById('app');
+const GLASS='rgba(110,140,160,.9)';
+function drawApp(){
+  const{ctx,w,h}=fit(app);ctx.clearRect(0,0,w,h);
+  const k=w/640;ctx.save();ctx.scale(k,k);
+  const t=S.t, now=performance.now()/1000;
+  // bench & hotplate
+  ctx.fillStyle='#e6d3b6';ctx.fillRect(0,385,640,40);
+  ctx.fillStyle='#5b544d';ctx.fillRect(48,368,170,18);
+  ctx.fillStyle=S.heat==='strong'&&t>0?'#d9532b':'#8b847c';ctx.fillRect(58,364,150,5);
+  // water bath
+  const bx=60,by=250,bw=150,bh=114;
+  const bathT=S.heat==='gentle'?Math.round(flaskT(t)):Math.round(flaskT(t));
+  ctx.fillStyle='rgba(160,200,225,.45)';ctx.fillRect(bx,by+24,bw,bh-24);
+  ctx.strokeStyle=GLASS;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(bx,by);ctx.lineTo(bx,by+bh);ctx.lineTo(bx+bw,by+bh);ctx.lineTo(bx+bw,by);ctx.stroke();
+  if(S.heat==='strong'&&t>1.5&&t<T_END){ctx.fillStyle='rgba(255,255,255,.8)';for(let i=0;i<10;i++){const yy=by+bh-((now*60+i*23)%(bh-26));ctx.beginPath();ctx.arc(bx+12+i*13,yy,2.5,0,7);ctx.fill();}}
+  // flask
+  const fx=135,fy=300,fr=44;
+  const ox=oxFrac(t);
+  const liq=mix('e07a1f','3f8a4a',ox);
+  ctx.save();ctx.beginPath();ctx.arc(fx,fy,fr,0,7);ctx.clip();ctx.fillStyle=liq;ctx.globalAlpha=.8;ctx.fillRect(fx-fr,fy-8,fr*2,fr+8);ctx.globalAlpha=1;
+  ctx.fillStyle='#fff';[[-12,30],[5,34],[18,28]].forEach(([dx,dy])=>{ctx.beginPath();ctx.arc(fx+dx,fy+dy,3,0,7);ctx.fill();});
+  if(t>1.5&&t<T_END&&S.mode==='distil'||S.mode==='reflux'&&t>1&&t<T_END){ctx.fillStyle='rgba(255,255,255,.7)';for(let i=0;i<6;i++){const yy=fy+38-((now*40+i*13)%40);ctx.beginPath();ctx.arc(fx-20+i*8,yy,1.8,0,7);ctx.fill();}}
+  ctx.restore();
+  ctx.strokeStyle=GLASS;ctx.lineWidth=2;
+  // main neck + side neck
+  ctx.beginPath();ctx.arc(fx,fy,fr,-Math.PI/2+0.2,-Math.PI/2-0.2+Math.PI*2);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(fx-9,fy-fr+1);ctx.lineTo(fx-9,175);ctx.moveTo(fx+9,fy-fr+1);ctx.lineTo(fx+9,175);ctx.stroke();
+  // side neck with tap funnel (angled left)
+  ctx.save();ctx.translate(fx-28,fy-32);ctx.rotate(-0.5);
+  ctx.beginPath();ctx.moveTo(-7,0);ctx.lineTo(-7,-48);ctx.moveTo(7,0);ctx.lineTo(7,-48);ctx.stroke();
+  // funnel
+  ctx.beginPath();ctx.moveTo(-3,-48);ctx.lineTo(-3,-62);ctx.moveTo(3,-48);ctx.lineTo(3,-62);ctx.stroke();
+  ctx.fillStyle='#8b847c';ctx.fillRect(-8,-66,16,5);
+  const alc=S.mode==='distil'?1-ss(t,1.8,ADD_END):0.15;
+  ctx.beginPath();ctx.moveTo(-4,-70);ctx.lineTo(-22,-110);ctx.lineTo(-22,-150);ctx.lineTo(22,-150);ctx.lineTo(22,-110);ctx.lineTo(4,-70);ctx.closePath();
+  ctx.save();ctx.clip();ctx.fillStyle='rgba(225,235,240,.95)';const top=-70-80*alc;ctx.fillRect(-25,top,50,-70-top+2);ctx.restore();ctx.stroke();
+  if(S.mode==='distil'&&t>1.8&&t<ADD_END){const ph=(now*1.4)%1;ctx.fillStyle='rgba(170,195,215,1)';ctx.beginPath();ctx.arc(0,-60+ph*62,2.4,0,7);ctx.fill();}
+  ctx.restore();
+  label(ctx,'propan-1-ol',38,114);
+  label(ctx,'acidified K₂Cr₂O₇',fx,fy+fr+16);
+  label(ctx,'water bath '+bathT+' °C',bx+bw/2,404);
+
+  if(S.mode==='distil')drawDistil(ctx,fx,t,now);else drawReflux(ctx,fx,t,now);
+  ctx.restore();
+}
+function label(ctx,s,x,y){ctx.fillStyle=css('--muted');ctx.font='11px '+css('--f-body');ctx.textAlign='center';ctx.fillText(s,x,y);}
+function drawDistil(ctx,fx,t,now){
+  ctx.strokeStyle=GLASS;ctx.lineWidth=2;
+  // still head
+  ctx.beginPath();ctx.moveTo(fx-9,175);ctx.lineTo(fx-9,92);ctx.moveTo(fx+9,175);ctx.lineTo(fx+9,160);ctx.moveTo(fx+9,146);ctx.lineTo(fx+9,92);ctx.stroke();
+  // side arm to condenser
+  const ax=fx+9, c0={x:215,y:182}, c1={x:470,y:290};
+  ctx.beginPath();ctx.moveTo(ax,146);ctx.lineTo(c0.x,c0.y-7);ctx.moveTo(ax,160);ctx.lineTo(c0.x,c0.y+7);ctx.stroke();
+  // vapour in head
+  if(t>1.6&&vapourT(t)>40){ctx.fillStyle='rgba(255,255,255,.55)';for(let i=0;i<5;i++){const yy=170-((now*30+i*11)%30);ctx.beginPath();ctx.arc(fx+Math.sin(now*3+i)*4,yy,3,0,7);ctx.fill();}}
+  // condenser
+  const ang=Math.atan2(c1.y-c0.y,c1.x-c0.x),len=Math.hypot(c1.x-c0.x,c1.y-c0.y);
+  ctx.save();ctx.translate(c0.x,c0.y);ctx.rotate(ang);
+  const jx0=30,jx1=len-30;
+  // jacket water
+  ctx.fillStyle='rgba(120,175,215,.45)';
+  if(S.water==='bottom')ctx.fillRect(jx0,-16,jx1-jx0,32);
+  else{ctx.fillRect(jx0,9,jx1-jx0,7);}
+  ctx.strokeStyle=GLASS;ctx.lineWidth=2;
+  ctx.strokeRect(jx0,-16,jx1-jx0,32);
+  ctx.beginPath();ctx.moveTo(0,-7);ctx.lineTo(len,-7);ctx.moveTo(0,7);ctx.lineTo(len,7);ctx.stroke();
+  // nozzles: outlet upper end (top side), inlet lower end (bottom side)
+  const inX=S.water==='bottom'?jx1-14:jx0+14, outX=S.water==='bottom'?jx0+14:jx1-14;
+  ctx.beginPath();ctx.moveTo(jx0+8,-16);ctx.lineTo(jx0+8,-30);ctx.moveTo(jx0+20,-16);ctx.lineTo(jx0+20,-30);
+  ctx.moveTo(jx1-20,16);ctx.lineTo(jx1-20,30);ctx.moveTo(jx1-8,16);ctx.lineTo(jx1-8,30);ctx.stroke();
+  // condensing drops
+  if(rate(t)>0.05){ctx.fillStyle='rgba(235,240,245,.95)';for(let i=0;i<5;i++){const xx=40+((now*70+i*55)%(len-40));ctx.beginPath();ctx.arc(xx,4,2,0,7);ctx.fill();}}
+  ctx.restore();
+  // water labels with arrows
+  const P=(x,y)=>({x:c0.x+Math.cos(ang)*x-Math.sin(ang)*y,y:c0.y+Math.sin(ang)*x+Math.cos(ang)*y});
+  const upper=P(jx0+14,-34), lower=P(jx1-14,34);
+  ctx.fillStyle=css('--blue');ctx.font='bold 11px '+css('--f-body');ctx.textAlign='center';
+  if(S.water==='bottom'){ctx.fillText('water in ↑',lower.x+6,lower.y+14);ctx.fillText('water out ↑',upper.x,upper.y-4);}
+  else{ctx.fillStyle=css('--bad');ctx.fillText('water in ↓',upper.x,upper.y-4);ctx.fillText('water out ↓',lower.x+6,lower.y+14);}
+  // adapter + receiver in ice
+  ctx.strokeStyle=GLASS;ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(c1.x,c1.y-7);ctx.lineTo(c1.x+18,c1.y);ctx.lineTo(c1.x+18,318);ctx.moveTo(c1.x,c1.y+7);ctx.lineTo(c1.x+6,c1.y+10);ctx.lineTo(c1.x+6,318);ctx.stroke();
+  const rx=c1.x+12, rTop=322, rBot=378;
+  ctx.fillStyle='rgba(215,235,245,.6)';ctx.fillRect(rx-62,340,124,44);
+  ctx.strokeStyle=GLASS;ctx.beginPath();ctx.moveTo(rx-62,326);ctx.lineTo(rx-62,385);ctx.lineTo(rx+62,385);ctx.lineTo(rx+62,326);ctx.stroke();
+  ctx.fillStyle='rgba(255,255,255,.9)';for(let i=0;i<9;i++){ctx.save();ctx.translate(rx-54+i*13,350+(i%3)*9);ctx.rotate(i);ctx.fillRect(-4,-4,8,8);ctx.restore();}
+  // receiver flask
+  ctx.beginPath();ctx.moveTo(rx-8,rTop);ctx.lineTo(rx-8,rTop+14);ctx.lineTo(rx-26,rBot);ctx.lineTo(rx+26,rBot);ctx.lineTo(rx+8,rTop+14);ctx.lineTo(rx+8,rTop);
+  ctx.save();ctx.clip();const vol=volume(t), lvl=Math.min(30,vol*4.5);ctx.fillStyle='rgba(235,240,230,.95)';ctx.fillRect(rx-30,rBot-lvl,60,lvl);ctx.restore();ctx.stroke();
+  if(rate(t)>0.05){const ph=(now*2.2)%1;ctx.fillStyle='rgba(200,215,225,1)';ctx.beginPath();ctx.arc(rx,318+ph*(rBot-lvlOf(t)-318),2.2,0,7);ctx.fill();}
+  if(S.water==='top'&&rate(t)>0.05){ctx.fillStyle='rgba(180,180,180,.5)';for(let i=0;i<4;i++){const ph=(now*0.8+i*0.25)%1;ctx.beginPath();ctx.arc(rx+20+ph*30,318-ph*40,4+ph*6,0,7);ctx.fill();}
+    label(ctx,'vapour escaping',rx+46,268);}
+  label(ctx,'receiver in ice',rx,404);
+  // thermometer
+  const by=S.thermo==='arm'?153:S.thermo==='liquid'?300:108;
+  ctx.fillStyle='#f4f1ec';ctx.strokeStyle='#8a8a8a';ctx.lineWidth=1;
+  ctx.fillRect(fx-3,30,6,by-30);ctx.strokeRect(fx-3,30,6,by-30);
+  ctx.fillStyle='#c0392b';ctx.beginPath();ctx.ellipse(fx,by+3,4,7,0,0,7);ctx.fill();
+  const rd=reading(t), colTop=lerp(by-6,40,clamp((rd-0)/110,0,1));
+  ctx.fillStyle='#c0392b';ctx.fillRect(fx-1.2,colTop,2.4,by-colTop);
+  ctx.fillStyle='#3b3631';ctx.fillRect(fx-8,92,16,8);
+  // reading tag
+  ctx.fillStyle='#fff';ctx.strokeStyle=css('--brown');ctx.lineWidth=1.5;ctx.beginPath();ctx.roundRect(fx+18,26,70,26,5);ctx.fill();ctx.stroke();
+  ctx.fillStyle=css('--brown');ctx.font='bold 14px '+css('--f-data');ctx.textAlign='center';ctx.fillText(rd.toFixed(0)+' °C',fx+53,44);
+  if(S.thermo!=='arm'){ctx.strokeStyle=css('--bad');ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(fx+14,153);ctx.lineTo(fx+30,153);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle=css('--bad');ctx.font='11px '+css('--f-body');ctx.textAlign='left';ctx.fillText('bulb should be here',fx+34,157);}
+  else{ctx.fillStyle=css('--good');ctx.font='11px '+css('--f-body');ctx.textAlign='left';ctx.fillText('bulb level with side arm',fx+16,133);}
+}
+function lvlOf(t){return Math.min(30,volume(t)*4.5)}
+function drawReflux(ctx,fx,t,now){
+  ctx.strokeStyle=GLASS;ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(fx-9,175);ctx.lineTo(fx-9,150);ctx.moveTo(fx+9,175);ctx.lineTo(fx+9,150);ctx.stroke();
+  // vertical condenser
+  const top=10,bot=150;
+  ctx.fillStyle='rgba(120,175,215,.45)';ctx.fillRect(fx-18,top+20,36,bot-top-35);
+  ctx.strokeRect(fx-18,top+20,36,bot-top-35);
+  ctx.beginPath();ctx.moveTo(fx-7,top);ctx.lineTo(fx-7,bot);ctx.moveTo(fx+7,top);ctx.lineTo(fx+7,bot);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(fx+18,bot-25);ctx.lineTo(fx+32,bot-25);ctx.moveTo(fx+18,top+30);ctx.lineTo(fx+32,top+30);ctx.stroke();
+  ctx.fillStyle=css('--blue');ctx.font='bold 11px '+css('--f-body');ctx.textAlign='left';
+  ctx.fillText('water in',fx+36,bot-21);ctx.fillText('water out',fx+36,top+34);
+  if(t>1&&t<T_END){ctx.fillStyle='rgba(235,240,245,.95)';for(let i=0;i<5;i++){const ph=(now*0.9+i*0.2)%1;ctx.beginPath();ctx.arc(fx+(i%2?3:-3),top+40+ph*(bot-top+20),2,0,7);ctx.fill();}}
+  label(ctx,'open to air',fx,8+0);
+  ctx.fillStyle=css('--brown');ctx.font='12px '+css('--f-body');ctx.textAlign='left';
+  ctx.fillText('Vapour condenses and runs back.',260,120);ctx.fillText('Nothing is collected: the product',260,138);ctx.fillText('stays in the flask with the oxidant.',260,156);
+  if(t>=T_END){ctx.fillStyle=css('--bad');ctx.font='bold 13px '+css('--f-body');ctx.fillText('Flask now contains propanoic acid',260,190);}
+}
+
+// ---- Graph ----
+const gCv=document.getElementById('graph');
+function drawGraph(){
+  const{ctx,w,h}=fit(gCv);ctx.clearRect(0,0,w,h);
+  const L=42,R=10,T=10,B=36,W=w-L-R,H=h-T-B, yMin=10,yMax=110;
+  const X=t=>L+t/T_END*W, Y=v=>T+(yMax-v)/(yMax-yMin)*H;
+  ctx.fillStyle='#fffdf8';ctx.fillRect(L,T,W,H);
+  for(let t=0;t<=T_END;t+=1){ctx.strokeStyle=t%5?css('--grid-minor'):css('--grid-major');ctx.lineWidth=t%5?.6:1;ctx.beginPath();ctx.moveTo(X(t),T);ctx.lineTo(X(t),T+H);ctx.stroke();}
+  for(let v=yMin;v<=yMax;v+=5){ctx.strokeStyle=v%20-10?css('--grid-minor'):css('--grid-major');ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(L,Y(v));ctx.lineTo(L+W,Y(v));ctx.stroke();}
+  // collection window
+  if(S.mode==='distil'){ctx.fillStyle='rgba(46,125,79,.12)';ctx.fillRect(L,Y(55),W,Y(45)-Y(55));
+    ctx.fillStyle=css('--good');ctx.font='10px '+css('--f-body');ctx.textAlign='right';ctx.fillText('collect 45–55 °C',L+W-4,Y(55)-3);}
+  // bp guides
+  [['propanal 48',48],['propan-1-ol 97',97]].forEach(([s,v])=>{ctx.strokeStyle=css('--muted');ctx.setLineDash([3,4]);ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(L,Y(v));ctx.lineTo(L+W,Y(v));ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle=css('--muted');ctx.textAlign='left';ctx.font='10px '+css('--f-body');ctx.fillText('b.p. '+s+' °C',L+4,Y(v)-3);});
+  ctx.fillStyle=css('--ink');ctx.font='10px '+css('--f-data');ctx.textAlign='center';
+  for(let t=0;t<=T_END;t+=5)ctx.fillText(t,X(t),T+H+13);
+  ctx.textAlign='right';for(let v=20;v<=yMax;v+=20)ctx.fillText(v,L-5,Y(v)+3);
+  ctx.font='11px '+css('--f-body');ctx.textAlign='center';ctx.fillText('Time / min',L+W/2,h-6);
+  ctx.save();ctx.translate(11,T+H/2);ctx.rotate(-Math.PI/2);ctx.fillText('Thermometer / °C',0,0);ctx.restore();
+  ctx.strokeStyle=css('--ink');ctx.lineWidth=1;ctx.strokeRect(L,T,W,H);
+  if(S.mode==='reflux'){ctx.fillStyle=css('--muted');ctx.font='12px '+css('--f-body');ctx.textAlign='center';ctx.fillText('No still-head thermometer under reflux',L+W/2,T+H/2);updRead();drawComp();return;}
+  // trace
+  ctx.strokeStyle=S.thermo==='arm'||S.mode==='reflux'?css('--brown'):css('--bad');ctx.lineWidth=2;ctx.beginPath();
+  for(let t=0;t<=S.t;t+=0.05){const v=clamp(reading(t),yMin,yMax);t===0?ctx.moveTo(X(t),Y(v)):ctx.lineTo(X(t),Y(v));}
+  ctx.stroke();
+  if(S.thermo!=='arm'&&S.mode==='distil'&&S.t>3){ctx.strokeStyle='rgba(123,74,38,.35)';ctx.setLineDash([4,3]);ctx.lineWidth=1.5;ctx.beginPath();
+    for(let t=0;t<=S.t;t+=0.1){const v=vapourT(t);t===0?ctx.moveTo(X(t),Y(v)):ctx.lineTo(X(t),Y(v));}ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle=css('--muted');ctx.font='10px '+css('--f-body');ctx.textAlign='left';ctx.fillText('true vapour temperature',X(Math.min(S.t,6))+4,Y(vapourT(Math.min(S.t,6)))+14);}
+  updRead();drawComp();
+}
+function updRead(){
+  document.getElementById('rTime').textContent=S.t.toFixed(1)+' min';
+  document.getElementById('rTemp').textContent=S.mode==='reflux'?'–':reading(S.t).toFixed(0)+' °C';
+  document.getElementById('rVol').textContent=volume(S.t).toFixed(1)+' cm³';
+}
+function drawComp(){
+  const box=document.getElementById('compBox');
+  if(S.t<T_END){box.innerHTML='';return;}
+  if(S.mode==='reflux'){box.innerHTML=`<div class="callout bad verdict">No distillate. After reflux the flask contains <b>propanoic acid</b> (b.p. ${BP.acid} °C). Rearrange for distillation to separate it.</div>`;return;}
+  const c=composition();
+  const parts=[['propanal',c.al,'#3f8a4a'],['water',c.w,'#7fb2d9'],['propan-1-ol',c.ol,'#d4a843'],['propanoic acid',c.acid,'#b23a2b']].filter(p=>p[1]>0);
+  const msgs=[];
+  if(S.heat==='strong')msgs.push('Heated too strongly: the temperature rose above 55 °C, so propan-1-ol and water distilled over with the propanal.');
+  if(S.thermo==='liquid')msgs.push('The bulb measured the boiling mixture in the flask, not the vapour leaving it. You cannot tell what is distilling.');
+  if(S.thermo==='high')msgs.push('The bulb was above the side arm, so the vapour did not surround it. The reading is too low and unsteady.');
+  if(S.water==='top')msgs.push('Water in at the top leaves the condenser jacket only partly full. Much of the propanal vapour escaped uncondensed (and it is flammable).');
+  box.innerHTML=`<div style="margin-top:10px"><span class="lbl">Distillate composition (by mass, approx.)</span>
+   <div class="comp">${parts.map(p=>`<i style="width:${p[1]}%;background:${p[2]}"></i>`).join('')}</div>
+   <div class="ckey">${parts.map(p=>`<span><i style="background:${p[2]}"></i>${p[0]} ${p[1]}%</span>`).join('')}</div>
+   <div class="callout ${msgs.length?'bad':'ok'} verdict">${msgs.length?msgs.join(' '):'Good distillation: a steady reading near 48 °C and an almost pure propanal distillate.'}</div></div>`;
+}
+
+// ---- Steps ----
+const STEPS=[
+ {t:'Set up the apparatus',b:()=>`
+  <p>Put about 20 cm³ of <b>acidified potassium dichromate(VI)</b> (K₂Cr₂O₇ in dilute H₂SO₄) in a round-bottomed flask with a few <b>anti-bumping granules</b>. Put about 3 cm³ of <b>propan-1-ol</b> in the tap funnel.</p>
+  <ul><li>Still head with the thermometer bulb level with the side arm</li>
+  <li>Liebig condenser sloping down to the receiver, water in at the bottom</li>
+  <li>Receiver standing in iced water</li>
+  <li>The apparatus is open at the receiver end. Never heat a sealed system.</li></ul>
+  <p>Heat the flask with a water bath or electric heater. No naked flames: propan-1-ol and propanal are flammable.</p>`},
+ {t:'Check the set-up',b:()=>`
+  <p>Use the <b>Thermometer bulb</b> and <b>Condenser water</b> controls to show what goes wrong, then run the distillation in the next step.</p>
+  <ul><li><b>Bulb at the side arm:</b> measures the temperature of the vapour that is about to leave and condense. That tells you which compound is distilling.</li>
+  <li><b>Bulb in the liquid:</b> measures the hot reaction mixture, not the vapour.</li>
+  <li><b>Bulb too high:</b> the vapour does not surround the bulb, so the reading is too low.</li>
+  <li><b>Water in at the bottom:</b> the jacket fills completely, and the coldest water meets the vapour just before it leaves the condenser. Water in at the top drains out and leaves the jacket half empty.</li></ul>`},
+ {t:'Heat and add the alcohol dropwise',a:{label:'Start distilling',to:T_END},b:()=>`
+  <p>Warm the flask gently, then add the propan-1-ol <b>a few drops at a time</b>. The reaction is exothermic, so slow addition keeps it under control.</p>
+  <p>Watch for:</p>
+  <ul><li>the mixture changing from <b style="color:var(--orange)">orange</b> to <b style="color:var(--green)">green</b> as Cr₂O₇²⁻ is reduced to Cr³⁺</li>
+  <li>the thermometer rising and then holding steady near 48 °C</li>
+  <li>a colourless distillate with a sharp, fruity smell</li></ul>`},
+ {t:'Collect the right fraction',a:{label:'Run distillation',to:T_END},b:()=>`
+  <p>Collect only the liquid that distils while the thermometer reads <b>45–55 °C</b>. Propanal boils at 48 °C.</p>
+  <p>If the temperature climbs higher, propan-1-ol (97 °C) and water are coming over too. Stop collecting, or change the receiver. Try <b>Heating: Too strong</b> and run it again.</p>
+  <p>Keep the receiver in ice: propanal is very volatile and evaporates easily at room temperature.</p>`},
+ {t:'Why distillation, not reflux?',a:{label:'Run it',to:T_END},b:()=>`
+  <div class="callout"><b>Key idea:</b> the conditions decide the product. Propanal can be oxidised further to propanoic acid.</div>
+  <div class="tblwrap"><table class="cmp"><thead><tr><th>Compound</th><th>Boiling point</th><th>Hydrogen bonding between molecules?</th></tr></thead><tbody>
+   <tr><td>propanal</td><td>48 °C</td><td>No: no O–H group</td></tr>
+   <tr><td>propan-1-ol</td><td>97 °C</td><td>Yes</td></tr>
+   <tr><td>propanoic acid</td><td>141 °C</td><td>Yes</td></tr></tbody></table></div>
+  <ul><li><b>Distillation:</b> propanal has the lowest boiling point because it has no hydrogen bonding between its molecules. It boils off as soon as it forms, before it can be oxidised again.</li>
+  <li><b>Reflux with excess oxidising agent:</b> the vapour condenses and runs back into the flask, so the propanal stays in contact with the dichromate and is oxidised to <b>propanoic acid</b>.</li></ul>
+  <p>Switch <b>Set-up</b> to <b>Reflux</b> to compare.</p>`},
+ {t:'Test the distillate',b:()=>`
+  <p>Confirm that the distillate contains an aldehyde:</p>
+  <ul><li><b>Tollens' reagent</b>, warmed in a water bath: a <b>silver mirror</b> forms.</li>
+  <li><b>Fehling's solution</b>, warmed: the blue solution gives a <b>brick-red precipitate</b>.</li></ul>
+  <p>A product made under reflux would give no silver mirror, but would <b>fizz with sodium carbonate</b> because it is a carboxylic acid. The tests are covered in Required Practical 6.</p>
+  <p>To check purity, measure the boiling point or record an IR spectrum. There should be a C=O peak near 1720 cm⁻¹ and no broad O–H peak.</p>`},
+ {t:'Safety and evaluation',b:()=>`
+  <ul><li><b>Flammable:</b> propan-1-ol and propanal. Heat with a water bath or electric heater, never a Bunsen.</li>
+  <li><b>Potassium dichromate(VI)</b> is toxic and carcinogenic. Wear gloves and avoid skin contact.</li>
+  <li><b>Anti-bumping granules</b> give smooth boiling and stop violent bumping.</li>
+  <li><b>Never heat a closed system:</b> the pressure would build up.</li>
+  <li><b>Low yield:</b> propanal is volatile and can escape from the receiver, and some is oxidised further to propanoic acid before it distils.</li></ul>`}
+];
+const dots=document.getElementById('dots');
+dots.innerHTML=STEPS.map((s,i)=>`<button data-i="${i}">${i+1}. ${s.t.replace(/\?.*/,'').replace(/ the (apparatus|set-up|right fraction|distillate)/,' $1').replace(/Heat and add the alcohol dropwise/,'Heat & add').replace(/Why distillation, not reflux/,'Distil vs reflux')}</button>`).join('');
+dots.onclick=e=>{const b=e.target.closest('button');if(b)go(+b.dataset.i)};
+function go(i){S.step=clamp(i,0,STEPS.length-1);renderStep();}
+function renderStep(){
+  const s=STEPS[S.step];
+  document.getElementById('stitle').textContent=`${S.step+1}. ${s.t}`;
+  document.getElementById('sbody').innerHTML=s.b();
+  [...dots.children].forEach((b,i)=>b.className=i===S.step?'on':i<S.step?'done':'');
+  const act=document.getElementById('action');act.innerHTML='';
+  if(s.a){const b=document.createElement('button');b.className='btn';b.textContent=S.t>0&&!S.playing?'Run again':s.a.label;b.disabled=S.playing;
+    b.onclick=()=>{S.t=0;S.target=s.a.to;S.playing=true;renderStep();};act.appendChild(b);}
+  document.getElementById('back').disabled=S.step===0;
+  document.getElementById('next').disabled=S.step===STEPS.length-1;
+}
+document.getElementById('next').onclick=()=>go(S.step+1);
+document.getElementById('back').onclick=()=>go(S.step-1);
+function seg(id,key){const el=document.getElementById(id);el.onclick=e=>{const b=e.target.closest('button');if(!b)return;
+  S[key]=b.dataset.v;[...el.children].forEach(c=>c.setAttribute('aria-pressed',c===b));drawGraph();};}
+seg('segMode','mode');seg('segHeat','heat');seg('segThermo','thermo');seg('segWater','water');
+
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let last=performance.now(),acc=0;
+function tick(now){const dt=Math.min(.1,(now-last)/1000);last=now;
+  if(S.playing){S.t=reduce?S.target:Math.min(S.target,S.t+dt*1.6);if(S.t>=S.target){S.playing=false;renderStep();}
+    acc+=dt;if(acc>.08||!S.playing){acc=0;drawGraph();}}
+  drawApp();requestAnimationFrame(tick);}
+addEventListener('resize',()=>{drawApp();drawGraph();});
+renderStep();drawGraph();requestAnimationFrame(tick);
+})();
+</script>
+
+</body></html>

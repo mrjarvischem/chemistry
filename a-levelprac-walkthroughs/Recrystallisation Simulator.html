@@ -1,0 +1,617 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Recrystallisation Simulator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: lab bench (canvas apparatus) on the left, method card + solubility graph + tallies on the right; stacks on narrow screens.
+   Single light theme by design: matches the rest of Nick's projector simulations. */
+:root{
+  --paper:#f4eee2; --panel:#fbf8f1; --ink:#3a2a1d; --ink-soft:#6c5846; --line:#dccdb6; --brown:#7b4a25;
+  --prod:#1f6a85; --prod-dark:#123f51; --imp:#b23f28; --insol:#7a7064; --cold:#3f7fa6; --good:#2f7a4a; --warn:#a86414;
+  --font-display:"Zilla Slab",Georgia,"Times New Roman",serif;
+  --font-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+html,body{background:var(--paper);color:var(--ink)}
+body{font-family:var(--font-body);font-size:15px;line-height:1.5;padding:18px 16px 28px}
+.wrap{max-width:1280px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 20px;border-bottom:2px solid var(--brown);padding-bottom:8px}
+h1{font-family:var(--font-display);font-weight:700;font-size:clamp(1.5rem,2.6vw,2.1rem);margin:0;color:var(--brown);text-wrap:balance}
+header p{margin:0;color:var(--ink-soft);font-size:.92rem}
+.grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:920px){.grid{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;min-width:0}
+.bench{display:flex;flex-direction:column;gap:10px}
+.stagehead{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.stagehead .num{font-family:var(--font-mono);font-size:.8rem;letter-spacing:.06em;color:var(--ink-soft);text-transform:uppercase}
+.stagehead h2{font-family:var(--font-display);font-weight:600;font-size:1.35rem;margin:0;text-wrap:balance}
+canvas{display:block;width:100%;height:auto}
+#sim{aspect-ratio:640/520;max-width:100%;background:#fdfaf4;border-radius:8px;border:1px solid var(--line)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:.85rem;color:var(--ink-soft)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:12px;height:12px;display:inline-block}
+.sw.p{background:var(--prod);border-radius:50%}
+.sw.px{background:var(--prod-dark);clip-path:polygon(25% 5%,75% 5%,100% 50%,75% 95%,25% 95%,0 50%)}
+.sw.i{background:var(--imp);transform:rotate(45deg);width:9px;height:9px}
+.sw.x{background:var(--insol);border-radius:40% 60% 55% 45%}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+button{font:inherit;cursor:pointer;border-radius:7px;border:1.5px solid var(--brown);padding:8px 14px;background:var(--panel);color:var(--brown);font-weight:600}
+button.primary{background:var(--brown);color:#fbf8f1}
+button:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible{outline:3px solid var(--cold);outline-offset:2px}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.opt .lab{font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-soft);min-width:118px}
+.chips{display:inline-flex;border:1.5px solid var(--brown);border-radius:7px;overflow:hidden}
+.chips button{border:0;border-radius:0;padding:5px 12px;font-weight:500;background:transparent}
+.chips button[aria-pressed="true"]{background:var(--brown);color:#fbf8f1}
+.side{display:flex;flex-direction:column;gap:16px;min-width:0}
+ol.steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;counter-reset:s}
+@media (max-width:480px){ol.steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
+ol.steps li{counter-increment:s;font-size:.78rem;line-height:1.25;padding:6px 7px;border-radius:6px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper)}
+ol.steps li::before{content:counter(s);font-family:var(--font-mono);font-weight:600;margin-right:5px}
+ol.steps li.done{color:var(--ink);border-color:#c9b79c}
+ol.steps li.now{background:var(--brown);color:#fbf8f1;border-color:var(--brown)}
+.explain p{margin:.55em 0 0;max-width:62ch}
+.key{margin-top:10px;border-left:4px solid var(--brown);background:var(--paper);padding:8px 10px;font-size:.9rem}
+.key b{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--brown);display:block}
+.temp{display:flex;align-items:baseline;gap:8px}
+.temp .v{font-family:var(--font-mono);font-weight:600;font-size:1.9rem;font-variant-numeric:tabular-nums}
+.temp .u{color:var(--ink-soft)}
+h3{font-family:var(--font-display);font-weight:600;font-size:1.05rem;margin:0 0 6px}
+table{border-collapse:collapse;width:100%;font-size:.86rem}
+th,td{padding:4px 6px;text-align:right;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+th{font-weight:500;color:var(--ink-soft);font-size:.75rem;text-transform:uppercase;letter-spacing:.05em}
+td{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+td:first-child{font-family:var(--font-body)}
+.scroll{overflow-x:auto}
+.note{font-size:.8rem;color:var(--ink-soft);margin:6px 0 0}
+.res{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:12px}
+.res div{background:var(--paper);border-radius:8px;padding:8px 10px}
+.res .k{font-size:.72rem;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-soft)}
+.res .n{font-family:var(--font-mono);font-weight:600;font-size:1.25rem}
+.mpscale{position:relative;height:96px;margin:6px 4px 0}
+.mpscale .axis{position:absolute;left:0;right:0;top:70px;border-top:1.5px solid var(--ink-soft)}
+.mpscale .tick{position:absolute;top:70px;font-family:var(--font-mono);font-size:.7rem;color:var(--ink-soft);transform:translateX(-50%);padding-top:6px}
+.mpscale .tick::before{content:"";position:absolute;left:50%;top:-1px;height:6px;border-left:1px solid var(--ink-soft)}
+.band{position:absolute;height:16px;border-radius:4px;font-size:.72rem;line-height:16px;white-space:nowrap}
+.band.crude{top:10px;background:rgba(178,63,40,.25);border:1.5px solid var(--imp)}
+.band.pure{top:38px;background:rgba(31,106,133,.22);border:1.5px solid var(--prod)}
+.band span{position:absolute;left:calc(100% + 6px);color:var(--ink)}
+.band.left span{left:auto;right:calc(100% + 6px)}
+.lit{position:absolute;top:2px;bottom:26px;border-left:2px dashed var(--good)}
+.lit span{position:absolute;top:-2px;left:4px;font-size:.7rem;color:var(--good);white-space:nowrap}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Recrystallisation of aspirin</h1>
+    <p>AQA A-level Required Practical 10 · purifying an organic solid and testing its purity</p>
+  </header>
+
+  <div class="grid">
+    <section class="card bench" aria-label="Apparatus">
+      <div class="stagehead"><span class="num" id="stNum">Step 1 of 8</span><h2 id="stTitle">Impure solid in cold solvent</h2></div>
+      <canvas id="sim" width="1280" height="1040" aria-label="Animated apparatus showing particles of product and impurities"></canvas>
+      <div class="legend">
+        <span><i class="sw p"></i>aspirin (in solution / crude solid)</span>
+        <span><i class="sw px"></i>aspirin in crystal lattice</span>
+        <span><i class="sw i"></i>soluble impurity</span>
+        <span><i class="sw x"></i>insoluble impurity</span>
+      </div>
+      <div class="controls">
+        <div class="opts">
+          <div class="opt"><span class="lab">Solvent volume</span>
+            <span class="chips" role="group" aria-label="Solvent volume">
+              <button id="vMin" aria-pressed="true">Minimum</button><button id="vEx" aria-pressed="false">Excess (×2)</button>
+            </span></div>
+          <div class="opt"><span class="lab">Cooling</span>
+            <span class="chips" role="group" aria-label="Cooling rate">
+              <button id="cSlow" aria-pressed="true">Slow</button><button id="cFast" aria-pressed="false">Rapid</button>
+            </span></div>
+        </div>
+        <div class="btns">
+          <button id="restart">Restart</button>
+          <button id="next" class="primary">Next step ▸</button>
+        </div>
+      </div>
+    </section>
+
+    <aside class="side">
+      <section class="card">
+        <ol class="steps" id="steps"></ol>
+        <div class="explain" id="explain"></div>
+      </section>
+
+      <section class="card">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
+          <h3>Solubility of the product</h3>
+          <div class="temp"><span class="v" id="tempV">20.0</span><span class="u">°C</span></div>
+        </div>
+        <canvas id="graph" width="1200" height="620" aria-label="Solubility curve with the current amount dissolved"></canvas>
+        <p class="note">Curves are illustrative: solubility rises steeply with temperature. Above a curve the solution is supersaturated and that solid crystallises.</p>
+      </section>
+
+      <section class="card">
+        <h3>Where the particles are</h3>
+        <div class="scroll"><table>
+          <thead><tr><th></th><th>Dissolved</th><th>In / on crystals</th><th>Removed</th></tr></thead>
+          <tbody>
+            <tr><td>Aspirin (120)</td><td id="pS">0</td><td id="pX">0</td><td id="pF">0</td></tr>
+            <tr><td>Soluble impurity (12)</td><td id="iS">0</td><td id="iX">0</td><td id="iF">0</td></tr>
+            <tr><td>Insoluble impurity (6)</td><td>–</td><td id="xX">6</td><td id="xF">0</td></tr>
+          </tbody>
+        </table></div>
+        <p class="note">“Removed” = in the filtrate or the filter paper. Crude solid counts under “in / on crystals” at the start.</p>
+      </section>
+
+      <section class="card" id="resCard" hidden>
+        <h3>Result</h3>
+        <div class="res">
+          <div><div class="k">Yield</div><div class="n" id="rY">–</div></div>
+          <div><div class="k">Purity</div><div class="n" id="rP">–</div></div>
+          <div><div class="k">Melting point</div><div class="n" id="rM">–</div></div>
+        </div>
+        <div class="mpscale" id="mpscale"></div>
+        <p class="note" id="rNote"></p>
+        <h3 style="margin-top:12px">Runs this session</h3>
+        <div class="scroll"><table>
+          <thead><tr><th>Solvent</th><th>Cooling</th><th>Yield</th><th>Trapped impurity</th><th>m.p. / °C</th></tr></thead>
+          <tbody id="log"></tbody>
+        </table></div>
+      </section>
+    </aside>
+  </div>
+</div>
+
+<script>
+(()=>{
+const css = getComputedStyle(document.documentElement);
+const C = n => css.getPropertyValue(n).trim();
+const COL = {prod:C('--prod'), prodD:C('--prod-dark'), imp:C('--imp'), insol:C('--insol'), ink:C('--ink'), soft:C('--ink-soft'), brown:C('--brown'), line:C('--line'), cold:C('--cold')};
+
+const NP=120, NI=12, NX=6;
+const K=Math.log(12.5)/75;               // min solvent: all 120 dissolve at 75 °C, ~10 stay dissolved at 0 °C
+const T_HOT=75, T_ROOM=20, T_ICE=2;
+let V=1, cooling='slow';
+const capP=T=>V*10*Math.exp(K*T);
+const capI=T=>V*20*Math.exp(K*T);
+const MP_LIT=136;
+
+const STAGES=[
+ {t:'Impure solid in cold solvent', s:'Crude solid'},
+ {t:'Dissolve in the minimum volume of hot solvent', s:'Heat to dissolve'},
+ {t:'Filter while hot', s:'Hot filtration'},
+ {t:'Cool to room temperature', s:'Cool'},
+ {t:'Cool further in an ice bath', s:'Ice bath'},
+ {t:'Filter under reduced pressure', s:'Büchner filtration'},
+ {t:'Wash with a little ice-cold solvent', s:'Wash'},
+ {t:'Dry and measure the melting point', s:'Dry & test purity'}
+];
+function explain(i){
+  const ex=V===2, fast=cooling==='rapid';
+  const T=[
+   ['Crude aspirin contains the product plus two kinds of impurity: soluble (red) and insoluble (grey). At room temperature only a little of the product dissolves.',
+    'A suitable solvent dissolves the product well when hot but poorly when cold.',
+    'Choose a solvent in which the product is very soluble when hot and much less soluble when cold.'],
+   [ex ? 'Twice the minimum volume has been used, so all the product dissolves well before the top temperature. The hot solution is far from saturated: on the graph the product point sits well below the curve.'
+       : 'Heating to just below the boiling point raises the solubility until all of the product just dissolves. Only just enough solvent was used, so the hot solution is close to saturated.',
+    'The insoluble impurity stays as solid. The soluble impurity dissolves.',
+    'Dissolve the impure solid in the minimum volume of hot solvent.'],
+   ['The hot mixture is filtered by gravity through fluted filter paper in a pre-warmed funnel. The insoluble impurity is left in the filter paper.',
+    'Everything is kept hot so that product does not crystallise in the funnel and get lost.',
+    'Filter the hot solution to remove insoluble impurities.'],
+   [fast ? 'Crash-cooling makes the solution strongly supersaturated, so many crystals start at once. They grow fast and stay small, and some impurity particles get trapped inside the lattice.'
+         : 'As the solution cools the solubility falls. Once the amount dissolved is greater than the solubility, aspirin crystallises. Slow cooling gives only a few nuclei, so crystals grow large and regular, and impurity particles are not built into the lattice.',
+    'The soluble impurity stays dissolved: there is so little of it that its concentration never reaches its own solubility limit (red point stays below the red curve).',
+    'Allow the solution to cool slowly so crystals form; soluble impurities remain in solution.'],
+   ['The ice bath lowers the solubility further, so more aspirin crystallises and the yield rises. Some product always stays dissolved, so the yield can never reach 100%.'
+    + (ex ? ' With excess solvent much more stays dissolved.' : ''),
+    'Compare the product point with the curve: whatever sits under the curve at this temperature is lost in the filtrate.',
+    'Cool in an ice bath to maximise the yield of crystals.'],
+   ['Suction through a Büchner funnel separates the crystals quickly and leaves them fairly dry. The filtrate (mother liquor) carries away the soluble impurity and the aspirin that stayed dissolved.',
+    'A thin film of this solution, containing some impurity, is left on the crystal surfaces.',
+    'Filter under reduced pressure using a Büchner funnel and flask.'],
+   ['A small volume of ice-cold solvent rinses the impurity-containing film off the crystal surfaces.',
+    'The solvent must be cold and the volume small, otherwise more product dissolves and is lost. A little is lost anyway.'
+    + (fast ? ' Washing cannot reach impurity trapped inside the crystals.' : ''),
+    'Wash the crystals with a small amount of cold solvent to remove soluble impurities.'],
+   ['Dry the crystals between filter papers or in a desiccator. A pure solid melts sharply, over about 1 °C, close to the data-book value.',
+    'Impurities disrupt the lattice, so an impure solid melts at a lower temperature and over a wider range.',
+    'Measure the melting point: a pure sample melts sharply at the data-book value.']
+  ];
+  const [a,b,k]=T[i];
+  return `<p>${a}</p><p>${b}</p><div class="key"><b>Exam wording</b>${k}</div>`;
+}
+
+/* ---------- state ---------- */
+let stage, T, Ttarget, Trate, vessel, heater, ice, particles, crystals, drops, stageTime, drainT, washT, accD, accI, accG, filterUsed, logged=false;
+const runs=[];
+const rnd=(a,b)=>a+Math.random()*(b-a);
+
+function heapPoints(n){
+  const pts=[], s=8.2, floor=426;
+  for(let j=0;j<30;j++){const y=floor-j*s*0.866;
+    for(let i=-22;i<=22;i++){const x=320+i*s+(j%2)*s/2, d=(x-320)/125, h=66*(1-d*d);
+      if(Math.abs(d)<1 && floor-y<=h) pts.push({x,y});}}
+  pts.sort((a,b)=>b.y-a.y||Math.abs(a.x-320)-Math.abs(b.x-320));
+  return pts.slice(0,n);
+}
+function init(){
+  stage=0; T=T_ROOM; Ttarget=T_ROOM; Trate=12; vessel='beaker'; heater=false; ice=false;
+  particles=[]; crystals=[]; drops=[]; stageTime=0; drainT=0; washT=0; accD=accI=accG=0; filterUsed=false; logged=false;
+  const types=[...Array(NP).fill('P'),...Array(NI).fill('I'),...Array(NX).fill('X')];
+  for(let i=types.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[types[i],types[j]]=[types[j],types[i]];}
+  heapPoints(types.length).forEach((pt,k)=>particles.push({type:types[k],state:'heap',x:pt.x,y:pt.y,hx:pt.x,hy:pt.y,vx:0,vy:0}));
+  document.getElementById('resCard').hidden=true;
+  renderUI();
+}
+const liqTop=()=>V===1?296:168;
+const cnt=(type,state)=>particles.reduce((n,p)=>n+(p.type===type&&(state===undefined||p.state===state)),0);
+
+/* ---------- crystals ---------- */
+function genSlots(theta){
+  const s=7.5, pts=[], c=Math.cos(theta), sn=Math.sin(theta);
+  for(let j=0;j<24;j++)for(let i=-22;i<=22;i++){
+    const dx=i*s+(j%2)*s/2, dy=-j*s*0.866; if(dx*dx+dy*dy>170*170)continue;
+    const u=dx*c+dy*sn, v=-dx*sn+dy*c; pts.push({dx,dy,m:(u/3.2)**2+v*v});}
+  return pts.sort((a,b)=>a.m-b.m);
+}
+function newCrystal(){
+  let best=null,bd=-1;
+  for(let k=0;k<40;k++){const x=rnd(190,425); const d=crystals.reduce((m,c)=>Math.min(m,Math.abs(c.seed.x-x)),999); if(d>bd){bd=d;best=x;}}
+  const theta=-Math.PI/2+rnd(-0.45,0.45);
+  crystals.push({seed:{x:best,y:427},theta,rot:0,slots:genSlots(theta),filled:0});
+}
+function slotPos(c,i){const o=c.slots[i],co=Math.cos(c.rot),si=Math.sin(c.rot);return{x:c.seed.x+o.dx*co-o.dy*si,y:c.seed.y+o.dx*si+o.dy*co};}
+function addToCrystal(p,c){p.state='xtal';p.crystal=c;p.slot=c.filled++;}
+function crystalliseOne(){
+  const sol=particles.filter(p=>p.type==='P'&&p.state==='sol'); if(!sol.length||!crystals.length)return;
+  const w=crystals.map(c=>cooling==='slow'?c.filled+4:1), tot=w.reduce((a,b)=>a+b,0);
+  let r=Math.random()*tot, c=crystals[0]; for(let i=0;i<crystals.length;i++){r-=w[i];if(r<=0){c=crystals[i];break;}}
+  addToCrystal(sol[Math.random()*sol.length|0],c);
+  if(cooling==='rapid' && Math.random()<0.13 && cnt('I','xtal')<5){
+    const si=particles.filter(p=>p.type==='I'&&p.state==='sol'); if(si.length) addToCrystal(si[Math.random()*si.length|0],c);
+  }
+}
+
+/* ---------- stage transitions ---------- */
+function enterStage(s){
+  stage=s; stageTime=0;
+  if(s===1){Ttarget=T_HOT;Trate=12;heater=true;}
+  if(s===2){filterUsed=true;let k=0;particles.forEach(p=>{if(p.type==='X'){p.state='filter';p.fx=566+(k%3)*12+((k/3|0))*6;p.fy=60+(k/3|0)*14;k++;}});}
+  if(s===3){heater=false;Ttarget=T_ROOM;Trate=cooling==='slow'?4.5:30;}
+  if(s===4){ice=true;Ttarget=T_ICE;Trate=cooling==='slow'?5:30;}
+  if(s===5){toBuchner();}
+  if(s===6){washT=0;}
+  if(s===7){finish();}
+  renderUI();
+}
+function toBuchner(){
+  vessel='buchner'; ice=false; drainT=0;
+  // lay crystals flat on the filter paper
+  const plateY=294; let cx=204, base=plateY, layerH=0;
+  const info=crystals.map(c=>{c.rot=-c.theta+rnd(-0.18,0.18);
+    const m=particles.filter(p=>p.state==='xtal'&&p.crystal===c).map(p=>{const o=c.slots[p.slot],co=Math.cos(c.rot),si=Math.sin(c.rot);return{x:o.dx*co-o.dy*si,y:o.dx*si+o.dy*co};});
+    return{c,minX:Math.min(...m.map(q=>q.x)),maxX:Math.max(...m.map(q=>q.x)),minY:Math.min(...m.map(q=>q.y)),maxY:Math.max(...m.map(q=>q.y)),n:m.length};
+  }).filter(o=>o.n>0).sort((a,b)=>b.n-a.n);
+  info.forEach(o=>{const w=o.maxX-o.minX;
+    if(cx+w>440&&cx>204){base-=layerH+2;cx=204;layerH=0;}
+    o.c.seed.x=cx-o.minX; o.c.seed.y=base-o.maxY; cx+=w+5; layerH=Math.max(layerH,o.maxY-o.minY);});
+  // film of mother liquor: up to 2 dissolved impurity particles cling to crystal surfaces
+  const xt=particles.filter(p=>p.state==='xtal'&&p.type==='P');
+  const solI=particles.filter(p=>p.type==='I'&&p.state==='sol');
+  for(let k=0;k<2&&k<solI.length&&xt.length;k++){
+    const p=solI[k]; p.state='film';
+    xt.sort((a,b)=>slotPos(a.crystal,a.slot).y-slotPos(b.crystal,b.slot).y);
+    p.attach=xt[(k*3)%Math.min(xt.length,8)]; p.off={x:rnd(-4,4),y:-7};
+  }
+  particles.forEach(p=>{if(p.state==='sol') startDrain(p,rnd(0.5,2.4),true);});
+}
+function startDrain(p,delay,inFunnel){
+  p.state='drain'; p.delay=delay;
+  p.path=[]; if(inFunnel)p.path.push({x:rnd(198,442),y:rnd(215,288)});
+  p.path.push({x:rnd(200,440),y:300},{x:320+rnd(-4,4),y:338},{x:320,y:392},{x:rnd(285,355),y:rnd(468,486)});
+}
+function finish(){
+  const r=result();
+  document.getElementById('resCard').hidden=false;
+  document.getElementById('rY').textContent=r.yield.toFixed(0)+'%';
+  document.getElementById('rP').textContent=r.purity.toFixed(1)+'%';
+  document.getElementById('rM').textContent=`${r.lo}–${r.hi} °C`;
+  const crude=mpRange(NI/(NI+NP));
+  drawScale(crude,r);
+  const notes=[];
+  notes.push(V===2?'Excess solvent: more aspirin stayed dissolved at 2 °C, so the yield is lower.':'Minimum solvent: only a little aspirin stayed dissolved in the cold filtrate.');
+  notes.push(r.trapped? `Rapid cooling trapped ${r.trapped} impurity particle${r.trapped>1?'s':''} inside the crystals, so the melting point is low and broad.`:'Slow cooling kept impurity out of the lattice, so the melting point is sharp and close to 136 °C.');
+  notes.push('Values are illustrative.');
+  document.getElementById('rNote').textContent=notes.join(' ');
+  if(!logged){logged=true;runs.push({v:V===1?'Minimum':'Excess',c:cooling==='slow'?'Slow':'Rapid',y:r.yield.toFixed(0)+'%',t:r.trapped,m:`${r.lo}–${r.hi}`});
+    document.getElementById('log').innerHTML=runs.map(q=>`<tr><td>${q.v}</td><td>${q.c}</td><td>${q.y}</td><td>${q.t}</td><td>${q.m}</td></tr>`).join('');}
+}
+function mpRange(x){return{lo:Math.round(135-110*x),hi:Math.round(136-38*x)};}
+function result(){
+  const p=cnt('P','xtal'), i=cnt('I','xtal')+cnt('I','film');
+  const x=i/(p+i||1), mp=mpRange(x);
+  return{yield:p/NP*100,purity:100*(1-x),trapped:i,lo:mp.lo,hi:mp.hi};
+}
+function drawScale(crude,r){
+  const lo=118,hi=140,pc=v=>((v-lo)/(hi-lo)*100).toFixed(2)+'%';
+  let h='<div class="axis"></div>';
+  for(let v=lo+2;v<=hi;v+=4)h+=`<div class="tick" style="left:${pc(v)}">${v}</div>`;
+  h+=`<div class="lit" style="left:${pc(MP_LIT)}"><span>data book 136</span></div>`;
+  h+=`<div class="band crude" style="left:${pc(crude.lo)};width:calc(${pc(crude.hi)} - ${pc(crude.lo)})"><span>crude ${crude.lo}–${crude.hi}</span></div>`;
+  const w=Math.max(r.hi-r.lo,0.6);
+  h+=`<div class="band pure left" style="left:${pc(r.lo)};width:calc(${pc(r.lo+w)} - ${pc(r.lo)})"><span>recrystallised ${r.lo}–${r.hi}</span></div>`;
+  document.getElementById('mpscale').innerHTML=h;
+}
+
+/* ---------- simulation ---------- */
+function bounds(){return vessel==='beaker'?{x0:166,x1:448,y0:liqTop()+6,y1:430}:{x0:198,x1:442,y0:205,y1:292};}
+function targetOf(p){
+  if(p.state==='heap')return{x:p.hx,y:p.hy};
+  if(p.state==='xtal')return slotPos(p.crystal,p.slot);
+  if(p.state==='filter')return{x:p.fx,y:p.fy};
+  if(p.state==='film'){const a=targetOf(p.attach);return{x:a.x+p.off.x,y:a.y+p.off.y};}
+  return{x:p.x,y:p.y};
+}
+function kinetics(dt){
+  if(stage>4)return;
+  const cp=capP(T);
+  let D=cnt('P','sol');
+  const heapP=particles.filter(p=>p.type==='P'&&p.state==='heap');
+  if(heapP.length && D<cp-0.5){
+    accD+=dt*45;
+    heapP.sort((a,b)=>a.hy-b.hy);
+    while(accD>=1&&heapP.length&&D<cp-0.5){const p=heapP.shift();p.state='sol';p.vx=rnd(-30,30);p.vy=rnd(-40,-10);D++;accD--;}
+  } else accD=0;
+  let DI=cnt('I','sol');
+  const heapI=particles.filter(p=>p.type==='I'&&p.state==='heap');
+  if(heapI.length && DI<capI(T)-0.5 && D>0){accI+=dt*8;
+    heapI.sort((a,b)=>a.hy-b.hy);
+    while(accI>=1&&heapI.length){const p=heapI.shift();p.state='sol';p.vx=rnd(-30,30);p.vy=rnd(-40,-10);accI--;}}
+  if(!particles.some(p=>p.state==='heap'&&p.type!=='X'))
+    particles.forEach(p=>{if(p.type==='X'&&p.state==='heap')p.hy=424;});
+  // crystallisation
+  const E=D-cp, slow=cooling==='slow';
+  const thr=crystals.length===0?(slow?1.5:0.5):(slow?1.2:0.5), maxN=slow?3:11, rate=slow?(crystals.length?0.35:1.2):10;
+  if(E>thr&&crystals.length<maxN&&Math.random()<rate*dt)newCrystal();
+  if(crystals.length&&E>0.5){accG+=dt*Math.min(90,15*E);while(accG>=1&&D>cp+0.5){crystalliseOne();D--;accG--;}} else accG=0;
+}
+function settled(){
+  if(stageTime<1.2||Math.abs(T-Ttarget)>0.3)return false;
+  if(stage<=4){
+    const cp=capP(T),D=cnt('P','sol');
+    if(cnt('P','heap')&&D<cp-0.5)return false;
+    if(D>cp+0.5&&crystals.length)return false;
+    if(cnt('I','heap')&&D>0)return false;
+  }
+  if(stage===5&&drainT<3)return false;
+  if(stage===6&&washT<2.4)return false;
+  return true;
+}
+function update(dt){
+  stageTime+=dt;
+  const d=Ttarget-T; T+=Math.sign(d)*Math.min(Math.abs(d),Trate*dt);
+  kinetics(dt);
+  if(stage===5)drainT+=dt;
+  if(stage===6){const before=washT;washT+=dt;
+    if(washT<1.3&&Math.random()<dt*40)drops.push({x:rnd(205,435),y:150,v:rnd(260,340)});
+    if(before<0.9&&washT>=0.9){
+      particles.forEach(p=>{if(p.state==='film')startDrain(p,rnd(0,0.4),false);});
+      const xt=particles.filter(p=>p.state==='xtal'&&p.type==='P').sort((a,b)=>targetOf(a).y-targetOf(b).y);
+      xt.slice(0,2).forEach(p=>startDrain(p,rnd(0.1,0.5),false));
+    }}
+  drops.forEach(q=>q.y+=q.v*dt); drops=drops.filter(q=>q.y<290);
+  const b=bounds(), heat=30+T*0.65;
+  const fTop=filtrateLevel();
+  for(const p of particles){
+    if(p.state==='sol'||p.state==='filtrate'){
+      const bb=p.state==='sol'?b:{x0:272,x1:368,y0:fTop+5,y1:488};
+      p.vx+=rnd(-1,1)*450*dt; p.vy+=rnd(-1,1)*450*dt;
+      const sp=Math.hypot(p.vx,p.vy),mx=p.state==='sol'?heat:22; if(sp>mx){p.vx*=mx/sp;p.vy*=mx/sp;}
+      p.x+=p.vx*dt;p.y+=p.vy*dt;
+      if(p.x<bb.x0){p.x=bb.x0;p.vx=Math.abs(p.vx);} if(p.x>bb.x1){p.x=bb.x1;p.vx=-Math.abs(p.vx);}
+      if(p.y<bb.y0){p.y+=Math.min(bb.y0-p.y,120*dt+0.5);p.vy=Math.abs(p.vy);} if(p.y>bb.y1){p.y=bb.y1;p.vy=-Math.abs(p.vy);}
+    } else if(p.state==='drain'){
+      const w=p.path[0];
+      if(p.delay>0){p.delay-=dt; if(p.path.length===5){p.x+=(w.x-p.x)*Math.min(1,dt*3);p.y+=(w.y-p.y)*Math.min(1,dt*3);}}
+      else{const dx=w.x-p.x,dy=w.y-p.y,dd=Math.hypot(dx,dy),st=180*dt;
+        if(dd<=st){p.x=w.x;p.y=w.y;p.path.shift();if(!p.path.length){p.state='filtrate';p.vx=p.vy=0;}}
+        else{p.x+=dx/dd*st;p.y+=dy/dd*st;}}
+    } else {
+      const t=targetOf(p), k=p.state==='xtal'?4:6;
+      p.x+=(t.x-p.x)*Math.min(1,dt*k); p.y+=(t.y-p.y)*Math.min(1,dt*k);
+    }
+  }
+}
+function filtrateLevel(){
+  if(vessel!=='buchner')return 494;
+  const a=Math.min(1,Math.max(0,(drainT-0.4)/2.4));
+  const w=stage>=6?Math.min(1,Math.max(0,(washT-0.6)/1.5)):0;
+  return 494-36*a-6*w;
+}
+
+/* ---------- drawing ---------- */
+const cv=document.getElementById('sim'),ctx=cv.getContext('2d');
+ctx.setTransform(2,0,0,2,0,0);
+function txt(s,x,y,{size=12,color=COL.soft,align='left',weight=500,font='var'}={}){
+  ctx.fillStyle=color;ctx.textAlign=align;ctx.font=`${weight} ${size}px ${font==='mono'?'"IBM Plex Mono",monospace':'"IBM Plex Sans",system-ui,sans-serif'}`;ctx.fillText(s,x,y);
+}
+function hex(x,y,r){ctx.beginPath();for(let k=0;k<6;k++){const a=Math.PI/3*k;ctx.lineTo(x+r*Math.cos(a),y+r*Math.sin(a));}ctx.closePath();}
+function drawParticle(p){
+  if(p.type==='P'){
+    if(p.state==='xtal'){hex(p.x,p.y,4.1);ctx.fillStyle=COL.prodD;ctx.fill();ctx.strokeStyle='rgba(255,255,255,.35)';ctx.lineWidth=.8;ctx.stroke();}
+    else{ctx.beginPath();ctx.arc(p.x,p.y,3.3,0,7);ctx.fillStyle=COL.prod;ctx.fill();}
+  } else if(p.type==='I'){
+    ctx.save();ctx.translate(p.x,p.y);ctx.rotate(Math.PI/4);ctx.fillStyle=COL.imp;ctx.fillRect(-3.2,-3.2,6.4,6.4);
+    if(p.state==='xtal'||p.state==='film'){ctx.strokeStyle='#5a1a0e';ctx.lineWidth=1.2;ctx.strokeRect(-3.2,-3.2,6.4,6.4);}ctx.restore();
+  } else {
+    ctx.beginPath();ctx.ellipse(p.x,p.y,6,4.8,0.5,0,7);ctx.fillStyle=COL.insol;ctx.fill();
+    ctx.beginPath();ctx.arc(p.x-1.8,p.y-1.4,1.6,0,7);ctx.fillStyle='rgba(255,255,255,.3)';ctx.fill();
+  }
+}
+function drawHotFilter(){
+  if(!filterUsed)return;
+  ctx.fillStyle='rgba(255,255,255,.9)';ctx.strokeStyle='#a99a86';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(546,44);ctx.lineTo(624,44);ctx.lineTo(585,108);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.strokeStyle='#cfc2ae';ctx.lineWidth=1;
+  for(let k=1;k<6;k++){ctx.beginPath();ctx.moveTo(546+k*13,44);ctx.lineTo(585,108);ctx.stroke();}
+  ctx.fillStyle='#a99a86';ctx.fillRect(582,108,6,26);
+  txt('hot filtration',585,30,{align:'center',size:11});
+  txt('insoluble impurity',585,150,{align:'center',size:11});
+}
+function drawBeaker(){
+  // bench
+  ctx.strokeStyle=COL.line;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(20,500);ctx.lineTo(620,500);ctx.stroke();
+  if(ice){
+    ctx.fillStyle='rgba(176,212,232,.45)';ctx.strokeStyle='#8fb3c8';ctx.lineWidth=2;
+    ctx.beginPath();ctx.roundRect(108,250,424,248,10);ctx.fill();ctx.stroke();
+    for(let k=0;k<9;k++){const x=118+k*46+(k%2)*8,y=258+(k%3)*6;ctx.save();ctx.translate(x,y);ctx.rotate((k%4-1.5)*0.2);
+      ctx.fillStyle='rgba(255,255,255,.85)';ctx.strokeStyle='#9cc0d4';ctx.lineWidth=1;ctx.fillRect(0,0,20,18);ctx.strokeRect(0,0,20,18);ctx.restore();}
+    txt('ice bath',120,488,{size:12,color:COL.cold,weight:600});
+  } else {
+    const g=heater?Math.min(1,(T-20)/55):0;
+    ctx.fillStyle='#d9d1c4';ctx.beginPath();ctx.roundRect(130,456,380,40,6);ctx.fill();
+    ctx.fillStyle=`rgb(${Math.round(120+120*g)},${Math.round(112-40*g)},${Math.round(104-70*g)})`;ctx.fillRect(140,444,360,12);
+    txt(heater?'hot plate · on':'hot plate · off',320,482,{align:'center',size:12,color:heater?'#a3461a':COL.soft,weight:600});
+  }
+  // liquid
+  const lt=liqTop();
+  ctx.fillStyle=T>40?'rgba(160,185,200,.30)':'rgba(140,180,205,.26)';ctx.fillRect(152,lt,336,286);
+  ctx.strokeStyle='rgba(80,120,150,.5)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(152,lt);ctx.lineTo(488,lt);ctx.stroke();
+  // steam
+  if(T>55){ctx.strokeStyle=`rgba(150,150,150,${Math.min(.5,(T-55)/40)})`;ctx.lineWidth=2;const ph=performance.now()/600;
+    for(let k=0;k<3;k++){const x=230+k*80;ctx.beginPath();ctx.moveTo(x,lt-6);ctx.bezierCurveTo(x+10*Math.sin(ph+k),lt-30,x-10*Math.sin(ph+k),lt-50,x+6,lt-72);ctx.stroke();}}
+}
+function drawBeakerFront(){
+  ctx.strokeStyle='#8fa7b3';ctx.lineWidth=3;ctx.lineJoin='round';
+  ctx.beginPath();ctx.moveTo(142,94);ctx.lineTo(150,100);ctx.lineTo(150,430);ctx.quadraticCurveTo(150,440,160,440);ctx.lineTo(480,440);ctx.quadraticCurveTo(490,440,490,430);ctx.lineTo(490,100);ctx.lineTo(498,94);ctx.stroke();
+  ctx.strokeStyle='#a9bcc6';ctx.lineWidth=1.2;
+  for(let k=0;k<5;k++){const y=380-k*60;ctx.beginPath();ctx.moveTo(152,y);ctx.lineTo(166,y);ctx.stroke();}
+  // thermometer
+  ctx.fillStyle='rgba(255,255,255,.85)';ctx.strokeStyle='#9aa9b0';ctx.lineWidth=1.2;
+  ctx.beginPath();ctx.roundRect(463,56,10,360,5);ctx.fill();ctx.stroke();
+  ctx.beginPath();ctx.arc(468,420,8,0,7);ctx.fillStyle='#c0392b';ctx.fill();
+  const yT=410-(T/100)*340;ctx.fillStyle='#c0392b';ctx.fillRect(466,yT,4,412-yT);
+  ctx.fillStyle='#fbf8f1';ctx.strokeStyle=COL.brown;ctx.lineWidth=1.2;ctx.beginPath();ctx.roundRect(500,yT-11,64,22,4);ctx.fill();ctx.stroke();
+  txt(T.toFixed(1)+' °C',532,yT+4.5,{align:'center',size:12,color:COL.ink,weight:600,font:'mono'});
+}
+function drawBuchnerBack(){
+  ctx.strokeStyle=COL.line;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(20,500);ctx.lineTo(620,500);ctx.stroke();
+  // filtrate in flask
+  const fl=filtrateLevel();
+  if(fl<493){ctx.save();ctx.beginPath();ctx.moveTo(300,402);ctx.lineTo(236,494);ctx.lineTo(404,494);ctx.lineTo(340,402);ctx.closePath();ctx.clip();
+    ctx.fillStyle='rgba(170,150,120,.28)';ctx.fillRect(220,fl,200,60);ctx.restore();}
+  // liquid in funnel
+  const a=Math.min(1,Math.max(0,(drainT-0.4)/2.4));let lv=184+112*a;
+  if(stage===6&&washT>0.3)lv=Math.max(lv,282+14*Math.min(1,Math.max(0,(washT-1)/1.2)));
+  if(lv<296){ctx.fillStyle=stage===6?'rgba(120,175,215,.30)':'rgba(140,180,205,.28)';ctx.fillRect(186,lv,268,298-lv);}
+  // filter paper + plate
+  ctx.fillStyle='#ffffff';ctx.fillRect(186,295,268,3);
+  ctx.fillStyle='#e8e1d6';ctx.fillRect(186,298,268,6);
+  ctx.fillStyle='#b9ab98';for(let x=196;x<450;x+=16)ctx.fillRect(x,299,5,4);
+}
+function drawBuchnerFront(){
+  ctx.strokeStyle='#b6a690';ctx.fillStyle='#efe8dc';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.rect(176,140,10,164);ctx.rect(454,140,10,164);ctx.fill();ctx.stroke();
+  ctx.beginPath();ctx.moveTo(176,304);ctx.lineTo(186,304);ctx.lineTo(312,338);ctx.lineTo(328,338);ctx.lineTo(454,304);ctx.lineTo(464,304);ctx.lineTo(332,346);ctx.lineTo(308,346);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.fillRect(312,338,16,6);
+  // stem
+  ctx.strokeStyle='#9aa9b0';ctx.lineWidth=1.5;ctx.strokeRect(313,346,14,48);
+  // flask
+  ctx.strokeStyle='#8fa7b3';ctx.lineWidth=2.5;ctx.lineJoin='round';
+  ctx.beginPath();ctx.moveTo(300,370);ctx.lineTo(300,402);ctx.lineTo(236,494);ctx.lineTo(404,494);ctx.lineTo(340,402);ctx.lineTo(340,370);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(340,382);ctx.lineTo(486,374);ctx.moveTo(340,392);ctx.lineTo(486,384);ctx.stroke();
+  // bung
+  ctx.fillStyle='#6b4a33';ctx.beginPath();ctx.moveTo(294,352);ctx.lineTo(346,352);ctx.lineTo(342,374);ctx.lineTo(298,374);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#9aa9b0';ctx.fillRect(316,350,8,26);
+  txt('Büchner funnel',168,166,{align:'right',size:12,weight:600});
+  txt('filter paper on',168,288,{align:'right',size:11});
+  txt('perforated plate',168,302,{align:'right',size:11});
+  txt('to vacuum pump →',490,368,{size:11});
+  txt('filtrate',228,486,{align:'right',size:12,weight:600});
+  txt('(mother liquor)',228,500,{align:'right',size:11});
+  if(stage>=7)txt('crystals dried, then melting point measured',320,130,{align:'center',size:12,color:COL.brown,weight:600});
+}
+function draw(){
+  ctx.clearRect(0,0,640,520);
+  if(vessel==='beaker')drawBeaker(); else drawBuchnerBack();
+  drawHotFilter();
+  for(const p of particles)if(p.state!=='xtal')drawParticle(p);
+  for(const p of particles)if(p.state==='xtal')drawParticle(p);
+  ctx.strokeStyle='rgba(63,127,166,.6)';ctx.lineWidth=2;for(const q of drops){ctx.beginPath();ctx.moveTo(q.x,q.y);ctx.lineTo(q.x,q.y+8);ctx.stroke();}
+  if(vessel==='beaker')drawBeakerFront(); else drawBuchnerFront();
+}
+
+/* ---------- graph ---------- */
+const gv=document.getElementById('graph'),g=gv.getContext('2d');g.setTransform(2,0,0,2,0,0);
+function drawGraph(){
+  const W=600,H=310,l=50,r=14,t=14,b=40,w=W-l-r,h=H-t-b,ymax=260;
+  const X=T=>l+T/80*w, Y=v=>t+(1-Math.min(v,ymax)/ymax)*h;
+  g.clearRect(0,0,W,H);
+  g.font='500 11px "IBM Plex Mono",monospace';g.fillStyle=COL.soft;g.strokeStyle='#e7dccb';g.lineWidth=1;
+  for(let v=0;v<=250;v+=50){g.beginPath();g.moveTo(l,Y(v));g.lineTo(l+w,Y(v));g.stroke();g.textAlign='right';g.fillText(v,l-6,Y(v)+4);}
+  for(let T0=0;T0<=80;T0+=20){g.textAlign='center';g.fillText(T0,X(T0),t+h+15);}
+  g.font='500 11px "IBM Plex Sans",sans-serif';g.textAlign='center';g.fillText('temperature / °C',l+w/2,H-4);
+  g.save();g.translate(12,t+h/2);g.rotate(-Math.PI/2);g.fillText('amount dissolved / particles',0,0);g.restore();
+  // supersaturated region (product)
+  g.beginPath();g.moveTo(X(0),Y(capP(0)));for(let T0=0;T0<=80;T0+=1)g.lineTo(X(T0),Y(capP(T0)));g.lineTo(X(80),t);g.lineTo(X(0),t);g.closePath();g.fillStyle='rgba(31,106,133,.07)';g.fill();
+  // curves
+  const curve=(f,col,dash)=>{g.beginPath();for(let T0=0;T0<=80;T0+=1){const v=f(T0);if(v>ymax)break;T0?g.lineTo(X(T0),Y(v)):g.moveTo(X(T0),Y(v));}g.setLineDash(dash);g.strokeStyle=col;g.lineWidth=2.2;g.stroke();g.setLineDash([]);};
+  curve(capP,COL.prod,[]); curve(capI,COL.imp,[6,4]);
+  // total product line
+  g.setLineDash([3,4]);g.strokeStyle=COL.brown;g.lineWidth=1.2;g.beginPath();g.moveTo(l,Y(NP));g.lineTo(l+w,Y(NP));g.stroke();g.setLineDash([]);
+  g.fillStyle=COL.brown;g.textAlign='left';g.font='500 11px "IBM Plex Sans",sans-serif';g.fillText('all 120 aspirin',l+4,Y(NP)-5);
+  g.fillStyle=COL.prod;g.fillText('aspirin solubility',X(4),Y(capP(4))-8>t+10?Y(capP(4))-8:t+12);
+  g.fillStyle='rgba(31,106,133,.75)';g.fillText('supersaturated → crystallises',X(2),t+12);
+  if(capI(30)<ymax){g.fillStyle=COL.imp;g.fillText('impurity solubility',X(36),Y(capI(36))-8);}
+  // points
+  if(vessel==='beaker'){
+    const D=cnt('P','sol'),DI=cnt('I','sol');
+    g.beginPath();g.arc(X(T),Y(DI),5,0,7);g.fillStyle=COL.imp;g.fill();
+    g.beginPath();g.arc(X(T),Y(D),6.5,0,7);g.fillStyle=COL.prod;g.fill();g.strokeStyle='#fff';g.lineWidth=2;g.stroke();
+  }
+  g.strokeStyle=COL.soft;g.lineWidth=1.2;g.beginPath();g.moveTo(l,t);g.lineTo(l,t+h);g.lineTo(l+w,t+h);g.stroke();
+}
+
+/* ---------- UI ---------- */
+const $=id=>document.getElementById(id);
+function renderUI(){
+  $('stNum').textContent=`Step ${stage+1} of 8`; $('stTitle').textContent=STAGES[stage].t;
+  $('steps').innerHTML=STAGES.map((s,i)=>`<li class="${i<stage?'done':i===stage?'now':''}">${s.s}</li>`).join('');
+  $('explain').innerHTML=explain(stage);
+  $('vMin').disabled=$('vEx').disabled=stage>=1;
+  $('cSlow').disabled=$('cFast').disabled=stage>=3;
+  $('vMin').setAttribute('aria-pressed',V===1);$('vEx').setAttribute('aria-pressed',V===2);
+  $('cSlow').setAttribute('aria-pressed',cooling==='slow');$('cFast').setAttribute('aria-pressed',cooling==='rapid');
+}
+function renderStats(){
+  $('tempV').textContent=T.toFixed(1);
+  const gone=s=>s==='drain'||s==='filtrate';
+  const c=(type,f)=>particles.reduce((n,p)=>n+(p.type===type&&f(p.state)),0);
+  $('pS').textContent=c('P',s=>s==='sol'); $('pX').textContent=c('P',s=>s==='xtal'||s==='heap'); $('pF').textContent=c('P',gone);
+  $('iS').textContent=c('I',s=>s==='sol'); $('iX').textContent=c('I',s=>s==='xtal'||s==='film'||s==='heap'); $('iF').textContent=c('I',gone);
+  $('xX').textContent=c('X',s=>s==='heap'); $('xF').textContent=c('X',s=>s==='filter');
+  const nb=$('next'), ok=stage<7&&settled();
+  nb.disabled=!ok;
+  nb.textContent=stage>=7?'Finished':ok?`Next: ${STAGES[stage+1].s} ▸`:'Running…';
+}
+$('next').onclick=()=>{if(stage<7&&settled())enterStage(stage+1);};
+$('restart').onclick=()=>init();
+$('vMin').onclick=()=>{if(stage<1){V=1;renderUI();}};
+$('vEx').onclick=()=>{if(stage<1){V=2;renderUI();}};
+$('cSlow').onclick=()=>{if(stage<3){cooling='slow';renderUI();}};
+$('cFast').onclick=()=>{if(stage<3){cooling='rapid';renderUI();}};
+
+init();
+let last=performance.now(),frame=0;
+function loop(now){const dt=Math.min(0.05,(now-last)/1000);last=now;update(dt);draw();drawGraph();if((frame++&3)===0)renderStats();requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
+})();
+</script>
+
+</body></html>

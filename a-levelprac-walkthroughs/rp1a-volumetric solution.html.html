@@ -1,0 +1,403 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Standard Solution Walkthrough</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: step rail on top, picture beside instructions, question and mistake cards below. Single light (projector) theme by choice. */
+:root{
+  --paper:#f7f1e6; --panel:#fffdf8; --ink:#2b2118; --muted:#6e5d4c;
+  --brown:#6b4226; --brown-2:#8a5a36; --line:#e2d5c0; --soft:#f1e7d6;
+  --good:#2f7a3d; --good-bg:#e5f2e3; --bad:#a3322a; --bad-bg:#f8e3df; --amber:#a86a12;
+  --display:"Charter","Bitstream Charter","Sitka Text",Cambria,Georgia,serif;
+  --body:"Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,Menlo,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5}
+.wrap{max-width:1180px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;border-bottom:2px solid var(--brown);padding-bottom:12px}
+h1{font-family:var(--display);font-size:clamp(1.5rem,3.4vw,2.2rem);margin:0;color:var(--brown);text-wrap:balance;line-height:1.15}
+.sub{margin:4px 0 0;color:var(--muted);font-size:.95rem}
+.score{font-family:var(--mono);font-size:.9rem;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:6px 10px;color:var(--brown);white-space:nowrap}
+.rail{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0}
+.rail button{font:600 .85rem var(--body);border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:999px;padding:6px 12px;cursor:pointer}
+.rail button.on{background:var(--brown);color:#fff;border-color:var(--brown)}
+.rail button.done:not(.on){border-color:var(--good);color:var(--good)}
+.rail button:focus-visible,.opt:focus-visible,.nav button:focus-visible,.pred button:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.stage{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:820px){.stage{grid-template-columns:1fr}}
+.pic{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px}
+.pic svg{width:100%;height:auto;display:block}
+.eyebrow{font:700 .75rem var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--brown-2);margin:0}
+h2{font-family:var(--display);font-size:1.55rem;margin:2px 0 8px;line-height:1.2;text-wrap:balance}
+.how{margin:0 0 10px;padding-left:20px}
+.how li{margin-bottom:4px}
+.why{background:var(--soft);border-radius:8px;padding:10px 12px;font-size:.95rem;margin:0}
+.why b{color:var(--brown)}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px}
+@media (max-width:820px){.cards{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;min-width:0}
+.card h3{font:700 .8rem var(--body);letter-spacing:.07em;text-transform:uppercase;margin:0 0 6px;color:var(--brown)}
+.card.mistake{border-top:4px solid var(--bad)}
+.card.mcq{border-top:4px solid var(--brown)}
+.q{font-weight:600;margin:0 0 10px}
+.opts{display:grid;gap:8px}
+.opt{text-align:left;font:inherit;font-size:.95rem;background:#fff;border:1.5px solid var(--line);border-radius:8px;padding:9px 12px;cursor:pointer;color:var(--ink)}
+.opt:hover:not(:disabled){border-color:var(--brown-2)}
+.opt:disabled{cursor:default}
+.opt.right{background:var(--good-bg);border-color:var(--good)}
+.opt.wrong{background:var(--bad-bg);border-color:var(--bad)}
+.fb{margin:10px 0 0;font-size:.93rem;padding:9px 12px;border-radius:8px;background:var(--soft)}
+.fb.ok{background:var(--good-bg)}.fb.no{background:var(--bad-bg)}
+.pred{display:flex;flex-wrap:wrap;gap:8px}
+.pred button{flex:1 1 110px;font:600 .9rem var(--body);border:1.5px solid var(--line);background:#fff;border-radius:8px;padding:9px 8px;cursor:pointer;color:var(--ink)}
+.pred button.right{background:var(--good-bg);border-color:var(--good)}
+.pred button.wrong{background:var(--bad-bg);border-color:var(--bad)}
+.effect{display:inline-block;font:700 .8rem var(--mono);padding:2px 8px;border-radius:4px;background:var(--bad);color:#fff;margin-right:6px}
+.nav{display:flex;justify-content:space-between;gap:10px;margin-top:20px}
+.nav button{font:600 .95rem var(--body);background:var(--brown);color:#fff;border:0;border-radius:8px;padding:10px 18px;cursor:pointer}
+.nav button.ghost{background:transparent;color:var(--brown);border:1.5px solid var(--brown)}
+.nav button:disabled{opacity:.35;cursor:default}
+.summary .card{margin-bottom:14px}
+.seg{display:inline-flex;border:1.5px solid var(--brown);border-radius:8px;overflow:hidden;margin:6px 0 10px;flex-wrap:wrap}
+.seg button{font:600 .88rem var(--body);background:var(--panel);color:var(--brown);border:0;padding:7px 12px;cursor:pointer}
+.seg button.on{background:var(--brown);color:#fff}
+.seg button:focus-visible{outline:3px solid var(--amber);outline-offset:-3px}
+.card.when{margin-top:20px;border-top:4px solid var(--amber)}
+.when-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media (max-width:820px){.when-grid{grid-template-columns:1fr}}
+.when-grid h4{margin:0 0 6px;font-family:var(--display);font-size:1.1rem;color:var(--brown)}
+.when-grid h4.cur::after{content:"  · shown above";font:600 .75rem var(--body);color:var(--amber)}
+.when-grid ul{margin:0;padding-left:20px;font-size:.95rem}
+.when-grid li{margin-bottom:5px}
+.when-grid .no{margin-top:8px;font-size:.9rem;color:var(--muted)}
+.qnum{font-family:var(--mono);color:var(--brown-2);margin-right:6px}
+.final{background:var(--brown);color:#fff;border-radius:10px;padding:16px 18px;margin-top:8px}
+.final b{font-family:var(--display);font-size:1.3rem}
+sub,sup{line-height:0}
+@media (prefers-reduced-motion:no-preference){.fadein{animation:f .25s ease-out}@keyframes f{from{opacity:.4;transform:translateY(4px)}to{opacity:1;transform:none}}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Standard Solution Walkthrough</h1>
+      <p class="sub">A-level Chemistry · making 250 cm³ of 0.100 mol dm⁻³ sodium carbonate solution</p>
+    </div>
+    <div class="score" id="score">Score 0 / 0</div>
+  </header>
+  <nav class="rail" id="rail" aria-label="Steps"></nav>
+  <main id="main"></main>
+</div>
+
+<script>
+/* ---------- drawing helpers (viewBox 400 x 320) ---------- */
+const C={glass:"#5a4632",acid:"#cde4f1",alk:"#e3edf3",pink:"#e46aa5",pale:"#f5c9dd",ink:"#2b2118",red:"#a3322a",brown:"#6b4226",muted:"#6e5d4c",tile:"#ffffff",wood:"#c9b28f",steel:"#8a8f96"};
+let uid=0;
+const T=(x,y,s,o={})=>`<text x="${x}" y="${y}" font-family="Segoe UI,system-ui,sans-serif" font-size="${o.size||11.5}" font-weight="${o.w||500}" fill="${o.fill||C.ink}" text-anchor="${o.a||'start'}">${s}</text>`;
+const lead=(x1,y1,x2,y2,col)=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${col||C.muted}" stroke-width="1"/><circle cx="${x2}" cy="${y2}" r="2" fill="${col||C.muted}"/>`;
+function lbl(x,y,lines,tx,ty,o={}){ // multi-line label with leader to (tx,ty)
+  const wd=Math.max(...lines.map(l=>l.length))*6.1;
+  const sx=o.lx??(tx>x+wd?x+wd+4:x-4);
+  let s=tx!=null?lead(sx,o.ly??(y-4),tx,ty,o.col):"";
+  lines.forEach((l,i)=>s+=T(x,y+i*14,l,{a:o.a,w:i?400:(o.w||600),fill:o.col&&!i?o.col:C.ink}));
+  return s;
+}
+function stand(x,yTop,yBase,armTo){
+  return `<rect x="${x-3}" y="${yTop}" width="6" height="${yBase-yTop}" fill="${C.steel}"/>
+  <rect x="${x-40}" y="${yBase}" width="80" height="8" rx="2" fill="${C.steel}"/>
+  <rect x="${armTo}" y="${yTop+30}" width="${x-armTo}" height="5" fill="${C.steel}"/>
+  <rect x="${armTo-4}" y="${yTop+25}" width="10" height="15" rx="2" fill="#6b7076"/>`;
+}
+function burette(cx,top,len,o={}){
+  const col=o.color||C.acid, lv=top+(o.level??0.05)*len, w=16;
+  let s="";
+  if(o.funnel){s+=`<path d="M${cx-22},${top-30} L${cx+22},${top-30} L${cx+4},${top-8} L${cx+4},${top+10} L${cx-4},${top+10} L${cx-4},${top-8} Z" fill="#fff" fill-opacity=".6" stroke="${C.glass}" stroke-width="1.6"/>`;}
+  s+=`<rect x="${cx-w/2}" y="${lv}" width="${w}" height="${top+len-lv}" fill="${col}"/>`;
+  s+=`<path d="M${cx-w/2},${lv} Q${cx},${lv+5} ${cx+w/2},${lv}" fill="none" stroke="${C.glass}" stroke-width="1"/>`;
+  s+=`<rect x="${cx-w/2}" y="${top}" width="${w}" height="${len}" fill="none" stroke="${C.glass}" stroke-width="1.6"/>`;
+  for(let i=0;i<=25;i++){const y=top+8+i*(len-16)/25,long=i%5===0;s+=`<line x1="${cx-w/2}" y1="${y}" x2="${cx-w/2+(long?8:4)}" y2="${y}" stroke="${C.glass}" stroke-width=".8"/>`;if(long&&!o.noNums)s+=T(cx-w/2-3,y+3,String(i*2),{size:8,a:"end",fill:C.muted});}
+  const b=top+len;
+  s+=`<path d="M${cx-4},${b} L${cx-4},${b+8} L${cx+4},${b+8} L${cx+4},${b} Z" fill="${col}" stroke="${C.glass}" stroke-width="1.3"/>`;
+  s+=`<rect x="${cx-7}" y="${b+8}" width="14" height="14" rx="2" fill="#d9d2c4" stroke="${C.glass}" stroke-width="1.3"/>`;
+  s+= o.open?`<rect x="${cx-2.5}" y="${b+2}" width="5" height="26" rx="2" fill="${C.brown}"/>`:`<rect x="${cx-20}" y="${b+12.5}" width="40" height="5" rx="2" fill="${C.brown}"/>`;
+  s+=`<path d="M${cx-3.5},${b+22} L${cx-1.3},${b+48} L${cx+1.3},${b+48} L${cx+3.5},${b+22} Z" fill="${o.jetEmpty?'#fff':col}" stroke="${C.glass}" stroke-width="1.3"/>`;
+  if(o.bubble)s+=`<ellipse cx="${cx}" cy="${b+31}" rx="2.4" ry="5" fill="#fff" stroke="${C.red}" stroke-width="1.4"/>`;
+  if(o.drip)s+=`<path d="M${cx},${b+54} q-3,6 0,8 q3,-2 0,-8" fill="${col}" stroke="${C.glass}" stroke-width=".8"/>`;
+  return s;
+}
+function flask(cx,by,liq,frac,o={}){
+  const id="fk"+(uid++);
+  const p=`M${cx-11},${by-112} L${cx-11},${by-72} L${cx-48},${by-6} Q${cx-50},${by} ${cx-43},${by} L${cx+43},${by} Q${cx+50},${by} ${cx+48},${by-6} L${cx+11},${by-72} L${cx+11},${by-112}`;
+  const h=frac*70;
+  let s=`<defs><clipPath id="${id}"><path d="${p} Z"/></clipPath></defs>`;
+  s+=`<path d="${p} Z" fill="#fff" fill-opacity=".55"/>`;
+  if(liq)s+=`<rect clip-path="url(#${id})" x="${cx-60}" y="${by-h}" width="120" height="${h}" fill="${liq}"/>`;
+  s+=`<path d="${p}" fill="none" stroke="${C.glass}" stroke-width="1.8"/><path d="M${cx-14},${by-112} L${cx+14},${by-112}" stroke="${C.glass}" stroke-width="2"/>`;
+  return s;
+}
+function tile(cx,y){return `<rect x="${cx-70}" y="${y}" width="140" height="10" rx="2" fill="${C.tile}" stroke="#bfb3a1"/>`;}
+function bench(y){return `<rect x="0" y="${y}" width="400" height="${320-y}" fill="${C.wood}" opacity=".35"/>`;}
+function beaker(x,by,w,h,col,frac,text){
+  const id="bk"+(uid++),p=`M${x},${by-h} L${x},${by} L${x+w},${by} L${x+w},${by-h}`;
+  let s=`<defs><clipPath id="${id}"><path d="${p} Z"/></clipPath></defs><path d="${p} Z" fill="#fff" fill-opacity=".55"/>`;
+  if(col)s+=`<rect clip-path="url(#${id})" x="${x}" y="${by-h*frac}" width="${w}" height="${h*frac}" fill="${col}"/>`;
+  s+=`<path d="M${x-4},${by-h-2} L${x},${by-h+2}" stroke="${C.glass}" stroke-width="1.6"/>`;
+  s+=`<path d="${p}" fill="none" stroke="${C.glass}" stroke-width="1.6"/>`;
+  if(text)s+=T(x+w/2,by+14,text,{a:"middle",size:10.5,fill:C.muted});
+  return s;
+}
+function pipette(cx,top,o={}){
+  const col=o.color||C.alk, mark=top+40, lvl=o.level??mark;
+  const bulbY=top+105, tip=top+222;
+  let s="";
+  // liquid
+  if(o.full!==false){
+    s+=`<rect x="${cx-2.5}" y="${lvl}" width="5" height="${bulbY-28-lvl}" fill="${col}"/>`;
+  }
+  if(o.bulbFill!==0) s+=`<ellipse cx="${cx}" cy="${bulbY}" rx="15" ry="30" fill="${col}" ${o.bulbFill?`clip-path="url(#pb${uid})"`:''}/>`;
+  if(o.bulbFill){s=`<defs><clipPath id="pb${uid}"><rect x="${cx-20}" y="${bulbY+30-60*o.bulbFill}" width="40" height="70"/></clipPath></defs>`+s;uid++;}
+  s+=`<path d="M${cx-2.5},${bulbY+28} L${cx-2.5},${tip-12} L${cx-1},${tip} L${cx+1},${tip} L${cx+2.5},${tip-12} L${cx+2.5},${bulbY+28} Z" fill="${o.stemEmpty?'#fff':col}"/>`;
+  // outline
+  s+=`<path d="M${cx-2.5},${top} L${cx-2.5},${bulbY-28} M${cx+2.5},${top} L${cx+2.5},${bulbY-28} M${cx-2.5},${bulbY+28} L${cx-2.5},${tip-12} L${cx-1},${tip} M${cx+2.5},${bulbY+28} L${cx+2.5},${tip-12} L${cx+1},${tip}" stroke="${C.glass}" stroke-width="1.4" fill="none"/>`;
+  s+=`<ellipse cx="${cx}" cy="${bulbY}" rx="15" ry="30" fill="none" stroke="${C.glass}" stroke-width="1.6"/>`;
+  s+=`<line x1="${cx-6}" y1="${mark}" x2="${cx+6}" y2="${mark}" stroke="${C.red}" stroke-width="1.4"/>`;
+  if(o.filler){s+=`<rect x="${cx-4}" y="${top-14}" width="8" height="16" fill="#3d3a38"/><circle cx="${cx}" cy="${top-34}" r="20" fill="#b2392f"/><circle cx="${cx-7}" cy="${top-40}" r="4" fill="#d9675d"/>`;}
+  return s;
+}
+function eye(x,y,flip){
+  const d=flip?-1:1;
+  return `<g transform="translate(${x},${y}) scale(${d},1)"><path d="M-16,0 Q0,-11 16,0 Q0,11 -16,0 Z" fill="#fff" stroke="${C.ink}" stroke-width="1.4"/><circle cx="4" cy="0" r="4.5" fill="${C.brown}"/><circle cx="5" cy="-1" r="1.6" fill="#fff"/></g>`;
+}
+function meniscusInset(cx,cy,r,o={}){
+  const id="mi"+(uid++), col=o.color||C.acid;
+  let s=`<defs><clipPath id="${id}"><circle cx="${cx}" cy="${cy}" r="${r}"/></clipPath></defs><circle cx="${cx}" cy="${cy}" r="${r}" fill="#fff" stroke="${C.brown}" stroke-width="2"/>`;
+  s+=`<g clip-path="url(#${id})"><path d="M${cx-r*0.55},${cy-6} Q${cx},${cy+16} ${cx+r*0.55},${cy-6} L${cx+r*0.55},${cy+r} L${cx-r*0.55},${cy+r} Z" fill="${col}"/>`;
+  s+=`<line x1="${cx-r*0.55}" y1="${cy-r}" x2="${cx-r*0.55}" y2="${cy+r}" stroke="${C.glass}" stroke-width="2"/><line x1="${cx+r*0.55}" y1="${cy-r}" x2="${cx+r*0.55}" y2="${cy+r}" stroke="${C.glass}" stroke-width="2"/>`;
+  if(o.scale){o.scale.forEach((t,i)=>{const y=cy+5+(i-1)*22;s+=`<line x1="${cx-r*0.55}" y1="${y}" x2="${cx+(i===1?r*0.2:-r*0.1)}" y2="${y}" stroke="${C.ink}" stroke-width="1"/>`;s+=T(cx+r*0.22,y-3,t,{size:9,fill:C.muted});});
+    for(let i=0;i<4;i++){const y=cy+5-22+i*11+5.5; if(i%2===0) s+=`<line x1="${cx-r*0.55}" y1="${y}" x2="${cx-r*0.3}" y2="${y}" stroke="${C.ink}" stroke-width=".7"/>`;}
+  } else {
+    s+=`<line x1="${cx-r*0.55}" y1="${cy+5}" x2="${cx+r*0.55}" y2="${cy+5}" stroke="${C.red}" stroke-width="1.6"/>`;
+  }
+  s+=`<line x1="${cx-r}" y1="${cy+5}" x2="${cx+r}" y2="${cy+5}" stroke="${C.brown}" stroke-width="1" stroke-dasharray="3 3"/></g>`;
+  return s;
+}
+function cross(x,y){return `<path d="M${x-7},${y-7} L${x+7},${y+7} M${x+7},${y-7} L${x-7},${y+7}" stroke="${C.red}" stroke-width="3" stroke-linecap="round"/>`;}
+function swirl(cx,cy){return `<path d="M${cx-62},${cy} A62,18 0 0 0 ${cx+62},${cy}" fill="none" stroke="${C.brown}" stroke-width="2" stroke-dasharray="5 4"/><path d="M${cx+62},${cy} l-9,-2 m9,2 l-3,-8" stroke="${C.brown}" stroke-width="2" fill="none"/>`;}
+function washBottle(x,by){return `<rect x="${x-18}" y="${by-60}" width="36" height="60" rx="10" fill="#eef4f7" stroke="${C.glass}" stroke-width="1.5"/><rect x="${x-6}" y="${by-70}" width="12" height="10" fill="#3d6aa0"/><path d="M${x},${by-70} L${x},${by-86} L${x-34},${by-98}" fill="none" stroke="${C.glass}" stroke-width="2.5"/>`+T(x,by+14,"distilled water",{a:"middle",size:10,fill:C.muted});}
+const svg=inner=>`<svg viewBox="0 0 400 320" role="img" xmlns="http://www.w3.org/2000/svg">${inner}</svg>`;
+
+/* ---------- extra helpers for standard solution ---------- */
+function volFlask(cx,by,liq,levelY,o={}){
+  const id="vf"+(uid++), r=46, cy=by-44, nt=by-215, nb=cy-r+6, nw=9;
+  const p=`M${cx-nw},${nt} L${cx-nw},${nb} A${r},${r} 0 0 0 ${cx-34},${by-8} Q${cx-30},${by} ${cx-22},${by} L${cx+22},${by} Q${cx+30},${by} ${cx+34},${by-8} A${r},${r} 0 0 0 ${cx+nw},${nb} L${cx+nw},${nt}`;
+  let s=`<defs><clipPath id="${id}"><path d="${p} Z"/></clipPath></defs><path d="${p} Z" fill="#fff" fill-opacity=".55"/>`;
+  if(liq&&levelY!=null)s+=`<rect clip-path="url(#${id})" x="${cx-60}" y="${levelY}" width="120" height="${by-levelY}" fill="${liq}"/>`;
+  s+=`<path d="${p}" fill="none" stroke="${C.glass}" stroke-width="1.8"/>`;
+  const mark=by-175;
+  s+=`<line x1="${cx-nw}" y1="${mark}" x2="${cx+nw}" y2="${mark}" stroke="${C.red}" stroke-width="1.6"/>`;
+  if(o.stopper)s+=`<rect x="${cx-11}" y="${nt-16}" width="22" height="18" rx="3" fill="#d9d2c4" stroke="${C.glass}" stroke-width="1.4"/>`;
+  if(o.label!==false)s+=T(cx,cy+8,"250 cm³",{a:"middle",size:10,fill:C.muted});
+  return s;
+}
+function balance(cx,by,reading){
+  return `<rect x="${cx-70}" y="${by-44}" width="140" height="44" rx="6" fill="#e9e3d8" stroke="${C.glass}" stroke-width="1.4"/>
+  <rect x="${cx-34}" y="${by-34}" width="68" height="22" rx="3" fill="#24302a"/>
+  ${T(cx,by-18,reading,{a:"middle",size:13,w:700,fill:"#8fe3a1"}).replace('font-family="Segoe UI,system-ui,sans-serif"','font-family="Consolas,Menlo,monospace"')}
+  <rect x="${cx-50}" y="${by-52}" width="100" height="8" rx="3" fill="#bfc4c9" stroke="${C.glass}"/>`;
+}
+function boat(cx,y,solid){return `<path d="M${cx-24},${y-14} L${cx+24},${y-14} L${cx+16},${y} L${cx-16},${y} Z" fill="#f3f0ea" stroke="${C.glass}" stroke-width="1.4"/>`+(solid?`<path d="M${cx-12},${y-14} Q${cx},${y-26} ${cx+12},${y-14} Z" fill="#fff" stroke="#b7ad9d"/>`:"");}
+function rod(x1,y1,x2,y2){return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#9fb6c4" stroke-width="4" stroke-linecap="round"/><line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${C.glass}" stroke-width=".8"/>`;}
+function card(x,y,w,lines){
+  let s=`<rect x="${x}" y="${y}" width="${w}" height="${lines.length*26+22}" rx="8" fill="#fff" stroke="#d7c8b0"/>`;
+  lines.forEach((l,i)=>s+=T(x+16,y+30+i*26,l[0],{size:l[1]||13,w:l[2]||500,fill:l[3]||C.ink}));
+  return s;
+}
+const SOL="#dcebf3";
+
+/* ---------- pictures for each step ---------- */
+const pics=[
+ ()=>svg(card(20,24,360,[["Target: 250 cm³ of 0.100 mol dm⁻³ Na₂CO₃",13,700,C.brown],["n = c × V = 0.100 × 0.250"],["   = 0.0250 mol"],["Mr(Na₂CO₃) = 2(23.0) + 12.0 + 3(16.0) = 106.0"],["m = n × Mr = 0.0250 × 106.0"],["   = 2.65 g",14,700,C.brown]])
+   +`<rect x="40" y="228" width="44" height="58" rx="5" fill="#f3f0ea" stroke="${C.glass}" stroke-width="1.4"/><rect x="36" y="220" width="52" height="10" rx="3" fill="${C.brown}"/>`+T(62,262,"Na₂CO₃",{a:"middle",size:9.5,w:700})+T(62,275,"anhydrous",{a:"middle",size:8.5,fill:C.muted})
+   +lbl(104,246,["Anhydrous solid, dried and","kept in a desiccator so it","has not absorbed water"])),
+ ()=>svg(bench(292)+balance(110,292,"14.82 g")+boat(110,240,1)+balance(290,292,"12.16 g")+boat(290,240,0)
+   +T(110,40,"1  Boat + solid",{a:"middle",w:700})+T(290,40,"3  Reweigh empty boat",{a:"middle",w:700})
+   +`<path d="M150,120 C180,80 220,80 250,120" fill="none" stroke="${C.brown}" stroke-width="2" stroke-dasharray="5 4"/><path d="M250,120 l-2,-10 m2,10 l-10,-3" stroke="${C.brown}" stroke-width="2" fill="none"/>`
+   +T(200,70,"2  Tip solid into beaker",{a:"middle",w:700})
+   +`<rect x="95" y="138" width="210" height="44" rx="6" fill="#f1e7d6"/>`+T(200,157,"Mass transferred = 14.82 − 12.16",{a:"middle",size:12})+T(200,173,"= 2.66 g",{a:"middle",size:12.5,w:700,fill:C.brown})),
+ ()=>svg(bench(292)+beaker(140,290,110,110,SOL,.5,"")+rod(175,150,215,280)
+   +`<g fill="#fff" stroke="#b7ad9d">${[[160,278],[178,282],[200,279],[215,283],[190,270]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="3"/>`).join("")}</g>`
+   +washBottle(330,286)+`<path d="M296,190 q-30,-6 -50,20" fill="none" stroke="#7aa6c9" stroke-width="1.6" stroke-dasharray="2 3"/>`
+   +lbl(20,150,["Dissolve in about","100 cm³ distilled water","in a beaker"],150,240,{lx:80,ly:184})
+   +lbl(222,110,["Stir with a glass rod","until all solid dissolves"],205,190)
+   +T(195,306,"beaker",{a:"middle",size:10.5,fill:C.muted})),
+ ()=>svg(bench(300)+volFlask(230,300,SOL,214)
+   +`<path d="M208,48 L252,48 L234,74 L234,92 L226,92 L226,74 Z" fill="#fff" fill-opacity=".6" stroke="${C.glass}" stroke-width="1.6"/>`
+   +`<g transform="rotate(-48 170 40)">${beaker(130,60,64,58,SOL,.45,"")}</g>`+rod(166,14,230,74)
+   +`<path d="M226,60 L230,92" stroke="#9fc4dc" stroke-width="3"/>`
+   +lbl(20,140,["Pour down a glass rod","through a funnel"],200,58)
+   +lbl(282,150,["Rinse beaker and rod","with distilled water;","add all washings","to the flask"])
+   +lbl(282,250,["250 cm³ volumetric","flask (±0.2 cm³)"],262,262)),
+ ()=>svg(bench(300)+volFlask(250,300,SOL,127)
+   +`<rect x="244" y="22" width="12" height="40" rx="3" fill="#eef4f7" stroke="${C.glass}" stroke-width="1.4"/><path d="M246,62 L249,82 L251,82 L254,62" fill="#fff" stroke="${C.glass}" stroke-width="1.3"/><ellipse cx="250" cy="12" rx="10" ry="12" fill="#3d3a38"/><path d="M250,88 q-3,6 0,8 q3,-2 0,-8" fill="${SOL}" stroke="${C.glass}" stroke-width=".7"/>`
+   +meniscusInset(90,125,52)+eye(14,130)+`<line x1="142" y1="130" x2="240" y2="125" stroke="${C.brown}" stroke-dasharray="3 3"/>`
+   +lbl(20,210,["Bottom of meniscus","on the mark, at eye level"])
+   +lbl(290,60,["Last few cm³","drop by drop"],258,62,{lx:286,ly:56})
+   +lbl(290,170,["Remove the funnel","first, and rinse it","into the flask"])),
+ ()=>svg(bench(300)+volFlask(110,300,SOL,125,{stopper:1})
+   +`<g transform="rotate(180 320 170)">${volFlask(320,300,SOL,85,{stopper:1,label:false})}</g>`
+   +`<path d="M262,150 a62,62 0 0 1 116,0" fill="none" stroke="${C.brown}" stroke-width="2" stroke-dasharray="5 4"/><path d="M378,150 l2,-10 m-2,10 l-9,-5" stroke="${C.brown}" stroke-width="2" fill="none"/>`
+   +lbl(165,200,["Stopper, then invert","and shake about","10 times to mix"])
+   +lbl(165,120,["Stopper"],121,78)),
+ ()=>svg(card(20,24,262,[["Use the mass actually transferred",13,700,C.brown],["n = m ÷ Mr = 2.66 ÷ 106.0"],["   = 0.02509 mol"],["c = n ÷ V = 0.02509 ÷ 0.250"],["   = 0.100 mol dm⁻³ (3 s.f.)",14,700,C.brown]])
+   +volFlask(340,300,SOL,125,{stopper:1})
+   +lbl(30,228,["Label the flask with the","compound, concentration,","date and your name"]))
+];
+
+/* ---------- content ---------- */
+const steps=[
+ {t:"Calculate the mass needed",how:["Decide the volume and concentration, e.g. 250 cm³ of 0.100 mol dm⁻³ Na₂CO₃.","Work out moles (n = c × V), then mass (m = n × Mr).","Use a primary standard: a pure, stable solid with a known Mr, such as anhydrous sodium carbonate."],
+  why:"A standard solution has an accurately known concentration, so the moles in the solid must be known exactly.",
+  q:{q:"What mass of anhydrous Na₂CO₃ (Mr 106.0) is needed for 250 cm³ of 0.200 mol dm⁻³ solution?",o:["5.30 g","2.65 g","21.2 g","53.0 g"],a:0,e:"n = 0.200 × 0.250 = 0.0500 mol. m = 0.0500 × 106.0 = 5.30 g."},
+  m:{t:"The solid has absorbed water from the air because it was not kept dry.",fx:"higher",e:"Some of the mass weighed is water, so there are fewer moles of Na₂CO₃ than you think. The true concentration is lower, so the value you report is <b>too high</b>."}},
+ {t:"Weigh by difference",r:"Weigh the solid",how:["Weigh a weighing boat containing the solid on a 2 d.p. (or 3 d.p.) balance.","Tip the solid into a beaker.","Reweigh the empty boat. Mass transferred = first reading − second reading."],
+  why:"Weighing by difference accounts for any solid left stuck to the boat, so you know the mass that actually went into the beaker.",
+  q:{q:"Boat + solid = 14.82 g. Empty boat after tipping = 12.16 g. What mass was transferred?",o:["2.66 g","2.65 g","14.82 g","26.98 g"],a:0,e:"14.82 − 12.16 = 2.66 g. Use this value in the calculation, not the target mass."},
+  m:{t:"The boat is not reweighed. Some solid stays in it, but the full mass on the balance is used in the calculation.",fx:"higher",e:"Less solid reaches the beaker than you recorded, so the true moles are smaller. The concentration you report is <b>too high</b>."}},
+ {t:"Dissolve in a beaker",how:["Add about 100 cm³ of distilled water to the solid in the beaker.","Stir with a glass rod until all of the solid has dissolved.","Warm gently if needed, but let it cool to room temperature before the next step."],
+  why:"Dissolving in a beaker is quicker and easier than in the narrow-necked flask, and you can see when all the solid has gone.",
+  q:{q:"Why is the solid dissolved in a beaker first, not directly in the volumetric flask?",o:["It is easier to stir and check it has all dissolved","The volumetric flask cannot hold solids","A beaker measures the volume more accurately","Volumetric flasks must not get wet"],a:0,e:"A beaker lets you stir with a rod and see that every bit of solid has dissolved, using less water than the final volume."},
+  m:{t:"The beaker was still wet with distilled water before the solid was added.",fx:"none",e:"Extra water does not change the number of moles of solute, and the final volume is set by the mark on the flask. <b>No effect.</b>"}},
+ {t:"Transfer to the volumetric flask",how:["Put a funnel in a 250 cm³ volumetric flask.","Pour the solution in, down the glass rod to avoid splashing.","Rinse the beaker and the rod with distilled water and pour all washings into the flask."],
+  why:"Rinsing makes sure every trace of solute ends up in the flask.",
+  q:{q:"The volumetric flask is wet with distilled water before you start. What is the effect?",o:["No effect","Concentration too high","Concentration too low","The flask must be dried in an oven first"],a:0,e:"Water does not change the moles of solute, and you top up to the mark anyway, so there is no effect."},
+  m:{t:"The beaker and glass rod are not rinsed into the flask.",fx:"higher",e:"Some solution is left behind, so the flask contains fewer moles than calculated. The concentration you report is <b>too high</b>."}},
+ {t:"Make up to the mark",how:["Rinse the funnel into the flask, then remove it.","Add distilled water until close to the mark.","Add the last few cm³ drop by drop with a dropping pipette until the bottom of the meniscus sits on the mark, at eye level."],
+  why:"The flask is calibrated to contain exactly 250 cm³ (±0.2 cm³) when filled to the mark at 20 °C.",
+  q:{q:"Why are the last few cm³ added with a dropping pipette?",o:["To avoid going past the mark","To mix the solution","To rinse the neck of the flask","To keep the solution cool"],a:0,e:"If you overshoot the mark you cannot remove water without removing solute, so the solution has to be made again."},
+  m:{t:"Filling stops with the bottom of the meniscus a little below the mark.",fx:"lower",e:"The volume is less than 250 cm³, so the true concentration is higher. Using 0.250 dm³ in the calculation makes the value you report <b>too low</b>."}},
+ {t:"Stopper and invert",how:["Put the stopper in firmly.","Turn the flask upside down and back about 10 times, holding the stopper.","The solution is now uniform and ready to use."],
+  why:"Without mixing, the concentrated solution stays near the bottom and the water near the top, so samples taken would vary.",
+  q:{q:"Why must the flask be inverted several times?",o:["So the concentration is the same throughout","To dissolve any remaining solid","To remove air bubbles","To bring it to room temperature"],a:0,e:"Inverting mixes the solution so every sample you pipette out has the same concentration."},
+  m:{t:"The solution was still warm when it was made up to the mark. It is used after cooling to room temperature.",fx:"lower",e:"The solution contracts on cooling, so it now occupies less than 250 cm³. The true concentration is higher, so the value you report is <b>too low</b>."}},
+ {t:"Calculate the concentration",how:["Use the mass actually transferred, not the target mass.","n = m ÷ Mr, then c = n ÷ V (V in dm³).","Give the answer to 3 significant figures and label the flask."],
+  why:"The real mass is rarely exactly the target, so the concentration is calculated from what you weighed.",
+  q:{q:"2.66 g of Na₂CO₃ (Mr 106.0) is made up to 250 cm³. What is the concentration?",o:["0.100 mol dm⁻³","0.0251 mol dm⁻³","10.6 mol dm⁻³","0.0100 mol dm⁻³"],a:0,e:"n = 2.66 ÷ 106.0 = 0.02509 mol. c = 0.02509 ÷ 0.250 = 0.100 mol dm⁻³."},
+  m:{t:"Anhydrous Na₂CO₃ was weighed, but the Mr of the hydrate Na₂CO₃·10H₂O (286.0) is used in the calculation.",fx:"lower",e:"Dividing by a larger Mr gives fewer moles than were really used. The concentration you report is <b>too low</b>."}}
+];
+
+const picWash=()=>svg(bench(292)+balance(100,292,"2.65 g")+boat(100,240,1)
+   +T(100,40,"1  Tare, then add solid",{a:"middle",w:700})+T(290,40,"2  Rinse boat into beaker",{a:"middle",w:700})
+   +beaker(200,290,110,96,SOL,.38,"")
+   +`<g transform="translate(250,168) rotate(35)">${boat(0,0,0)}</g>`
+   +`<path d="M247,182 C246,200 250,215 248,250" fill="none" stroke="#9fc4dc" stroke-width="3"/>`
+   +`<rect x="340" y="150" width="34" height="56" rx="10" fill="#eef4f7" stroke="${C.glass}" stroke-width="1.5"/><rect x="351" y="140" width="12" height="10" fill="#3d6aa0"/><path d="M357,140 L357,124 L290,146" fill="none" stroke="${C.glass}" stroke-width="2.5"/>`
+   +`<path d="M290,146 q-12,4 -20,12" fill="none" stroke="#7aa6c9" stroke-width="1.6" stroke-dasharray="2 3"/>`
+   +lbl(20,90,["Balance zeroed with the","empty boat on the pan:","reading = mass of solid"],100,236,{lx:70,ly:128})
+   +lbl(210,76,["Rinse all the solid","off the boat; every","washing goes in"]));
+const washStep={t:"Transfer with washings",r:"Weigh the solid",
+  how:["Put the weighing boat on the balance and press tare (zero).","Add solid until the reading is close to the target mass. Record it.","Tip the solid into the beaker, then rinse the boat with distilled water from a wash bottle so every trace goes into the beaker."],
+  why:"Because all the solid is washed into the beaker, the balance reading is the mass that ends up in the solution. The extra water does not matter: the solution is made up to the mark later.",
+  q:{q:"Why does adding the boat washings to the beaker not affect the final concentration?",o:["The solution is made up to the mark later, so the final volume is still 250 cm³","The washings evaporate before the solution is used","Distilled water has no volume effect on a solution","The washings contain no solute"],a:0,e:"The washings contain solute that must not be lost. The extra water is fine because the total volume is set by the mark on the volumetric flask."},
+  m:{t:"The balance was tared and 2.65 g recorded, but the boat is not rinsed. A little solid stays stuck to it.",fx:"higher",e:"The calculation uses 2.65 g, but less than that reached the solution. Fewer moles are present, so the concentration you report is <b>too high</b>."}};
+const whenUse={
+ diff:{h:"Weigh by difference",li:["The solid must go somewhere you cannot add extra water: for example a fixed 50 cm³ of water in an enthalpy of solution experiment, a reaction mixture, or a non-aqueous solvent.","The solid is hygroscopic and kept in a stoppered weighing bottle. You open it only briefly to tip some out, then reweigh.","Solid tends to stick to the container and cannot be rinsed out easily. Reweighing measures what actually left."],no:"Needs two readings, so the uncertainty in the mass is ±2 × the balance resolution."},
+ wash:{h:"Transfer with washings",li:["You are making an aqueous solution that will be made up to a fixed volume anyway, as in a standard solution.","The solid dissolves readily in water, so it rinses off the boat cleanly.","The balance can be tared, so a single reading gives the mass directly."],no:"Not suitable when extra water would change the result, or when the solid reacts with water."}
+};
+const summary=[
+ {q:"A student needs 2.00 g of solid KCl dissolved in exactly 50.0 cm³ of water to measure an enthalpy of solution. Which weighing method should they use?",o:["Weigh by difference, because rinsing the boat would add extra water","Transfer with washings, because all the solid must reach the water","Either method gives the same result","Tare the balance and do not record any mass"],a:0,e:"The volume of water is fixed, so washings would change it. Weighing by difference measures the mass that actually left the boat without adding water."},
+ {q:"A student makes a standard solution of a very soluble solid using a tared plastic boat. Which is the correct way to transfer the solid?",o:["Tip the solid into the beaker and rinse the boat into it with distilled water","Tip the solid in and discard the boat without rinsing","Dissolve the solid in the boat and pour it straight to the mark","Rinse the boat into a separate beaker and discard the washings"],a:0,e:"With a tared boat, the reading is only correct if every bit of solid is rinsed into the beaker. The extra water is fine as the flask is made up to the mark."},
+ {q:"What mass of anhydrous Na₂CO₃ (Mr 106.0) is needed to make 250 cm³ of 0.0500 mol dm⁻³ solution?",o:["1.33 g","5.30 g","0.133 g","2.65 g"],a:0,e:"n = 0.0500 × 0.250 = 0.0125 mol. m = 0.0125 × 106.0 = 1.33 g (3 s.f.)."},
+ {q:"25.0 cm³ of 0.100 mol dm⁻³ Na₂CO₃ reacts with 21.50 cm³ of HCl. What is the concentration of the HCl?",o:["0.233 mol dm⁻³","0.116 mol dm⁻³","0.465 mol dm⁻³","0.0116 mol dm⁻³"],a:0,e:"Na₂CO₃ + 2HCl → 2NaCl + H₂O + CO₂. n(Na₂CO₃) = 2.50 × 10⁻³, so n(HCl) = 5.00 × 10⁻³ mol. 5.00 × 10⁻³ ÷ 0.02150 = 0.233 mol dm⁻³."},
+ {q:"A balance reads to ±0.005 g. A mass of 2.66 g is found by difference. What is the percentage uncertainty?",o:["0.38%","0.19%","0.005%","3.8%"],a:0,e:"Two readings, so ±0.010 g. (0.010 ÷ 2.66) × 100 = 0.38%."},
+ {q:"A 250 cm³ volumetric flask has an uncertainty of ±0.2 cm³. What is the percentage uncertainty?",o:["0.08%","0.8%","0.2%","0.04%"],a:0,e:"(0.2 ÷ 250) × 100 = 0.08%."},
+ {q:"Which mistake makes the true concentration lower than the value you report?",o:["Not rinsing the beaker into the flask","Volumetric flask wet with distilled water","Meniscus left below the mark","Using the hydrate's Mr for an anhydrous solid"],a:0,e:"Unrinsed solution means fewer moles in the flask. The other three give no effect or a reported value that is too low."},
+ {q:"Why is the solid stored in a desiccator before weighing?",o:["So it has not absorbed water, which would add to its mass","To keep it at room temperature","To stop it reacting with oxygen","So it dissolves faster"],a:0,e:"Any water absorbed is weighed as if it were solute, so the moles would be overestimated."},
+ {q:"How could the percentage uncertainty in the mass be reduced?",o:["Weigh a larger mass, or use a 3 d.p. balance","Weigh the solid twice and average","Use a larger beaker","Dissolve the solid in warm water"],a:0,e:"A larger mass or a more precise balance makes the uncertainty a smaller fraction of the reading."},
+ {q:"Why is the funnel rinsed and removed before making up to the mark?",o:["Solution on the funnel must go in, and a funnel in the neck can drip after you stop","The funnel changes the flask's volume","It makes the solution easier to mix","Funnels react with the solution"],a:0,e:"Rinsing gets all the solute in. Leaving the funnel in place means drops can fall in after you reach the mark and push it over."}
+];
+
+/* ---------- state & render ---------- */
+const S={cur:0,ans:{},att:0,right:0,method:"diff"};
+const isWash=i=>i===1&&S.method==="wash";
+const getStep=i=>isWash(i)?washStep:steps[i];
+const sid=i=>isWash(i)?"1w":String(i);
+const stepById=id=>id==="1w"?washStep:steps[+id];
+const fxName={higher:"Reported value too high",lower:"Reported value too low",none:"No effect"};
+const $=s=>document.querySelector(s);
+function shuffleOrder(n,seed){const a=[...Array(n).keys()];let x=seed*9301+49297;for(let i=n-1;i>0;i--){x=(x*9301+49297)%233280;const j=Math.floor(x/233280*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function updScore(){$("#score").textContent=`Score ${S.right} / ${S.att}`;}
+function rail(){
+  const r=$("#rail");r.innerHTML="";
+  steps.forEach((s,i)=>{const b=document.createElement("button");b.id="rail"+i;b.textContent=`${i+1}. ${s.r||s.t}`;if(i===S.cur)b.classList.add("on");if(S.ans["q"+sid(i)]!==undefined&&S.ans["m"+sid(i)]!==undefined)b.classList.add("done");b.onclick=()=>go(i);r.appendChild(b);});
+  const b=document.createElement("button");b.id="railS";b.textContent="Summary quiz";if(S.cur===steps.length)b.classList.add("on");b.onclick=()=>go(steps.length);r.appendChild(b);
+}
+function mcqHTML(key,item,seed){
+  const ord=shuffleOrder(item.o.length,seed);
+  const done=S.ans[key];
+  let h=`<div class="opts">`;
+  ord.forEach(k=>{let cls="";if(done!==undefined){if(k===item.a)cls="right";else if(k===done)cls="wrong";}
+    h+=`<button class="opt ${cls}" id="${key}_${k}" data-key="${key}" data-k="${k}" ${done!==undefined?"disabled":""}>${item.o[k]}</button>`;});
+  h+=`</div>`;
+  if(done!==undefined)h+=`<p class="fb ${done===item.a?'ok':'no'}">${done===item.a?"Correct. ":"Not quite. "}${item.e}</p>`;
+  return h;
+}
+function render(){
+  rail();updScore();
+  const m=$("#main");
+  if(S.cur===steps.length){renderSummary();return;}
+  const i=S.cur,s=getStep(i),k=sid(i),md=S.ans["m"+k];
+  m.innerHTML=`<div class="fadein">
+   <div class="stage">
+     <div class="pic">${isWash(i)?picWash():pics[i]()}</div>
+     <div>
+       <p class="eyebrow">Step ${i+1} of ${steps.length}</p>
+       ${i===1?`<div class="seg" role="group" aria-label="Weighing method"><button id="mDiff" class="${S.method==='diff'?'on':''}" aria-pressed="${S.method==='diff'}">Weigh by difference</button><button id="mWash" class="${S.method==='wash'?'on':''}" aria-pressed="${S.method==='wash'}">Transfer with washings</button></div>`:""}
+       <h2>${s.t}</h2>
+       <ul class="how">${s.how.map(x=>`<li>${x}</li>`).join("")}</ul>
+       <p class="why"><b>Why: </b>${s.why}</p>
+     </div>
+   </div>
+   ${i===1?`<section class="card when"><h3>Which method, when?</h3><div class="when-grid">${["diff","wash"].map(w=>`<div><h4 class="${S.method===w?'cur':''}">${whenUse[w].h}</h4><ul>${whenUse[w].li.map(x=>`<li>${x}</li>`).join("")}</ul><p class="no">${whenUse[w].no}</p></div>`).join("")}</div></section>`:""}
+   <div class="cards">
+     <section class="card mcq"><h3>Check your understanding</h3><p class="q">${s.q.q}</p>${mcqHTML("q"+k,s.q,i+3)}</section>
+     <section class="card mistake"><h3>Potential mistake</h3><p class="q">${s.m.t}</p>
+       <p style="margin:0 0 8px;color:var(--muted);font-size:.9rem">Is the concentration you calculate and report too high, too low, or unaffected?</p>
+       <div class="pred">${["higher","lower","none"].map(f=>{let c="";if(md!==undefined){if(f===s.m.fx)c="right";else if(f===md)c="wrong";}return `<button id="m${k}_${f}" data-m="${k}" data-f="${f}" class="${c}" ${md!==undefined?"disabled":""}>${fxName[f]}</button>`;}).join("")}</div>
+       ${md!==undefined?`<p class="fb ${md===s.m.fx?'ok':'no'}"><span class="effect">${fxName[s.m.fx]}</span>${s.m.e}</p>`:""}
+     </section>
+   </div>
+   <div class="nav"><button class="ghost" id="prev" ${i===0?"disabled":""}>← Previous</button><button id="next">${i===steps.length-1?"Summary quiz →":"Next step →"}</button></div>
+  </div>`;
+  $("#prev").onclick=()=>go(i-1);$("#next").onclick=()=>go(i+1);
+  if(i===1){$("#mDiff").onclick=()=>{S.method="diff";render();};$("#mWash").onclick=()=>{S.method="wash";render();};}
+  bind();
+}
+function renderSummary(){
+  const m=$("#main");
+  let h=`<div class="fadein summary"><p class="eyebrow">Summary</p><h2>Summary questions</h2><p style="margin:0 0 14px;color:var(--muted)">Calculations, uncertainties and the effect of errors.</p>`;
+  summary.forEach((q,j)=>{h+=`<section class="card mcq"><p class="q"><span class="qnum">Q${j+1}</span>${q.q}</p>${mcqHTML("s"+j,q,j+11)}</section>`;});
+  const answered=summary.filter((q,j)=>S.ans["s"+j]!==undefined).length;
+  if(answered===summary.length){const sc=summary.filter((q,j)=>S.ans["s"+j]===q.a).length;h+=`<div class="final"><b>Summary quiz: ${sc} / ${summary.length}</b><br>Whole walkthrough: ${S.right} / ${S.att} correct first time.</div>`;}
+  h+=`<div class="nav"><button class="ghost" id="prev">← Back to step ${steps.length}</button><button id="restart">Start again</button></div></div>`;
+  m.innerHTML=h;
+  $("#prev").onclick=()=>go(steps.length-1);
+  $("#restart").onclick=()=>{S.ans={};S.att=0;S.right=0;S.method="diff";go(0);};
+  bind();
+}
+function bind(){
+  document.querySelectorAll(".opt:not(:disabled)").forEach(b=>b.onclick=()=>{
+    const key=b.dataset.key,k=+b.dataset.k;S.ans[key]=k;S.att++;
+    const item=key[0]==="q"?stepById(key.slice(1)).q:summary[+key.slice(1)];
+    if(k===item.a)S.right++;render();
+  });
+  document.querySelectorAll(".pred button:not(:disabled)").forEach(b=>b.onclick=()=>{
+    const id=b.dataset.m,f=b.dataset.f;S.ans["m"+id]=f;S.att++;if(f===stepById(id).m.fx)S.right++;render();
+  });
+}
+function go(i){S.cur=Math.max(0,Math.min(steps.length,i));render();window.scrollTo({top:0,behavior:"smooth"});}
+document.addEventListener("keydown",e=>{if(e.target.tagName==="BUTTON"&&(e.key===" "||e.key==="Enter"))return;if(e.key==="ArrowRight")go(S.cur+1);if(e.key==="ArrowLeft")go(S.cur-1);});
+render();
+</script>
+
+</body></html>

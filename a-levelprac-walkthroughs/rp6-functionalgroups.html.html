@@ -1,0 +1,329 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Functional Group Tests Practical</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: test-tube rack on the bench with reagent bottles below, results grid beside it; step card underneath drives the lesson. */
+:root{
+  --paper:#f7f1e6; --panel:#fffbf3; --ink:#3b2a1d; --muted:#7a6552; --rule:#e2d4bf;
+  --brown:#7b4a26; --brown-soft:#efe2cf; --orange:#e07a1f; --green:#3f8a4a; --blue:#2f6fb8; --good:#2e7d4f;
+  --warn:#d9822b; --bad:#b23a2b;
+  --f-display:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --f-body:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-data:ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+  color-scheme:light;
+}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
+.wrap{max-width:1280px;margin:0 auto;padding-block:18px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:16px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 20px}
+h1{font-family:var(--f-display);font-size:1.7rem;margin:0;text-wrap:balance;color:var(--brown)}
+h1 small{display:block;font-family:var(--f-body);font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.stage{display:grid;grid-template-columns:minmax(0,6fr) minmax(0,5fr);gap:16px}
+@media (max-width:920px){.stage{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:10px;padding:12px;min-width:0}
+.panel h2{font-size:.75rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:0 0 8px;font-weight:700}
+canvas{display:block;width:100%;max-width:100%;cursor:pointer}
+.reagents{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.reagent{font:inherit;font-size:.85rem;display:inline-flex;align-items:center;gap:8px;border:1px solid var(--rule);background:#fff;color:var(--ink);border-radius:8px;padding:6px 10px;cursor:pointer}
+.reagent i{width:14px;height:20px;border-radius:2px 2px 4px 4px;border:1px solid rgba(0,0,0,.25)}
+.reagent[aria-pressed="true"]{border-color:var(--brown);box-shadow:0 0 0 2px var(--brown) inset}
+.reagent[hidden]{display:none}
+.hint{font-size:.85rem;color:var(--muted);margin-top:6px}
+.step{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+.dots{display:flex;flex-wrap:wrap;gap:6px}
+.dots button{font:inherit;font-size:.8rem;border:1px solid var(--rule);background:#fff;color:var(--muted);border-radius:999px;padding:3px 10px;cursor:pointer}
+.dots button.on{background:var(--brown);border-color:var(--brown);color:#fff}
+.dots button.done{color:var(--brown);border-color:var(--brown)}
+.step h3{font-family:var(--f-display);font-size:1.35rem;margin:2px 0 0;color:var(--brown);text-wrap:balance}
+.body{max-width:82ch}
+.body p{margin:.4em 0}
+.body ul{margin:.3em 0;padding-left:1.2em}
+.callout{border-left:4px solid var(--warn);background:#fdf1e3;padding:8px 12px;border-radius:0 6px 6px 0;margin:.6em 0}
+.callout.ok{border-color:var(--good);background:#eaf5ee}
+.eq{font-family:var(--f-data);font-size:.88rem;background:#fff;border:1px solid var(--rule);border-radius:6px;padding:6px 10px;overflow-x:auto;margin:.5em 0}
+.nav{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{font:inherit;font-size:.9rem;border:1px solid var(--brown);background:#fff;color:var(--brown);border-radius:7px;padding:7px 14px;cursor:pointer}
+.btn.primary{background:var(--brown);color:#fff}
+.btn:disabled{opacity:.4;cursor:default}
+button:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.spacer{flex:1}
+.tblwrap{overflow-x:auto}
+table.grid,table.cmp{border-collapse:collapse;font-size:.82rem;width:100%}
+.grid th,.grid td,.cmp th,.cmp td{border:1px solid var(--rule);padding:5px 6px;text-align:center;vertical-align:middle}
+.cmp th,.cmp td{text-align:left}
+.grid thead th,.cmp thead th{background:var(--brown-soft);font-weight:600}
+.grid tbody th{background:#fff;font-family:var(--f-data);min-width:2.5em}
+.grid td{background:#fff;color:#c9b8a3;min-width:4.2em}
+.grid td.pos{color:var(--ink);background:#eaf5ee;font-weight:600}
+.grid td.neg{color:var(--muted)}
+.grid .name{font-family:var(--f-body);font-size:.75rem;color:var(--brown);display:block;font-weight:500}
+.side{display:grid;gap:10px}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1><small>AQA Required Practical 6 · Chemical tests</small>Tests for alcohols, aldehydes, alkenes and carboxylic acids</h1>
+  </header>
+
+  <div class="stage">
+    <section class="panel" aria-label="Bench">
+      <h2>Bench</h2>
+      <canvas id="bench" data-ratio="0.62"></canvas>
+      <div class="reagents" id="reagents"></div>
+      <div class="hint" id="hint"></div>
+    </section>
+    <section class="panel side" aria-label="Results">
+      <h2>Results</h2>
+      <div class="tblwrap"><table class="grid" id="grid"></table></div>
+      <div class="nav" id="gridNav"></div>
+    </section>
+  </div>
+
+  <section class="panel step" aria-live="polite">
+    <div class="dots" id="dots"></div>
+    <h3 id="stitle"></h3>
+    <div class="body" id="sbody"></div>
+    <div class="nav">
+      <button class="btn" id="back">← Back</button>
+      <span class="spacer"></span>
+      <button class="btn primary" id="next">Next →</button>
+    </div>
+  </section>
+</div>
+
+<script>
+(()=>{
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)), lerp=(a,b,f)=>a+(b-a)*f;
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+// ---- Substances and reagents ----
+const SUB={
+  ol1:{name:'propan-1-ol',type:'primary alcohol'},
+  ol3:{name:'2-methylpropan-2-ol',type:'tertiary alcohol'},
+  al:{name:'propanal',type:'aldehyde'},
+  one:{name:'propanone',type:'ketone'},
+  ene:{name:'cyclohexene',type:'alkene',layer:true},
+  acid:{name:'ethanoic acid',type:'carboxylic acid'}
+};
+const REA={
+  carb:{name:'Sodium carbonate',short:'Na₂CO₃',col:'#f4f4f2',a:.15,heat:false},
+  br:{name:'Bromine water',short:'Br₂(aq)',col:'#e0821e',a:.75,shake:true},
+  tol:{name:"Tollens' reagent",short:"Tollens'",col:'#eef0f2',a:.2,heat:true},
+  feh:{name:"Fehling's solution",short:"Fehling's",col:'#1f5fbf',a:.8,heat:true},
+  dich:{name:'Acidified K₂Cr₂O₇',short:'K₂Cr₂O₇/H⁺',col:'#e07a1f',a:.8,heat:true}
+};
+// result: {pos, final colour, effect, text}
+function result(s,r){
+  const R={pos:false,col:REA[r].col,a:REA[r].a,fx:null,txt:'no visible change',g:'no change'};
+  if(r==='carb'&&s==='acid')return{...R,pos:true,fx:'fizz',txt:'effervescence',g:'fizzes'};
+  if(r==='br'){if(s==='ene')return{...R,pos:true,col:'#f4f4f2',a:.12,txt:'orange → colourless',g:'colourless'};return{...R,txt:'stays orange',g:'orange'};}
+  if(r==='tol'&&s==='al')return{...R,pos:true,fx:'mirror',txt:'silver mirror',g:'mirror'};
+  if(r==='feh'){if(s==='al')return{...R,pos:true,col:'#5f86c9',a:.35,fx:'red',txt:'brick-red ppt',g:'red ppt'};return{...R,txt:'stays blue',g:'blue'};}
+  if(r==='dich'){if(s==='ol1'||s==='al')return{...R,pos:true,col:'#3f8a4a',a:.8,txt:'orange → green',g:'green'};return{...R,txt:'stays orange',g:'orange'};}
+  return R;
+}
+
+// ---- State ----
+const S={step:0,reagent:null,tubes:[],grid:{},letters:{},revealed:false};
+function shuffleLetters(){const keys=Object.keys(SUB);for(let i=keys.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[keys[i],keys[j]]=[keys[j],keys[i]];}
+  S.letters={};keys.forEach((k,i)=>S.letters['ABCDEF'[i]]=k);S.grid={};S.revealed=false;}
+shuffleLetters();
+
+// ---- Steps ----
+const STEPS=[
+ {t:'The four tests',tubes:[],reagents:[],b:()=>`
+  <div class="tblwrap"><table class="cmp"><thead><tr><th>Functional group</th><th>Reagent</th><th>Conditions</th><th>Positive result</th></tr></thead><tbody>
+   <tr><td>Carboxylic acid</td><td>Sodium carbonate (or hydrogencarbonate)</td><td>Room temperature</td><td>Effervescence; the gas turns limewater cloudy (CO₂)</td></tr>
+   <tr><td>Alkene</td><td>Bromine water</td><td>Shake at room temperature</td><td>Orange → colourless</td></tr>
+   <tr><td>Aldehyde</td><td>Tollens' reagent<br>or Fehling's solution</td><td>Warm in a water bath</td><td>Silver mirror<br>Blue solution → brick-red precipitate</td></tr>
+   <tr><td>Primary or secondary alcohol (and aldehyde)</td><td>Acidified potassium dichromate(VI)</td><td>Warm in a water bath</td><td>Orange → green</td></tr></tbody></table></div>
+  <p>Use about 1 cm³ of the organic compound and 1 cm³ of reagent in a clean test tube. Click <b>Next</b> to try each test on a positive and a negative example.</p>`},
+ {t:'Carboxylic acids: sodium carbonate',tubes:['acid','ol1'],reagents:['carb'],b:()=>`
+  <p>Add a small spatula of solid sodium carbonate, or 1 cm³ of solution. Select the reagent, then click each tube.</p>
+  <p>The acid gives <b>effervescence</b>. Bubble the gas through limewater: it turns cloudy, so the gas is CO₂.</p>
+  <div class="eq">2CH₃COOH + Na₂CO₃ → 2CH₃COONa + H₂O + CO₂</div>
+  <p>Alcohols are far too weakly acidic to react with carbonate, so there is no change.</p>`},
+ {t:'Alkenes: bromine water',tubes:['ene','acid'],reagents:['br'],b:()=>`
+  <p>Add a few drops of bromine water and <b>shake</b>. Electrophilic addition across the C=C uses up the bromine.</p>
+  <div class="eq">C₆H₁₀ + Br₂ → C₆H₁₀Br₂ (1,2-dibromocyclohexane)</div>
+  <div class="callout"><b>Say "colourless", not "clear".</b> Bromine water is already clear: it is transparent and orange. Exam mark schemes do not accept "clear".</div>`},
+ {t:'Aldehydes: Tollens\' and Fehling\'s',tubes:['al','one'],reagents:['tol','feh'],b:()=>`
+  <p><b>Tollens' reagent</b> must be made fresh: add one drop of NaOH(aq) to AgNO₃(aq) to give a brown precipitate, then add dilute NH₃(aq) dropwise until the precipitate just dissolves. The active ion is [Ag(NH₃)₂]⁺.</p>
+  <p>Add the organic compound and <b>warm in a water bath</b> at about 60 °C. Use both reagents on each tube.</p>
+  <div class="eq">Ag⁺ + e⁻ → Ag &nbsp;&nbsp;(silver mirror)<br>Cu²⁺ (blue) → Cu⁺ in Cu₂O (brick-red precipitate)</div>
+  <p>The aldehyde is oxidised to a carboxylic acid; the metal ion is reduced. Ketones cannot be oxidised this way, so there is no change. This is how the test tells an aldehyde from a ketone.</p>
+  <div class="callout"><b>Water bath, not a Bunsen burner:</b> the organic compounds are flammable. Wash Tollens' reagent away straight after use. It can form explosive compounds if left to stand.</div>`},
+ {t:'Alcohols: acidified dichromate',tubes:['ol1','ol3','al'],reagents:['dich'],b:()=>`
+  <p>Add a few drops of acidified potassium dichromate(VI) and <b>warm in a water bath</b>. Cr₂O₇²⁻ (orange) is reduced to Cr³⁺ (green).</p>
+  <ul><li><b>Primary and secondary alcohols</b> are oxidised: orange → green.</li>
+  <li><b>Tertiary alcohols</b> have no H on the carbon bonded to the OH, so they are not oxidised: stays orange.</li></ul>
+  <div class="callout"><b>Not a test for alcohols alone.</b> An aldehyde also turns dichromate green. A green result means "primary alcohol, secondary alcohol or aldehyde", so combine it with Tollens' or Fehling's.</div>`},
+ {t:'Identify the unknowns',tubes:'unknown',reagents:['carb','br','tol','feh','dich'],b:()=>`
+  <p>Six tubes, A–F, contain one each of: propan-1-ol, 2-methylpropan-2-ol, propanal, propanone, cyclohexene and ethanoic acid.</p>
+  <p>Select a reagent and click a tube. Each test uses a fresh sample, and the result is added to the grid.</p>
+  <p>A sensible order: <b>sodium carbonate</b> (finds the acid), <b>bromine water</b> (finds the alkene), <b>Tollens' or Fehling's</b> (finds the aldehyde), then <b>dichromate</b> (separates the primary from the tertiary alcohol). The compound that is negative in every test is the ketone.</p>`},
+ {t:'Common errors',tubes:[],reagents:[],b:()=>`
+  <ul>
+  <li>Saying bromine water goes <b>"clear"</b> instead of <b>colourless</b>.</li>
+  <li>Heating tubes in a <b>Bunsen flame</b>. Organic liquids are flammable: use a water bath.</li>
+  <li>Using dichromate to "prove" an alcohol. Aldehydes turn it green too.</li>
+  <li>Expecting a <b>tertiary</b> alcohol to turn dichromate green. It does not.</li>
+  <li>Using Tollens' reagent that has been left to stand. Make it fresh and dispose of it straight away.</li>
+  <li>Forgetting to <b>shake</b> bromine water with an immiscible alkene, so it never mixes with the bromine.</li>
+  <li>Calling the Fehling's result "red solution". It is a <b>brick-red precipitate</b>; the solution was blue.</li></ul>`}
+];
+
+function setupStep(){
+  const st=STEPS[S.step];
+  S.tubes=[];
+  if(st.tubes==='unknown'){'ABCDEF'.split('').forEach(L=>S.tubes.push({label:L,sub:S.letters[L],r:null,p:0}));}
+  else st.tubes.forEach(k=>S.tubes.push({label:SUB[k].name,sub:k,r:null,p:0}));
+  S.reagent=st.reagents.length?st.reagents[0]:null;
+  renderReagents();renderGrid();
+}
+
+// ---- Reagent buttons ----
+const reaBox=document.getElementById('reagents');
+reaBox.innerHTML=Object.entries(REA).map(([k,r])=>`<button class="reagent" data-k="${k}" aria-pressed="false"><i style="background:${r.col}"></i>${r.name}</button>`).join('');
+reaBox.onclick=e=>{const b=e.target.closest('button');if(!b)return;S.reagent=b.dataset.k;renderReagents();};
+function renderReagents(){
+  const allowed=STEPS[S.step].reagents;
+  [...reaBox.children].forEach(b=>{b.hidden=!allowed.includes(b.dataset.k);b.setAttribute('aria-pressed',b.dataset.k===S.reagent);});
+  document.getElementById('hint').textContent=allowed.length?`Selected: ${REA[S.reagent].name}${REA[S.reagent].heat?' (warmed in a water bath)':REA[S.reagent].shake?' (shaken)':''}. Click a tube to add it.`:'';
+}
+
+// ---- Results grid ----
+const grid=document.getElementById('grid'), gridNav=document.getElementById('gridNav');
+function renderGrid(){
+  const st=STEPS[S.step];
+  if(st.tubes==='unknown'){
+    const rk=Object.keys(REA);
+    grid.innerHTML=`<thead><tr><th></th>${rk.map(k=>`<th>${REA[k].short}</th>`).join('')}</tr></thead><tbody>`+
+      'ABCDEF'.split('').map(L=>`<tr><th>${L}${S.revealed?`<span class="name">${SUB[S.letters[L]].name}</span>`:''}</th>${rk.map(k=>{const g=S.grid[L+k];
+        return g?`<td class="${g.pos?'pos':'neg'}">${g.g}</td>`:'<td>–</td>';}).join('')}</tr>`).join('')+'</tbody>';
+    gridNav.innerHTML='';
+    const rev=document.createElement('button');rev.className='btn';rev.textContent=S.revealed?'Hide answers':'Reveal answers';
+    rev.onclick=()=>{S.revealed=!S.revealed;renderGrid();drawBench();};
+    const sh=document.createElement('button');sh.className='btn';sh.textContent='New unknowns';
+    sh.onclick=()=>{shuffleLetters();setupStep();};
+    gridNav.append(rev,sh);
+  }else{
+    const names=Object.keys(SUB), rk=Object.keys(REA);
+    grid.innerHTML=`<thead><tr><th>Compound</th>${rk.map(k=>`<th>${REA[k].short}</th>`).join('')}</tr></thead><tbody>`+
+      names.map(n=>`<tr><th style="font-family:var(--f-body);text-align:left;font-weight:500">${SUB[n].name}</th>${rk.map(k=>{const g=S.grid['demo'+n+k];
+        return g?`<td class="${g.pos?'pos':'neg'}">${g.g}</td>`:'<td>–</td>';}).join('')}</tr>`).join('')+'</tbody>';
+    gridNav.innerHTML='';
+    if(Object.keys(S.grid).some(k=>k.startsWith('demo'))){const c=document.createElement('button');c.className='btn';c.textContent='Clear demo results';
+      c.onclick=()=>{Object.keys(S.grid).forEach(k=>{if(k.startsWith('demo'))delete S.grid[k]});renderGrid();};gridNav.append(c);}
+  }
+}
+
+// ---- Bench drawing ----
+const cv=document.getElementById('bench');
+let layout=[];
+function fit(){const dpr=devicePixelRatio||1,w=cv.clientWidth,h=Math.round(w*parseFloat(cv.dataset.ratio));
+  if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);cv.style.height=h+'px';}
+  const ctx=cv.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);return{ctx,w,h};}
+function rgba(hex,a){const c=hex.match(/\w\w/g).map(x=>parseInt(x,16));return`rgba(${c[0]},${c[1]},${c[2]},${a})`}
+function mixC(h1,a1,h2,a2,f){const c1=h1.match(/\w\w/g).map(x=>parseInt(x,16)),c2=h2.match(/\w\w/g).map(x=>parseInt(x,16));
+  return`rgba(${c1.map((v,i)=>Math.round(lerp(v,c2[i],f))).join(',')},${lerp(a1,a2,f)})`}
+function drawBench(){
+  const{ctx,w,h}=fit();ctx.clearRect(0,0,w,h);
+  const k=w/640;ctx.save();ctx.scale(k,k);const now=performance.now()/1000;
+  ctx.fillStyle='#e6d3b6';ctx.fillRect(0,318,640,80);
+  layout=[];
+  const n=S.tubes.length;
+  if(!n){ctx.fillStyle=css('--muted');ctx.font='15px '+css('--f-body');ctx.textAlign='center';
+    ctx.fillText(S.step===0?'Click Next to start testing.':'Use the notes below to review.',320,170);ctx.restore();return;}
+  const anyHeat=S.tubes.some(t=>t.r&&REA[t.r].heat);
+  const gap=Math.min(100,560/n), x0=320-gap*(n-1)/2;
+  // water bath
+  if(anyHeat){ctx.fillStyle='rgba(160,200,225,.35)';ctx.fillRect(x0-gap/2+6,200,gap*n-12,118);
+    ctx.strokeStyle='rgba(110,140,160,.9)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x0-gap/2+6,180);ctx.lineTo(x0-gap/2+6,318);ctx.lineTo(x0+gap*(n-0.5)-6,318);ctx.lineTo(x0+gap*(n-0.5)-6,180);ctx.stroke();
+    ctx.fillStyle=css('--blue');ctx.font='12px '+css('--f-body');ctx.textAlign='left';ctx.fillText('Warmed in a water bath at about 60 °C',8,18);}
+  else{ // rack
+    ctx.fillStyle='#b98a5e';ctx.fillRect(x0-gap/2+6,250,gap*n-12,14);ctx.fillRect(x0-gap/2+6,300,gap*n-12,10);
+    ctx.fillRect(x0-gap/2+6,250,8,68);ctx.fillRect(x0+gap*(n-0.5)-14,250,8,68);}
+  S.tubes.forEach((t,i)=>{const cx=x0+i*gap;drawTube(ctx,cx,t,now);layout.push({x:cx,t});});
+  ctx.restore();
+}
+function drawTube(ctx,cx,t,now){
+  const tw=26,top=70,bot=290;
+  const shake=t.r&&REA[t.r].shake&&t.p<0.7?Math.sin(now*30)*4*(1-t.p):0;
+  ctx.save();ctx.translate(cx+shake,0);
+  const res=t.r?result(t.sub,t.r):null, p=t.p;
+  const sample=118, reag=t.r?sample*0.9*Math.min(1,p*3):0;
+  const level=bot-(sample*0.55+reag*0.55);
+  // tube path
+  const path=()=>{ctx.beginPath();ctx.moveTo(-tw/2,top);ctx.lineTo(-tw/2,bot-tw/2);ctx.arc(0,bot-tw/2,tw/2,Math.PI,0,true);ctx.lineTo(tw/2,top);};
+  ctx.save();path();ctx.clip();
+  // liquid
+  let col='rgba(240,242,240,.25)';
+  if(t.r){const R=REA[t.r];const f=clamp((p-0.35)/0.5,0,1);col=mixC(R.col,R.a,res.col,res.a,f);}
+  ctx.fillStyle=col;ctx.fillRect(-tw,level,tw*2,bot);
+  // organic layer for cyclohexene before shaking
+  if(SUB[t.sub].layer&&(!t.r||(t.r&&REA[t.r].shake&&p<0.4))){ctx.fillStyle='rgba(250,250,245,.9)';ctx.fillRect(-tw,level,tw*2,14);}
+  if(SUB[t.sub].layer&&t.r&&!(REA[t.r].shake)){ctx.fillStyle='rgba(250,250,245,.9)';ctx.fillRect(-tw,level,tw*2,14);}
+  if(res&&res.fx==='mirror'){const f=clamp((p-0.4)/0.5,0,1);const g=ctx.createLinearGradient(-tw/2,0,tw/2,0);
+    g.addColorStop(0,`rgba(140,145,150,${f})`);g.addColorStop(.35,`rgba(235,238,240,${f})`);g.addColorStop(.6,`rgba(170,175,180,${f})`);g.addColorStop(1,`rgba(120,125,130,${f})`);
+    ctx.fillStyle=g;ctx.fillRect(-tw,level+4,tw*2,bot);}
+  if(res&&res.fx==='red'){const f=clamp((p-0.4)/0.5,0,1);ctx.fillStyle=`rgba(178,62,32,${f})`;ctx.fillRect(-tw,bot-tw/2-4,tw*2,30);
+    for(let i=0;i<8;i++){ctx.beginPath();ctx.arc(-9+i*2.6,bot-tw/2-6-(i%3)*2,1.8,0,7);ctx.fill();}}
+  if(res&&res.fx==='fizz'&&p>0.3){ctx.fillStyle='rgba(255,255,255,.95)';ctx.strokeStyle='rgba(150,160,170,.6)';ctx.lineWidth=.8;
+    const n=Math.round(14*(p<1?1:0.6));for(let i=0;i<n;i++){const ph=(now*1.2+i*0.137)%1;const y=bot-10-ph*(bot-10-level);ctx.beginPath();ctx.arc(-8+((i*37)%17),y,1.5+ph*1.5,0,7);ctx.fill();ctx.stroke();}}
+  ctx.restore();
+  // glass
+  path();ctx.strokeStyle='rgba(110,140,160,.95)';ctx.lineWidth=2;ctx.stroke();
+  ctx.fillStyle='rgba(255,255,255,.35)';ctx.fillRect(-tw/2+4,top+6,3,bot-top-30);
+  // dropper while adding
+  if(t.r&&p<0.35){const R=REA[t.r];ctx.fillStyle='#55504a';ctx.fillRect(-4,top-48,8,14);ctx.fillStyle=rgba(R.col,.9);ctx.fillRect(-2.5,top-34,5,30);
+    const ph=(now*3)%1;ctx.beginPath();ctx.arc(0,top+ph*(level-top),2.4,0,7);ctx.fill();}
+  // labels
+  ctx.fillStyle=css('--ink');ctx.textAlign='center';
+  const lbl=t.label, big=lbl.length===1;
+  ctx.font=(big?'bold 20px ':'12px ')+css('--f-body');
+  if(big){ctx.fillText(lbl,0,top-12);if(S.revealed){ctx.font='11px '+css('--f-body');ctx.fillStyle=css('--brown');wrapText(ctx,SUB[t.sub].name,0,336,90);}}
+  else wrapText(ctx,lbl,0,top-26,92);
+  if(res&&p>=1){ctx.font='bold 12px '+css('--f-body');ctx.fillStyle=res.pos?css('--good'):css('--muted');wrapText(ctx,res.txt,0,big&&S.revealed?352:338,96);}
+  ctx.restore();
+}
+function wrapText(ctx,s,x,y,maxW){const words=s.split(' ');let line='',yy=y;
+  for(const w of words){const test=line?line+' '+w:w;if(ctx.measureText(test).width>maxW&&line){ctx.fillText(line,x,yy);line=w;yy+=14;}else line=test;}
+  ctx.fillText(line,x,yy);}
+
+cv.addEventListener('click',e=>{
+  if(!S.reagent||!layout.length)return;
+  const rect=cv.getBoundingClientRect(), k=rect.width/640, x=(e.clientX-rect.left)/k;
+  const hit=layout.reduce((a,b)=>Math.abs(b.x-x)<Math.abs(a.x-x)?b:a);
+  if(Math.abs(hit.x-x)>45)return;
+  addReagent(hit.t);
+});
+function addReagent(t){t.r=S.reagent;t.p=0;t.recorded=false;}
+// keyboard access: number keys 1–6 test the matching tube
+addEventListener('keydown',e=>{const i=parseInt(e.key,10)-1;if(i>=0&&i<S.tubes.length&&S.reagent&&!(e.target.closest&&e.target.closest('input,textarea')))addReagent(S.tubes[i]);});
+
+// ---- Steps UI ----
+const dots=document.getElementById('dots');
+dots.innerHTML=STEPS.map((s,i)=>`<button data-i="${i}">${i+1}. ${s.t.split(':')[0]}</button>`).join('');
+dots.onclick=e=>{const b=e.target.closest('button');if(b)go(+b.dataset.i)};
+function go(i){S.step=clamp(i,0,STEPS.length-1);const s=STEPS[S.step];
+  document.getElementById('stitle').textContent=`${S.step+1}. ${s.t}`;
+  document.getElementById('sbody').innerHTML=s.b();
+  [...dots.children].forEach((b,j)=>b.className=j===S.step?'on':j<S.step?'done':'');
+  document.getElementById('back').disabled=S.step===0;document.getElementById('next').disabled=S.step===STEPS.length-1;
+  setupStep();}
+document.getElementById('next').onclick=()=>go(S.step+1);
+document.getElementById('back').onclick=()=>go(S.step-1);
+
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let last=performance.now();
+function tick(now){const dt=Math.min(.1,(now-last)/1000);last=now;
+  S.tubes.forEach(t=>{if(t.r&&t.p<1){t.p=reduce?1:Math.min(1,t.p+dt/2.6);
+    if(t.p>=1&&!t.recorded){t.recorded=true;const res=result(t.sub,t.r);
+      const key=STEPS[S.step].tubes==='unknown'?t.label+t.r:'demo'+t.sub+t.r;S.grid[key]=res;renderGrid();}}});
+  drawBench();requestAnimationFrame(tick);}
+addEventListener('resize',drawBench);
+go(0);requestAnimationFrame(tick);
+})();
+</script>
+
+</body></html>

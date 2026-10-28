@@ -1,0 +1,434 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Mg + CuSO₄ Enthalpy Practical</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: lab bench (apparatus + results) beside a sheet of graph paper; step card underneath drives the lesson. */
+:root{
+  --paper:#f7f1e6; --panel:#fffbf3; --ink:#3b2a1d; --muted:#7a6552; --rule:#e2d4bf;
+  --brown:#7b4a26; --brown-soft:#efe2cf; --copper:#b5652f; --cuso4:#2f6fb8; --good:#2e7d4f;
+  --loss:#d9822b; --grid-minor:#efdcc0; --grid-major:#ddbf98;
+  --f-display:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --f-body:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-data:ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+  color-scheme:light;
+}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
+.wrap{max-width:1280px;margin:0 auto;padding-block:18px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:16px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 20px}
+h1{font-family:var(--f-display);font-size:1.7rem;margin:0;text-wrap:balance;color:var(--brown)}
+h1 small{display:block;font-family:var(--f-body);font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.eqn{font-family:var(--f-data);font-size:.9rem;background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:6px 10px}
+.stage{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:16px}
+@media (max-width:920px){.stage{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:10px;padding:12px;min-width:0}
+.panel h2{font-size:.75rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:0 0 8px;font-weight:700}
+canvas{display:block;width:100%;max-width:100%}
+.bench{display:grid;grid-template-columns:minmax(0,1fr) 128px;gap:12px}
+@media (max-width:480px){.bench{grid-template-columns:minmax(0,1fr)}}
+.results{font-family:var(--f-data);font-size:.82rem;max-height:390px;overflow-y:auto;border:1px solid var(--rule);border-radius:6px;background:#fff}
+.results table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+.results th{position:sticky;top:0;background:var(--brown-soft);font-weight:600;padding:4px 6px;text-align:right;font-size:.75rem}
+.results td{padding:2px 6px;text-align:right;border-top:1px solid #f1e8da}
+.results tr.gap td{color:var(--copper);font-style:italic;text-align:center}
+.results tr.pending td{color:#c9b8a3}
+.controls{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin-top:10px}
+.seg{display:inline-flex;border:1px solid var(--brown);border-radius:7px;overflow:hidden}
+.seg button{border:0;background:transparent;color:var(--brown);font:inherit;font-size:.85rem;padding:5px 10px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--brown)}
+.seg button[aria-pressed="true"]{background:var(--brown);color:#fff}
+.lbl{font-size:.75rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600;margin-right:6px}
+.step{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+.dots{display:flex;flex-wrap:wrap;gap:6px}
+.dots button{font:inherit;font-size:.8rem;border:1px solid var(--rule);background:#fff;color:var(--muted);border-radius:999px;padding:3px 10px;cursor:pointer}
+.dots button.on{background:var(--brown);border-color:var(--brown);color:#fff}
+.dots button.done{color:var(--brown);border-color:var(--brown)}
+.step h3{font-family:var(--f-display);font-size:1.35rem;margin:2px 0 0;color:var(--brown);text-wrap:balance}
+.body{max-width:78ch}
+.body p{margin:.4em 0}
+.body ul{margin:.3em 0;padding-left:1.2em}
+.callout{border-left:4px solid var(--loss);background:#fdf1e3;padding:8px 12px;border-radius:0 6px 6px 0;margin:.6em 0}
+.callout.ok{border-color:var(--good);background:#eaf5ee}
+.calc{font-family:var(--f-data);font-size:.92rem;background:#fff;border:1px solid var(--rule);border-radius:6px;padding:10px 12px;line-height:1.8;overflow-x:auto}
+.calc b{color:var(--brown)}
+.nav{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{font:inherit;font-size:.9rem;border:1px solid var(--brown);background:#fff;color:var(--brown);border-radius:7px;padding:7px 14px;cursor:pointer}
+.btn.primary{background:var(--brown);color:#fff}
+.btn:disabled{opacity:.4;cursor:default}
+button:focus-visible{outline:3px solid var(--cuso4);outline-offset:2px}
+.spacer{flex:1}
+.cmp{border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:.88rem;margin:.5em 0}
+.cmp th,.cmp td{border:1px solid var(--rule);padding:4px 10px;text-align:right}
+.cmp th:first-child,.cmp td:first-child{text-align:left}
+.cmp thead th{background:var(--brown-soft)}
+.toggles{display:flex;flex-wrap:wrap;gap:8px 16px;margin:.4em 0}
+.toggles label{display:inline-flex;gap:6px;align-items:center;font-size:.88rem;cursor:pointer}
+.key{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.78rem;color:var(--muted);margin-top:6px}
+.key i{display:inline-block;width:18px;height:0;border-top:2px solid;vertical-align:middle;margin-right:4px}
+.tblwrap{overflow-x:auto}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1><small>AQA Required Practical 2 · Enthalpy change</small>Magnesium + copper(II) sulfate</h1>
+    <div class="eqn">Mg(s) + CuSO₄(aq) → MgSO₄(aq) + Cu(s)</div>
+  </header>
+
+  <div class="stage">
+    <section class="panel" aria-label="Apparatus">
+      <h2>Bench</h2>
+      <div class="bench">
+        <canvas id="app" height="400"></canvas>
+        <div class="results" aria-label="Results table">
+          <table><thead><tr><th>t / min</th><th>T / °C</th></tr></thead><tbody id="tbody"></tbody></table>
+        </div>
+      </div>
+      <div class="controls">
+        <div><span class="lbl">Container</span><span class="seg" id="segIns">
+          <button data-v="poly" aria-pressed="true">Polystyrene + lid</button><button data-v="glass" aria-pressed="false">Glass beaker</button></span></div>
+        <div><span class="lbl">Magnesium</span><span class="seg" id="segMg">
+          <button data-v="powder" aria-pressed="true">Powder</button><button data-v="granules" aria-pressed="false">Granules</button><button data-v="ribbon" aria-pressed="false">Ribbon</button></span></div>
+      </div>
+    </section>
+
+    <section class="panel" aria-label="Graph">
+      <h2>Temperature against time</h2>
+      <div class="tblwrap"><canvas id="graph" height="440" style="min-width:460px"></canvas></div>
+      <div class="key" id="key"></div>
+    </section>
+  </div>
+
+  <section class="panel step" aria-live="polite">
+    <div class="dots" id="dots"></div>
+    <h3 id="stitle"></h3>
+    <div class="body" id="sbody"></div>
+    <div class="nav">
+      <button class="btn" id="back">← Back</button>
+      <span id="action"></span>
+      <span class="spacer"></span>
+      <button class="btn" id="newrun" title="New set of readings with fresh random scatter">New readings</button>
+      <button class="btn primary" id="next">Next →</button>
+    </div>
+  </section>
+</div>
+
+<script>
+(()=>{
+// ---------- Chemistry and heat model ----------
+const VOL=25.0, CONC=0.200, MASS=25.0, CAP=4.18, DH_LIT=-531.6, TROOM=20.0, T_ADD=210, T_END=600;
+const N_CU=CONC*VOL/1000;                       // 0.00500 mol, limiting
+const MG_MASS=0.20, N_MG=MG_MASS/24.3;           // excess
+const DT_AD=N_CU*(-DH_LIT*1000)/(MASS*CAP);      // rise with no heat loss
+const INS={poly:{k:0.0008,label:'Polystyrene cup + lid'},glass:{k:0.0022,label:'Glass beaker, no lid'}};
+const MG={powder:{tau:15,label:'powder'},granules:{tau:45,label:'granules'},ribbon:{tau:120,label:'ribbon'}};
+const DT=0.5, NSTEP=T_END/DT;
+
+let state={ins:'poly',mg:'powder',seed:7,simT:0,target:0,playing:false,step:0,showPerfect:true,showLoss:true,showCompare:false};
+
+function rng(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function gauss(r){let u=0,v=0;while(!u)u=r();while(!v)v=r();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+function xi(t,tau){return t<T_ADD?0:1-Math.exp(-(t-T_ADD)/tau)}
+
+function run(insKey,mgKey,seed){
+  const k=INS[insKey].k,tau=MG[mgKey].tau;
+  const T=new Float64Array(NSTEP+1);let temp=TROOM;
+  for(let i=0;i<=NSTEP;i++){const t=i*DT;T[i]=temp;
+    const rate=t<T_ADD?0:Math.exp(-(t-T_ADD)/tau)/tau;
+    temp+=DT*(DT_AD*rate-k*(temp-TROOM));}
+  const r=rng(seed*7919+1);const readings=[];
+  for(let t=0;t<=T_END;t+=30){
+    const noise=gauss(r)*0.05;
+    readings.push({t,T:t===T_ADD?null:Math.round((T[t/DT]+noise)*10)/10});}
+  const valid=readings.filter(p=>p.T!==null);
+  const base=valid.filter(p=>p.t<T_ADD);
+  const T0=base.reduce((s,p)=>s+p.T,0)/base.length;
+  const after=valid.filter(p=>p.t>T_ADD);
+  const peak=after.reduce((a,b)=>b.T>a.T?b:a);
+  let pts=after.filter(p=>p.t>=peak.t+60);
+  if(pts.length<3)pts=after.filter(p=>p.t>peak.t).slice(-3);
+  let n=pts.length,sx=0,sy=0,sxx=0,sxy=0;pts.forEach(p=>{sx+=p.t;sy+=p.T;sxx+=p.t*p.t;sxy+=p.t*p.T});
+  const m=(n*sxy-sx*sy)/(n*sxx-sx*sx),c=(sy-m*sx)/n;
+  const Tex=m*T_ADD+c;
+  // complete within the recorded time?
+  const done99=T_ADD+MG[mgKey].tau*Math.log(100);
+  return{T,readings,T0,peak,fitPts:pts,m,c,Tex,dTobs:peak.T-T0,dTex:Tex-T0,k,tau,complete:pts.length>=4&&pts[0].t>done99,insKey,mgKey};
+}
+let R=run(state.ins,state.mg,state.seed), RC=null;
+function rebuild(){R=run(state.ins,state.mg,state.seed);RC=run(state.ins==='poly'?'glass':'poly',state.mg,state.seed);}
+rebuild();
+
+// ---------- Canvas helpers ----------
+function fitCanvas(cv){const dpr=window.devicePixelRatio||1;const w=cv.clientWidth,h=parseFloat(cv.getAttribute('height'));
+  if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);cv.style.height=h+'px';}
+  const ctx=cv.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);return{ctx,w,h};}
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const fmtTime=s=>{const m=Math.floor(s/60),ss=Math.floor(s%60);return m+':'+String(ss).padStart(2,'0')};
+const tempAt=t=>R.T[Math.min(NSTEP,Math.max(0,Math.round(t/DT)))];
+
+// ---------- Apparatus ----------
+const appCv=document.getElementById('app');
+const cuDots=[...Array(90)].map((_,i)=>{const r=rng(i+11);return{x:r(),y:r(),s:1+r()*2}});
+const mgDots=[...Array(40)].map((_,i)=>{const r=rng(i+301);return{x:r(),y:r(),s:1+r()*1.6}});
+function drawApparatus(){
+  const{ctx,w,h}=fitCanvas(appCv);ctx.clearRect(0,0,w,h);
+  const t=state.simT, added=t>=T_ADD, x=xi(t,R.tau);
+  const cx=Math.min(w*0.45,170), cupW=Math.min(150,w*0.5), cupTop=150, cupBot=350;
+  // bench
+  ctx.fillStyle='#e6d3b6';ctx.fillRect(0,cupBot+18,w,h-cupBot-18);
+  ctx.strokeStyle='#cdb390';ctx.beginPath();ctx.moveTo(0,cupBot+18);ctx.lineTo(w,cupBot+18);ctx.stroke();
+  const poly=state.ins==='poly';
+  const topHalf=cupW/2, botHalf=poly?cupW*0.36:cupW/2;
+  const liqTop=cupTop+80;
+  const pathCup=()=>{ctx.beginPath();ctx.moveTo(cx-topHalf,cupTop);ctx.lineTo(cx-botHalf,cupBot);ctx.lineTo(cx+botHalf,cupBot);ctx.lineTo(cx+topHalf,cupTop);};
+  if(poly){ // support beaker
+    ctx.strokeStyle='rgba(120,150,170,.7)';ctx.lineWidth=2;ctx.fillStyle='rgba(200,225,235,.25)';
+    ctx.beginPath();ctx.moveTo(cx-cupW*0.62,cupTop+40);ctx.lineTo(cx-cupW*0.62,cupBot+16);ctx.lineTo(cx+cupW*0.62,cupBot+16);ctx.lineTo(cx+cupW*0.62,cupTop+40);ctx.fill();ctx.stroke();
+  }
+  // liquid
+  const frac=(y)=>(y-cupTop)/(cupBot-cupTop), half=y=>topHalf+(botHalf-topHalf)*frac(y);
+  ctx.save();pathCup();ctx.clip();
+  const blue=0.62*(1-x)+0.05;
+  ctx.fillStyle=`rgba(47,111,184,${blue})`;ctx.fillRect(cx-topHalf,liqTop,cupW,cupBot-liqTop);
+  ctx.fillStyle='rgba(210,230,240,.25)';ctx.fillRect(cx-topHalf,liqTop,cupW,cupBot-liqTop);
+  // Mg (grey) and Cu (pink-brown) solids
+  if(added){
+    const nMg=Math.round(mgDots.length*(1-0.61*x));
+    for(let i=0;i<nMg;i++){const d=mgDots[i];const y=cupBot-4-d.y*16;const hw=half(y)-6;ctx.fillStyle='#8d9196';ctx.beginPath();ctx.arc(cx-hw+d.x*hw*2,y,d.s,0,7);ctx.fill();}
+    const nCu=Math.round(cuDots.length*x);
+    for(let i=0;i<nCu;i++){const d=cuDots[i];const y=cupBot-3-d.y*22;const hw=half(y)-6;ctx.fillStyle='#b5652f';ctx.beginPath();ctx.arc(cx-hw+d.x*hw*2,y,d.s,0,7);ctx.fill();}
+  }
+  ctx.restore();
+  // container outline
+  pathCup();
+  if(poly){ctx.fillStyle='rgba(255,255,255,.0)';ctx.strokeStyle='#bdb3a6';ctx.lineWidth=7;ctx.stroke();ctx.strokeStyle='#f4f1ec';ctx.lineWidth=4;ctx.stroke();}
+  else{ctx.strokeStyle='rgba(110,140,160,.85)';ctx.lineWidth=2;ctx.stroke();
+    ctx.fillStyle='rgba(110,140,160,.85)';ctx.font='10px '+css('--f-data');
+    for(let i=1;i<=4;i++){const y=cupBot-i*40;ctx.fillRect(cx+topHalf-14,y,10,1);}}
+  // lid
+  if(poly){ctx.fillStyle='#ece6dd';ctx.strokeStyle='#bdb3a6';ctx.lineWidth=1.5;
+    ctx.fillRect(cx-topHalf-6,cupTop-8,topHalf*2+12,8);ctx.strokeRect(cx-topHalf-6,cupTop-8,topHalf*2+12,8);}
+  // thermometer probe
+  const px=cx+topHalf*0.35;
+  ctx.fillStyle='#55504a';ctx.fillRect(px-2.5,40,5,cupBot-30-40);
+  ctx.fillStyle='#9aa0a6';ctx.fillRect(px-3,cupBot-36,6,10);
+  // cable + digital display
+  const dx=Math.min(w-104,cx+topHalf+18), dy=28;
+  ctx.strokeStyle='#55504a';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(px,40);ctx.quadraticCurveTo(px,dy+20,dx,dy+28);ctx.stroke();
+  ctx.fillStyle='#3b3631';roundRect(ctx,dx,dy,96,56,6);ctx.fill();
+  ctx.fillStyle='#cfe3c9';roundRect(ctx,dx+7,dy+7,82,30,3);ctx.fill();
+  ctx.fillStyle='#1f2a1d';ctx.font='bold 20px '+css('--f-data');ctx.textAlign='right';
+  const shown=(Math.round(tempAt(t)*10)/10).toFixed(1);ctx.fillText(shown,dx+82,dy+29);
+  ctx.font='10px '+css('--f-body');ctx.fillStyle='#e9e1d5';ctx.textAlign='left';ctx.fillText('°C   ±0.1',dx+8,dy+50);
+  // stopwatch
+  const sx=dx, sy=dy+74;
+  ctx.fillStyle='#fff';ctx.strokeStyle='#7b4a26';ctx.lineWidth=2;roundRect(ctx,sx,sy,96,40,6);ctx.fill();ctx.stroke();
+  ctx.fillStyle='#7b4a26';ctx.font='bold 18px '+css('--f-data');ctx.textAlign='center';ctx.fillText(fmtTime(t),sx+48,sy+27);
+  ctx.font='10px '+css('--f-body');ctx.fillStyle=css('--muted');ctx.fillText('stopwatch',sx+48,sy+52);
+  // stirrer
+  if(added&&t<T_END){const wob=Math.sin(performance.now()/120)*10;ctx.strokeStyle='#c8b9a3';ctx.lineWidth=4;ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(cx-topHalf*0.45+wob*0.3,60);ctx.lineTo(cx-topHalf*0.2+wob,cupBot-16);ctx.stroke();ctx.lineCap='butt';}
+  // spatula with Mg before addition
+  if(!added&&state.step>=1){ctx.save();ctx.translate(cx-topHalf-6,cupTop-40);ctx.rotate(-0.35);
+    ctx.fillStyle='#a9adb2';ctx.fillRect(-70,-2,70,4);ctx.beginPath();ctx.ellipse(6,0,12,6,0,0,7);ctx.fill();
+    ctx.fillStyle='#6f7378';for(let i=0;i<8;i++){ctx.beginPath();ctx.arc(1+i*1.5,-3+(i%3),1.6,0,7);ctx.fill();}ctx.restore();
+    ctx.fillStyle=css('--muted');ctx.font='11px '+css('--f-body');ctx.textAlign='left';ctx.fillText(MG_MASS.toFixed(2)+' g Mg '+MG[state.mg].label,8,cupTop-62);}
+  // labels
+  ctx.fillStyle=css('--muted');ctx.font='11px '+css('--f-body');ctx.textAlign='left';
+  ctx.fillText(VOL.toFixed(1)+' cm³ '+CONC.toFixed(3)+' mol dm⁻³ CuSO₄',8,h-14);
+}
+function roundRect(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();}
+
+// ---------- Results table ----------
+const tbody=document.getElementById('tbody');
+function drawTable(){
+  tbody.innerHTML=R.readings.map(p=>{
+    const tm=(p.t/60).toFixed(1);
+    if(p.t===T_ADD)return `<tr class="gap"><td colspan="2">${tm} add Mg</td></tr>`;
+    const got=p.t<=state.simT;
+    return `<tr class="${got?'':'pending'}"><td>${tm}</td><td>${got?p.T.toFixed(1):'–'}</td></tr>`;}).join('');
+}
+
+// ---------- Graph ----------
+const gCv=document.getElementById('graph');
+function drawGraph(){
+  const{ctx,w,h}=fitCanvas(gCv);ctx.clearRect(0,0,w,h);
+  const L=52,Rm=14,Tm=14,B=44, W=w-L-Rm, H=h-Tm-B;
+  const yMin=18, yMax=Math.max(48,Math.ceil(TROOM+DT_AD+2));
+  const X=t=>L+t/T_END*W, Y=T=>Tm+(yMax-T)/(yMax-yMin)*H;
+  // graph paper
+  ctx.fillStyle='#fffdf8';ctx.fillRect(L,Tm,W,H);
+  for(let t=0;t<=T_END+0.1;t+=6){const maj=t%60===0;ctx.strokeStyle=maj?css('--grid-major'):css('--grid-minor');ctx.lineWidth=maj?1:0.6;ctx.beginPath();ctx.moveTo(X(t),Tm);ctx.lineTo(X(t),Tm+H);ctx.stroke();}
+  for(let T=yMin;T<=yMax+0.01;T+=0.5){const maj=Math.abs(T%2)<0.01;ctx.strokeStyle=maj?css('--grid-major'):css('--grid-minor');ctx.lineWidth=maj?1:0.6;ctx.beginPath();ctx.moveTo(L,Y(T));ctx.lineTo(L+W,Y(T));ctx.stroke();}
+  // axes labels
+  ctx.fillStyle=css('--ink');ctx.font='11px '+css('--f-data');ctx.textAlign='center';
+  for(let m=0;m<=10;m++)ctx.fillText(m,X(m*60),Tm+H+15);
+  ctx.textAlign='right';for(let T=yMin;T<=yMax;T+=4)ctx.fillText(T,L-6,Y(T)+4);
+  ctx.font='12px '+css('--f-body');ctx.textAlign='center';ctx.fillText('Time / min',L+W/2,h-8);
+  ctx.save();ctx.translate(14,Tm+H/2);ctx.rotate(-Math.PI/2);ctx.fillText('Temperature / °C',0,0);ctx.restore();
+  ctx.strokeStyle=css('--ink');ctx.lineWidth=1.2;ctx.strokeRect(L,Tm,W,H);
+
+  const st=state.step, done=state.simT>=T_END;
+  const keys=[];
+  // compare overlay (other container)
+  if(st===6&&state.showCompare&&RC&&done){
+    plotReadings(ctx,RC,X,Y,'#a99a88',state.simT);drawLines(ctx,RC,X,Y,'#a99a88',true);
+    keys.push(['#a99a88',INS[RC.insKey].label+' (comparison)']);}
+  // perfect-insulation curve and heat-loss shading
+  if(st===6&&done){
+    const perfect=t=>R.T0+DT_AD*xi(t,R.tau);
+    if(state.showLoss){ctx.fillStyle='rgba(217,130,43,.22)';ctx.beginPath();
+      for(let t=T_ADD;t<=T_END;t+=2)ctx.lineTo(X(t),Y(perfect(t)));
+      for(let t=T_END;t>=T_ADD;t-=2)ctx.lineTo(X(t),Y(tempAt(t)-TROOM+R.T0));
+      ctx.closePath();ctx.fill();keys.push(['rgba(217,130,43,.6)','heat lost to surroundings']);}
+    if(state.showPerfect){ctx.strokeStyle=css('--good');ctx.lineWidth=2;ctx.setLineDash([2,3]);ctx.beginPath();
+      for(let t=0;t<=T_END;t+=2){const v=perfect(t);t===0?ctx.moveTo(X(t),Y(v)):ctx.lineTo(X(t),Y(v));}ctx.stroke();ctx.setLineDash([]);
+      keys.push([css('--good'),'perfect insulation (no heat loss)']);}
+  }
+  // actual readings
+  plotReadings(ctx,R,X,Y,css('--brown'),state.simT);
+  keys.unshift([css('--brown'),'your readings ×']);
+  if(st>=5&&done){drawLines(ctx,R,X,Y,css('--cuso4'),false);keys.push([css('--cuso4'),'extrapolated lines']);}
+  // mixing marker
+  if(state.simT>=T_ADD||st>=2){ctx.strokeStyle=css('--copper');ctx.setLineDash([4,4]);ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(X(T_ADD),Tm);ctx.lineTo(X(T_ADD),Tm+H);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle=css('--copper');ctx.font='11px '+css('--f-body');ctx.textAlign='left';ctx.fillText('Mg added, 3.5 min',X(T_ADD)+4,Tm+H-6);}
+  // observed max marker
+  if(st===6&&done){ctx.fillStyle=css('--loss');ctx.font='11px '+css('--f-body');ctx.textAlign='left';
+    ctx.beginPath();ctx.arc(X(R.peak.t),Y(R.peak.T),5,0,7);ctx.strokeStyle=css('--loss');ctx.lineWidth=1.5;ctx.stroke();
+    ctx.fillText('highest reading '+R.peak.T.toFixed(1)+' °C',X(R.peak.t)+8,Y(R.peak.T)+16);}
+  document.getElementById('key').innerHTML=keys.map(([c,l])=>`<span><i style="border-color:${c}"></i>${l}</span>`).join('');
+}
+function plotReadings(ctx,run,X,Y,col,upTo){
+  ctx.strokeStyle=col;ctx.lineWidth=1.6;
+  run.readings.forEach(p=>{if(p.T===null||p.t>upTo)return;const x=X(p.t),y=Y(p.T),s=4;
+    ctx.beginPath();ctx.moveTo(x-s,y-s);ctx.lineTo(x+s,y+s);ctx.moveTo(x+s,y-s);ctx.lineTo(x-s,y+s);ctx.stroke();});
+}
+function drawLines(ctx,run,X,Y,col,quiet){
+  ctx.strokeStyle=col;ctx.lineWidth=quiet?1.2:2;
+  // baseline, extended to mixing time
+  ctx.beginPath();ctx.moveTo(X(0),Y(run.T0));ctx.lineTo(X(T_ADD),Y(run.T0));ctx.stroke();
+  // cooling best fit: solid through data, dashed back to mixing time
+  const f=t=>run.m*t+run.c, t1=run.fitPts[0].t;
+  ctx.beginPath();ctx.moveTo(X(t1),Y(f(t1)));ctx.lineTo(X(T_END),Y(f(T_END)));ctx.stroke();
+  ctx.setLineDash([6,4]);ctx.beginPath();ctx.moveTo(X(T_ADD),Y(f(T_ADD)));ctx.lineTo(X(t1),Y(f(t1)));ctx.stroke();ctx.setLineDash([]);
+  if(quiet)return;
+  // ΔT bracket
+  const x=X(T_ADD)-10;ctx.strokeStyle=col;ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(x,Y(run.T0));ctx.lineTo(x,Y(run.Tex));ctx.moveTo(x-5,Y(run.T0));ctx.lineTo(x+5,Y(run.T0));ctx.moveTo(x-5,Y(run.Tex));ctx.lineTo(x+5,Y(run.Tex));ctx.stroke();
+  ctx.fillStyle=col;ctx.font='bold 13px '+css('--f-data');ctx.textAlign='right';
+  ctx.fillText('ΔT = '+run.dTex.toFixed(1)+' K',x-8,(Y(run.T0)+Y(run.Tex))/2+4);
+}
+
+// ---------- Steps ----------
+const f1=v=>v.toFixed(1), f2=v=>v.toFixed(2);
+const STEPS=[
+ {t:'Set up',a:null,b:()=>`
+  <p>Use a pipette to transfer <b>25.0 cm³</b> of <b>0.200 mol dm⁻³ CuSO₄(aq)</b> into a polystyrene cup. Stand the cup in a beaker so it cannot tip over, and fit a lid with a hole for the thermometer.</p>
+  <p>Weigh about <b>0.20 g of magnesium powder</b>. Magnesium must be in excess so that all the Cu²⁺ ions react: n(Mg) = 0.20 ÷ 24.3 = ${N_MG.toFixed(4)} mol, n(Cu²⁺) = ${N_CU.toFixed(5)} mol.</p>
+  <p>Cu²⁺ is the limiting reagent, so the moles of Cu²⁺ go into the ΔH calculation.</p>`},
+ {t:'Record a baseline',a:{label:'Start stopwatch',to:180},b:()=>`
+  <p>Start the stopwatch and record the temperature <b>every 30 seconds for 3 minutes</b>, stirring gently.</p>
+  <p>The baseline gives a reliable starting temperature from seven readings instead of one, and shows whether the solution is drifting towards room temperature before anything is added.</p>`},
+ {t:'Add the magnesium at 3.5 minutes',a:{label:'Add Mg at 3:30',to:240},b:()=>`
+  <p>At exactly <b>3.5 minutes</b>, add the magnesium and stir. <b>Do not take a reading at 3.5 minutes</b>: you are busy adding the solid, and the mixture has not had time to change.</p>
+  <p>The time of mixing matters later. It is the time the extrapolated lines are drawn to.</p>`},
+ {t:'Keep recording to 10 minutes',a:{label:'Continue to 10:00',to:T_END},b:()=>`
+  <p>Keep stirring and record every 30 s until 10 minutes. Watch for:</p>
+  <ul><li>the blue colour fading as Cu²⁺(aq) is used up</li><li>a pink-brown solid (copper) forming</li><li>the temperature rising to a maximum and then falling slowly as the solution cools</li></ul>`},
+ {t:'Plot the graph',a:null,b:()=>`
+  <p>Plot temperature (y-axis) against time (x-axis). Mark each reading with a small cross. There is no point at 3.5 min.</p>
+  <p>Do not join the dots. Two straight best-fit lines come next.</p>`},
+ {t:'Extrapolate to the time of mixing',a:null,b:()=>`
+  <p>Draw two lines:</p>
+  <ul><li><b>Before mixing:</b> a horizontal best-fit line through the baseline points, extended forward to 3.5 min.</li>
+  <li><b>After the maximum:</b> a best-fit line through the cooling points, extended <i>back</i> to 3.5 min.</li></ul>
+  <p>ΔT is the vertical gap between the two lines at 3.5 min: <b>${f1(R.Tex)} − ${f1(R.T0)} = ${f1(R.dTex)} K</b>.</p>
+  ${R.complete?'':`<div class="callout">With magnesium ${MG[state.mg].label}, the reaction is still going after the maximum, so the "cooling" points are not just cooling. The extrapolated line is unreliable. This is why powder is used.</div>`}`},
+ {t:'Why extrapolate? It is not about insulation',a:null,b:()=>{
+  const c=RC, rows=[R,c].map(r=>`<tr><td>${INS[r.insKey].label}</td><td>${f1(r.dTobs)}</td><td>${f1(r.dTex)}</td></tr>`).join('');
+  return `
+  <div class="callout"><b>Common misconception:</b> "We extrapolate because the cup isn't insulated well enough." Better insulation does not remove the need for the graph.</div>
+  <p>The reaction does not happen instantly. It takes time to release all of its heat. As soon as the solution is warmer than the room it starts losing heat, so heat is leaving <i>while the reaction is still adding heat</i>. The highest reading is therefore always lower than the rise the reaction alone would cause.</p>
+  <p>The cooling line, extended back to 3.5 min, estimates the temperature the solution would have reached <b>if all the heat had been released at the moment of mixing</b>, before any could escape. That is the rise caused by the reaction itself.</p>
+  <p>Insulation only slows the rate of heat loss. It makes the cooling line flatter and straighter, which makes the extrapolation more reliable. It does not stop the loss during the reaction. Try a slower form of magnesium: the highest reading drops a lot, but the extrapolated ΔT barely moves.</p>
+  <div class="toggles">
+   <label><input type="checkbox" id="tPerf" ${state.showPerfect?'checked':''}> Perfect-insulation curve</label>
+   <label><input type="checkbox" id="tLoss" ${state.showLoss?'checked':''}> Shade heat lost</label>
+   <label><input type="checkbox" id="tCmp" ${state.showCompare?'checked':''}> Overlay the other container</label></div>
+  <div class="tblwrap"><table class="cmp"><thead><tr><th>Mg ${MG[state.mg].label}</th><th>Highest reading − baseline / K</th><th>Extrapolated ΔT / K</th></tr></thead>
+  <tbody>${rows}<tr><td>No heat loss at all (theory)</td><td>${f1(DT_AD)}</td><td>${f1(DT_AD)}</td></tr></tbody></table></div>`;}},
+ {t:'Calculate ΔH',a:null,b:()=>{
+  const q=MASS*CAP*R.dTex, dH=-q/N_CU/1000;
+  return `<div class="calc">
+  q = mcΔT = ${f1(MASS)} g × 4.18 J g⁻¹ K⁻¹ × ${f1(R.dTex)} K = <b>${Math.round(q)} J</b><br>
+  n(Cu²⁺) = ${CONC.toFixed(3)} mol dm⁻³ × ${(VOL/1000).toFixed(4)} dm³ = <b>${N_CU.toFixed(5)} mol</b><br>
+  ΔH = −q ÷ n = −${Math.round(q)} ÷ ${N_CU.toFixed(5)} = <b>${Math.round(dH)} kJ mol⁻¹</b></div>
+  <ul><li>m is the mass of <b>solution</b> (25.0 cm³ ≈ 25.0 g), not the mass of magnesium.</li>
+  <li>The sign is negative because the temperature rose: the reaction is exothermic.</li>
+  <li>Data-book value from enthalpies of formation: about ${Math.round(DH_LIT)} kJ mol⁻¹.</li></ul>`;}},
+ {t:'Evaluate',a:null,b:()=>`
+  <ul>
+  <li><b>Heat still lost:</b> the extrapolation assumes the cooling is linear and the reaction is fast. A slow reaction, or very fast cooling, makes the corrected ΔT too small.</li>
+  <li><b>Heat capacity of the cup and thermometer ignored</b>, and the solution assumed to have the density and specific heat capacity of water.</li>
+  <li><b>Side reaction:</b> CuSO₄(aq) is slightly acidic, so some magnesium may react to give hydrogen. Fizzing is a sign of this.</li>
+  <li><b>Precision:</b> ±0.1 °C on each reading, and two readings make up ΔT. Percentage uncertainty in ΔT = 2 × 0.1 ÷ ${f1(R.dTex)} × 100 = ${f2(20/R.dTex)} %.</li>
+  <li><b>Improvement:</b> use a lid, stir continuously, use powder so the reaction is quick, and take readings more often near the maximum.</li></ul>`}
+];
+
+const dots=document.getElementById('dots');
+dots.innerHTML=STEPS.map((s,i)=>`<button data-i="${i}">${i+1}. ${s.t.split(/[:?]/)[0].replace(/ at 3.5 minutes| to 10 minutes| to the time of mixing/,'')}</button>`).join('');
+dots.addEventListener('click',e=>{const b=e.target.closest('button');if(b)goto(+b.dataset.i)});
+
+function minTimeFor(i){ // steps after recording need the run complete
+  return i>=4?T_END:i===3?240:i===2?180:0;}
+function goto(i){
+  state.step=Math.max(0,Math.min(STEPS.length-1,i));
+  const need=minTimeFor(state.step);
+  if(state.simT<need){state.simT=need;state.target=need;state.playing=false;}
+  render();}
+function renderStep(){
+  const s=STEPS[state.step];
+  document.getElementById('stitle').textContent=`${state.step+1}. ${s.t}`;
+  document.getElementById('sbody').innerHTML=s.b();
+  [...dots.children].forEach((b,i)=>{b.className=i===state.step?'on':(i<state.step?'done':'')});
+  const act=document.getElementById('action');act.innerHTML='';
+  if(s.a){const b=document.createElement('button');b.className='btn';b.textContent=s.a.label;
+    b.disabled=state.simT>=s.a.to||state.playing;
+    b.onclick=()=>{state.target=s.a.to;state.playing=true;renderStep();};act.appendChild(b);}
+  document.getElementById('back').disabled=state.step===0;
+  const nx=document.getElementById('next');nx.disabled=state.step===STEPS.length-1;
+  const pendingAction=s.a&&state.simT<s.a.to;
+  nx.textContent=pendingAction?'Skip ahead →':'Next →';
+  const bind=(id,key)=>{const el=document.getElementById(id);if(el)el.onchange=()=>{state[key]=el.checked;drawGraph();}};
+  bind('tPerf','showPerfect');bind('tLoss','showLoss');bind('tCmp','showCompare');
+}
+function render(){drawApparatus();drawTable();drawGraph();renderStep();}
+
+document.getElementById('next').onclick=()=>{const s=STEPS[state.step];
+  if(s.a&&state.simT<s.a.to){state.simT=s.a.to;state.target=s.a.to;state.playing=false;render();return;}
+  goto(state.step+1);};
+document.getElementById('back').onclick=()=>goto(state.step-1);
+document.getElementById('newrun').onclick=()=>{state.seed=Math.floor(Math.random()*1e6);rebuild();render();};
+function seg(id,key){const el=document.getElementById(id);el.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+  state[key]=b.dataset.v;[...el.children].forEach(c=>c.setAttribute('aria-pressed',c===b));rebuild();render();});}
+seg('segIns','ins');seg('segMg','mg');
+
+// ---------- Animation loop ----------
+const SPEED=30, reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let last=performance.now(), lastRow=-1;
+function tick(now){
+  const dt=Math.min(0.1,(now-last)/1000);last=now;
+  if(state.playing){
+    state.simT=reduce?state.target:Math.min(state.target,state.simT+dt*SPEED);
+    if(state.simT>=state.target){state.playing=false;renderStep();}
+    const row=Math.floor(state.simT/30);if(row!==lastRow){lastRow=row;drawTable();drawGraph();
+      const box=tbody.closest('.results');const rows=tbody.querySelectorAll('tr:not(.pending)');const lastEl=rows[rows.length-1];if(lastEl&&box)box.scrollTop=Math.max(0,lastEl.offsetTop-box.clientHeight+lastEl.offsetHeight+4);}
+    if(!state.playing)drawGraph();
+  }
+  drawApparatus();
+  requestAnimationFrame(tick);
+}
+window.addEventListener('resize',()=>{drawApparatus();drawGraph();});
+render();requestAnimationFrame(tick);
+})();
+</script>
+
+</body></html>
