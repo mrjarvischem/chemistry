@@ -1,0 +1,293 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Organic Naming Quiz</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,750&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one centred quiz card; setup → two-part question (group, then name) → round summary. */
+:root{
+  --paper:#f5f7f5; --surface:#ffffff; --ink:#16232a; --muted:#566670; --line:#d6dedb;
+  --accent:#0d6d73; --accent-ink:#ffffff; --accent-soft:#e1efee;
+  --amber:#a8650a; --amber-soft:#fbf1df;
+  --ok:#2a7a3e; --ok-soft:#e3f2e6; --bad:#b0281f; --bad-soft:#f9e6e3;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --f-chem:"JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --paper:#0f171b; --surface:#162127; --ink:#e4ebe9; --muted:#9aabb0; --line:#2a3a42;
+  --accent:#55b8bd; --accent-ink:#0b1417; --accent-soft:#143338;
+  --amber:#e2a54a; --amber-soft:#2e2412;
+  --ok:#72c58a; --ok-soft:#163423; --bad:#f08f84; --bad-soft:#3a1d1a; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --paper:#0f171b; --surface:#162127; --ink:#e4ebe9; --muted:#9aabb0; --line:#2a3a42;
+  --accent:#55b8bd; --accent-ink:#0b1417; --accent-soft:#143338;
+  --amber:#e2a54a; --amber-soft:#2e2412;
+  --ok:#72c58a; --ok-soft:#163423; --bad:#f08f84; --bad-soft:#3a1d1a; color-scheme:dark }
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.55;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+.wrap{max-width:760px;margin:0 auto;padding-block:28px 80px}
+header{display:flex;flex-wrap:wrap;gap:10px 24px;align-items:flex-end;justify-content:space-between;padding-bottom:18px;border-bottom:2px solid var(--ink);margin-bottom:26px}
+.kicker{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+h1{font-family:var(--f-display);font-weight:750;font-size:clamp(30px,5vw,44px);line-height:1.05;margin:6px 0 0;text-wrap:balance}
+.score{font-variant-numeric:tabular-nums;font-size:15px;color:var(--muted);text-align:right}
+.score b{font-size:22px;color:var(--ink);font-family:var(--f-display)}
+h2{font-family:var(--f-display);font-size:24px;margin:0 0 8px}
+.muted{color:var(--muted)}
+.field{margin:20px 0}
+.field > .lbl{font-weight:700;margin-bottom:8px;display:block}
+.seg{display:flex;flex-wrap:wrap;gap:8px}
+.seg button,.chip{all:unset;cursor:pointer;padding:8px 14px;border:1.5px solid var(--line);border-radius:6px;font-size:15px;background:var(--surface)}
+.seg button[aria-pressed="true"],.chip[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.seg button:focus-visible,.chip:focus-visible,.btn:focus-visible,.opt:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:var(--accent-ink);font-weight:700;padding:11px 20px;border-radius:6px;font-size:16px}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line);font-weight:400}
+.btn[disabled]{opacity:.45;cursor:default}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.card{border:2px solid var(--ink);border-radius:10px;background:var(--surface);padding:20px}
+.qtop{display:flex;justify-content:space-between;gap:10px;font-size:13px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--accent)}
+.struct{min-height:190px;display:grid;place-items:center;margin:14px 0 6px;padding:10px;border-radius:8px;background:var(--paper)}
+.struct svg{width:100%;max-width:340px;height:auto}
+.struct .cf{font-family:var(--f-chem);font-size:clamp(20px,4.5vw,28px);text-align:center;overflow-x:auto;max-width:100%}
+.struct .cf sub{font-size:.65em}
+.ftype{text-align:center;font-size:13px;color:var(--muted);margin-bottom:14px}
+.part{border-top:1px solid var(--line);padding-top:16px;margin-top:16px}
+.part h3{margin:0 0 10px;font-size:18px}
+.part h3 .n{font-family:var(--f-chem);color:var(--muted);font-weight:400;font-size:14px;margin-right:6px}
+input[type=text]{font:inherit;padding:10px 12px;border:1.5px solid var(--line);border-radius:6px;background:var(--paper);color:var(--ink);flex:1 1 220px;min-width:0}
+input[type=text]:focus{outline:2px solid var(--accent);outline-offset:1px}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:8px}
+.opt{all:unset;cursor:pointer;display:grid;grid-template-columns:26px 1fr;gap:10px;align-items:start;padding:10px 12px;border:1.5px solid var(--line);border-radius:6px;background:var(--paper)}
+.opt:hover:not([disabled]){border-color:var(--accent)}
+.opt .let{font-family:var(--f-chem);font-weight:600;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;border:1.5px solid var(--muted);font-size:12px;color:var(--muted)}
+.opt .nm{font-family:var(--f-chem);font-size:15.5px;word-break:break-word}
+.opt[disabled]{cursor:default}
+.opt.right{border-color:var(--ok);background:var(--ok-soft)}
+.opt.right .let{background:var(--ok);border-color:var(--ok);color:var(--surface)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.opt.wrong .let{border-color:var(--bad);color:var(--bad)}
+.opt.faded{opacity:.5}
+.fb{margin-top:12px;padding:12px 14px;border-radius:6px;font-size:16px}
+.fb.ok{background:var(--ok-soft)}
+.fb.bad{background:var(--bad-soft)}
+.fb b{display:block;margin-bottom:2px}
+.fb.ok b{color:var(--ok)} .fb.bad b{color:var(--bad)}
+.next{margin-top:18px;display:flex;justify-content:flex-end}
+.tbl{overflow-x:auto;margin:16px 0}
+table{border-collapse:collapse;width:100%;min-width:460px;font-size:15px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
+th{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+td.m{font-family:var(--f-chem);font-size:14px}
+.y{color:var(--ok);font-weight:700}.x{color:var(--bad);font-weight:700}
+.big{font-family:var(--f-display);font-size:48px;font-weight:750;line-height:1;font-variant-numeric:tabular-nums}
+.note{font-size:14px;color:var(--muted)}
+</style>
+
+<div class="wrap">
+  <header>
+    <div><div class="kicker">AQA A-level Chemistry · 3.3.1 · Year 1 functional groups</div><h1>Organic Naming Quiz</h1></div>
+    <div class="score" id="score"></div>
+  </header>
+  <main id="app"></main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/smiles-drawer@2.1.7/dist/smiles-drawer.min.js"></script>
+<script>
+/* name, SMILES, structural formula (null = ring, skeletal only), group, distractors [name, why wrong], explanation, multi */
+const M=[
+['2-methylbutane','CC(C)CC','CH3CH(CH3)CH2CH3','alkane',[['3-methylbutane','Number from the end nearer the branch, so the methyl is on carbon 2.'],['pentane','There are five carbons, but not in one straight chain.'],['2-ethylpropane','The longest chain is four carbons, not three.']],'Longest chain: 4 C (butane). Methyl on carbon 2.'],
+['2,2-dimethylpropane','CC(C)(C)C','CH3C(CH3)2CH3','alkane',[['2-dimethylpropane','Each methyl needs its own number: 2,2-.'],['2,2-methylpropane','Two methyl groups need the prefix di-.'],['1,1-dimethylpropane','A methyl on carbon 1 would just lengthen the chain.']],'Longest chain: 3 C (propane). Two methyls on carbon 2: 2,2-dimethyl.'],
+['3-methylpentane','CCC(C)CC','CH3CH2CH(CH3)CH2CH3','alkane',[['2-ethylbutane','The longest chain runs through the ethyl group: five carbons.'],['3-methylhexane','Count the main chain again: five carbons.'],['hexane','Six carbons in total, but not in one straight chain.']],'Longest chain: 5 C (pentane). Methyl on carbon 3 from either end.'],
+['2,3-dimethylbutane','CC(C)C(C)C','CH3CH(CH3)CH(CH3)CH3','alkane',[['2,3-methylbutane','Two methyl groups need the prefix di-.'],['2-methyl-3-methylbutane','Identical substituents are combined: 2,3-dimethyl.'],['hexane','Six carbons in total, but branched.']],'Longest chain: 4 C. Methyls on carbons 2 and 3.'],
+['3-ethyl-2-methylpentane','CCC(CC)C(C)C','CH3CH2CH(C2H5)CH(CH3)CH3','alkane',[['2-methyl-3-ethylpentane','Prefixes go in alphabetical order: ethyl before methyl.'],['3-ethyl-4-methylpentane','Number from the other end to get the lower set of numbers, 2,3.'],['3-ethyl-2-methylhexane','The longest chain has five carbons.']],'Longest chain: 5 C. Numbers 2,3 (lowest). Ethyl before methyl alphabetically.'],
+['but-1-ene','C=CCC','CH2=CHCH2CH3','alkene',[['but-2-ene','The double bond is between carbons 1 and 2.'],['but-3-ene','Number from the end nearer the double bond.'],['butane','There is a C=C, so the ending is -ene.']],'4 C, C=C starting at carbon 1.'],
+['pent-2-ene','CC=CCC','CH3CH=CHCH2CH3','alkene',[['pent-3-ene','Number from the end nearer the double bond.'],['pent-1-ene','The double bond does not involve an end carbon.'],['pent-2-ane','The -ane ending is for single bonds only.']],'5 C, C=C starting at carbon 2.'],
+['2-methylpropene','C=C(C)C','CH2=C(CH3)CH3','alkene',[['but-1-ene','That is the straight-chain isomer. This chain is branched.'],['1-methylpropene','A methyl on carbon 1 would lengthen the chain.'],['2-methylpropane','There is a C=C, so the ending is -ene.']],'Longest chain with the C=C: 3 C. Methyl on carbon 2.'],
+['3-methylbut-1-ene','C=CC(C)C','CH2=CHCH(CH3)CH3','alkene',[['2-methylbut-3-ene','The C=C gets the lowest number before the branch does.'],['3-methylbut-2-ene','The double bond is between carbons 1 and 2.'],['pent-1-ene','The chain is branched: four carbons plus a methyl.']],'Number from the C=C end: C=C at 1, methyl at 3.'],
+['buta-1,3-diene','C=CC=C','CH2=CHCH=CH2','alkene',[['but-1,3-diene','An extra "a" is added before a consonant: buta-.'],['but-1,3-ene','Two double bonds need -diene.'],['buta-1,2-diene','The double bonds start at carbons 1 and 3.']],'4 C, two C=C starting at carbons 1 and 3.'],
+['cyclohexene','C1=CCCCC1',null,'alkene',[['cyclohexane','The ring contains a C=C.'],['hex-1-ene','A ring is shown by the prefix cyclo-.'],['benzene','Benzene has a delocalised ring; this has one C=C.']],'Six-carbon ring with one C=C.'],
+['2-bromopropane','CC(Br)C','CH3CHBrCH3','halogenoalkane',[['1-bromopropane','The Br is on the middle carbon.'],['bromopropane','A number is needed: there are two possible positions.'],['2-bromopropene','There is no C=C.']],'3 C, Br on carbon 2.'],
+['1-chlorobutane','ClCCCC','CH3CH2CH2CH2Cl','halogenoalkane',[['4-chlorobutane','Number from the end nearer the Cl.'],['2-chlorobutane','The Cl is on an end carbon.'],['1-chloropropane','Count again: four carbons.']],'4 C, Cl on carbon 1.'],
+['2-bromo-2-methylpropane','CC(C)(C)Br','(CH3)3CBr','halogenoalkane',[['2-methyl-2-bromopropane','Alphabetical order: bromo before methyl.'],['2-bromobutane','The longest chain is three carbons; the fourth carbon is a branch.'],['1-bromo-1,1-dimethylethane','Find the longest chain first: three carbons.']],'Longest chain: 3 C. Br and methyl both on carbon 2.'],
+['1,2-dichloroethane','ClCCCl','CH2ClCH2Cl','halogenoalkane',[['1,1-dichloroethane','There is one Cl on each carbon.'],['1,2-chloroethane','Two Cl atoms need the prefix di-.'],['1,2-dichloroethene','There is no C=C.']],'2 C, one Cl on each carbon.'],
+['2-chloro-3-methylbutane','CC(Cl)C(C)C','CH3CHClCH(CH3)CH3','halogenoalkane',[['3-chloro-2-methylbutane','Both ends give 2,3. When there is a tie, the group first in the alphabet (chloro) gets the lower number.'],['2-methyl-3-chlorobutane','Prefixes go in alphabetical order: chloro before methyl.'],['2-chloro-3-methylpentane','Count the main chain: four carbons.']],'4 C. Numbers are 2,3 either way, so chloro (first alphabetically) gets 2.'],
+['1-bromo-2-chloroethane','BrCCCl','CH2BrCH2Cl','halogenoalkane',[['2-bromo-1-chloroethane','Numbers tie (1,2), so bromo, first in the alphabet, gets 1.'],['1-chloro-2-bromoethane','Prefixes go in alphabetical order: bromo before chloro.'],['1,2-bromochloroethane','Each different prefix gets its own number.']],'2 C. Tie on numbers, so alphabetical: bromo gets 1.'],
+['trichloromethane','ClC(Cl)Cl','CHCl3','halogenoalkane',[['chloroform','That is the traditional name, not the IUPAC name.'],['trichloroethane','There is only one carbon: meth-.'],['tetrachloromethane','Count the Cl atoms: three.']],'1 C with three Cl atoms.'],
+['iodoethane','CCI','CH3CH2I','halogenoalkane',[['ethyl iodide','That is an older name; use the IUPAC prefix iodo-.'],['iodomethane','Count the carbons: two.'],['iodoethene','There is no C=C.']],'2 C, one I.'],
+['ethanol','CCO','CH3CH2OH','alcohol',[['ethanal','The -al ending is for aldehydes (C=O at the end).'],['methanol','Count the carbons: two.'],['ethanoic acid','There is no C=O.']],'2 C with an OH.'],
+['propan-2-ol','CC(O)C','CH3CH(OH)CH3','alcohol',[['propan-1-ol','The OH is on the middle carbon.'],['propanol','A number is needed: the OH could be on carbon 1 or 2.'],['propan-2-one','There is an OH, not a C=O.']],'3 C, OH on carbon 2.'],
+['butan-1-ol','CCCCO','CH3CH2CH2CH2OH','alcohol',[['butan-4-ol','Number from the end nearer the OH.'],['butanal','There is an OH, not a CHO.'],['butan-2-ol','The OH is on an end carbon.']],'4 C, OH on carbon 1.'],
+['2-methylpropan-2-ol','CC(C)(C)O','(CH3)3COH','alcohol',[['2-methylpropan-1-ol','The OH is on the central carbon.'],['butan-2-ol','The chain is branched: three carbons plus a methyl.'],['1,1-dimethylethanol','Find the longest chain first: three carbons.']],'Longest chain: 3 C. OH and methyl on carbon 2.'],
+['pentan-3-ol','CCC(O)CC','CH3CH2CH(OH)CH2CH3','alcohol',[['pentan-2-ol','Count again: the OH is on the middle carbon, carbon 3.'],['pent-3-ol','The stem keeps "an": pentan-3-ol.'],['pentan-3-one','There is an OH, not a C=O.']],'5 C, OH on carbon 3.'],
+['ethane-1,2-diol','OCCO','HOCH2CH2OH','alcohol',[['ethan-1,2-diol','Keep the "e" before a consonant: ethane-.'],['ethane-1,1-diol','There is one OH on each carbon.'],['1,2-ethanol','Two OH groups need the ending -diol.']],'2 C, one OH on each carbon: -1,2-diol.'],
+['3-methylbutan-2-ol','CC(O)C(C)C','CH3CH(OH)CH(CH3)CH3','alcohol',[['2-methylbutan-3-ol','The OH (suffix group) gets the lowest number.'],['3-methylbutan-2-one','There is an OH, not a C=O.'],['2-methylbutan-2-ol','The OH and methyl are on different carbons.']],'4 C. Number from the OH end: OH at 2, methyl at 3.'],
+['cyclohexanol','OC1CCCCC1',null,'alcohol',[['cyclohexanone','There is an OH, not a C=O.'],['hexan-1-ol','A ring is shown by the prefix cyclo-.'],['cyclohexene','There is no C=C; the group is OH.']],'Six-carbon ring with an OH.'],
+['methanol','CO','CH3OH','alcohol',[['methanal','There is an OH, not a C=O.'],['ethanol','Only one carbon: meth-.'],['methanoic acid','There is no C=O.']],'1 C with an OH.'],
+['ethanal','CC=O','CH3CHO','aldehyde',[['ethanol','There is a C=O, not an OH.'],['ethanone','A C=O at the end of a chain is an aldehyde: -al.'],['methanal','Count the carbons: two.']],'2 C, CHO at the end.'],
+['propanal','CCC=O','CH3CH2CHO','aldehyde',[['propanone','The C=O is at the end of the chain, so it is an aldehyde.'],['propan-1-al','The CHO carbon is always carbon 1, so no number is used.'],['propan-1-ol','There is a C=O, not an OH.']],'3 C including the CHO carbon.'],
+['butanal','CCCC=O','CH3CH2CH2CHO','aldehyde',[['butanone','The C=O is at the end: aldehyde.'],['propanal','Count the CHO carbon too: four carbons.'],['butan-1-al','The CHO carbon is always carbon 1; no number needed.']],'4 C including the CHO carbon.'],
+['2-methylpropanal','CC(C)C=O','CH3CH(CH3)CHO','aldehyde',[['butanal','The chain is branched: three carbons plus a methyl.'],['3-methylpropanal','The CHO carbon is carbon 1, so the methyl is on carbon 2.'],['2-methylpropanone','The C=O is at the end of the chain: -al.']],'3 C chain from the CHO carbon. Methyl on carbon 2.'],
+['methanal','C=O','HCHO','aldehyde',[['methanol','There is a C=O, not an OH.'],['ethanal','Only one carbon: meth-.'],['methanone','A C=O on a carbon with H is an aldehyde: -al.']],'1 C aldehyde.'],
+['propanone','CC(=O)C','CH3COCH3','ketone',[['propanal','The C=O is in the middle of the chain, so it is a ketone.'],['propan-2-ol','There is a C=O, not an OH.'],['ethanone','Count the carbons: three.']],'3 C with C=O on the middle carbon.'],
+['butanone','CCC(=O)C','CH3COCH2CH3','ketone',[['butanal','The C=O is not at the end: ketone.'],['butan-3-one','Number from the end nearer the C=O.'],['butan-2-ol','There is a C=O, not an OH.']],'4 C ketone. The C=O can only be on carbon 2, so no number is needed.'],
+['pentan-2-one','CCCC(C)=O','CH3COCH2CH2CH3','ketone',[['pentan-4-one','Number from the end nearer the C=O.'],['pentan-3-one','The C=O is on carbon 2, next to an end carbon.'],['pentanal','The C=O is not at the end: ketone.']],'5 C, C=O on carbon 2.'],
+['pentan-3-one','CCC(=O)CC','CH3CH2COCH2CH3','ketone',[['pentan-2-one','Count again: the C=O is on the middle carbon.'],['pentan-3-ol','There is a C=O, not an OH.'],['pentanal','The C=O is in the middle: ketone.']],'5 C, C=O on carbon 3.'],
+['3-methylbutan-2-one','CC(C)C(C)=O','CH3COCH(CH3)CH3','ketone',[['2-methylbutan-3-one','The C=O gets the lowest number.'],['3-methylbutanal','The C=O is not at the end: ketone.'],['3-methylbutan-2-ol','There is a C=O, not an OH.']],'4 C. C=O at 2, methyl at 3.'],
+['cyclohexanone','O=C1CCCCC1',null,'ketone',[['cyclohexanol','There is a C=O, not an OH.'],['hexanal','A C=O in a ring always has carbons on both sides: a ketone, with prefix cyclo-.'],['hexan-1-one','A ring is shown by the prefix cyclo-.']],'Six-carbon ring with a C=O.'],
+['ethanoic acid','CC(=O)O','CH3COOH','carboxylic acid',[['methanoic acid','The COOH carbon counts: two carbons.'],['ethanal','There is an OH on the C=O carbon: COOH.'],['ethanol','There is a C=O as well as the OH.']],'2 C including the COOH carbon.'],
+['propanoic acid','CCC(=O)O','CH3CH2COOH','carboxylic acid',[['propan-1-oic acid','The COOH carbon is always carbon 1; no number.'],['butanoic acid','Count again: three carbons including COOH.'],['propanal','There is an OH on the C=O carbon: COOH.']],'3 C including the COOH carbon.'],
+['2-methylpropanoic acid','CC(C)C(=O)O','CH3CH(CH3)COOH','carboxylic acid',[['butanoic acid','The chain is branched.'],['3-methylpropanoic acid','The COOH carbon is carbon 1, so the methyl is on carbon 2.'],['2-methylpropanal','There is an OH on the C=O carbon: COOH.']],'3 C chain from COOH. Methyl on carbon 2.'],
+['methanoic acid','OC=O','HCOOH','carboxylic acid',[['methanal','There is an OH on the C=O carbon.'],['ethanoic acid','Only one carbon.'],['methanol','There is a C=O as well as the OH.']],'1 C carboxylic acid.'],
+['3-methylbutanoic acid','CC(C)CC(=O)O','CH3CH(CH3)CH2COOH','carboxylic acid',[['2-methylbutanoic acid','Count from the COOH carbon: the methyl is on carbon 3.'],['pentanoic acid','The chain is branched.'],['3-methylbutanal','There is an OH on the C=O carbon: COOH.']],'4 C chain from COOH. Methyl on carbon 3.'],
+['ethanedioic acid','OC(=O)C(=O)O','HOOCCOOH','carboxylic acid',[['ethandioic acid','Keep the "e" before a consonant: ethane-.'],['ethanoic acid','Two COOH groups need -dioic acid.'],['oxalic acid','That is the traditional name.']],'2 C, both are COOH carbons.'],
+['propanenitrile','CCC#N','CH3CH2CN','nitrile',[['ethanenitrile','The CN carbon counts: three carbons.'],['propylamine','C≡N is a nitrile, not an amine (NH₂).'],['butanenitrile','Count again: three carbons.']],'3 C including the CN carbon.'],
+['butanenitrile','CCCC#N','CH3CH2CH2CN','nitrile',[['propanenitrile','Count the CN carbon too: four carbons.'],['pentanenitrile','Count again: four carbons.'],['butylamine','C≡N is a nitrile, not an amine.']],'4 C including the CN carbon.'],
+['ethylamine','CCN','CH3CH2NH2','amine',[['methylamine','Count the carbons: two.'],['ethanenitrile','NH₂ is an amine group, not C≡N.'],['ethanamide','An amide also has a C=O.']],'2 C with NH₂.'],
+['propylamine','CCCN','CH3CH2CH2NH2','amine',[['propanenitrile','NH₂ is an amine, not C≡N.'],['ethylamine','Count the carbons: three.'],['propanamide','An amide also has a C=O.']],'3 C with NH₂.'],
+['4-chlorobutan-2-ol','CC(O)CCCl','CH3CH(OH)CH2CH2Cl','alcohol',[['1-chlorobutan-3-ol','The OH (suffix group) gets the lowest number, not the Cl.'],['2-hydroxy-4-chlorobutane','The OH gives the suffix -ol. Halogens are always prefixes.'],['4-chlorobutan-2-one','There is an OH, not a C=O.']],'OH gives the suffix and the lowest number (2). Cl on carbon 4.',1],
+['but-3-en-2-ol','CC(O)C=C','CH3CH(OH)CH=CH2','alcohol',[['but-1-en-3-ol','The OH outranks the C=C, so the OH gets the lowest number.'],['butan-2-ol','There is a C=C as well.'],['but-3-ene-2-ol','The "e" of -ene is dropped before a vowel: -en-2-ol.']],'OH gives the suffix and lowest number (2). C=C starts at carbon 3.',1],
+['3-bromopropanoic acid','BrCCC(=O)O','CH2BrCH2COOH','carboxylic acid',[['1-bromopropanoic acid','The COOH carbon is carbon 1.'],['2-bromopropanoic acid','Count from COOH: the Br is on carbon 3.'],['3-bromopropanal','There is an OH on the C=O carbon: COOH.']],'COOH carbon = 1. Br on carbon 3.',1],
+['2-hydroxypropanoic acid','CC(O)C(=O)O','CH3CH(OH)COOH','carboxylic acid',[['3-hydroxypropanoic acid','Count from COOH: the OH is on carbon 2.'],['2-hydroxypropanal','There is an OH on the C=O carbon: COOH.'],['propan-2-ol-oic acid','The acid gives the suffix; the OH becomes the prefix hydroxy-.']],'COOH outranks OH, so OH becomes hydroxy-, on carbon 2.',1],
+['prop-2-en-1-ol','C=CCO','CH2=CHCH2OH','alcohol',[['prop-1-en-3-ol','The OH gets the lowest number.'],['propan-1-ol','There is a C=C as well.'],['prop-2-enal','There is an OH, not a CHO.']],'OH at carbon 1 (suffix). C=C starts at carbon 2.',1]
+];
+
+const GROUPS=['alkane','alkene','halogenoalkane','alcohol','aldehyde','ketone','carboxylic acid','nitrile','amine'];
+const CONF={alcohol:['aldehyde','carboxylic acid','ketone'],aldehyde:['ketone','alcohol','carboxylic acid'],ketone:['aldehyde','alcohol','carboxylic acid'],'carboxylic acid':['aldehyde','alcohol','ketone'],alkane:['alkene','halogenoalkane','alcohol'],alkene:['alkane','alcohol','halogenoalkane'],halogenoalkane:['alkane','alkene','amine'],nitrile:['amine','alkene','ketone'],amine:['nitrile','alcohol','halogenoalkane']};
+const WHY={alkane:'Only C–C and C–H single bonds.',alkene:'There is a C=C double bond.',halogenoalkane:'A halogen atom (F, Cl, Br or I) is bonded to carbon.',alcohol:'An –OH on a carbon that has no C=O.',aldehyde:'A C=O at the end of the chain (–CHO).',ketone:'A C=O with a carbon on each side.','carboxylic acid':'A C=O and an OH on the same carbon (–COOH).',nitrile:'A C≡N triple bond.',amine:'An –NH₂ group.'};
+const SYN={alkane:['alkane','cycloalkane'],alkene:['alkene','cycloalkene'],halogenoalkane:['halogenoalkane','haloalkane','bromoalkane','chloroalkane','iodoalkane','fluoroalkane','alkylhalide'],alcohol:['alcohol','primaryalcohol','secondaryalcohol','tertiaryalcohol','hydroxyl','hydroxy'],aldehyde:['aldehyde'],ketone:['ketone'],'carboxylic acid':['carboxylicacid','carboxylic','carboxyl'],nitrile:['nitrile'],amine:['amine','primaryamine']};
+
+/* ---------- helpers ---------- */
+function fmtF(t){ let o='',i=0; while(i<t.length){ const c=t[i]; if(/\d/.test(c)&&i>0&&/[A-Za-z)]/.test(t[i-1])){ let d=''; while(i<t.length&&/\d/.test(t[i])){d+=t[i];i++;} o+='<sub>'+d+'</sub>'; continue;} o+=c; i++; } return o; }
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function lev(a,b){ const d=[...Array(b.length+1).keys()]; for(let i=1;i<=a.length;i++){ let p=d[0]; d[0]=i; for(let j=1;j<=b.length;j++){ const t=d[j]; d[j]=Math.min(d[j]+1,d[j-1]+1,p+(a[i-1]===b[j-1]?0:1)); p=t; } } return d[b.length]; }
+function norm(s){ return s.toLowerCase().replace(/[^a-z]/g,'').replace(/s$/,''); }
+function matchGroup(txt){
+  const n=norm(txt); if(!n) return null;
+  let best=null,bd=99;
+  for(const g of GROUPS) for(const s of SYN[g]){ const d=lev(n,s); const tol=s.length>=8?2:s.length>=6?1:0; if(d<=tol && d<bd){ best=g; bd=d; } }
+  return best;
+}
+const store={ get(k){ try{ return JSON.parse(localStorage.getItem(k)); }catch(e){ return null; } }, set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} } };
+
+/* ---------- state ---------- */
+let S=Object.assign({gmode:'type',view:'mix',len:10,groups:GROUPS.slice()}, store.get('naming-quiz-settings')||{});
+let R=null; // round
+const app=document.getElementById('app');
+
+function setScore(){ const el=document.getElementById('score'); if(!R){ el.innerHTML=''; return; } el.innerHTML=`Question ${Math.min(R.i+1,R.qs.length)} of ${R.qs.length}<br><b>${R.pts}</b> / ${R.qs.length*2} points`; }
+
+/* ---------- setup ---------- */
+function setup(){
+  R=null; setScore();
+  const seg=(key,opts)=>`<div class="seg" data-key="${key}">${opts.map(([v,l])=>`<button type="button" data-v="${v}" aria-pressed="${S[key]==v}">${l}</button>`).join('')}</div>`;
+  const count=M.filter(m=>S.groups.includes(m[3])).length;
+  app.innerHTML=`<div class="card">
+   <h2>Set up a round</h2>
+   <p class="muted">Each question shows a structure. First identify the functional group, then choose the correct name. One point for each part.</p>
+   <div class="field"><span class="lbl">Part 1: answer the functional group by</span>${seg('gmode',[['type','Typing it'],['mc','Multiple choice']])}</div>
+   <div class="field"><span class="lbl">Show structures as</span>${seg('view',[['skeletal','Skeletal formulae'],['structural','Structural formulae'],['mix','A mix of both']])}</div>
+   <div class="field"><span class="lbl">Questions per round</span>${seg('len',[[10,'10'],[15,'15'],[20,'20']])}</div>
+   <div class="field"><span class="lbl">Include these functional groups</span><div class="seg" id="gsel">${GROUPS.map(g=>`<button type="button" class="chip" data-g="${g}" aria-pressed="${S.groups.includes(g)}">${g}</button>`).join('')}</div>
+   <p class="note" id="gcount">${count} molecules in the pool.</p></div>
+   <button class="btn" id="go" ${count?'':'disabled'}>Start the quiz →</button></div>`;
+  app.querySelectorAll('.seg[data-key] button').forEach(b=>b.onclick=()=>{ const k=b.parentNode.dataset.key; S[k]= k==='len'?+b.dataset.v:b.dataset.v; store.set('naming-quiz-settings',S); setup(); });
+  app.querySelectorAll('#gsel .chip').forEach(b=>b.onclick=()=>{ const g=b.dataset.g; S.groups=S.groups.includes(g)?S.groups.filter(x=>x!==g):[...S.groups,g]; store.set('naming-quiz-settings',S); setup(); });
+  document.getElementById('go').onclick=()=>start();
+}
+
+function start(pool){
+  const src=pool||shuffle(M.filter(m=>S.groups.includes(m[3])));
+  const qs=src.slice(0,Math.min(S.len,src.length)).map(m=>{
+    const ring=m[2]===null; const v= ring?'skeletal': S.view==='mix'?(Math.random()<.5?'skeletal':'structural'):S.view;
+    return {m, v, gopts:shuffle([m[3],...CONF[m[3]]]), nopts:shuffle([[m[0],null],...m[4]]), g:null, gOk:null, n:null, nOk:null};
+  });
+  R={qs,i:0,pts:0}; question();
+}
+
+/* ---------- question ---------- */
+function drawStruct(q){
+  const box=document.getElementById('struct');
+  if(q.v==='structural' || typeof SmilesDrawer==='undefined'){
+    box.innerHTML=`<div class="cf">${q.m[2]?fmtF(q.m[2]):'(drawing unavailable)'}</div>`;
+    if(q.v==='skeletal') document.getElementById('ftype').textContent='Structural formula (skeletal drawing could not load)';
+    return;
+  }
+  box.innerHTML='<svg id="mol"></svg>';
+  const cs=getComputedStyle(document.documentElement), ink=cs.getPropertyValue('--ink').trim(), bg=cs.getPropertyValue('--paper').trim();
+  const th={C:ink,O:ink,N:ink,F:ink,CL:ink,BR:ink,I:ink,P:ink,S:ink,B:ink,SI:ink,H:ink,BACKGROUND:bg};
+  const d=new SmilesDrawer.SvgDrawer({width:340,height:220,bondThickness:1.4,bondLength:26,fontSizeLarge:10,fontSizeSmall:7,padding:16,compactDrawing:false,themes:{mono:th}});
+  SmilesDrawer.parse(q.m[1],tree=>{ try{ d.draw(tree,'mol','mono'); }catch(e){ box.innerHTML=`<div class="cf">${fmtF(q.m[2]||'')}</div>`; } },()=>{ box.innerHTML=`<div class="cf">${fmtF(q.m[2]||'')}</div>`; });
+}
+
+function question(){
+  setScore();
+  const q=R.qs[R.i], m=q.m;
+  const gq= m[5+1] ? 'This molecule has two functional groups. Which one gives the name its suffix?' : 'Which functional group is present?';
+  let part1;
+  if(q.g===null){
+    part1 = S.gmode==='type'
+     ? `<div class="row"><input type="text" id="gin" autocomplete="off" spellcheck="false" placeholder="e.g. alkene" aria-label="Functional group"><button class="btn" id="gchk">Check</button></div>`
+     : `<div class="opts">${q.gopts.map((g,k)=>`<button class="opt" data-g="${g}"><span class="let">${'ABCD'[k]}</span><span>${g}</span></button>`).join('')}</div>`;
+  } else {
+    const typed = S.gmode==='type';
+    part1 = (typed?`<p>You answered: <strong>${q.g||'(blank)'}</strong></p>`:
+      `<div class="opts">${q.gopts.map((g,k)=>{ const c=g===m[3]?'right':g===q.g?'wrong':'faded'; return `<button class="opt ${c}" disabled><span class="let">${'ABCD'[k]}</span><span>${g}</span></button>`; }).join('')}</div>`)
+     + `<div class="fb ${q.gOk?'ok':'bad'}"><b>${q.gOk?'Correct':'Not quite'}: ${m[3]}</b>${WHY[m[3]]}${m[6]?' The other group is named as a prefix or with its position number.':''}</div>`;
+  }
+  let part2='';
+  if(q.g!==null){
+    part2=`<div class="part"><h3><span class="n">2</span>Choose the correct name</h3><div class="opts">${q.nopts.map(([nm],k)=>{
+      let c=''; if(q.n!==null){ c= nm===m[0]?'right': nm===q.n?'wrong':'faded'; }
+      return `<button class="opt ${c}" data-n="${k}" ${q.n!==null?'disabled':''}><span class="let">${'ABCD'[k]}</span><span class="nm">${nm}</span></button>`; }).join('')}</div>`;
+    if(q.n!==null){
+      const why = q.nOk?'' : (q.nopts.find(o=>o[0]===q.n)||[])[1];
+      part2+=`<div class="fb ${q.nOk?'ok':'bad'}"><b>${q.nOk?'Correct':'Not quite'}: ${m[0]}</b>${why?why+' ':''}${m[5]}</div>
+      <div class="next"><button class="btn" id="nxt">${R.i<R.qs.length-1?'Next molecule →':'See results →'}</button></div>`;
+    }
+    part2+='</div>';
+  }
+  app.innerHTML=`<div class="card"><div class="qtop"><span>Molecule ${R.i+1}</span><span>${q.v==='skeletal'?'Skeletal formula':'Structural formula'}</span></div>
+   <div class="struct" id="struct"></div><div class="ftype" id="ftype"></div>
+   <div class="part" style="border-top:0;margin-top:0;padding-top:0"><h3><span class="n">1</span>${gq}</h3>${part1}</div>${part2}</div>`;
+  drawStruct(q);
+  const gin=document.getElementById('gin');
+  if(gin){ gin.focus({preventScroll:true}); const go=()=>answerG(gin.value.trim()); document.getElementById('gchk').onclick=go; gin.onkeydown=e=>{ if(e.key==='Enter') go(); }; }
+  app.querySelectorAll('.opt[data-g]').forEach(b=>b.onclick=()=>answerG(b.dataset.g));
+  app.querySelectorAll('.opt[data-n]').forEach(b=>b.onclick=()=>answerN(+b.dataset.n));
+  const nx=document.getElementById('nxt'); if(nx){ nx.focus({preventScroll:true}); nx.onclick=()=>{ R.i++; R.i<R.qs.length?question():results(); window.scrollTo({top:0}); }; }
+}
+function answerG(v){
+  const q=R.qs[R.i];
+  const g = S.gmode==='type' ? matchGroup(v) : v;
+  q.g = S.gmode==='type' ? (v||'') : v;
+  q.gOk = g===q.m[3]; if(q.gOk) R.pts++;
+  question();
+}
+function answerN(k){
+  const q=R.qs[R.i]; const nm=q.nopts[k][0];
+  q.n=nm; q.nOk= nm===q.m[0]; if(q.nOk) R.pts++;
+  question();
+}
+
+/* ---------- results ---------- */
+function results(){
+  setScore();
+  const tot=R.qs.length*2, missed=R.qs.filter(q=>!q.gOk||!q.nOk).map(q=>q.m);
+  app.innerHTML=`<div class="card"><h2>Round complete</h2>
+   <div class="row" style="gap:24px;margin:10px 0"><div class="big">${R.pts}<span class="muted" style="font-size:24px"> / ${tot}</span></div>
+   <div class="muted">${Math.round(R.pts/tot*100)}% · Functional groups ${R.qs.filter(q=>q.gOk).length}/${R.qs.length} · Names ${R.qs.filter(q=>q.nOk).length}/${R.qs.length}</div></div>
+   <div class="tbl"><table><thead><tr><th>Molecule</th><th>Group</th><th>Name</th></tr></thead><tbody>
+   ${R.qs.map(q=>`<tr><td class="m">${q.m[0]}</td><td><span class="${q.gOk?'y':'x'}">${q.gOk?'✓':'✗'}</span> ${q.m[3]}</td><td>${q.nOk?'<span class="y">✓</span>':'<span class="x">✗</span> you chose '+q.n}</td></tr>`).join('')}
+   </tbody></table></div>
+   <div class="row">${missed.length?`<button class="btn" id="redo">Practise the ${missed.length} I missed →</button>`:''}<button class="btn ghost" id="again">New round</button><button class="btn ghost" id="set">Change settings</button></div></div>`;
+  const r=document.getElementById('redo'); if(r) r.onclick=()=>start(shuffle(missed));
+  document.getElementById('again').onclick=()=>start();
+  document.getElementById('set').onclick=()=>setup();
+}
+
+setup();
+</script>
+
+</body></html>

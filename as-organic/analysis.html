@@ -1,0 +1,624 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Organic Analysis Guide</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,750&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: sticky section rail on the left, one reading column on the right; steps unlock top to bottom like a worked lesson. */
+:root{
+  --paper:#f5f7f5; --surface:#ffffff; --ink:#16232a; --muted:#566670; --line:#d6dedb;
+  --accent:#0d6d73; --accent-ink:#ffffff; --accent-soft:#e1efee;
+  --amber:#a8650a; --amber-soft:#fbf1df;
+  --ok:#2a7a3e; --ok-soft:#e3f2e6; --bad:#b0281f; --bad-soft:#f9e6e3;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --f-chem:"JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --paper:#0f171b; --surface:#162127; --ink:#e4ebe9; --muted:#9aabb0; --line:#2a3a42;
+  --accent:#55b8bd; --accent-ink:#0b1417; --accent-soft:#143338;
+  --amber:#e2a54a; --amber-soft:#2e2412;
+  --ok:#72c58a; --ok-soft:#163423; --bad:#f08f84; --bad-soft:#3a1d1a; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --paper:#0f171b; --surface:#162127; --ink:#e4ebe9; --muted:#9aabb0; --line:#2a3a42;
+  --accent:#55b8bd; --accent-ink:#0b1417; --accent-soft:#143338;
+  --amber:#e2a54a; --amber-soft:#2e2412;
+  --ok:#72c58a; --ok-soft:#163423; --bad:#f08f84; --bad-soft:#3a1d1a; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.6;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+.wrap{max-width:1120px;margin:0 auto;padding-block:28px 80px}
+header.top{display:flex;flex-wrap:wrap;gap:12px 32px;align-items:flex-end;justify-content:space-between;padding-bottom:22px;border-bottom:2px solid var(--ink)}
+.kicker{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+h1{font-family:var(--f-display);font-weight:750;font-size:clamp(30px,5vw,46px);line-height:1.05;margin:6px 0 0;letter-spacing:-.01em;text-wrap:balance}
+.overall{min-width:220px;flex:0 1 300px}
+.overall .lbl{font-size:14px;color:var(--muted);display:flex;justify-content:space-between;font-variant-numeric:tabular-nums}
+.bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .4s}
+
+.layout{display:grid;grid-template-columns:250px minmax(0,1fr);gap:40px;margin-top:28px}
+nav.rail{position:sticky;top:calc(env(safe-area-inset-top, 0px) + 16px);align-self:start;display:flex;flex-direction:column;gap:2px}
+nav.rail .grp{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:14px 0 4px 10px}
+nav.rail .grp:first-child{margin-top:0}
+nav.rail button{all:unset;cursor:pointer;display:grid;grid-template-columns:26px 1fr auto;gap:8px;align-items:center;padding:7px 10px;border-radius:6px;font-size:15px;line-height:1.3}
+nav.rail button:hover{background:var(--accent-soft)}
+nav.rail button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+nav.rail button.on{background:var(--ink);color:var(--paper)}
+nav.rail .n{font-family:var(--f-chem);font-size:12px;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;border:1.5px solid currentColor;opacity:.75}
+nav.rail .st{font-size:12px;font-variant-numeric:tabular-nums;color:var(--muted)}
+nav.rail button.on .st{color:inherit;opacity:.8}
+nav.rail button.done .n{background:var(--ok);border-color:var(--ok);color:var(--surface);opacity:1}
+nav.rail button.part .n{border-color:var(--accent);color:var(--accent);opacity:1}
+nav.rail button.on.part .n{color:var(--paper);border-color:var(--paper)}
+
+main{min-width:0;max-width:720px}
+.sechead .spec{font-family:var(--f-chem);font-size:13px;color:var(--accent);font-weight:600}
+.sechead h2{font-family:var(--f-display);font-weight:750;font-size:clamp(26px,4vw,34px);line-height:1.1;margin:4px 0 6px;text-wrap:balance}
+.sechead p{color:var(--muted);margin:0 0 8px}
+.stepcount{font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+
+.step{margin-top:34px;scroll-margin-top:20px}
+.step.learn h3{font-family:var(--f-display);font-weight:600;font-size:22px;margin:0 0 10px;line-height:1.2}
+.step.learn h3 .sn{font-family:var(--f-chem);font-size:13px;color:var(--muted);font-weight:400;margin-right:8px}
+.step p{margin:0 0 14px}
+.step ul,.step ol{margin:0 0 14px;padding-left:22px}
+.step li{margin-bottom:6px}
+
+.chem{font-family:var(--f-chem);font-size:.92em;white-space:nowrap}
+.chem sub,.eq sub{font-size:.72em;line-height:0}
+.chem sup,.eq sup{font-size:.72em;line-height:0}
+.co{margin-right:1px}
+.rad{color:var(--amber);font-weight:600}
+.op{color:var(--muted)}
+
+.eqb{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:12px 16px;margin:0 0 14px;overflow-x:auto}
+.eqb .tag{font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:2px}
+.eq{font-family:var(--f-chem);font-size:17px;white-space:nowrap;display:block;line-height:2}
+.eq .arrow{display:inline-flex;flex-direction:column;align-items:center;line-height:1;padding:0 .2em;vertical-align:bottom;margin-bottom:.35em}
+.eq .arrow small{font-family:var(--f-body);font-size:11px;color:var(--amber);font-weight:700;white-space:nowrap;margin-bottom:2px}
+.eq .arrow span{font-size:1.25em;color:var(--muted)}
+.eqnote{font-size:14px;color:var(--muted);margin-top:6px;white-space:normal}
+
+.tip{border:1.5px dashed var(--amber);background:var(--amber-soft);border-radius:6px;padding:10px 14px;margin:0 0 14px;font-size:16px}
+.tip b.t{display:block;font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--amber)}
+
+.tbl{overflow-x:auto;margin:0 0 14px}
+table{border-collapse:collapse;width:100%;font-size:15px;min-width:480px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+td:first-child{font-weight:700}
+
+.check{border:2px solid var(--ink);border-radius:8px;padding:18px 18px 16px;background:var(--surface)}
+.check .clabel{display:flex;justify-content:space-between;gap:10px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--accent)}
+.check .q{font-size:18px;margin:8px 0 14px;font-weight:700;line-height:1.45}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{all:unset;cursor:pointer;display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:start;padding:10px 12px;border:1.5px solid var(--line);border-radius:6px;background:var(--paper);line-height:1.45}
+.opt:hover:not([disabled]){border-color:var(--accent)}
+.opt:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.opt .let{font-family:var(--f-chem);font-weight:600;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;border:1.5px solid var(--muted);font-size:13px;color:var(--muted)}
+.opt[disabled]{cursor:default}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.opt.wrong .let{border-color:var(--bad);color:var(--bad)}
+.opt.right{border-color:var(--ok);background:var(--ok-soft)}
+.opt.right .let{background:var(--ok);border-color:var(--ok);color:var(--surface)}
+.opt.faded{opacity:.5}
+.opt .fb{grid-column:2;font-size:15px;margin-top:4px}
+.opt.wrong .fb{color:var(--bad)}
+.opt.right .fb{color:var(--ok)}
+.why{margin-top:12px;padding-top:12px;border-top:1px solid var(--line);font-size:16px}
+.why b{color:var(--ok)}
+
+.next{all:unset;cursor:pointer;margin-top:18px;display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:var(--accent-ink);font-weight:700;padding:10px 18px;border-radius:6px;font-size:16px}
+.next:hover{filter:brightness(1.08)}
+.next:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.ghost{all:unset;cursor:pointer;padding:8px 14px;border:1.5px solid var(--line);border-radius:6px;font-size:15px}
+.ghost:hover{border-color:var(--accent)}
+.ghost:focus-visible{outline:2px solid var(--accent)}
+.finish{margin-top:36px;padding:18px;border-radius:8px;background:var(--accent-soft)}
+.finish h3{margin:0 0 6px;font-family:var(--f-display);font-size:22px}
+
+figure{margin:0 0 14px}
+figure svg{width:100%;max-width:560px;height:auto;display:block}
+figcaption{font-size:14px;color:var(--muted);margin-top:4px}
+.mols{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin:0 0 14px}
+.mols figure{margin:0;flex:0 1 220px;min-width:0}
+.mols svg{width:100%;max-width:230px;height:auto;display:block}
+.mols figcaption{text-align:center;margin-top:0}
+.mols .join{font-family:var(--f-chem);font-size:24px;color:var(--muted);text-align:center}
+.mols .join small{display:block;font-family:var(--f-body);font-size:12px;color:var(--amber);font-weight:700}
+.smi{margin:0 0 14px}
+.smi svg{width:100%;max-width:260px;height:auto;max-height:170px;display:block}
+.irf{margin:0 0 14px}
+.irf svg{width:100%;max-width:560px;height:auto;display:block}
+.bonds{display:flex;flex-direction:column;gap:8px;margin:0 0 14px}
+.bonds .row{display:grid;grid-template-columns:54px 1fr 70px;gap:10px;align-items:center;font-variant-numeric:tabular-nums}
+.bonds .row b{font-family:var(--f-chem)}
+.bonds .track{height:18px;background:var(--line);border-radius:3px;overflow:hidden}
+.bonds .track i{display:block;height:100%;background:var(--accent)}
+.bonds .row span{font-size:14px;color:var(--muted);text-align:right}
+
+.home .lead{font-size:19px;max-width:62ch}
+.how{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:18px;margin:24px 0}
+.how div{border-top:2px solid var(--ink);padding-top:10px}
+.how h4{margin:0 0 4px;font-family:var(--f-display);font-size:18px}
+.how p{margin:0;font-size:15px;color:var(--muted)}
+.res{width:100%;min-width:420px}
+.res td.num{font-variant-numeric:tabular-nums;font-weight:400}
+.bankgrp{margin-top:26px}
+.bankgrp h3{font-family:var(--f-display);font-size:20px;margin:0 0 10px}
+.confirm{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}
+
+@media (max-width:860px){
+  .layout{grid-template-columns:minmax(0,1fr);gap:18px}
+  nav.rail{position:static;flex-direction:row;overflow-x:auto;gap:6px;padding-bottom:6px}
+  nav.rail .grp{display:none}
+  nav.rail button{grid-template-columns:22px auto;white-space:nowrap;border:1.5px solid var(--line)}
+  nav.rail .st{display:none}
+  body{font-size:16px}
+}
+@media (prefers-reduced-motion:reduce){ *{transition:none!important;scroll-behavior:auto!important} }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="kicker">AQA A-level Chemistry · 3.3.6 · Self-teach guide</div>
+      <h1>Organic Analysis</h1>
+    </div>
+    <div class="overall">
+      <div class="lbl"><span id="ovSec">0 of 5 sections</span><span id="ovScore"></span></div>
+      <div class="bar"><i id="ovBar"></i></div>
+    </div>
+  </header>
+  <div class="layout">
+    <nav class="rail" id="rail" aria-label="Sections"></nav>
+    <main id="main"></main>
+  </div>
+</div>
+
+<script>
+/* ---------- formula formatting ---------- */
+function fmtF(t){
+  let out='', i=0;
+  const m=t.match(/^(\d+½|\d+\.\d+|\d+|½|n)(?=[A-Z(•\[])/);
+  if(m){ out+='<span class="co">'+m[1]+'</span>'; i=m[1].length; }
+  while(i<t.length){
+    const c=t[i];
+    if(c==='^'){ i++; let ch=''; while(i<t.length && /[0-9+\-−]/.test(t[i])){ ch+= t[i]==='-'?'−':t[i]; i++; } out+='<sup>'+ch+'</sup>'; continue; }
+    if(/\d/.test(c) && i>0 && /[A-Za-z)\]]/.test(t[i-1])){ let d=''; while(i<t.length && /\d/.test(t[i])){ d+=t[i]; i++; } out+='<sub>'+d+'</sub>'; continue; }
+    if(c==='n' && t[i-1]===']'){ out+='<sub>n</sub>'; i++; continue; }
+    if(c==='•'){ out+='<span class="rad">•</span>'; i++; continue; }
+    out+=c; i++;
+  }
+  return out;
+}
+function fmtEq(s){
+  return s.trim().split(/\s+/).map(t=> (t==='+'||t==='→'||t==='⇌') ? '<span class="op">'+t+'</span>' : fmtF(t)).join(' ');
+}
+function rich(s){ return s.replace(/\[\[(.+?)\]\]/g,(_,m)=>'<span class="chem">'+fmtEq(m)+'</span>'); }
+
+/* ---------- content ---------- */
+const L=(h,...b)=>({k:'learn',h,b});
+const Q=(q,o,why,fig)=>({k:'check',q,o,why,fig});
+
+const SECTIONS=[
+{id:'tests',grp:'Chemical tests',short:'Test-tube tests',title:'Identifying functional groups by test-tube reactions',spec:'3.3.6.1',
+ intro:'Quick chemical tests that tell you which functional group is present.',
+ steps:[
+ L('The four tests',
+  {table:{head:['Functional group','Reagent','Positive result'],rows:[
+   ['Alkene','Bromine water, shake','Orange → colourless'],
+   ['Primary or secondary alcohol, or aldehyde','Acidified K₂Cr₂O₇, warm','Orange → green'],
+   ['Aldehyde','Tollens\' reagent, warm','Silver mirror'],
+   ['Aldehyde','Fehling\'s solution, warm','Blue → brick-red precipitate'],
+   ['Carboxylic acid','Sodium hydrogencarbonate (or sodium carbonate)','Effervescence; the gas turns limewater cloudy']]}},
+  {eq:'CH3COOH + NaHCO3 → CH3COONa + H2O + CO2',tag:'Carboxylic acid + hydrogencarbonate',key:true},
+  {tip:`Acidified dichromate turns green with primary alcohols, secondary alcohols <strong>and</strong> aldehydes. On its own it cannot tell them apart. Combine tests to narrow it down.`,t:'Watch out'}),
+ Q(`A colourless liquid fizzes when added to sodium hydrogencarbonate solution. Which functional group is present?`,[
+  [`Carboxylic acid`,true,`Correct. Acids react with hydrogencarbonates to release CO<sub>2</sub>.`],
+  [`Alcohol`,false,`Alcohols are not acidic enough to react with NaHCO<sub>3</sub>.`],
+  [`Aldehyde`,false,`Aldehydes do not release CO<sub>2</sub> with NaHCO<sub>3</sub>. Use Tollens' or Fehling's for aldehydes.`],
+  [`Alkene`,false,`Alkenes are tested with bromine water.`]],
+  `Fizzing with NaHCO<sub>3</sub> = carboxylic acid.`),
+ Q(`Compound X turns acidified dichromate green but gives no change with Tollens' reagent. What could X be?`,[
+  [`A primary or secondary alcohol`,true,`Correct. It is oxidised (green), but it is not an aldehyde (no silver mirror).`],
+  [`An aldehyde`,false,`An aldehyde would give a silver mirror with Tollens' reagent.`],
+  [`A ketone`,false,`Ketones are not oxidised, so the dichromate would stay orange.`],
+  [`A tertiary alcohol`,false,`Tertiary alcohols are not oxidised, so the dichromate would stay orange.`]],
+  `Combine tests: green but no mirror → 1° or 2° alcohol.`),
+ Q(`Which pair of compounds could be distinguished using Fehling's solution?`,[
+  [`Propanal and propanone`,true,`Correct. Propanal gives a brick-red precipitate; propanone does not react.`],
+  [`Propan-1-ol and propan-2-ol`,false,`Neither alcohol reacts with Fehling's solution. Use acidified dichromate and then test the products.`],
+  [`Propene and propane`,false,`Use bromine water for these. Neither reacts with Fehling's solution.`],
+  [`Ethanoic acid and propanoic acid`,false,`Both are carboxylic acids, and neither reacts with Fehling's.`]],
+  `Fehling's distinguishes aldehydes from ketones.`)
+ ]},
+
+{id:'ms',grp:'Instrumental analysis',short:'Mass spectrometry',title:'High-resolution mass spectrometry',spec:'3.3.6.2',
+ intro:'Using precise masses to work out a molecular formula.',
+ steps:[
+ L('The molecular ion',
+  `In a mass spectrum of an organic compound, the peak with the <strong>highest m/z</strong> (ignoring a tiny peak one unit higher, caused by carbon-13) is usually the <strong>molecular ion</strong>, M<sup>+</sup>. Its m/z value equals the relative molecular mass, M<sub>r</sub>.`,
+  `Several different molecular formulae can share the same whole-number M<sub>r</sub>. For example, [[C3H8]], [[C2H4O]] and [[CO2]] all have M<sub>r</sub> = 44.`),
+ L('Precise masses',
+  `<strong>High-resolution</strong> mass spectrometry measures m/z to four decimal places. Atoms do not have whole-number masses (except carbon-12, which is exactly 12 by definition), so each formula has a slightly different precise mass.`,
+  {table:{head:['Atom','Precise mass'],rows:[['¹H','1.0078'],['¹²C','12.0000'],['¹⁴N','14.0031'],['¹⁶O','15.9949']]}},
+  {table:{head:['Formula','Calculation','Precise M<sub>r</sub>'],rows:[
+   ['C₃H₈','(3 × 12.0000) + (8 × 1.0078)','44.0624'],
+   ['C₂H₄O','(2 × 12.0000) + (4 × 1.0078) + 15.9949','44.0261'],
+   ['CO₂','12.0000 + (2 × 15.9949)','43.9898']]}},
+  `Match the measured value to the formula with the same precise mass.`),
+ Q(`A compound has a molecular ion peak at m/z = 58.0417. Which is its molecular formula?`,[
+  [`[[C3H6O]]`,true,`Correct. (3 × 12.0000) + (6 × 1.0078) + 15.9949 = 58.0417.`],
+  [`[[C4H10]]`,false,`(4 × 12.0000) + (10 × 1.0078) = 58.0780. Too high.`],
+  [`[[C2H2O2]]`,false,`(2 × 12.0000) + (2 × 1.0078) + (2 × 15.9949) = 58.0054. Too low.`],
+  [`[[C3H8O]]`,false,`That has M<sub>r</sub> about 60, not 58.`]],
+  `Calculate each precise mass and match it.`),
+ Q(`Two compounds both have M<sub>r</sub> = 60 to the nearest whole number. One has a precise molecular ion at 60.0573 and the other at 60.0210. The second is…`,[
+  [`[[C2H4O2]]`,true,`Correct. 24.0000 + 4.0312 + 31.9898 = 60.0210.`],
+  [`[[C3H8O]]`,false,`C<sub>3</sub>H<sub>8</sub>O is 60.0573: that is the first compound.`],
+  [`[[C2H5NO]]`,false,`(2 × 12.0000) + (5 × 1.0078) + 14.0031 + 15.9949 = 59.0370, so its M<sub>r</sub> is 59, not 60.`],
+  [`They must be the same compound`,false,`Different precise masses mean different molecular formulae.`]],
+  `More O atoms and fewer H atoms lower the precise mass.`),
+ Q(`What does the m/z value of the molecular ion peak tell you?`,[
+  [`The relative molecular mass of the compound`,true,`Correct.`],
+  [`The number of carbon atoms`,false,`You might deduce this with more information, but the peak gives the M<sub>r</sub> directly.`],
+  [`The functional group present`,false,`Functional groups are identified by chemical tests or IR spectroscopy.`],
+  [`The boiling point`,false,`Mass spectrometry gives masses, not boiling points.`]],
+  `M<sup>+</sup> peak → M<sub>r</sub>.`)
+ ]},
+
+{id:'ir',grp:'Instrumental analysis',short:'Infrared theory',title:'Infrared spectroscopy',spec:'3.3.6.3',
+ intro:'How bonds absorb infrared radiation, and what an IR spectrum shows.',
+ steps:[
+ L('Bonds absorb infrared',
+  `Covalent bonds vibrate. A bond absorbs infrared radiation of a particular frequency that makes it vibrate more. Different bonds absorb at different frequencies, given as <strong>wavenumbers</strong> in cm<sup>−1</sup>.`,
+  `An IR spectrum plots <strong>transmittance</strong> against wavenumber. Wavenumber <em>decreases</em> from left to right. Absorptions show as downward dips, usually called peaks.`,
+  {ir:'alkane',cap:'Schematic IR spectrum of hexane: C–H absorptions only'},
+  `The region below 1500 cm<sup>−1</sup> is the <strong>fingerprint region</strong>. It has a complicated pattern unique to each compound. Comparing it with a database of known spectra identifies a compound, or shows impurities if extra peaks are present.`),
+ L('The data you are given',
+  {table:{head:['Bond','Found in','Wavenumber / cm⁻¹','Appearance'],rows:[
+   ['O–H','Alcohols','3230–3550','Broad'],
+   ['O–H','Carboxylic acids','2500–3000','Very broad'],
+   ['N–H','Amines','3300–3500','Medium'],
+   ['C–H','Most organic compounds','2850–3300','Sharp'],
+   ['C≡N','Nitriles','2220–2260','Sharp'],
+   ['C=O','Aldehydes, ketones, acids, esters','1680–1750','Strong, sharp'],
+   ['C=C','Alkenes','1620–1680','Medium'],
+   ['C–O','Alcohols, acids, esters','1000–1300','Strong']]}},
+  `These values are in the AQA data booklet, so you do not need to learn them. You do need to know how to use them.`,
+  {tip:`Almost every organic compound has C–H, so a peak near 2900 cm<sup>−1</sup> tells you very little. Look first at the C=O and O–H regions.`,t:'Strategy'}),
+ Q(`What is the fingerprint region used for?`,[
+  [`Identifying a compound by comparing its spectrum with known spectra`,true,`Correct. The pattern below 1500 cm<sup>−1</sup> is unique to each compound.`],
+  [`Identifying the O–H group`,false,`O–H absorbs above 2500 cm<sup>−1</sup>, well outside the fingerprint region.`],
+  [`Measuring the relative molecular mass`,false,`That is done by mass spectrometry.`],
+  [`Showing how much infrared the compound emits`,false,`IR spectra show absorption, not emission.`]],
+  `Fingerprint region: unique pattern below 1500 cm<sup>−1</sup>.`),
+ L('IR absorption and global warming',
+  `The same idea explains the greenhouse effect. The Earth's surface emits infrared radiation. Gases such as <strong>CO<sub>2</sub>, CH<sub>4</sub> and H<sub>2</sub>O</strong> contain bonds that absorb some of this infrared, so the energy stays in the atmosphere instead of escaping to space. Increasing concentrations of these gases contribute to <strong>global warming</strong>.`),
+ Q(`Why does carbon dioxide contribute to global warming?`,[
+  [`Its C=O bonds absorb infrared radiation emitted by the Earth`,true,`Correct.`],
+  [`It absorbs ultraviolet radiation from the Sun`,false,`UV absorption is the job of the ozone layer. Greenhouse gases absorb infrared.`],
+  [`It destroys the ozone layer`,false,`That is CFCs and chlorine radicals, a separate problem.`],
+  [`It reflects sunlight back to Earth`,false,`Greenhouse gases absorb infrared; they do not reflect visible light.`]],
+  `Greenhouse gases absorb IR.`)
+ ]},
+
+{id:'read',grp:'Instrumental analysis',short:'Reading IR spectra',title:'Reading IR spectra',spec:'3.3.6.3',
+ intro:'A routine for interpreting a spectrum, then practice on real-shaped examples.',
+ steps:[
+ L('A four-step routine',
+  `<ol><li>Is there a strong, sharp peak at <strong>1680–1750</strong>? If yes, there is a C=O.</li><li>Is there a broad peak at <strong>3230–3550</strong> (alcohol O–H) or a very broad one across <strong>2500–3000</strong> (acid O–H)?</li><li>Check anything else: C≡N at about 2250, C=C at about 1650, N–H at 3300–3500.</li><li>Combine: C=O + very broad O–H = carboxylic acid. Broad O–H, no C=O = alcohol. C=O, no O–H = aldehyde or ketone.</li></ol>`,
+  {ir:'ethanol',cap:'Ethanol: broad O–H at about 3350, no C=O'},
+  {ir:'acid',cap:'Ethanoic acid: very broad O–H across 2500–3300, strong C=O at about 1715'},
+  {ir:'ketone',cap:'Propanone: strong C=O at about 1715, no O–H'}),
+ Q(`Which type of compound gives this spectrum?`,[
+  [`An alcohol`,true,`Correct. Broad O–H at about 3350 cm<sup>−1</sup> and no C=O peak.`],
+  [`A carboxylic acid`,false,`An acid would also show a strong C=O at 1680–1750, and its O–H would be lower and much broader.`],
+  [`A ketone`,false,`There is no C=O peak between 1680 and 1750.`],
+  [`An alkane`,false,`The broad peak above 3200 is an O–H. Alkanes only show C–H.`]],
+  `Broad O–H, no C=O = alcohol.`,{ir:'ethanol'}),
+ Q(`Which type of compound gives this spectrum?`,[
+  [`A carboxylic acid`,true,`Correct. Very broad O–H from about 2500 to 3300, plus a strong C=O near 1715.`],
+  [`An alcohol`,false,`An alcohol has no C=O peak. Look at the strong dip near 1715.`],
+  [`An aldehyde`,false,`An aldehyde has C=O but no broad O–H.`],
+  [`A nitrile`,false,`A nitrile shows a sharp C≡N at about 2250, not a broad band.`]],
+  `Very broad O–H + C=O = carboxylic acid.`,{ir:'acid'}),
+ Q(`Which type of compound gives this spectrum?`,[
+  [`A nitrile`,true,`Correct. Sharp peak at about 2250 cm<sup>−1</sup> is C≡N.`],
+  [`An alkene`,false,`C=C absorbs at 1620–1680. This peak is around 2250.`],
+  [`A ketone`,false,`There is no strong peak at 1680–1750.`],
+  [`An alcohol`,false,`There is no broad O–H above 3200.`]],
+  `About 2250 = C≡N.`,{ir:'nitrile'}),
+ Q(`Propan-1-ol is heated under reflux with acidified dichromate. How would the IR spectrum change?`,[
+  [`A C=O peak appears at 1680–1750, and the O–H moves to a very broad band at 2500–3000`,true,`Correct. The alcohol has become propanoic acid.`],
+  [`The O–H peak disappears and nothing else changes`,false,`Oxidation adds a C=O, and the acid still has an O–H, just at a lower, broader position.`],
+  [`A C≡N peak appears at 2250`,false,`No nitrogen is involved in this reaction.`],
+  [`A C=C peak appears at 1650`,false,`That would be dehydration to an alkene, which needs a concentrated acid catalyst, not dichromate.`]],
+  `Alcohol → acid: C=O appears; O–H becomes very broad and lower.`)
+ ]},
+
+{id:'combine',grp:'Problem solving',short:'Putting it together',title:'Combining the evidence',spec:'3.3.6',
+ intro:'Real questions give you several pieces of evidence. Use all of them.',
+ steps:[
+ L('Working an example',
+  `<strong>Compound Y:</strong> molecular ion at m/z = 58.0417. IR shows a strong peak at 1715 cm<sup>−1</sup> and no broad peak above 2500. It gives no change with Tollens' reagent.`,
+  `<ol><li>Precise mass 58.0417 → [[C3H6O]].</li><li>IR: C=O present, no O–H → aldehyde or ketone.</li><li>Tollens': no silver mirror → not an aldehyde, so a ketone.</li><li>The only ketone with formula C<sub>3</sub>H<sub>6</sub>O is <strong>propanone</strong>, [[CH3COCH3]].</li></ol>`,
+  {tip:`Write down what each piece of evidence tells you before trying to name the compound. Marks are usually given for each deduction, not just the final answer.`,t:'Exam technique'}),
+ Q(`Compound Z has molecular formula [[C3H6O]]. Its IR spectrum shows a peak at 1730 cm<sup>−1</sup>, and it produces a silver mirror with Tollens' reagent. What is Z?`,[
+  [`Propanal`,true,`Correct. C=O plus a positive Tollens' test means an aldehyde.`],
+  [`Propanone`,false,`Propanone is a ketone, which does not react with Tollens' reagent.`],
+  [`Propan-1-ol`,false,`Its formula is C<sub>3</sub>H<sub>8</sub>O, and it has no C=O.`],
+  [`Propanoic acid`,false,`Its formula is C<sub>3</sub>H<sub>6</sub>O<sub>2</sub>, and it would show a very broad O–H.`]],
+  `C=O + silver mirror = aldehyde.`),
+ Q(`An alcohol [[C4H10O]] does not change the colour of acidified potassium dichromate(VI). Which is it?`,[
+  [`2-methylpropan-2-ol`,true,`Correct. It is the only tertiary alcohol with this formula.`],
+  [`Butan-1-ol`,false,`It is primary, so it would turn the dichromate green.`],
+  [`Butan-2-ol`,false,`It is secondary, so it would turn the dichromate green.`],
+  [`2-methylpropan-1-ol`,false,`The chain is branched, but the OH is on an end carbon: primary.`]],
+  `No oxidation → tertiary alcohol.`),
+ Q(`A compound decolourises bromine water. Its IR spectrum shows a broad peak at 3350 cm<sup>−1</sup> and no peak at 1680–1750. Which compound fits?`,[
+  [`Prop-2-en-1-ol, [[CH2=CHCH2OH]]`,true,`Correct. The C=C decolourises bromine water and the O–H gives the broad peak.`],
+  [`Propanal`,false,`Propanal would show a strong C=O at about 1730 and has no broad O–H.`],
+  [`Propan-1-ol`,false,`It has the O–H, but no C=C, so it would not decolourise bromine water.`],
+  [`Propene`,false,`It has the C=C, but no O–H to give the broad peak at 3350.`]],
+  `Use every clue: one test, two IR observations.`)
+ ]}
+];
+
+/* ---------- state ---------- */
+const KEY='organic-analysis-guide-v1';
+let P={}, view='home';
+try{ const s=JSON.parse(localStorage.getItem(KEY)||'null'); if(s){ P=s.p||{}; view=s.v||'home'; } }catch(e){}
+function save(){ try{ localStorage.setItem(KEY,JSON.stringify({p:P,v:view})); }catch(e){} }
+function sp(id){ if(!P[id]) P[id]={u:1,a:{}}; return P[id]; }
+
+function hash(s){ let h=2166136261; for(const c of s){ h^=c.charCodeAt(0); h=Math.imul(h,16777619);} return h>>>0; }
+function order(n,seed){ const a=[...Array(n).keys()]; let x=seed||1; for(let i=n-1;i>0;i--){ x=(Math.imul(x,1103515245)+12345)>>>0; const j=x%(i+1); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+function secStats(sec){
+  const pr=P[sec.id]; const checks=sec.steps.map((s,i)=>[s,i]).filter(([s])=>s.k==='check');
+  let first=0, solved=0;
+  checks.forEach(([s,i])=>{ const a=pr&&pr.a[i]; if(a&&a.s){ solved++; if(!a.w.length) first++; } });
+  const done = pr && pr.u>=sec.steps.length && (sec.steps[sec.steps.length-1].k!=='check' || (pr.a[sec.steps.length-1]||{}).s);
+  return {total:checks.length, first, solved, done:!!done, started:!!pr};
+}
+
+/* ---------- figures ---------- */
+function figColumn(){
+  const fr=[['Refinery gases','C1–C4','bottled gas (LPG)'],['Petrol','C5–C10','car fuel'],['Naphtha','C8–C12','chemical feedstock'],['Kerosene','C11–C15','jet fuel'],['Diesel (gas oil)','C15–C19','diesel engines'],['Fuel oil','C20–C30','ships, power stations'],['Bitumen (residue)','C30+','roads, roofing']];
+  const ys=[62,118,174,230,286,342,412];
+  let s=`<svg viewBox="0 0 560 450" role="img" aria-label="Fractionating column with fractions leaving at different heights">
+  <defs><linearGradient id="grad" x1="0" y1="1" x2="0" y2="0"><stop offset="0" style="stop-color:var(--amber);stop-opacity:.55"/><stop offset="1" style="stop-color:var(--accent);stop-opacity:.15"/></linearGradient></defs>
+  <rect x="150" y="30" width="90" height="400" rx="10" fill="url(#grad)" stroke="var(--ink)" stroke-width="2"/>`;
+  for(let k=0;k<6;k++){ const y=ys[k]+28; s+=`<line x1="150" y1="${y}" x2="240" y2="${y}" stroke="var(--ink)" stroke-width="1" stroke-dasharray="4 3" opacity=".6"/>`; }
+  fr.forEach((f,k)=>{ const y=ys[k];
+    s+=`<line x1="240" y1="${y}" x2="275" y2="${y}" stroke="var(--ink)" stroke-width="2"/><path d="M275 ${y-4} L283 ${y} L275 ${y+4}" fill="var(--ink)"/>
+    <text x="292" y="${y-3}" font-family="Atkinson Hyperlegible, sans-serif" font-size="14" font-weight="700" fill="var(--ink)">${f[0]}</text>
+    <text x="292" y="${y+13}" font-family="JetBrains Mono, monospace" font-size="11.5" fill="var(--muted)">${f[1].replace(/(\d+)/g,'$1')}  ·  ${f[2]}</text>`; });
+  s+=`<rect x="20" y="380" width="96" height="46" rx="6" fill="var(--amber-soft)" stroke="var(--amber)" stroke-width="1.5"/>
+  <text x="68" y="399" text-anchor="middle" font-family="Atkinson Hyperlegible, sans-serif" font-size="12.5" font-weight="700" fill="var(--ink)">Furnace</text>
+  <text x="68" y="415" text-anchor="middle" font-family="Atkinson Hyperlegible, sans-serif" font-size="11.5" fill="var(--muted)">about 350 °C</text>
+  <line x1="116" y1="392" x2="146" y2="392" stroke="var(--ink)" stroke-width="2"/><path d="M144 388 L151 392 L144 396" fill="var(--ink)"/>
+  <text x="68" y="372" text-anchor="middle" font-family="Atkinson Hyperlegible, sans-serif" font-size="11.5" fill="var(--muted)">crude oil vapour</text>
+  <line x1="40" y1="330" x2="40" y2="60" stroke="var(--muted)" stroke-width="1.5"/><path d="M36 64 L40 52 L44 64" fill="var(--muted)"/>
+  <text x="54" y="70" font-family="Atkinson Hyperlegible, sans-serif" font-size="12" fill="var(--muted)">cooler</text>
+  <text x="54" y="86" font-family="Atkinson Hyperlegible, sans-serif" font-size="12" fill="var(--muted)">~25 °C</text>
+  <text x="54" y="318" font-family="Atkinson Hyperlegible, sans-serif" font-size="12" fill="var(--muted)">hotter</text>
+  <text x="54" y="334" font-family="Atkinson Hyperlegible, sans-serif" font-size="12" fill="var(--muted)">~350 °C</text>
+  </svg>`;
+  return `<figure>${s}<figcaption>Chain lengths are approximate; textbooks quote slightly different ranges. Smaller molecules leave higher up.</figcaption></figure>`;
+}
+function figBonds(){
+  const b=[['C–F',467,'most polar'],['C–Cl',346,''],['C–Br',290,''],['C–I',228,'weakest']];
+  return `<div class="bonds" aria-label="Mean bond enthalpies">${b.map(x=>`<div class="row"><b>${x[0]}</b><div class="track"><i style="width:${(x[1]/467*100).toFixed(1)}%"></i></div><span>${x[1]} kJ mol<sup>−1</sup></span></div>`).join('')}</div><p style="font-size:14px;color:var(--muted);margin-top:-6px">Mean bond enthalpies. Values vary slightly between data sources.</p>`;
+}
+
+/* ---------- structure drawings ---------- */
+function lab(x,y,t,anc){
+  let o=`<text x="${x}" y="${y}" text-anchor="${anc}" dominant-baseline="middle" style="fill:var(--ink);font-family:var(--f-chem);font-size:15px">`, off=0;
+  (t.match(/\d+|[^\d]+/g)||[]).forEach(r=>{ const d=/^\d/.test(r); const ny=d?4:0; o+=`<tspan dy="${ny-off}"${d?' style="font-size:11px"':''}>${r}</tspan>`; off=ny; });
+  return o+'</text>';
+}
+const LN=(x1,y1,x2,y2)=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" style="stroke:var(--ink);stroke-width:1.8;stroke-linecap:round"/>`;
+function alkeneSVG(g){ // g = [top-left, bottom-left, top-right, bottom-right]
+  return `<svg viewBox="0 0 230 130" role="img" aria-label="Displayed formula">${lab(85,65,'C','middle')}${lab(145,65,'C','middle')}
+  ${LN(95,60,135,60)}${LN(95,70,135,70)}${LN(78,57,62,39)}${LN(78,73,62,91)}${LN(152,57,168,39)}${LN(152,73,168,91)}
+  ${lab(60,30,g[0],'end')}${lab(60,101,g[1],'end')}${lab(170,30,g[2],'start')}${lab(170,101,g[3],'start')}</svg>`;
+}
+function ruSVG(g){ // g = [top1, bottom1, top2, bottom2]
+  return `<svg viewBox="0 0 240 132" role="img" aria-label="Repeat unit">${lab(95,66,'C','middle')}${lab(150,66,'C','middle')}
+  ${LN(28,66,86,66)}${LN(104,66,141,66)}${LN(159,66,214,66)}${LN(95,56,95,34)}${LN(95,76,95,98)}${LN(150,56,150,34)}${LN(150,76,150,98)}
+  ${lab(95,23,g[0],'middle')}${lab(95,110,g[1],'middle')}${lab(150,23,g[2],'middle')}${lab(150,110,g[3],'middle')}
+  <path d="M64 14 L56 14 L56 118 L64 118" style="fill:none;stroke:var(--ink);stroke-width:1.8"/><path d="M180 14 L188 14 L188 118 L180 118" style="fill:none;stroke:var(--ink);stroke-width:1.8"/>
+  ${lab(196,122,'n','start')}</svg>`;
+}
+function molRow(b){
+  return `<div class="mols">${b.mols.map((m,i)=>(i&&b.join?`<div class="join">${b.jl?`<small>${b.jl}</small>`:''}${b.join}</div>`:'')+`<figure>${m.t==='ru'?ruSVG(m.g):alkeneSVG(m.g)}${m.cap?`<figcaption>${rich(m.cap)}</figcaption>`:''}</figure>`).join('')}</div>`;
+}
+
+const FIGS={column:figColumn,bonds:figBonds};
+
+/* ---------- skeletal formulae (SmilesDrawer) ---------- */
+let SMI_N=0;
+function smiFig(b){ const id='smi'+(SMI_N++); return `<figure class="smi"><svg id="${id}" data-smi="${b.smi}" data-alt="${(b.alt||'').replace(/"/g,'&quot;')}"></svg>${b.cap?`<figcaption>${rich(b.cap)}</figcaption>`:''}</figure>`; }
+function isDark(){ const t=document.documentElement.dataset.theme; return t==='dark' || (t!=='light' && matchMedia('(prefers-color-scheme: dark)').matches); }
+function drawSmiles(root){
+  const svgs=(root||document).querySelectorAll('svg[data-smi]');
+  if(!svgs.length) return;
+  const ink=getComputedStyle(document.documentElement).getPropertyValue('--ink').trim()||'#16232a';
+  const bg=getComputedStyle(document.documentElement).getPropertyValue('--surface').trim()||'#fff';
+  if(typeof SmilesDrawer==='undefined'){ svgs.forEach(s=>{ const f=document.createElement('div'); f.className='chem'; f.innerHTML=s.dataset.alt?fmtEq(s.dataset.alt):'(structure could not load)'; s.replaceWith(f); }); return; }
+  const th={C:ink,O:ink,N:ink,F:ink,CL:ink,BR:ink,I:ink,P:ink,S:ink,B:ink,SI:ink,H:ink,BACKGROUND:bg};
+  const d=new SmilesDrawer.SvgDrawer({width:260,height:170,bondThickness:1.3,bondLength:22,fontSizeLarge:9,fontSizeSmall:6,padding:12,compactDrawing:false,terminalCarbons:false,themes:{mono:th}});
+  svgs.forEach(s=>{ if(s.dataset.done) return; SmilesDrawer.parse(s.dataset.smi, tree=>{ try{ d.draw(tree,s,'mono'); s.dataset.done=1; }catch(e){} }, ()=>{}); });
+}
+
+/* ---------- IR spectra (schematic) ---------- */
+const IR={
+  ethanol:[[3350,55,170],[2975,45,35],[2900,25,25],[1450,22,18],[1380,18,14],[1090,30,22],[1050,50,18],[880,22,14]],
+  acid:[[2980,48,300],[1715,72,24],[1410,28,18],[1290,42,22],[940,24,22]],
+  ketone:[[3005,18,25],[2925,15,20],[1715,75,22],[1360,38,18],[1220,48,20],[1090,14,14]],
+  aldehyde:[[2980,32,35],[2820,18,14],[2720,18,14],[1730,72,22],[1460,22,16],[1390,22,14],[1110,18,16]],
+  alkane:[[2955,58,32],[2870,45,22],[1465,30,14],[1380,20,10],[725,14,10]],
+  alkene:[[3080,22,14],[2930,52,30],[1645,28,12],[1440,22,14],[990,30,10],[910,38,10]],
+  nitrile:[[2950,35,30],[2250,48,14],[1460,25,16],[1380,18,12]]
+};
+function irFig(b){
+  const pk=IR[b.ir], W=540, H=230, L=44, R=W-14, T=14, B=H-38;
+  const x=v=>L+(4000-v)/(4000-500)*(R-L), y=t=>T+(100-t)/100*(B-T);
+  let d=''; for(let v=4000; v>=500; v-=5){ let t=95; pk.forEach(([c,dp,w])=>t-=dp*Math.exp(-(((v-c)/w)**2))); d+=(v===4000?'M':'L')+x(v).toFixed(1)+' '+y(Math.max(2,t)).toFixed(1)+' '; }
+  let ax=''; [4000,3500,3000,2500,2000,1500,1000,500].forEach(v=>{ ax+=`<line x1="${x(v)}" y1="${B}" x2="${x(v)}" y2="${B+5}" style="stroke:var(--muted)"/><text x="${x(v)}" y="${B+18}" text-anchor="middle" style="fill:var(--muted);font-size:11px;font-family:var(--f-chem)">${v}</text>`; });
+  [0,50,100].forEach(t=>{ ax+=`<text x="${L-6}" y="${y(t)+4}" text-anchor="end" style="fill:var(--muted);font-size:11px;font-family:var(--f-chem)">${t}</text>`; });
+  return `<figure class="irf"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Infrared spectrum">
+  <rect x="${x(1500)}" y="${T}" width="${x(500)-x(1500)}" height="${B-T}" style="fill:var(--accent-soft)"/>
+  <text x="${(x(1500)+x(500))/2}" y="${B-8}" text-anchor="middle" style="fill:var(--accent);font-size:11px;font-weight:700;font-family:var(--f-body)">fingerprint region</text>
+  <line x1="${L}" y1="${B}" x2="${R}" y2="${B}" style="stroke:var(--muted)"/><line x1="${L}" y1="${T}" x2="${L}" y2="${B}" style="stroke:var(--muted)"/>
+  <path d="${d}" style="fill:none;stroke:var(--ink);stroke-width:1.6;stroke-linejoin:round"/>${ax}
+  <text x="${(L+R)/2}" y="${H-4}" text-anchor="middle" style="fill:var(--muted);font-size:11.5px;font-family:var(--f-body)">Wavenumber / cm⁻¹</text>
+  <text x="12" y="${(T+B)/2}" text-anchor="middle" transform="rotate(-90 12 ${(T+B)/2})" style="fill:var(--muted);font-size:11.5px;font-family:var(--f-body)">Transmittance / %</text></svg>
+  ${b.cap?`<figcaption>${rich(b.cap)}</figcaption>`:''}</figure>`;
+}
+
+/* ---------- rendering ---------- */
+function block(b){
+  if(typeof b==='string') return b.trim().startsWith('<') ? rich(b) : `<p>${rich(b)}</p>`;
+  if(b.eq!==undefined){
+    let html;
+    if(b.cond){ const ar=b.eq.includes('⇌')?'⇌':'→'; const [l,r]=b.eq.split(ar); html=fmtEq(l)+` <span class="arrow"><small>${b.cond}</small><span>${ar}</span></span> `+fmtEq(r); }
+    else html=fmtEq(b.eq);
+    return `<div class="eqb">${b.tag?`<div class="tag">${rich(b.tag)}</div>`:''}<div class="eq">${html}</div>${b.note?`<div class="eqnote">${rich(b.note)}</div>`:''}</div>`;
+  }
+  if(b.tip) return `<div class="tip"><b class="t">${b.t||'Tip'}</b>${rich(b.tip)}</div>`;
+  if(b.table) return `<div class="tbl"><table><thead><tr>${b.table.head.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${b.table.rows.map(r=>`<tr>${r.map(c=>`<td>${rich(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+  if(b.fig) return (FIGS[b.fig]||(()=>''))(b);
+  if(b.mols) return molRow(b);
+  if(b.smi) return smiFig(b);
+  if(b.ir) return irFig(b);
+  return '';
+}
+
+function renderRail(){
+  const rail=document.getElementById('rail'); let h='', g='';
+  h+=`<button class="${view==='home'?'on':''}" data-v="home"><span class="n">i</span><span>Start here</span><span class="st"></span></button>`;
+  SECTIONS.forEach((s,i)=>{
+    if(s.grp!==g){ g=s.grp; h+=`<div class="grp">${g}</div>`; }
+    const st=secStats(s);
+    const cls=[view===s.id?'on':'', st.done?'done':(st.started?'part':'')].join(' ');
+    h+=`<button class="${cls}" data-v="${s.id}"><span class="n">${st.done?'✓':i+1}</span><span>${s.short}</span><span class="st">${st.solved?st.first+'/'+st.total:''}</span></button>`;
+  });
+  h+=`<div class="grp">Revision</div>`;
+  h+=`<button class="${view==='bank'?'on':''}" data-v="bank"><span class="n">=</span><span>Equation bank</span><span class="st"></span></button>`;
+  h+=`<button class="${view==='results'?'on':''}" data-v="results"><span class="n">%</span><span>My results</span><span class="st"></span></button>`;
+  rail.innerHTML=h;
+  rail.querySelectorAll('button').forEach(b=>b.onclick=()=>go(b.dataset.v));
+  // overall
+  let done=0,first=0,tot=0,solved=0; SECTIONS.forEach(s=>{const st=secStats(s); if(st.done)done++; first+=st.first; tot+=st.total; solved+=st.solved;});
+  document.getElementById('ovSec').textContent=`${done} of ${SECTIONS.length} sections complete`;
+  document.getElementById('ovScore').textContent= solved?`${first}/${solved} right first time`:'';
+  document.getElementById('ovBar').style.width=(done/SECTIONS.length*100)+'%';
+}
+
+function go(v){ view=v; save(); render(); window.scrollTo({top:0}); }
+
+function renderHome(){
+  const next=SECTIONS.find(s=>!secStats(s).done);
+  return `<div class="home"><div class="sechead"><div class="spec">How this guide works</div><h2>Learn it step by step, check as you go</h2></div>
+  <p class="lead">This guide covers organic analysis: chemical tests, mass spectrometry and infrared spectroscopy, with the focus on <strong>what is happening and the overall equation</strong>. Mechanisms (curly arrows) come later, in class.</p>
+  <div class="how">
+   <div><h4>Read a step</h4><p>Each section is broken into short steps. Read one, then press Continue.</p></div>
+   <div><h4>Answer the check</h4><p>Multiple-choice checks appear between steps. You must get each right to move on.</p></div>
+   <div><h4>Learn from mistakes</h4><p>A wrong answer tells you why it is wrong. Use that to try again.</p></div>
+   <div><h4>Aim for first time</h4><p>Your score counts questions you got right on the first try. Revisit sections to improve.</p></div>
+  </div>
+  <p>Work through the sections in order: later sections build on earlier ones. Your progress is saved in this browser.</p>
+  <button class="next" id="startBtn">${next? (secStats(next).started?'Carry on: ':'Start: ')+next.title : 'Review the equation bank'} →</button></div>`;
+}
+
+function renderSection(sec){
+  const pr=sp(sec.id); const idx=SECTIONS.indexOf(sec);
+  let h=`<div class="sechead"><div class="spec">Section ${idx+1} · Spec ${sec.spec}</div><h2>${sec.title}</h2><p>${sec.intro}</p><div class="stepcount">Step ${Math.min(pr.u,sec.steps.length)} of ${sec.steps.length}</div></div>`;
+  let ln=0;
+  for(let i=0;i<pr.u && i<sec.steps.length;i++){
+    const st=sec.steps[i];
+    if(st.k==='learn'){ ln++; h+=`<section class="step learn" id="st${i}"><h3><span class="sn">${idx+1}.${ln}</span>${rich(st.h)}</h3>${st.b.map(block).join('')}</section>`; }
+    else h+=renderCheck(sec,st,i,pr);
+    const last=i===pr.u-1, solved= st.k==='learn' || (pr.a[i]&&pr.a[i].s);
+    if(last && solved && i<sec.steps.length-1) h+=`<button class="next" data-cont="1">Continue →</button>`;
+  }
+  const stt=secStats(sec);
+  if(stt.done){
+    const nxt=SECTIONS[idx+1];
+    h+=`<div class="finish"><h3>Section complete</h3><p>You got <strong>${stt.first} of ${stt.total}</strong> checks right first time.${stt.first<stt.total?' Look back at the ones you missed before moving on.':''}</p>
+    <div class="confirm">${nxt?`<button class="next" data-go="${nxt.id}">Next: ${nxt.short} →</button>`:`<button class="next" data-go="bank">Go to the equation bank →</button>`}<button class="ghost" data-redo="${sec.id}">Redo this section</button></div></div>`;
+  }
+  return h;
+}
+
+function renderCheck(sec,st,i,pr){
+  const a=pr.a[i]||{w:[],s:false};
+  const ord=order(st.o.length,hash(sec.id+i+st.q));
+  let qn=sec.steps.slice(0,i+1).filter(s=>s.k==='check').length;
+  let h=`<section class="step" id="st${i}"><div class="check"><div class="clabel"><span>Check ${qn}</span><span>${a.s?(a.w.length?'Solved':'Right first time'):''}</span></div><div class="q">${rich(st.q)}</div>${st.fig?block(st.fig):''}<div class="opts">`;
+  ord.forEach((oi,pos)=>{
+    const o=st.o[oi]; const isW=a.w.includes(oi); const isR=a.s&&o[1];
+    const cls=isW?'wrong':isR?'right':(a.s?'faded':'');
+    const dis=a.s||isW;
+    h+=`<button class="opt ${cls}" ${dis?'disabled':''} data-q="${i}" data-o="${oi}"><span class="let">${'ABCD'[pos]}</span><span>${rich(o[0])}</span>${(isW||isR)?`<span class="fb">${isW?'✗ ':'✓ '}${rich(o[2])}</span>`:''}</button>`;
+  });
+  h+=`</div>${a.s?`<div class="why"><b>Key point:</b> ${rich(st.why)}</div>`:''}</div></section>`;
+  return h;
+}
+
+function renderBank(){
+  let h=`<div class="sechead"><div class="spec">Revision</div><h2>Equation bank</h2><p>The key equations from every section in one place. Cover the right-hand side and try to write each one from memory.</p></div>`;
+  SECTIONS.forEach((s,i)=>{
+    const eqs=[]; s.steps.forEach(st=>{ if(st.k==='learn') st.b.forEach(b=>{ if(b&&b.key) eqs.push(b); }); });
+    if(!eqs.length) return;
+    h+=`<div class="bankgrp"><h3>${i+1}. ${s.title}</h3>${eqs.map(e=>block({eq:e.eq,cond:e.cond,tag:e.tag})).join('')}</div>`;
+  });
+  return h;
+}
+
+function renderResults(){
+  let rows='', tf=0, tt=0, ts=0;
+  SECTIONS.forEach((s,i)=>{ const st=secStats(s); tf+=st.first; tt+=st.total; ts+=st.solved;
+    rows+=`<tr><td>${i+1}. ${s.short}</td><td class="num">${st.done?'Complete':st.started?'In progress':'Not started'}</td><td class="num">${st.solved}/${st.total}</td><td class="num">${st.solved?st.first+'/'+st.total:'–'}</td></tr>`; });
+  return `<div class="sechead"><div class="spec">Revision</div><h2>My results</h2><p>"First time" counts checks you answered correctly with no wrong attempts. Show this page to your teacher if asked.</p></div>
+  <div class="tbl"><table class="res"><thead><tr><th>Section</th><th>Status</th><th>Checks done</th><th>Right first time</th></tr></thead><tbody>${rows}
+  <tr><td>Total</td><td></td><td class="num">${ts}/${tt}</td><td class="num"><strong>${tf}/${tt}</strong></td></tr></tbody></table></div>
+  <div id="resetArea"><button class="ghost" id="resetBtn">Reset all progress</button></div>`;
+}
+
+function render(){
+  renderRail();
+  const m=document.getElementById('main');
+  const sec=SECTIONS.find(s=>s.id===view);
+  m.innerHTML = view==='bank'?renderBank(): view==='results'?renderResults(): sec?renderSection(sec): renderHome();
+  drawSmiles(m);
+  const sb=document.getElementById('startBtn');
+  if(sb) sb.onclick=()=>{ const n=SECTIONS.find(s=>!secStats(s).done); go(n?n.id:'bank'); };
+  m.querySelectorAll('[data-cont]').forEach(b=>b.onclick=()=>{ const pr=sp(view); pr.u++; save(); render(); const el=document.getElementById('st'+(pr.u-1)); if(el) el.scrollIntoView({behavior:'smooth',block:'start'}); });
+  m.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));
+  m.querySelectorAll('[data-redo]').forEach(b=>b.onclick=()=>{ P[b.dataset.redo]={u:1,a:{}}; save(); render(); window.scrollTo({top:0}); });
+  m.querySelectorAll('.opt').forEach(b=>b.onclick=()=>answer(+b.dataset.q,+b.dataset.o));
+  const rb=document.getElementById('resetBtn');
+  if(rb) rb.onclick=()=>{ document.getElementById('resetArea').innerHTML=`<div class="confirm"><span>This clears every answer. Are you sure?</span><button class="next" id="yesReset">Yes, reset</button><button class="ghost" id="noReset">Cancel</button></div>`;
+    document.getElementById('yesReset').onclick=()=>{ P={}; save(); render(); };
+    document.getElementById('noReset').onclick=()=>render(); };
+}
+
+function answer(i,oi){
+  const sec=SECTIONS.find(s=>s.id===view); const pr=sp(sec.id); const st=sec.steps[i];
+  const a=pr.a[i]||(pr.a[i]={w:[],s:false}); if(a.s) return;
+  if(st.o[oi][1]) a.s=true; else if(!a.w.includes(oi)) a.w.push(oi);
+  save(); render();
+  const el=document.querySelector(`.opt[data-q="${i}"][data-o="${oi}"]`); if(el && !a.s) el.focus();
+  if(a.s){ const nb=document.querySelector('[data-cont]')||document.querySelector('.finish .next'); if(nb) nb.focus({preventScroll:true}); }
+}
+
+render();
+</script>
+
+</body></html>
