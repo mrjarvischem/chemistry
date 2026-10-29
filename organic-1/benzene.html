@@ -1,0 +1,502 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Benzene Delocalisation Explorer</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: tab bar over a two-column stage (diagram left, teacher-stepped explanation right); stacks on phones. Single light theme to match the rest of the simulation set. */
+:root{
+  --bg:#efe9dd; --panel:#fbf8f1; --ink:#2a2018; --muted:#6c5f50; --line:#d8cdb9;
+  --brown:#7a4a22; --pi:#2c5a8c; --brk:#b0362a; --mk:#2d7246; --amb:#b5700c; --ghost:#9d907c;
+  --display:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --body:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:ui-monospace,"SF Mono",Consolas,"Liberation Mono",monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:14px 28px}
+.wrap{max-width:1240px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 20px}
+h1{font-family:var(--display);font-weight:600;font-size:clamp(1.4rem,2.6vw,2rem);margin:0;color:var(--brown);text-wrap:balance}
+.sub{color:var(--muted);font-size:.9rem}
+nav{display:flex;flex-wrap:wrap;gap:6px}
+nav button{font:inherit;font-size:.88rem;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:7px 12px;border-radius:6px;cursor:pointer}
+nav button .n{font-family:var(--mono);color:var(--ghost);margin-right:6px;font-size:.8rem}
+nav button[aria-selected="true"]{background:var(--brown);color:#fff;border-color:var(--brown)}
+nav button[aria-selected="true"] .n{color:#e9d6c2}
+button:focus-visible,input:focus-visible{outline:3px solid var(--amb);outline-offset:2px}
+.page{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:14px;align-items:start}
+.page.wide{grid-template-columns:minmax(0,1fr)}
+@media (max-width:860px){.page{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px;min-width:0}
+.stage{display:flex;flex-direction:column;gap:6px}
+.molrow{display:flex;justify-content:center}
+.molrow svg{width:100%;max-width:440px;height:auto}
+svg text{font-family:var(--body);fill:var(--ink)}
+.esvg{width:100%;height:auto;display:block}
+h2{font-family:var(--display);font-size:1.3rem;margin:0 0 4px;color:var(--brown);text-wrap:balance}
+h3{font-family:var(--display);font-size:1.05rem;margin:10px 0 4px}
+p{margin:6px 0}
+.eq{font-family:var(--mono);background:#f2ece0;border:1px solid var(--line);border-radius:5px;padding:6px 10px;display:inline-block;font-size:.92rem}
+.steps{display:flex;flex-direction:column;gap:10px}
+.stepnav{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.stepnav button{font:inherit;border:1px solid var(--brown);background:var(--panel);color:var(--brown);padding:8px 16px;border-radius:6px;cursor:pointer;font-weight:600}
+.stepnav button.go{background:var(--brown);color:#fff}
+.stepnav button:disabled{opacity:.35;cursor:default}
+.dots{display:flex;gap:5px;margin-left:auto}
+.dots span{width:10px;height:10px;border-radius:50%;background:var(--line)}
+.dots span.on{background:var(--brown)}
+.counter{font-family:var(--mono);font-size:.8rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.k-brk{color:var(--brk);font-weight:600}.k-mk{color:var(--mk);font-weight:600}.k-amb{color:var(--amb);font-weight:600}.k-pi{color:var(--pi);font-weight:600}
+.tally{font-family:var(--mono);font-size:.88rem;border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+.tally td{padding:3px 6px;border-bottom:1px solid var(--line)}
+.tally td:last-child{text-align:right}
+.tally tr.dim td{color:#c3b8a6}
+.tally tr.tot td{font-weight:700;border-top:2px solid var(--ink)}
+.note{border-left:3px solid var(--amb);background:#f7efe0;padding:6px 10px;font-size:.9rem;border-radius:0 5px 5px 0}
+.ctrls{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;font-size:.9rem}
+.chip{font:inherit;font-size:.85rem;border:1px solid var(--line);background:var(--panel);padding:5px 10px;border-radius:20px;cursor:pointer;color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.seg{display:inline-flex;border:1px solid var(--brown);border-radius:6px;overflow:hidden}
+.seg button{font:inherit;font-size:.88rem;border:0;background:var(--panel);color:var(--brown);padding:7px 12px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--brown);color:#fff}
+canvas{width:100%;display:block;border-radius:6px;background:#fdfbf6;touch-action:none}
+input[type=range]{accent-color:var(--brown)}
+.tablewrap{overflow-x:auto}
+table.cmp{border-collapse:collapse;width:100%;min-width:640px;font-size:.93rem}
+table.cmp th,table.cmp td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+table.cmp thead th{background:#efe6d6;font-family:var(--display);font-size:1rem}
+table.cmp tbody th{width:18%;color:var(--brown);font-weight:600;background:#f6f0e4}
+td.real{cursor:pointer}
+td.real.hid{color:transparent;background:repeating-linear-gradient(45deg,#f1eadc 0 8px,#ebe2d1 8px 16px)}
+td.real.hid::after{content:"click to reveal";color:var(--ghost);font-size:.8rem}
+td.real.hid *{visibility:hidden}
+.bars{display:flex;flex-direction:column;gap:6px;font-family:var(--mono);font-size:.85rem;font-variant-numeric:tabular-nums}
+.bar{display:grid;grid-template-columns:150px 1fr 70px;align-items:center;gap:8px}
+.bar i{display:block;height:14px;border-radius:3px}
+@media (max-width:480px){.bar{grid-template-columns:96px 1fr 58px}}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:.82rem;color:var(--muted)}
+.legend b{display:inline-block;width:18px;height:3px;vertical-align:middle;margin-right:5px}
+.new{animation:fade .55s ease both}
+.draw{stroke-dasharray:1;stroke-dashoffset:1;animation:draw .7s ease forwards}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes draw{to{stroke-dashoffset:0}}
+@media (prefers-reduced-motion:reduce){.new,.draw{animation:none;stroke-dashoffset:0}}
+.kbd{font-family:var(--mono);font-size:.78rem;color:var(--muted)}
+</style>
+
+<div class="wrap">
+<header>
+  <h1>Benzene: Kekulé vs Delocalised</h1>
+  <span class="sub">AQA A-level · Aromatic chemistry · use ← → keys to step</span>
+</header>
+<nav id="tabs" role="tablist"></nav>
+
+<!-- 1 Kekulé simple -->
+<section class="page" id="p-kekule" data-tab="kekule">
+  <div class="card stage"><div class="molrow" id="m1"></div><div id="e1"></div></div>
+  <div class="card steps" id="s1"></div>
+</section>
+
+<!-- 2 Kekulé full bond enthalpy -->
+<section class="page" id="p-bonds" data-tab="bonds" hidden>
+  <div class="card stage"><div class="molrow" id="m2"></div><div id="e2"></div></div>
+  <div class="card steps" id="s2"></div>
+</section>
+
+<!-- 3 Delocalised -->
+<section class="page" id="p-deloc" data-tab="deloc" hidden>
+  <div class="card stage"><div class="molrow" id="m3"></div><div id="e3"></div></div>
+  <div class="card steps" id="s3"></div>
+</section>
+
+<!-- 4 Hydrogenation data -->
+<section class="page" id="p-data" data-tab="data" hidden>
+  <div class="card stage">
+    <div class="ctrls" id="dchips"></div>
+    <div id="e4"></div>
+    <div class="legend"><span><b style="border-top:2px dashed var(--ghost)"></b>predicted (n × −120)</span><span><b style="background:var(--ink)"></b>measured</span><span><b style="background:var(--amb)"></b>stabilisation from delocalisation</span></div>
+  </div>
+  <div class="card">
+    <h2>Predicted vs measured ΔH<sub>hydrogenation</sub></h2>
+    <p>Cyclohexene is the reference: one C=C gives −120 kJ mol⁻¹. Each extra C=C should add another −120, <em>unless</em> the π electrons are delocalised.</p>
+    <div class="tablewrap"><table class="tally" id="dtable"></table></div>
+    <h3>Cyclohexa-1,3-diene vs cyclohexa-1,4-diene</h3>
+    <p><span class="k-pi">1,3-diene (conjugated):</span> the C=C bonds alternate with one single bond, so the p orbitals on C2 and C3 sit next to each other and overlap slightly. There is a little delocalisation, so it is 8 kJ mol⁻¹ more stable than predicted.</p>
+    <p><span class="k-pi">1,4-diene (isolated):</span> the C=C bonds are separated by a CH₂ carbon with no p orbital. No overlap, no delocalisation, so measured = predicted.</p>
+    <p class="note">The same idea applies to open-chain isomers: hexa-1,3-diene is conjugated (partial delocalisation); hexa-1,5-diene has isolated C=C bonds (none).</p>
+    <h3>Exam working</h3>
+    <p><span class="eq">delocalisation energy = 3 × (−120) − (−208) = −360 + 208 = 152 kJ mol⁻¹</span></p>
+    <p>Benzene releases <strong>less</strong> energy on hydrogenation because it starts <strong>lower</strong> in energy: the delocalised ring needs more energy to break.</p>
+  </div>
+</section>
+
+<!-- 5 Orbitals -->
+<section class="page" id="p-orbitals" data-tab="orbitals" hidden>
+  <div class="card stage">
+    <canvas id="orb" width="800" height="560" aria-label="3D model of benzene orbitals"></canvas>
+    <div class="ctrls">
+      <label for="tilt">View: top</label><input id="tilt" type="range" min="0" max="90" value="68"><span>side</span>
+      <button class="chip" id="spin" aria-pressed="true">Rotate</button>
+      <span class="kbd">drag to turn</span>
+    </div>
+  </div>
+  <div class="card steps" id="s5"></div>
+</section>
+
+<!-- 6 Bond lengths -->
+<section class="page" id="p-lengths" data-tab="lengths" hidden>
+  <div class="card stage">
+    <div class="ctrls">
+      <div class="seg" role="group" aria-label="Structure"><button id="lt" aria-pressed="true">Hypothetical triene</button><button id="lb" aria-pressed="false">Actual benzene</button></div>
+      <button class="chip" id="lghost" aria-pressed="false">Overlay other shape</button>
+      <button class="chip" id="ldens" aria-pressed="true">Electron density</button>
+    </div>
+    <div class="molrow"><svg id="lsvg" viewBox="0 0 520 430" style="max-width:560px"></svg></div>
+    <div class="ctrls"><label for="ex">Exaggerate differences</label><input id="ex" type="range" min="1" max="5" step="0.5" value="1"><span id="exv" class="kbd">×1 (true scale)</span></div>
+  </div>
+  <div class="card">
+    <h2 id="lhead">Hypothetical cyclohexa-1,3,5-triene</h2>
+    <p id="ltext"></p>
+    <div class="bars" id="bars"></div>
+    <h3>The σ framework (AQA)</h3>
+    <p><strong>6 C–C σ bonds</strong> and <strong>6 C–H σ bonds</strong> hold the ring together, all in one plane with 120° bond angles. The remaining <strong>6 electrons</strong> (one p electron from each carbon) form the delocalised π system.</p>
+    <p class="note">Both shapes have 120° angles. The triene would be an <em>irregular</em> hexagon (sides alternate); benzene is a <em>regular</em> hexagon. X-ray diffraction shows six equal bonds.</p>
+  </div>
+</section>
+
+<!-- 7 Compare -->
+<section class="page wide" id="p-compare" data-tab="compare" hidden>
+  <div class="card">
+    <div class="ctrls" style="justify-content:space-between">
+      <h2 style="margin:0">Theory vs reality</h2>
+      <span><button class="chip" id="hideall">Hide “actual” column</button> <button class="chip" id="showall">Reveal all</button></span>
+    </div>
+    <p class="sub">Hide the right-hand column, ask students to predict, then click each cell to reveal.</p>
+    <div class="tablewrap"><table class="cmp" id="cmp"></table></div>
+  </div>
+</section>
+</div>
+
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const TABS=[["kekule","Kekulé: simple"],["bonds","Kekulé: bond enthalpies"],["deloc","Delocalised benzene"],["data","Hydrogenation data"],["orbitals","π system"],["lengths","Bond lengths & shape"],["compare","Theory vs reality"]];
+let active="kekule"; const steppers={};
+
+/* ---------- molecule (displayed formula) ---------- */
+function mol(o){
+  const R=58, ang=i=>(-90+60*i)*Math.PI/180;
+  const C=[...Array(6)].map((_,i)=>[R*Math.cos(ang(i)),R*Math.sin(ang(i))]);
+  const sh=(a,b,d)=>{const dx=b[0]-a[0],dy=b[1]-a[1],L=Math.hypot(dx,dy);return [a[0]+dx/L*d,a[1]+dy/L*d,b[0]-dx/L*d,b[1]-dy/L*d]};
+  const ln=(p,cls,extra="")=>`<line x1="${p[0].toFixed(1)}" y1="${p[1].toFixed(1)}" x2="${p[2].toFixed(1)}" y2="${p[3].toFixed(1)}" class="${cls}" ${extra}/>`;
+  let s=`<svg viewBox="-112 -112 330 224" role="img" aria-label="${o.aria||'structure'}"><style>
+  .mb{stroke:var(--ink);stroke-width:2.4;stroke-linecap:round}.mbk{stroke:var(--brk);stroke-width:2.4;stroke-dasharray:5 4;fill:none}
+  .mmk{stroke:var(--mk);stroke-width:3.2;stroke-linecap:round}.mpi{stroke:var(--pi);stroke-width:2.4;stroke-linecap:round;fill:none}
+  .at{font-size:15px;font-weight:600;text-anchor:middle;dominant-baseline:central}.hm{fill:var(--mk)}.hb{fill:var(--brk)}</style>`;
+  for(let i=0;i<6;i++){
+    const a=C[i],b=C[(i+1)%6],dbl=o.ring==="kekule"&&i%2===0;
+    let sc="mb";
+    if(dbl&&o.dbl==="fullbreak")sc="mbk";
+    if(dbl&&o.dbl==="reformed")sc="mmk";
+    s+=ln(sh(a,b,11),sc);
+    if(dbl&&(o.dbl==="normal"||o.dbl==="pibreak"||o.dbl==="fullbreak")){
+      const mx=(a[0]+b[0])/2,my=(a[1]+b[1])/2,k=(R-9)/R*1;
+      const ia=[a[0]*k,a[1]*k],ib=[b[0]*k,b[1]*k];
+      s+=ln(sh(ia,ib,16),o.dbl==="normal"?"mpi":"mbk");
+    }
+  }
+  if(o.ring==="deloc") s+=`<circle r="${R*0.56}" fill="none" class="${o.deloc==="break"?"mbk":"mpi"}" style="stroke-width:2.6"/>`;
+  C.forEach(c=>s+=`<text class="at" x="${c[0]}" y="${c[1]}">C</text>`);
+  for(let i=0;i<6;i++){
+    const offs=o.hPer===2?[-23,23]:[0];
+    offs.forEach((d,j)=>{
+      const t=ang(i)+d*Math.PI/180,hx=(R+38)*Math.cos(t),hy=(R+38)*Math.sin(t);
+      const isNew=o.hPer===2&&o.newH&&j===1;
+      s+=ln(sh(C[i],[hx,hy],10),isNew?"mmk":"mb");
+      s+=`<text class="at ${isNew?"hm":""}" x="${hx.toFixed(1)}" y="${hy.toFixed(1)}">H</text>`;
+    });
+  }
+  if(o.h2!=="none"){
+    s+=`<text x="118" y="0" class="at" style="font-size:20px">+</text>`;
+    [-55,0,55].forEach(y=>{
+      if(o.h2==="mol"){s+=`<text class="at" x="150" y="${y}">H</text><line x1="158" y1="${y}" x2="178" y2="${y}" class="mb"/><text class="at" x="186" y="${y}">H</text>`}
+      else{s+=`<text class="at hb" x="146" y="${y}">H</text><line x1="155" y1="${y}" x2="181" y2="${y}" class="mbk"/><text class="at hb" x="190" y="${y}">H</text>`}
+    });
+  }
+  return s+"</svg>";
+}
+
+/* ---------- energy level diagram ---------- */
+function energy(cfg,step){
+  const W=560,H=470,top=26,bot=26,X0=14;
+  const Y=v=>top+(cfg.max-v)/(cfg.max-cfg.min)*(H-top-bot);
+  let s=`<svg viewBox="0 0 ${W} ${H}" class="esvg" role="img" aria-label="Enthalpy level diagram"><style>
+  .lv{stroke:var(--ink);stroke-width:2.6}.lv.gh{stroke:var(--ghost);stroke-dasharray:7 5}
+  .ar{stroke-width:3;fill:none}.ar.brk{stroke:var(--brk)}.ar.mk{stroke:var(--mk)}.ar.dh{stroke:var(--brown)}.ar.gh{stroke:var(--ghost);stroke-dasharray:6 5}
+  .hd.brk{fill:var(--brk)}.hd.mk{fill:var(--mk)}.hd.dh{fill:var(--brown)}.hd.gh{fill:var(--ghost)}
+  .lb{font-size:12.5px}.lb.brk{fill:var(--brk)}.lb.mk{fill:var(--mk)}.lb.dh{fill:var(--brown);font-weight:700}.lb.gh{fill:var(--ghost)}.lb.amb{fill:var(--amb);font-weight:700}
+  .ll{font-size:12px;fill:var(--muted)}</style>`;
+  s+=`<line x1="${X0}" y1="${H-bot}" x2="${X0}" y2="${top-8}" stroke="var(--muted)" stroke-width="1.5"/><polygon points="${X0-5},${top-4} ${X0+5},${top-4} ${X0},${top-14}" fill="var(--muted)"/>`;
+  s+=`<text x="${X0+8}" y="${top-6}" class="ll" style="font-size:11px">H</text>`;
+  const lines=(arr,x,y,cls,anchor)=>{const n=arr.length;return arr.map((t,k)=>`<text x="${x}" y="${(y+(k-(n-1)/2)*15+4).toFixed(1)}" class="lb ${cls}" text-anchor="${anchor}">${t}</text>`).join("")};
+  (cfg.bands||[]).forEach(b=>{ if(b.step>step)return;
+    const nw=b.step===step?"new":"";
+    s+=`<g class="${nw}"><rect x="${b.x-9}" y="${Y(b.y2)}" width="18" height="${Y(b.y1)-Y(b.y2)}" fill="var(--amb)" opacity=".85" rx="2"/>`+lines(b.label,b.x+(b.side==="l"?-14:14),(Y(b.y1)+Y(b.y2))/2,"amb",b.side==="l"?"end":"start")+`</g>`;
+  });
+  cfg.levels.forEach(l=>{ if(l.step>step)return;
+    const nw=l.step===step?"new":"";
+    s+=`<g class="${nw}"><line x1="${l.x1}" y1="${Y(l.y)}" x2="${l.x2}" y2="${Y(l.y)}" class="lv ${l.ghost?"gh":""}"/>`;
+    if(l.label) s+=`<text x="${l.x1+2}" y="${Y(l.y)+(l.below?16:-7)}" class="ll">${l.label}</text>`;
+    s+="</g>";
+  });
+  cfg.arrows.forEach(a=>{ if(a.step>step)return;
+    const y1=Y(a.y1),y2=Y(a.y2),dir=y2>y1?1:-1,tip=y2-dir*1,base=y2-dir*12;
+    const nw=a.step===step;
+    const cls=a.cls+(a.ghost?" gh":"");
+    s+=`<g class="${nw?"new":""}"><line x1="${a.x}" y1="${y1}" x2="${a.x}" y2="${base}" class="ar ${cls} ${nw&&!a.ghost?"draw":""}" pathLength="1"/>`;
+    s+=`<polygon class="hd ${cls}" points="${a.x-6},${base} ${a.x+6},${base} ${a.x},${tip}"/>`;
+    const ly=a.ly!==undefined?Y(a.ly):(y1+y2)/2;
+    s+=lines(a.label,a.x+(a.side==="l"?-11:11),ly,cls,a.side==="l"?"end":"start")+"</g>";
+  });
+  return s+"</svg>";
+}
+
+/* ---------- stepper ---------- */
+function stepper(key,host,steps,render){
+  const st={i:0,n:steps.length};
+  host.innerHTML=`<div class="counter"></div><h2></h2><div class="body"></div>
+  <div class="stepnav"><button class="back">← Back</button><button class="go next">Next →</button><div class="dots">${steps.map(()=>"<span></span>").join("")}</div></div>`;
+  const go=i=>{st.i=Math.max(0,Math.min(st.n-1,i));const s=steps[st.i];
+    host.querySelector(".counter").textContent=`Step ${st.i+1} of ${st.n}`;
+    host.querySelector("h2").innerHTML=s.t;host.querySelector(".body").innerHTML=s.h;
+    host.querySelector(".back").disabled=st.i===0;host.querySelector(".next").disabled=st.i===st.n-1;
+    host.querySelectorAll(".dots span").forEach((d,k)=>d.classList.toggle("on",k<=st.i));
+    render(st.i);};
+  host.querySelector(".back").onclick=()=>go(st.i-1);host.querySelector(".next").onclick=()=>go(st.i+1);
+  st.go=go;steppers[key]=st;go(0);
+}
+
+/* ---------- 1: Kekulé simple ---------- */
+const E1={min:-480,max:2250,
+ levels:[{y:0,x1:40,x2:270,step:0,label:"Kekulé C₆H₆ + 3H₂"},{y:2100,x1:40,x2:530,step:1,label:"bonds broken"},{y:-360,x1:210,x2:530,step:2,label:"cyclohexane, C₆H₁₂",below:true}],
+ arrows:[{x:190,y1:0,y2:2100,cls:"brk",step:1,side:"l",label:["Break","3 × C=C π bonds","+ 3 × H–H"]},
+  {x:450,y1:2100,y2:-360,cls:"mk",step:2,side:"r",label:["Make","6 × C–H"]},
+  {x:250,y1:0,y2:-360,cls:"dh",step:3,side:"r",label:["ΔH = −360","kJ mol⁻¹"]}]};
+const M1=[{ring:"kekule",dbl:"normal",h2:"mol",hPer:1},{ring:"kekule",dbl:"pibreak",h2:"atoms",hPer:1},{ring:"single",h2:"none",hPer:2,newH:true},{ring:"single",h2:"none",hPer:2}];
+stepper("kekule",$("s1"),[
+ {t:"Kekulé benzene + 3H₂",h:`<p>Kekulé pictured benzene as <strong>cyclohexa-1,3,5-triene</strong>: a ring of alternating C=C and C–C bonds.</p><p>Hydrogenation adds H₂ across each C=C to give cyclohexane.</p><p class="eq">C₆H₆ + 3H₂ → C₆H₁₂</p>`},
+ {t:"Break bonds: energy in",h:`<p>Each C=C is a σ bond plus a π bond. Only the <span class="k-pi">π bond</span> breaks; the σ bond stays as a C–C single bond in cyclohexane.</p><p><span class="k-brk">Break 3 × π (from C=C) and 3 × H–H.</span> This is endothermic, so the arrow points up.</p>`},
+ {t:"Make bonds: energy out",h:`<p>Each carbon gains one hydrogen: <span class="k-mk">6 new C–H bonds</span> form.</p><p>This is exothermic, so the arrow points down. More energy comes out than went in.</p>`},
+ {t:"ΔH hydrogenation (predicted)",h:`<p>The overall change is <strong>ΔH = −360 kJ mol⁻¹</strong>.</p><p>This prediction comes from cyclohexene: one C=C releases 120 kJ mol⁻¹, so three should release</p><p class="eq">3 × (−120) = −360 kJ mol⁻¹</p><p class="note">Next tab: the same cycle worked out fully with mean bond enthalpies.</p>`}
+],i=>{$("m1").innerHTML=mol(M1[i]);$("e1").innerHTML=energy(E1,i)});
+
+/* ---------- 2: full bond enthalpy ---------- */
+const E2={min:-560,max:3300,
+ levels:[{y:0,x1:30,x2:290,step:0,label:"Kekulé C₆H₆ + 3H₂"},{y:1836,x1:90,x2:240,step:1},{y:3144,x1:150,x2:390,step:2,label:"all broken bonds"},{y:2100,x1:300,x2:470,step:3},{y:-372,x1:220,x2:540,step:4,label:"cyclohexane",below:true}],
+ arrows:[{x:110,y1:0,y2:1836,cls:"brk",step:1,side:"l",label:["3 × C=C","+1836"]},
+  {x:180,y1:1836,y2:3144,cls:"brk",step:2,side:"l",label:["3 × H–H","+1308"]},
+  {x:340,y1:3144,y2:2100,cls:"mk",step:3,side:"r",label:["3 × C–C","−1044"]},
+  {x:440,y1:2100,y2:-372,cls:"mk",step:4,side:"r",label:["6 × C–H","−2472"]},
+  {x:250,y1:0,y2:-372,cls:"dh",step:5,side:"r",label:["ΔH = −372"]}]};
+const M2=[{ring:"kekule",dbl:"normal",h2:"mol",hPer:1},{ring:"kekule",dbl:"fullbreak",h2:"mol",hPer:1},{ring:"kekule",dbl:"fullbreak",h2:"atoms",hPer:1},{ring:"kekule",dbl:"reformed",h2:"atoms",hPer:1},{ring:"single",h2:"none",hPer:2,newH:true},{ring:"single",h2:"none",hPer:2}];
+const tally=i=>{const rows=[["Break 3 × C=C","3 × 612","+1836",1],["Break 3 × H–H","3 × 436","+1308",2],["Make 3 × C–C","3 × 348","−1044",3],["Make 6 × C–H","6 × 412","−2472",4]];
+  return `<table class="tally">${rows.map(r=>`<tr class="${r[3]>i?"dim":""}"><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join("")}<tr class="tot ${i<5?"dim":""}"><td>ΔH</td><td>3144 − 3516</td><td>−372</td></tr></table>`};
+stepper("bonds",$("s2"),[
+ {t:"Mean bond enthalpies",h:`<p>This time treat each C=C as a whole bond that breaks, then count the C–C single bonds that form.</p><table class="tally"><tr><td>C=C</td><td>612 kJ mol⁻¹</td></tr><tr><td>C–C</td><td>348 kJ mol⁻¹</td></tr><tr><td>H–H</td><td>436 kJ mol⁻¹</td></tr><tr><td>C–H</td><td>412 kJ mol⁻¹</td></tr></table>`},
+ {t:"Break 3 × C=C",h:`<p class="k-brk">3 × 612 = +1836 kJ mol⁻¹</p>`+"%T"},
+ {t:"Break 3 × H–H",h:`<p class="k-brk">3 × 436 = +1308 kJ mol⁻¹. Total in: +3144</p>`+"%T"},
+ {t:"Make 3 × C–C",h:`<p class="k-mk">3 × 348 = −1044 kJ mol⁻¹</p><p>The ring re-forms with single bonds.</p>`+"%T"},
+ {t:"Make 6 × C–H",h:`<p class="k-mk">6 × 412 = −2472 kJ mol⁻¹. Total out: −3516</p>`+"%T"},
+ {t:"ΔH = −372 kJ mol⁻¹",h:`<p class="eq">ΔH = Σ(bonds broken) − Σ(bonds made)<br>= 3144 − 3516 = −372 kJ mol⁻¹</p>`+"%T"+`<p class="note">Mean bond enthalpies are averages over many compounds, so this is close to (not equal to) the −360 from cyclohexene. The simple version is the same idea: 612 − 348 = 264 kJ mol⁻¹ is the π part of each C=C.</p>`}
+].map((s,k)=>({t:s.t,h:s.h.replace("%T",tally(k))})),i=>{$("m2").innerHTML=mol(M2[i]);$("e2").innerHTML=energy(E2,i)});
+
+/* ---------- 3: delocalised ---------- */
+const E3={min:-480,max:2250,
+ levels:[{y:0,x1:40,x2:330,step:0,ghost:true,label:"Kekulé triene + 3H₂"},{y:-152,x1:40,x2:330,step:0,label:"benzene + 3H₂",below:true},{y:2100,x1:40,x2:530,step:1,label:"bonds broken"},{y:-360,x1:200,x2:530,step:2,label:"cyclohexane",below:true}],
+ bands:[{x:190,y1:-152,y2:0,step:1,side:"r",label:["+152 extra"]}],
+ arrows:[{x:190,y1:-152,y2:2100,cls:"brk",step:1,side:"l",label:["Break","delocalised π system","+ 3 × H–H"],ly:1100},
+  {x:450,y1:2100,y2:-360,cls:"mk",step:2,side:"r",label:["Make","6 × C–H","(same as Kekulé)"]},
+  {x:310,y1:-152,y2:-360,cls:"dh",step:3,side:"r",label:["ΔH = −208"]},
+  {x:230,y1:0,y2:-360,cls:"dh",ghost:true,step:4,side:"l",label:["predicted −360"],ly:-330}]};
+const M3=[{ring:"deloc",deloc:"normal",h2:"mol",hPer:1},{ring:"deloc",deloc:"break",h2:"atoms",hPer:1},{ring:"single",h2:"none",hPer:2,newH:true},{ring:"single",h2:"none",hPer:2},{ring:"single",h2:"none",hPer:2}];
+stepper("deloc",$("s3"),[
+ {t:"Real benzene + 3H₂",h:`<p>Real benzene has a <span class="k-pi">delocalised π system</span>: six π electrons spread over the whole ring.</p><p>Its energy level is <strong>below</strong> the hypothetical Kekulé triene (dashed). It is more stable.</p>`},
+ {t:"Break: more energy needed",h:`<p>Breaking the delocalised π system takes <strong>more energy</strong> than breaking three separate π bonds.</p><p>The extra energy (<span class="k-amb">amber</span>) is the <strong>delocalisation energy</strong>: about 152 kJ mol⁻¹.</p>`},
+ {t:"Make 6 × C–H",h:`<p>The <span class="k-mk">same six C–H bonds</span> form and the product is the same cyclohexane.</p><p>So this arrow is <strong>exactly the same length</strong> as in the Kekulé cycle. Only the starting point has changed.</p>`},
+ {t:"ΔH = −208 kJ mol⁻¹ (measured)",h:`<p>The measured enthalpy of hydrogenation of benzene is <strong>−208 kJ mol⁻¹</strong>.</p><p>Less energy is released because more energy was needed to break the delocalised ring.</p>`},
+ {t:"Compare with the prediction",h:`<p class="eq">delocalisation energy = −208 − (−360) = +152 kJ mol⁻¹</p><p>Benzene is <strong>152 kJ mol⁻¹ more stable</strong> than cyclohexa-1,3,5-triene would be.</p><p class="note">Exam phrasing: “Benzene is more stable because its π electrons are delocalised; more energy is needed to break the delocalised system, so less energy is released on hydrogenation.”</p>`}
+],i=>{$("m3").innerHTML=mol(M3[i]);$("e3").innerHTML=energy(E3,i)});
+
+/* ---------- 4: data ---------- */
+const CMP=[{k:"ene",n:"cyclohexene",d:[0],p:120,a:120},{k:"14",n:"cyclohexa-1,4-diene",d:[0,3],p:240,a:240},{k:"13",n:"cyclohexa-1,3-diene",d:[0,2],p:240,a:232},{k:"bz",n:"benzene",d:[],ar:true,p:360,a:208}];
+const dOn={ene:true,"14":true,"13":true,bz:true}; let showPred=true;
+function skel(cx,cy,r,c){const P=[...Array(6)].map((_,i)=>{const t=(-90+60*i)*Math.PI/180;return[cx+r*Math.cos(t),cy+r*Math.sin(t)]});
+  let s=`<polygon points="${P.map(p=>p.join(",")).join(" ")}" fill="none" stroke="var(--ink)" stroke-width="2"/>`;
+  c.d.forEach(i=>{const a=P[i],b=P[(i+1)%6],k=.74,dx=(b[0]-a[0])*.18,dy=(b[1]-a[1])*.18;
+    s+=`<line x1="${cx+(a[0]-cx)*k+dx}" y1="${cy+(a[1]-cy)*k+dy}" x2="${cx+(b[0]-cx)*k-dx}" y2="${cy+(b[1]-cy)*k-dy}" stroke="var(--ink)" stroke-width="2"/>`});
+  if(c.ar)s+=`<circle cx="${cx}" cy="${cy}" r="${r*.55}" fill="none" stroke="var(--pi)" stroke-width="2"/>`;return s}
+function drawData(){
+  const W=660,H=440,base=330,top=36,Y=v=>base-(v/400)*(base-top),list=CMP.filter(c=>dOn[c.k]),cw=W/Math.max(list.length,1);
+  let s=`<svg viewBox="0 0 ${W} ${H}" class="esvg" role="img" aria-label="Hydrogenation enthalpy comparison"><style>.t{font-size:12px}.tm{font-size:11.5px;fill:var(--muted)}</style>`;
+  [0,120,240,360].forEach(v=>s+=`<line x1="30" x2="${W-6}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)" stroke-width="1"/><text x="26" y="${Y(v)+4}" class="tm" text-anchor="end">${v}</text>`);
+  s+=`<line x1="30" x2="${W-6}" y1="${base}" y2="${base}" stroke="var(--ink)" stroke-width="2.6"/><text x="34" y="${base-6}" class="tm">cyclohexane</text>`;
+  list.forEach((c,k)=>{const cx=30+(k+.5)*((W-60)/list.length),x1=cx-50,x2=cx+50;
+    if(showPred&&c.p!==c.a){s+=`<line x1="${x1}" x2="${x2}" y1="${Y(c.p)}" y2="${Y(c.p)}" stroke="var(--ghost)" stroke-width="2.4" stroke-dasharray="7 5"/><text x="${x1}" y="${Y(c.p)-7}" class="tm">predicted −${c.p}</text>`;
+      s+=`<rect x="${x2-8}" y="${Y(c.p)}" width="10" height="${Y(c.a)-Y(c.p)}" fill="var(--amb)"/><text x="${x2+6}" y="${(Y(c.p)+Y(c.a))/2+4}" class="t" style="fill:var(--amb);font-weight:700">${c.p-c.a}</text>`}
+    s+=`<line x1="${x1}" x2="${x2}" y1="${Y(c.a)}" y2="${Y(c.a)}" stroke="var(--ink)" stroke-width="2.6"/>`;
+    s+=`<text x="${x1}" y="${Y(c.a)+(c.p!==c.a&&showPred?15:-7)}" class="tm">${c.p===c.a&&showPred?"measured = predicted":"measured"}</text>`;
+    const ax=cx-14,y1=Y(c.a)+3,y2=base-12;
+    s+=`<line x1="${ax}" x2="${ax}" y1="${y1}" y2="${y2}" stroke="var(--brown)" stroke-width="3"/><polygon points="${ax-6},${y2} ${ax+6},${y2} ${ax},${base-1}" fill="var(--brown)"/>`;
+    s+=`<text x="${ax+9}" y="${(y1+base)/2+4}" class="t" style="fill:var(--brown);font-weight:700">−${c.a}</text>`;
+    s+=skel(cx,base+44,22,c)+`<text x="${cx}" y="${base+92}" class="t" text-anchor="middle">${c.n}</text>`;
+  });
+  $("e4").innerHTML=s+"</svg>";
+  $("dtable").innerHTML=`<tr><td><strong>Compound</strong></td><td><strong>C=C</strong></td><td><strong>predicted</strong></td><td><strong>measured</strong></td><td><strong>extra stability</strong></td></tr>`+
+   CMP.map(c=>`<tr><td>${c.n}</td><td>${c.ar?"(3)":c.d.length}</td><td>−${c.p}</td><td>−${c.a}</td><td>${c.p-c.a}</td></tr>`).join("");
+}
+$("dchips").innerHTML=CMP.map(c=>`<button class="chip" data-k="${c.k}" aria-pressed="true">${c.n}</button>`).join("")+`<button class="chip" id="pred" aria-pressed="true">Show predicted</button>`;
+$("dchips").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
+  if(b.id==="pred"){showPred=!showPred;b.setAttribute("aria-pressed",showPred)}
+  else{const k=b.dataset.k;if(dOn[k]&&Object.values(dOn).filter(Boolean).length===1)return;dOn[k]=!dOn[k];b.setAttribute("aria-pressed",dOn[k])}
+  drawData()});
+drawData();
+
+/* ---------- 5: orbitals (3D canvas) ---------- */
+const cv=$("orb"),ctx=cv.getContext("2d");
+const O={theta:.5,phi:68*Math.PI/180,spin:true,step:0,t:0};
+const RC=1.4,RH=2.48;
+const Cs=[...Array(6)].map((_,i)=>{const a=i*Math.PI/3;return[RC*Math.cos(a),RC*Math.sin(a),0]});
+const Hs=[...Array(6)].map((_,i)=>{const a=i*Math.PI/3;return[RH*Math.cos(a),RH*Math.sin(a),0]});
+function proj(p){const c=Math.cos(O.theta),s=Math.sin(O.theta),x1=p[0]*c-p[1]*s,y1=p[0]*s+p[1]*c,z=p[2];
+  const cp=Math.cos(O.phi),sp=Math.sin(O.phi);return{x:O.cx+x1*O.sc,y:O.cy+(y1*cp-z*sp)*O.sc,d:z*cp+y1*sp}}
+function blob(x,y,r,rgb,a){const g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,`rgba(${rgb},${a})`);g.addColorStop(.6,`rgba(${rgb},${a*.55})`);g.addColorStop(1,`rgba(${rgb},0)`);ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill()}
+const PI_RGB="44,90,140",AMB_RGB="181,112,12";
+function sizeCanvas(){const w=cv.clientWidth||600,h=Math.round(w*0.68),dpr=Math.min(2,window.devicePixelRatio||1);
+  cv.width=w*dpr;cv.height=h*dpr;cv.style.height=h+"px";ctx.setTransform(dpr,0,0,dpr,0,0);O.cx=w/2;O.cy=h/2;O.sc=Math.min(w,h)/6.4;O.w=w;O.h=h}
+function drawOrb(){
+  const it=[],add=(p,f,bias=0)=>{const q=proj(p);it.push({z:p[2],d:q.d+bias,f:()=>f(q)})};
+  const st=O.step;
+  const sphere=(p,r,rgb,a)=>add(p,q=>blob(q.x,q.y,r*O.sc*1.35,rgb,a));
+  // sigma bonds
+  for(let i=0;i<6;i++){const a=Cs[i],b=Cs[(i+1)%6],m=[(a[0]+b[0])/2,(a[1]+b[1])/2,0];
+    add(m,()=>{const p=proj(a),q=proj(b);ctx.strokeStyle="#4b3d30";ctx.lineWidth=O.sc*.13;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);ctx.stroke()},-.01);
+    const h=Hs[i],mh=[(a[0]+h[0])/2,(a[1]+h[1])/2,0];
+    add(mh,()=>{const p=proj(a),q=proj(h);ctx.strokeStyle="#8a7a66";ctx.lineWidth=O.sc*.1;ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);ctx.stroke()},-.01);
+  }
+  Cs.forEach(c=>add(c,q=>{const r=O.sc*.26,g=ctx.createRadialGradient(q.x-r*.35,q.y-r*.35,r*.1,q.x,q.y,r);g.addColorStop(0,"#7d6c5b");g.addColorStop(1,"#2a2018");ctx.fillStyle=g;ctx.beginPath();ctx.arc(q.x,q.y,r,0,7);ctx.fill()}));
+  Hs.forEach(h=>add(h,q=>{const r=O.sc*.17;ctx.fillStyle="#fffdf8";ctx.strokeStyle="#9d907c";ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(q.x,q.y,r,0,7);ctx.fill();ctx.stroke()}));
+  // p orbitals
+  if(st===1||st===3||st===2){const a=st===2?.05:.2;
+    Cs.forEach(c=>[1,-1].forEach(sg=>{for(let k=0;k<10;k++){const t=k/9,z=sg*(.18+1.3*t),r=.46*Math.pow(Math.sin(Math.PI*(.06+.88*t)),.7);sphere([c[0],c[1],z],r,PI_RGB,a)}}));
+    if(st===1)Cs.forEach(c=>add([c[0],c[1],1.05],q=>{ctx.fillStyle="#173a5e";ctx.beginPath();ctx.arc(q.x,q.y,O.sc*.07,0,7);ctx.fill()},.5));
+  }
+  if(st===2){[[0,1],[2,3],[4,5]].forEach(([i,j])=>[1,-1].forEach(sg=>{for(let k=0;k<11;k++){const t=k/10,a=Cs[i],b=Cs[j];
+    sphere([a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,sg*.72],.36*(.75+.35*Math.sin(Math.PI*t)),PI_RGB,.3)}}))}
+  if(st===3){for(let i=0;i<6;i++){const a=Cs[i],b=Cs[(i+1)%6];[1,-1].forEach(sg=>sphere([(a[0]+b[0])/2,(a[1]+b[1])/2,sg*.85],.3,AMB_RGB,.55))}}
+  if(st===4){const N=84;for(let k=0;k<N;k++){const t=k/N*2*Math.PI;[1,-1].forEach(sg=>sphere([RC*Math.cos(t),RC*Math.sin(t),sg*.72],.4,PI_RGB,.2))}
+    for(let k=0;k<6;k++){const t=O.t*.5+k*Math.PI/3,sg=k%2?-1:1;add([RC*Math.cos(t),RC*Math.sin(t),sg*.72],q=>{ctx.fillStyle="#173a5e";ctx.beginPath();ctx.arc(q.x,q.y,O.sc*.07,0,7);ctx.fill()},.3)}}
+  ctx.clearRect(0,0,O.w,O.h);
+  const below=it.filter(o=>o.z<-1e-6).sort((a,b)=>a.d-b.d),above=it.filter(o=>o.z>=-1e-6).sort((a,b)=>a.d-b.d);
+  below.forEach(o=>o.f());
+  // molecular plane
+  const sq=[[-3.1,-3.1,0],[3.1,-3.1,0],[3.1,3.1,0],[-3.1,3.1,0]].map(proj);
+  ctx.fillStyle="rgba(122,74,34,0.07)";ctx.strokeStyle="rgba(122,74,34,0.25)";ctx.lineWidth=1;ctx.beginPath();sq.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.closePath();ctx.fill();ctx.stroke();
+  above.forEach(o=>o.f());
+  ctx.font="600 13px system-ui,sans-serif";ctx.fillStyle="#6c5f50";
+  if(st>=1&&O.phi>0.8){const u=proj([0,0,1.9]),d=proj([0,0,-1.9]);ctx.textAlign="center";ctx.fillText("above the plane",u.x,u.y);ctx.fillText("below the plane",d.x,d.y+8)}
+  ctx.textAlign="left";ctx.fillText(["σ framework: 6 C–C σ + 6 C–H σ","6 p orbitals, 1 electron each","Kekulé: 3 localised π bonds","each p orbital overlaps both neighbours","delocalised π system: 6 electrons"][st],12,22);
+}
+function loop(ts){if(active==="orbitals"){O.t=ts/1000;if(O.spin&&!O.drag)O.theta+=.004;drawOrb()}requestAnimationFrame(loop)}
+$("tilt").oninput=e=>{O.phi=e.target.value*Math.PI/180};
+$("spin").onclick=e=>{O.spin=!O.spin;e.target.setAttribute("aria-pressed",O.spin)};
+cv.addEventListener("pointerdown",e=>{O.drag={x:e.clientX,y:e.clientY};cv.setPointerCapture(e.pointerId)});
+cv.addEventListener("pointermove",e=>{if(!O.drag)return;O.theta+=(e.clientX-O.drag.x)*.01;O.phi=Math.max(0,Math.min(Math.PI/2,O.phi+(e.clientY-O.drag.y)*.01));$("tilt").value=Math.round(O.phi*180/Math.PI);O.drag={x:e.clientX,y:e.clientY}});
+cv.addEventListener("pointerup",()=>O.drag=null);
+if(matchMedia("(prefers-reduced-motion: reduce)").matches){O.spin=false;$("spin").setAttribute("aria-pressed","false")}
+stepper("orbitals",$("s5"),[
+ {t:"The σ framework",h:`<p>Each carbon forms three σ bonds: two to neighbouring carbons and one to hydrogen.</p><p class="eq">6 × C–C σ bonds + 6 × C–H σ bonds</p><p>All 12 atoms lie in <strong>one plane</strong>. Each carbon is trigonal planar, bond angles <strong>120°</strong>.</p>`},
+ {t:"One p orbital per carbon",h:`<p>Each carbon has one electron left over, in a <span class="k-pi">p orbital</span> at right angles to the plane: one lobe above, one below.</p><p class="eq">6 p orbitals → 6 electrons</p><p>Try the side view to see the lobes clearly.</p>`},
+ {t:"Kekulé: overlap in pairs",h:`<p>If the p orbitals overlapped only in <strong>pairs</strong>, you would get three localised π bonds.</p><p>Electron density would be concentrated above and below three of the six bonds: alternate C=C and C–C. This is the Kekulé model.</p>`},
+ {t:"Overlap with both neighbours",h:`<p>But each p orbital sits <strong>equally</strong> between two neighbours, so it overlaps sideways with <strong>both</strong> of them.</p><p>The amber regions show overlap on every one of the six bonds, not just three.</p>`},
+ {t:"The delocalised π system",h:`<p>The overlap continues round the ring, giving a ring of <span class="k-pi">π electron density above and below the plane</span>.</p><p>The <strong>6 π electrons are delocalised</strong>: they are not fixed between any two carbons but spread over all six.</p><p class="note">The two rings are one π system. That is why every C–C bond is identical, and why benzene is more stable than the Kekulé structure.</p>`}
+],i=>{O.step=i;if(active==="orbitals")drawOrb()});
+
+/* ---------- 6: bond lengths ---------- */
+const L={m:0,target:0,ex:1,ghost:false,dens:true};
+const lerp=(a,b,t)=>a+(b-a)*t;
+function hexPts(A,B){let x=0,y=0,g=-Math.PI/6*2;const p=[[0,0]];for(let i=0;i<6;i++){const l=i%2?B:A;x+=l*Math.cos(g);y+=l*Math.sin(g);p.push([x,y]);g+=Math.PI/3}
+  p.pop();const cx=p.reduce((s,q)=>s+q[0],0)/6,cy=p.reduce((s,q)=>s+q[1],0)/6;return p.map(q=>[(q[0]-cx)*1000+260,(q[1]-cy)*1000+205])}
+function shape(m){const a=lerp(.134,.140,m),b=lerp(.154,.140,m);return{a,b,P:hexPts(.140+(a-.140)*L.ex,.140+(b-.140)*L.ex)}}
+function drawLengths(){
+  const {a,b,P}=shape(L.m),m=L.m;let s="";
+  if(L.ghost){const o=shape(L.target?0:1).P;s+=`<polygon points="${o.map(q=>q.join(",")).join(" ")}" fill="none" stroke="var(--ghost)" stroke-width="2" stroke-dasharray="6 5"/>`}
+  for(let i=0;i<6;i++){const p=P[i],q=P[(i+1)%6],dbl=i%2===0;
+    if(L.dens){const w=dbl?lerp(26,15,m):lerp(7,15,m),op=dbl?lerp(.32,.22,m):lerp(.12,.22,m);s+=`<line x1="${p[0]}" y1="${p[1]}" x2="${q[0]}" y2="${q[1]}" stroke="var(--pi)" stroke-opacity="${op}" stroke-width="${w}" stroke-linecap="round"/>`}
+  }
+  const cx=260,cy=205;
+  for(let i=0;i<6;i++){const p=P[i],q=P[(i+1)%6],dbl=i%2===0;
+    s+=`<line x1="${p[0]}" y1="${p[1]}" x2="${q[0]}" y2="${q[1]}" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/>`;
+    if(dbl&&m<.999){const k=.8,dx=(q[0]-p[0])*.15,dy=(q[1]-p[1])*.15;
+      s+=`<line x1="${cx+(p[0]-cx)*k+dx}" y1="${cy+(p[1]-cy)*k+dy}" x2="${cx+(q[0]-cx)*k-dx}" y2="${cy+(q[1]-cy)*k-dy}" stroke="var(--ink)" stroke-width="3" stroke-linecap="round" opacity="${1-m}"/>`}
+    const mx=(p[0]+q[0])/2,my=(p[1]+q[1])/2,dx=mx-cx,dy=my-cy,d=Math.hypot(dx,dy);
+    const col=m>.5?"var(--pi)":dbl?"var(--brk)":"var(--mk)";
+    s+=`<text x="${mx+dx/d*34}" y="${my+dy/d*34+5}" text-anchor="middle" style="font-family:var(--mono);font-size:15px;font-weight:700;fill:${col}">${(dbl?a:b).toFixed(3)} nm</text>`;
+  }
+  if(m>.001)s+=`<circle cx="${cx}" cy="${cy}" r="${Math.min(...P.map(p=>Math.hypot(p[0]-cx,p[1]-cy)))*.55}" fill="none" stroke="var(--pi)" stroke-width="3" opacity="${m}"/>`;
+  P.forEach(p=>s+=`<circle cx="${p[0]}" cy="${p[1]}" r="9" fill="var(--ink)"/>`);
+  // angle marker at vertex 0
+  const v=P[0],n1=P[5],n2=P[1],u1=Math.atan2(n1[1]-v[1],n1[0]-v[0]),u2=Math.atan2(n2[1]-v[1],n2[0]-v[0]),r=30;
+  s+=`<path d="M${v[0]+r*Math.cos(u1)},${v[1]+r*Math.sin(u1)} A${r},${r} 0 0 0 ${v[0]+r*Math.cos(u2)},${v[1]+r*Math.sin(u2)}" fill="none" stroke="var(--amb)" stroke-width="2"/>`;
+  const um=(u1+u2)/2+(Math.abs(u1-u2)>Math.PI?Math.PI:0);
+  s+=`<text x="${v[0]+52*Math.cos(um)}" y="${v[1]+52*Math.sin(um)+5}" text-anchor="middle" style="font-size:14px;font-weight:700;fill:var(--amb)">120°</text>`;
+  s+=`<text x="12" y="420" style="font-size:12px;fill:var(--muted)">${L.ex>1?"Shape exaggerated ×"+L.ex+"; labels show true lengths":"Drawn to scale (1 nm = 1000 units)"}</text>`;
+  $("lsvg").innerHTML=s;
+}
+function setLenText(){const tri=!L.target;
+  $("lhead").textContent=tri?"Hypothetical cyclohexa-1,3,5-triene":"Actual benzene";
+  $("ltext").innerHTML=tri?`Three localised C=C bonds (<span class="k-brk">0.134 nm</span>) alternate with three C–C bonds (<span class="k-mk">0.154 nm</span>). Electron density is concentrated in the double bonds, so the ring would be an irregular hexagon.`
+   :`All six carbon–carbon bonds are <span class="k-pi">0.140 nm</span>: between a single and a double bond. The π electron density is spread evenly, so benzene is a regular, planar hexagon.`}
+function animateTo(t){L.target=t;$("lt").setAttribute("aria-pressed",!t);$("lb").setAttribute("aria-pressed",!!t);setLenText();
+  const s0=L.m,t0=performance.now(),dur=matchMedia("(prefers-reduced-motion: reduce)").matches?1:900;
+  const f=now=>{const k=Math.min(1,(now-t0)/dur),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;L.m=lerp(s0,t,e);drawLengths();if(k<1)requestAnimationFrame(f)};requestAnimationFrame(f)}
+$("lt").onclick=()=>animateTo(0);$("lb").onclick=()=>animateTo(1);
+$("lghost").onclick=e=>{L.ghost=!L.ghost;e.target.setAttribute("aria-pressed",L.ghost);drawLengths()};
+$("ldens").onclick=e=>{L.dens=!L.dens;e.target.setAttribute("aria-pressed",L.dens);drawLengths()};
+$("ex").oninput=e=>{L.ex=+e.target.value;$("exv").textContent=L.ex===1?"×1 (true scale)":"×"+L.ex;drawLengths()};
+$("bars").innerHTML=[["C–C (single)",.154,"var(--mk)"],["benzene C–C",.140,"var(--pi)"],["C=C (double)",.134,"var(--brk)"]].map(([n,v,c])=>`<div class="bar"><span>${n}</span><i style="width:${((v-.10)/.06*100).toFixed(0)}%;background:${c}"></i><span>${v.toFixed(3)} nm</span></div>`).join("")+`<span class="kbd">bars start at 0.100 nm</span>`;
+setLenText();drawLengths();
+
+/* ---------- 7: compare ---------- */
+const ROWS=[
+ ["Bonding","σ framework + 3 localised π bonds (three C=C)","6 C–C σ, 6 C–H σ, and 6 π electrons <strong>delocalised</strong> over the ring"],
+ ["π electron density","Concentrated between alternate pairs of carbons","Spread evenly: a ring above and below the plane"],
+ ["C–C bond lengths","Three at 0.154 nm (C–C), three at 0.134 nm (C=C)","All six 0.140 nm (X-ray diffraction)"],
+ ["Shape","Planar, 120°, irregular hexagon","Planar, 120°, <strong>regular</strong> hexagon"],
+ ["ΔH hydrogenation","−360 kJ mol⁻¹ predicted (3 × −120)","−208 kJ mol⁻¹ measured"],
+ ["Stability","Reference point","152 kJ mol⁻¹ more stable (delocalisation energy)"],
+ ["With bromine water","Decolourises it at room temperature (electrophilic addition)","No reaction at room temperature"],
+ ["Typical reaction","Electrophilic <strong>addition</strong> across C=C","Electrophilic <strong>substitution</strong>, which keeps the delocalised ring"],
+ ["1,2-dibromo isomers","Two predicted (Br across a C=C or across a C–C)","Only one exists"]];
+$("cmp").innerHTML=`<thead><tr><th></th><th>Theoretical: cyclohexa-1,3,5-triene</th><th>Actual: benzene</th></tr></thead><tbody>`+ROWS.map(r=>`<tr><th>${r[0]}</th><td>${r[1]}</td><td class="real"><span>${r[2]}</span></td></tr>`).join("")+"</tbody>";
+$("cmp").addEventListener("click",e=>{const td=e.target.closest("td.real");if(td)td.classList.toggle("hid")});
+$("hideall").onclick=()=>document.querySelectorAll("td.real").forEach(t=>t.classList.add("hid"));
+$("showall").onclick=()=>document.querySelectorAll("td.real").forEach(t=>t.classList.remove("hid"));
+
+/* ---------- tabs ---------- */
+$("tabs").innerHTML=TABS.map(([k,n],i)=>`<button role="tab" data-k="${k}" aria-selected="${k===active}"><span class="n">${i+1}</span>${n}</button>`).join("");
+function show(k){if(!TABS.some(t=>t[0]===k))k="kekule";active=k;
+  document.querySelectorAll("#tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.k===k));
+  document.querySelectorAll(".page").forEach(p=>p.hidden=p.dataset.tab!==k);
+  if(k==="orbitals"){sizeCanvas();drawOrb()}
+  try{history.replaceState(null,"","#"+k)}catch(e){}}
+$("tabs").addEventListener("click",e=>{const b=e.target.closest("button");if(b)show(b.dataset.k)});
+document.addEventListener("keydown",e=>{if(e.target.matches("input"))return;const st=steppers[active];if(!st)return;
+  if(e.key==="ArrowRight"){st.go(st.i+1);e.preventDefault()}if(e.key==="ArrowLeft"){st.go(st.i-1);e.preventDefault()}});
+window.addEventListener("resize",()=>{if(active==="orbitals"){sizeCanvas();drawOrb()}});
+show((location.hash||"").slice(1)||"kekule");
+requestAnimationFrame(loop);
+})();
+</script>
+
+</body></html>

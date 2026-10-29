@@ -1,0 +1,667 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Organic Reaction Map</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: fixed 1660×1110 map canvas scaled to fit, controls bar above, tile tray below. Light cream/brown classroom theme (deliberately single-theme for projector use). */
+:root{
+  --bg:#f2ebdf; --card:#fffaf2; --ink:#33251a; --muted:#7a6553; --line:#5c4433;
+  --accent:#8a5a2b; --accent-soft:#e8d8c2; --mech:#6b3b5c;
+  --ok:#2e7a4c; --ok-soft:#dcefe2; --bad:#b0372b; --bad-soft:#f6dcd7;
+  --f-hc:#8a7b6a; --f-hal:#8f6a1f; --f-oxy:#a0442f; --f-nit:#2f5f8a; --f-aro:#2f6e66;
+  --sans:"Segoe UI","Helvetica Neue",Arial,system-ui,sans-serif;
+  --display:"Rockwell","Roboto Slab","Georgia",serif;
+  color-scheme:light;
+}
+html,body{height:100%}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);margin:0;
+  display:flex;flex-direction:column;overflow:hidden;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));box-sizing:border-box}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;padding-block:10px 8px;border-bottom:1.5px solid var(--accent-soft)}
+h1{font-family:var(--display);font-size:22px;margin:0;color:var(--accent);letter-spacing:.01em;text-wrap:balance}
+.grp{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.lbl{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-right:2px}
+.chip{font:600 13px var(--sans);border:1.5px solid var(--accent);background:var(--card);color:var(--accent);
+  border-radius:999px;padding:5px 12px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--accent);color:var(--card)}
+.btn{font:600 13px var(--sans);border:1.5px solid var(--line);background:var(--line);color:var(--card);border-radius:6px;padding:6px 13px;cursor:pointer}
+.btn.ghost{background:var(--card);color:var(--line)}
+.btn:disabled{opacity:.4;cursor:default}
+button:focus-visible{outline:3px solid var(--mech);outline-offset:2px}
+#score{font:700 14px var(--sans);color:var(--ink);font-variant-numeric:tabular-nums;min-width:90px}
+#mapwrap{flex:1;min-height:0;position:relative;overflow:hidden}
+#map{position:absolute;left:0;top:0;width:1660px;height:1110px;transform-origin:0 0}
+#edges{position:absolute;inset:0;width:1660px;height:1110px;overflow:visible}
+.node{position:absolute;width:190px;transform:translate(-50%,-50%);background:var(--card);border:1.5px solid var(--line);
+  border-radius:8px;box-shadow:0 2px 0 var(--accent-soft);display:flex;flex-direction:column;align-items:center;gap:4px;padding:0 6px 7px;box-sizing:border-box}
+.node .band{align-self:stretch;height:6px;margin:0 -6px 3px;border-radius:6px 6px 0 0}
+.gname{font:700 15px var(--display);text-align:center;line-height:1.15}
+.cname{font-size:11.5px;color:var(--muted);text-align:center;line-height:1.1}
+.struct{font:600 14px var(--sans);letter-spacing:.01em}
+.skel{height:76px;display:flex;align-items:center;justify-content:center}
+.skel svg{display:block}
+.elab{position:absolute;max-width:150px;background:var(--bg);padding:1px 3px;border-radius:4px;font-size:12.5px;line-height:1.25;display:flex;flex-direction:column;gap:3px}
+.reag{font-weight:600;color:var(--ink)}
+.mech{font-style:italic;color:var(--mech)}
+.legend{position:absolute;left:830px;top:715px;transform:translate(-50%,-50%);width:250px;font-size:12px;color:var(--ink);line-height:1.35}
+.legend h3{font:700 13px var(--display);margin:0 0 6px;color:var(--accent)}
+.legend .row{display:flex;align-items:center;gap:7px;margin:2px 0}
+.legend .sw{width:22px;height:6px;border-radius:3px}
+.legend p{margin:8px 0 0;color:var(--muted)}
+.legend .k{display:flex;gap:10px;margin-top:6px}
+/* slots + tiles */
+.slot{border:1.8px dashed var(--accent);border-radius:6px;background:rgba(138,90,43,.06);min-width:96px;min-height:24px;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;box-sizing:border-box}
+.slot.empty::after{content:"?";color:var(--accent);font-weight:700;opacity:.6}
+.slot.k-skel{width:160px;height:74px}
+.slot.k-name{width:170px;min-height:38px}
+.slot.k-struct{width:170px}
+.slot.k-reag,.slot.k-mech{width:140px}
+.slot.hot{background:var(--accent-soft)}
+.slot.ok{border-style:solid;border-color:var(--ok);background:var(--ok-soft)}
+.slot.bad{border-style:solid;border-color:var(--bad);background:var(--bad-soft)}
+.tile{background:var(--card);border:1.5px solid var(--line);border-radius:6px;padding:4px 8px;cursor:grab;user-select:none;-webkit-user-select:none;
+  touch-action:none;font-size:12.5px;line-height:1.25;text-align:center;box-shadow:0 2px 0 var(--accent-soft)}
+.tile.sel{outline:3px solid var(--mech);outline-offset:1px}
+.slot .tile{border:none;box-shadow:none;background:transparent;padding:2px 4px;width:100%;box-sizing:border-box}
+.tile.t-reag{font-weight:600;max-width:150px}
+.tile.t-mech{font-style:italic;color:var(--mech);max-width:150px}
+.tile.t-struct{font:600 14px var(--sans)}
+.tile.t-name b{font:700 14px var(--display);display:block}
+.tile.t-name span{font-size:11px;color:var(--muted)}
+.dragghost{position:fixed;pointer-events:none;z-index:50;opacity:.92;transform:translate(-50%,-50%) rotate(-2deg);box-shadow:0 6px 16px rgba(51,37,26,.25)}
+#tray{max-height:30vh;overflow:auto;border-top:1.5px solid var(--accent-soft);padding-block:8px 10px}
+#tray h2{font:700 13px var(--sans);text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 6px}
+#tiles{display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+#tiles:empty::after{content:"All tiles placed. Press Check.";color:var(--muted);font-size:13px}
+
+.tabs{display:flex;gap:2px;background:var(--accent-soft);padding:3px;border-radius:8px}
+.tab{font:600 13.5px var(--sans);border:0;background:transparent;color:var(--line);padding:6px 13px;border-radius:6px;cursor:pointer}
+.tab[aria-selected="true"]{background:var(--card);color:var(--accent);box-shadow:0 1px 0 rgba(51,37,26,.15)}
+.view{flex:1;min-height:0;display:flex;flex-direction:column}
+.view.scroll{overflow:auto}
+.qwrap{width:100%;max-width:880px;margin:0 auto;padding-block:18px 28px;display:flex;flex-direction:column;gap:14px;box-sizing:border-box}
+.qbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.tally{font:700 16px var(--sans);font-variant-numeric:tabular-nums;color:var(--accent)}
+.qcard{background:var(--card);border:1.5px solid var(--line);border-radius:10px;padding:20px 22px 22px;box-shadow:0 3px 0 var(--accent-soft)}
+.qnum{margin:0 0 4px;font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+.qtext{font:700 21px/1.25 var(--display);margin:0 0 16px;text-wrap:balance}
+.scheme{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+.mini{border:1.5px solid var(--line);border-radius:8px;background:var(--bg);padding:0 8px 8px;min-width:150px;display:flex;flex-direction:column;align-items:center;gap:3px}
+.mini .band{align-self:stretch;height:5px;margin:0 -8px 3px;border-radius:6px 6px 0 0}
+.mini.q{border-style:dashed;border-color:var(--accent);justify-content:center;min-height:120px;color:var(--accent);font:700 30px var(--display)}
+.arrowbox{display:flex;flex-direction:column;align-items:center;min-width:120px;max-width:200px;gap:3px;text-align:center;font-size:13px}
+.arrowbox .ar{width:100%;height:12px;position:relative}
+.arrowbox .ar::before{content:"";position:absolute;left:0;right:8px;top:5px;border-top:2px solid var(--line)}
+.arrowbox .ar::after{content:"";position:absolute;right:0;top:0;border-left:10px solid var(--line);border-top:6px solid transparent;border-bottom:6px solid transparent}
+.arrowbox .qm{color:var(--accent);font-weight:700}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ropts{display:flex;flex-direction:column;gap:10px}
+.opt{font:600 15px var(--sans);text-align:left;background:var(--card);color:var(--ink);border:1.5px solid var(--line);border-radius:8px;padding:11px 14px;cursor:pointer;display:flex;gap:10px;align-items:flex-start;line-height:1.35}
+.opt .let{flex:none;width:24px;height:24px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-size:13px}
+.opt:hover:not(:disabled){background:var(--accent-soft)}
+.opt:disabled{cursor:default}
+.opt.ok{border-color:var(--ok);background:var(--ok-soft)}
+.opt.bad{border-color:var(--bad);background:var(--bad-soft)}
+.opt.dim{opacity:.55}
+.route{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;font-size:14px}
+.route .g{font-weight:700;font-family:var(--display)}
+.route .r{font-weight:500;color:var(--line);display:inline-flex;align-items:center;gap:4px}
+.route .r::before{content:"→";font-weight:700;color:var(--accent)}
+.route .r i{font-style:normal;border-bottom:1.5px dotted var(--accent)}
+.fb{margin-top:16px;padding:12px 14px;border-radius:8px;background:var(--bg);font-size:14px;line-height:1.5}
+.fb b.ok{color:var(--ok)} .fb b.bad{color:var(--bad)}
+.fb ol{margin:6px 0 0;padding-left:20px}
+.qnext{display:flex;justify-content:flex-end;margin-top:16px}
+.empty-note{color:var(--muted);font-size:14px}
+@media (max-width:640px){.opts{grid-template-columns:1fr}.qtext{font-size:18px}}
+@media (prefers-reduced-motion:no-preference){.slot,.tile{transition:background .15s,border-color .15s}}
+</style>
+
+<header>
+  <h1>Organic Reaction Map</h1>
+  <nav class="tabs" role="tablist">
+    <button class="tab" role="tab" data-tab="map" aria-selected="true">Reaction map</button>
+    <button class="tab" role="tab" data-tab="quiz" aria-selected="false">Single steps</button>
+    <button class="tab" role="tab" data-tab="synth" aria-selected="false">Synthesis routes</button>
+  </nav>
+  <div class="grp"><span class="lbl">Content</span>
+    <button class="chip" id="lv12" aria-pressed="false">Year 12</button>
+    <button class="chip" id="lv13" aria-pressed="true">Full A-level</button>
+  </div>
+  <div class="grp mapctl"><span class="lbl">Remove</span>
+    <button class="chip" data-hide="name" aria-pressed="false">Names</button>
+    <button class="chip" data-hide="struct" aria-pressed="false">Structural</button>
+    <button class="chip" data-hide="skel" aria-pressed="false">Skeletal</button>
+    <button class="chip" data-hide="reag" aria-pressed="false">Reagents</button>
+    <button class="chip" data-hide="mech" aria-pressed="false">Mechanisms</button>
+  </div>
+  <div class="grp mapctl">
+    <button class="btn" id="check" disabled>Check</button>
+    <button class="btn ghost" id="reveal" disabled>Reveal</button>
+    <button class="btn ghost" id="reset" disabled>Reset</button>
+    <span id="score"></span>
+  </div>
+</header>
+<div id="v-map" class="view">
+<div id="mapwrap"><div id="map"><svg id="edges" viewBox="0 0 1660 1110"></svg></div></div>
+<section id="tray" hidden><h2>Tiles — drag (or tap, then tap a gap) into place</h2><div id="tiles"></div></section>
+</div>
+<div id="v-quiz" class="view scroll" hidden>
+ <div class="qwrap">
+  <div class="qbar">
+   <div class="grp"><span class="lbl">Ask about</span>
+    <button class="chip" data-qt="product" aria-pressed="true">Product</button>
+    <button class="chip" data-qt="reagent" aria-pressed="true">Reagents</button>
+    <button class="chip" data-qt="mech" aria-pressed="false">Mechanism</button>
+   </div>
+   <span class="tally" id="q-tally">0 / 0</span>
+  </div>
+  <div class="qcard">
+   <p class="qnum" id="q-num"></p>
+   <h2 class="qtext" id="q-text"></h2>
+   <div class="scheme" id="q-scheme"></div>
+   <div class="opts" id="q-opts"></div>
+   <div class="fb" id="q-fb" hidden></div>
+   <div class="qnext"><button class="btn" id="q-next">Next question</button></div>
+  </div>
+ </div>
+</div>
+<div id="v-synth" class="view scroll" hidden>
+ <div class="qwrap">
+  <div class="qbar">
+   <div class="grp"><span class="lbl">Route length</span>
+    <button class="chip" data-sl="2" aria-pressed="true">2 steps</button>
+    <button class="chip" data-sl="3" aria-pressed="true">3 steps</button>
+   </div>
+   <span class="tally" id="s-tally">0 / 0</span>
+  </div>
+  <div class="qcard">
+   <p class="qnum" id="s-num"></p>
+   <h2 class="qtext" id="s-text"></h2>
+   <div class="scheme" id="s-scheme"></div>
+   <div class="ropts" id="s-opts"></div>
+   <div class="fb" id="s-fb" hidden></div>
+   <div class="qnext"><button class="btn" id="s-next">Next route</button></div>
+  </div>
+ </div>
+</div>
+
+<script>
+(function(){
+const COLX=[150,490,830,1170,1510], ROWY=[105,410,715,1020];
+const FAM={hc:'--f-hc',hal:'--f-hal',oxy:'--f-oxy',nit:'--f-nit',aro:'--f-aro'};
+const s=0.866;
+// skeletal molecules: atoms [x,y,label], bonds [a,b,order]; ring:true draws benzene at origin
+const MOL={
+ ethane:{a:[[0,0],[s,-.5]],b:[[0,1,1]]},
+ ethene:{a:[[0,0],[s,-.5]],b:[[0,1,2]]},
+ dibromo:{a:[[0,0,'Br'],[s,-.5],[2*s,0],[3*s,-.5,'Br']],b:[[0,1,1],[1,2,1],[2,3,1]]},
+ bromo:{a:[[0,0],[s,-.5],[2*s,0,'Br']],b:[[0,1,1],[1,2,1]]},
+ ethanol:{a:[[0,0],[s,-.5],[2*s,0,'OH']],b:[[0,1,1],[1,2,1]]},
+ ethanal:{a:[[0,0],[s,-.5],[2*s,0,'O']],b:[[0,1,1],[1,2,2]]},
+ acid:{a:[[0,0],[s,-.5],[s,-1.5,'O'],[2*s,0,'OH']],b:[[0,1,1],[1,2,2],[1,3,1]]},
+ ester:{a:[[0,0],[s,-.5],[s,-1.5,'O'],[2*s,0,'O'],[3*s,-.5],[4*s,0]],b:[[0,1,1],[1,2,2],[1,3,1],[3,4,1],[4,5,1]]},
+ acylcl:{a:[[0,0],[s,-.5],[s,-1.5,'O'],[2*s,0,'Cl']],b:[[0,1,1],[1,2,2],[1,3,1]]},
+ amide:{a:[[0,0],[s,-.5],[s,-1.5,'O'],[2*s,0,'NH₂']],b:[[0,1,1],[1,2,2],[1,3,1]]},
+ amine:{a:[[0,0],[s,-.5],[2*s,0,'NH₂']],b:[[0,1,1],[1,2,1]]},
+ nitrile:{a:[[0,0],[s,-.5],[2*s,0],[3*s,.5,'N']],b:[[0,1,1],[1,2,1],[2,3,3]]},
+ hydroxynitrile:{a:[[0,0],[s,-.5],[s,-1.5,'OH'],[2*s,0],[3*s,.5,'N']],b:[[0,1,1],[1,2,1],[1,3,1],[3,4,3]]},
+ propan2ol:{a:[[0,0],[s,-.5],[s,-1.5,'OH'],[2*s,0]],b:[[0,1,1],[1,2,1],[1,3,1]]},
+ propanone:{a:[[0,0],[s,-.5],[s,-1.5,'O'],[2*s,0]],b:[[0,1,1],[1,2,2],[1,3,1]]},
+ benzene:{ring:true,a:[],b:[]},
+ nitrobenzene:{ring:true,a:[[1,0],[2,0,'NO₂']],b:[[0,1,1]]},
+ phenylamine:{ring:true,a:[[1,0],[2,0,'NH₂']],b:[[0,1,1]]},
+ phenylethanone:{ring:true,a:[[1,0],[2,0],[2.5,-s,'O'],[2.5,s]],b:[[0,1,1],[1,2,2],[1,3,1]]}
+};
+const NODES=[
+ {id:'alkane',c:0,r:0,f:'hc',y:12,g:'Alkane',n:'ethane',st:'CH₃CH₃',m:'ethane'},
+ {id:'alkene',c:1,r:0,f:'hc',y:12,g:'Alkene',n:'ethene',st:'CH₂=CH₂',m:'ethene'},
+ {id:'dibromo',c:2,r:0,f:'hal',y:12,g:'Dihaloalkane',n:'1,2-dibromoethane',st:'CH₂BrCH₂Br',m:'dibromo'},
+ {id:'hydroxynitrile',c:3,r:0,f:'nit',y:13,g:'Hydroxynitrile',n:'2-hydroxypropanenitrile',st:'CH₃CH(OH)CN',m:'hydroxynitrile'},
+ {id:'alc2',c:4,r:0,f:'oxy',y:12,g:'Secondary alcohol',n:'propan-2-ol',st:'CH₃CH(OH)CH₃',m:'propan2ol'},
+ {id:'nitrile',c:0,r:1,f:'nit',y:12,g:'Nitrile',n:'propanenitrile',st:'CH₃CH₂CN',m:'nitrile'},
+ {id:'halo',c:1,r:1,f:'hal',y:12,g:'Haloalkane',n:'bromoethane',st:'CH₃CH₂Br',m:'bromo'},
+ {id:'alc1',c:2,r:1,f:'oxy',y:12,g:'Primary alcohol',n:'ethanol',st:'CH₃CH₂OH',m:'ethanol'},
+ {id:'ald',c:3,r:1,f:'oxy',y:12,g:'Aldehyde',n:'ethanal',st:'CH₃CHO',m:'ethanal'},
+ {id:'ketone',c:4,r:1,f:'oxy',y:12,g:'Ketone',n:'propanone',st:'CH₃COCH₃',m:'propanone'},
+ {id:'arketone',c:0,r:2,f:'aro',y:13,g:'Aromatic ketone',n:'phenylethanone',st:'C₆H₅COCH₃',m:'phenylethanone'},
+ {id:'amine',c:1,r:2,f:'nit',y:12,g:'Primary amine',n:'ethylamine',st:'CH₃CH₂NH₂',m:'amine'},
+ {id:'acid',c:3,r:2,f:'oxy',y:12,g:'Carboxylic acid',n:'ethanoic acid',st:'CH₃COOH',m:'acid'},
+ {id:'ester',c:4,r:2,f:'oxy',y:13,g:'Ester',n:'ethyl ethanoate',st:'CH₃COOCH₂CH₃',m:'ester'},
+ {id:'benzene',c:0,r:3,f:'aro',y:13,g:'Arene',n:'benzene',st:'C₆H₆',m:'benzene'},
+ {id:'nitroarene',c:1,r:3,f:'aro',y:13,g:'Nitroarene',n:'nitrobenzene',st:'C₆H₅NO₂',m:'nitrobenzene'},
+ {id:'aramine',c:2,r:3,f:'aro',y:13,g:'Aromatic amine',n:'phenylamine',st:'C₆H₅NH₂',m:'phenylamine'},
+ {id:'acylcl',c:3,r:3,f:'oxy',y:13,g:'Acyl chloride',n:'ethanoyl chloride',st:'CH₃COCl',m:'acylcl'},
+ {id:'amide',c:4,r:3,f:'nit',y:13,g:'Amide',n:'ethanamide',st:'CH₃CONH₂',m:'amide'}
+];
+const NS='Nucleophilic substitution',EA='Electrophilic addition',NA='Nucleophilic addition',NAE='Nucleophilic addition–elimination',ES='Electrophilic substitution',OX='Oxidation',EL='Elimination',RD='Reduction';
+const DICHROM='acidified K₂Cr₂O₇, reflux';
+// [from,to,reagents,mechanism,year,labelNudge(optional {dx,dy})]
+const EDGES=[
+ ['alkane','halo','Br₂, UV light','Free-radical substitution',12],
+ ['alkene','alkane','H₂, Ni catalyst, 150 °C','Addition (hydrogenation)',12],
+ ['alkene','dibromo','Br₂, room temp',EA,12],
+ ['alkene','halo','HBr, room temp',EA,12],
+ ['halo','alkene','KOH in ethanol, heat',EL,12],
+ ['alkene','alc1','steam, H₃PO₄ catalyst, 300 °C, 60–70 atm',EA,12],
+ ['alc1','alkene','conc. H₂SO₄ or H₃PO₄, heat','Elimination (dehydration)',12],
+ ['halo','alc1','NaOH(aq), warm',NS,12],
+ ['halo','nitrile','KCN in aqueous ethanol, reflux',NS,12],
+ ['halo','amine','excess NH₃ in ethanol, heat, pressure',NS,12],
+ ['nitrile','amine','LiAlH₄ or H₂/Ni *',RD,13],
+ ['alc1','ald','acidified K₂Cr₂O₇, warm, distil off',OX,12],
+ ['ald','alc1','NaBH₄(aq)',NA,13],
+ ['ald','acid',DICHROM,OX,12],
+ ['ald','hydroxynitrile','KCN, then dilute acid',NA,13],
+ ['alc2','ketone',DICHROM,OX,12],
+ ['ketone','alc2','NaBH₄(aq)',NA,13],
+ ['acid','ester','ethanol, conc. H₂SO₄ catalyst, heat','Esterification',13],
+ ['ester','acid','dilute acid, reflux','Acid hydrolysis',13],
+ ['acylcl','acid','water',NAE,13],
+ ['acylcl','ester','ethanol',NAE,13],
+ ['acylcl','amide','ammonia',NAE,13],
+ ['benzene','nitroarene','conc. HNO₃ + conc. H₂SO₄, 50 °C',ES,13],
+ ['nitroarene','aramine','Sn + conc. HCl, reflux; then NaOH',RD,13],
+ ['benzene','arketone','CH₃COCl, AlCl₃ catalyst',ES,13]
+];
+const NUDGE={'alkene>alc1':{abs:[580,300],w:152},'halo>alkene':{dy:-44,w:96},'alkene>halo':{dy:-30},'alkane>halo':{stack:-1,dx:-4,dy:6},'nitrile>amine':{stack:-1,dx:-4,dy:6},'acylcl>acid':{stack:1}};
+
+let level=13, hide=new Set(), selected=null, mapDirty=false;
+const map=document.getElementById('map'), svg=document.getElementById('edges'), tilesEl=document.getElementById('tiles'), tray=document.getElementById('tray');
+const NW=190;
+
+function molSVG(key){
+  const M=MOL[key],U=22,lines=[],texts=[];let pts=[];
+  if(M.ring){
+    for(let k=0;k<6;k++){const t=Math.PI/3*k;pts.push([Math.cos(t),Math.sin(t)]);}
+    for(let k=0;k<6;k++){const a=pts[k],b=pts[(k+1)%6];lines.push([a,b]);}
+  }
+  M.a.forEach(p=>pts.push([p[0],p[1]]));
+  M.b.forEach(([i,j,o])=>{
+    const A=M.a[i],B=M.a[j],dx=B[0]-A[0],dy=B[1]-A[1],L=Math.hypot(dx,dy),nx=-dy/L,ny=dx/L;
+    const offs=o===1?[0]:o===2?[-.09,.09]:[-.13,0,.13];
+    offs.forEach(d=>lines.push([[A[0]+nx*d,A[1]+ny*d],[B[0]+nx*d,B[1]+ny*d]]));
+  });
+  M.a.forEach(p=>{if(p[2])texts.push(p);});
+  let minx=Infinity,maxx=-Infinity,miny=Infinity,maxy=-Infinity;
+  pts.forEach(([x,y])=>{minx=Math.min(minx,x);maxx=Math.max(maxx,x);miny=Math.min(miny,y);maxy=Math.max(maxy,y);});
+  texts.forEach(([x,y,l])=>{maxx=Math.max(maxx,x+.25*l.length);});
+  const pad=.45;minx-=pad;miny-=pad;maxx+=pad;maxy+=pad;
+  const w=(maxx-minx),h=(maxy-miny);
+  let out=`<svg viewBox="${minx} ${miny} ${w} ${h}" width="${(w*U).toFixed(1)}" height="${(h*U).toFixed(1)}" aria-hidden="true">`;
+  out+=`<g stroke="var(--ink)" stroke-width=".075" stroke-linecap="round">`;
+  lines.forEach(([a,b])=>out+=`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}"/>`);
+  out+='</g>';
+  if(M.ring)out+=`<circle cx="0" cy="0" r=".55" fill="none" stroke="var(--ink)" stroke-width=".075"/>`;
+  texts.forEach(([x,y,l])=>{
+    out+=`<text x="${x-.2}" y="${y+.21}" font-size=".6" font-family="Segoe UI,Arial,sans-serif" font-weight="600" fill="var(--ink)" stroke="var(--card)" stroke-width=".22" paint-order="stroke">${l}</text>`;
+  });
+  return out+'</svg>';
+}
+
+function slot(kind,val){
+  const d=document.createElement('div');d.className='slot empty k-'+kind;d.dataset.kind=kind;d.dataset.ans=val;return d;
+}
+function nameHTML(n){return `<b>${n.g}</b><span>${n.n}</span>`;}
+
+let pending=[];
+function render(){
+  map.querySelectorAll('.node,.elab,.legend').forEach(e=>e.remove());
+  svg.innerHTML=`<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--line)"/></marker></defs>`;
+  pending=[];
+  const vis={};
+  NODES.forEach(n=>{
+    if(n.y>level)return;
+    const el=document.createElement('div');el.className='node';el.style.left=COLX[n.c]+'px';el.style.top=ROWY[n.r]+'px';
+    el.innerHTML=`<div class="band" style="background:var(${FAM[n.f]})"></div>`;
+    if(hide.has('name')){el.appendChild(slot('name',n.id));pending.push({kind:'name',val:n.id,html:nameHTML(n)});}
+    else el.insertAdjacentHTML('beforeend',`<div class="gname">${n.g}</div><div class="cname">${n.n}</div>`);
+    if(hide.has('struct')){el.appendChild(slot('struct',n.st));pending.push({kind:'struct',val:n.st,html:n.st});}
+    else el.insertAdjacentHTML('beforeend',`<div class="struct">${n.st}</div>`);
+    if(hide.has('skel')){el.appendChild(slot('skel',n.m));pending.push({kind:'skel',val:n.m,html:molSVG(n.m)});}
+    else el.insertAdjacentHTML('beforeend',`<div class="skel">${molSVG(n.m)}</div>`);
+    map.appendChild(el);vis[n.id]={el,x:COLX[n.c],y:ROWY[n.r]};
+  });
+  // measure nodes
+  Object.values(vis).forEach(v=>{v.h=v.el.offsetHeight;v.w=NW;});
+  const shown=EDGES.filter(e=>e[4]<=level&&vis[e[0]]&&vis[e[1]]);
+  const keyOf=(a,b)=>[a,b].sort().join('|');
+  const pairCount={};shown.forEach(e=>{const k=keyOf(e[0],e[1]);pairCount[k]=(pairCount[k]||0)+1;});
+  shown.forEach(e=>{
+    const [fa,tb,reag,mech]=e,A=vis[fa],B=vis[tb];
+    let dx=B.x-A.x,dy=B.y-A.y;const L=Math.hypot(dx,dy),ux=dx/L,uy=dy/L;
+    // canonical normal: points "up" (or left for vertical) using sorted pair direction so paired arrows separate
+    const [p,q]=[fa,tb].sort(),P=vis[p],Q=vis[q];let cx=Q.x-P.x,cy=Q.y-P.y;const CL=Math.hypot(cx,cy);cx/=CL;cy/=CL;
+    let nx=cy,ny=-cx; if(ny>0.01||(Math.abs(ny)<0.01&&nx>0)){nx=-nx;ny=-ny;}
+    const paired=pairCount[keyOf(fa,tb)]>1;
+    const side=paired?(fa===p?1:-1):0;
+    const off=side*10;
+    const clip=(N,dirx,diry)=>{const hw=N.w/2+6,hh=N.h/2+6;const t=Math.min(Math.abs(dirx)>1e-6?hw/Math.abs(dirx):1e9,Math.abs(diry)>1e-6?hh/Math.abs(diry):1e9);return t;};
+    const sx0=A.x+nx*off,sy0=A.y+ny*off,ex0=B.x+nx*off,ey0=B.y+ny*off;
+    const t1=clip(A,ux,uy),t2=clip(B,ux,uy);
+    const x1=sx0+ux*t1,y1=sy0+uy*t1,x2=ex0-ux*t2,y2=ey0-uy*t2;
+    svg.insertAdjacentHTML('beforeend',`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--line)" stroke-width="2" marker-end="url(#ah)"/>`);
+    const mx=(x1+x2)/2,my=(y1+y2)/2;
+    const nud=NUDGE[fa+'>'+tb]||{};
+    const mk=(items,sgn,gap)=>{
+      const b=document.createElement('div');b.className='elab';
+      const vx=nx*sgn,vy=ny*sgn;
+      const px=mx+vx*gap+(nud.dx||0),py=my+vy*gap+(nud.dy||0);
+      const tx=vx<-.4?'-100%':vx>.4?'0':'-50%',ty=vy<-.4?'-100%':vy>.4?'0':'-50%';
+      b.style.left=px+'px';b.style.top=py+'px';b.style.transform=`translate(${tx},${ty})`;
+      if(nud.w)b.style.maxWidth=nud.w+'px';
+      b.style.textAlign=vx<-.4?'right':vx>.4?'left':'center';b.style.alignItems=vx<-.4?'flex-end':vx>.4?'flex-start':'center';
+      if(nud.abs&&sgn===side){b.style.left=nud.abs[0]+'px';b.style.top=nud.abs[1]+'px';b.style.transform='translate(0,0)';b.style.textAlign='left';b.style.alignItems='flex-start';}
+      items.forEach(([k,v])=>{
+        if(hide.has(k)){b.appendChild(slot(k,v));pending.push({kind:k,val:v,html:v});}
+        else b.insertAdjacentHTML('beforeend',`<div class="${k}">${v}</div>`);
+      });
+      map.appendChild(b);
+    };
+    if(paired) mk([['reag',reag],['mech',mech]],side,16);
+    else if(nud.stack) mk([['reag',reag],['mech',mech]],nud.stack,8);
+    else {mk([['reag',reag]],1,6);mk([['mech',mech]],-1,6);}
+  });
+  // legend
+  const lg=document.createElement('div');lg.className='legend';
+  lg.innerHTML=`<h3>Key</h3>
+   <div class="row"><span class="sw" style="background:var(--f-hc)"></span>Hydrocarbons</div>
+   <div class="row"><span class="sw" style="background:var(--f-hal)"></span>Halogen compounds</div>
+   <div class="row"><span class="sw" style="background:var(--f-oxy)"></span>Oxygen compounds</div>
+   <div class="row"><span class="sw" style="background:var(--f-nit)"></span>Nitrogen compounds</div>
+   ${level>12?`<div class="row"><span class="sw" style="background:var(--f-aro)"></span>Aromatic compounds</div>`:''}
+   <div class="k"><span class="reag">Reagents &amp; conditions</span><span class="mech">Mechanism / type</span></div>
+   ${level>12?`<p>* Reducing propanenitrile gives propylamine, CH₃CH₂CH₂NH₂ (the chain gains the CN carbon). Ethylamine comes from the NH₃ route.</p>`:''}`;
+  map.appendChild(lg);
+  buildTray();fit();
+}
+
+function makeTile(t){
+  const d=document.createElement('div');d.className='tile t-'+t.kind;d.dataset.kind=t.kind;d.dataset.val=t.val;d.innerHTML=t.html;d.tabIndex=0;
+  d.addEventListener('pointerdown',down);
+  d.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();toggleSel(d);}});
+  return d;
+}
+function buildTray(){
+  tilesEl.innerHTML='';selected=null;
+  const list=pending.slice();
+  for(let i=list.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[list[i],list[j]]=[list[j],list[i]];}
+  list.forEach(t=>tilesEl.appendChild(makeTile(t)));
+  tray.hidden=pending.length===0;
+  ['check','reveal','reset'].forEach(id=>document.getElementById(id).disabled=pending.length===0);
+  document.getElementById('score').textContent='';
+  map.querySelectorAll('.slot').forEach(sl=>sl.addEventListener('click',()=>slotClick(sl)));
+}
+function clearMarks(){map.querySelectorAll('.slot').forEach(s=>s.classList.remove('ok','bad'));document.getElementById('score').textContent='';}
+function place(tile,sl){
+  if(sl.dataset.kind!==tile.dataset.kind)return false;
+  const cur=sl.querySelector('.tile');
+  if(cur&&cur!==tile){tilesEl.appendChild(cur);}
+  const from=tile.parentElement;
+  sl.appendChild(tile);sl.classList.remove('empty');
+  if(from&&from.classList.contains('slot')&&from!==sl)from.classList.add('empty');
+  clearMarks();return true;
+}
+function toTray(tile){const from=tile.parentElement;tilesEl.appendChild(tile);if(from.classList.contains('slot'))from.classList.add('empty');clearMarks();}
+function toggleSel(t){if(selected===t){t.classList.remove('sel');selected=null;return;}if(selected)selected.classList.remove('sel');selected=t;t.classList.add('sel');}
+function slotClick(sl){
+  if(selected&&sl.contains(selected)){return;}
+  if(selected){if(place(selected,sl)){selected.classList.remove('sel');selected=null;}return;}
+}
+// pointer drag
+let drag=null;
+function down(ev){
+  const t=ev.currentTarget;if(ev.button>0)return;
+  drag={t,x:ev.clientX,y:ev.clientY,moved:false,ghost:null,hot:null};
+  t.setPointerCapture(ev.pointerId);
+  t.addEventListener('pointermove',move);t.addEventListener('pointerup',up,{once:true});t.addEventListener('pointercancel',cancel,{once:true});
+}
+function move(ev){
+  if(!drag)return;
+  if(!drag.moved&&Math.hypot(ev.clientX-drag.x,ev.clientY-drag.y)>6){
+    drag.moved=true;const g=drag.t.cloneNode(true);g.classList.add('dragghost');g.classList.remove('sel');
+    g.style.background='var(--card)';g.style.border='1.5px solid var(--line)';g.style.borderRadius='6px';g.style.padding='4px 8px';
+    document.body.appendChild(g);drag.ghost=g;drag.t.style.opacity='.35';
+  }
+  if(drag.ghost){
+    drag.ghost.style.left=ev.clientX+'px';drag.ghost.style.top=ev.clientY+'px';
+    const under=document.elementFromPoint(ev.clientX,ev.clientY);const sl=under&&under.closest('.slot');
+    if(drag.hot&&drag.hot!==sl)drag.hot.classList.remove('hot');
+    if(sl&&sl.dataset.kind===drag.t.dataset.kind){sl.classList.add('hot');drag.hot=sl;}else drag.hot=null;
+  }
+}
+function up(ev){
+  const d=drag;drag=null;d.t.removeEventListener('pointermove',move);
+  if(!d.moved){
+    // tap: placed tile returns to tray; tray tile toggles selection
+    if(d.t.parentElement.classList.contains('slot')&&!selected){toTray(d.t);}
+    else if(d.t.parentElement.classList.contains('slot')&&selected){place(selected,d.t.parentElement);selected.classList.remove('sel');selected=null;}
+    else toggleSel(d.t);
+    return;
+  }
+  d.ghost.remove();d.t.style.opacity='';if(d.hot)d.hot.classList.remove('hot');
+  const under=document.elementFromPoint(ev.clientX,ev.clientY);
+  const sl=under&&under.closest('.slot');
+  if(sl)place(d.t,sl);
+  else if(under&&under.closest('#tray')&&d.t.parentElement.classList.contains('slot'))toTray(d.t);
+  if(selected){selected.classList.remove('sel');selected=null;}
+}
+function cancel(){if(!drag)return;if(drag.ghost)drag.ghost.remove();drag.t.style.opacity='';drag=null;}
+
+document.getElementById('check').onclick=()=>{
+  let ok=0,tot=0;
+  map.querySelectorAll('.slot').forEach(sl=>{
+    tot++;const t=sl.querySelector('.tile');sl.classList.remove('ok','bad');
+    if(!t)return;
+    if(t.dataset.val===sl.dataset.ans){sl.classList.add('ok');ok++;}else sl.classList.add('bad');
+  });
+  document.getElementById('score').textContent=`${ok} / ${tot} correct`;
+};
+document.getElementById('reveal').onclick=()=>{
+  map.querySelectorAll('.slot').forEach(sl=>{
+    const cur=sl.querySelector('.tile');
+    if(cur&&cur.dataset.val===sl.dataset.ans){sl.classList.add('ok');return;}
+    if(cur)tilesEl.appendChild(cur);
+    // find a tray tile with the right value
+    const m=[...tilesEl.children].find(t=>t.dataset.kind===sl.dataset.kind&&t.dataset.val===sl.dataset.ans)
+      ||[...map.querySelectorAll('.slot .tile')].find(t=>t.dataset.val===sl.dataset.ans&&t.parentElement.dataset.ans!==t.dataset.val);
+    if(m){const from=m.parentElement;sl.appendChild(m);sl.classList.remove('empty','bad');sl.classList.add('ok');if(from.classList&&from.classList.contains('slot')){from.classList.add('empty');from.classList.remove('ok');}}
+  });
+  // second pass for any slots emptied by swaps
+  map.querySelectorAll('.slot.empty').forEach(sl=>{const m=[...tilesEl.children].find(t=>t.dataset.val===sl.dataset.ans&&t.dataset.kind===sl.dataset.kind);if(m){sl.appendChild(m);sl.classList.remove('empty');sl.classList.add('ok');}});
+  document.getElementById('score').textContent='Answers shown';
+};
+document.getElementById('reset').onclick=render;
+document.querySelectorAll('[data-hide]').forEach(b=>b.onclick=()=>{
+  const k=b.dataset.hide;if(hide.has(k))hide.delete(k);else hide.add(k);b.setAttribute('aria-pressed',hide.has(k));render();
+});
+const l12=document.getElementById('lv12'),l13=document.getElementById('lv13');
+l12.onclick=()=>{level=12;l12.setAttribute('aria-pressed','true');l13.setAttribute('aria-pressed','false');if(document.getElementById('v-map').hidden)mapDirty=true;else render();newQ();newS();};
+l13.onclick=()=>{level=13;l13.setAttribute('aria-pressed','true');l12.setAttribute('aria-pressed','false');if(document.getElementById('v-map').hidden)mapDirty=true;else render();newQ();newS();};
+
+function fit(){
+  const w=document.getElementById('mapwrap'),W=w.clientWidth,H=w.clientHeight;
+  const sc=Math.min(W/1660,H/1110);
+  map.style.transform=`translate(${(W-1660*sc)/2}px,${Math.max(0,(H-1110*sc)/2)}px) scale(${sc})`;
+}
+window.addEventListener('resize',fit);
+new ResizeObserver(fit).observe(document.getElementById('mapwrap'));
+render();
+
+// ================= shared helpers for quiz tabs =================
+const NB={};NODES.forEach(n=>NB[n.id]=n);
+const visNodes=()=>NODES.filter(n=>n.y<=level);
+const visEdges=()=>EDGES.filter(e=>e[4]<=level&&NB[e[0]].y<=level&&NB[e[1]].y<=level);
+const rnd=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const uniq=a=>[...new Set(a)];
+const LET='ABCD';
+// a 2° alcohol oxidises to a ketone whether or not the product is distilled off
+const sameR=(a,b,v)=>a===b||(v==='ketone'&&a.includes('K₂Cr₂O₇')&&b.includes('K₂Cr₂O₇'));
+function art(id){const n=NB[id];return /^[AEIOU]/.test(n.g)?'an':'a';}
+function miniCard(id){
+  const n=NB[id];
+  return `<div class="mini"><div class="band" style="background:var(${FAM[n.f]})"></div><div class="gname">${n.g}</div><div class="cname">${n.n}</div><div class="struct">${n.st}</div><div class="skel">${molSVG(n.m)}</div></div>`;
+}
+const qMini='<div class="mini q">?</div>';
+function arrowBox(top,bottom){return `<div class="arrowbox"><div class="reag">${top}</div><div class="ar"></div><div class="mech">${bottom||''}</div></div>`;}
+function pickDistractors(correct,pools,isWrong,n=3){
+  const out=[];
+  for(const pool of pools){for(const c of shuffle(uniq(pool))){if(out.length>=n)break;if(c!==correct&&!out.includes(c)&&isWrong(c))out.push(c);}}
+  return out;
+}
+
+// ================= single-step quiz =================
+const qTypes=new Set(['product','reagent']);
+let qScore=0,qTot=0,qCur=null;
+document.querySelectorAll('[data-qt]').forEach(b=>b.onclick=()=>{
+  const k=b.dataset.qt;
+  if(qTypes.has(k)){if(qTypes.size===1)return;qTypes.delete(k);}else qTypes.add(k);
+  b.setAttribute('aria-pressed',qTypes.has(k));newQ();
+});
+function newQ(){
+  const E=visEdges(),type=rnd([...qTypes]),e=rnd(E),[f,t,r,m]=e;
+  let text,scheme,correct,opts;
+  if(type==='product'){
+    text=`What type of compound forms when ${art(f)} ${NB[f].g.toLowerCase()} reacts with ${r.replace(' *','')}?`;
+    scheme=miniCard(f)+arrowBox(r.replace(' *',''),'')+qMini;
+    correct=NB[t].g;
+    const fromSame=E.filter(x=>x[0]===f).map(x=>NB[x[1]].g);
+    const intoSimilar=E.filter(x=>x[2]===r).map(x=>NB[x[1]].g);
+    const all=visNodes().filter(n=>n.id!==f).map(n=>n.g);
+    const wrong=c=>!E.some(x=>x[0]===f&&x[2]===r&&NB[x[1]].g===c);
+    opts=[correct,...pickDistractors(correct,[fromSame,intoSimilar,all],wrong)];
+  } else if(type==='reagent'){
+    text=`Which reagents and conditions convert ${art(f)} ${NB[f].g.toLowerCase()} into ${art(t)} ${NB[t].g.toLowerCase()}?`;
+    scheme=miniCard(f)+arrowBox('<span class="qm">?</span>','')+miniCard(t);
+    correct=r;
+    const near=E.filter(x=>(x[0]===f||x[1]===t||x[0]===t||x[1]===f)&&x!==e).map(x=>x[2]);
+    const all=E.map(x=>x[2]);
+    const wrong=c=>!E.some(x=>x[0]===f&&x[1]===t&&sameR(x[2],c,t));
+    opts=[correct,...pickDistractors(correct,[near,all],wrong)];
+  } else {
+    text=`What type of reaction converts ${art(f)} ${NB[f].g.toLowerCase()} into ${art(t)} ${NB[t].g.toLowerCase()}?`;
+    scheme=miniCard(f)+arrowBox(r.replace(' *',''),'<span class="qm">?</span>')+miniCard(t);
+    correct=m;
+    const all=E.map(x=>x[3]);
+    opts=[correct,...pickDistractors(correct,[all],c=>!(c.startsWith(m)||m.startsWith(c)))];
+  }
+  qCur={e,type,correct};
+  opts=shuffle(opts);
+  document.getElementById('q-num').textContent=`Question ${qTot+1}`;
+  document.getElementById('q-text').textContent=text;
+  document.getElementById('q-scheme').innerHTML=scheme;
+  const box=document.getElementById('q-opts');box.innerHTML='';
+  opts.forEach((o,i)=>{
+    const b=document.createElement('button');b.className='opt';b.innerHTML=`<span class="let">${LET[i]}</span><span>${o.replace(' *','')}</span>`;
+    b.onclick=()=>answerQ(b,o);box.appendChild(b);
+  });
+  const fb=document.getElementById('q-fb');fb.hidden=true;fb.innerHTML='';
+}
+function answerQ(btn,o){
+  const ok=o===qCur.correct;qTot++;if(ok)qScore++;
+  document.querySelectorAll('#q-opts .opt').forEach(b=>{b.disabled=true;
+    const v=b.lastElementChild.textContent;
+    if(v===qCur.correct.replace(' *',''))b.classList.add('ok');else if(b===btn)b.classList.add('bad');else b.classList.add('dim');});
+  const [f,t,r,m]=qCur.e;
+  const fb=document.getElementById('q-fb');fb.hidden=false;
+  fb.innerHTML=`<b class="${ok?'ok':'bad'}">${ok?'Correct.':'Not quite.'}</b> ${NB[f].g} (${NB[f].n}) → ${NB[t].g} (${NB[t].n}) using <b>${r.replace(' *','')}</b>. <span class="mech">${m}</span>.${f==='nitrile'&&t==='amine'?' Reducing propanenitrile actually gives propylamine.':''}`;
+  document.getElementById('q-tally').textContent=`${qScore} / ${qTot}`;
+}
+document.getElementById('q-next').onclick=newQ;
+
+// ================= synthesis routes =================
+const sLens=new Set([2,3]);
+let sScore=0,sTot=0,sCur=null;
+document.querySelectorAll('[data-sl]').forEach(b=>b.onclick=()=>{
+  const k=+b.dataset.sl;
+  if(sLens.has(k)){if(sLens.size===1)return;sLens.delete(k);}else sLens.add(k);
+  b.setAttribute('aria-pressed',sLens.has(k));newS();
+});
+function stepOK(E,u,r,v){return E.some(x=>x[0]===u&&x[1]===v&&sameR(x[2],r,v));}
+function routeOK(E,R){for(let i=0;i<R.r.length;i++)if(!stepOK(E,R.g[i],R.r[i],R.g[i+1]))return false;return true;}
+const sig=R=>R.g.join('>')+'|'+R.r.join('>');
+function allShortest(E,s){
+  // BFS returning dist and all shortest-path predecessor edges
+  const dist={[s]:0},pred={};const q=[s];
+  while(q.length){const u=q.shift();E.filter(x=>x[0]===u).forEach(x=>{const v=x[1];
+    if(dist[v]===undefined){dist[v]=dist[u]+1;pred[v]=[x];q.push(v);}else if(dist[v]===dist[u]+1)pred[v].push(x);});}
+  return {dist,pred};
+}
+function pathsTo(pred,s,t){
+  if(t===s)return [{g:[s],r:[]}];
+  const out=[];(pred[t]||[]).forEach(x=>pathsTo(pred,s,x[0]).forEach(p=>out.push({g:[...p.g,t],r:[...p.r,x[2]]})));
+  return out;
+}
+function newS(){
+  const E=visEdges(),cands=[];
+  visNodes().forEach(n=>{const {dist,pred}=allShortest(E,n.id);
+    Object.keys(dist).forEach(t=>{if(sLens.has(dist[t]))cands.push({s:n.id,t,pred});});});
+  const box=document.getElementById('s-opts');
+  if(!cands.length){document.getElementById('s-text').textContent='No routes of that length at this level.';box.innerHTML='';document.getElementById('s-scheme').innerHTML='';return;}
+  const c=rnd(cands),paths=pathsTo(c.pred,c.s,c.t),R=rnd(paths);
+  const n=R.r.length,allR=uniq(E.map(x=>x[2]));
+  const cats=[[],[],[],[]];
+  // 1 reagents in the wrong order
+  if(n>1){cats[0].push({g:R.g.slice(),r:R.r.slice().reverse()});
+    if(n===3){cats[0].push({g:R.g.slice(),r:[R.r[1],R.r[0],R.r[2]]});cats[0].push({g:R.g.slice(),r:[R.r[0],R.r[2],R.r[1]]});}}
+  // 2 one reagent swapped for a plausible wrong one (reagents used on neighbouring arrows)
+  for(let i=0;i<n;i++){
+    const near=uniq(E.filter(x=>x[0]===R.g[i]||x[1]===R.g[i+1]||x[0]===R.g[i+1]||x[1]===R.g[i]).map(x=>x[2]));
+    near.forEach(alt=>{const r2=R.r.slice();r2[i]=alt;cats[1].push({g:R.g.slice(),r:r2});});}
+  // 3 wrong intermediate, same reagents: groups linked to the neighbours of that intermediate
+  for(let i=1;i<n;i++){
+    const near=uniq(E.filter(x=>x[0]===R.g[i-1]||x[1]===R.g[i+1]||x[0]===R.g[i]||x[1]===R.g[i]).flatMap(x=>[x[0],x[1]])).filter(id=>!R.g.includes(id));
+    near.forEach(id=>{const g2=R.g.slice();g2[i]=id;cats[2].push({g:g2,r:R.r.slice()});});}
+  // 4 a genuine first step to a different group, then the rest of the real route
+  E.filter(x=>x[0]===c.s&&x[1]!==R.g[1]&&!R.g.includes(x[1])).forEach(x=>{
+    const g2=R.g.slice();g2[1]=x[1];const r2=R.r.slice();r2[0]=x[2];cats[3].push({g:g2,r:r2});});
+  const seen=new Set([sig(R)]),dis=[];
+  const take=P=>{if(dis.length<3&&!seen.has(sig(P))&&!routeOK(E,P)){seen.add(sig(P));dis.push(P);return true;}return false;};
+  const order=shuffle([0,1,2,3]).map(k=>shuffle(cats[k]));
+  for(let pass=0;pass<6&&dis.length<3;pass++)order.forEach(list=>{while(list.length){if(take(list.shift()))break;}});
+  let guard=0;while(dis.length<3&&guard++<200){take({g:R.g.slice(),r:R.r.map(()=>rnd(allR))});}
+  sCur={R,E,ok:sig(R)};
+  document.getElementById('s-num').textContent=`Route ${sTot+1} · ${n} steps`;
+  document.getElementById('s-text').textContent=`Suggest a ${n}-step synthesis of ${art(c.t)} ${NB[c.t].g.toLowerCase()} from ${art(c.s)} ${NB[c.s].g.toLowerCase()}.`;
+  document.getElementById('s-scheme').innerHTML=miniCard(c.s)+arrowBox(`<span class="qm">${n} steps</span>`,'')+miniCard(c.t);
+  box.innerHTML='';
+  shuffle([R,...dis]).forEach((P,i)=>{
+    const b=document.createElement('button');b.className='opt';
+    let h=`<span class="g">${NB[P.g[0]].g}</span>`;
+    P.r.forEach((r,j)=>{h+=`<span class="r"><i>${r.replace(' *','')}</i></span><span class="g">${NB[P.g[j+1]].g}</span>`;});
+    b.innerHTML=`<span class="let">${LET[i]}</span><span class="route">${h}</span>`;
+    b.onclick=()=>answerS(b,P);box.appendChild(b);b._sig=sig(P);
+  });
+  const fb=document.getElementById('s-fb');fb.hidden=true;
+}
+function answerS(btn,P){
+  const ok=routeOK(sCur.E,P);sTot++;if(ok)sScore++;
+  document.querySelectorAll('#s-opts .opt').forEach(b=>{b.disabled=true;
+    if(b._sig===sCur.ok)b.classList.add('ok');else if(b===btn)b.classList.add('bad');else b.classList.add('dim');});
+  const R=sCur.R,E=sCur.E;
+  let li='';R.r.forEach((r,i)=>{const x=E.find(x=>x[0]===R.g[i]&&x[1]===R.g[i+1]&&x[2]===r);
+    li+=`<li>${NB[R.g[i]].g} → ${NB[R.g[i+1]].g}: <b>${r.replace(' *','')}</b> <span class="mech">(${x[3]})</span></li>`;});
+  // explain why the chosen wrong route fails
+  let why='';
+  if(!ok){for(let i=0;i<P.r.length;i++){if(!stepOK(E,P.g[i],P.r[i],P.g[i+1])){why=` Step ${i+1} fails: ${P.r[i].replace(' *','')} does not convert ${art(P.g[i])} ${NB[P.g[i]].g.toLowerCase()} into ${art(P.g[i+1])} ${NB[P.g[i+1]].g.toLowerCase()}.`;break;}}}
+  const fb=document.getElementById('s-fb');fb.hidden=false;
+  fb.innerHTML=`<b class="${ok?'ok':'bad'}">${ok?'Correct.':'Not quite.'}</b>${why} The route:<ol>${li}</ol>`;
+  document.getElementById('s-tally').textContent=`${sScore} / ${sTot}`;
+}
+document.getElementById('s-next').onclick=newS;
+
+// ================= tabs =================
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+  const k=t.dataset.tab;
+  document.querySelectorAll('.tab').forEach(x=>x.setAttribute('aria-selected',x===t));
+  ['map','quiz','synth'].forEach(v=>document.getElementById('v-'+v).hidden=v!==k);
+  document.querySelectorAll('.mapctl').forEach(el=>el.hidden=k!=='map');
+  if(k==='map'){if(mapDirty){mapDirty=false;render();}else fit();}
+});
+newQ();newS();
+})();
+</script>
+
+</body></html>

@@ -1,0 +1,688 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Proton NMR Scanner</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: compound chips + controls → bench (RF transmitter, sample in magnetic field, receiver) → spectrum with readout column and multiplet zoom */
+:root{
+  --bg:#ecebe6; --panel:#fbfbf8; --ink:#1f2328; --muted:#5b6066; --line:#d4d1c8;
+  --accent:#0e5f66; --accent-soft:#dcebec; --chip:#f3f2ee;
+  --f-ui:"Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+  --f-data:ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:15px;line-height:1.45;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:14px 24px}
+.wrap{max-width:1280px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:10px 20px}
+h1{margin:0;font-size:1.45rem;letter-spacing:-.01em;text-wrap:balance}
+.sub{margin:2px 0 0;color:var(--muted);font-size:.9rem;max-width:70ch}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:inherit;font-size:.88rem;border:1px solid var(--line);background:var(--chip);color:var(--ink);padding:6px 11px;border-radius:999px;cursor:pointer;display:flex;flex-direction:column;align-items:flex-start;line-height:1.15}
+.chip small{color:var(--muted);font-size:.72rem;letter-spacing:.04em}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.chip[aria-pressed="true"] small{color:#cfe6e8}
+.chip:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 12px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg button{font:inherit;font-size:.88rem;border:0;background:var(--chip);color:var(--ink);padding:6px 12px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.btn{font:inherit;font-size:.88rem;border:1px solid var(--line);background:var(--chip);color:var(--ink);padding:6px 12px;border-radius:6px;cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;min-width:9.5em}
+.ctl{display:flex;align-items:center;gap:8px;font-size:.86rem;color:var(--muted)}
+.ctl output{font-family:var(--f-data);color:var(--ink);min-width:6.5em}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px}
+canvas{display:block;width:100%;touch-action:none}
+#bench{aspect-ratio:1000/320;cursor:pointer}
+#spec{aspect-ratio:1000/390;cursor:ew-resize}
+#zoom{aspect-ratio:320/150}
+.bench{padding:6px}
+.lower{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:12px}
+@media (max-width:920px){.lower{grid-template-columns:minmax(0,1fr)}}
+.spec{padding:6px 6px 10px;min-width:0}
+.hint{margin:4px 10px 0;color:var(--muted);font-size:.82rem}
+.readout{padding:14px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.big{display:flex;align-items:baseline;gap:8px}
+.big b{font-family:var(--f-data);font-size:2.1rem;font-weight:600;font-variant-numeric:tabular-nums;line-height:1}
+.big span{color:var(--muted)}
+.sw{display:inline-block;width:12px;height:12px;border-radius:3px;flex:none}
+dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:.88rem}
+dt{color:var(--muted)}
+dd{margin:0;font-family:var(--f-data);font-variant-numeric:tabular-nums}
+.status{padding:9px 11px;border-radius:6px;background:var(--chip);border-left:4px solid var(--line);font-size:.9rem;min-height:3.4em}
+.lbl{font-size:.72rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:0 0 4px}
+.rows{display:flex;flex-direction:column;gap:3px}
+.row{font:inherit;font-size:.84rem;display:grid;grid-template-columns:14px 1fr auto;gap:2px 8px;align-items:center;text-align:left;border:1px solid transparent;background:transparent;color:var(--ink);padding:5px 6px;border-radius:5px;cursor:pointer}
+.row:hover{background:var(--chip)}
+.row.on{background:var(--accent-soft);border-color:#b7d6d8}
+.row .r{grid-column:2 / 4;font-family:var(--f-data);color:var(--muted);font-size:.76rem}
+.row .p{font-family:var(--f-data);font-size:.8rem;text-align:right}
+.zoomcap{margin:4px 0 0;font-size:.84rem}
+.note{font-size:.86rem;margin:0}
+nav.tabs{display:flex;flex-wrap:wrap;gap:4px;border-bottom:2px solid var(--line)}
+nav.tabs button{font:inherit;font-size:.92rem;border:0;background:transparent;color:var(--muted);padding:8px 14px;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px}
+nav.tabs button[aria-selected="true"]{color:var(--ink);font-weight:600;border-bottom-color:var(--accent)}
+.panel{display:flex;flex-direction:column;gap:12px}
+.pad{padding:14px;display:flex;flex-direction:column;gap:12px;min-width:0}
+#spinC{aspect-ratio:1000/400}
+#splitC{aspect-ratio:1000/470;cursor:pointer}
+.chips.small .chip{font-size:.84rem}
+.frow{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
+#spinF{flex:1;min-width:180px}
+.bigf{font-family:var(--f-data);font-size:1.15rem;font-variant-numeric:tabular-nums}
+footer{color:var(--muted);font-size:.8rem;max-width:80ch}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Proton NMR Scanner</h1>
+      <p class="sub">In a strong magnetic field, each hydrogen nucleus absorbs radio waves of one exact frequency. Hydrogens in different environments absorb at different chemical shifts.</p>
+    </div>
+    <div class="chips" id="chips" role="group" aria-label="Compound"></div>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Sections">
+    <button role="tab" id="tab1" aria-selected="true">Spectrometer</button>
+    <button role="tab" id="tab2" aria-selected="false">Spin flip and relaxation</button>
+    <button role="tab" id="tab3" aria-selected="false">How splitting works</button>
+  </nav>
+  <div class="panel" id="p1">
+  <div class="toolbar">
+    <button class="btn primary" id="play">Start sweep</button>
+    <button class="btn" id="reset">Reset sweep</button>
+    <button class="btn" id="full">Show full spectrum</button>
+    <label class="ctl" for="speed">Sweep speed <input type="range" id="speed" min="0.1" max="1.5" step="0.05" value="0.3"><output id="speedOut">0.30 ppm/s</output></label>
+    <div class="seg" role="group" aria-label="Resolution">
+      <button id="hiRes" aria-pressed="true">High resolution (splitting)</button>
+      <button id="loRes" aria-pressed="false">Low resolution</button>
+    </div>
+    <label class="ctl" for="integ"><input type="checkbox" id="integ" checked> Integration trace</label>
+    <label class="ctl" for="ranges"><input type="checkbox" id="ranges"> Data sheet ranges</label>
+  </div>
+
+  <section class="card bench"><canvas id="bench" aria-label="NMR spectrometer with sample in a magnetic field"></canvas></section>
+
+  <div class="lower">
+    <section class="card spec">
+      <canvas id="spec" aria-label="Proton NMR spectrum"></canvas>
+      <p class="hint">Drag on the spectrum or press ← → to move the sweep. Click an H atom, or a row in the table, to jump to its peak.</p>
+    </section>
+    <aside class="card readout">
+      <div>
+        <p class="lbl">Chemical shift</p>
+        <div class="big"><span class="sw" id="curSw"></span><b id="dl">0.00</b><span>ppm</span></div>
+      </div>
+      <dl>
+        <dt>Radio frequency</dt><dd id="fq">–</dd>
+        <dt>Photon energy, E = hf</dt><dd id="en">–</dd>
+      </dl>
+      <div class="status" id="status">–</div>
+      <div>
+        <p class="lbl">Splitting at this shift</p>
+        <canvas id="zoom" aria-label="Zoomed view of the nearest peak"></canvas>
+        <p class="zoomcap" id="zoomCap"></p>
+      </div>
+      <div>
+        <p class="lbl" id="tblTitle">Environments</p>
+        <div class="rows" id="rows"></div>
+      </div>
+      <p class="note" id="note"></p>
+    </aside>
+  </div>
+  </div>
+
+  <div class="panel" id="p2" hidden>
+    <section class="card bench"><canvas id="spinC" aria-label="A hydrogen nucleus in a magnetic field and its two spin energy levels"></canvas></section>
+    <div class="lower">
+      <section class="card pad">
+        <div><p class="lbl">Hydrogen environment</p><div class="chips small" id="spinEnv"></div></div>
+        <div class="frow"><p class="lbl" style="margin:0">Magnet</p><div class="seg" id="spinB"></div></div>
+        <div>
+          <p class="lbl">Radio frequency sent</p>
+          <div class="frow"><input type="range" id="spinF" min="-0.5" max="11" step="0.01" value="2.1" aria-label="Radio frequency"><span class="bigf" id="spinFOut"></span></div>
+        </div>
+        <div class="frow">
+          <button class="btn primary" id="spinSend">Send photon</button>
+          <button class="btn" id="spinTune">Tune to resonance</button>
+          <label class="ctl" for="spinAuto"><input type="checkbox" id="spinAuto"> Keep sending</label>
+        </div>
+      </section>
+      <aside class="card readout">
+        <div class="status" id="spinStatus"></div>
+        <dl>
+          <dt>Frequency needed</dt><dd id="spinNeed">–</dd>
+          <dt>ΔE between spin states</dt><dd id="spinDE">–</dd>
+          <dt>Photon energy sent, hf</dt><dd id="spinHF">–</dd>
+        </dl>
+        <p class="note">The spin of the hydrogen <b>nucleus</b> (a proton) flips, not an electron. Electrons matter because they shield the nucleus from B₀: more electron density means a smaller field felt, a smaller ΔE, a lower frequency and a smaller δ. Electronegative atoms such as O pull electron density away, so those H are deshielded and appear at higher δ.</p>
+      </aside>
+    </div>
+  </div>
+
+  <div class="panel" id="p3" hidden>
+    <div class="toolbar">
+      <span class="ctl">Neighbouring H (n)</span>
+      <div class="seg" id="splitN"></div>
+      <button class="btn primary" id="splitPlay">Animate splitting</button>
+      <label class="ctl" for="splitCycle"><input type="checkbox" id="splitCycle" checked> Cycle through spin arrangements</label>
+    </div>
+    <section class="card bench"><canvas id="splitC" aria-label="Spin arrangements of neighbouring H and the resulting splitting pattern"></canvas></section>
+    <section class="card pad"><p class="note" id="splitText"></p></section>
+  </div>
+
+  <footer>Modelled on a 100 MHz instrument, with the sample dissolved in CDCl₃ (no ¹H signal) and TMS added as the δ 0 reference. Shifts are typical literature values; ranges follow the AQA data sheet. O–H protons are shown as singlets because they exchange too quickly to couple. Multiplets with very small lines are drawn taller and marked; the integration trace shows the true ratio.</footer>
+</div>
+
+<script>
+(()=>{
+const H=6.626e-34, NA=6.022e23, F0=100e6, JPPM=0.07;
+const INK='#1f2328', MUTED='#5b6066', LINE='#d4d1c8', PANEL='#fbfbf8', ACC='#0e5f66', RF='#3d7c84', TMSC='#8a8880';
+const FONT='"Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif';
+const DATAF='ui-monospace, Consolas, "SF Mono", Menlo, monospace';
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const ECOL=['#c2410c','#1d5fc4','#15803d','#9333ea'];
+const SPLIT=['singlet','doublet','triplet','quartet','quintet','sextet','septet'];
+const binom=(n,k)=>{let r=1;for(let i=1;i<=k;i++)r=r*(n-k+i)/i;return r;};
+
+const TYPES={
+  CH3:{t:'R–CH₃',r:[0.7,1.2]}, CCO:{t:'H–C–C=O',r:[2.1,2.6]}, HCO:{t:'H–C–O',r:[3.1,3.9]},
+  EST:{t:'H–C–O–C=O',r:[3.7,4.1]}, OH:{t:'R–OH',r:[0.5,5.0]}, CHO:{t:'R–CHO',r:[9.0,10.0]}, COOH:{t:'R–COOH',r:[10.0,12.0]}
+};
+const HX=(c,list)=>list.map(p=>['H',p[0],p[1],c]);
+// atoms: [el,x,y]; bonds: [a,b,order]; envs: {name, h:[atom idx], d, n, nbr:[atom idx], J, type}
+const COMPOUNDS=[
+ {name:'Propanone',formula:'CH₃COCH₃',
+  atoms:[['C',0,0],['C',1,0],['O',1,-1],['C',2,0],['H',-1,0],['H',0,-1],['H',0,1],['H',3,0],['H',2,-1],['H',2,1]],
+  bonds:[[0,1,1],[1,2,2],[1,3,1],[0,4,1],[0,5,1],[0,6,1],[3,7,1],[3,8,1],[3,9,1]],
+  envs:[{name:'2 × CH₃',h:[4,5,6,7,8,9],d:2.17,n:0,nbr:[],J:7,type:'CCO'}],
+  note:'All six H atoms are in one environment, so there is one peak. It is a singlet because the neighbouring carbon (the C=O) has no H.'},
+ {name:'Ethanoic acid',formula:'CH₃COOH',
+  atoms:[['C',0,0],['C',1,0],['O',1,-1],['O',2,0],['H',3,0],['H',-1,0],['H',0,-1],['H',0,1]],
+  bonds:[[0,1,1],[1,2,2],[1,3,1],[3,4,1],[0,5,1],[0,6,1],[0,7,1]],
+  envs:[{name:'COOH',h:[4],d:11.4,n:0,nbr:[],J:7,type:'COOH'},{name:'CH₃',h:[5,6,7],d:2.10,n:0,nbr:[],J:7,type:'CCO'}],
+  note:'Two singlets in the ratio 1:3. The COOH proton is strongly deshielded and appears far to the left, near δ 11.4.'},
+ {name:'Ethanal',formula:'CH₃CHO',
+  atoms:[['C',0,0],['C',1,0],['O',1.8,-0.6],['H',1.8,0.6],['H',-1,0],['H',0,-1],['H',0,1]],
+  bonds:[[0,1,1],[1,2,2],[1,3,1],[0,4,1],[0,5,1],[0,6,1]],
+  envs:[{name:'CHO',h:[3],d:9.80,n:3,nbr:[4,5,6],J:2.9,type:'CHO'},{name:'CH₃',h:[4,5,6],d:2.20,n:1,nbr:[3],J:2.9,type:'CCO'}],
+  note:'The aldehyde H near δ 9.8 is split into a quartet by the CH₃. The CH₃ is split into a doublet by the single aldehyde H. The coupling is small, so use the zoom view.'},
+ {name:'Butanone',formula:'CH₃COCH₂CH₃',
+  atoms:[['C',0,0],['C',1,0],['O',1,-1],['C',2,0],['C',3,0],['H',-1,0],['H',0,-1],['H',0,1],['H',2,-1],['H',2,1],['H',4,0],['H',3,-1],['H',3,1]],
+  bonds:[[0,1,1],[1,2,2],[1,3,1],[3,4,1],[0,5,1],[0,6,1],[0,7,1],[3,8,1],[3,9,1],[4,10,1],[4,11,1],[4,12,1]],
+  envs:[{name:'CH₂',h:[8,9],d:2.44,n:3,nbr:[10,11,12],J:7,type:'CCO'},{name:'CH₃CO',h:[5,6,7],d:2.14,n:0,nbr:[],J:7,type:'CCO'},
+        {name:'CH₃ (ethyl)',h:[10,11,12],d:1.06,n:2,nbr:[8,9],J:7,type:'CH3'}],
+  note:'Three environments in the ratio 2:3:3. The CH₃ next to C=O is a singlet. The CH₂ and the other CH₃ split each other into a quartet and a triplet.'},
+ {name:'Propan-2-ol',formula:'(CH₃)₂CHOH',
+  atoms:[['C',0,0],['C',1,0],['C',2,0],['O',1,-1],['H',1,-2],['H',1,1],['H',-1,0],['H',0,-1],['H',0,1],['H',3,0],['H',2,-1],['H',2,1]],
+  bonds:[[0,1,1],[1,2,1],[1,3,1],[3,4,1],[1,5,1],[0,6,1],[0,7,1],[0,8,1],[2,9,1],[2,10,1],[2,11,1]],
+  envs:[{name:'CH',h:[5],d:4.02,n:6,nbr:[6,7,8,9,10,11],J:6.1,type:'HCO'},{name:'OH',h:[4],d:2.40,n:0,nbr:[],J:7,type:'OH'},
+        {name:'2 × CH₃',h:[6,7,8,9,10,11],d:1.20,n:1,nbr:[5],J:6.1,type:'CH3'}],
+  note:'The two CH₃ groups are equivalent (6 H) and are split into a doublet by the single CH. The CH has 6 neighbouring H, giving a septet. The O–H is a singlet.'},
+ {name:'Ethyl ethanoate',formula:'CH₃COOCH₂CH₃',
+  atoms:[['C',0,0],['C',1,0],['O',1,-1],['O',2,0],['C',3,0],['C',4,0],['H',-1,0],['H',0,-1],['H',0,1],['H',3,-1],['H',3,1],['H',5,0],['H',4,-1],['H',4,1]],
+  bonds:[[0,1,1],[1,2,2],[1,3,1],[3,4,1],[4,5,1],[0,6,1],[0,7,1],[0,8,1],[4,9,1],[4,10,1],[5,11,1],[5,12,1],[5,13,1]],
+  envs:[{name:'OCH₂',h:[9,10],d:4.12,n:3,nbr:[11,12,13],J:7.1,type:'EST'},{name:'CH₃CO',h:[6,7,8],d:2.05,n:0,nbr:[],J:7,type:'CCO'},
+        {name:'CH₃ (ethyl)',h:[11,12,13],d:1.26,n:2,nbr:[9,10],J:7.1,type:'CH3'}],
+  note:'Ratio 2:3:3. The OCH₂ is shifted to about δ 4.1 by the neighbouring O and is a quartet. The ethyl CH₃ is a triplet and the CH₃CO is a singlet.'}
+];
+COMPOUNDS.forEach(m=>{
+  m.envs.forEach((e,i)=>e.col=ECOL[i]);
+  m.envOf=m.atoms.map(()=>-1);m.envs.forEach((e,i)=>e.h.forEach(a=>m.envOf[a]=i));
+  const xs=m.atoms.map(a=>a[1]),ys=m.atoms.map(a=>a[2]);m.bx=[Math.min(...xs),Math.max(...xs)];m.by=[Math.min(...ys),Math.max(...ys)];
+  m.dmax=Math.max(5,Math.ceil(Math.max(...m.envs.map(e=>e.d))+0.6));
+});
+const TMS={name:'TMS',d:0,n:0,J:7,col:TMSC,h:[],tms:true};
+
+// ---------- state ----------
+let ci=3, hires=true, running=false, d=2.44, revealed=-0.5, speed=0.3, showInteg=true, showRanges=false;
+let photons=[], bursts=[], flip=[], glow=[], spawn=0, sig=0, statusHold=0;
+const M=()=>COMPOUNDS[ci];
+const D1=-0.5;
+
+// ---------- lines ----------
+function linesOf(e){ // [delta, relIntensity(per-H weight), pascalRel]
+  if(!hires||e.n===0) return [[e.d,1,1]];
+  const n=e.n,out=[],mx=binom(n,Math.floor(n/2));
+  for(let k=0;k<=n;k++)out.push([e.d+(k-n/2)*e.J/100,binom(n,k)/2**n,binom(n,k)/mx]);
+  return out;
+}
+let model=null;
+function buildModel(){
+  const m=M(),envs=[...m.envs,TMS];
+  const peakMax=e=>Math.max(...linesOf(e).map(l=>l[1]))*(e.tms?0:e.h.length);
+  const G0=Math.max(...m.envs.map(peakMax));
+  model=envs.map(e=>{
+    const ls=linesOf(e), nH=e.tms?0:e.h.length;
+    let scale=1;const pm=peakMax(e);
+    if(!e.tms&&pm<0.3*G0){scale=0.3*G0/pm;}
+    const hgt=e.tms?0.45:0;
+    return {e,ls,nH,scale,lines:ls.map(l=>({c:l[0],I:e.tms?hgt*G0:nH*l[1]*scale,rel:l[2],trueI:nH*l[1]}))};
+  });
+  model.G=Math.max(...model.flatMap(x=>x.lines.map(l=>l.I)));
+  model.hw=hires?0.009:0.03;
+}
+function specY(x){let s=0;const hw=model.hw;for(const me of model)for(const l of me.lines){const z=(x-l.c)/hw;s+=l.I/(1+z*z);}return s/model.G;}
+function envWeights(x){ // absorption strength for animation, 0..1 each
+  const hw=model.hw*3;
+  return model.map(me=>{let w=0;for(const l of me.lines){const z=(x-l.c)/hw;w=Math.max(w,l.rel/(1+z*z));}return w;});
+}
+function integ(x){ // cumulative H count passed (sweep from high δ to low δ)
+  let s=0;const hw=model.hw;
+  for(const me of model){if(me.e.tms)continue;for(const l of me.lines)s+=l.trueI*(0.5+Math.atan((l.c-x)/hw)/Math.PI);}
+  return s;
+}
+
+// ---------- canvases ----------
+const bench=document.getElementById('bench'),spec=document.getElementById('spec'),zoom=document.getElementById('zoom');
+const AW=1000,AH=320,GW=1000,GH=390,ZW=320,ZH=150;
+let actx,gctx,zctx;
+function fit(c,W,Hh){const dpr=window.devicePixelRatio||1;const cw=c.clientWidth||W;c.width=Math.round(cw*dpr);c.height=Math.round(cw*Hh/W*dpr);const ctx=c.getContext('2d');ctx.setTransform(c.width/W,0,0,c.width/W,0,0);return ctx;}
+function refit(){actx=fit(bench,AW,AH);gctx=fit(spec,GW,GH);zctx=fit(zoom,ZW,ZH);}
+[bench,spec,zoom].forEach(c=>new ResizeObserver(refit).observe(c));refit();
+
+const X0=60,X1=980,PY0=28,PY1=330;
+const D0=()=>M().dmax;
+const xOf=v=>X0+(D0()-v)/(D0()-D1)*(X1-X0), dOf=x=>Math.max(D1,Math.min(D0(),D0()-(x-X0)/(X1-X0)*(D0()-D1)));
+const BASE=PY1-8, yOf=s=>BASE-s*(BASE-PY0-40);
+let curve=[], icurve=[], totalH=0;
+function buildCompound(){
+  buildModel();const m=M();curve=[];icurve=[];totalH=m.envs.reduce((a,e)=>a+e.h.length,0);
+  for(let i=0;i<=(X1-X0)*2;i++){const x=dOf(X0+i/2);curve.push(specY(x));icurve.push(integ(x));}
+  flip=m.atoms.map(()=>0);glow=m.envs.map(()=>0);photons=[];bursts=[];
+  buildTable();
+}
+
+// ---------- bench ----------
+const BY=160, TX=[20,110], CELL=[300,720,22,298], RX=800;
+let L=null;
+function layout(){const m=M(),sx=m.bx[1]-m.bx[0]+1.4,sy=m.by[1]-m.by[0]+1.4;
+  const u=Math.min((CELL[1]-CELL[0]-90)/sx,(CELL[3]-CELL[2]-110)/sy,62);
+  const cx=(CELL[0]+CELL[1])/2+14,cy=(CELL[2]+CELL[3])/2-4;
+  return {u,ox:cx-(m.bx[0]+m.bx[1])/2*u,oy:cy-(m.by[0]+m.by[1])/2*u};}
+const P=i=>{const a=M().atoms[i];return [L.ox+a[1]*L.u,L.oy+a[2]*L.u];};
+function rr(c,x,y,w,h,r){c.beginPath();c.roundRect?c.roundRect(x,y,w,h,r):c.rect(x,y,w,h);}
+function dominant(ws){let k=-1,b=0.15;ws.forEach((w,i)=>{if(w>b){b=w;k=i;}});return k;}
+
+function makePhoton(){
+  const ws=envWeights(d),p=0.85*(1-ws.reduce((a,w)=>a*(1-0.9*w),1));
+  const ph={x:TX[1],y:BY+(Math.random()*2-1)*12,phase:Math.random()*6.28,dir:[1,0]};
+  if(Math.random()<p){let r=Math.random()*ws.reduce((a,w)=>a+w,0),k=0;for(;k<ws.length-1;k++){r-=ws[k];if(r<=0)break;}
+    ph.env=k;const e=model[k].e;ph.atom=e.tms?-1:e.h[Math.floor(Math.random()*e.h.length)];ph.abs=true;}
+  photons.push(ph);
+}
+function update(dt){
+  if(running){d-=speed*dt;if(d<=D1){d=D1;running=false;setPlay();}revealed=Math.min(revealed,d);}
+  spawn+=(RM?13:26)*dt;while(spawn>=1){spawn--;makePhoton();}
+  const SP=300;
+  for(const ph of photons){
+    if(ph.abs&&ph.x>=CELL[0]+10){
+      if(ph.atom<0){bursts.push({x:ph.x,y:ph.y,col:TMSC,t:0});ph.dead=true;continue;}
+      const t=P(ph.atom),dx=t[0]-ph.x,dy=t[1]-ph.y,dd=Math.hypot(dx,dy);
+      if(dd<7){bursts.push({x:t[0],y:t[1],col:model[ph.env].e.col,t:0});flip[ph.atom]=0.6+Math.random()*0.6;glow[ph.env]=Math.min(1,glow[ph.env]+0.5);ph.dead=true;continue;}
+      ph.dir=[dx/dd,dy/dd];const st=Math.min(dd,SP*dt);ph.x+=ph.dir[0]*st;ph.y+=ph.dir[1]*st;
+    }else{ph.x+=SP*dt;if(ph.x>=RX)ph.dead=true;}
+  }
+  photons=photons.filter(p=>!p.dead);
+  bursts.forEach(b=>b.t+=dt);bursts=bursts.filter(b=>b.t<0.55);
+  flip=flip.map(f=>Math.max(0,f-dt));glow=glow.map(g=>g*Math.exp(-dt/0.6));
+  sig+=(Math.min(1,specY(d))-sig)*Math.min(1,dt*6);
+}
+function drawPhoton(c,ph){
+  const lam=34,Lg=40,A=4,nx=-ph.dir[1],ny=ph.dir[0];
+  c.strokeStyle=RF;c.lineWidth=1.8;c.beginPath();
+  for(let s=0;s<=Lg;s+=1.5){const a=A*Math.sin(Math.PI*s/Lg)*Math.sin(2*Math.PI*s/lam+ph.phase);const px=ph.x-ph.dir[0]*s+nx*a,py=ph.y-ph.dir[1]*s+ny*a;s?c.lineTo(px,py):c.moveTo(px,py);}
+  c.stroke();
+}
+function arrow(c,x,y,len,up,col,lw){const s=up?-1:1;c.strokeStyle=col;c.fillStyle=col;c.lineWidth=lw;
+  c.beginPath();c.moveTo(x,y-s*len/2);c.lineTo(x,y+s*len/2);c.stroke();
+  c.beginPath();c.moveTo(x,y+s*len/2+s*2);c.lineTo(x-4,y+s*len/2-s*5);c.lineTo(x+4,y+s*len/2-s*5);c.fill();}
+let T=0;
+function drawBench(){
+  const c=actx,m=M(),ws=envWeights(d),dom=dominant(ws);
+  c.clearRect(0,0,AW,AH);c.fillStyle=PANEL;c.fillRect(0,0,AW,AH);
+  c.fillStyle='rgba(61,124,132,0.08)';c.fillRect(TX[1],BY-18,RX-TX[1],36);
+  // transmitter
+  c.fillStyle='#2a2d31';rr(c,TX[0],BY-36,TX[1]-TX[0],72,8);c.fill();
+  c.strokeStyle='#7fc4cc';c.lineWidth=2.5;for(let i=0;i<4;i++){c.beginPath();c.ellipse(45+i*11,BY,5,20,0,0,7);c.stroke();}
+  // frequency readout
+  c.textAlign='center';c.fillStyle=MUTED;c.font=`12px ${FONT}`;c.fillText('frequency being sent',205,BY-58);
+  c.fillStyle=INK;c.font=`600 15px ${DATAF}`;c.fillText(`100 MHz + ${Math.round(Math.max(0,d)*100)} Hz`,205,BY-38);
+  if(d<0){c.fillStyle=MUTED;c.font=`11px ${FONT}`;c.fillText('(below TMS)',205,BY-24);}
+  // field region
+  c.fillStyle='#f6f8f8';c.strokeStyle=LINE;c.lineWidth=1.5;rr(c,CELL[0],CELL[2],CELL[1]-CELL[0],CELL[3]-CELL[2],10);c.fill();c.stroke();
+  c.fillStyle='#a33a3a';rr(c,CELL[0]+60,CELL[3]-20,CELL[1]-CELL[0]-120,16,4);c.fill();
+  c.fillStyle='#3a56a3';rr(c,CELL[0]+60,CELL[2]+4,CELL[1]-CELL[0]-120,16,4);c.fill();
+  c.fillStyle='#fff';c.font=`700 12px ${FONT}`;c.fillText('N',(CELL[0]+CELL[1])/2,CELL[3]-8);c.fillText('S',(CELL[0]+CELL[1])/2,CELL[2]+16);
+  c.strokeStyle='rgba(58,86,163,0.12)';c.lineWidth=1;for(let x=CELL[0]+80;x<CELL[1]-60;x+=36){c.beginPath();c.moveTo(x,CELL[3]-24);c.lineTo(x,CELL[2]+24);c.stroke();}
+  arrow(c,CELL[0]+24,BY,90,true,'#3a56a3',2.5);c.fillStyle='#3a56a3';c.font=`700 14px ${FONT}`;c.textAlign='left';c.fillText('B₀',CELL[0]+32,BY-36);
+  c.fillStyle=INK;c.font=`600 14px ${FONT}`;c.fillText(m.name,CELL[0]+60,CELL[2]+40);
+  c.fillStyle=MUTED;c.font=`13px ${FONT}`;c.fillText(m.formula,CELL[0]+60,CELL[2]+57);
+  // molecule
+  L=layout();
+  // environment glows
+  m.envs.forEach((e,i)=>{const a=Math.max(ws[i],glow[i]);if(a<0.05)return;c.fillStyle=e.col;
+    e.h.forEach(h=>{const p=P(h);c.globalAlpha=0.12+0.3*a;c.beginPath();c.arc(p[0],p[1],L.u*(0.32+0.12*a),0,7);c.fill();});c.globalAlpha=1;});
+  // neighbour rings
+  if(dom>=0&&!model[dom].e.tms&&hires){const e=model[dom].e;c.setLineDash([3,3]);c.strokeStyle=MUTED;c.lineWidth=1.5;
+    e.nbr.forEach(h=>{const p=P(h);c.beginPath();c.arc(p[0],p[1],L.u*0.33,0,7);c.stroke();});c.setLineDash([]);}
+  c.strokeStyle=INK;c.lineWidth=2.2;c.lineCap='round';
+  m.bonds.forEach(b=>{const p=P(b[0]),q=P(b[1]);const dx=q[0]-p[0],dy=q[1]-p[1],dd=Math.hypot(dx,dy),nx=-dy/dd,ny=dx/dd;
+    (b[2]===1?[0]:[-0.07,0.07]).forEach(o=>{c.beginPath();c.moveTo(p[0]+nx*o*L.u,p[1]+ny*o*L.u);c.lineTo(q[0]+nx*o*L.u,q[1]+ny*o*L.u);c.stroke();});});
+  c.textAlign='center';c.textBaseline='middle';
+  m.atoms.forEach((a,i)=>{const p=P(i),isH=a[0]==='H',ev=m.envOf[i];
+    c.fillStyle='#f6f8f8';c.beginPath();c.arc(p[0],p[1],L.u*(isH?0.21:0.24),0,7);c.fill();
+    c.fillStyle=isH&&ev>=0?m.envs[ev].col:a[0]==='O'?'#a11d1d':INK;
+    c.font=`700 ${Math.round(L.u*(isH?0.34:0.36))}px ${FONT}`;c.fillText(a[0],p[0],p[1]+1);
+    if(isH&&ev>=0){const up=flip[i]<=0;arrow(c,p[0]+L.u*0.36,p[1],L.u*0.34,up,up?'rgba(31,35,40,0.45)':m.envs[ev].col,up?1.4:2.2);}});
+  c.textBaseline='alphabetic';
+  // caption
+  c.textAlign='center';c.font=`13px ${FONT}`;c.fillStyle=INK;
+  let cap='Small arrows show each H nucleus spinning in line with B₀ (lower energy).';
+  if(dom>=0){const e=model[dom].e;cap=e.tms?'TMS molecules elsewhere in the sample are absorbing (δ 0 reference).':
+    `${e.name} nuclei flip to the higher-energy spin state`+(hires&&e.n>0?`; dashed rings: ${e.n} neighbouring H`:'')+'.';}
+  c.fillText(cap,(CELL[0]+CELL[1])/2,CELL[3]-30);
+  photons.forEach(ph=>drawPhoton(c,ph));
+  bursts.forEach(b=>{c.globalAlpha=1-b.t/0.55;c.strokeStyle=b.col;c.lineWidth=2;c.beginPath();c.arc(b.x,b.y,4+30*b.t,0,7);c.stroke();c.globalAlpha=1;});
+  // receiver
+  c.fillStyle='#2a2d31';rr(c,RX,BY-34,56,68,6);c.fill();
+  c.strokeStyle='#7fc4cc';c.lineWidth=2;for(let i=0;i<3;i++){c.beginPath();c.ellipse(RX+16+i*10,BY,4,16,0,0,7);c.stroke();}
+  const mx=884,mt=BY-62,mh=124;c.fillStyle='#e7e5df';rr(c,mx,mt,20,mh,4);c.fill();
+  const fh=mh*Math.max(0,Math.min(1,sig));c.fillStyle=ACC;rr(c,mx,mt+mh-fh,20,fh,4);c.fill();
+  c.textAlign='left';c.fillStyle=INK;c.font=`600 15px ${FONT}`;c.fillText('Signal',914,BY);
+  c.fillStyle=MUTED;c.font=`12px ${FONT}`;c.fillText('absorption',914,BY+17);
+  c.textAlign='center';c.font=`13px ${FONT}`;c.fillStyle=MUTED;
+  c.fillText('RF transmitter',(TX[0]+TX[1])/2,BY+56);c.fillText('(radio waves)',(TX[0]+TX[1])/2,BY+72);
+  c.fillText('Receiver',RX+28,BY+56);
+  c.fillText('Sample in CDCl₃ + TMS, inside a strong magnetic field',(CELL[0]+CELL[1])/2,CELL[3]+16);
+}
+
+// ---------- spectrum ----------
+function drawSpec(){
+  const c=gctx,m=M(),xr=xOf(revealed),n=Math.min(curve.length-1,Math.round((xr-X0)*2));
+  c.clearRect(0,0,GW,GH);c.fillStyle=PANEL;c.fillRect(0,0,GW,GH);
+  if(showRanges)m.envs.forEach(e=>{const r=TYPES[e.type].r;c.fillStyle=e.col;c.globalAlpha=0.1;c.fillRect(xOf(Math.min(r[1],D0())),PY0,xOf(r[0])-xOf(Math.min(r[1],D0())),PY1-PY0);c.globalAlpha=1;});
+  c.strokeStyle='#e6e3dc';c.lineWidth=1;c.font=`12px ${DATAF}`;c.fillStyle=MUTED;c.textAlign='center';
+  const step=D0()>8?1:0.5;
+  for(let v=Math.floor(D0());v>=0;v-=step){const x=xOf(v);c.beginPath();c.moveTo(x,PY0);c.lineTo(x,PY1);c.stroke();if(v%1===0)c.fillText(v,x,PY1+18);}
+  c.strokeStyle='#b9b5ab';c.strokeRect(X0,PY0,X1-X0,PY1-PY0);
+  c.fillStyle=MUTED;c.font=`13px ${FONT}`;c.fillText('Chemical shift, δ / ppm',(X0+X1)/2,PY1+40);
+  c.save();c.translate(28,(PY0+PY1)/2);c.rotate(-Math.PI/2);c.fillText('Absorption',0,0);c.restore();
+  c.fillStyle=MUTED;c.font=`12px ${FONT}`;c.textAlign='left';c.fillText('← deshielded (downfield)',X0+8,PY0+16);c.textAlign='right';c.fillText('shielded (upfield) →',X1-8,PY0+16);
+  // integration
+  if(showInteg&&n>0){const top=PY0+60,h=BASE-top;c.strokeStyle='rgba(14,95,102,0.55)';c.lineWidth=1.5;c.beginPath();
+    for(let i=0;i<=n;i+=2){const y=BASE-icurve[i]/totalH*h*0.9;i?c.lineTo(X0+i/2,y):c.moveTo(X0,y);}c.stroke();
+    c.fillStyle=ACC;c.font=`600 12px ${DATAF}`;c.textAlign='center';
+    m.envs.forEach(e=>{if(e.d<revealed)return;const before=integ(e.d+0.25),y=BASE-before/totalH*h*0.9;c.fillText(e.h.length,xOf(e.d)+16,y-6);});}
+  // trace
+  c.strokeStyle=INK;c.lineWidth=1.5;c.lineJoin='round';c.beginPath();
+  for(let i=0;i<=n;i++){const y=yOf(curve[i]);i?c.lineTo(X0+i/2,y):c.moveTo(X0,y);}c.stroke();
+  // labels
+  const placed=[];
+  model.forEach(me=>{const e=me.e;if(e.d<revealed)return;const x=xOf(e.d);let row=0;while(placed.some(p=>p.row===row&&Math.abs(p.x-x)<70))row++;placed.push({x,row});
+    const top=Math.max(...me.lines.map(l=>l.I))/model.G,y=Math.max(PY0+34,yOf(top)-10-row*15);
+    c.fillStyle=e.col;c.font=`700 12px ${FONT}`;c.textAlign='center';
+    c.fillText(e.tms?'TMS':e.name+(me.scale>1.05?` (×${me.scale.toFixed(0)})`:''),x,y);});
+  // cursor
+  const cx=xOf(d);c.strokeStyle='rgba(61,124,132,0.9)';c.lineWidth=2;c.beginPath();c.moveTo(cx,PY0);c.lineTo(cx,PY1);c.stroke();
+  c.fillStyle=RF;c.beginPath();c.moveTo(cx-6,PY0-8);c.lineTo(cx+6,PY0-8);c.lineTo(cx,PY0);c.fill();
+}
+function nearestEnv(){let k=0,b=1e9;model.forEach((me,i)=>{const dd=Math.abs(me.e.d-d);if(dd<b){b=dd;k=i;}});return k;}
+function drawZoom(){
+  const c=zctx,me=model[nearestEnv()],e=me.e;c.clearRect(0,0,ZW,ZH);c.fillStyle='#f6f5f1';c.fillRect(0,0,ZW,ZH);
+  const half=Math.max(0.12,(hires?e.n/2*e.J/100:0)+0.07),zx=v=>ZW/2+(e.d-v)/half*(ZW/2-14);
+  const base=ZH-24,top=34,mx=Math.max(...me.lines.map(l=>l.rel));
+  c.strokeStyle=LINE;c.beginPath();c.moveTo(8,base);c.lineTo(ZW-8,base);c.stroke();
+  me.lines.forEach(l=>{const x=zx(l.c),h=(base-top)*l.rel/mx;c.strokeStyle=e.col;c.lineWidth=3;c.beginPath();c.moveTo(x,base);c.lineTo(x,base-h);c.stroke();
+    if(hires&&e.n>0){c.fillStyle=INK;c.font=`600 11px ${DATAF}`;c.textAlign='center';c.fillText(binom(e.n,Math.round((l.c-e.d)*100/e.J+e.n/2)),x,base-h-5);}});
+  c.fillStyle=MUTED;c.font=`11px ${DATAF}`;c.textAlign='left';c.fillText((e.d+half).toFixed(2),6,ZH-8);c.textAlign='right';c.fillText((e.d-half).toFixed(2),ZW-6,ZH-8);
+  c.fillStyle=e.col;c.font=`700 13px ${FONT}`;c.textAlign='left';
+  c.fillText(e.tms?'TMS · singlet':`${e.name} · ${hires?SPLIT[e.n]:'one peak'} · δ ${e.d.toFixed(2)}`,8,18);
+  const cx=zx(d);if(cx>4&&cx<ZW-4){c.strokeStyle='rgba(61,124,132,0.8)';c.lineWidth=1.5;c.beginPath();c.moveTo(cx,24);c.lineTo(cx,base);c.stroke();}
+  const cap=document.getElementById('zoomCap');
+  if(e.tms)cap.textContent='12 equivalent H in Si(CH₃)₄ give one sharp reference peak at δ 0.';
+  else if(!hires)cap.textContent='Low resolution: each environment shows as one peak. Switch to high resolution to see splitting.';
+  else if(e.n===0)cap.textContent=e.type==='OH'||e.type==='COOH'?'O–H proton: no coupling shown, so a singlet.':'No H on the neighbouring carbon: n = 0, so 0 + 1 = 1 peak.';
+  else cap.textContent=`${e.n} H on neighbouring carbon${e.n>1?'s':''}: n + 1 = ${e.n+1} peaks, intensity ratio ${[...Array(e.n+1)].map((_,k)=>binom(e.n,k)).join(':')}.`;
+}
+
+// ---------- UI ----------
+const $=id=>document.getElementById(id);
+const chips=$('chips');
+COMPOUNDS.forEach((m,i)=>{const b=document.createElement('button');b.className='chip';b.innerHTML=`<small>${m.formula}</small>${m.name}`;b.onclick=()=>selectCompound(i);chips.appendChild(b);});
+function markChips(){[...chips.children].forEach((b,k)=>b.setAttribute('aria-pressed',k===ci));}
+function selectCompound(i){ci=i;markChips();d=D0();revealed=D0();buildCompound();setPlay();}
+function buildTable(){
+  const m=M(),rows=$('rows');rows.innerHTML='';
+  [...m.envs,TMS].forEach((e,i)=>{const b=document.createElement('button');b.className='row';b.dataset.i=i;
+    const ty=e.tms?{t:'reference',r:[0,0]}:TYPES[e.type];
+    b.innerHTML=`<span class="sw" style="background:${e.col}"></span><span><b>${e.name}</b> · ${e.tms?'12 H':e.h.length+' H'} · ${e.tms||e.type==='OH'||e.type==='COOH'?'singlet':SPLIT[e.n]}</span><span class="p">δ ${e.d.toFixed(2)}</span>`+
+      `<span class="r">${e.tms?'Si(CH₃)₄, defined as δ 0':ty.t+'  '+ty.r[0].toFixed(1)+'–'+ty.r[1].toFixed(1)}</span>`;
+    b.onclick=()=>jump(e.d);rows.appendChild(b);});
+  $('tblTitle').textContent='Proton environments in '+m.name;$('note').textContent=m.note;
+}
+function jump(v){d=Math.max(D1,Math.min(D0(),v));revealed=Math.min(revealed,d);running=false;setPlay();}
+function setPlay(){$('play').textContent=running?'Pause':revealed<=D1+0.01?'Sweep again':d<D0()-0.01?'Resume sweep':'Start sweep';}
+$('play').onclick=()=>{if(running)running=false;else{if(revealed<=D1+0.01||d<=D1+0.01){d=D0();revealed=D0();}running=true;}setPlay();};
+$('reset').onclick=()=>{running=false;d=D0();revealed=D0();setPlay();};
+$('full').onclick=()=>{running=false;revealed=D1;setPlay();};
+$('speed').oninput=e=>{speed=+e.target.value;$('speedOut').textContent=speed.toFixed(2)+' ppm/s';};
+$('integ').onchange=e=>showInteg=e.target.checked;
+$('ranges').onchange=e=>showRanges=e.target.checked;
+function setRes(h){hires=h;$('hiRes').setAttribute('aria-pressed',h);$('loRes').setAttribute('aria-pressed',!h);buildCompound();}
+$('hiRes').onclick=()=>setRes(true);$('loRes').onclick=()=>setRes(false);
+
+let dragging=false;
+const sx=e=>{const r=spec.getBoundingClientRect();return (e.clientX-r.left)*GW/r.width;};
+spec.addEventListener('pointerdown',e=>{dragging=true;spec.setPointerCapture(e.pointerId);jump(dOf(sx(e)));});
+spec.addEventListener('pointermove',e=>{if(dragging)jump(dOf(sx(e)));});
+spec.addEventListener('pointerup',()=>dragging=false);
+bench.addEventListener('click',e=>{if(!L)return;const r=bench.getBoundingClientRect(),x=(e.clientX-r.left)*AW/r.width,y=(e.clientY-r.top)*AH/r.height,m=M();
+  let best=-1,bd=18;m.atoms.forEach((a,i)=>{const p=P(i),dd=Math.hypot(x-p[0],y-p[1]);if(dd<bd){bd=dd;best=i;}});
+  if(best<0)return;const ev=m.envOf[best];
+  if(ev>=0)jump(m.envs[ev].d);else{statusHold=performance.now()+2500;$('status').innerHTML=`<b>${m.atoms[best][0]} atom.</b> Proton NMR only detects ¹H nuclei; click an H atom.`;}});
+document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();const st=e.shiftKey?0.5:0.02;jump(d+(e.key==='ArrowLeft'?st:-st));}});
+
+function updateUI(){
+  const m=M(),f=F0*(1+d*1e-6),E=H*f;
+  $('dl').textContent=d.toFixed(2);
+  $('fq').textContent=`100 MHz ${d>=0?'+':'−'} ${Math.abs(Math.round(d*100))} Hz`;
+  $('en').textContent=(E/1e-26).toFixed(4)+' × 10⁻²⁶ J';
+  const ws=envWeights(d),k=dominant(ws),st=$('status');
+  $('curSw').style.background=k>=0?model[k].e.col:RF;
+  let html,col;
+  if(k<0){html=`<b>No absorption.</b> No hydrogen in ${m.name.toLowerCase()} resonates at δ ${d.toFixed(2)}, so the radio waves pass through.`;col=LINE;}
+  else{const e=model[k].e;col=e.col;
+    html=e.tms?'<b>Absorbing: TMS reference.</b> Its 12 equivalent H are highly shielded and define δ 0.':
+      `<b>Absorbing: ${e.name} protons</b> (${TYPES[e.type].t}). Nuclei in this environment flip to the higher-energy spin state when the radio frequency matches.`;}
+  if(performance.now()>statusHold){st.innerHTML=html;st.style.borderLeftColor=col;}
+  [...$('rows').children].forEach((r,i)=>r.classList.toggle('on',ws[i]>0.15));
+}
+
+// ================= tabs =================
+let tab=1;
+function setTab(k){tab=k;[1,2,3].forEach(i=>{$('tab'+i).setAttribute('aria-selected',i===k);$('p'+i).hidden=i!==k;});chips.hidden=k!==1;}
+[1,2,3].forEach(i=>$('tab'+i).onclick=()=>setTab(i));
+
+// ================= spin flip =================
+const spinC=$('spinC'),splitC=$('splitC');let sctx,pctx;
+const SW=1000,SH=400,PW=1000,PH=470;
+function refit2(){sctx=fit(spinC,SW,SH);pctx=fit(splitC,PW,PH);}
+[spinC,splitC].forEach(c=>new ResizeObserver(refit2).observe(c));refit2();
+const SENV=[{name:'TMS',d:0,dens:1},{name:'CH₃ in an alkane',d:0.9,dens:0.85},{name:'CH₃ next to C=O',d:2.1,dens:0.66},
+  {name:'CH₂ next to O',d:3.6,dens:0.5},{name:'Aldehyde H (CHO)',d:9.8,dens:0.2}];
+const FIELDS=[{f:60,B:1.41,G:80},{f:100,B:2.35,G:120},{f:400,B:9.40,G:190}];
+const SP={e:2,fi:1,s:2.1,level:0,pos:0,tUp:0,ph:[],heat:[],auto:0,msg:'idle',flash:0};
+const NX=230,NY=205;
+const SOLV=[...Array(8)].map((_,i)=>{const a=i/8*6.283+0.3;return [NX+Math.cos(a)*150,NY+Math.sin(a)*120,0];});
+const sMatch=()=>Math.abs(SP.s-SENV[SP.e].d)<0.12;
+const gapPx=v=>FIELDS[SP.fi].G*(1+0.6*(v-5)/12);
+function fMHz(v){const f0=FIELDS[SP.fi].f;return f0+f0*v*1e-6;}
+const fmtF=v=>fMHz(v).toFixed(6).replace(/(\.\d{3})(\d{3})/,'$1 $2')+' MHz';
+SENV.forEach((e,i)=>{const b=document.createElement('button');b.className='chip';b.innerHTML=`<small>δ ${e.d.toFixed(1)}</small>${e.name}`;
+  b.onclick=()=>{SP.e=i;SP.level=0;SP.pos=0;SP.tUp=0;SP.ph=[];SP.msg='idle';markSpin();};$('spinEnv').appendChild(b);});
+FIELDS.forEach((f,i)=>{const b=document.createElement('button');b.textContent=`${f.B.toFixed(2)} T (${f.f} MHz)`;b.onclick=()=>{SP.fi=i;markSpin();};$('spinB').appendChild(b);});
+function markSpin(){[...$('spinEnv').children].forEach((b,k)=>b.setAttribute('aria-pressed',k===SP.e));[...$('spinB').children].forEach((b,k)=>b.setAttribute('aria-pressed',k===SP.fi));spinUI();}
+$('spinF').oninput=e=>{SP.s=+e.target.value;spinUI();};
+$('spinTune').onclick=()=>{SP.s=SENV[SP.e].d;$('spinF').value=SP.s;spinUI();};
+$('spinSend').onclick=()=>SP.ph.push({x:24,phase:0});
+$('spinAuto').onchange=e=>{SP.autoOn=e.target.checked;SP.auto=0;};
+function spinUI(){
+  const e=SENV[SP.e],need=fMHz(e.d)*1e6,sent=fMHz(SP.s)*1e6;
+  $('spinFOut').textContent=fmtF(SP.s);$('spinNeed').textContent=fmtF(e.d);
+  $('spinDE').textContent=(H*need/1e-26).toFixed(5)+' × 10⁻²⁶ J';$('spinHF').textContent=(H*sent/1e-26).toFixed(5)+' × 10⁻²⁶ J';
+  const M_={idle:['Press <b>Send photon</b>. It is absorbed only if its energy hf exactly equals the gap ΔE between the two spin states.',LINE],
+    abs:['<b>Absorbed.</b> hf matched ΔE, so the nucleus flipped from the lower-energy α state (aligned with B₀) to the higher-energy β state (opposed to B₀).','#15803d'],
+    hi:['<b>Not absorbed.</b> The photon has <b>more</b> energy than ΔE. Lower the frequency.','#c2410c'],
+    lo:['<b>Not absorbed.</b> The photon has <b>less</b> energy than ΔE. Raise the frequency.','#c2410c'],
+    busy:['<b>Not absorbed.</b> This nucleus is already in the higher β state. It must relax before it can absorb again.','#c2410c'],
+    relax:['<b>Relaxation.</b> The nucleus drops back to the α state and passes the energy to surrounding molecules as heat, not as a new photon. It can now absorb again.',ACC]};
+  const m_=M_[SP.msg];$('spinStatus').innerHTML=m_[0];$('spinStatus').style.borderLeftColor=m_[1];
+}
+function spinUpdate(dt){
+  if(SP.autoOn){SP.auto+=dt;if(SP.auto>1.1){SP.auto=0;SP.ph.push({x:24,phase:0});}}
+  for(const p of SP.ph){p.x+=330*dt;
+    if(p.res==null&&p.x>=NX-30){
+      if(sMatch()&&SP.level===0){SP.level=1;SP.tUp=2.2;SP.msg='abs';SP.flash=1;p.dead=true;}
+      else{p.res=1;SP.msg=SP.level===1&&sMatch()?'busy':SP.s>SENV[SP.e].d?'hi':'lo';}spinUI();}
+    if(p.x>440)p.dead=true;}
+  SP.ph=SP.ph.filter(p=>!p.dead);
+  if(SP.level===1){SP.tUp-=dt;if(SP.tUp<=0){SP.level=0;SP.msg='relax';spinUI();
+    SOLV.forEach((s,i)=>SP.heat.push({i,t:0}));}}
+  SP.pos+=((SP.level)-SP.pos)*Math.min(1,dt*7);
+  SP.heat.forEach(h=>h.t+=dt);SP.heat=SP.heat.filter(h=>h.t<1);SP.flash=Math.max(0,SP.flash-dt*2);
+}
+function drawSpin(){
+  const c=sctx,e=SENV[SP.e];c.clearRect(0,0,SW,SH);c.fillStyle=PANEL;c.fillRect(0,0,SW,SH);
+  // field panel
+  c.fillStyle='#f6f8f8';c.strokeStyle=LINE;c.lineWidth=1.5;rr(c,14,14,430,372,10);c.fill();c.stroke();
+  c.fillStyle='#3a56a3';rr(c,80,18,300,16,4);c.fill();c.fillStyle='#a33a3a';rr(c,80,366,300,16,4);c.fill();
+  c.fillStyle='#fff';c.font=`700 12px ${FONT}`;c.textAlign='center';c.fillText('S',230,30);c.fillText('N',230,378);
+  c.strokeStyle='rgba(58,86,163,0.12)';c.lineWidth=1;for(let x=96;x<380;x+=34){c.beginPath();c.moveTo(x,38);c.lineTo(x,362);c.stroke();}
+  arrow(c,40,200,100,true,'#3a56a3',2.5);c.fillStyle='#3a56a3';c.font=`700 15px ${FONT}`;c.textAlign='left';c.fillText('B₀',50,148);
+  // solvent molecules + heat
+  SOLV.forEach((s,i)=>{const h=SP.heat.find(q=>q.i===i);const g=h?Math.max(0,1-Math.abs(h.t-0.6)*2):0;
+    c.fillStyle=g>0?`rgba(194,65,12,${0.25+0.5*g})`:'#d9d6ce';c.beginPath();c.arc(s[0],s[1],9,0,7);c.fill();});
+  SP.heat.forEach(h=>{const s=SOLV[h.i],f=Math.min(1,h.t/0.6),x1=NX+(s[0]-NX)*0.2,y1=NY+(s[1]-NY)*0.2,x2=NX+(s[0]-NX)*(0.2+0.65*f),y2=NY+(s[1]-NY)*(0.2+0.65*f);
+    const dx=x2-x1,dy=y2-y1,L_=Math.hypot(dx,dy)||1,nx=-dy/L_,ny=dx/L_;c.strokeStyle=`rgba(194,65,12,${1-h.t})`;c.lineWidth=1.6;c.beginPath();
+    for(let k=0;k<=1;k+=0.05){const w_=3*Math.sin(k*L_/4);const px=x1+dx*k+nx*w_,py=y1+dy*k+ny*w_;k?c.lineTo(px,py):c.moveTo(px,py);}c.stroke();});
+  // electron cloud
+  const gr=c.createRadialGradient(NX,NY,10,NX,NY,92);gr.addColorStop(0,`rgba(29,95,196,${0.45*e.dens})`);gr.addColorStop(1,'rgba(29,95,196,0)');
+  c.fillStyle=gr;c.beginPath();c.arc(NX,NY,92,0,7);c.fill();
+  c.fillStyle='#1d5fc4';c.font=`12px ${FONT}`;c.textAlign='center';c.fillText(`electron density: ${e.dens>0.8?'high (well shielded)':e.dens>0.45?'medium':'low (deshielded)'}`,NX,350);
+  // photons
+  SP.ph.forEach(p=>{c.strokeStyle=RF;c.lineWidth=2;c.beginPath();for(let s_=0;s_<=48;s_+=1.5){const a=4.5*Math.sin(Math.PI*s_/48)*Math.sin(2*Math.PI*s_/30);s_?c.lineTo(p.x-s_,NY+a):c.moveTo(p.x,NY+a);}c.stroke();});
+  if(SP.flash>0){c.strokeStyle=`rgba(21,128,61,${SP.flash})`;c.lineWidth=3;c.beginPath();c.arc(NX,NY,26+(1-SP.flash)*40,0,7);c.stroke();}
+  // nucleus with rotating spin arrow
+  c.save();c.translate(NX,NY);c.rotate(SP.pos*Math.PI);
+  c.strokeStyle=INK;c.fillStyle=INK;c.lineWidth=3;c.beginPath();c.moveTo(0,40);c.lineTo(0,-40);c.stroke();
+  c.beginPath();c.moveTo(0,-50);c.lineTo(-8,-36);c.lineTo(8,-36);c.fill();c.restore();
+  c.fillStyle='#c2410c';c.beginPath();c.arc(NX,NY,20,0,7);c.fill();c.fillStyle='#fff';c.font=`700 15px ${FONT}`;c.textBaseline='middle';c.fillText('¹H',NX,NY+1);c.textBaseline='alphabetic';
+  c.fillStyle=INK;c.font=`13px ${FONT}`;c.fillText(SP.pos<0.5?'spin aligned with B₀ (α)':'spin opposed to B₀ (β)',NX,58);
+  c.fillStyle=MUTED;c.fillText(e.name,NX,76);
+  // energy diagram
+  const yL=345,gN=gapPx(e.d),yU=yL-gN,gP=gapPx(SP.s),ok=sMatch();
+  c.strokeStyle=MUTED;c.fillStyle=MUTED;c.lineWidth=1.5;c.beginPath();c.moveTo(490,yL+15);c.lineTo(490,40);c.stroke();c.beginPath();c.moveTo(490,32);c.lineTo(485,44);c.lineTo(495,44);c.fill();
+  c.save();c.translate(476,200);c.rotate(-Math.PI/2);c.font=`13px ${FONT}`;c.textAlign='center';c.fillText('Energy',0,0);c.restore();
+  c.fillStyle=INK;c.font=`600 14px ${FONT}`;c.textAlign='left';c.fillText('Nuclear spin energy levels in B₀',520,30);
+  c.strokeStyle=INK;c.lineWidth=3;[yL,yU].forEach(y=>{c.beginPath();c.moveTo(580,y);c.lineTo(760,y);c.stroke();});
+  c.fillStyle=INK;c.font=`600 13px ${FONT}`;c.fillText('β  spin opposed to B₀',772,yU+4);c.fillText('α  spin aligned with B₀',772,yL+4);
+  c.fillStyle=MUTED;c.font=`12px ${FONT}`;c.fillText('higher energy',772,yU+20);c.fillText('lower energy',772,yL+20);
+  // ΔE arrow
+  c.strokeStyle=INK;c.lineWidth=1.5;c.beginPath();c.moveTo(735,yL-3);c.lineTo(735,yU+3);c.stroke();
+  [[yU+3,1],[yL-3,-1]].forEach(([y,s_])=>{c.beginPath();c.moveTo(735,y);c.lineTo(731,y+8*s_);c.lineTo(739,y+8*s_);c.fillStyle=INK;c.fill();});
+  c.fillStyle=INK;c.font=`600 13px ${FONT}`;c.textAlign='right';c.fillText('ΔE',728,(yL+yU)/2+4);
+  // photon energy bar
+  const pc=ok?'#15803d':'#c2410c';c.strokeStyle=pc;c.fillStyle=pc;c.lineWidth=5;c.beginPath();c.moveTo(540,yL);c.lineTo(540,yL-gP+10);c.stroke();
+  c.beginPath();c.moveTo(540,yL-gP);c.lineTo(532,yL-gP+13);c.lineTo(548,yL-gP+13);c.fill();
+  c.setLineDash([4,4]);c.lineWidth=1.2;c.beginPath();c.moveTo(540,yL-gP);c.lineTo(580,yL-gP);c.stroke();c.setLineDash([]);
+  c.font=`600 12px ${FONT}`;c.textAlign='center';c.fillText('photon',540,Math.min(yL-gP-22,yL-26)+0);c.fillText('hf',540,Math.min(yL-gP-8,yL-12));
+  c.fillText(ok?'hf = ΔE':(SP.s>e.d?'hf > ΔE':'hf < ΔE'),540,yL+22);
+  // state marker
+  const my=yL+(yU-yL)*SP.pos;c.fillStyle='#c2410c';c.beginPath();c.arc(660,my-11,9,0,7);c.fill();
+  c.save();c.translate(660,my-11);c.rotate(SP.pos*Math.PI);c.strokeStyle='#fff';c.fillStyle='#fff';c.lineWidth=2;c.beginPath();c.moveTo(0,5);c.lineTo(0,-3);c.stroke();c.beginPath();c.moveTo(0,-7);c.lineTo(-3.5,-1);c.lineTo(3.5,-1);c.fill();c.restore();
+  if(SP.level===1){c.fillStyle=MUTED;c.font=`12px ${FONT}`;c.textAlign='center';c.fillText(`relaxing in ${Math.max(0,SP.tUp).toFixed(1)} s`,660,yU-26);}
+  c.fillStyle=MUTED;c.font=`11px ${FONT}`;c.textAlign='left';c.fillText('Not to scale. Differences between environments are exaggerated.',520,390);
+  c.fillText(`Stronger magnet → bigger ΔE → higher frequency (${FIELDS[SP.fi].f} MHz at ${FIELDS[SP.fi].B.toFixed(2)} T).`,520,375);
+}
+
+// ================= splitting =================
+const SPL={n:3,prog:3,playing:false,ci:0,ct:0,cycle:true};
+const CX=660,SPC=112,TY0=196,TDY=40,PB=448,HMAX=120;
+const xA=(a,L)=>CX-(a-L/2)*SPC;
+const EXAMPLE=['the CH₃ in propanone (no H on the next carbon)','the CH₃ in ethanal (next to the CHO hydrogen)','the CH₃ of an ethyl group (next to CH₂)','the CH₂ of an ethyl group (next to CH₃)'];
+for(let i=0;i<=3;i++){const b=document.createElement('button');b.textContent=i;b.onclick=()=>{SPL.n=i;SPL.prog=i;SPL.playing=false;SPL.ci=0;markSplit();};$('splitN').appendChild(b);}
+$('splitPlay').onclick=()=>{SPL.prog=0;SPL.playing=true;};
+$('splitCycle').onchange=e=>SPL.cycle=e.target.checked;
+function combosOf(n){const out=[];for(let m=0;m<2**n;m++){const bits=[...Array(n)].map((_,k)=>(m>>(n-1-k))&1?0:1);out.push(bits);}return out;}
+function markSplit(){[...$('splitN').children].forEach((b,k)=>b.setAttribute('aria-pressed',k===SPL.n));
+  const n=SPL.n,ratio=[...Array(n+1)].map((_,k)=>binom(n,k)).join(' : ');
+  $('splitText').innerHTML=n===0?`<b>n = 0.</b> No H on the neighbouring carbon, so nothing changes the field felt by Hₐ. One peak: a <b>singlet</b>. Example: ${EXAMPLE[0]}.`:
+   `<b>n = ${n}.</b> Each neighbouring H nucleus is either aligned with B₀ (adds a tiny amount to the field Hₐ feels) or opposed (subtracts a tiny amount). The two states are almost equally likely, so the ${2**n} arrangements are equally common across the billions of molecules in the sample. Arrangements with the same overall effect give the same peak, so there are n + 1 = ${n+1} peaks, a <b>${SPLIT[n]}</b>, in the ratio ${ratio}. Example: ${EXAMPLE[n]}. The gap between the lines is the coupling constant, J.`;}
+function splitUpdate(dt){
+  if(SPL.playing){SPL.prog+=dt*0.8;if(SPL.prog>=SPL.n){SPL.prog=SPL.n;SPL.playing=false;}}
+  if(SPL.cycle&&SPL.prog>=SPL.n&&SPL.n>0){SPL.ct+=dt;if(SPL.ct>1.1){SPL.ct=0;SPL.ci=(SPL.ci+1)%(2**SPL.n);}}
+}
+function drawSplit(){
+  const c=pctx,n=SPL.n,combos=combosOf(n),done=SPL.prog>=n-1e-6,cur=n>0&&done?combos[SPL.ci]:null;
+  c.clearRect(0,0,PW,PH);c.fillStyle=PANEL;c.fillRect(0,0,PW,PH);
+  // fragment
+  c.fillStyle='#f6f8f8';c.strokeStyle=LINE;c.lineWidth=1.5;rr(c,14,14,300,442,10);c.fill();c.stroke();
+  const C1=[100,250],C2=[220,250],Ha=[100,160],subs=[[220,160],[300,250],[220,340]];
+  const line=(p,q)=>{c.strokeStyle=INK;c.lineWidth=2.2;c.beginPath();c.moveTo(p[0],p[1]);c.lineTo(q[0],q[1]);c.stroke();};
+  line(C1,C2);line(C1,Ha);line(C1,[30,250]);line(C1,[100,340]);subs.forEach(s=>line(C2,s));
+  const lab=(p,t,col,sz=20)=>{c.fillStyle='#f6f8f8';c.beginPath();c.arc(p[0],p[1],15,0,7);c.fill();c.fillStyle=col;c.font=`700 ${sz}px ${FONT}`;c.textAlign='center';c.textBaseline='middle';c.fillText(t,p[0],p[1]+1);c.textBaseline='alphabetic';};
+  lab(C1,'C',INK);lab(C2,'C',INK);lab([30,250],'R',MUTED,17);lab([100,340],'R',MUTED,17);lab(Ha,'Hₐ','#c2410c');
+  subs.forEach((s,k)=>{if(k<n){lab(s,'H','#1d5fc4');const up=cur?cur[k]===1:true;arrow(c,s[0]+24,s[1],24,up,cur?'#1d5fc4':'rgba(29,95,196,0.35)',2.2);}else lab(s,'R',MUTED,17);});
+  arrow(c,40,110,60,true,'#3a56a3',2);c.fillStyle='#3a56a3';c.font=`700 13px ${FONT}`;c.textAlign='left';c.fillText('B₀',48,86);
+  c.fillStyle=INK;c.font=`600 14px ${FONT}`;c.fillText('Hₐ is the proton we observe',30,40);
+  c.fillStyle=MUTED;c.font=`13px ${FONT}`;c.fillText(`${n} H on the neighbouring carbon`,30,58);
+  if(cur){const a=cur.reduce((s,b)=>s+b,0),o=n-a,eff=a>o?'slightly larger':a<o?'slightly smaller':'unchanged';
+    c.fillStyle=INK;c.font=`13px ${FONT}`;c.fillText('In this molecule:',30,392);c.fillText(`${a} aligned, ${o} opposed`,30,410);c.fillText(`field at Hₐ is ${eff}`,30,428);}
+  // tree title
+  c.fillStyle=INK;c.font=`600 14px ${FONT}`;c.textAlign='left';c.fillText('Spin arrangements of the neighbouring H',340,30);
+  // tree
+  const Lf=Math.floor(SPL.prog+1e-6),fr=SPL.prog-Lf;
+  c.fillStyle=MUTED;c.font=`12px ${FONT}`;c.textAlign='right';c.fillText('Hₐ alone',CX-SPC*1.9,TY0+4);
+  for(let L=0;L<=Math.min(n,Lf);L++){for(let a=0;a<=L;a++){const x=xA(a,L),y=TY0+L*TDY;c.strokeStyle='#c2410c';c.lineWidth=2.5;c.beginPath();c.moveTo(x-14,y);c.lineTo(x+14,y);c.stroke();}
+    if(L>0){c.fillStyle=MUTED;c.font=`12px ${FONT}`;c.textAlign='right';c.fillText(`+ H ${L}`,CX-SPC*1.9,TY0+L*TDY+4);}
+    if(L<Lf){for(let a=0;a<=L;a++){[[a+1,'↑'],[a,'↓']].forEach(([a2])=>{c.strokeStyle='rgba(194,65,12,0.45)';c.lineWidth=1.3;c.beginPath();c.moveTo(xA(a,L),TY0+L*TDY+3);c.lineTo(xA(a2,L+1),TY0+(L+1)*TDY-3);c.stroke();});}}}
+  if(Lf<n&&fr>0){const L=Lf;for(let a=0;a<=L;a++)[a+1,a].forEach(a2=>{const x0=xA(a,L),y0=TY0+L*TDY,x1=xA(a2,L+1),y1=TY0+(L+1)*TDY;
+    const x=x0+(x1-x0)*fr,y=y0+(y1-y0)*fr;c.strokeStyle='rgba(194,65,12,0.45)';c.lineWidth=1.3;c.beginPath();c.moveTo(x0,y0+3);c.lineTo(x,y);c.stroke();});}
+  // combination boxes (when complete)
+  if(done&&n>0){for(let a=n;a>=0;a--){const list=combos.map((b,i)=>[b,i]).filter(([b])=>b.reduce((s,v)=>s+v,0)===a);const x=xA(a,n);
+    list.forEach(([b,i],j)=>{const y=46+j*30,w=Math.max(46,n*16+14),on=i===SPL.ci&&SPL.cycle;
+      c.fillStyle=on?'#dcebec':'#f3f2ee';c.strokeStyle=on?ACC:LINE;c.lineWidth=on?2:1;rr(c,x-w/2,y,w,24,5);c.fill();c.stroke();
+      b.forEach((v,k)=>arrow(c,x-(n-1)*8+k*16,y+12,14,v===1,'#1d5fc4',1.8));});}
+    c.fillStyle=MUTED;c.font=`12px ${FONT}`;c.textAlign='center';
+    const ly=46+binom(n,Math.floor(n/2))*30+14;c.fillText('adds to field',xA(n,n),ly);c.fillText('reduces field',xA(0,n),ly);}
+  // peaks
+  const Lp=Math.min(n,Lf);c.strokeStyle=LINE;c.lineWidth=1;c.beginPath();c.moveTo(340,PB);c.lineTo(980,PB);c.stroke();
+  const curA=cur?cur.reduce((s,v)=>s+v,0):-1;
+  for(let a=0;a<=Lp;a++){const x=xA(a,Lp),cnt=binom(Lp,a),h=HMAX*cnt/2**Lp,on=done&&a===curA&&SPL.cycle;
+    if(on){c.strokeStyle='rgba(14,95,102,0.25)';c.lineWidth=14;c.beginPath();c.moveTo(x,PB);c.lineTo(x,PB-h);c.stroke();}
+    c.strokeStyle='#c2410c';c.lineWidth=4;c.beginPath();c.moveTo(x,PB);c.lineTo(x,PB-h);c.stroke();
+    c.fillStyle=INK;c.font=`700 13px ${DATAF}`;c.textAlign='center';c.fillText(cnt,x,PB-h-6);}
+  c.fillStyle=INK;c.font=`600 14px ${FONT}`;c.textAlign='left';
+  c.fillText(SPLIT[Lp],340,PB-HMAX+20);if(Lp>0){c.font=`13px ${DATAF}`;c.fillText([...Array(Lp+1)].map((_,k)=>binom(Lp,k)).join(' : '),340,PB-HMAX+38);}
+  if(Lp>0){const y=PB+14;c.strokeStyle=MUTED;c.lineWidth=1;c.beginPath();c.moveTo(xA(1,Lp),y);c.lineTo(xA(0,Lp),y);c.stroke();
+    c.fillStyle=MUTED;c.font=`12px ${FONT}`;c.textAlign='center';c.fillText('J',(xA(1,Lp)+xA(0,Lp))/2,y+13);}
+  c.fillStyle=MUTED;c.font=`12px ${FONT}`;c.textAlign='right';c.fillText('← higher δ',CX-SPC*1.9+10,PB-6);c.textAlign='left';c.fillText('lower δ →',CX+SPC*1.9-10,PB-6);
+}
+splitC.addEventListener('click',e=>{if(SPL.n===0||SPL.prog<SPL.n)return;const r=splitC.getBoundingClientRect(),x=(e.clientX-r.left)*PW/r.width;
+  let best=0,bd=1e9;for(let a=0;a<=SPL.n;a++){const d_=Math.abs(xA(a,SPL.n)-x);if(d_<bd){bd=d_;best=a;}}
+  const cs=combosOf(SPL.n);const idx=cs.map((b,i)=>[b,i]).filter(([b])=>b.reduce((s,v)=>s+v,0)===best).map(q=>q[1]);
+  const nx=idx.find(i=>i>SPL.ci)??idx[0];SPL.ci=nx;SPL.ct=0;});
+markSpin();markSplit();
+
+let last=performance.now(),lastUI=0;
+function frame(now){const dt=Math.min(0.05,(now-last)/1000);last=now;T+=dt;
+  if(tab===1){update(dt);drawBench();drawSpec();if(now-lastUI>90){updateUI();drawZoom();lastUI=now;}}
+  else if(tab===2){spinUpdate(dt);drawSpin();}
+  else{splitUpdate(dt);drawSplit();}
+  requestAnimationFrame(frame);}
+markChips();buildCompound();setPlay();requestAnimationFrame(frame);
+})();
+</script>
+
+</body></html>

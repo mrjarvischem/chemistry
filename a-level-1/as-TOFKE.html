@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>[hidden]{display:none!important}body{margin:0}</style>
+<title>TOF KE Walkthrough</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: header with a fixed formula strip, sticky tab bar, one reading column (max 1120px).
+   Each tab = one section of the worksheet. Single light theme by choice (matches the rest of the simulation set). */
+:root{
+  --bg:#f6efe3; --panel:#fffbf4; --panel2:#f0e5d2; --ink:#3a2817; --muted:#7a634e; --line:#e0cfb6;
+  --accent:#8c4a1c; --accent-soft:#f5e1cb; --found:#1d6b67; --found-soft:#dcefea;
+  --good:#2a7a45; --good-soft:#e2f2e6; --bad:#a8382b; --bad-soft:#f9e3de; --warn:#94650d; --warn-soft:#fbefd6;
+  --elec:#2b62a8;
+  --i1:#1d6b67; --i2:#b4531c; --i3:#6b4c9a; --i4:#5c7a18;
+  --f-ui:"Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+  --f-math:"Cambria Math", Cambria, "STIX Two Math", "Times New Roman", serif;
+  --f-num:ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+  color-scheme: light;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:17px;line-height:1.5}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--panel)}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top{background:var(--panel);border-bottom:1px solid var(--line)}
+header.top .wrap{padding-block:18px 14px;display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0}
+h1{font-size:clamp(22px,3.2vw,30px);margin:2px 0 0;line-height:1.15;text-wrap:balance}
+.formulas{display:flex;flex-wrap:wrap;gap:8px}
+.formulas span{font-family:var(--f-math);font-size:18px;background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:3px 10px;white-space:nowrap}
+.mode{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted)}
+.seg{display:inline-flex;border:1px solid var(--accent);border-radius:8px;overflow:hidden}
+.seg button{border:0;background:var(--panel);color:var(--accent);font:inherit;font-size:14px;padding:6px 12px;cursor:pointer}
+.seg button.on{background:var(--accent);color:var(--panel)}
+nav.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+nav.tabs .wrap{display:flex;gap:4px;overflow-x:auto;padding-block:8px;scrollbar-width:thin}
+nav.tabs button{flex:0 0 auto;font:inherit;font-size:15px;border:1px solid transparent;background:transparent;color:var(--muted);padding:6px 12px;border-radius:8px;cursor:pointer;display:flex;gap:6px;align-items:center}
+nav.tabs button:hover{color:var(--ink);background:var(--panel2)}
+nav.tabs button.on{background:var(--panel);border-color:var(--line);color:var(--ink);font-weight:600}
+.badge{font-size:12px;font-variant-numeric:tabular-nums;background:var(--panel2);border-radius:10px;padding:0 7px;color:var(--muted);font-weight:500}
+.badge.full{background:var(--good-soft);color:var(--good)}
+main .wrap{padding-block:22px 60px;display:flex;flex-direction:column;gap:20px}
+section.tab{display:flex;flex-direction:column;gap:20px}
+h2{font-size:24px;margin:0;text-wrap:balance}
+h3{font-size:18px;margin:0 0 8px}
+p{margin:0}
+.lead{max-width:70ch;color:var(--ink)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 20px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px}
+.math{font-family:var(--f-math);font-size:1.08em}
+i.v{font-family:var(--f-math);font-style:italic}
+sup,sub{line-height:0}
+.btn{font:inherit;font-size:15px;border:1px solid var(--accent);background:var(--panel);color:var(--accent);border-radius:8px;padding:7px 14px;cursor:pointer}
+.btn:hover{background:var(--accent-soft)}
+.btn.primary{background:var(--accent);color:var(--panel)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.ghost{border-color:var(--line);color:var(--muted)}
+.btn:disabled{opacity:.45;cursor:default}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.note{font-size:14px;color:var(--muted)}
+
+/* strategy box */
+.strategy{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:20px;align-items:center}
+@media (max-width:820px){.strategy{grid-template-columns:1fr}}
+.strategy ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:4px}
+
+/* route map */
+.route svg{width:100%;height:auto;display:block}
+.route .edge{stroke:var(--line);stroke-width:3}
+.route .edge.lit{stroke:var(--found);stroke-width:4}
+.route .hub rect{fill:var(--panel);stroke:var(--line);stroke-width:2}
+.route .hub.lit rect{fill:var(--found-soft);stroke:var(--found)}
+.route .hub text{font-family:var(--f-math);font-size:17px;fill:var(--muted)}
+.route .hub.lit text{fill:var(--ink)}
+.route .node circle{fill:var(--panel);stroke:var(--line);stroke-width:2.5}
+.route .node .sym{font-family:var(--f-math);font-style:italic;font-size:22px;fill:var(--muted)}
+.route .node .unit{font-size:12.5px;fill:var(--muted)}
+.route .node.known circle{fill:var(--panel2);stroke:var(--ink)}
+.route .node.known .sym{fill:var(--ink)}
+.route .node.found circle{fill:var(--found-soft);stroke:var(--found);stroke-width:3}
+.route .node.found .sym{fill:var(--found)}
+.route .node.target circle{stroke:var(--accent);stroke-dasharray:5 4;stroke-width:3}
+.route .node.active circle{stroke:var(--accent);stroke-width:4;stroke-dasharray:none}
+.route .pill rect{fill:var(--panel2)}
+.route .pill text{font-size:12px;fill:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:14px;height:14px;border-radius:50%;display:inline-block;border:2px solid}
+.lg-known{background:var(--panel2);border-color:var(--ink)!important}
+.lg-found{background:var(--found-soft);border-color:var(--found)!important}
+.lg-target{border-color:var(--accent)!important;border-style:dashed!important}
+
+/* question cards */
+.q{background:var(--panel);border:1px solid var(--line);border-radius:12px;min-width:0}
+.q > .qh{all:unset;box-sizing:border-box;width:100%;display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:start;padding:16px 20px;cursor:pointer}
+.q > .qh:focus-visible{outline:3px solid var(--accent);outline-offset:-3px;border-radius:12px}
+.qnum{font-weight:700;font-size:18px;min-width:30px;height:30px;border-radius:50%;background:var(--panel2);display:grid;place-items:center;font-variant-numeric:tabular-nums}
+.q.complete .qnum{background:var(--good-soft);color:var(--good)}
+.qtext{max-width:75ch}
+.marks{font-size:13px;color:var(--muted);white-space:nowrap}
+.tag-we{display:inline-block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;background:var(--accent-soft);color:var(--accent);border-radius:4px;padding:1px 6px;margin-right:6px;vertical-align:2px}
+.qb{padding:0 20px 20px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.9fr);gap:20px;align-items:start}
+.qb.single{grid-template-columns:minmax(0,1fr)}
+@media (max-width:860px){.qb{grid-template-columns:1fr}.qb .route{order:-1}}
+.given{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:14px;color:var(--muted)}
+.chip{font-family:var(--f-math);font-size:16px;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:1px 8px}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.step{border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:10px;background:var(--panel)}
+.step.locked{color:var(--muted);background:transparent;border-style:dashed;padding:8px 14px}
+.step.active{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.step.done{background:var(--found-soft);border-color:transparent}
+.sh{display:flex;gap:10px;align-items:baseline;font-weight:600}
+.sn{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;white-space:nowrap}
+.step.done .sn{color:var(--found)}
+.work{font-family:var(--f-math);font-size:18px;overflow-x:auto}
+.shown{font-size:12px;color:var(--warn);font-weight:500}
+.final{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;background:var(--good-soft);border-radius:10px;padding:12px 14px}
+.final .lbl{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--good);font-weight:700}
+.final .ans{font-family:var(--f-math);font-size:20px}
+
+/* MCQ */
+.mcq{display:flex;flex-direction:column;gap:8px}
+.mq{font-weight:500}
+.opts{display:grid;gap:6px}
+.opt{display:flex;gap:10px;align-items:flex-start;text-align:left;font:inherit;font-size:16px;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 12px;cursor:pointer}
+.opt:hover:not(:disabled){border-color:var(--accent);background:var(--accent-soft)}
+.opt .ol{font-weight:700;color:var(--muted);min-width:16px}
+.opt.sel{border-color:var(--accent);background:var(--accent-soft)}
+.opt.right{border-color:var(--good);background:var(--good-soft)}
+.opt.right .ol{color:var(--good)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft);text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--bad) 50%,transparent)}
+.opt.missed{border-color:var(--good);border-style:dashed}
+.opt:disabled{cursor:default}
+.mhint{font-size:13px;color:var(--muted)}
+.fb{font-size:15px;border-radius:8px;padding:8px 12px}
+.fb:empty{display:none}
+.fb.good{background:var(--good-soft);color:#1e5732}
+.fb.bad{background:var(--bad-soft);color:#7d2419}
+.fb.warn{background:var(--warn-soft);color:#6b4a08}
+.fb .ms{display:block;margin-top:6px;color:var(--ink)}
+
+/* number entry */
+.calc{display:flex;flex-direction:column;gap:8px}
+.entry{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-family:var(--f-math);font-size:19px}
+.entry input{font-family:var(--f-num);font-size:17px;border:1px solid var(--muted);border-radius:6px;padding:5px 8px;background:#fff;color:var(--ink)}
+.entry .mant{width:7.5em}
+.entry .expo{width:3.6em;font-size:14px;padding:3px 6px;vertical-align:10px}
+.entry .times{white-space:nowrap}
+.entry .unit{color:var(--muted)}
+
+/* machine */
+.canvas-wrap{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--panel)}
+canvas{display:block;width:100%;height:auto}
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px 20px;align-items:end}
+.ctl{display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--muted)}
+.ctl b{color:var(--ink);font-variant-numeric:tabular-nums;font-weight:600}
+.ctl select,.ctl input[type=number]{font:inherit;font-size:16px;padding:5px 8px;border-radius:6px;border:1px solid var(--line);background:#fff;color:var(--ink)}
+input[type=range]{accent-color:var(--accent);width:100%}
+.caption{min-height:3.2em;background:var(--panel2);border-radius:8px;padding:10px 14px}
+.tbl-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:15px}
+th,td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-weight:600;color:var(--muted);font-size:13px}
+.sw{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+
+/* derivation stepper */
+.deriv{display:flex;flex-direction:column;gap:6px;font-family:var(--f-math);font-size:21px}
+.dl{display:flex;flex-wrap:wrap;gap:4px 16px;align-items:baseline}
+.dl .op{font-family:var(--f-ui);font-size:13px;color:var(--accent);background:var(--accent-soft);border-radius:4px;padding:1px 8px}
+.dl.new{animation:slidein .45s ease-out}
+.dl.old{color:var(--muted)}
+.dl.last{font-weight:600}
+@keyframes slidein{from{opacity:.15;transform:translateY(-8px)}to{opacity:1;transform:none}}
+
+/* mass chain */
+.chain{display:flex;flex-wrap:wrap;align-items:stretch;gap:8px}
+.cbox{border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:150px;background:var(--panel);opacity:.35;transition:opacity .3s,background .3s,border-color .3s}
+.cbox.on{opacity:1;background:var(--found-soft);border-color:var(--found)}
+.cbox .cv{font-family:var(--f-math);font-size:19px}
+.cbox .cd{font-size:13px;color:var(--muted)}
+.cop{display:flex;flex-direction:column;justify-content:center;align-items:center;min-width:110px;opacity:.35;transition:opacity .3s}
+.cop.on{opacity:1}
+.cop .ct{font-family:var(--f-math);font-size:16px;color:var(--accent)}
+.cop .track{position:relative;width:100%;height:4px;background:var(--line);border-radius:2px;margin-top:4px}
+.cop .track::after{content:"";position:absolute;right:-2px;top:-5px;border:7px solid transparent;border-left-color:var(--line);border-right:0}
+.cop.on .track{background:var(--accent)}
+.cop.on .track::after{border-left-color:var(--accent)}
+.cop .dot{position:absolute;top:-4px;left:0;width:12px;height:12px;border-radius:50%;background:var(--accent);opacity:0}
+.cop.run .dot{animation:run .65s ease-in forwards}
+@keyframes run{0%{left:0;opacity:1}100%{left:calc(100% - 12px);opacity:1}}
+@media (max-width:620px){.chain{flex-direction:column}.cop{min-width:0;flex-direction:row;gap:10px;justify-content:flex-start;padding-left:20px}.cop .track{width:60px}}
+
+.tip{border-left:4px solid var(--accent);background:var(--accent-soft);border-radius:0 8px 8px 0;padding:10px 14px}
+.parts{display:flex;flex-direction:column;gap:14px;padding:0 20px 20px}
+.part{border-top:1px solid var(--line);padding-top:14px;display:flex;flex-direction:column;gap:10px}
+.part > .pt{display:flex;gap:10px}
+.part > .pt .pl{font-weight:700}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="top"><div class="wrap">
+  <div>
+    <p class="eyebrow">AQA A-level Chemistry · Atomic structure</p>
+    <h1>Time of flight mass spectrometry: KE calculations</h1>
+  </div>
+  <div class="formulas" aria-label="Key equations">
+    <span>KE = ½<i>mv</i>²</span><span><i>v</i> = <i>d</i> ÷ <i>t</i></span><span><i>L</i> = 6.022 × 10<sup>23</sup> mol<sup>−1</sup></span>
+  </div>
+  <div class="mode"><span>Support:</span>
+    <div class="seg" role="group" aria-label="Support level">
+      <button id="modeG" class="on" type="button">Guided</button><button id="modeI" type="button">Independent</button>
+    </div>
+  </div>
+</div></header>
+
+<nav class="tabs" aria-label="Sections"><div class="wrap" id="tabbar"></div></nav>
+
+<main><div class="wrap" id="main">
+
+<!-- ============ THE MACHINE ============ -->
+<section class="tab" id="tab-machine" data-tab="machine">
+  <div>
+    <h2>What happens inside the spectrometer</h2>
+    <p class="lead">Every calculation on the sheet comes from two facts. In the acceleration area every 1+ ion gets the <b>same kinetic energy</b>. In the flight tube there is no field, so each ion keeps a <b>constant velocity</b>. Fire a bunch of ions and watch the lighter ones arrive first.</p>
+  </div>
+  <div class="card">
+    <div class="canvas-wrap"><canvas id="mc" width="1000" height="380" aria-label="Animation of a time of flight mass spectrometer"></canvas></div>
+    <div class="caption" id="mcap" aria-live="polite"></div>
+    <div class="row">
+      <button class="btn primary" id="mFire" type="button">Fire a bunch of ions</button>
+      <button class="btn" id="mPause" type="button" disabled>Pause</button>
+      <div class="seg" role="group" aria-label="Animation speed"><button type="button" data-sp="0.5">Slow</button><button type="button" data-sp="1" class="on">Normal</button><button type="button" data-sp="2">Fast</button></div>
+      <label class="note" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="mShow" checked> Show the numbers</label>
+    </div>
+    <div class="controls">
+      <label class="ctl">Sample
+        <select id="mPreset">
+          <option value="Ne">Neon (²⁰Ne, ²²Ne)</option><option value="Mg">Magnesium (²⁴Mg, ²⁵Mg, ²⁶Mg)</option>
+          <option value="Cl">Chlorine (³⁵Cl, ³⁷Cl)</option><option value="Cu" selected>Copper (⁶³Cu, ⁶⁵Cu)</option>
+          <option value="Ga">Gallium (⁶⁹Ga, ⁷¹Ga)</option><option value="Br">Bromine (⁷⁹Br, ⁸¹Br)</option>
+          <option value="Ag">Silver (¹⁰⁷Ag, ¹⁰⁹Ag)</option><option value="mix">Gas mixture (N₂, O₂, Ar, CO₂)</option>
+        </select></label>
+      <label class="ctl">Kinetic energy given to each ion: <b id="mKEv"></b><input type="range" id="mKE" min="0.5" max="5" step="0.05" value="1"></label>
+      <label class="ctl">Flight tube length, <i class="v">d</i>: <b id="mDv"></b><input type="range" id="mD" min="0.5" max="1.5" step="0.05" value="1"></label>
+    </div>
+    <div class="tbl-wrap"><table id="mTable"></table></div>
+    <p class="note" id="mNote"></p>
+  </div>
+  <div class="card"><h3>Check your understanding</h3><p class="note">Use the animation and sliders to help you.</p><div class="grid2" id="machineQs"></div></div>
+</section>
+
+<!-- ============ TOOLKIT ============ -->
+<section class="tab" id="tab-toolkit" data-tab="toolkit" hidden>
+  <div>
+    <h2>The toolkit</h2>
+    <p class="lead">There are only two equations. Velocity, <i class="v">v</i>, appears in both, so it is the bridge between them. Every question is a route across this map.</p>
+  </div>
+  <div class="card">
+    <h3>The route map</h3>
+    <div class="row" id="routeBtns"></div>
+    <div class="route" id="routeBig"></div>
+    <div class="legend"><span><i class="lg-known"></i>given in the question</span><span><i class="lg-found"></i>you calculate it</span><span><i class="lg-target"></i>what the question asks for</span></div>
+    <p id="routeText" class="lead"></p>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <h3>Rearranging KE = ½<i class="v">mv</i>²</h3>
+      <div class="seg" role="group" aria-label="Subject of the equation" id="rearrSeg"><button type="button" data-r="v" class="on">Make <i>v</i> the subject</button><button type="button" data-r="m">Make <i>m</i> the subject</button></div>
+      <div class="deriv" id="rearr" aria-live="polite"></div>
+      <div class="row"><button class="btn primary" id="rNext" type="button">Next step</button><button class="btn ghost" id="rBack" type="button">Back</button></div>
+    </div>
+    <div class="card">
+      <h3>Units: the trap in every question</h3>
+      <p>KE is in joules, so mass <b>must be in kg</b> and velocity in m s<sup>−1</sup>. A mass number tells you the mass of a <b>mole</b> of ions in <b>grams</b>. You need two conversions to get the mass of <b>one</b> ion in kg.</p>
+      <div class="tip">The electron knocked off during ionisation has a tiny mass. So the mass of one mole of X<sup>+</sup> ions in g is the same number as the mass number.</div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>From mass number to the mass of one ion (and back)</h3>
+    <div class="row">
+      <label class="ctl" style="flex-direction:row;align-items:center;gap:8px">Mass number <input type="number" id="chainA" value="35" min="1" max="300" style="width:5.5em"></label>
+      <div class="seg" role="group" aria-label="Direction" id="chainSeg"><button type="button" data-d="f" class="on">Mass number → one ion (Sections B, F)</button><button type="button" data-d="r">One ion → mass number (Section D)</button></div>
+      <button class="btn primary" id="chainGo" type="button">Run</button>
+    </div>
+    <div class="chain" id="chain"></div>
+  </div>
+  <div class="card"><h3>Quick checks</h3><div class="grid2" id="toolQs"></div></div>
+</section>
+
+<section class="tab" id="tab-a" data-tab="a" hidden></section>
+<section class="tab" id="tab-b" data-tab="b" hidden></section>
+<section class="tab" id="tab-c" data-tab="c" hidden></section>
+<section class="tab" id="tab-d" data-tab="d" hidden></section>
+<section class="tab" id="tab-e" data-tab="e" hidden></section>
+<section class="tab" id="tab-f" data-tab="f" hidden></section>
+
+</div></main>
+
+<script>
+(()=>{
+"use strict";
+const L = 6.022e23;
+let guided = true;
+
+/* ---------- formatting ---------- */
+const SUPD = {'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','-':'⁻','+':'⁺'};
+const supTxt = s => String(s).split('').map(ch=>SUPD[ch]||ch).join('');
+function parts(x,sf){ let e=Math.floor(Math.log10(Math.abs(x))); let ms=(x/Math.pow(10,e)).toPrecision(sf);
+  if(Math.abs(parseFloat(ms))>=10){e+=1; ms=(x/Math.pow(10,e)).toPrecision(sf);} return [ms,e]; }
+function fmt(x,sf=3){
+  if(!isFinite(x)) return '—';
+  const ax=Math.abs(x);
+  if(ax>=0.1 && ax<1000) return Number(x).toPrecision(sf);
+  const [ms,e]=parts(x,sf);
+  return `${ms} × 10<sup>${e<0?'−'+(-e):e}</sup>`;
+}
+function fmtT(x,sf=3){ // plain text for canvas
+  const ax=Math.abs(x);
+  if(ax>=0.1 && ax<1000) return Number(x).toPrecision(sf);
+  const [ms,e]=parts(x,sf); return `${ms} × 10${supTxt(e)}`;
+}
+const iso=(A,el,ch='+')=>`<sup>${A}</sup>${el}<sup>${ch}</sup>`;
+const LH = '6.022 × 10<sup>23</sup>';
+
+/* ---------- seeded shuffle ---------- */
+function seeded(str){let h=2166136261;for(const ch of str){h^=ch.charCodeAt(0);h=Math.imul(h,16777619);}
+  return ()=>{h=Math.imul(h^(h>>>15),2246822507);h=Math.imul(h^(h>>>13),3266489909);h^=h>>>16;return (h>>>0)/4294967296;};}
+function order(n,key){const r=seeded(key);const a=[...Array(n).keys()];for(let i=n-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+/* ---------- MCQ engine ---------- */
+const MCQ = {};
+function ensureMCQ(id,spec,onOk,rerender){
+  if(!MCQ[id]) MCQ[id]={spec,onOk,rerender,st:{wrong:new Set(),sel:new Set(),ok:false,last:null,checked:false}};
+  else { MCQ[id].spec=spec; MCQ[id].onOk=onOk; MCQ[id].rerender=rerender; }
+  return MCQ[id];
+}
+function mcqHTML(id){
+  const {spec,st}=MCQ[id]; const ord=order(spec.opts.length,id+'x');
+  let h=`<div class="mcq" data-mcq="${id}"><p class="mq">${spec.q}</p>`;
+  if(spec.multi) h+=`<p class="mhint">Choose ${spec.multi}.</p>`;
+  h+='<div class="opts">';
+  ord.forEach((i,k)=>{
+    const ok=spec.opts[i][1]; let cls='opt';
+    if(spec.multi){
+      if(st.sel.has(i)) cls+=' sel';
+      if(st.checked){ if(ok&&st.sel.has(i)) cls+=' right'; else if(ok&&st.ok) cls+=' right'; else if(!ok&&st.sel.has(i)) cls+=' wrong'; }
+    } else { if(st.wrong.has(i)) cls+=' wrong'; if(st.ok&&ok) cls+=' right'; }
+    const dis = st.ok || (!spec.multi && st.wrong.has(i));
+    h+=`<button type="button" class="${cls}" data-act="opt" data-id="${id}" data-i="${i}" ${dis?'disabled':''}><span class="ol">${'ABCDEF'[k]}</span><span>${spec.opts[i][0]}</span></button>`;
+  });
+  h+='</div>';
+  if(spec.multi && !st.ok) h+=`<div class="row"><button type="button" class="btn" data-act="mcheck" data-id="${id}" ${st.sel.size!==spec.multi?'disabled':''}>Check</button></div>`;
+  if(!spec.multi && st.last!=null){
+    const [,ok,why]=spec.opts[st.last];
+    h+=`<div class="fb ${ok?'good':'bad'}"><b>${ok?'Correct.':'Not quite.'}</b> ${why||''}${ok&&spec.ms?`<span class="ms"><b>Mark scheme:</b> ${spec.ms}</span>`:''}</div>`;
+  }
+  if(spec.multi && st.checked){
+    if(st.ok) h+=`<div class="fb good"><b>Correct.</b> ${spec.okWhy||''}${spec.ms?`<span class="ms"><b>Mark scheme:</b> ${spec.ms}</span>`:''}</div>`;
+    else { const bad=[...st.sel].filter(i=>!spec.opts[i][1]);
+      h+=`<div class="fb bad"><b>Not quite.</b> ${bad.map(i=>spec.opts[i][2]).join(' ')} Change your choice and check again.</div>`; }
+  }
+  return h+'</div>';
+}
+function mcqClick(id,i){
+  const m=MCQ[id]; if(!m||m.st.ok) return; const {spec,st}=m;
+  if(spec.multi){ if(st.checked){st.checked=false;} if(st.sel.has(i)) st.sel.delete(i); else if(st.sel.size<spec.multi) st.sel.add(i); }
+  else { st.last=i; if(spec.opts[i][1]){ st.ok=true; m.onOk&&m.onOk(); } else st.wrong.add(i); }
+  m.rerender();
+}
+function mcqCheck(id){
+  const m=MCQ[id]; const {spec,st}=m; st.checked=true;
+  const allOk=[...st.sel].every(i=>spec.opts[i][1]) && st.sel.size===spec.multi;
+  if(allOk){ st.ok=true; m.onOk&&m.onOk(); }
+  m.rerender();
+}
+function standaloneMCQ(container,id,spec){
+  const box=document.createElement('div'); container.appendChild(box);
+  const render=()=>{ box.innerHTML=mcqHTML(id); };
+  ensureMCQ(id,spec,null,render); render();
+}
+
+/* ---------- step templates ---------- */
+const optV_KE = c => c.KE!=null ? 'You don\'t know the mass yet, so you can\'t use this one.' : 'You aren\'t given the kinetic energy or the mass here.';
+const T = {
+  convert_cm:{ title:'Convert the tube length into metres', key:'d', nodes:['d'], unit:'m', lab:'<i>d</i>',
+    mcq:c=>({q:`The tube length is ${fmt(c.dcm)} cm. What must you do before using it?`,opts:[
+      ['Divide by 100 to change cm into m',1,'Velocity is in m s<sup>−1</sup>, so the length must be in metres. 100 cm = 1 m.'],
+      ['Multiply by 100',0,'A metre is bigger than a centimetre, so the number of metres must be <i>smaller</i>.'],
+      ['Divide by 1000',0,'There are 100 cm in a metre, not 1000.'],
+      ['Nothing, cm is fine',0,'You need SI units: m, kg, s and J.']]}),
+    hint:'<i>d</i> (m) = <i>d</i> (cm) ÷ 100',
+    errs:c=>[[c.dcm*100,'You multiplied by 100. The tube is less than a metre long, so divide.'],[c.dcm/1000,'1 m = 100 cm, so divide by 100, not 1000.']],
+    work:c=>`<i>d</i> = ${fmt(c.dcm)} cm ÷ 100 = <b>${fmt(c.d)} m</b>` },
+
+  v_dt:{ title:'Calculate the velocity', key:'v', nodes:['v'], unit:'m s<sup>−1</sup>', lab:'<i>v</i>',
+    mcq:c=>({q:'You know the tube length and the flight time. Which equation gives the velocity?',opts:[
+      ['<i>v</i> = <i>d</i> ÷ <i>t</i>',1,'Velocity is the distance travelled each second. The ion moves at a constant velocity in the flight tube.'],
+      ['<i>v</i> = <i>d</i> × <i>t</i>',0,'Multiplying gives units of m s, not m s<sup>−1</sup>.'],
+      ['<i>v</i> = <i>t</i> ÷ <i>d</i>',0,'Upside down: that is seconds per metre.'],
+      ['<i>v</i> = √(2KE ÷ <i>m</i>)',0,optV_KE(c)]]}),
+    hint:'<i>v</i> = <i>d</i> ÷ <i>t</i>',
+    errs:c=>{const a=[[c.d*c.t,'You multiplied. Velocity = distance ÷ time.'],[c.t/c.d,'Your division is upside down. Distance goes on top.']]; if(c.dcm) a.push([c.dcm/c.t,'You used the length in cm. Use the length in m from step 1.']); return a;},
+    work:c=>`<i>v</i> = <i>d</i> ÷ <i>t</i> = ${fmt(c.d)} ÷ (${fmt(c.t)}) = <b>${fmt(c.v)} m s<sup>−1</sup></b>` },
+
+  mass_from_A:{ title:'Find the mass of one ion in kg', key:'m', nodes:['mg','mkg'], unit:'kg', lab:'<i>m</i>',
+    mcq:c=>({q:`The ion has mass number ${c.A}, so one mole of these ions has a mass of ${c.A} g. How do you find the mass of <b>one</b> ion in <b>kg</b>?`,opts:[
+      [`${c.A} ÷ 1000 ÷ (${LH})`,1,'÷ 1000 changes g into kg. ÷ <i>L</i> shares the mass of one mole between 6.022 × 10<sup>23</sup> ions.'],
+      [`${c.A} ÷ (${LH})`,0,'This is the mass of one ion in <b>grams</b>. KE = ½<i>mv</i>² needs kg.'],
+      [`${c.A} × ${LH} ÷ 1000`,0,'Multiplying by <i>L</i> gives a huge number. One ion has a tiny mass.'],
+      [`${c.A} ÷ 1000`,0,'This is the mass of a whole <b>mole</b> in kg, not one ion.']]}),
+    hint:'<i>m</i> = mass number ÷ (1000 × <i>L</i>)',
+    errs:c=>[[c.A/L,'That is the mass of one ion in grams. Divide by 1000 to get kg.'],[c.A/1000,'That is the mass of a whole mole. Divide by the Avogadro constant to get one ion.'],[c.A*L/1000,'You multiplied by <i>L</i>. One ion must have a tiny mass, so divide.'],[c.A*1000/L,'You multiplied by 1000. To change g into kg you divide by 1000.']],
+    work:c=>`<i>m</i> = ${c.A} ÷ (1000 × ${LH}) = <b>${fmt(c.m)} kg</b>` },
+
+  v_KE:{ title:'Calculate the velocity from the kinetic energy', key:'v', nodes:['v'], unit:'m s<sup>−1</sup>', lab:'<i>v</i>',
+    mcq:()=>({q:'Rearrange KE = ½<i>mv</i>² to make <i>v</i> the subject.',opts:[
+      ['<i>v</i> = √(2KE ÷ <i>m</i>)',1,'× 2 both sides, ÷ <i>m</i> both sides, then square root both sides.'],
+      ['<i>v</i> = 2KE ÷ <i>m</i>',0,'That gives <i>v</i>². You still need to take the square root.'],
+      ['<i>v</i> = √(KE ÷ 2<i>m</i>)',0,'The ½ moves to the other side as × 2 on the top, not the bottom.'],
+      ['<i>v</i> = √(2<i>m</i> ÷ KE)',0,'Upside down. KE goes on the top.']]}),
+    hint:'<i>v</i> = √(2KE ÷ <i>m</i>)',
+    errs:c=>[[2*c.KE/c.m,'That is <i>v</i>². Take the square root.'],[Math.sqrt(c.KE/c.m),'You forgot the × 2.'],[Math.sqrt(c.KE/(2*c.m)),'The ½ becomes × 2 on the top: √(2KE ÷ <i>m</i>).'],[Math.sqrt(2*c.KE/(c.m*1000)),'It looks like you used the mass in grams. Use kg.']],
+    work:c=>`<i>v</i> = √(2KE ÷ <i>m</i>) = √[(2 × ${fmt(c.KE)}) ÷ (${fmt(c.m)})] = <b>${fmt(c.v)} m s<sup>−1</sup></b>` },
+
+  d_vt:{ title:'Calculate the length of the flight tube', key:'d', nodes:['d'], unit:'m', lab:'<i>d</i>',
+    mcq:()=>({q:'You know the velocity and the flight time. How do you find the length of the tube?',opts:[
+      ['<i>d</i> = <i>v</i> × <i>t</i>',1,'Distance = velocity × time. The velocity is constant in the tube.'],
+      ['<i>d</i> = <i>v</i> ÷ <i>t</i>',0,'Rearrange <i>v</i> = <i>d</i> ÷ <i>t</i> by multiplying both sides by <i>t</i>.'],
+      ['<i>d</i> = <i>t</i> ÷ <i>v</i>',0,'That would be time ÷ velocity, which isn\'t a distance.'],
+      ['<i>d</i> = ½<i>vt</i>',0,'There is no field in the flight tube, so the ion doesn\'t speed up. No ½ is needed.']]}),
+    hint:'<i>d</i> = <i>v</i> × <i>t</i>',
+    errs:c=>[[c.v/c.t,'Multiply by the time, don\'t divide.'],[c.t/c.v,'Distance = velocity × time.']],
+    work:c=>`<i>d</i> = <i>v</i> × <i>t</i> = (${fmt(c.v)}) × (${fmt(c.t)}) = <b>${fmt(c.d)} m</b>` },
+
+  t_dv:{ title:'Calculate the time of flight', key:'t', nodes:['t'], unit:'s', lab:'<i>t</i>',
+    mcq:()=>({q:'You know the velocity and the tube length. How do you find the time?',opts:[
+      ['<i>t</i> = <i>d</i> ÷ <i>v</i>',1,'Rearrange <i>v</i> = <i>d</i> ÷ <i>t</i>: multiply by <i>t</i>, then divide by <i>v</i>.'],
+      ['<i>t</i> = <i>d</i> × <i>v</i>',0,'That gives a huge number, not a time of a few microseconds.'],
+      ['<i>t</i> = <i>v</i> ÷ <i>d</i>',0,'Upside down.'],
+      ['<i>t</i> = 2<i>d</i> ÷ <i>v</i>',0,'The velocity is constant in the tube, so there is no factor of 2.']]}),
+    hint:'<i>t</i> = <i>d</i> ÷ <i>v</i>',
+    errs:c=>[[c.d*c.v,'Divide the distance by the velocity.'],[c.v/c.d,'Your division is upside down.']],
+    work:c=>`<i>t</i> = <i>d</i> ÷ <i>v</i> = ${fmt(c.d)} ÷ (${fmt(c.v)}) = <b>${fmt(c.t)} s</b>` },
+
+  m_KEv:{ title:'Calculate the mass of the ion in kg', key:'m', nodes:['mkg'], unit:'kg', lab:'<i>m</i>',
+    mcq:()=>({q:'Now make <i>m</i> the subject of KE = ½<i>mv</i>².',opts:[
+      ['<i>m</i> = 2KE ÷ <i>v</i>²',1,'× 2 both sides, then ÷ <i>v</i>² both sides.'],
+      ['<i>m</i> = 2KE ÷ <i>v</i>',0,'The velocity must be squared.'],
+      ['<i>m</i> = KE ÷ 2<i>v</i>²',0,'The ½ moves across as × 2 on the top.'],
+      ['<i>m</i> = ½KE<i>v</i>²',0,'You need to divide by <i>v</i>², not multiply.']]}),
+    hint:'<i>m</i> = 2KE ÷ <i>v</i>²',
+    errs:c=>[[2*c.KE/c.v,'You forgot to square the velocity.'],[c.KE/(c.v*c.v),'You forgot the × 2.'],[c.KE/(2*c.v*c.v),'The ½ becomes × 2 on the top.']],
+    work:c=>`<i>m</i> = 2KE ÷ <i>v</i>² = (2 × ${fmt(c.KE)}) ÷ (${fmt(c.v)})² = <b>${fmt(c.m)} kg</b>` },
+
+  kg_to_g:{ title:'Convert the mass into grams', key:'mg', nodes:['mg'], unit:'g', lab:'mass',
+    mcq:()=>({q:'The question asks for the mass in g. Your mass is in kg. What do you do?',opts:[
+      ['Multiply by 1000',1,'1 kg = 1000 g, so the number of grams is 1000 times bigger.'],
+      ['Divide by 1000',0,'A gram is smaller than a kilogram, so the number must get bigger.'],
+      ['Multiply by 100',0,'There are 1000 g in 1 kg.'],
+      ['Nothing, it is already in g',0,'KE = ½<i>mv</i>² with KE in J gives the mass in kg.']]}),
+    hint:'mass in g = mass in kg × 1000',
+    errs:c=>[[c.m/1000,'You divided. Multiply by 1000 to change kg into g.'],[c.m*100,'1 kg = 1000 g.']],
+    work:c=>`mass in g = ${fmt(c.m)} × 1000 = <b>${fmt(c.mg)} g</b>` },
+
+  molar:{ title:'Find the mass of one mole of these ions', key:'M', nodes:['M'], unit:'g mol<sup>−1</sup>', lab:'mass of 1 mol',
+    mcq:()=>({q:'You know the mass of <b>one</b> ion in g. How do you find the mass of <b>one mole</b> of these ions?',opts:[
+      [`Multiply by the Avogadro constant, ${LH}`,1,'One mole contains 6.022 × 10<sup>23</sup> ions.'],
+      [`Divide by ${LH}`,0,'That makes it even smaller. A mole of ions is much heavier than one ion.'],
+      ['Multiply by 1000',0,'That only changes units. It doesn\'t take you from one ion to a mole of ions.'],
+      [`Multiply by ${LH}, then divide by 1000`,0,'Your mass is already in g, so you don\'t need ÷ 1000.']]}),
+    hint:'mass of 1 mol = mass of one ion (g) × <i>L</i>',
+    errs:c=>[[c.mg/L,'Multiply by <i>L</i>, don\'t divide.'],[c.m*L,'You used the mass in kg. Use the mass in g.']],
+    work:c=>`mass of 1 mol = ${fmt(c.mg)} × ${LH} = <b>${fmt(c.M)} g mol<sup>−1</sup></b>` },
+
+  massno:{ title:'Suggest the mass number, y', key:'y', nodes:['M'], unit:'', lab:'<i>y</i>', int:true,
+    mcq:c=>({q:`One mole of these ions has a mass of ${fmt(c.M)} g. What is the mass number, <i>y</i>?`,opts:[
+      [`${Math.round(c.M)}`,1,'A mass number counts protons + neutrons, so it is a whole number. The lost electron has almost no mass, so the molar mass of the ion ≈ the mass number.'],
+      [`${c.M.toFixed(1)}`,0,'A mass number counts protons and neutrons. It must be a whole number.'],
+      [`${Math.round(c.M)+1}`,0,'Round to the nearest whole number.'],
+      [`${Math.round(c.M)-1}`,0,'Round to the nearest whole number.']]}),
+    hint:'round the molar mass to the nearest whole number',
+    errs:()=>[],
+    work:c=>`mass number, <i>y</i> = <b>${Math.round(c.M)}</b>` },
+
+  ratio_same:{ title:'What is the same for both ions?', nodes:[], nocalc:true,
+    mcq:()=>({q:'Both ions have the same charge, are accelerated to the same kinetic energy and travel along the same flight tube. Which two quantities are the same for both ions?',opts:[
+      ['KE and tube length, <i>d</i>',1,'Same accelerating field → same KE. Same machine → same <i>d</i>.'],
+      ['Velocity and time',0,'Different masses with the same KE move at different speeds, so they take different times.'],
+      ['Mass and KE',0,'They are different isotopes, so they have different masses.'],
+      ['Velocity and KE',0,'Same KE but different mass means different velocity.']]}),
+    work:()=>'KE and <i>d</i> are the same, so <i>t</i> depends only on <i>m</i>.' },
+
+  ratio_predict:{ title:'Predict: longer or shorter?', nodes:[], nocalc:true,
+    mcq:c=>({q:`${iso(c.m2,c.el)} is heavier than ${iso(c.m1,c.el)}. With the same KE, what happens to it?`,opts:[
+      ['It moves more slowly, so it takes longer',1,`KE = ½<i>mv</i>²: a bigger <i>m</i> with the same KE means a smaller <i>v</i>. Your answer must be a little <b>bigger</b> than ${fmt(c.t1)} s.`],
+      ['It moves faster, so it takes less time',0,'With the same KE, a heavier ion must move more slowly.'],
+      ['It moves at the same speed, so it takes the same time',0,'Only the KE is the same. Different masses give different speeds.'],
+      ['It has more KE, so it takes less time',0,'All the ions are given the same KE.']]}),
+    work:c=>`Heavier → slower → <i>t</i> will be a bit more than ${fmt(c.t1)} s.` },
+
+  ratio:{ title:'Calculate the new time of flight', key:'t2', nodes:[], unit:'s', lab:'<i>t</i>', tol:0.004, errTol:0.006,
+    mcq:()=>({q:'Combining the equations gives <i>t</i> = <i>d</i>√(<i>m</i> ÷ 2KE). <i>d</i> and KE are the same, so <i>t</i> ∝ √<i>m</i>. Which calculation gives the new time?',opts:[
+      ['<i>t</i><sub>2</sub> = <i>t</i><sub>1</sub> × √(<i>m</i><sub>2</sub> ÷ <i>m</i><sub>1</sub>)',1,'Time is proportional to the square root of mass.'],
+      ['<i>t</i><sub>2</sub> = <i>t</i><sub>1</sub> × (<i>m</i><sub>2</sub> ÷ <i>m</i><sub>1</sub>)',0,'<i>t</i> is proportional to √<i>m</i>, not <i>m</i>.'],
+      ['<i>t</i><sub>2</sub> = <i>t</i><sub>1</sub> × √(<i>m</i><sub>1</sub> ÷ <i>m</i><sub>2</sub>)',0,'Upside down. This would make the heavier ion arrive sooner.'],
+      ['<i>t</i><sub>2</sub> = <i>t</i><sub>1</sub> × (<i>m</i><sub>2</sub> ÷ <i>m</i><sub>1</sub>)²',0,'<i>t</i> is proportional to √<i>m</i>.']]}),
+    hint:'<i>t</i><sub>2</sub> = <i>t</i><sub>1</sub> × √(<i>m</i><sub>2</sub> ÷ <i>m</i><sub>1</sub>)',
+    errs:c=>[[c.t1*c.m2/c.m1,'You forgot the square root: <i>t</i> ∝ √<i>m</i>.'],[c.t1*Math.sqrt(c.m1/c.m2),'Your ratio is upside down. The heavier ion should take longer.'],[c.t1,'That is the same time as the first ion. The heavier ion is slower.']],
+    work:c=>`<i>t</i> = (${fmt(c.t1)}) × √(${c.m2} ÷ ${c.m1}) = <b>${fmt(c.t2)} s</b>` },
+};
+
+/* ---------- route map ---------- */
+const NODES={d:[48,55,'d','m'],t:[48,172,'t','s'],v:[300,113,'v','m s⁻¹'],KE:[548,46,'KE','J'],mkg:[548,180,'m','kg'],mg:[660,180,'m','g'],M:[772,180,'M','g mol⁻¹']};
+const HUBS=[[172,113,'v = d ÷ t',['d','t','v']],[425,113,'KE = ½mv²',['v','KE','mkg']]];
+function routeSVG(known,found,target,active){
+  const lit=new Set([...known,...found]);
+  let s='<svg viewBox="0 0 825 232" role="img" aria-label="Route map linking d, t, v, KE and m">';
+  HUBS.forEach(([x,y,,ns])=>{const on=ns.every(n=>lit.has(n)); ns.forEach(n=>{const [nx,ny]=NODES[n]; s+=`<line class="edge ${on?'lit':''}" x1="${x}" y1="${y}" x2="${nx}" y2="${ny}"/>`;});});
+  [['mkg','mg','× or ÷ 1000'],['mg','M','× or ÷ L']].forEach(([a,b,lab])=>{const [x1,y1]=NODES[a],[x2,y2]=NODES[b]; const on=lit.has(a)&&lit.has(b);
+    s+=`<line class="edge ${on?'lit':''}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/><g class="pill"><rect x="${(x1+x2)/2-38}" y="${y1-42}" width="76" height="20" rx="10"/><text x="${(x1+x2)/2}" y="${y1-28}" text-anchor="middle">${lab}</text></g>`;});
+  HUBS.forEach(([x,y,lab,ns])=>{const on=ns.every(n=>lit.has(n)); s+=`<g class="hub ${on?'lit':''}"><rect x="${x-66}" y="${y-20}" width="132" height="40" rx="8"/><text x="${x}" y="${y+6}" text-anchor="middle">${lab}</text></g>`;});
+  Object.entries(NODES).forEach(([k,[x,y,sym,unit]])=>{
+    let cls='node'; if(known.includes(k)) cls+=' known'; if(found.includes(k)) cls+=' found'; if(k===target&&!found.includes(k)) cls+=' target'; if(active.includes(k)) cls+=' active';
+    s+=`<g class="${cls}"><circle cx="${x}" cy="${y}" r="27"/><text class="sym" x="${x}" y="${y+7}" text-anchor="middle">${sym}</text><text class="unit" x="${x}" y="${y+45}" text-anchor="middle">${unit}</text></g>`;});
+  return s+'</svg>';
+}
+function knownNodes(g){const k=[]; if(g.d!=null||g.dcm!=null) k.push('d'); if(g.t!=null) k.push('t'); if(g.KE!=null) k.push('KE'); if(g.A!=null) k.push('M'); return k;}
+
+/* ---------- questions ---------- */
+const QS={}; const SECTIONS={};
+function Q(id,sec,n,marks,text,given,steps,extra={}){
+  const q={id,sec,n,marks,text,given,steps,...extra};
+  q.ctx={...given}; steps.forEach(k=>{const c=q.ctx; switch(k){
+    case 'convert_cm': c.d=c.dcm/100; break; case 'v_dt': c.v=c.d/c.t; break; case 'mass_from_A': c.m=c.A/1000/L; break;
+    case 'v_KE': c.v=Math.sqrt(2*c.KE/c.m); break; case 'd_vt': c.d=c.v*c.t; break; case 't_dv': c.t=c.d/c.v; break;
+    case 'm_KEv': c.m=2*c.KE/(c.v*c.v); break; case 'kg_to_g': c.mg=c.m*1000; break; case 'molar': c.M=c.mg*L; break;
+    case 'massno': c.y=Math.round(c.M); break; case 'ratio': c.t2=c.t1*Math.sqrt(c.m2/c.m1); break; }});
+  q.st={idx:0,shown:new Set(),tries:0,open:false,hint:false};
+  QS[id]=q; (SECTIONS[sec]=SECTIONS[sec]||[]).push(q); return q;
+}
+function givenChips(g){
+  const c=[]; if(g.A!=null) c.push(`mass number = ${g.A}`); if(g.m1!=null) c.push(`<i>m</i><sub>1</sub> = ${g.m1}, <i>t</i><sub>1</sub> = ${fmt(g.t1)} s`); if(g.m2!=null) c.push(`<i>m</i><sub>2</sub> = ${g.m2}`);
+  if(g.KE!=null) c.push(`KE = ${fmt(g.KE)} J`); if(g.dcm!=null) c.push(`<i>d</i> = ${fmt(g.dcm)} cm`); if(g.d!=null) c.push(`<i>d</i> = ${fmt(g.d)} m`); if(g.t!=null) c.push(`<i>t</i> = ${fmt(g.t)} s`);
+  return c.map(x=>`<span class="chip">${x}</span>`).join('');
+}
+// Section A
+Q('q1','a',1,2,`A ${iso(35,'Cl')} ion travels along a 1.20 m flight tube in 5.40 × 10<sup>−5</sup> s. Calculate the velocity of the ion.`,{d:1.20,t:5.40e-5},['v_dt'],{worked:true});
+Q('q2','a',2,3,`A ${iso(63,'Cu')} ion travels along a flight tube of length 84.0 cm in 3.15 × 10<sup>−5</sup> s. Calculate the velocity of the ion, in m s<sup>−1</sup>.`,{dcm:84.0,t:3.15e-5},['convert_cm','v_dt']);
+Q('q3','a',3,2,`A ${iso(40,'Ar')} ion travels along a 1.05 m flight tube and reaches the detector in 2.90 × 10<sup>−5</sup> s. Calculate the velocity of the ion.`,{d:1.05,t:2.90e-5},['v_dt']);
+// Section B
+const Bt=(A,el,KE,t)=>`A ${iso(A,el)} ion is accelerated to a kinetic energy of ${fmt(KE)} J. The ion takes ${fmt(t)} s to travel along the flight tube. Calculate the length, in m, of the flight tube.`;
+Q('q4','b',4,4,Bt(23,'Na',1.16e-16,1.35e-5),{A:23,KE:1.16e-16,t:1.35e-5},['mass_from_A','v_KE','d_vt'],{worked:true});
+Q('q5','b',5,4,Bt(79,'Br',1.51e-16,2.50e-5),{A:79,KE:1.51e-16,t:2.50e-5},['mass_from_A','v_KE','d_vt']);
+Q('q6','b',6,4,Bt(127,'I',1.43e-16,3.80e-5),{A:127,KE:1.43e-16,t:3.80e-5},['mass_from_A','v_KE','d_vt']);
+// Section C
+const Ct=(KE,d,t)=>`An ion is accelerated to a kinetic energy of ${fmt(KE)} J and travels along a ${fmt(d)} m flight tube in ${fmt(t)} s. Calculate the mass, in g, of the ion.`;
+Q('q7','c',7,4,Ct(2.71e-17,1.05,4.35e-5),{KE:2.71e-17,d:1.05,t:4.35e-5},['v_dt','m_KEv','kg_to_g'],{worked:true});
+Q('q8','c',8,4,Ct(3.72e-17,0.950,6.30e-5),{KE:3.72e-17,d:0.950,t:6.30e-5},['v_dt','m_KEv','kg_to_g']);
+// Section D
+const Dt=(name,KE,d,t)=>`A sample of ${name} contains an isotope of mass number y. An ion of this isotope is accelerated to a kinetic energy of ${fmt(KE)} J and travels along a ${fmt(d)} m flight tube, taking ${fmt(t)} s to reach the detector. Calculate the mass, in g, of one mole of these ${name} ions, and use your answer to suggest the mass number, y, of this ${name} isotope.`;
+const Dsteps=['v_dt','m_KEv','kg_to_g','molar','massno'];
+Q('q9','d',9,5,Dt('magnesium',1.76e-17,1.10,3.70e-5),{KE:1.76e-17,d:1.10,t:3.70e-5},Dsteps,{worked:true});
+Q('q10','d',10,5,Dt('copper',1.55e-17,0.880,5.20e-5),{KE:1.55e-17,d:0.880,t:5.20e-5},Dsteps);
+Q('q11','d',11,5,Dt('strontium',2.17e-15,1.30,7.55e-6),{KE:2.17e-15,d:1.30,t:7.55e-6},Dsteps);
+Q('q12','d',12,5,Dt('barium',3.37e-17,0.780,4.55e-5),{KE:3.37e-17,d:0.780,t:4.55e-5},Dsteps);
+// Section E
+const Et=(el,m1,m2,t1)=>`A ${iso(m1,el)} ion takes ${fmt(t1)} s to travel along the flight tube. Calculate the time taken for a ${iso(m2,el)} ion to travel along the same flight tube.`;
+const Esteps=['ratio_same','ratio_predict','ratio'];
+Q('q13','e',13,3,Et('Cu',63,65,2.10e-5),{el:'Cu',m1:63,m2:65,t1:2.10e-5},Esteps,{worked:true});
+Q('q14','e',14,3,Et('Ga',69,71,2.40e-5),{el:'Ga',m1:69,m2:71,t1:2.40e-5},Esteps);
+Q('q15','e',15,3,Et('Ag',107,109,3.05e-5),{el:'Ag',m1:107,m2:109,t1:3.05e-5},Esteps);
+Q('q16','e',16,3,Et('Sb',121,123,4.85e-5),{el:'Sb',m1:121,m2:123,t1:4.85e-5},Esteps);
+
+/* ---------- Section F ---------- */
+const REASONS = el=>({q:'Pick the two correct reasons.',multi:2,opts:[
+  ['So the ions can be accelerated by the electric field',1,''],
+  ['So the ions can be detected: they make a current when they hit the detector',1,''],
+  ['So the particles become lighter and travel faster',0,'Losing one electron hardly changes the mass.'],
+  ['So the ions can be deflected by a magnetic field',0,'A TOF spectrometer has no magnet. Ions are separated by their flight time.'],
+  ['So the atoms turn into a gas',0,'Ionisation doesn\'t vaporise the sample.']],
+  okWhy:'Only charged particles are pushed by the electric field, and only ions produce a current at the detector.',
+  ms:'so that the ions can be accelerated by an electric field; so that the ions can be detected (they generate a current at the detector)'});
+const EQN = (el)=>({q:'Pick the correct equation.',opts:[
+  [`${el}(g) + e<sup>−</sup> → ${el}<sup>+</sup>(g) + 2e<sup>−</sup>`,1,'A high-energy electron hits the atom and knocks one electron out, so two electrons leave.'],
+  [`${el}(g) → ${el}<sup>+</sup>(g) + e<sup>−</sup>`,0,'This is the first ionisation energy equation. For electron impact, the incoming electron must be on the left.'],
+  [`${el}(g) + e<sup>−</sup> → ${el}<sup>−</sup>(g)`,0,'Electron impact makes positive ions, not negative ions.'],
+  [`${el}(g) + e<sup>−</sup> → ${el}<sup>+</sup>(g) + e<sup>−</sup>`,0,'The charges don\'t balance: −1 on the left, 0 on the right.']],
+  ms:`${el}(g) + e<sup>−</sup> → ${el}<sup>+</sup>(g) + 2e<sup>−</sup>`});
+const FQ = [
+ {n:17,marks:9,stem:`This question is about the analysis of neon by TOF mass spectrometry. Neon has three isotopes: <sup>20</sup>Ne, <sup>21</sup>Ne and <sup>22</sup>Ne. The isotopes are ionised by electron impact.`, parts:[
+   {l:'a',m:1,text:'Write an equation, including state symbols, for the formation of Ne<sup>+</sup> ions from Ne atoms by electron impact ionisation.',mcq:EQN('Ne')},
+   {l:'b',m:2,text:'Give two reasons why the neon atoms must be ionised before they can be analysed in a time of flight mass spectrometer.',mcq:REASONS('neon')},
+   {l:'c',m:2,text:'State, using an isotope symbol, which neon ion reaches the detector first. Justify your answer.',mcq:{q:'Which neon ion reaches the detector first, and why?',opts:[
+     [`${iso(20,'Ne')}: lowest mass, so with the same KE it has the highest velocity`,1,'Same KE, smaller <i>m</i> → bigger <i>v</i> → shorter time.'],
+     [`${iso(22,'Ne')}: greatest mass, so it has the most kinetic energy`,0,'All the ions have the same KE.'],
+     [`${iso(20,'Ne')}: it has the least kinetic energy`,0,'All the ions have the same KE. The difference is in their velocity.'],
+     ['They arrive together because they have the same KE',0,'Same KE but different masses means different velocities.']],
+     ms:`${iso(20,'Ne')}; lowest mass, so for the same kinetic energy it has the greatest velocity, so it reaches the detector first`}},
+   {l:'d',m:4,text:`A ${iso(22,'Ne')} ion is accelerated to a kinetic energy of 5.20 × 10<sup>−17</sup> J and travels along a 1.10 m flight tube. Calculate the time, in s, taken for the ion to reach the detector.`,calc:{given:{A:22,KE:5.20e-17,d:1.10},steps:['mass_from_A','v_KE','t_dv']}}]},
+ {n:18,marks:9,stem:'A mixture of argon, nitrogen, oxygen and carbon dioxide is analysed using TOF mass spectrometry. The mixture is ionised by electron impact.', parts:[
+   {l:'a',m:1,text:'State the meaning of the term electron impact ionisation.',mcq:{q:'What does electron impact ionisation mean?',opts:[
+     ['High-energy electrons from an electron gun hit the particles and knock out an electron, forming positive ions',1,''],
+     ['The sample is dissolved in a volatile solvent and sprayed through a charged needle',0,'That is electrospray ionisation, the other method on the specification.'],
+     ['Electrons are added to the particles to form negative ions',0,'Electron impact knocks electrons <i>out</i>, so it forms positive ions.'],
+     ['The sample is heated until it gives off electrons',0,'The electrons come from an electron gun, not from heating.']],
+     ms:'high-energy electrons (from an electron gun) collide with each atom or molecule and knock out an electron, forming a positive ion'}},
+   {l:'b',m:2,text:'Identify the ion, from this mixture, that reaches the detector last. Justify your answer.',mcq:{q:'Which ion reaches the detector last, and why?',opts:[
+     ['CO<sub>2</sub><sup>+</sup>: greatest mass (44), so with the same KE it has the lowest velocity',1,'12 + 16 + 16 = 44, more than Ar (40), O<sub>2</sub> (32) and N<sub>2</sub> (28).'],
+     ['Ar<sup>+</sup>: it is the heaviest particle',0,'Ar = 40, but CO<sub>2</sub> = 12 + 16 + 16 = 44.'],
+     ['N<sub>2</sub><sup>+</sup>: lowest mass, so it is the slowest',0,'The lightest ion is the fastest, so it arrives first.'],
+     ['CO<sub>2</sub><sup>+</sup>: it has the most kinetic energy',0,'All the ions have the same KE.']],
+     ms:'CO<sub>2</sub><sup>+</sup>; it has the greatest mass (m/z) of the ions present, so for the same kinetic energy it has the lowest velocity, so it reaches the detector last'}},
+   {l:'c',m:2,text:'State how the ions are detected, and how the abundance of each ion is measured, in a TOF mass spectrometer.',mcq:{q:'How are the ions detected, and how is abundance measured?',opts:[
+     ['Each ion gains an electron at the detector, creating a current; the bigger the current, the greater the abundance',1,''],
+     ['Each ion loses an electron at the detector; the current depends on how fast the ion is moving',0,'Positive ions <i>gain</i> an electron. The current depends on the number of ions.'],
+     ['The ions give out light at the detector; brighter light means more ions',0,'The detector measures a current, not light.'],
+     ['The longer the time of flight, the greater the abundance',0,'Time of flight tells you the mass. The size of the current tells you the abundance.']],
+     ms:'ions hit the detector and gain an electron, generating a current; the size of the current is proportional to the abundance of the ion'}},
+   {l:'d',m:4,text:'An Ar<sup>+</sup> ion in this mixture is accelerated to a kinetic energy of 1.45 × 10<sup>−16</sup> J and travels along a flight tube of length 0.900 m. Calculate the time, in s, taken for the ion to reach the detector. (Use mass number 40 for argon.)',calc:{given:{A:40,KE:1.45e-16,d:0.900},steps:['mass_from_A','v_KE','t_dv']}}]},
+ {n:19,marks:8,stem:`This question is about the analysis of gallium by TOF mass spectrometry. Gallium has two isotopes, <sup>69</sup>Ga and <sup>71</sup>Ga, which are ionised by electron impact.`, parts:[
+   {l:'a',m:2,text:'Give two reasons why gallium atoms must be ionised before they can be analysed in a time of flight mass spectrometer.',mcq:REASONS('gallium')},
+   {l:'b',m:1,text:'Describe how electron impact ionisation produces Ga<sup>+</sup> ions from Ga atoms.',mcq:{q:'How does electron impact ionisation make Ga<sup>+</sup> ions?',opts:[
+     ['High-energy electrons from an electron gun knock an electron out of each Ga atom',1,''],
+     ['Each Ga atom gains an electron from the electron gun',0,'Gaining an electron would make Ga<sup>−</sup>.'],
+     ['Each Ga atom gains a proton: Ga + H<sup>+</sup> → GaH<sup>+</sup>',0,'Gaining a proton happens in electrospray ionisation, not electron impact.'],
+     ['Each Ga atom loses a proton',0,'Ionisation removes electrons, not protons.']],
+     ms:'high-energy electrons (from an electron gun) knock an electron out of each gallium atom, forming a Ga<sup>+</sup> ion'}},
+   {l:'c',m:2,text:'State, using an isotope symbol, which gallium ion reaches the detector first. Justify your answer.',mcq:{q:'Which gallium ion reaches the detector first, and why?',opts:[
+     [`${iso(69,'Ga')}: lower mass, so with the same KE it has a higher velocity`,1,''],
+     [`${iso(71,'Ga')}: higher mass, so it has more kinetic energy`,0,'Both ions have the same KE.'],
+     [`${iso(69,'Ga')}: it is more abundant`,0,'Abundance affects the size of the peak, not the arrival time.'],
+     ['Both arrive together because they have the same charge',0,'Same charge gives the same KE, but different masses still give different velocities.']],
+     ms:`${iso(69,'Ga')}; lowest mass, so for the same kinetic energy it has the greatest velocity, so it reaches the detector first`}},
+   {l:'d',m:3,text:`All the gallium ions are accelerated to the same kinetic energy. A ${iso(69,'Ga')} ion takes 2.20 × 10<sup>−5</sup> s to travel along the flight tube. Calculate the time taken for a ${iso(71,'Ga')} ion to travel along the same flight tube.`,calc:{given:{el:'Ga',m1:69,m2:71,t1:2.20e-5},steps:['ratio_predict','ratio']}}]},
+ {n:20,marks:8,stem:'This question is about the analysis of krypton by TOF mass spectrometry. Krypton is ionised by electron impact.', parts:[
+   {l:'a',m:1,text:'Write an equation, including state symbols, for the formation of Kr<sup>+</sup> ions from Kr atoms by electron impact ionisation.',mcq:EQN('Kr')},
+   {l:'b',m:5,text:'A sample of krypton contains an isotope of mass number y. A Kr<sup>+</sup> ion of this isotope is accelerated to a kinetic energy of 1.83 × 10<sup>−16</sup> J and travels along a 1.00 m flight tube, taking 1.95 × 10<sup>−5</sup> s to reach the detector. Calculate the mass, in g, of one mole of these krypton ions, and use your answer to suggest the mass number, y, of this krypton isotope.',calc:{given:{KE:1.83e-16,d:1.00,t:1.95e-5},steps:Dsteps}},
+   {l:'c',m:2,text:'Give two reasons why krypton atoms must be ionised before they can be analysed in a time of flight mass spectrometer.',mcq:REASONS('krypton')}]},
+];
+FQ.forEach(f=>{f.open=false; f.parts.forEach(p=>{p.id=`f${f.n}${p.l}`; if(p.calc){ const q=Q(p.id,'fcalc',`${f.n}${p.l}`,p.m,p.text,p.calc.given,p.calc.steps); q.parent=f.n; q.st.open=true; }});});
+FQ[0].open=true;
+
+/* ---------- input parsing / checking ---------- */
+function readVal(ms,es){
+  ms=(ms||'').trim().replace(/[−–]/g,'-').replace(/,/g,'').replace(/\s+/g,'');
+  if(!ms) return null;
+  ms=ms.replace(/(?:x|×|\*)10\^?\(?(-?\d+)\)?$/i,'e$1');
+  const m=Number(ms); if(!isFinite(m)) return NaN;
+  es=(es||'').trim().replace(/[−–]/g,'-');
+  const e= es===''?0:Number(es); if(!Number.isInteger(e)) return NaN;
+  return m*Math.pow(10,e);
+}
+const close=(a,b,t)=>Math.abs(a-b)<=t*Math.abs(b);
+
+/* ---------- walkthrough rendering ---------- */
+function stepsHTML(q){
+  const st=q.st, c=q.ctx; let h='<ol class="steps">';
+  q.steps.forEach((k,i)=>{
+    const tp=T[k];
+    if(i<st.idx){
+      h+=`<li class="step done"><div class="sh"><span class="sn">Step ${i+1} ✓</span><span>${tp.title}</span>${st.shown.has(i)?'<span class="shown">(shown)</span>':''}</div><div class="work">${tp.work(c)}</div></li>`;
+    } else if(i===st.idx){
+      const mid=`${q.id}-s${i}`;
+      ensureMCQ(mid,tp.mcq(c),null,()=>renderQ(q.id));
+      const showMCQ = guided || tp.nocalc;
+      h+=`<li class="step active"><div class="sh"><span class="sn">Step ${i+1}</span><span>${tp.title}</span></div>`;
+      if(showMCQ) h+=mcqHTML(mid);
+      const mcqOk = MCQ[mid].st.ok;
+      if(tp.nocalc){ if(mcqOk) h+=`<div class="row"><button type="button" class="btn primary" data-act="next" data-q="${q.id}">Next step →</button></div>`; }
+      else if(!guided || mcqOk){
+        h+=`<div class="calc">${guided?'<p class="note">Now use your calculator.</p>':''}
+          ${!guided&&st.hint?`<div class="tip">${tp.hint}</div>`:''}
+          <div class="entry"><label for="m-${q.id}">${tp.lab} =</label><input id="m-${q.id}" class="mant" inputmode="decimal" autocomplete="off" aria-label="number" data-q="${q.id}">
+          ${tp.int?'':`<span class="times">× 10<input id="e-${q.id}" class="expo" inputmode="numeric" autocomplete="off" aria-label="power of ten" data-q="${q.id}"></span>`}
+          <span class="unit">${tp.unit}</span></div>
+          <div class="row"><button type="button" class="btn primary" data-act="check" data-q="${q.id}">Check</button>
+          ${!guided&&!st.hint?`<button type="button" class="btn" data-act="hint" data-q="${q.id}">Hint</button>`:''}
+          <button type="button" class="btn ghost" data-act="show" data-q="${q.id}">Show me</button></div>
+          ${tp.int?'':'<p class="note">Type the number in the first box and the power of ten in the small box. Leave the small box empty if you don\'t need it.</p>'}
+          <div class="fb" id="fb-${q.id}" aria-live="polite"></div></div>`;
+      }
+      h+='</li>';
+    } else {
+      h+=`<li class="step locked"><span class="sn">Step ${i+1}</span>${guided?'':' · '+tp.title}</li>`;
+    }
+  });
+  h+='</ol>';
+  if(st.idx>=q.steps.length){
+    const last=T[q.steps[q.steps.length-1]]; const c2=q.ctx; let ans='';
+    if(last.key==='y') ans=`mass of 1 mol = ${fmt(c2.M)} g mol<sup>−1</sup>; <i>y</i> = ${Math.round(c2.M)}`;
+    else if(last.key==='t2') ans=`<i>t</i> = ${fmt(c2.t2)} s`;
+    else if(last.key==='mg') ans=`mass = ${fmt(c2.mg)} g`;
+    else ans=`${last.lab} = ${fmt(c2[last.key])} ${last.unit}`;
+    h+=`<div class="final"><span class="lbl">Answer</span><span class="ans">${ans}</span><button type="button" class="btn ghost" data-act="reset" data-q="${q.id}">Try again</button></div>`;
+  }
+  return h;
+}
+function routeFor(q){
+  if(q.sec==='e'||q.given.m1!=null) return '';
+  const known=knownNodes(q.given); const found=[]; const st=q.st;
+  q.steps.forEach((k,i)=>{ if(i<st.idx) found.push(...T[k].nodes); });
+  const active = st.idx<q.steps.length ? T[q.steps[st.idx]].nodes : [];
+  const lastNodes=T[q.steps[q.steps.length-1]].nodes; const target=lastNodes[lastNodes.length-1];
+  return `<div class="route">${routeSVG(known,found,target,active)}</div>`;
+}
+function qBody(q){
+  const r=routeFor(q);
+  return `<div class="qb ${r?'':'single'}"><div style="display:flex;flex-direction:column;gap:12px;min-width:0"><div class="given">Given: ${givenChips(q.given)}</div>${stepsHTML(q)}</div>${r}</div>`;
+}
+function qCard(q){
+  const done=q.st.idx>=q.steps.length;
+  return `<article class="q ${done?'complete':''}" id="card-${q.id}">
+    <button type="button" class="qh" data-act="toggle" data-q="${q.id}" aria-expanded="${q.st.open}">
+      <span class="qnum">${done?'✓':q.n}</span>
+      <span class="qtext">${q.worked?'<span class="tag-we">Walkthrough</span>':''}${q.text}</span>
+      <span class="marks">${q.marks} marks ${q.st.open?'▴':'▾'}</span></button>
+    ${q.st.open?qBody(q):''}</article>`;
+}
+function fCard(f){
+  const done=f.parts.every(partDone);
+  let h=`<article class="q ${done?'complete':''}" id="fcard-${f.n}"><button type="button" class="qh" data-act="ftoggle" data-f="${f.n}" aria-expanded="${f.open}">
+    <span class="qnum">${done?'✓':f.n}</span><span class="qtext">${f.stem}</span><span class="marks">${f.marks} marks ${f.open?'▴':'▾'}</span></button>`;
+  if(f.open){
+    h+='<div class="parts">';
+    f.parts.forEach(p=>{
+      h+=`<div class="part"><div class="pt"><span class="pl">${p.l})</span><span>${p.text} <span class="marks">(${p.m})</span></span></div>`;
+      if(p.mcq){ ensureMCQ(p.id,p.mcq,null,()=>renderF(f.n)); h+=mcqHTML(p.id); }
+      else { const q=QS[p.id]; h+=qBody(q); }
+      h+='</div>';
+    });
+    h+='</div>';
+  }
+  return h+'</article>';
+}
+function partDone(p){ return p.mcq ? !!(MCQ[p.id]&&MCQ[p.id].st.ok) : QS[p.id].st.idx>=QS[p.id].steps.length; }
+function renderQ(id){
+  const q=QS[id]; if(q.parent){ renderF(q.parent); return; }
+  const el=document.getElementById('card-'+id); if(el) el.outerHTML=qCard(q); updateBadges();
+}
+function renderF(n){ const f=FQ.find(x=>x.n===n); const el=document.getElementById('fcard-'+n); if(el) el.outerHTML=fCard(f); updateBadges(); }
+
+function fb(q,msg,type){ const el=document.getElementById('fb-'+q.id); if(el){ el.className='fb '+type; el.innerHTML=msg; } }
+function checkQ(q){
+  const i=q.st.idx, tp=T[q.steps[i]], c=q.ctx, target=tp.key==='y'?Math.round(c.M):c[tp.key];
+  const mEl=document.getElementById('m-'+q.id), eEl=document.getElementById('e-'+q.id);
+  const val=readVal(mEl&&mEl.value, eEl&&eEl.value);
+  if(val===null){ fb(q,'Type your answer first.','warn'); return; }
+  if(isNaN(val)){ fb(q,'That number can\'t be read. Type the digits in the first box (for example 2.22) and the power of ten in the small box (for example 4).','warn'); return; }
+  const tol=tp.tol??0.008;
+  const ok = tp.int ? val===target : close(val,target,tol);
+  if(ok){ q.st.idx++; q.st.hint=false; q.st.tries=0; renderQ(q.id); return; }
+  q.st.tries++;
+  const more = q.st.tries>=2 ? ' If you are stuck, press <b>Show me</b>.' : '';
+  if(tp.int){ fb(q, close(val,c.M,0.02) ? 'A mass number must be a whole number. Round your answer.' : `Not right. Look at your mass of one mole (${fmt(c.M)} g mol<sup>−1</sup>).`+more,'bad'); return; }
+  for(const [ev,msg] of tp.errs(c)){ if(close(val,ev,tp.errTol??0.02)){ fb(q,msg+more,'bad'); return; } }
+  const lg=Math.log10(Math.abs(val/target));
+  if(val>0 && Math.abs(lg-Math.round(lg))<0.006 && Math.round(lg)!==0){ fb(q,'Your digits are right but the power of ten is wrong. Check your standard form and your units.'+more,'bad'); return; }
+  if(close(val,target,0.05)){ fb(q,'Very close. Check your rounding: keep at least 3 significant figures at each step.'+more,'warn'); return; }
+  fb(q,'Not right yet. Check the equation and what you typed into your calculator. Put brackets around anything you divide by.'+more,'bad');
+}
+
+/* ---------- section pages ---------- */
+const SECINFO = {
+  a:{title:'Section A · Calculating ion velocity',lead:'The quickest type. You are given the tube length and the flight time. Only the flight tube matters.',
+     route:['Check <i>d</i> is in m and <i>t</i> is in s.','<i>v</i> = <i>d</i> ÷ <i>t</i>.','Give your answer to 3 significant figures, in m s<sup>−1</sup>.'], k:['d','t'], f:['v'], tg:'v'},
+  b:{title:'Section B · Calculating the length of the flight tube',lead:'You are given a mass number, a KE and a time. Use KE to find the velocity, then use the time to find the distance.',
+     route:['Mass number → mass of one ion in kg: ÷ 1000 ÷ <i>L</i>.','<i>v</i> = √(2KE ÷ <i>m</i>).','<i>d</i> = <i>v</i> × <i>t</i>.'], k:['M','KE','t'], f:['mg','mkg','v','d'], tg:'d'},
+  c:{title:'Section C · Calculating the mass of an ion',lead:'This is Section B in reverse. Find the velocity from the tube, then use KE to find the mass.',
+     route:['<i>v</i> = <i>d</i> ÷ <i>t</i>.','<i>m</i> = 2KE ÷ <i>v</i>² (this is in kg).','× 1000 to give the mass in g.'], k:['d','t','KE'], f:['v','mkg','mg'], tg:'mg'},
+  d:{title:'Section D · Calculating relative atomic mass',lead:'Exactly the same as Section C, then two more steps take you from one ion to a mole of ions.',
+     route:['<i>v</i> = <i>d</i> ÷ <i>t</i>.','<i>m</i> = 2KE ÷ <i>v</i>² (kg).','× 1000 → mass of one ion in g.','× <i>L</i> → mass of one mole in g mol<sup>−1</sup>.','Round to a whole number → mass number, <i>y</i>.'], k:['d','t','KE'], f:['v','mkg','mg','M'], tg:'M'},
+  e:{title:'Section E · Comparing two isotopes',lead:'You are not given KE or the tube length, and you don\'t need them. Both ions have the same KE and travel the same distance, so you can use a ratio.',
+     route:['Same KE and same <i>d</i>, so <i>t</i> ∝ √<i>m</i>.','The heavier ion is slower, so its time must be a little longer.','<i>t</i><sub>2</sub> = <i>t</i><sub>1</sub> × √(<i>m</i><sub>2</sub> ÷ <i>m</i><sub>1</sub>).']},
+  f:{title:'Section F · Combined practice',lead:'Exam-style questions. The written parts test the ideas behind the machine. Each calculation part uses a route you have already practised.'}
+};
+function buildSection(sec){
+  const el=document.getElementById('tab-'+sec), info=SECINFO[sec];
+  let h=`<div><h2>${info.title}</h2><p class="lead">${info.lead}</p></div>`;
+  if(info.route){
+    h+=`<div class="card"><div class="strategy"><div><h3>The route</h3><ol>${info.route.map(r=>`<li>${r}</li>`).join('')}</ol></div>`;
+    h+= info.k ? `<div class="route">${routeSVG(info.k,info.f,info.tg,[])}</div>` : `<div class="tip">You never need the actual KE or tube length here. Because they are the same for both ions, they cancel when you divide one time by the other.</div>`;
+    h+='</div></div>';
+  }
+  if(sec==='e'){
+    h+=`<div style="display:flex;flex-direction:column;gap:20px"><div class="card"><h3>Why <i>t</i> ∝ √<i>m</i></h3><div class="deriv" id="ederiv" aria-live="polite"></div><div class="row"><button class="btn primary" id="eNext" type="button">Next step</button><button class="btn ghost" id="eBack" type="button">Back</button></div></div>
+      <div class="card"><h3>Race two isotopes</h3><div class="row"><label class="ctl" style="flex-direction:row;gap:8px;align-items:center">Pair <select id="rPair"></select></label><button class="btn primary" id="rGo" type="button">Race</button></div>
+      <div class="canvas-wrap"><canvas id="rc" width="1000" height="300" aria-label="Two isotopes racing along identical flight tubes"></canvas></div><p class="note" id="rNote"></p></div></div>`;
+  }
+  h+='<div style="display:flex;flex-direction:column;gap:12px" class="qlist">';
+  if(sec==='f') FQ.forEach(f=>h+=fCard(f));
+  else { SECTIONS[sec][0].st.open=true; SECTIONS[sec].forEach(q=>h+=qCard(q)); }
+  h+='</div>';
+  el.innerHTML=h;
+}
+function rebuildCards(){
+  Object.values(QS).forEach(q=>{ if(!q.parent){ const el=document.getElementById('card-'+q.id); if(el) el.outerHTML=qCard(q);} });
+  FQ.forEach(f=>renderF(f.n));
+}
+
+/* ---------- tabs ---------- */
+const TABS=[['machine','The machine'],['toolkit','Toolkit'],['a','A · Velocity'],['b','B · Tube length'],['c','C · Ion mass'],['d','D · Mass number'],['e','E · Two isotopes'],['f','F · Exam practice']];
+const tabbar=document.getElementById('tabbar');
+tabbar.innerHTML=TABS.map(([id,l])=>`<button type="button" data-tab="${id}">${l}<span class="badge" id="bd-${id}" hidden></span></button>`).join('');
+function showTab(id){
+  if(!TABS.some(t=>t[0]===id)) id='machine';
+  document.querySelectorAll('section.tab').forEach(s=>s.hidden = s.dataset.tab!==id);
+  tabbar.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.tab===id));
+  try{ history.replaceState(null,'','#'+id); }catch(e){}
+  if(id==='e') drawRace();
+  window.scrollTo({top:0});
+}
+function updateBadges(){
+  ['a','b','c','d','e'].forEach(s=>{const list=SECTIONS[s]; const n=list.filter(q=>q.st.idx>=q.steps.length).length; const b=document.getElementById('bd-'+s); b.hidden=false; b.textContent=`${n}/${list.length}`; b.classList.toggle('full',n===list.length);});
+  const parts=FQ.flatMap(f=>f.parts); const n=parts.filter(partDone).length; const b=document.getElementById('bd-f'); b.hidden=false; b.textContent=`${n}/${parts.length}`; b.classList.toggle('full',n===parts.length);
+}
+tabbar.addEventListener('click',e=>{const b=e.target.closest('button[data-tab]'); if(b) showTab(b.dataset.tab);});
+
+/* ---------- global delegation ---------- */
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]'); if(!b) return; const act=b.dataset.act;
+  if(act==='opt') mcqClick(b.dataset.id,+b.dataset.i);
+  else if(act==='mcheck') mcqCheck(b.dataset.id);
+  else if(act==='toggle'){ const q=QS[b.dataset.q]; q.st.open=!q.st.open; renderQ(q.id); }
+  else if(act==='ftoggle'){ const f=FQ.find(x=>x.n===+b.dataset.f); f.open=!f.open; renderF(f.n); }
+  else if(act==='check') checkQ(QS[b.dataset.q]);
+  else if(act==='hint'){ const q=QS[b.dataset.q]; q.st.hint=true; renderQ(q.id); }
+  else if(act==='show'){ const q=QS[b.dataset.q]; q.st.shown.add(q.st.idx); q.st.idx++; q.st.hint=false; q.st.tries=0; renderQ(q.id); }
+  else if(act==='next'){ const q=QS[b.dataset.q]; q.st.idx++; renderQ(q.id); }
+  else if(act==='reset'){ const q=QS[b.dataset.q]; q.steps.forEach((k,i)=>delete MCQ[`${q.id}-s${i}`]); q.st.idx=0; q.st.shown=new Set(); q.st.tries=0; q.st.hint=false; renderQ(q.id); }
+});
+document.addEventListener('keydown',e=>{ if(e.key==='Enter' && e.target.matches('.entry input')){ e.preventDefault(); checkQ(QS[e.target.dataset.q]); }});
+function setMode(g){ guided=g; document.getElementById('modeG').classList.toggle('on',g); document.getElementById('modeI').classList.toggle('on',!g); rebuildCards(); }
+document.getElementById('modeG').onclick=()=>setMode(true);
+document.getElementById('modeI').onclick=()=>setMode(false);
+
+/* ---------- colours for canvas ---------- */
+const CS=getComputedStyle(document.documentElement); const col=n=>CS.getPropertyValue('--'+n).trim();
+const ICOL=['i1','i2','i3','i4'].map(col);
+function setupCanvas(cv){ const dpr=Math.min(2,window.devicePixelRatio||1); const W=cv.width,H=cv.height; cv.width=W*dpr; cv.height=H*dpr; const c=cv.getContext('2d'); c.scale(dpr,dpr); return {c,W,H}; }
+function rr(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();}
+
+/* ---------- MACHINE ---------- */
+const PRESETS={
+  Ne:{ions:[[20,'Ne',9],[22,'Ne',1]],note:'²¹Ne is only 0.3% of neon, so it is too rare to appear in a bunch of 10.'},
+  Mg:{ions:[[24,'Mg',8],[25,'Mg',1],[26,'Mg',1]]},
+  Cl:{ions:[[35,'Cl',6],[37,'Cl',2]]},
+  Cu:{ions:[[63,'Cu',7],[65,'Cu',3]]},
+  Ga:{ions:[[69,'Ga',6],[71,'Ga',4]]},
+  Br:{ions:[[79,'Br',5],[81,'Br',5]]},
+  Ag:{ions:[[107,'Ag',5],[109,'Ag',5]]},
+  mix:{ions:[[28,'N₂',3],[32,'O₂',3],[40,'Ar',3],[44,'CO₂',3]],note:'Equal numbers of each ion are shown, not the real proportions in air.'}
+};
+const Mc={preset:'Cu',KE:1e-16,d:1.0,speed:1,show:true,phase:'idle',T:0,ts:0,ions:[],sp:[],paused:false,last:0,raf:0,flash:0,trace:false};
+const mcv=document.getElementById('mc'); const MG=setupCanvas(mcv);
+const X0=240,X1=900, RATE=4; // μs of flight per real second
+function label(s){ return supTxt(s.A)+s.el+'⁺'; }
+function species(){ return PRESETS[Mc.preset].ions.map(([A,el,n],i)=>{const m=A/1000/L, v=Math.sqrt(2*Mc.KE/m), t=Mc.d/v; return {A,el,n,m,v,t,col:ICOL[i],done:false};}); }
+function tAxisMax(){ const mx=Math.max(...Mc.sp.map(s=>s.t))*1e6*1.12; const step=mx>40?10:5; return Math.ceil(mx/step)*step; }
+function resetMachine(){
+  cancelAnimationFrame(Mc.raf); Mc.phase='idle'; Mc.T=0; Mc.ts=0; Mc.ions=[]; Mc.trace=false; Mc.paused=false; Mc.sp=species();
+  document.getElementById('mPause').disabled=true; document.getElementById('mPause').textContent='Pause';
+  document.getElementById('mKEv').innerHTML=`${fmt(Mc.KE)} J`; document.getElementById('mDv').textContent=`${Mc.d.toFixed(2)} m`;
+  document.getElementById('mNote').textContent=PRESETS[Mc.preset].note||'';
+  table(); caption(); drawMachine();
+}
+function fire(){
+  cancelAnimationFrame(Mc.raf); Mc.sp=species(); Mc.ions=[]; Mc.T=0; Mc.ts=0; Mc.flash=0; Mc.trace=true; Mc.phase='ionise'; Mc.paused=false; Mc.last=0;
+  const total=Mc.sp.reduce((a,s)=>a+s.n,0); const ord=order(total,'fire'+Math.random()); let k=0;
+  Mc.sp.forEach((s,si)=>{ for(let j=0;j<s.n;j++){ const slot=ord[k]; Mc.ions.push({si,ax:42+Math.random()*90,ay:80+Math.random()*100,ty:100+((j+0.5)/s.n)*60+ (Math.random()-.5)*6,jx:(Math.random()-.5)*8,hit:0.15+slot*(1.15/total),edir:[Math.random()*6.28,Math.random()*6.28]}); k++; } });
+  document.getElementById('mPause').disabled=false; table(); Mc.raf=requestAnimationFrame(loop);
+}
+function loop(now){
+  if(!Mc.last) Mc.last=now; const dt=Math.min(0.05,(now-Mc.last)/1000); Mc.last=now;
+  if(!Mc.paused){
+    Mc.T+=dt; Mc.flash=Math.max(0,Mc.flash-dt);
+    const prev=Mc.phase;
+    if(Mc.T<1.6) Mc.phase='ionise'; else if(Mc.T<2.5) Mc.phase='accel'; else if(Mc.phase!=='done') { Mc.phase='drift'; Mc.ts+=dt*RATE*Mc.speed; }
+    if(Mc.phase==='drift'){ let all=true; Mc.sp.forEach(s=>{ if(!s.done && Mc.ts*1e-6>=s.t){ s.done=true; Mc.flash=0.35; table(); } if(!s.done) all=false; }); if(all){ Mc.phase='done'; } }
+    if(prev!==Mc.phase) caption();
+  }
+  drawMachine();
+  if(Mc.phase!=='done' || Mc.flash>0) Mc.raf=requestAnimationFrame(loop); else { document.getElementById('mPause').disabled=true; }
+}
+function caption(){
+  const el=document.getElementById('mcap'); const ke=Mc.show?fmt(Mc.KE)+' J':'the same value';
+  const C={
+    idle:'Press <b>Fire</b> to send one bunch of atoms through the spectrometer.',
+    ionise:'<b>1 · Electron impact ionisation.</b> High-energy electrons from the electron gun knock one electron out of each atom: X(g) + e<sup>−</sup> → X<sup>+</sup>(g) + 2e<sup>−</sup>',
+    accel:`<b>2 · Acceleration.</b> The electric field pushes the positive ions towards the negative plate. Every 1+ ion gains the <b>same kinetic energy</b> (${ke}).`,
+    drift:'<b>3 · Flight tube.</b> There is no field here, so each ion keeps a constant velocity. Same KE = ½<i>mv</i>², so lighter ions move faster and arrive first.',
+    done:'<b>4 · Detection.</b> Each ion gains an electron at the detector, making a current. The bigger the current, the more ions (abundance). The time of flight, <i>t</i> = <i>d</i> ÷ <i>v</i>, tells you the mass.'};
+  el.innerHTML=C[Mc.phase];
+}
+function table(){
+  const sh=Mc.show; const q='<span style="color:var(--muted)">?</span>';
+  let h='<thead><tr><th>Ion</th><th>Mass of one ion, <i>m</i> / kg</th><th>Velocity, <i>v</i> / m s<sup>−1</sup></th><th>Time of flight, <i>t</i> / s</th><th>Ions in bunch</th></tr></thead><tbody>';
+  Mc.sp.forEach(s=>{ h+=`<tr><td><span class="sw" style="background:${s.col}"></span>${iso(s.A,s.el)}</td><td>${sh?fmt(s.m):q}</td><td>${sh?fmt(s.v):q}</td><td>${sh?fmt(s.t):q}</td><td>${s.n}</td></tr>`; });
+  document.getElementById('mTable').innerHTML=h+'</tbody>';
+}
+function drawMachine(){
+  const {c,W,H}=MG; c.clearRect(0,0,W,H); c.fillStyle=col('panel'); c.fillRect(0,0,W,H);
+  c.textAlign='center'; c.font='13px '+col('f-ui');
+  // source
+  rr(c,22,64,130,134,10); c.fillStyle=col('panel2'); c.fill(); c.strokeStyle=col('line'); c.lineWidth=2; c.stroke();
+  c.fillStyle=col('ink'); rr(c,70,22,30,24,4); c.fill(); c.fillStyle=col('muted'); c.textAlign='left'; c.fillText('electron gun',106,38); c.textAlign='center';
+  // plates
+  [[170,'+'],[228,'−']].forEach(([x,s])=>{ c.strokeStyle=col('accent'); c.setLineDash([6,5]); c.lineWidth=3; c.beginPath(); c.moveTo(x,66); c.lineTo(x,196); c.stroke(); c.setLineDash([]); c.fillStyle=col('accent'); c.font='bold 20px '+col('f-ui'); c.fillText(s,x,58); });
+  c.font='13px '+col('f-ui');
+  // tube
+  rr(c,X0,88,X1-X0,86,8); c.fillStyle=col('bg'); c.fill(); c.strokeStyle=col('line'); c.lineWidth=2; c.stroke();
+  // dimension
+  c.strokeStyle=col('muted'); c.lineWidth=1.2; c.beginPath(); c.moveTo(X0,190); c.lineTo(X1,190); c.moveTo(X0,184); c.lineTo(X0,196); c.moveTo(X1,184); c.lineTo(X1,196); c.stroke();
+  c.fillStyle=col('panel'); c.fillRect((X0+X1)/2-70,181,140,18); c.fillStyle=col('ink'); c.font='italic 15px '+col('f-math'); c.fillText(`d = ${Mc.d.toFixed(2)} m`,(X0+X1)/2,195);
+  // detector
+  c.fillStyle=Mc.flash>0?col('accent'):col('ink'); rr(c,X1+2,78,22,106,4); c.fill();
+  if(Mc.flash>0){ c.globalAlpha=Mc.flash/0.35*0.4; c.fillStyle=col('accent'); c.beginPath(); c.arc(X1+13,131,40,0,6.3); c.fill(); c.globalAlpha=1; }
+  // labels
+  c.font='13px '+col('f-ui'); c.fillStyle=col('muted');
+  c.fillText('Ionisation',87,216); c.fillText('Acceleration',199,216); c.fillText('Flight tube: no field, constant velocity',(X0+X1)/2,216); c.fillText('Detector',X1+13,216);
+  // ions
+  const ph=Mc.phase;
+  Mc.ions.forEach(io=>{
+    const s=Mc.sp[io.si]; let x,y,ion=true,alpha=1;
+    if(ph==='idle') return;
+    if(Mc.T<1.6){ x=io.ax; y=io.ay; ion = Mc.T>=io.hit+0.25;
+      if(Mc.T>=io.hit && Mc.T<io.hit+0.25){ const p=(Mc.T-io.hit)/0.25; dot(c,85+(io.ax-85)*p,46+(io.ay-46)*p,3,col('elec')); }
+      if(ion && Mc.T<io.hit+0.85){ const p=(Mc.T-io.hit-0.25); c.globalAlpha=Math.max(0,1-p/0.6); io.edir.forEach(a=>dot(c,io.ax+Math.cos(a)*p*110,io.ay+Math.sin(a)*p*110,3,col('elec'))); c.globalAlpha=1; }
+    } else if(Mc.T<2.5){ const p=(Mc.T-1.6)/0.9; x=io.ax+(X0-io.ax)*p*p; const e=p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2; y=io.ay+(io.ty-io.ay)*e; }
+    else { const fr=Math.min(1,Mc.ts*1e-6/s.t); if(fr>=1) return; x=X0+fr*(X1-X0)+io.jx; y=io.ty; }
+    if(!ion){ dot(c,x,y,6.5,'#b8a68c'); return; }
+    c.globalAlpha=alpha; dot(c,x,y,7,s.col); c.strokeStyle='#fff'; c.lineWidth=1.6; c.beginPath(); c.moveTo(x-3,y); c.lineTo(x+3,y); c.moveTo(x,y-3); c.lineTo(x,y+3); c.stroke(); c.globalAlpha=1;
+  });
+  // trace
+  const gx0=X0, gx1=X1+24, gy0=350, gyT=250, tmax=tAxisMax();
+  c.strokeStyle=col('ink'); c.lineWidth=1.5; c.beginPath(); c.moveTo(gx0,gyT-6); c.lineTo(gx0,gy0); c.lineTo(gx1,gy0); c.stroke();
+  const step=tmax>40?10:5; c.fillStyle=col('muted'); c.font='12px '+col('f-ui'); c.textAlign='center';
+  for(let t=0;t<=tmax+1e-9;t+=step){ const x=gx0+(t/tmax)*(gx1-gx0); c.strokeStyle=col('line'); c.lineWidth=1; c.beginPath(); c.moveTo(x,gyT); c.lineTo(x,gy0); c.stroke(); c.fillText(String(t),x,gy0+15); }
+  c.fillText('time of flight / μs',(gx0+gx1)/2,gy0+29);
+  c.save(); c.translate(gx0-26,(gy0+gyT)/2); c.rotate(-Math.PI/2); c.fillText('detector current',0,0); c.restore();
+  // clock
+  c.textAlign='left'; c.fillStyle=col('ink'); c.font='14px '+col('f-num');
+  if(Mc.trace){ c.textAlign='right'; c.fillText(`flight time so far: ${Mc.ts.toFixed(1)} μs`,W-14,30); c.textAlign='left'; }
+  if(Mc.trace){
+    const maxN=Math.max(...Mc.sp.map(s=>s.n));
+    // time cursor
+    if(Mc.phase==='drift'){ const x=gx0+Math.min(1,Mc.ts/tmax)*(gx1-gx0); c.strokeStyle=col('accent'); c.setLineDash([4,4]); c.beginPath(); c.moveTo(x,gyT); c.lineTo(x,gy0); c.stroke(); c.setLineDash([]); }
+    Mc.sp.forEach(s=>{ if(!s.done) return; const xp=gx0+(s.t*1e6/tmax)*(gx1-gx0); const h=(s.n/maxN)*88;
+      c.strokeStyle=s.col; c.lineWidth=2.5; c.beginPath(); for(let x=xp-18;x<=xp+18;x+=1){ const y=gy0-h*Math.exp(-((x-xp)**2)/(2*16)); x===xp-18?c.moveTo(x,y):c.lineTo(x,y);} c.stroke();
+      c.fillStyle=s.col; c.font='bold 13px '+col('f-ui'); c.textAlign='center'; c.fillText(supTxt(s.A)+s.el+'⁺',xp,gy0-h-18);
+      if(Mc.show){ c.font='12px '+col('f-num'); c.fillText((s.t*1e6).toFixed(1)+' μs',xp,gy0-h-5); } });
+  }
+  c.textAlign='left';
+}
+function dot(c,x,y,r,f){ c.fillStyle=f; c.beginPath(); c.arc(x,y,r,0,6.2832); c.fill(); }
+document.getElementById('mFire').onclick=fire;
+document.getElementById('mPause').onclick=e=>{ Mc.paused=!Mc.paused; e.target.textContent=Mc.paused?'Resume':'Pause'; };
+document.getElementById('mPreset').onchange=e=>{ Mc.preset=e.target.value; resetMachine(); };
+document.getElementById('mKE').oninput=e=>{ Mc.KE=(+e.target.value)*1e-16; resetMachine(); };
+document.getElementById('mD').oninput=e=>{ Mc.d=+e.target.value; resetMachine(); };
+document.getElementById('mShow').onchange=e=>{ Mc.show=e.target.checked; table(); caption(); drawMachine(); };
+document.querySelectorAll('[data-sp]').forEach(b=>b.onclick=()=>{ Mc.speed=+b.dataset.sp; document.querySelectorAll('[data-sp]').forEach(x=>x.classList.toggle('on',x===b)); });
+
+const mq=document.getElementById('machineQs');
+standaloneMCQ(mq,'mc1',{q:'In the acceleration area, every 1+ ion gains the same…',opts:[['kinetic energy',1,'The field does the same work on every ion with the same charge, so they all get the same KE.'],['velocity',0,'Look at the animation: the ions leave the plates together but then separate, so their velocities differ.'],['mass',0,'Mass doesn\'t change. Each isotope has its own mass.'],['time of flight',0,'Lighter ions arrive first, so the times are different.']]});
+standaloneMCQ(mq,'mc2',{q:'Inside the flight tube, where there is no electric field, the ions…',opts:[['move at a constant velocity',1,'No force acts on them, so they don\'t speed up or slow down. That is why <i>v</i> = <i>d</i> ÷ <i>t</i> works.'],['keep speeding up',0,'Speeding up only happens between the plates, where there is a field.'],['slow down',0,'Nothing in the tube slows them.'],['follow a curved path',0,'There is no magnet in a TOF spectrometer.']]});
+standaloneMCQ(mq,'mc3',{q:'Use the slider. If the kinetic energy is doubled, the time of flight…',opts:[['decreases, to about 0.71 times its value (÷ √2)',1,'KE = ½<i>mv</i>², so <i>v</i> ∝ √KE. Double KE → <i>v</i> × √2 → <i>t</i> ÷ √2.'],['halves',0,'Velocity depends on √KE, not KE.'],['doubles',0,'More energy means faster ions, so less time.'],['doesn\'t change',0,'Try it with the slider: the peaks move left.']]});
+standaloneMCQ(mq,'mc4',{q:'If the flight tube is twice as long (same KE), the time of flight…',opts:[['doubles',1,'The velocity is the same, so twice the distance takes twice the time.'],['halves',0,'The ions travel further at the same speed.'],['increases by √2',0,'Distance and time are directly proportional at constant velocity.'],['doesn\'t change',0,'Try it with the slider.']]});
+
+/* ---------- TOOLKIT ---------- */
+const ROUTES={a:['A · velocity',['d','t'],['v'],'v','A: use <i>v</i> = <i>d</i> ÷ <i>t</i> only.'],
+  b:['B · tube length',['M','KE','t'],['mg','mkg','v','d'],'d','B: start at the mass number, convert to kg, cross to <i>v</i> using KE, then use <i>t</i> to find <i>d</i>.'],
+  c:['C · ion mass',['d','t','KE'],['v','mkg','mg'],'mg','C: find <i>v</i> from <i>d</i> and <i>t</i>, cross to <i>m</i> using KE, then convert to g.'],
+  d:['D · mass number',['d','t','KE'],['v','mkg','mg','M'],'M','D: the same as C, then × <i>L</i> to get the mass of a mole, which ≈ the mass number.'],
+  f:['F · time of flight',['M','KE','d'],['mg','mkg','v','t'],'t','F (17d, 18d): mass number → <i>m</i> in kg → <i>v</i> from KE → <i>t</i> = <i>d</i> ÷ <i>v</i>.']};
+const rb=document.getElementById('routeBtns');
+rb.innerHTML='<div class="seg" role="group" aria-label="Choose a route">'+Object.entries(ROUTES).map(([k,r],i)=>`<button type="button" data-route="${k}" class="${i===1?'on':''}">${r[0]}</button>`).join('')+'</div>';
+function showRoute(k){ const r=ROUTES[k]; document.getElementById('routeBig').innerHTML=routeSVG(r[1],r[2],r[3],[]); document.getElementById('routeText').innerHTML=r[4]; rb.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.route===k)); }
+rb.onclick=e=>{ const b=e.target.closest('[data-route]'); if(b) showRoute(b.dataset.route); };
+showRoute('b');
+
+function stepper(el,sets,startKey){
+  let key=startKey,k=0;
+  const draw=(anim)=>{ const lines=sets[key]; el.innerHTML=lines.slice(0,k+1).map((l,i)=>`<div class="dl ${i===k?'last':'old'} ${i===k&&anim?'new':''}"><span>${l[0]}</span>${l[1]?`<span class="op">${l[1]}</span>`:''}</div>`).join(''); };
+  draw(false);
+  return { next(){ if(k<sets[key].length-1){k++; draw(true);} }, back(){ if(k>0){k--; draw(false);} }, set(nk){ key=nk; k=0; draw(false);} , atEnd(){return k>=sets[key].length-1;} };
+}
+const RE={
+  v:[['KE = ½<i>mv</i>²',''],['2KE = <i>mv</i>²','× 2 both sides'],['2KE ÷ <i>m</i> = <i>v</i>²','÷ <i>m</i> both sides'],['<i>v</i> = √(2KE ÷ <i>m</i>)','√ both sides'],['Sections B and F use this','']],
+  m:[['KE = ½<i>mv</i>²',''],['2KE = <i>mv</i>²','× 2 both sides'],['2KE ÷ <i>v</i>² = <i>m</i>','÷ <i>v</i>² both sides'],['<i>m</i> = 2KE ÷ <i>v</i>²','swap sides'],['Sections C and D use this','']]};
+const rs=stepper(document.getElementById('rearr'),RE,'v');
+document.getElementById('rNext').onclick=()=>rs.next(); document.getElementById('rBack').onclick=()=>rs.back();
+document.getElementById('rearrSeg').onclick=e=>{ const b=e.target.closest('[data-r]'); if(!b) return; rs.set(b.dataset.r); document.querySelectorAll('#rearrSeg button').forEach(x=>x.classList.toggle('on',x===b)); };
+
+let chainDir='f';
+function chainHTML(){
+  const A=Math.max(1,Math.min(300,Math.round(+document.getElementById('chainA').value||35)));
+  const m=A/1000/L;
+  const items = chainDir==='f'
+   ? [['box',`${A} g mol<sup>−1</sup>`,'mass of one mole of ions'],['op','÷ 1000'],['box',`${fmt(A/1000)} kg mol<sup>−1</sup>`,'still one mole, now in kg'],['op',`÷ ${LH}`],['box',`${fmt(m)} kg`,'mass of ONE ion: use this in KE = ½<i>mv</i>²']]
+   : [['box',`${fmt(m)} kg`,'one ion, from <i>m</i> = 2KE ÷ <i>v</i>²'],['op','× 1000'],['box',`${fmt(m*1000)} g`,'one ion, in grams'],['op',`× ${LH}`],['box',`${fmt(A)} g mol<sup>−1</sup>`,`one mole of ions, so mass number = ${A}`]];
+  return items.map((it,i)=> it[0]==='box' ? `<div class="cbox ${i===0?'on':''}" data-ci="${i}"><div class="cv">${it[1]}</div><div class="cd">${it[2]}</div></div>` : `<div class="cop" data-ci="${i}"><span class="ct">${it[1]}</span><div class="track"><span class="dot"></span></div></div>`).join('');
+}
+const chainEl=document.getElementById('chain'); let chainTimers=[];
+function chainReset(){ chainTimers.forEach(clearTimeout); chainTimers=[]; chainEl.innerHTML=chainHTML(); }
+function chainRun(){ chainReset(); const els=[...chainEl.children]; let t=300;
+  els.forEach((el,i)=>{ if(i===0) return; chainTimers.push(setTimeout(()=>{ el.classList.add('on'); if(el.classList.contains('cop')) el.classList.add('run'); }, t)); t+= el.classList.contains('cop')?700:450; }); }
+document.getElementById('chainGo').onclick=chainRun;
+document.getElementById('chainA').oninput=chainReset;
+document.getElementById('chainSeg').onclick=e=>{ const b=e.target.closest('[data-d]'); if(!b) return; chainDir=b.dataset.d; document.querySelectorAll('#chainSeg button').forEach(x=>x.classList.toggle('on',x===b)); chainReset(); };
+chainReset();
+
+const tq=document.getElementById('toolQs');
+standaloneMCQ(tq,'tk1',{q:'KE is in joules. What unit must the mass be in?',opts:[['kg',1,'1 J = 1 kg m<sup>2</sup> s<sup>−2</sup>, so mass must be in kg.'],['g',0,'Using g gives a velocity that is √1000 ≈ 32 times too small.'],['g mol<sup>−1</sup>',0,'That is the mass of a whole mole, not one ion.'],['No unit is needed',0,'Units matter: KE in J needs kg and m s<sup>−1</sup>.']]});
+standaloneMCQ(tq,'tk2',{q:`Sense check: which is a sensible mass for one ${iso(35,'Cl')} ion?`,opts:[['5.81 × 10<sup>−26</sup> kg',1,'35 ÷ 1000 ÷ 6.022 × 10<sup>23</sup>. One ion has a tiny mass.'],['5.81 × 10<sup>−23</sup> kg',0,'That is the mass in grams with the wrong unit. Divide by 1000 again.'],['0.035 kg',0,'That is the mass of a whole mole.'],['2.11 × 10<sup>25</sup> kg',0,'Bigger than a planet! You multiplied by <i>L</i> instead of dividing.']]});
+standaloneMCQ(tq,'tk3',{q:'Sam types 1.20 ÷ 5.40 × 10 ^ −5 into a calculator and gets 2.22 × 10<sup>−6</sup> m s<sup>−1</sup>. What went wrong?',opts:[['The calculator worked out (1.20 ÷ 5.40) × 10<sup>−5</sup>. The bottom needs brackets, or use the ×10<sup>x</sup> key',1,'Type 1.20 ÷ (5.40 × 10<sup>−5</sup>) or use the ×10<sup>x</sup> (EXP) key. The answer is 2.22 × 10<sup>4</sup> m s<sup>−1</sup>.'],['The time should be in ms',0,'Seconds are correct.'],['The length should be in cm',0,'Metres are correct.'],['Nothing, that is right',0,'An ion travelling 1.2 m in about 50 μs must be fast, about 20 000 m s<sup>−1</sup>.']]});
+standaloneMCQ(tq,'tk4',{q:'Typical ion velocities in a TOF spectrometer are about…',opts:[['10<sup>4</sup> to 10<sup>5</sup> m s<sup>−1</sup>',1,'If your velocity is far outside this range, check your units and powers of ten.'],['10 to 100 m s<sup>−1</sup>',0,'Far too slow: a 1 m tube would take a tenth of a second.'],['10<sup>−4</sup> m s<sup>−1</sup>',0,'That is slower than a snail.'],['3 × 10<sup>8</sup> m s<sup>−1</sup>',0,'That is the speed of light. Ions are much slower.']]});
+
+/* ---------- SECTION E extras ---------- */
+let eStep, Race={pair:0,T:0,run:false,raf:0,last:0};
+const PAIRS=[['Cu',63,65,2.10e-5,'Q13'],['Ga',69,71,2.40e-5,'Q14'],['Ag',107,109,3.05e-5,'Q15'],['Sb',121,123,4.85e-5,'Q16'],['Ga',69,71,2.20e-5,'Q19d'],['Ne',20,22,2.00e-5,'Ne']];
+let RG;
+function setupE(){
+  eStep=stepper(document.getElementById('ederiv'),{t:[
+    ['KE = ½<i>mv</i>²',''],['KE = ½<i>m</i>(<i>d</i> ÷ <i>t</i>)²','substitute <i>v</i> = <i>d</i> ÷ <i>t</i>'],['KE = <i>md</i>² ÷ 2<i>t</i>²','tidy up'],['<i>t</i>² = <i>md</i>² ÷ 2KE','rearrange for <i>t</i>²'],['<i>t</i> = <i>d</i> √(<i>m</i> ÷ 2KE)','√ both sides'],['<i>t</i> ∝ √<i>m</i>','<i>d</i> and KE are the same for both ions'],['<i>t</i><sub>2</sub> ÷ <i>t</i><sub>1</sub> = √(<i>m</i><sub>2</sub> ÷ <i>m</i><sub>1</sub>)','so']]},'t');
+  document.getElementById('eNext').onclick=()=>eStep.next(); document.getElementById('eBack').onclick=()=>eStep.back();
+  const sel=document.getElementById('rPair'); sel.innerHTML=PAIRS.map((p,i)=>`<option value="${i}">${p[4]==='Ne'?'Neon':p[4]}: ${supTxt(p[1])}${p[0]} vs ${supTxt(p[2])}${p[0]}</option>`).join('');
+  sel.onchange=()=>{ Race.pair=+sel.value; Race.T=0; Race.run=false; cancelAnimationFrame(Race.raf); drawRace(); };
+  document.getElementById('rGo').onclick=()=>{ cancelAnimationFrame(Race.raf); Race.T=0; Race.run=true; Race.last=0; Race.raf=requestAnimationFrame(raceLoop); };
+  RG=setupCanvas(document.getElementById('rc'));
+  drawRace();
+}
+function raceLoop(now){ if(!Race.last) Race.last=now; Race.T+=Math.min(0.05,(now-Race.last)/1000); Race.last=now; drawRace(); const [, m1, m2, t1]=PAIRS[Race.pair]; const t2=t1*Math.sqrt(m2/m1); if(Race.T*(t1/5)<t2*1.02) Race.raf=requestAnimationFrame(raceLoop); else Race.run=false; }
+function drawRace(){
+  if(!RG) return; const {c,W,H}=RG; const [el,m1,m2,t1]=PAIRS[Race.pair]; const t2=t1*Math.sqrt(m2/m1);
+  const ts=Race.T*(t1/5); // light ion finishes in 5 s
+  c.fillStyle=col('panel'); c.fillRect(0,0,W,H);
+  const XA=150,XB=900; c.font='15px '+col('f-ui'); c.textAlign='right';
+  [[m1,ICOL[0],50,t1],[m2,ICOL[1],120,t2]].forEach(([m,cl,y,t])=>{
+    rr(c,XA,y-22,XB-XA,44,8); c.fillStyle=col('bg'); c.fill(); c.strokeStyle=col('line'); c.lineWidth=2; c.stroke();
+    c.fillStyle=col('ink'); rr(c,XB+2,y-26,16,52,3); c.fill();
+    c.fillStyle=cl; c.font='bold 17px '+col('f-ui'); c.fillText(supTxt(m)+el+'⁺',XA-14,y+6);
+    const fr=Math.min(1,ts/t); dot(c,XA+fr*(XB-XA),y,10,cl);
+    c.font='13px '+col('f-num'); c.fillStyle=col('muted'); c.textAlign='left';
+    c.fillText(fr>=1?`arrived: ${fmtT(t)} s`:'',XA+8,y-28); c.textAlign='right';
+  });
+  // zoom panel
+  const zx0=150,zx1=900,zy=232; c.textAlign='left'; c.fillStyle=col('muted'); c.font='13px '+col('f-ui');
+  c.fillText('Zoom ×30 on the last 3% of the tube',zx0,186);
+  rr(c,zx0,198,zx1-zx0,68,8); c.fillStyle=col('panel2'); c.fill();
+  c.strokeStyle=col('ink'); c.lineWidth=3; c.beginPath(); c.moveTo(zx1-6,200); c.lineTo(zx1-6,264); c.stroke();
+  [[t1,ICOL[0],218],[t2,ICOL[1],248]].forEach(([t,cl,y])=>{ const fr=Math.min(1,ts/t); if(fr>0.97){ dot(c,zx0+(fr-0.97)/0.03*(zx1-6-zx0),y,8,cl);} });
+  c.fillStyle=col('ink'); c.font='14px '+col('f-num'); c.textAlign='left';
+  c.fillText(`t = ${(ts*1e6).toFixed(2)} μs`,10,292);
+  c.textAlign='right'; c.fillText(`gap at the detector = ${((t2-t1)*1e9).toFixed(0)} ns`,W-10,292);
+  const note=document.getElementById('rNote');
+  if(note) note.innerHTML=`<i>t</i><sub>2</sub> = ${fmt(t1)} × √(${m2} ÷ ${m1}) = ${fmt(t2)} s. The heavier ion is only ${(100*(Math.sqrt(m2/m1)-1)).toFixed(1)}% slower, so the difference shows up in the third significant figure.`;
+}
+
+/* ---------- boot ---------- */
+['a','b','c','d','e','f'].forEach(buildSection);
+setupE();
+updateBadges();
+resetMachine();
+let start='machine'; try{ const h=location.hash.replace('#',''); if(h) start=h; }catch(e){}
+showTab(start);
+})();
+</script>
+
+</body>
+</html>

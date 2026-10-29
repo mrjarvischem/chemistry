@@ -1,0 +1,484 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>IR Spectroscopy Scanner</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: compound chips + controls → optical bench (source, monochromator, sample, detector) → spectrum with aligned colour strips, readout column beside it */
+:root{
+  --bg:#ecebe6; --panel:#fbfbf8; --ink:#1f2328; --muted:#5b6066; --line:#d4d1c8;
+  --accent:#0e5f66; --accent-soft:#dcebec; --chip:#f3f2ee;
+  --f-ui:"Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+  --f-data:ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:15px;line-height:1.45;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:14px 24px}
+.wrap{max-width:1280px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:10px 20px}
+h1{margin:0;font-size:1.45rem;letter-spacing:-.01em;text-wrap:balance}
+.sub{margin:2px 0 0;color:var(--muted);font-size:.9rem}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:inherit;font-size:.88rem;border:1px solid var(--line);background:var(--chip);color:var(--ink);padding:6px 11px;border-radius:999px;cursor:pointer;display:flex;flex-direction:column;align-items:flex-start;line-height:1.15}
+.chip small{color:var(--muted);font-size:.72rem;letter-spacing:.04em;text-transform:uppercase}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.chip[aria-pressed="true"] small{color:#cfe6e8}
+.chip:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 12px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg button{font:inherit;font-size:.88rem;border:0;background:var(--chip);color:var(--ink);padding:6px 12px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.btn{font:inherit;font-size:.88rem;border:1px solid var(--line);background:var(--chip);color:var(--ink);padding:6px 12px;border-radius:6px;cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;min-width:9.5em}
+.ctl{display:flex;align-items:center;gap:8px;font-size:.86rem;color:var(--muted)}
+.ctl output{font-family:var(--f-data);color:var(--ink);min-width:6.5em}
+.scanonly{display:contents}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px}
+canvas{display:block;width:100%;touch-action:none}
+#bench{aspect-ratio:1000/320;cursor:pointer}
+#spec{aspect-ratio:1000/420;cursor:ew-resize}
+.bench{padding:6px}
+.lower{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:12px}
+@media (max-width:920px){.lower{grid-template-columns:minmax(0,1fr)}}
+.spec{padding:6px 6px 10px;min-width:0}
+.hint{margin:4px 10px 0;color:var(--muted);font-size:.82rem}
+.readout{padding:14px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.big{display:flex;align-items:baseline;gap:8px}
+.big b{font-family:var(--f-data);font-size:2.1rem;font-weight:600;font-variant-numeric:tabular-nums;line-height:1}
+.big span{color:var(--muted)}
+.sw{display:inline-block;width:12px;height:12px;border-radius:3px;flex:none}
+dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:.88rem}
+dt{color:var(--muted)}
+dd{margin:0;font-family:var(--f-data);font-variant-numeric:tabular-nums}
+.status{padding:9px 11px;border-radius:6px;background:var(--chip);border-left:4px solid var(--line);font-size:.9rem;min-height:3.4em}
+.lbl{font-size:.72rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:0 0 4px}
+.rows{display:flex;flex-direction:column;gap:3px}
+.row{font:inherit;font-size:.86rem;display:grid;grid-template-columns:14px 1fr auto auto;gap:8px;align-items:center;text-align:left;border:1px solid transparent;background:transparent;color:var(--ink);padding:5px 6px;border-radius:5px;cursor:pointer}
+.row:hover{background:var(--chip)}
+.row.on{background:var(--accent-soft);border-color:#b7d6d8}
+.row .r{font-family:var(--f-data);color:var(--muted);font-size:.8rem}
+.row .p{font-family:var(--f-data);font-size:.8rem;min-width:4.3em;text-align:right}
+.note{font-size:.86rem;margin:0;color:var(--ink)}
+footer{color:var(--muted);font-size:.8rem;max-width:80ch}
+@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>IR Spectroscopy Scanner</h1>
+      <p class="sub">Infrared photons pass through a sample. Bonds absorb the photons whose energy matches their stretching vibration.</p>
+    </div>
+    <div class="chips" id="chips" role="group" aria-label="Compound"></div>
+  </header>
+
+  <div class="toolbar">
+    <div class="seg" role="group" aria-label="Beam mode">
+      <button id="mScan" aria-pressed="true">Scan one wavenumber at a time</button>
+      <button id="mWhole" aria-pressed="false">Whole beam</button>
+    </div>
+    <span class="scanonly" id="scanCtl">
+      <button class="btn primary" id="play">Start scan</button>
+      <button class="btn" id="reset">Reset scan</button>
+      <button class="btn" id="full">Show full spectrum</button>
+      <label class="ctl" for="speed">Scan speed <input type="range" id="speed" min="40" max="600" step="10" value="160"><output id="speedOut">160 cm⁻¹/s</output></label>
+    </span>
+    <label class="ctl" for="ranges"><input type="checkbox" id="ranges"> Data sheet ranges</label>
+  </div>
+
+  <section class="card bench"><canvas id="bench" aria-label="IR spectrometer with sample"></canvas></section>
+
+  <div class="lower">
+    <section class="card spec">
+      <canvas id="spec" aria-label="Infrared spectrum"></canvas>
+      <p class="hint">Drag on the spectrum or press ← → to move the beam's wavenumber. Click a bond in the molecule, or a row in the table, to jump to its absorption.</p>
+    </section>
+    <aside class="card readout">
+      <div>
+        <p class="lbl">Beam wavenumber</p>
+        <div class="big"><span class="sw" id="curSw"></span><b id="wn">4000</b><span>cm⁻¹</span></div>
+      </div>
+      <dl>
+        <dt>Wavelength</dt><dd id="lam">–</dd>
+        <dt>Photon energy, E = hcν̃</dt><dd id="en">–</dd>
+        <dt>Per mole of photons</dt><dd id="enm">–</dd>
+        <dt>Transmittance</dt><dd id="tr">–</dd>
+      </dl>
+      <div class="status" id="status">–</div>
+      <div>
+        <p class="lbl" id="tblTitle">Bonds in this molecule</p>
+        <div class="rows" id="rows"></div>
+      </div>
+      <p class="note" id="note"></p>
+    </aside>
+  </div>
+  <footer>Spectra are modelled from typical liquid-film peak positions and use the AQA data sheet ranges. Colours are false colours: violet for high-energy (high wavenumber) photons through to red for low-energy ones. Modern FTIR instruments measure every wavenumber at once and sort them out mathematically; the scanning beam here shows the same idea one wavenumber at a time.</footer>
+</div>
+
+<script>
+(()=>{
+const H=6.626e-34, C=2.998e8, NA=6.022e23;
+const INK='#1f2328', MUTED='#5b6066', LINE='#d4d1c8', PANEL='#fbfbf8', ACC='#0e5f66';
+const FONT='"Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif';
+const DATAF='ui-monospace, Consolas, "SF Mono", Menlo, monospace';
+const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const GDEF={
+  OHalc:{label:'O–H (alcohol)',short:'O–H',range:[3230,3550],tags:['OH']},
+  OHacid:{label:'O–H (acid)',short:'O–H',range:[2500,3000],tags:['OH']},
+  CH:{label:'C–H',short:'C–H',range:[2850,3300],tags:['CH','CHs']},
+  CN:{label:'C≡N',short:'C≡N',range:[2220,2260],tags:['CN']},
+  CdO:{label:'C=O',short:'C=O',range:[1680,1750],tags:['C=O']},
+  CdC:{label:'C=C',short:'C=C',range:[1620,1680],tags:['C=C']},
+  CO:{label:'C–O',short:'C–O',range:[1000,1300],tags:['CO']},
+  fp:{label:'Fingerprint region',short:'fingerprint',range:[500,1500],tags:null}
+};
+const Hs=(list,tag='CH')=>list;
+const COMPOUNDS=[
+ {name:'Ethanol',cls:'Alcohol',formula:'CH₃CH₂OH',
+  note:'Broad O–H (alcohol) around 3340 cm⁻¹, widened by hydrogen bonding between molecules. Strong C–O near 1050 cm⁻¹. No C=O peak.',
+  atoms:[['C',0,0],['C',1,0],['O',2,0],['H',3,0],['H',-1,0],['H',0,-1],['H',0,1],['H',1,-1],['H',1,1]],
+  bonds:[[0,1,1,'CC'],[1,2,1,'CO'],[2,3,1,'OH'],[0,4,1,'CH'],[0,5,1,'CH'],[0,6,1,'CH'],[1,7,1,'CH'],[1,8,1,'CH']],
+  bands:[[3340,110,68,'OHalc'],[2975,22,55,'CH'],[2930,16,30,'CH'],[2885,16,28,'CH'],[1055,18,72,'CO'],[1090,12,38,'CO'],
+         [1450,14,22,'fp'],[1380,12,25,'fp'],[1330,14,15,'fp'],[880,10,35,'fp'],[660,40,12,'fp']]},
+ {name:'Ethanoic acid',cls:'Carboxylic acid',formula:'CH₃COOH',
+  note:'Very broad O–H (acid) from about 2500 to 3300 cm⁻¹ that swamps the C–H peaks, plus a strong C=O at 1715 cm⁻¹. Together they point to COOH.',
+  atoms:[['C',0,0],['C',1,0],['O',1,-1],['O',2,0],['H',3,0],['H',-1,0],['H',0,-1],['H',0,1]],
+  bonds:[[0,1,1,'CC'],[1,2,2,'C=O'],[1,3,1,'CO'],[3,4,1,'OH'],[0,5,1,'CH'],[0,6,1,'CH'],[0,7,1,'CH']],
+  bands:[[2950,230,52,'OHacid'],[2660,40,12,'OHacid'],[2995,18,14,'CH'],[1715,22,88,'CdO'],[1290,22,62,'CO'],
+         [1410,16,38,'fp'],[1050,14,22,'fp'],[940,30,35,'fp'],[620,20,30,'fp']]},
+ {name:'Propanone',cls:'Ketone',formula:'CH₃COCH₃',
+  note:'Sharp, strong C=O at 1715 cm⁻¹ and no O–H. The peak near 1220 cm⁻¹ is C–C–C stretching in the fingerprint region, not a C–O bond.',
+  atoms:[['C',0,0],['C',1,0],['O',1,-1],['C',2,0],['H',-1,0],['H',0,-1],['H',0,1],['H',3,0],['H',2,-1],['H',2,1]],
+  bonds:[[0,1,1,'CC'],[1,2,2,'C=O'],[1,3,1,'CC'],[0,4,1,'CH'],[0,5,1,'CH'],[0,6,1,'CH'],[3,7,1,'CH'],[3,8,1,'CH'],[3,9,1,'CH']],
+  bands:[[3005,14,22,'CH'],[2965,16,20,'CH'],[1716,16,90,'CdO'],[1420,14,38,'fp'],[1362,12,62,'fp'],[1222,16,58,'fp'],
+         [1093,12,20,'fp'],[902,10,18,'fp'],[530,14,40,'fp']]},
+ {name:'Ethyl ethanoate',cls:'Ester',formula:'CH₃COOCH₂CH₃',
+  note:'Ester C=O at a slightly higher wavenumber (about 1740 cm⁻¹) than a ketone, with two strong C–O peaks between 1000 and 1300 cm⁻¹. No O–H.',
+  atoms:[['C',0,0],['C',1,0],['O',1,-1],['O',2,0],['C',3,0],['C',4,0],['H',-1,0],['H',0,-1],['H',0,1],['H',3,-1],['H',3,1],['H',5,0],['H',4,-1],['H',4,1]],
+  bonds:[[0,1,1,'CC'],[1,2,2,'C=O'],[1,3,1,'CO'],[3,4,1,'CO'],[4,5,1,'CC'],[0,6,1,'CH'],[0,7,1,'CH'],[0,8,1,'CH'],[4,9,1,'CH'],[4,10,1,'CH'],[5,11,1,'CH'],[5,12,1,'CH'],[5,13,1,'CH']],
+  bands:[[2985,18,35,'CH'],[2940,14,18,'CH'],[1742,16,88,'CdO'],[1450,14,30,'fp'],[1374,12,52,'fp'],[1240,22,88,'CO'],[1048,16,62,'CO'],
+         [938,12,30,'fp'],[848,10,20,'fp'],[635,12,30,'fp']]},
+ {name:'Propene',cls:'Alkene',formula:'CH₂=CHCH₃',
+  note:'C=C at about 1645 cm⁻¹ is much weaker than a C=O. C–H bonds on the C=C absorb just above 3000 cm⁻¹; C–H on the CH₃ absorb just below.',
+  atoms:[['C',0,0],['C',1,0],['C',2,0],['H',-0.7,-0.7],['H',-0.7,0.7],['H',1,-1],['H',3,0],['H',2,-1],['H',2,1]],
+  bonds:[[0,1,2,'C=C'],[1,2,1,'CC'],[0,3,1,'CHs'],[0,4,1,'CHs'],[1,5,1,'CHs'],[2,6,1,'CH'],[2,7,1,'CH'],[2,8,1,'CH']],
+  bands:[[3085,16,35,'CH',['CHs']],[2980,16,40,'CH',['CH']],[2955,14,30,'CH',['CH']],[2870,12,22,'CH',['CH']],[1648,12,48,'CdC'],
+         [1445,14,35,'fp'],[1415,12,30,'fp'],[1375,10,20,'fp'],[990,10,58,'fp'],[912,10,75,'fp'],[575,14,22,'fp']]},
+ {name:'Propanenitrile',cls:'Nitrile',formula:'CH₃CH₂CN',
+  note:'The C≡N peak at about 2250 cm⁻¹ sits in an otherwise empty part of the spectrum, so it is easy to spot.',
+  atoms:[['C',0,0],['C',1,0],['C',2,0],['N',3,0],['H',-1,0],['H',0,-1],['H',0,1],['H',1,-1],['H',1,1]],
+  bonds:[[0,1,1,'CC'],[1,2,1,'CC'],[2,3,3,'CN'],[0,4,1,'CH'],[0,5,1,'CH'],[0,6,1,'CH'],[1,7,1,'CH'],[1,8,1,'CH']],
+  bands:[[2990,16,40,'CH'],[2950,14,28,'CH'],[2890,12,15,'CH'],[2250,9,62,'CN'],[1465,14,40,'fp'],[1430,12,35,'fp'],
+         [1320,12,22,'fp'],[1075,12,25,'fp'],[1010,10,18,'fp'],[785,12,30,'fp'],[545,14,25,'fp']]}
+];
+
+// ---------- molecule prep ----------
+function bandBonds(m,bn){
+  if(bn[3]==='fp') return m.bonds.map((_,i)=>i);
+  const tags=bn[4]||GDEF[bn[3]].tags;
+  return m.bonds.map((b,i)=>tags.includes(b[3])?i:-1).filter(i=>i>=0);
+}
+COMPOUNDS.forEach(m=>{
+  const n=m.atoms.length, adj=[...Array(n)].map(()=>[]);
+  m.bonds.forEach(([a,b],i)=>{adj[a].push([b,i]);adj[b].push([a,i]);});
+  const reach=(s,skip)=>{const seen=new Set([s]),st=[s];while(st.length){const v=st.pop();for(const [u,bi] of adj[v]){if(bi===skip||seen.has(u))continue;seen.add(u);st.push(u);}}return seen;};
+  m.side=m.bonds.map(([a,b],i)=>{const sb=reach(b,i),sa=reach(a,i);return sb.size<=sa.size?{anchor:a,moved:b,set:[...sb]}:{anchor:b,moved:a,set:[...sa]};});
+  m.bandBonds=m.bands.map(bn=>bandBonds(m,bn));
+  m.bondW=m.bonds.map((_,i)=>{let best=null;m.bands.forEach((bn,k)=>{if(bn[3]!=='fp'&&m.bandBonds[k].includes(i)&&(!best||bn[2]>best[2]))best=bn;});return best?best[0]:1100;});
+  const gk=[];m.bands.forEach(bn=>{if(!gk.includes(bn[3]))gk.push(bn[3]);});
+  gk.sort((a,b)=>(a==='fp')-(b==='fp')||GDEF[b].range[1]-GDEF[a].range[1]);
+  m.groups=gk.map(k=>{const bs=m.bands.filter(bn=>bn[3]===k);const deep=bs.reduce((p,q)=>q[2]>p[2]?q:p);return {key:k,deep};});
+  const xs=m.atoms.map(a=>a[1]),ys=m.atoms.map(a=>a[2]);
+  m.bx=[Math.min(...xs),Math.max(...xs)];m.by=[Math.min(...ys),Math.max(...ys)];
+});
+
+// ---------- physics of the spectrum ----------
+const base=w=>94.5+1.8*(w-500)/3500;
+function contribs(m,w){return m.bands.map(bn=>{const z=(w-bn[0])/bn[1];return bn[2]/100*Math.exp(-z*z);});}
+function absFrac(m,w){let s=1;for(const c of contribs(m,w))s*=(1-c);return 1-s;}
+function Tcalc(m,w){return Math.max(1,Math.min(99.5,base(w)*(1-absFrac(m,w))+0.35*Math.sin(w*0.41)+0.25*Math.sin(w*1.7+1)));}
+function wc(w,a=1){const h=Math.max(0,Math.min(270,270*(w-500)/3500));const l=(h>35&&h<200)?35:45;return `hsla(${h.toFixed(0)},80%,${l}%,${a})`;}
+
+// ---------- state ----------
+let ci=0, mode='scan', running=false, w=3340, revealed=500, speed=160, showRanges=false;
+let photons=[], bursts=[], exc=[], spawnA=0, spawnB=0, entered=1, arrived=0.95, det=0.95, lastAbs=null;
+const M=()=>COMPOUNDS[ci];
+
+// ---------- canvases ----------
+const bench=document.getElementById('bench'), spec=document.getElementById('spec');
+const AW=1000,AH=320,GW=1000,GH=420;
+let actx,gctx;
+function fit(c,W,Hh){const dpr=window.devicePixelRatio||1;const cw=c.clientWidth||W;c.width=Math.round(cw*dpr);c.height=Math.round(cw*Hh/W*dpr);const ctx=c.getContext('2d');const s=c.width/W;ctx.setTransform(s,0,0,s,0,0);return ctx;}
+function refit(){actx=fit(bench,AW,AH);gctx=fit(spec,GW,GH);}
+new ResizeObserver(refit).observe(bench);new ResizeObserver(refit).observe(spec);refit();
+
+// spectrum geometry
+const X0=100,X1=980,S1Y=16,S2Y=62,SH=26,PY0=112,PY1=366;
+const xOf=v=>X0+(4000-v)/3500*(X1-X0), wOf=x=>Math.max(500,Math.min(4000,4000-(x-X0)/(X1-X0)*3500)), yOf=T=>PY1-T/100*(PY1-PY0);
+const NS=X1-X0;
+const stripIn=document.createElement('canvas'); stripIn.width=NS; stripIn.height=1;
+const stripOut=document.createElement('canvas'); stripOut.width=NS; stripOut.height=1;
+(()=>{const c=stripIn.getContext('2d');for(let i=0;i<NS;i++){c.fillStyle=wc(wOf(X0+i+.5));c.fillRect(i,0,1,1);}})();
+let curve=[];
+function buildCompound(){
+  const m=M(); curve=[];
+  const c=stripOut.getContext('2d');c.clearRect(0,0,NS,1);
+  for(let i=0;i<=NS;i++){const v=wOf(X0+i);const T=Tcalc(m,v);curve.push(T);
+    if(i<NS){c.fillStyle=wc(v);c.fillRect(i,0,1,1);c.fillStyle=`rgba(16,16,20,${Math.min(1,(1-T/base(v))*1.15).toFixed(3)})`;c.fillRect(i,0,1,1);}}
+  exc=m.bonds.map(()=>0); photons=[]; bursts=[]; lastAbs=null;
+  buildTable();
+}
+
+// ---------- bench geometry ----------
+const BY=160, SRC=[20,100], MONO=[150,250], CELL=[300,720,22,298], DETX=800;
+function molLayout(){
+  const m=M(), sx=m.bx[1]-m.bx[0]+1.3, sy=m.by[1]-m.by[0]+1.6;
+  const u=Math.min((CELL[1]-CELL[0]-40)/sx,(CELL[3]-CELL[2]-50)/sy,64);
+  const cx=(CELL[0]+CELL[1])/2, cy=(CELL[2]+CELL[3])/2+8;
+  return {u,ox:cx-(m.bx[0]+m.bx[1])/2*u,oy:cy-(m.by[0]+m.by[1])/2*u};
+}
+let disp=[]; let L=null;
+function atomPos(i){const a=M().atoms[i],d=disp[i]||[0,0];return [L.ox+(a[1]+d[0])*L.u,L.oy+(a[2]+d[1])*L.u];}
+function bondMid(i){const b=M().bonds[i];const p=atomPos(b[0]),q=atomPos(b[1]);return [(p[0]+q[0])/2,(p[1]+q[1])/2];}
+
+// steady excitation from a monochromatic beam
+function steady(){
+  const m=M(), s=m.bonds.map(()=>0);
+  if(mode!=='scan') return s;
+  const cs=contribs(m,w);
+  cs.forEach((c,k)=>{const f=m.bands[k][3]==='fp'?0.55:1.4;m.bandBonds[k].forEach(i=>s[i]=Math.min(1,s[i]+c*f));});
+  return s;
+}
+
+// ---------- photons ----------
+function makePhoton(x,v,stopAt){
+  const m=M(), cs=contribs(m,v), p=1-cs.reduce((a,c)=>a*(1-c),1);
+  const ph={x,y:BY+(Math.random()*2-1)*15,w:v,stopAt,phase:Math.random()*6.28,dir:[1,0],alpha:1};
+  if(!stopAt && Math.random()<p){
+    let r=Math.random()*cs.reduce((a,c)=>a+c,0),k=0;for(;k<cs.length-1;k++){r-=cs[k];if(r<=0)break;}
+    const bb=m.bandBonds[k];ph.band=k;ph.bond=bb[Math.floor(Math.random()*bb.length)];ph.abs=true;
+  }
+  photons.push(ph);
+}
+function absorbEvent(ph){
+  const m=M(), bn=m.bands[ph.band];
+  bursts.push({x:ph.x,y:ph.y,w:ph.w,t:0});
+  if(bn[3]==='fp') m.bonds.forEach((_,i)=>exc[i]=Math.min(1,exc[i]+0.22));
+  else m.bandBonds[ph.band].forEach(i=>exc[i]=Math.min(1,exc[i]+0.7));
+  lastAbs={w:ph.w,g:bn[3]};
+}
+function update(dt){
+  if(mode==='scan'&&running){w-=speed*dt;if(w<=500){w=500;running=false;setPlay();}revealed=Math.min(revealed,w);}
+  const rate=RM?0.5:1, SP=300;
+  if(mode==='whole'){spawnA+=45*rate*dt;while(spawnA>=1){spawnA--;makePhoton(SRC[1],500+Math.random()*3500,null);}}
+  else{spawnA+=30*rate*dt;while(spawnA>=1){spawnA--;makePhoton(SRC[1],500+Math.random()*3500,MONO[0]+18);}
+       spawnB+=28*rate*dt;while(spawnB>=1){spawnB--;makePhoton(MONO[1],w,null);}}
+  for(const ph of photons){
+    if(ph.dead)continue;
+    if(ph.stopAt!=null&&ph.x>=ph.stopAt){ph.alpha-=dt*5;ph.x+=SP*0.3*dt;if(ph.alpha<=0)ph.dead=true;continue;}
+    if(!ph.entered&&ph.x>=CELL[0]+8){ph.entered=true;entered+=1;}
+    if(ph.abs&&ph.entered){
+      const t=bondMid(ph.bond),dx=t[0]-ph.x,dy=t[1]-ph.y,d=Math.hypot(dx,dy);
+      if(d<7){absorbEvent(ph);ph.dead=true;continue;}
+      ph.dir=[dx/d,dy/d];const st=Math.min(d,SP*dt);ph.x+=ph.dir[0]*st;ph.y+=ph.dir[1]*st;
+    }else{ph.x+=SP*dt;ph.dir=[1,0];if(ph.x>=DETX){arrived+=1;ph.dead=true;}}
+  }
+  photons=photons.filter(p=>!p.dead);
+  bursts.forEach(b=>b.t+=dt);bursts=bursts.filter(b=>b.t<0.55);
+  const k=Math.exp(-dt/0.7);exc=exc.map(e=>e*k);
+  const kd=Math.exp(-dt/1.5);entered*=kd;arrived*=kd;
+  const target=mode==='scan'?Tcalc(M(),w)/100:Math.min(1,arrived/Math.max(entered,0.01));
+  det+=(target-det)*Math.min(1,dt*4);
+}
+
+// ---------- drawing: bench ----------
+let T=0;
+function rr(c,x,y,w_,h,r){c.beginPath();c.roundRect?c.roundRect(x,y,w_,h,r):c.rect(x,y,w_,h);}
+function drawPhoton(c,ph){
+  const lam=4+(4000/ph.w)*2.1, Lg=24, A=3.6, nx=-ph.dir[1], ny=ph.dir[0];
+  c.strokeStyle=wc(ph.w,ph.alpha);c.lineWidth=1.8;c.beginPath();
+  for(let s=0;s<=Lg;s+=1.2){const a=A*Math.sin(Math.PI*s/Lg)*Math.sin(2*Math.PI*s/lam+ph.phase);
+    const px=ph.x-ph.dir[0]*s+nx*a,py=ph.y-ph.dir[1]*s+ny*a;s?c.lineTo(px,py):c.moveTo(px,py);}
+  c.stroke();
+}
+function drawBench(){
+  const c=actx,m=M();
+  c.clearRect(0,0,AW,AH);c.fillStyle=PANEL;c.fillRect(0,0,AW,AH);
+  // beam band
+  c.fillStyle='rgba(31,35,40,0.045)';c.fillRect(SRC[1],BY-20,MONO[0]-SRC[1],40);
+  c.fillStyle=mode==='scan'?wc(w,0.10):'rgba(31,35,40,0.045)';c.fillRect(MONO[1],BY-20,DETX-MONO[1],40);
+  // source
+  c.fillStyle='#2a2d31';rr(c,SRC[0],BY-36,SRC[1]-SRC[0],72,8);c.fill();
+  c.strokeStyle='#ff9a3c';c.lineWidth=3;c.shadowColor='#ff7a00';c.shadowBlur=12;c.beginPath();
+  for(let i=0;i<=10;i++){const x=34+i*5.2,y=BY+(i%2?-9:9);i?c.lineTo(x,y):c.moveTo(x,y);}c.stroke();c.shadowBlur=0;
+  // monochromator
+  c.globalAlpha=mode==='scan'?1:0.35;
+  c.fillStyle='#f1f0ec';c.strokeStyle=LINE;c.lineWidth=1.5;rr(c,MONO[0],BY-48,MONO[1]-MONO[0],96,6);c.fill();c.stroke();
+  c.strokeStyle='#9aa0a6';c.lineWidth=1;for(let i=0;i<9;i++){c.beginPath();c.moveTo(MONO[0]+22+i*7,BY-30);c.lineTo(MONO[0]+36+i*7,BY+10);c.stroke();}
+  c.fillStyle=INK;c.font=`600 12px ${DATAF}`;c.textAlign='center';
+  c.fillText(mode==='scan'?`${Math.round(w)} cm⁻¹`:'bypassed',(MONO[0]+MONO[1])/2,BY+34);
+  c.globalAlpha=1;
+  // cell
+  c.fillStyle='#f6f8f8';c.strokeStyle=LINE;c.lineWidth=1.5;rr(c,CELL[0],CELL[2],CELL[1]-CELL[0],CELL[3]-CELL[2],10);c.fill();c.stroke();
+  c.fillStyle='#cfe2e8';c.fillRect(CELL[0],BY-46,8,92);c.fillRect(CELL[1]-8,BY-46,8,92);
+  c.textAlign='left';c.fillStyle=INK;c.font=`600 14px ${FONT}`;c.fillText(m.name,CELL[0]+16,CELL[2]+22);
+  c.fillStyle=MUTED;c.font=`13px ${FONT}`;c.fillText(`${m.cls} · ${m.formula}`,CELL[0]+16,CELL[2]+40);
+  // molecule
+  L=molLayout();
+  const s=steady(), amps=m.bonds.map((_,i)=>Math.max(s[i],exc[i]));
+  disp=m.atoms.map(()=>[0,0]);
+  amps.forEach((a,i)=>{if(a<0.02)return;const sd=m.side[i],A=m.atoms[sd.anchor],B=m.atoms[sd.moved];
+    let ux=B[1]-A[1],uy=B[2]-A[2];const d=Math.hypot(ux,uy);ux/=d;uy/=d;
+    const off=a*(RM?0.06:0.13)*Math.sin(T*m.bondW[i]/110);
+    sd.set.forEach(j=>{disp[j][0]+=ux*off;disp[j][1]+=uy*off;});});
+  // glows
+  c.lineCap='round';
+  m.bonds.forEach((b,i)=>{const a=amps[i];if(a<0.04)return;const p=atomPos(b[0]),q=atomPos(b[1]);
+    c.strokeStyle=wc(m.bondW[i],0.22+0.55*a);c.lineWidth=6+12*a;c.beginPath();c.moveTo(p[0],p[1]);c.lineTo(q[0],q[1]);c.stroke();});
+  // bonds
+  c.strokeStyle=INK;c.lineWidth=2.2;
+  m.bonds.forEach(b=>{const p=atomPos(b[0]),q=atomPos(b[1]);let dx=q[0]-p[0],dy=q[1]-p[1];const d=Math.hypot(dx,dy);const nx=-dy/d,ny=dx/d;
+    const offs=b[2]===1?[0]:b[2]===2?[-0.07,0.07]:[-0.1,0,0.1];
+    offs.forEach(o=>{c.beginPath();c.moveTo(p[0]+nx*o*L.u,p[1]+ny*o*L.u);c.lineTo(q[0]+nx*o*L.u,q[1]+ny*o*L.u);c.stroke();});});
+  // atoms
+  c.textAlign='center';c.textBaseline='middle';
+  m.atoms.forEach((a,i)=>{const p=atomPos(i),r=L.u*(a[0]==='H'?0.2:0.24);
+    c.fillStyle='#f6f8f8';c.beginPath();c.arc(p[0],p[1],r,0,7);c.fill();
+    c.fillStyle=a[0]==='O'?'#a11d1d':a[0]==='N'?'#1d3fa1':a[0]==='H'?'#4b5057':INK;
+    c.font=`${a[0]==='H'?500:700} ${Math.round(L.u*(a[0]==='H'?0.3:0.36))}px ${FONT}`;c.fillText(a[0],p[0],p[1]+1);});
+  c.textBaseline='alphabetic';
+  // photons & bursts
+  photons.forEach(ph=>drawPhoton(c,ph));
+  bursts.forEach(b=>{c.strokeStyle=wc(b.w,1-b.t/0.55);c.lineWidth=2;c.beginPath();c.arc(b.x,b.y,4+34*b.t,0,7);c.stroke();});
+  // detector
+  c.fillStyle='#2a2d31';rr(c,DETX,BY-34,56,68,6);c.fill();
+  c.fillStyle='#e9e7e1';c.fillRect(DETX+6,BY-22,6,44);
+  const mx=884,mt=BY-62,mh=124;
+  c.fillStyle='#e7e5df';rr(c,mx,mt,20,mh,4);c.fill();
+  c.fillStyle=ACC;const fh=mh*Math.max(0,Math.min(1,det));rr(c,mx,mt+mh-fh,20,fh,4);c.fill();
+  c.fillStyle=INK;c.textAlign='left';c.font=`600 20px ${DATAF}`;c.fillText(`${Math.round(det*100)}%`,914,BY+4);
+  c.fillStyle=MUTED;c.font=`12px ${FONT}`;c.fillText('transmitted',914,BY+22);
+  // labels
+  c.textAlign='center';c.fillStyle=MUTED;c.font=`13px ${FONT}`;
+  c.fillText('IR source',(SRC[0]+SRC[1])/2,BY+56);c.fillText('(hot filament)',(SRC[0]+SRC[1])/2,BY+72);
+  c.globalAlpha=mode==='scan'?1:0.5;c.fillText('Monochromator',(MONO[0]+MONO[1])/2,BY+66);
+  c.fillText(mode==='scan'?'selects one wavenumber':'out of the beam',(MONO[0]+MONO[1])/2,BY+82);c.globalAlpha=1;
+  c.fillText('Detector',DETX+28,BY+56);
+  c.fillText('Sample cell: sodium chloride windows let IR through',(CELL[0]+CELL[1])/2,CELL[3]+16);
+}
+
+// ---------- drawing: spectrum ----------
+function drawSpec(){
+  const c=gctx,m=M(),rev=mode==='whole'?500:revealed,xr=xOf(rev);
+  c.clearRect(0,0,GW,GH);c.fillStyle=PANEL;c.fillRect(0,0,GW,GH);
+  c.imageSmoothingEnabled=true;
+  c.drawImage(stripIn,0,0,NS,1,X0,S1Y,NS,SH);
+  const sw=Math.max(0,xr-X0);
+  if(sw>0.5)c.drawImage(stripOut,0,0,Math.min(NS,sw),1,X0,S2Y,Math.min(NS,sw),SH);
+  if(sw<NS){c.fillStyle='#e4e2db';c.fillRect(X0+sw,S2Y,NS-sw,SH);
+    if(NS-sw>110){c.fillStyle=MUTED;c.font=`12px ${FONT}`;c.textAlign='center';c.fillText('not scanned yet',X0+sw+(NS-sw)/2,S2Y+17);}}
+  c.strokeStyle=LINE;c.lineWidth=1;c.strokeRect(X0,S1Y,NS,SH);c.strokeRect(X0,S2Y,NS,SH);
+  c.fillStyle=INK;c.font=`600 12px ${FONT}`;c.textAlign='right';
+  c.fillText('Shone in',X0-8,S1Y+17);c.fillText('Transmitted',X0-8,S2Y+17);
+  // plot frame
+  const fx=xOf(1500);
+  c.fillStyle='rgba(31,35,40,0.04)';c.fillRect(fx,PY0,X1-fx,PY1-PY0);
+  if(showRanges){m.groups.forEach(g=>{if(g.key==='fp')return;const r=GDEF[g.key].range;c.fillStyle=wc(g.deep[0],0.13);c.fillRect(xOf(r[1]),PY0,xOf(r[0])-xOf(r[1]),PY1-PY0);});}
+  c.strokeStyle='#e6e3dc';c.lineWidth=1;c.font=`12px ${DATAF}`;c.fillStyle=MUTED;
+  for(let T=0;T<=100;T+=20){const y=yOf(T);c.beginPath();c.moveTo(X0,y);c.lineTo(X1,y);c.stroke();c.textAlign='right';c.fillText(T,X0-8,y+4);}
+  for(let v=4000;v>=500;v-=500){const x=xOf(v);c.beginPath();c.moveTo(x,PY0);c.lineTo(x,PY1);c.stroke();c.textAlign='center';c.fillText(v,x,PY1+18);}
+  c.strokeStyle='#b9b5ab';c.strokeRect(X0,PY0,X1-X0,PY1-PY0);
+  c.fillStyle=MUTED;c.font=`13px ${FONT}`;c.textAlign='center';c.fillText('Wavenumber / cm⁻¹',(X0+X1)/2,PY1+40);
+  c.save();c.translate(30,(PY0+PY1)/2);c.rotate(-Math.PI/2);c.fillText('Transmittance / %',0,0);c.restore();
+  c.fillStyle=MUTED;c.font=`12px ${FONT}`;c.textAlign='left';c.fillText('fingerprint region',fx+8,PY1-10);
+  // trace
+  c.strokeStyle=INK;c.lineWidth=1.8;c.lineJoin='round';c.beginPath();
+  const n=Math.min(NS,Math.round(xr-X0));
+  for(let i=0;i<=n;i++){const y=yOf(curve[i]);i?c.lineTo(X0+i,y):c.moveTo(X0,y);}c.stroke();
+  // peak labels
+  const placed=[];
+  m.groups.forEach(g=>{if(g.key==='fp'||g.deep[0]<rev)return;const x=xOf(g.deep[0]);let row=0;
+    while(placed.some(p=>p.row===row&&Math.abs(p.x-x)<46))row++;placed.push({x,row});
+    const y=PY0+16+row*16,ty=yOf(Tcalc(m,g.deep[0]));
+    c.strokeStyle=wc(g.deep[0],0.55);c.setLineDash([3,3]);c.lineWidth=1;c.beginPath();c.moveTo(x,y+4);c.lineTo(x,ty-4);c.stroke();c.setLineDash([]);
+    c.font=`700 13px ${FONT}`;c.textAlign='center';c.fillStyle=PANEL;c.fillRect(x-20,y-11,40,15);c.fillStyle=wc(g.deep[0]);c.fillText(GDEF[g.key].short,x,y);});
+  // cursor
+  const cx=xOf(w),cT=Tcalc(m,w);
+  c.strokeStyle=wc(w,0.9);c.lineWidth=2;c.beginPath();c.moveTo(cx,S1Y-6);c.lineTo(cx,PY1);c.stroke();
+  c.fillStyle=PANEL;c.strokeStyle=wc(w);c.lineWidth=2.5;c.beginPath();c.arc(cx,yOf(cT),5.5,0,7);c.fill();c.stroke();
+  c.fillStyle=wc(w);c.beginPath();c.moveTo(cx-6,S1Y-10);c.lineTo(cx+6,S1Y-10);c.lineTo(cx,S1Y-2);c.fill();
+}
+
+// ---------- UI ----------
+const $=id=>document.getElementById(id);
+const chips=$('chips');
+COMPOUNDS.forEach((m,i)=>{const b=document.createElement('button');b.className='chip';b.id='chip'+i;b.innerHTML=`<small>${m.cls}</small>${m.name}`;
+  b.onclick=()=>selectCompound(i);chips.appendChild(b);});
+function selectCompound(i){ci=i;[...chips.children].forEach((b,k)=>b.setAttribute('aria-pressed',k===i));w=4000;revealed=4000;buildCompound();setPlay();}
+function buildTable(){
+  const m=M(),rows=$('rows');rows.innerHTML='';
+  m.groups.forEach(g=>{const d=GDEF[g.key];const b=document.createElement('button');b.className='row';b.dataset.g=g.key;
+    const fp=g.key==='fp';
+    b.innerHTML=`<span class="sw" style="background:${fp?'#9a9890':wc(g.deep[0])}"></span><span>${d.label}</span><span class="r">${fp?'below 1500':d.range[0]+'–'+d.range[1]}</span><span class="p">${fp?'many':'≈'+g.deep[0]}</span>`;
+    b.title=fp?'Jump to the strongest fingerprint peak':`Jump to the ${d.short} absorption`;
+    b.onclick=()=>jump(g.deep[0]);rows.appendChild(b);});
+  $('tblTitle').textContent='Absorptions in '+m.name+' (cm⁻¹)';
+  $('note').textContent=m.note;
+}
+function jump(v){w=v;if(mode==='scan')revealed=Math.min(revealed,w);running=false;setPlay();}
+function setPlay(){$('play').textContent=running?'Pause':revealed<=500.5?'Scan from 4000':w<3999?'Resume scan':'Start scan';}
+$('play').onclick=()=>{if(running){running=false;}else{if(revealed<=500.5||w<=500.5){w=4000;revealed=4000;}running=true;}setPlay();};
+$('reset').onclick=()=>{running=false;w=4000;revealed=4000;setPlay();};
+$('full').onclick=()=>{running=false;revealed=500;setPlay();};
+$('speed').oninput=e=>{speed=+e.target.value;$('speedOut').textContent=speed+' cm⁻¹/s';};
+$('ranges').onchange=e=>{showRanges=e.target.checked;};
+function setMode(mm){mode=mm;running=false;$('mScan').setAttribute('aria-pressed',mm==='scan');$('mWhole').setAttribute('aria-pressed',mm==='whole');
+  $('scanCtl').hidden=mm!=='scan';photons=[];setPlay();}
+$('mScan').onclick=()=>setMode('scan');$('mWhole').onclick=()=>setMode('whole');
+
+// spectrum dragging
+let dragging=false;
+function specPoint(e){const r=spec.getBoundingClientRect();return [(e.clientX-r.left)*GW/r.width,(e.clientY-r.top)*GH/r.height];}
+spec.addEventListener('pointerdown',e=>{dragging=true;spec.setPointerCapture(e.pointerId);const [x]=specPoint(e);jump(wOf(x));});
+spec.addEventListener('pointermove',e=>{if(!dragging)return;const [x]=specPoint(e);jump(wOf(x));});
+spec.addEventListener('pointerup',()=>dragging=false);
+// click a bond
+bench.addEventListener('click',e=>{if(!L)return;const r=bench.getBoundingClientRect();const x=(e.clientX-r.left)*AW/r.width,y=(e.clientY-r.top)*AH/r.height;
+  const m=M();let best=-1,bd=14;
+  m.bonds.forEach((b,i)=>{const p=atomPos(b[0]),q=atomPos(b[1]);const dx=q[0]-p[0],dy=q[1]-p[1];const t=Math.max(0,Math.min(1,((x-p[0])*dx+(y-p[1])*dy)/(dx*dx+dy*dy)));
+    const d=Math.hypot(x-(p[0]+t*dx),y-(p[1]+t*dy));if(d<bd){bd=d;best=i;}});
+  if(best<0)return;
+  let bb=null;m.bands.forEach((bn,k)=>{if(bn[3]!=='fp'&&m.bandBonds[k].includes(best)&&(!bb||bn[2]>bb[2]))bb=bn;});
+  if(bb)jump(bb[0]);else{statusHold=performance.now()+2500;$('status').innerHTML=`<b>${m.bonds[best][3]==='CC'?'C–C':'This'} bond</b> has no diagnostic peak. Its vibrations are in the fingerprint region below 1500 cm⁻¹.`;}
+});
+document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();const st=e.shiftKey?100:10;jump(Math.max(500,Math.min(4000,w+(e.key==='ArrowLeft'?st:-st))));}});
+
+let lastUI=0, statusHold=0;
+function updateUI(){
+  const m=M(),E=H*C*w*100,T=Tcalc(m,w);
+  $('wn').textContent=Math.round(w);$('curSw').style.background=wc(w);
+  $('lam').textContent=(10000/w).toFixed(2)+' μm';
+  $('en').textContent=(E/1e-20).toFixed(2)+' × 10⁻²⁰ J';
+  $('enm').textContent=(E*NA/1000).toFixed(1)+' kJ mol⁻¹';
+  $('tr').textContent=T.toFixed(0)+' %';
+  const cs=contribs(m,w),p=absFrac(m,w);let k=0;cs.forEach((c,i)=>{if(c>cs[k])k=i;});
+  const g=m.bands[k][3], st=$('status');
+  let html,col;
+  if(p<0.08){html=`<b>Transmitted.</b> No bond in ${m.name.toLowerCase()} vibrates at this energy, so these photons pass straight through.`;col=LINE;}
+  else if(g==='fp'){html=`<b>Absorbed in the fingerprint region.</b> Bending and whole-molecule vibrations take in these photons.`;col='#9a9890';}
+  else{html=`<b>Absorbed by ${GDEF[g].label}.</b> The photon energy matches the energy needed to make this bond stretch more strongly.`;col=wc(m.bands[k][0]);}
+  if(mode==='whole'){html=`<b>All wavenumbers at once.</b> Photons whose energy matches a bond are absorbed; the rest reach the detector.`+
+    (lastAbs?`<br>Last photon absorbed: ${Math.round(lastAbs.w)} cm⁻¹, ${lastAbs.g==='fp'?'fingerprint region':GDEF[lastAbs.g].label}.`:'');col=lastAbs?wc(lastAbs.w):LINE;}
+  if(performance.now()>statusHold){st.innerHTML=html;st.style.borderLeftColor=col;}
+  [...$('rows').children].forEach(r=>{const gk=r.dataset.g;let s=0;cs.forEach((c,i)=>{if(m.bands[i][3]===gk)s=Math.max(s,c);});
+    r.classList.toggle('on',mode==='scan'&&s>0.08);});
+}
+
+let last=performance.now();
+function frame(now){const dt=Math.min(0.05,(now-last)/1000);last=now;T+=dt;update(dt);drawBench();drawSpec();if(now-lastUI>90){updateUI();lastUI=now;}requestAnimationFrame(frame);}
+[...chips.children].forEach((b,k)=>b.setAttribute('aria-pressed',k===0));
+buildCompound();setPlay();requestAnimationFrame(frame);
+})();
+</script>
+
+</body></html>

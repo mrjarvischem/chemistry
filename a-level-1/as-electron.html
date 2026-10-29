@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>[hidden]{display:none!important}body{margin:0}</style>
+<title>Sub-shell Electron Arrangement</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: header with key-facts strip, sticky tab bar, one reading column (max 1120px).
+   Tabs: simulator, toolkit, then worked sections A–F. Single light theme by choice (matches Nick's simulation set). */
+:root{
+  --bg:#f6efe3; --panel:#fffbf4; --panel2:#f0e5d2; --ink:#3a2817; --muted:#7a634e; --line:#e0cfb6;
+  --accent:#8c4a1c; --accent-soft:#f5e1cb; --found:#1d6b67; --found-soft:#dcefea;
+  --good:#2a7a45; --good-soft:#e2f2e6; --bad:#a8382b; --bad-soft:#f9e3de; --warn:#94650d; --warn-soft:#fbefd6;
+  --up:#1d6b67; --down:#b4531c;
+  --blk-s:#dbe9f2; --blk-p:#f3e3c4; --blk-d:#e4dcef;
+  --f-ui:"Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+  --f-math:"Cambria Math", Cambria, "STIX Two Math", "Times New Roman", serif;
+  --f-num:ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+  color-scheme: light;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:17px;line-height:1.5}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--panel)}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top{background:var(--panel);border-bottom:1px solid var(--line)}
+header.top .wrap{padding-block:18px 14px;display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0}
+h1{font-size:clamp(22px,3.2vw,30px);margin:2px 0 0;line-height:1.15;text-wrap:balance}
+.facts{display:flex;flex-wrap:wrap;gap:8px}
+.facts span{font-family:var(--f-math);font-size:17px;background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:3px 10px;white-space:nowrap}
+.mode{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted)}
+.seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--accent);border-radius:8px;overflow:hidden}
+.seg button{border:0;background:var(--panel);color:var(--accent);font:inherit;font-size:14px;padding:6px 12px;cursor:pointer}
+.seg button.on{background:var(--accent);color:var(--panel)}
+nav.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+nav.tabs .wrap{display:flex;gap:4px;overflow-x:auto;padding-block:8px;scrollbar-width:thin}
+nav.tabs button{flex:0 0 auto;font:inherit;font-size:15px;border:1px solid transparent;background:transparent;color:var(--muted);padding:6px 12px;border-radius:8px;cursor:pointer;display:flex;gap:6px;align-items:center}
+nav.tabs button:hover{color:var(--ink);background:var(--panel2)}
+nav.tabs button.on{background:var(--panel);border-color:var(--line);color:var(--ink);font-weight:600}
+.badge{font-size:12px;font-variant-numeric:tabular-nums;background:var(--panel2);border-radius:10px;padding:0 7px;color:var(--muted);font-weight:500}
+.badge.full{background:var(--good-soft);color:var(--good)}
+main .wrap{padding-block:22px 60px;display:flex;flex-direction:column;gap:20px}
+section.tab{display:flex;flex-direction:column;gap:20px}
+h2{font-size:24px;margin:0;text-wrap:balance}
+h3{font-size:18px;margin:0}
+p{margin:0}
+.lead{max-width:72ch}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 20px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
+.math{font-family:var(--f-math);font-size:1.08em}
+sup,sub{line-height:0}
+.btn{font:inherit;font-size:15px;border:1px solid var(--accent);background:var(--panel);color:var(--accent);border-radius:8px;padding:7px 14px;cursor:pointer}
+.btn:hover{background:var(--accent-soft)}
+.btn.primary{background:var(--accent);color:var(--panel)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.ghost{border-color:var(--line);color:var(--muted)}
+.btn:disabled{opacity:.45;cursor:default}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.note{font-size:14px;color:var(--muted)}
+.tip{border-left:4px solid var(--accent);background:var(--accent-soft);border-radius:0 8px 8px 0;padding:10px 14px}
+
+/* periodic table */
+.pt-wrap{overflow-x:auto;padding-bottom:4px}
+.pt{display:grid;grid-template-columns:repeat(18,minmax(34px,1fr));gap:3px;min-width:640px}
+.pt button{font:inherit;border:1px solid var(--line);border-radius:5px;padding:2px 0 3px;cursor:pointer;display:flex;flex-direction:column;align-items:center;line-height:1.1;color:var(--ink);background:var(--panel)}
+.pt button small{font-size:10px;color:var(--muted)}
+.pt button b{font-size:15px}
+.pt button.s{background:var(--blk-s)} .pt button.p{background:var(--blk-p)} .pt button.d{background:var(--blk-d)}
+.pt.plain button{background:var(--panel)}
+.pt button.on{outline:3px solid var(--accent);outline-offset:-1px;font-weight:700}
+.pt button:hover{border-color:var(--accent)}
+.blk-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.blk-legend i{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin-right:5px;border:1px solid var(--line)}
+
+/* simulator */
+.sim{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:860px){.sim{grid-template-columns:1fr}}
+.diagram{border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+.diagram svg{display:block;width:100%;height:auto}
+.ob{fill:var(--panel);stroke:var(--ink);stroke-width:2}
+.clickable .ob{cursor:pointer}
+.clickable .ob:hover{fill:var(--accent-soft)}
+.rowhl{fill:var(--accent-soft)}
+.slab{font-family:var(--f-math);font-size:20px;fill:var(--ink)}
+.slab.dim{fill:var(--muted)}
+.e-up{stroke:var(--up);fill:var(--up)} .e-down{stroke:var(--down);fill:var(--down)}
+.e-up line,.e-down line{stroke-width:3}
+.drop{animation:drop .45s ease-out;transform-box:fill-box}
+@keyframes drop{from{transform:translateY(-26px);opacity:0}to{transform:none;opacity:1}}
+.fade{animation:fadeout .6s ease-out forwards}
+@keyframes fadeout{from{opacity:1}to{opacity:0}}
+.jump{stroke:var(--accent);stroke-width:2.5;fill:none;stroke-dasharray:6 5}
+.info{display:flex;flex-direction:column;gap:10px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;align-items:baseline}
+.kv dt{font-size:13px;color:var(--muted)}
+.kv dd{margin:0;font-family:var(--f-math);font-size:19px;overflow-wrap:anywhere}
+.big{font-size:28px;font-weight:700}
+.rules{display:flex;gap:6px;flex-wrap:wrap}
+.rule{font-size:13px;border:1px solid var(--line);border-radius:14px;padding:2px 10px;color:var(--muted);background:var(--panel)}
+.rule.on{background:var(--accent);border-color:var(--accent);color:var(--panel)}
+.caption{min-height:4.6em;background:var(--panel2);border-radius:8px;padding:10px 14px}
+.caption.bad{background:var(--bad-soft)} .caption.good{background:var(--good-soft)}
+input[type=range]{accent-color:var(--accent)}
+
+/* boxes (HTML) */
+.mb{display:inline-flex;gap:4px;align-items:center;vertical-align:middle}
+.mb .bx{width:38px;height:38px;border:2px solid var(--ink);border-radius:3px;display:inline-flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;background:var(--panel);letter-spacing:-2px;font-family:var(--f-ui)}
+.mb .bx .u{color:var(--up)} .mb .bx .d{color:var(--down)}
+.mb .lab{font-family:var(--f-math);font-size:18px;margin-right:4px;min-width:26px}
+button.bx{cursor:pointer;padding:0}
+button.bx:hover{background:var(--accent-soft)}
+.rulecard{display:flex;flex-direction:column;gap:10px}
+.okx{display:flex;flex-direction:column;gap:6px}
+.okx div{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.okx .t{font-size:14px;font-weight:600;min-width:58px}
+.okx .t.y{color:var(--good)} .okx .t.n{color:var(--bad)}
+
+/* notation anatomy */
+.anat{display:flex;gap:24px;align-items:flex-end;flex-wrap:wrap}
+.anat .big3{font-family:var(--f-math);font-size:64px;line-height:1}
+.anat .big3 span{padding:0 2px;border-bottom:3px solid}
+.anat ul{margin:0;padding-left:18px}
+
+/* filling ladder */
+.ladder{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.lchip{border:1px solid var(--line);border-radius:8px;padding:6px 10px;text-align:center;min-width:72px;background:var(--panel);transition:background .3s,border-color .3s}
+.lchip .s{font-family:var(--f-math);font-size:20px}
+.lchip .c{font-size:12px;color:var(--muted)}
+.lchip.on{background:var(--found-soft);border-color:var(--found)}
+.lchip.now{background:var(--accent-soft);border-color:var(--accent)}
+.larr{color:var(--muted)}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:15px}
+th,td{text-align:left;padding:6px 10px;border-bottom:1px solid var(--line)}
+th{font-weight:600;color:var(--muted);font-size:13px}
+td.m{font-family:var(--f-math);font-size:17px}
+.tbl-wrap{overflow-x:auto}
+
+/* question cards */
+.q{background:var(--panel);border:1px solid var(--line);border-radius:12px;min-width:0}
+.q > .qh{all:unset;box-sizing:border-box;width:100%;display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:start;padding:16px 20px;cursor:pointer}
+.q > .qh:focus-visible{outline:3px solid var(--accent);outline-offset:-3px;border-radius:12px}
+.qnum{font-weight:700;font-size:16px;min-width:30px;height:30px;border-radius:50%;background:var(--panel2);display:grid;place-items:center;font-variant-numeric:tabular-nums;padding:0 4px}
+.q.complete .qnum{background:var(--good-soft);color:var(--good)}
+.qtext{max-width:75ch}
+.marks{font-size:13px;color:var(--muted);white-space:nowrap}
+.tag-we{display:inline-block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;background:var(--accent-soft);color:var(--accent);border-radius:4px;padding:1px 6px;margin-right:6px;vertical-align:2px}
+.qb{padding:0 20px 20px;display:flex;flex-direction:column;gap:12px}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.step{border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:10px;background:var(--panel)}
+.step.locked{color:var(--muted);background:transparent;border-style:dashed;padding:8px 14px}
+.step.active{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.step.done{background:var(--found-soft);border-color:transparent}
+.sh{display:flex;gap:10px;align-items:baseline;font-weight:600;flex-wrap:wrap}
+.sn{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;white-space:nowrap}
+.step.done .sn{color:var(--found)}
+.work{font-size:16px}
+.work .cfg,.cfg{font-family:var(--f-math);font-size:19px}
+.shown{font-size:12px;color:var(--warn);font-weight:500}
+.final{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;background:var(--good-soft);border-radius:10px;padding:12px 14px}
+.final .lbl{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--good);font-weight:700}
+.final .ans{font-family:var(--f-math);font-size:20px}
+
+/* MCQ */
+.mcq{display:flex;flex-direction:column;gap:8px}
+.mq{font-weight:500}
+.opts{display:grid;gap:6px}
+.opt{display:flex;gap:10px;align-items:flex-start;text-align:left;font:inherit;font-size:16px;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 12px;cursor:pointer}
+.opt:hover:not(:disabled){border-color:var(--accent);background:var(--accent-soft)}
+.opt .ol{font-weight:700;color:var(--muted);min-width:16px}
+.opt.right{border-color:var(--good);background:var(--good-soft)}
+.opt.right .ol{color:var(--good)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft);text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--bad) 50%,transparent)}
+.opt:disabled{cursor:default}
+.fb{font-size:15px;border-radius:8px;padding:8px 12px}
+.fb:empty{display:none}
+.fb.good{background:var(--good-soft);color:#1e5732}
+.fb.bad{background:var(--bad-soft);color:#7d2419}
+.fb.warn{background:var(--warn-soft);color:#6b4a08}
+
+/* builder */
+.builder{display:flex;flex-direction:column;gap:10px}
+.subs{display:flex;flex-wrap:wrap;gap:8px}
+.sub{display:flex;align-items:center;gap:4px;border:1px solid var(--line);border-radius:8px;padding:4px 6px;background:var(--panel)}
+.sub.has{border-color:var(--found);background:var(--found-soft)}
+.sub .sl{font-family:var(--f-math);font-size:18px;min-width:26px;text-align:center}
+.sub .cnt{font-family:var(--f-num);font-size:17px;min-width:22px;text-align:center;font-weight:600}
+.sub .cap{font-size:12px;color:var(--muted)}
+.sub button{font:inherit;width:28px;height:28px;border-radius:6px;border:1px solid var(--accent);background:var(--panel);color:var(--accent);cursor:pointer;font-size:18px;line-height:1;padding:0}
+.sub button:disabled{opacity:.3;cursor:default}
+.preview{background:var(--panel2);border-radius:8px;padding:8px 12px;min-height:2.4em}
+.numin{font-family:var(--f-num);font-size:17px;border:1px solid var(--muted);border-radius:6px;padding:5px 8px;width:6em;background:#fff;color:var(--ink)}
+.parts{display:flex;flex-direction:column;gap:14px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="top"><div class="wrap">
+  <div>
+    <p class="eyebrow">AQA A-level Chemistry · Atomic structure</p>
+    <h1>Electron arrangement in sub-shells</h1>
+  </div>
+  <div class="facts" aria-label="Key facts">
+    <span>s: 2 e⁻</span><span>p: 6 e⁻</span><span>d: 10 e⁻</span><span>1s 2s 2p 3s 3p 4s 3d 4p</span>
+  </div>
+  <div class="mode"><span>Support:</span>
+    <div class="seg" role="group" aria-label="Support level"><button id="modeG" class="on" type="button">Guided</button><button id="modeI" type="button">Independent</button></div>
+  </div>
+</div></header>
+
+<nav class="tabs" aria-label="Sections"><div class="wrap" id="tabbar"></div></nav>
+
+<main><div class="wrap">
+
+<!-- ============ SIMULATOR ============ -->
+<section class="tab" id="tab-sim" data-tab="sim">
+  <div>
+    <h2>The orbital filling simulator</h2>
+    <p class="lead">Pick an element from hydrogen to krypton. <b>Watch it fill</b> shows each electron going in and names the rule it follows. <b>You fill it</b> lets you place the electrons yourself: click an orbital box to add an electron.</p>
+  </div>
+  <div class="card">
+    <div class="pt-wrap"><div class="pt" id="simPT"></div></div>
+    <div class="blk-legend"><span><i style="background:var(--blk-s)"></i>s-block</span><span><i style="background:var(--blk-p)"></i>p-block</span><span><i style="background:var(--blk-d)"></i>d-block</span></div>
+  </div>
+  <div class="card">
+    <div class="row" style="justify-content:space-between">
+      <div class="seg" role="group" aria-label="Simulator mode"><button type="button" data-sm="watch" class="on">Watch it fill</button><button type="button" data-sm="you">You fill it</button></div>
+      <div class="rules" aria-label="Rules"><span class="rule" data-rule="aufbau">Lowest energy first</span><span class="rule" data-rule="hund">Hund's rule</span><span class="rule" data-rule="pauli">Pauli: opposite spins</span><span class="rule" data-rule="exception">Cr / Cu exception</span><span class="rule" data-rule="ion">Ion</span></div>
+    </div>
+    <div class="sim">
+      <div class="diagram" id="diag"></div>
+      <div class="info">
+        <div class="caption" id="simCap" aria-live="polite"></div>
+        <dl class="kv" id="simKV"></dl>
+      </div>
+    </div>
+    <div class="row" id="watchCtl">
+      <button class="btn primary" id="wPlay" type="button">Play</button>
+      <button class="btn" id="wStep" type="button">Next electron</button>
+      <button class="btn ghost" id="wBack" type="button">Back</button>
+      <button class="btn ghost" id="wReset" type="button">Empty</button>
+      <button class="btn ghost" id="wAll" type="button">Fill all</button>
+      <label class="note" style="display:flex;gap:6px;align-items:center">Speed <input type="range" id="wSpeed" min="0.4" max="2.5" step="0.1" value="1"></label>
+    </div>
+    <div class="row" id="ionCtl">
+      <span class="note">Make an ion:</span>
+      <button class="btn" id="ionRem" type="button">Remove an electron (more +)</button>
+      <button class="btn" id="ionAdd" type="button">Add an electron (more −)</button>
+    </div>
+    <div class="row" id="youCtl" hidden>
+      <button class="btn" id="uUndo" type="button">Undo</button>
+      <button class="btn ghost" id="uClear" type="button">Clear</button>
+      <button class="btn ghost" id="uFill" type="button">Fill it for me</button>
+      <button class="btn primary" id="uExc" type="button" hidden>Show the exception</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TOOLKIT ============ -->
+<section class="tab" id="tab-toolkit" data-tab="toolkit" hidden>
+  <div>
+    <h2>The toolkit</h2>
+    <p class="lead">Electrons are arranged in <b>shells</b> (energy levels), which are split into <b>sub-shells</b> (s, p, d), which are made of <b>orbitals</b>. An orbital is a region that holds up to two electrons with opposite spins.</p>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <h3>Shells, sub-shells and orbitals</h3>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Sub-shell</th><th>Orbitals</th><th>Max electrons</th><th>Drawn as</th></tr></thead>
+        <tbody>
+          <tr><td class="m">s</td><td>1</td><td>2</td><td><span class="mb"><span class="bx"></span></span></td></tr>
+          <tr><td class="m">p</td><td>3</td><td>6</td><td><span class="mb"><span class="bx"></span><span class="bx"></span><span class="bx"></span></span></td></tr>
+          <tr><td class="m">d</td><td>5</td><td>10</td><td><span class="mb"><span class="bx"></span><span class="bx"></span><span class="bx"></span><span class="bx"></span><span class="bx"></span></span></td></tr>
+        </tbody></table></div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Shell, n</th><th>Sub-shells</th><th>Max electrons</th></tr></thead>
+        <tbody><tr><td>1</td><td class="m">1s</td><td>2</td></tr><tr><td>2</td><td class="m">2s 2p</td><td>2 + 6 = 8</td></tr><tr><td>3</td><td class="m">3s 3p 3d</td><td>2 + 6 + 10 = 18</td></tr><tr><td>4</td><td class="m">4s 4p 4d 4f</td><td>32</td></tr></tbody></table></div>
+    </div>
+    <div class="card">
+      <h3>Reading the notation</h3>
+      <div class="anat">
+        <div class="big3"><span style="border-color:var(--up)">3</span><span style="border-color:var(--accent)">p</span><sup style="font-size:.55em;border-bottom:3px solid var(--down)">4</sup></div>
+        <ul>
+          <li><b style="color:var(--up)">3</b> = the shell (energy level)</li>
+          <li><b style="color:var(--accent)">p</b> = the type of sub-shell</li>
+          <li><b style="color:var(--down)">4</b> = electrons in that sub-shell</li>
+        </ul>
+      </div>
+      <p>The superscripts always add up to the number of electrons. Sulfur: 1s<sup>2</sup> 2s<sup>2</sup> 2p<sup>6</sup> 3s<sup>2</sup> 3p<sup>4</sup> → 2 + 2 + 6 + 2 + 4 = 16.</p>
+      <div class="tip">Noble gas shorthand: replace the electrons of the previous noble gas with its symbol in square brackets. Sulfur = [Ne] 3s<sup>2</sup> 3p<sup>4</sup>.</div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>The filling order</h3>
+    <p>Sub-shells fill in order of energy. The 4s sub-shell is <b>lower in energy than 3d</b>, so it fills first.</p>
+    <div class="ladder" id="ladder"></div>
+    <div class="row"><button class="btn primary" id="ladGo" type="button">Play the order</button><span class="note" id="ladNote">Totals show the electrons used once each sub-shell is full.</span></div>
+  </div>
+  <div class="grid3" id="ruleCards"></div>
+  <div class="card">
+    <h3>Blocks of the periodic table</h3>
+    <p>An element's block is the type of sub-shell its highest-energy electron goes into. Click an element.</p>
+    <div class="pt-wrap"><div class="pt" id="blkPT"></div></div>
+    <div class="blk-legend"><span><i style="background:var(--blk-s)"></i>s-block</span><span><i style="background:var(--blk-p)"></i>p-block</span><span><i style="background:var(--blk-d)"></i>d-block</span></div>
+    <p id="blkOut" class="preview"></p>
+  </div>
+  <div class="card"><h3>Quick checks</h3><div class="grid2" id="toolQs"></div></div>
+</section>
+
+<section class="tab" id="tab-a" data-tab="a" hidden></section>
+<section class="tab" id="tab-b" data-tab="b" hidden></section>
+<section class="tab" id="tab-c" data-tab="c" hidden></section>
+<section class="tab" id="tab-d" data-tab="d" hidden></section>
+<section class="tab" id="tab-e" data-tab="e" hidden></section>
+<section class="tab" id="tab-f" data-tab="f" hidden></section>
+</div></main>
+
+<script>
+(()=>{
+"use strict";
+let guided=true;
+
+/* ---------- element data ---------- */
+const EL=['H','He','Li','Be','B','C','N','O','F','Ne','Na','Mg','Al','Si','P','S','Cl','Ar','K','Ca','Sc','Ti','V','Cr','Mn','Fe','Co','Ni','Cu','Zn','Ga','Ge','As','Se','Br','Kr'];
+const NM=['hydrogen','helium','lithium','beryllium','boron','carbon','nitrogen','oxygen','fluorine','neon','sodium','magnesium','aluminium','silicon','phosphorus','sulfur','chlorine','argon','potassium','calcium','scandium','titanium','vanadium','chromium','manganese','iron','cobalt','nickel','copper','zinc','gallium','germanium','arsenic','selenium','bromine','krypton'];
+const MASS=[1,4,7,9,11,12,14,16,19,20,23,24,27,28,31,32,35,40,39,40,45,48,51,52,55,56,59,59,64,65,70,73,75,79,80,84];
+const cap=s=>s[0].toUpperCase()+s.slice(1);
+const SUBS=[['1s',1,0],['2s',2,0],['2p',2,1],['3s',3,0],['3p',3,1],['4s',4,0],['3d',3,2],['4p',4,1]].map(([id,n,l])=>({id,n,l,k:2*l+1,max:2*(2*l+1)}));
+const SUB={}; SUBS.forEach((s,i)=>{s.i=i; SUB[s.id]=s;});
+const SHELL_ORDER=['1s','2s','2p','3s','3p','3d','4s','4p'];
+const CORES={He:{n:2,subs:['1s']},Ne:{n:10,subs:['1s','2s','2p']},Ar:{n:18,subs:['1s','2s','2p','3s','3p']}};
+
+/* ---------- configuration maths ---------- */
+const empty=()=>Object.fromEntries(SUBS.map(s=>[s.id,0]));
+const total=c=>SUBS.reduce((a,s)=>a+c[s.id],0);
+function aufbau(N){ const c=empty(); let left=N; for(const s of SUBS){ const k=Math.min(left,s.max); c[s.id]=k; left-=k; } return c; }
+function configOf(Z){ const c=aufbau(Z); if(Z===24){c['3d']=5;c['4s']=1;} if(Z===29){c['3d']=10;c['4s']=1;} return c; }
+function removalSub(c){ return SUBS.filter(s=>c[s.id]>0).sort((a,b)=>(b.n-a.n)||(b.l-a.l))[0]; }
+function addSub(c){ return SUBS.find(s=>c[s.id]<s.max); }
+function ionConfig(Z,q){ const c=configOf(Z); if(q>0) for(let i=0;i<q;i++) c[removalSub(c).id]--; if(q<0) for(let i=0;i<-q;i++) c[addSub(c).id]++; return c; }
+function same(a,b){ return SUBS.every(s=>a[s.id]===b[s.id]); }
+function unpairedSub(cnt,k){ return cnt<=k?cnt:2*k-cnt; }
+function unpaired(c){ return SUBS.reduce((a,s)=>a+unpairedSub(c[s.id],s.k),0); }
+function blockOf(Z){ const c=aufbau(Z); let last='1s'; SUBS.forEach(s=>{ if(c[s.id]>0) last=s.id; }); return last[1]; }
+function coreFor(N){ let best=null; Object.entries(CORES).forEach(([k,v])=>{ if(v.n<N) best=k; }); return best; }
+function coreFits(c,core){ return CORES[core].subs.every(s=>c[s]===SUB[s].max); }
+function cfgHTML(c,core){ const skip=core?CORES[core].subs:[]; const parts=SHELL_ORDER.filter(s=>c[s]>0&&!skip.includes(s)).map(s=>`${s}<sup>${c[s]}</sup>`);
+  return (core?`[${core}] `:'')+(parts.length?parts.join(' '):(core?'':'—')); }
+function chargeSup(q){ if(!q) return ''; const a=Math.abs(q); return `<sup>${a>1?a:''}${q>0?'+':'−'}</sup>`; }
+function sp(Z,q=0){ return EL[Z-1]+chargeSup(q); }
+function hundOcc(cnt,k){ const a=Array(k).fill(0); for(let i=0;i<cnt;i++){ a[i<k?i:i-k]++; } return a; }
+
+/* ---------- seeded shuffle + MCQ engine ---------- */
+function seeded(str){let h=2166136261;for(const ch of str){h^=ch.charCodeAt(0);h=Math.imul(h,16777619);}
+  return ()=>{h=Math.imul(h^(h>>>15),2246822507);h=Math.imul(h^(h>>>13),3266489909);h^=h>>>16;return (h>>>0)/4294967296;};}
+function order(n,key){const r=seeded(key);const a=[...Array(n).keys()];for(let i=n-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+const MCQ={};
+function ensureMCQ(id,spec,rerender){ if(!MCQ[id]) MCQ[id]={spec,rerender,st:{wrong:new Set(),ok:false,last:null}}; else {MCQ[id].spec=spec;MCQ[id].rerender=rerender;} return MCQ[id]; }
+function mcqHTML(id){
+  const {spec,st}=MCQ[id]; const ord=order(spec.opts.length,id+'y');
+  let h=`<div class="mcq"><p class="mq">${spec.q}</p><div class="opts">`;
+  ord.forEach((i,k)=>{ const ok=spec.opts[i][1]; let cls='opt'; if(st.wrong.has(i)) cls+=' wrong'; if(st.ok&&ok) cls+=' right';
+    h+=`<button type="button" class="${cls}" data-act="opt" data-id="${id}" data-i="${i}" ${(st.ok||st.wrong.has(i))?'disabled':''}><span class="ol">${'ABCDEF'[k]}</span><span>${spec.opts[i][0]}</span></button>`; });
+  h+='</div>';
+  if(st.last!=null){ const [,ok,why]=spec.opts[st.last]; h+=`<div class="fb ${ok?'good':'bad'}"><b>${ok?'Correct.':'Not quite.'}</b> ${why||''}</div>`; }
+  return h+'</div>';
+}
+function mcqClick(id,i){ const m=MCQ[id]; if(!m||m.st.ok) return; m.st.last=i; if(m.spec.opts[i][1]) m.st.ok=true; else m.st.wrong.add(i); m.rerender(); }
+function standaloneMCQ(container,id,spec){ const box=document.createElement('div'); container.appendChild(box); const r=()=>{box.innerHTML=mcqHTML(id); updateBadges();}; ensureMCQ(id,spec,r); box.innerHTML=mcqHTML(id); }
+function uniqOpts(list){ const seen=new Set(); return list.filter(o=>{ const k=String(o[0]); if(seen.has(k)) return false; seen.add(k); return true; }); }
+
+/* ---------- step factories ---------- */
+function stepCount(Z,q=0){
+  const N=Z-q, nm=cap(NM[Z-1]);
+  let mcq;
+  if(!q) mcq={q:`${nm} has atomic number ${Z}. How many electrons are in one atom?`,opts:uniqOpts([
+    [Z,1,'In a neutral atom, number of electrons = number of protons = atomic number.'],
+    [MASS[Z-1],0,'That is the mass number. Neutrons have no charge, so they don\'t affect the electrons.'],
+    [Z+1,0,'Electrons = protons = atomic number. No extra electrons.'],[Z-1,0,'Electrons = protons = atomic number.']])};
+  else mcq={q:`An atom of ${nm} has ${Z} electrons. How many electrons does ${sp(Z,q)} have?`,opts:uniqOpts([
+    [N,1,q>0?`A ${q}+ ion has <b>lost</b> ${q} electron${q>1?'s':''}: ${Z} − ${q} = ${N}.`:`A ${-q}− ion has <b>gained</b> ${-q} electron${q<-1?'s':''}: ${Z} + ${-q} = ${N}.`],
+    [Z+q,0,q>0?'A positive ion forms by <b>losing</b> electrons, not gaining them.':'A negative ion forms by <b>gaining</b> electrons.'],
+    [Z,0,'The charge tells you electrons have been lost or gained.'],[q>0?N-1:N+1,0,'Look at the size of the charge.']])};
+  return {title:'Count the electrons',kind:'num',target:N,mcq,hint:q?'electrons = atomic number − charge':'electrons = atomic number',
+    work:q?`${Z} ${q>0?'−':'+'} ${Math.abs(q)} = <b>${N} electrons</b>`:`atomic number ${Z} → <b>${Z} electrons</b>`,
+    errs:v=>v===Z+q&&q?'Check the sign: positive ions have <b>fewer</b> electrons than the atom.':v===MASS[Z-1]?'That is the mass number. Use the atomic number.':null};
+}
+function stepLast(Z){
+  const c=aufbau(Z); let li=0; SUBS.forEach((s,i)=>{ if(c[s.id]>0) li=i; });
+  const cands=[li-2,li-1,li+1,li+2].filter(i=>i>=0&&i<SUBS.length&&i!==li).slice(0,3);
+  const opts=[[SUBS[li].id,1,`Fill 1s → 2s → 2p → … in order of energy. ${cap(NM[Z-1])}'s ${Z}th electron lands in ${SUBS[li].id}.`]];
+  cands.forEach(i=>{ const s=SUBS[i]; opts.push([s.id,0, i<li?`${s.id} is already full by then.`:`${s.id} is higher in energy, so it doesn't start filling until ${SUBS[i-1].id} is full.`]); });
+  return {title:'Find where the last electron goes',kind:'none',mcq:{q:`Filling in order of energy, which sub-shell does the last electron of ${NM[Z-1]} go into?`,opts},
+    work:`Fill in order: ${SUBS.slice(0,li+1).map(s=>s.id).join(' → ')}. The last electron goes into <b>${SUBS[li].id}</b>.`};
+}
+function stepCore(N,who){
+  const core=coreFor(N); const names=['He','Ne','Ar','Kr'];
+  const opts=names.map(nm=>{ const n={He:2,Ne:10,Ar:18,Kr:36}[nm];
+    if(nm===core) return [`[${nm}]`,1,`[${nm}] stands for ${n} electrons: ${CORES[nm].subs.map(s=>s+'<sup>'+SUB[s].max+'</sup>').join(' ')}. It is the noble gas just before ${who}.`];
+    if(n>=N) return [`[${nm}]`,0,`[${nm}] has ${n} electrons, but ${who} has only ${N}.`];
+    return [`[${nm}]`,0,`Use the noble gas just before ${who}, so the core covers as many electrons as possible.`]; });
+  return {title:'Choose the noble gas core',kind:'none',mcq:{q:`Which noble gas core do you use for ${who}?`,opts},work:`Use <b>[${core}]</b> (${CORES[core].n} electrons).`};
+}
+function stepBuild(target,o={}){
+  return {title:o.title||'Build the configuration',kind:'build',target,core:o.core||null,allowCore:!!o.allowCore||!!o.core,
+    hint:'Fill order: 1s 2s 2p 3s 3p 4s 3d 4p. Each s holds 2, p holds 6, d holds 10.',
+    errs:o.errs||(()=>null),
+    work:`<span class="cfg">${cfgHTML(target,o.core||null)}</span>`+altShort(target,o.core)};
+}
+function altShort(t,core){ if(core) return ''; const N=total(t), c=coreFor(N); if(!c||[2,10,18].includes(N)||!coreFits(t,c)) return ''; return ` <span class="note">or</span> <span class="cfg">${cfgHTML(t,c)}</span>`; }
+function patternHTML(arr){ return `<span class="mb">${arr.map(v=>`<span class="bx">${v===2?'<span class="u">↑</span><span class="d">↓</span>':v===1?'<span class="u">↑</span>':''}</span>`).join('')}</span>`; }
+function stepBoxes(target,subs,who){
+  const main=subs.map(s=>SUB[s]).filter(s=>s.k>1&&target[s.id]>0&&target[s.id]<s.max)[0]||SUB[subs[subs.length-1]];
+  const cnt=target[main.id], k=main.k; const right=hundOcc(cnt,k);
+  const pairFirst=Array(k).fill(0); for(let i=0;i<cnt;i++) pairFirst[Math.floor(i/2)]++;
+  const opts=[[patternHTML(right),1,'Hund\'s rule: electrons go into empty orbitals one at a time, with parallel spins, before any pair up.']];
+  if(!same2(right,pairFirst)) opts.push([patternHTML(pairFirst),0,'Electrons only pair up once every orbital in the sub-shell has one electron.']);
+  const opp=right.map(v=>v); // opposite-spin singles: shown as text
+  opts.push([`<span class="mb">${right.map((v,i)=>`<span class="bx">${v===2?'<span class="u">↑</span><span class="d">↓</span>':v===1?(i%2?'<span class="d">↓</span>':'<span class="u">↑</span>'):''}</span>`).join('')}</span>`,0,'Unpaired electrons in the same sub-shell have <b>parallel</b> spins (all up).']);
+  if(cnt>=3) opts.push([`<span class="mb">${Array(k).fill(0).map((_,i)=>i===0?'<span class="bx" style="font-size:15px"><span class="u">↑↑</span><span class="d">↓</span></span>':'<span class="bx"></span>').join('')}</span>`,0,'Pauli: an orbital holds a maximum of two electrons.']);
+  return {title:`Draw the orbitals for ${who}`,kind:'boxes',subs,target,
+    mcq:cnt>1&&cnt<main.max?{q:`${who} has ${cnt} electron${cnt>1?'s':''} in ${main.id}. How are they arranged in the ${k} ${main.id} orbitals?`,opts}:null,
+    hint:'Hund\'s rule: one electron in each orbital first, then pair up.',
+    work:subs.map(s=>`<span class="mb"><span class="lab">${s}</span>${patternHTML(hundOcc(target[s],SUB[s].k)).replace(/^<span class="mb">|<\/span>$/g,'')}</span>`).join(' &nbsp; ')};
+}
+function same2(a,b){ return a.length===b.length&&a.every((v,i)=>v===b[i]); }
+function stepUnpaired(target){
+  const u=unpaired(target);
+  return {title:'Count the unpaired electrons',kind:'num',target:u,mcq:null,hint:'count the boxes with a single arrow',work:`<b>${u}</b> unpaired electron${u===1?'':'s'}`,errs:()=>null};
+}
+function stepMCQ(title,spec,work){ return {title,kind:'none',mcq:spec,work}; }
+
+/* ---------- questions ---------- */
+const QS={}, SECTIONS={};
+function Q(id,sec,n,text,steps,extra={}){ const q={id,sec,n,text,steps,...extra}; q.st={idx:0,shown:new Set(),tries:0,open:false,hint:false,fb:null,b:{core:'',c:empty()},bx:{}}; QS[id]=q; (SECTIONS[sec]=SECTIONS[sec]||[]).push(q); return q; }
+const tmetErr=(Z,q)=>S=>{ const wrong=configOf(Z); let r=q; const w={...wrong}; while(r>0&&w['3d']>0){w['3d']--;r--;} if(same(S,w)) return 'You removed 3d electrons. The <b>4s</b> electrons are removed first, even though 4s filled first.'; return null; };
+
+// A — full configurations
+[[7,1],[11],[16],[19],[26],[35]].forEach(([Z,w],i)=>{
+  const extra = Z===26 ? {errs:S=>{ if(S['3d']===8&&S['4s']===0) return 'The 4s sub-shell fills before 3d. Put 2 electrons in 4s first.'; return null;}} : {};
+  Q('a'+(i+1),'a',i+1,`Write the full electron configuration of ${/^[aeiou]/.test(NM[Z-1])?'an':'a'} ${NM[Z-1]} atom, ${EL[Z-1]}.`,[stepCount(Z),stepLast(Z),stepBuild(configOf(Z),extra)],{worked:!!w,ans:cfgHTML(configOf(Z))});
+});
+// B — shorthand
+[[14,1],[15],[22],[28],[31],[34]].forEach(([Z,w],i)=>{
+  const core=coreFor(Z);
+  const errs=S=>{ if(Z>30 && S['3d']===0) return 'Don\'t forget 3d<sup>10</sup>. The 3d sub-shell fills between 4s and 4p.'; return null; };
+  Q('b'+(i+1),'b',i+1,`Write the electron configuration of ${NM[Z-1]}, ${EL[Z-1]}, using noble gas shorthand.`,[stepCount(Z),stepCore(Z,NM[Z-1]),stepBuild(configOf(Z),{core,errs})],{worked:!!w,ans:cfgHTML(configOf(Z),core)});
+});
+// C — ions
+const ionMCQ={
+  '11,1':{q:'Which electron is removed to form Na<sup>+</sup>?',opts:[['The 3s electron: it is in the outer, highest-energy sub-shell',1,'Na = 1s<sup>2</sup> 2s<sup>2</sup> 2p<sup>6</sup> 3s<sup>1</sup>. Losing the 3s electron leaves the configuration of neon.'],['A 1s electron: it is closest to the nucleus',0,'Inner electrons are held most strongly. The outer electron is lost.'],['A 2p electron',0,'2p is an inner sub-shell in sodium.'],['None, Na<sup>+</sup> gains an electron',0,'A positive ion has lost an electron.']]},
+  '8,-2':{q:'Where do the two extra electrons go to form O<sup>2−</sup>?',opts:[['Into 2p, filling it to 2p<sup>6</sup>',1,'O = 1s<sup>2</sup> 2s<sup>2</sup> 2p<sup>4</sup>. Two more fill the 2p sub-shell, giving the configuration of neon.'],['Into 3s',0,'2p has space, and it is lower in energy than 3s.'],['Into 2s',0,'2s is already full (2 electrons).'],['They replace two 2p electrons',0,'Electrons are added, so the total goes up to 10.']]},
+  '20,2':{q:'Which electrons are removed to form Ca<sup>2+</sup>?',opts:[['Both 4s electrons',1,'Ca = [Ar] 4s<sup>2</sup>. Losing the two 4s electrons leaves the configuration of argon.'],['Two 3p electrons',0,'3p is an inner sub-shell. The outer 4s electrons go first.'],['Two 3d electrons',0,'Calcium has no 3d electrons.'],['One 4s and one 3p electron',0,'Both outer 4s electrons are lost.']]},
+  '17,-1':{q:'Where does the extra electron go to form Cl<sup>−</sup>?',opts:[['Into 3p, filling it to 3p<sup>6</sup>',1,'Cl = [Ne] 3s<sup>2</sup> 3p<sup>5</sup>. One more fills 3p, giving the configuration of argon.'],['Into 4s',0,'3p has space and is lower in energy.'],['Into 3d',0,'3p has space and is lower in energy.'],['Into 3s',0,'3s is already full.']]},
+  '26,2':{q:'Which electrons are removed to form Fe<sup>2+</sup>?',opts:[['Both 4s electrons, even though 4s filled before 3d',1,'Fe = [Ar] 3d<sup>6</sup> 4s<sup>2</sup>. When transition metals form ions, the 4s electrons are lost first.'],['Two 3d electrons, because 3d filled last',0,'This is the classic mistake. 4s electrons are removed before 3d electrons.'],['One 4s and one 3d electron',0,'Both 4s electrons go before any 3d electron.'],['Two 3p electrons',0,'3p is an inner sub-shell.']]},
+  '26,3':{q:'Which electrons are removed to form Fe<sup>3+</sup>?',opts:[['Both 4s electrons, then one 3d electron',1,'Fe = [Ar] 3d<sup>6</sup> 4s<sup>2</sup> → Fe<sup>3+</sup> = [Ar] 3d<sup>5</sup>.'],['Three 3d electrons',0,'The 4s electrons are removed first.'],['Two 3d electrons and one 4s electron',0,'Both 4s electrons go before any 3d electron.'],['Three 4s electrons',0,'4s only holds 2 electrons.']]},
+  '30,2':{q:'Which electrons are removed to form Zn<sup>2+</sup>?',opts:[['Both 4s electrons',1,'Zn = [Ar] 3d<sup>10</sup> 4s<sup>2</sup> → Zn<sup>2+</sup> = [Ar] 3d<sup>10</sup>.'],['Two 3d electrons',0,'The 4s electrons are lost first.'],['One 4s and one 3d electron',0,'Both 4s electrons go first.'],['Two 4p electrons',0,'Zinc has no 4p electrons.']]},
+};
+[[11,1,1],[8,-2],[20,2],[17,-1],[26,2,1],[26,3],[30,2]].forEach(([Z,q,w],i)=>{
+  const t=ionConfig(Z,q);
+  const errs = Z>=21&&Z<=30 ? tmetErr(Z,q) : (S=>{ if(same(S,configOf(Z))) return 'That is the configuration of the atom. Now remove or add electrons for the charge.'; return null; });
+  Q('c'+(i+1),'c',i+1,`Write the electron configuration of the ${sp(Z,q)} ion. You can use full notation or noble gas shorthand.`,[stepCount(Z,q),stepMCQ(q>0?'Which electrons are removed?':'Where do the extra electrons go?',ionMCQ[`${Z},${q}`],ionMCQ[`${Z},${q}`].opts[0][2]),stepBuild(t,{allowCore:true,errs})],{worked:!!w,ans:cfgHTML(t)+altShort(t)});
+});
+// D — Cr and Cu
+const predCr=aufbau(24), predCu=aufbau(29);
+Q('d1','d',1,'Write the electron configuration of chromium, Cr, using noble gas shorthand.',[stepCount(24),
+  stepMCQ('Predict using the filling order',{q:'Using the normal filling order, what would you predict for chromium (24 electrons)?',opts:[['[Ar] 3d<sup>4</sup> 4s<sup>2</sup>',1,'18 in the [Ar] core, 2 in 4s, then 4 in 3d. This is the prediction. The real configuration is different.'],['[Ar] 3d<sup>6</sup>',0,'4s fills before 3d.'],['[Ar] 4s<sup>2</sup> 4p<sup>4</sup>',0,'3d fills before 4p.'],['[Ar] 3d<sup>5</sup> 4s<sup>2</sup>',0,'That is 25 electrons.']]},'Prediction: [Ar] 3d<sup>4</sup> 4s<sup>2</sup>.'),
+  stepMCQ('The real configuration',{q:'Chromium is an exception. What is its actual configuration, and why?',opts:[['[Ar] 3d<sup>5</sup> 4s<sup>1</sup>: a half-filled 3d sub-shell is more stable',1,'One 4s electron moves into 3d, so all five 3d orbitals have one electron each.'],['[Ar] 3d<sup>4</sup> 4s<sup>2</sup>: it follows the rules',0,'Chromium is one of the two exceptions you need to know (Cr and Cu).'],['[Ar] 3d<sup>6</sup>: both 4s electrons move into 3d',0,'Only one electron moves.'],['[Ar] 3d<sup>5</sup> 4s<sup>1</sup>: 4s is higher in energy than 3d',0,'The configuration is right, but the reason is the extra stability of a half-filled d sub-shell.']]},'Actual: [Ar] 3d<sup>5</sup> 4s<sup>1</sup> (half-filled 3d is more stable).'),
+  stepBuild(configOf(24),{core:'Ar',errs:S=>same(S,predCr)?'That is the predicted configuration. Chromium is an exception: move one electron from 4s to 3d.':null})],{worked:true,ans:cfgHTML(configOf(24),'Ar')});
+Q('d2','d',2,'Write the electron configuration of copper, Cu, using noble gas shorthand.',[stepCount(29),
+  stepMCQ('The real configuration',{q:'The filling order predicts [Ar] 3d<sup>9</sup> 4s<sup>2</sup>. What is the actual configuration of copper, and why?',opts:[['[Ar] 3d<sup>10</sup> 4s<sup>1</sup>: a full 3d sub-shell is more stable',1,'One 4s electron moves into 3d to complete it.'],['[Ar] 3d<sup>9</sup> 4s<sup>2</sup>: it follows the rules',0,'Copper is an exception, like chromium.'],['[Ar] 3d<sup>10</sup> 4s<sup>2</sup>',0,'That is 30 electrons (zinc).'],['[Ar] 3d<sup>11</sup>',0,'A d sub-shell holds a maximum of 10 electrons.']]},'Actual: [Ar] 3d<sup>10</sup> 4s<sup>1</sup> (full 3d is more stable).'),
+  stepBuild(configOf(29),{core:'Ar',errs:S=>same(S,predCu)?'That is the predicted configuration. Copper is an exception: move one electron from 4s to 3d.':null})],{ans:cfgHTML(configOf(29),'Ar')});
+Q('d3','d',3,`Write the electron configuration of the ${sp(24,3)} ion.`,[stepCount(24,3),
+  stepMCQ('Which electrons are removed?',{q:'Cr = [Ar] 3d<sup>5</sup> 4s<sup>1</sup>. Which electrons are removed to form Cr<sup>3+</sup>?',opts:[['The 4s electron, then two 3d electrons',1,'4s goes first, then 3d: [Ar] 3d<sup>3</sup>.'],['Three 3d electrons',0,'The 4s electron is removed first.'],['The 4s electron and two 4p electrons',0,'Chromium has no 4p electrons.'],['Two 4s electrons and one 3d electron',0,'Chromium has only one 4s electron.']]},'Remove 4s<sup>1</sup>, then two 3d electrons.'),
+  stepBuild(ionConfig(24,3),{allowCore:true,errs:tmetErr(24,3)})],{ans:cfgHTML(ionConfig(24,3),'Ar')});
+Q('d4','d',4,`Write the electron configuration of the ${sp(29,2)} ion.`,[stepCount(29,2),
+  stepMCQ('Which electrons are removed?',{q:'Cu = [Ar] 3d<sup>10</sup> 4s<sup>1</sup>. Which electrons are removed to form Cu<sup>2+</sup>?',opts:[['The 4s electron, then one 3d electron',1,'Cu<sup>2+</sup> = [Ar] 3d<sup>9</sup>.'],['Two 3d electrons',0,'The 4s electron goes first.'],['Two 4s electrons',0,'Copper has only one 4s electron.'],['Nothing, the ion is [Ar] 3d<sup>10</sup> 4s<sup>1</sup>',0,'A 2+ ion has lost two electrons.']]},'Remove 4s<sup>1</sup>, then one 3d electron.'),
+  stepBuild(ionConfig(29,2),{allowCore:true,errs:tmetErr(29,2)})],{ans:cfgHTML(ionConfig(29,2),'Ar')});
+// E — orbitals and unpaired
+[[8,0,['2s','2p'],1],[7,0,['2s','2p']],[15,0,['3s','3p']],[26,0,['4s','3d'],1],[24,0,['4s','3d']],[26,3,['4s','3d']]].forEach(([Z,q,subs,w],i)=>{
+  const t=ionConfig(Z,q); const who=q?sp(Z,q):NM[Z-1];
+  Q('e'+(i+1),'e',i+1,`Draw the arrangement of electrons in the ${subs.join(' and ')} orbitals of ${q?'the '+who+' ion':(/^[aeiou]/.test(who)?'an ':'a ')+who+' atom'}, and state the number of unpaired electrons.`,[stepBoxes(t,subs,q?who:cap(who)),stepUnpaired(t)],{worked:!!w,ans:`${unpaired(t)} unpaired electron${unpaired(t)===1?'':'s'}`});
+});
+
+/* ---------- walkthrough rendering ---------- */
+function builderHTML(q){
+  const step=q.steps[q.st.idx], b=q.st.b; const lock=b.core?CORES[b.core].subs:[];
+  let h='<div class="builder">';
+  if(step.allowCore) h+=`<div class="row"><span class="note">Noble gas core:</span><div class="seg" role="group" aria-label="Noble gas core">${['','He','Ne','Ar'].map(c=>`<button type="button" class="${b.core===c?'on':''}" data-act="bcore" data-q="${q.id}" data-c="${c}">${c?'['+c+']':'none'}</button>`).join('')}</div></div>`;
+  h+='<div class="subs">';
+  SUBS.forEach(s=>{ if(lock.includes(s.id)) return; const v=b.c[s.id];
+    h+=`<div class="sub ${v?'has':''}"><button type="button" aria-label="remove from ${s.id}" data-act="bminus" data-q="${q.id}" data-s="${s.id}" ${v?'':'disabled'}>−</button><span class="sl">${s.id}</span><span class="cnt">${v}</span><span class="cap">/${s.max}</span><button type="button" aria-label="add to ${s.id}" data-act="bplus" data-q="${q.id}" data-s="${s.id}" ${v<s.max?'':'disabled'}>+</button></div>`; });
+  h+='</div>';
+  const S=builtCounts(q);
+  h+=`<div class="preview"><span class="note">Your configuration (${total(S)} electrons):</span> <span class="cfg">${b.core||total(b.c)?cfgHTML({...S,...Object.fromEntries(lock.map(x=>[x,0]))},b.core||null):'—'}</span></div>`;
+  h+=`<p class="note">Sub-shells are listed in filling order. Use + and − to set the electrons in each.</p>`;
+  return h+'</div>';
+}
+function builtCounts(q){ const b=q.st.b; const S={...b.c}; if(b.core) CORES[b.core].subs.forEach(s=>S[s]=SUB[s].max); return S; }
+function boxesHTML(q){
+  const step=q.steps[q.st.idx]; let h='<div class="row" style="gap:18px">';
+  step.subs.forEach(s=>{ const occ=q.st.bx[s]||(q.st.bx[s]=Array(SUB[s].k).fill(0));
+    h+=`<span class="mb"><span class="lab">${s}</span>${occ.map((v,o)=>`<button type="button" class="bx" aria-label="${s} orbital ${o+1}" data-act="box" data-q="${q.id}" data-s="${s}" data-o="${o}">${v===2?'<span class="u">↑</span><span class="d">↓</span>':v===1?'<span class="u">↑</span>':''}</button>`).join('')}</span>`; });
+  return h+'</div><p class="note">Click a box to add an electron. A third click empties it.</p>';
+}
+function stepsHTML(q){
+  const st=q.st; let h='<ol class="steps">';
+  q.steps.forEach((step,i)=>{
+    if(i<st.idx){ h+=`<li class="step done"><div class="sh"><span class="sn">Step ${i+1} ✓</span><span>${step.title}</span>${st.shown.has(i)?'<span class="shown">(shown)</span>':''}</div><div class="work">${step.work}</div></li>`; return; }
+    if(i>st.idx){ h+=`<li class="step locked"><span class="sn">Step ${i+1}</span>${guided?'':' · '+step.title}</li>`; return; }
+    const mid=`${q.id}-s${i}`; if(step.mcq) ensureMCQ(mid,step.mcq,()=>renderQ(q.id));
+    h+=`<li class="step active"><div class="sh"><span class="sn">Step ${i+1}</span><span>${step.title}</span></div>`;
+    const showMCQ = step.mcq && (guided || step.kind==='none');
+    if(showMCQ) h+=mcqHTML(mid);
+    const mcqOk = !step.mcq || MCQ[mid].st.ok;
+    if(step.kind==='none'){ if(mcqOk) h+=`<div class="row"><button type="button" class="btn primary" data-act="next" data-q="${q.id}">Next step →</button></div>`; }
+    else if(!showMCQ || mcqOk){
+      if(!guided && st.hint) h+=`<div class="tip">${step.hint}</div>`;
+      if(step.kind==='num') h+=`<div class="row"><label for="n-${q.id}">Answer:</label><input id="n-${q.id}" class="numin" inputmode="numeric" autocomplete="off" data-q="${q.id}"></div>`;
+      if(step.kind==='build') h+=builderHTML(q);
+      if(step.kind==='boxes') h+=boxesHTML(q);
+      h+=`<div class="row"><button type="button" class="btn primary" data-act="check" data-q="${q.id}">Check</button>${!guided&&!st.hint?`<button type="button" class="btn" data-act="hint" data-q="${q.id}">Hint</button>`:''}<button type="button" class="btn ghost" data-act="show" data-q="${q.id}">Show me</button></div>`;
+      h+=`<div class="fb ${st.fb?st.fb.type:''}" id="fb-${q.id}" aria-live="polite">${st.fb?st.fb.msg:''}</div>`;
+    }
+    h+='</li>';
+  });
+  h+='</ol>';
+  if(st.idx>=q.steps.length) h+=`<div class="final"><span class="lbl">Answer</span><span class="ans">${q.ans}</span><button type="button" class="btn ghost" data-act="reset" data-q="${q.id}">Try again</button></div>`;
+  return h;
+}
+function qCard(q){
+  const done=q.st.idx>=q.steps.length;
+  return `<article class="q ${done?'complete':''}" id="card-${q.id}"><button type="button" class="qh" data-act="toggle" data-q="${q.id}" aria-expanded="${q.st.open}">
+    <span class="qnum">${done?'✓':q.n}</span><span class="qtext">${q.worked?'<span class="tag-we">Walkthrough</span>':''}${q.text}</span><span class="marks">${q.st.open?'▴':'▾'}</span></button>
+    ${q.st.open?`<div class="qb">${stepsHTML(q)}</div>`:''}</article>`;
+}
+function renderQ(id){ const el=document.getElementById('card-'+id); if(el) el.outerHTML=qCard(QS[id]); updateBadges(); }
+function setFb(q,msg,type){ q.st.fb={msg,type}; const el=document.getElementById('fb-'+q.id); if(el){el.className='fb '+type; el.innerHTML=msg;} }
+function advance(q,shown){ if(shown) q.st.shown.add(q.st.idx); q.st.idx++; q.st.fb=null; q.st.hint=false; q.st.tries=0; q.st.b={core:'',c:empty()}; q.st.bx={}; renderQ(q.id); }
+function checkQ(q){
+  const step=q.steps[q.st.idx]; const more=()=>q.st.tries>=2?' If you are stuck, press <b>Show me</b>.':'';
+  if(step.kind==='num'){
+    const el=document.getElementById('n-'+q.id); const raw=(el.value||'').trim(); if(!raw){ setFb(q,'Type your answer first.','warn'); return; }
+    const v=Number(raw); if(!Number.isInteger(v)){ setFb(q,'Type a whole number.','warn'); return; }
+    if(v===step.target){ advance(q); return; } q.st.tries++;
+    const e=step.errs&&step.errs(v); setFb(q,(e||'Not right yet. Try again.')+more(),'bad'); return;
+  }
+  if(step.kind==='build'){
+    const b=q.st.b, S=builtCounts(q), T=step.target;
+    if(!b.core&&total(b.c)===0){ setFb(q,'Use the + buttons to put electrons into the sub-shells.','warn'); return; }
+    if(same(S,T)){
+      if(step.core && b.core!==step.core){ q.st.tries++; setFb(q,`The electrons are right, but the question asks for noble gas shorthand. Choose the <b>[${step.core}]</b> core.`,'warn'); return; }
+      advance(q); return; }
+    q.st.tries++;
+    const e=step.errs(S); if(e){ setFb(q,e+more(),'bad'); return; }
+    const nT=total(T), nS=total(S);
+    if(nS!==nT){ setFb(q,`You have placed ${nS} electrons. You need ${nT}.${b.core?` The [${b.core}] core counts as ${CORES[b.core].n}.`:''}`+more(),'bad'); return; }
+    for(let i=0;i<SUBS.length;i++){ const s=SUBS[i]; if(S[s.id]<s.max){ const later=SUBS.slice(i+1).find(x=>S[x.id]>0); if(later){ setFb(q,`${later.id} has electrons but ${s.id} isn't full yet. Fill lower-energy sub-shells first: 1s 2s 2p 3s 3p 4s 3d 4p.`+more(),'bad'); return; } } }
+    setFb(q,'The total is right, but the arrangement isn\'t. Check which sub-shell each electron goes into.'+more(),'bad'); return;
+  }
+  if(step.kind==='boxes'){
+    let ok=true, msgs=[];
+    step.subs.forEach(s=>{ const occ=q.st.bx[s]||Array(SUB[s].k).fill(0); const t=hundOcc(step.target[s],SUB[s].k);
+      const n=occ.reduce((a,b)=>a+b,0);
+      if(n!==step.target[s]){ ok=false; msgs.push(`${s} should contain ${step.target[s]} electron${step.target[s]===1?'':'s'}; you have ${n}.`); }
+      else if(!same2([...occ].sort(),[...t].sort())){ ok=false; msgs.push(`In ${s}, put one electron in each orbital before pairing up (Hund's rule).`); } });
+    if(ok){ advance(q); return; } q.st.tries++; setFb(q,msgs.join(' ')+more(),'bad');
+  }
+}
+
+/* ---------- section pages ---------- */
+const SECINFO={
+  a:['Section A · Full electron configurations','Write the configuration of an atom in full, from 1s upwards.',['Count the electrons: atomic number.','Fill sub-shells in energy order: 1s 2s 2p 3s 3p 4s 3d 4p.','Fill each sub-shell completely (s 2, p 6, d 10) before moving on, until every electron is placed.','Check the superscripts add up to the atomic number.']],
+  b:['Section B · Noble gas shorthand','Replace the inner electrons with the symbol of the previous noble gas.',['Count the electrons.','Find the noble gas just before the element: [He], [Ne] or [Ar].','Write the core, then the sub-shells that come after it.','From gallium onwards, remember the 3d<sup>10</sup> after [Ar].']],
+  c:['Section C · Ions','Start from the atom, then remove or add electrons.',['Count the electrons in the ion: atomic number − charge.','Positive ions: remove electrons from the outer, highest-energy sub-shell. For transition metals, remove <b>4s before 3d</b>.','Negative ions: add electrons to the next available sub-shell.','Many ions end up with the same configuration as a noble gas.']],
+  d:['Section D · Chromium and copper','Two exceptions you have to learn.',['Cr: predicted [Ar] 3d<sup>4</sup> 4s<sup>2</sup>, actual <b>[Ar] 3d<sup>5</sup> 4s<sup>1</sup></b> (half-filled 3d is more stable).','Cu: predicted [Ar] 3d<sup>9</sup> 4s<sup>2</sup>, actual <b>[Ar] 3d<sup>10</sup> 4s<sup>1</sup></b> (full 3d is more stable).','Their ions still lose the 4s electron first.']],
+  e:['Section E · Orbitals and unpaired electrons','Draw electrons-in-boxes diagrams and count the unpaired electrons.',['Work out how many electrons are in each sub-shell.','Pauli: an orbital holds up to two electrons, with opposite spins.','Hund\'s rule: within a sub-shell, put one electron in each orbital, all with parallel spin, before pairing.','Unpaired electrons = boxes with a single arrow.']],
+  f:['Section F · Exam practice','Mixed multiple-choice questions on the whole topic.',null]
+};
+function buildSection(sec){
+  const [title,lead,route]=SECINFO[sec]; const el=document.getElementById('tab-'+sec);
+  let h=`<div><h2>${title}</h2><p class="lead">${lead}</p></div>`;
+  if(route) h+=`<div class="card"><h3>The method</h3><ol style="margin:0;padding-left:22px;display:flex;flex-direction:column;gap:4px">${route.map(r=>`<li>${r}</li>`).join('')}</ol></div>`;
+  if(sec==='f'){ h+='<div class="grid2" id="fQs"></div>'; el.innerHTML=h; buildF(); return; }
+  SECTIONS[sec][0].st.open=true;
+  h+='<div style="display:flex;flex-direction:column;gap:12px">'+SECTIONS[sec].map(qCard).join('')+'</div>';
+  el.innerHTML=h;
+}
+const FMCQ=[
+ {q:'Which element has the configuration 1s<sup>2</sup> 2s<sup>2</sup> 2p<sup>6</sup> 3s<sup>2</sup> 3p<sup>6</sup> 3d<sup>3</sup> 4s<sup>2</sup>?',opts:[['Vanadium',1,'2 + 2 + 6 + 2 + 6 + 3 + 2 = 23 electrons, so Z = 23.'],['Scandium',0,'Count every electron: there are 23.'],['Chromium',0,'Cr has 24 electrons and is an exception: 3d<sup>5</sup> 4s<sup>1</sup>.'],['Arsenic',0,'Arsenic has 33 electrons.']]},
+ {q:'Which species has the same electron configuration as argon?',opts:[['Ca<sup>2+</sup>',1,'Ca has 20 electrons; Ca<sup>2+</sup> has 18, the same as Ar.'],['K',0,'K has 19 electrons: [Ar] 4s<sup>1</sup>.'],['Cl',0,'Cl has 17 electrons. Cl<sup>−</sup> would match argon.'],['Na<sup>+</sup>',0,'Na<sup>+</sup> has 10 electrons, like neon.']]},
+ {q:'What is the electron configuration of a Mn<sup>2+</sup> ion?',opts:[['[Ar] 3d<sup>5</sup>',1,'Mn = [Ar] 3d<sup>5</sup> 4s<sup>2</sup>. Both 4s electrons are lost first.'],['[Ar] 3d<sup>3</sup> 4s<sup>2</sup>',0,'4s electrons are removed before 3d electrons.'],['[Ar] 3d<sup>5</sup> 4s<sup>2</sup>',0,'That is the Mn atom.'],['[Ar] 3d<sup>4</sup> 4s<sup>1</sup>',0,'Both electrons come from 4s.']]},
+ {q:'In which block of the periodic table is selenium?',opts:[['p-block',1,'Se = [Ar] 3d<sup>10</sup> 4s<sup>2</sup> 4p<sup>4</sup>. The highest-energy electron is in 4p.'],['d-block',0,'3d is full and 4p is being filled.'],['s-block',0,'4s is full and 4p is being filled.'],['f-block',0,'No f electrons at all.']]},
+ {q:'What is the maximum number of electrons in the third shell (n = 3)?',opts:[['18',1,'3s (2) + 3p (6) + 3d (10) = 18.'],['8',0,'That ignores 3d.'],['32',0,'That is the fourth shell, which includes 4f.'],['10',0,'That is just the 3d sub-shell.']]},
+ {q:'How many electrons are in the third shell of an iron atom?',opts:[['14',1,'Fe: 3s<sup>2</sup> 3p<sup>6</sup> 3d<sup>6</sup> = 14 in shell 3. The 4s electrons are in shell 4.'],['8',0,'Remember the 3d electrons are in shell 3.'],['16',0,'The 4s electrons are in shell 4, not shell 3.'],['18',0,'3d is not full in iron.']]},
+ {q:'Which atom has three unpaired electrons?',opts:[['Phosphorus',1,'3p<sup>3</sup>: one electron in each of the three 3p orbitals.'],['Sulfur',0,'3p<sup>4</sup>: one pair and two unpaired.'],['Aluminium',0,'3p<sup>1</sup>: one unpaired.'],['Calcium',0,'4s<sup>2</sup>: no unpaired electrons.']]},
+ {q:'What is an orbital?',opts:[['A region around the nucleus that can hold up to two electrons, with opposite spins',1,''],['A circular path that an electron follows around the nucleus',0,'Orbitals are regions where electrons are likely to be found, not fixed paths.'],['A group of sub-shells with the same energy',0,'That describes something closer to a shell.'],['A region that can hold up to eight electrons',0,'Every orbital holds a maximum of two electrons.']]},
+ {q:'Why is copper [Ar] 3d<sup>10</sup> 4s<sup>1</sup> and not [Ar] 3d<sup>9</sup> 4s<sup>2</sup>?',opts:[['A full 3d sub-shell is more stable',1,'One 4s electron moves into 3d to complete it.'],['4s is higher in energy than 3d, so it fills last',0,'4s fills before 3d.'],['Copper has only 28 electrons',0,'Copper has 29 electrons in both versions.'],['A 4s orbital can hold only one electron',0,'Every orbital can hold two electrons.']]},
+ {q:'Which sub-shell contains the highest-energy electron in a gallium atom?',opts:[['4p',1,'Ga = [Ar] 3d<sup>10</sup> 4s<sup>2</sup> 4p<sup>1</sup>.'],['4s',0,'4s is full; the 31st electron goes into 4p.'],['3d',0,'3d is full by zinc (30).'],['3p',0,'3p is full by argon (18).']]},
+ {q:'What is the electron configuration of S<sup>2−</sup>?',opts:[['1s<sup>2</sup> 2s<sup>2</sup> 2p<sup>6</sup> 3s<sup>2</sup> 3p<sup>6</sup>',1,'16 + 2 = 18 electrons.'],['1s<sup>2</sup> 2s<sup>2</sup> 2p<sup>6</sup> 3s<sup>2</sup> 3p<sup>4</sup>',0,'That is the sulfur atom.'],['1s<sup>2</sup> 2s<sup>2</sup> 2p<sup>6</sup> 3s<sup>2</sup> 3p<sup>2</sup>',0,'A 2− ion has gained electrons.'],['1s<sup>2</sup> 2s<sup>2</sup> 2p<sup>6</sup> 3s<sup>2</sup> 3p<sup>4</sup> 4s<sup>2</sup>',0,'3p has room for the extra electrons, and it is lower in energy than 4s.']]},
+ {q:'An element is [Ne] 3s<sup>2</sup> 3p<sup>1</sup>. Which element is it, and which block is it in?',opts:[['Aluminium, p-block',1,'10 + 2 + 1 = 13 electrons; the highest-energy electron is in 3p.'],['Aluminium, s-block',0,'The highest-energy electron is in 3p, so it is p-block.'],['Boron, p-block',0,'Boron is [He] 2s<sup>2</sup> 2p<sup>1</sup>.'],['Magnesium, s-block',0,'Magnesium has 12 electrons.']]},
+];
+function buildF(){ const box=document.getElementById('fQs'); FMCQ.forEach((s,i)=>standaloneMCQ(box,'f'+i,{q:`<b>${i+1}.</b> ${s.q}`,opts:s.opts})); }
+function rebuildCards(){ Object.values(QS).forEach(q=>{ const el=document.getElementById('card-'+q.id); if(el) el.outerHTML=qCard(q); }); }
+
+/* ---------- tabs ---------- */
+const TABS=[['sim','Simulator'],['toolkit','Toolkit'],['a','A · Full configurations'],['b','B · Shorthand'],['c','C · Ions'],['d','D · Cr and Cu'],['e','E · Orbitals'],['f','F · Exam practice']];
+const tabbar=document.getElementById('tabbar');
+tabbar.innerHTML=TABS.map(([id,l])=>`<button type="button" data-tab="${id}">${l}<span class="badge" id="bd-${id}" hidden></span></button>`).join('');
+function showTab(id){ if(!TABS.some(t=>t[0]===id)) id='sim';
+  document.querySelectorAll('section.tab').forEach(s=>s.hidden=s.dataset.tab!==id);
+  tabbar.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.tab===id));
+  try{history.replaceState(null,'','#'+id);}catch(e){} window.scrollTo({top:0}); }
+tabbar.addEventListener('click',e=>{ const b=e.target.closest('[data-tab]'); if(b) showTab(b.dataset.tab); });
+function updateBadges(){
+  ['a','b','c','d','e'].forEach(s=>{ const l=SECTIONS[s]; const n=l.filter(q=>q.st.idx>=q.steps.length).length; const b=document.getElementById('bd-'+s); b.hidden=false; b.textContent=`${n}/${l.length}`; b.classList.toggle('full',n===l.length); });
+  const n=FMCQ.filter((_,i)=>MCQ['f'+i]&&MCQ['f'+i].st.ok).length; const b=document.getElementById('bd-f'); b.hidden=false; b.textContent=`${n}/${FMCQ.length}`; b.classList.toggle('full',n===FMCQ.length);
+}
+
+/* ---------- delegation ---------- */
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]'); if(!b) return; const act=b.dataset.act; const q=b.dataset.q?QS[b.dataset.q]:null;
+  if(act==='opt') mcqClick(b.dataset.id,+b.dataset.i);
+  else if(act==='toggle'){ q.st.open=!q.st.open; renderQ(q.id); }
+  else if(act==='check') checkQ(q);
+  else if(act==='hint'){ q.st.hint=true; renderQ(q.id); }
+  else if(act==='show') advance(q,true);
+  else if(act==='next'){ q.st.idx++; renderQ(q.id); }
+  else if(act==='reset'){ q.steps.forEach((_,i)=>delete MCQ[`${q.id}-s${i}`]); q.st.idx=0; q.st.shown=new Set(); q.st.fb=null; q.st.b={core:'',c:empty()}; q.st.bx={}; renderQ(q.id); }
+  else if(act==='bplus'||act==='bminus'){ const s=b.dataset.s; const v=q.st.b.c[s]+(act==='bplus'?1:-1); q.st.b.c[s]=Math.max(0,Math.min(SUB[s].max,v)); q.st.fb=null; renderQ(q.id); }
+  else if(act==='bcore'){ q.st.b.core=b.dataset.c; if(b.dataset.c) CORES[b.dataset.c].subs.forEach(s=>q.st.b.c[s]=0); q.st.fb=null; renderQ(q.id); }
+  else if(act==='box'){ const s=b.dataset.s,o=+b.dataset.o; const occ=q.st.bx[s]; occ[o]=(occ[o]+1)%3; q.st.fb=null; renderQ(q.id); }
+});
+document.addEventListener('keydown',e=>{ if(e.key==='Enter'&&e.target.matches('.numin')){ e.preventDefault(); checkQ(QS[e.target.dataset.q]); } });
+function setMode(g){ guided=g; document.getElementById('modeG').classList.toggle('on',g); document.getElementById('modeI').classList.toggle('on',!g); rebuildCards(); }
+document.getElementById('modeG').onclick=()=>setMode(true); document.getElementById('modeI').onclick=()=>setMode(false);
+
+/* ---------- periodic table ---------- */
+function ptPos(Z){ if(Z===1) return [1,1]; if(Z===2) return [1,18];
+  if(Z<=10) return [2, Z<=4?Z-2:Z+8]; if(Z<=18) return [3, Z<=12?Z-10:Z]; return [4,Z-18]; }
+function ptHTML(prefix){ let h=''; for(let Z=1;Z<=36;Z++){ const [r,c]=ptPos(Z); h+=`<button type="button" class="${blockOf(Z)}" style="grid-row:${r};grid-column:${c}" data-${prefix}="${Z}" title="${cap(NM[Z-1])}"><small>${Z}</small><b>${EL[Z-1]}</b></button>`; } return h; }
+
+/* ---------- SIMULATOR ---------- */
+const LAY={'1s':[120,415],'2s':[120,345],'2p':[270,318],'3s':[120,255],'3p':[270,228],'4s':[120,168],'3d':[470,142],'4p':[270,92]};
+const BX=38, GAP=6;
+const emptyOcc=()=>Object.fromEntries(SUBS.map(s=>[s.id,Array(s.k).fill(0)]));
+const occCounts=o=>Object.fromEntries(SUBS.map(s=>[s.id,o[s.id].reduce((a,b)=>a+b,0)]));
+function arrowSVG(x,y,up,cls){ return up
+  ? `<g class="e-up ${cls}"><line x1="${x}" y1="${y+32}" x2="${x}" y2="${y+12}"/><polygon points="${x-6},${y+15} ${x+6},${y+15} ${x},${y+5}"/></g>`
+  : `<g class="e-down ${cls}"><line x1="${x}" y1="${y+6}" x2="${x}" y2="${y+26}"/><polygon points="${x-6},${y+23} ${x+6},${y+23} ${x},${y+33}"/></g>`; }
+function boxXY(s,o){ const [x,y]=LAY[s]; return [x+o*(BX+GAP),y]; }
+function diagramSVG(occ,opt={}){
+  let h=`<svg viewBox="0 0 700 470" role="img" aria-label="Orbital energy diagram" class="${opt.clickable?'clickable':''}">`;
+  h+=`<line x1="40" y1="455" x2="40" y2="60" stroke="var(--muted)" stroke-width="2"/><polygon points="33,68 47,68 40,52" fill="var(--muted)"/><text x="28" y="260" transform="rotate(-90 28 260)" text-anchor="middle" font-size="15" fill="var(--muted)">Energy</text>`;
+  SUBS.forEach(s=>{ const [x,y]=LAY[s.id]; const w=s.k*(BX+GAP)-GAP;
+    if(opt.active===s.id) h+=`<rect class="rowhl" x="${x-58}" y="${y-8}" width="${w+66}" height="${BX+16}" rx="8"/>`;
+    h+=`<text class="slab ${occ[s.id].some(v=>v)?'':'dim'}" x="${x-12}" y="${y+27}" text-anchor="end">${s.id}</text>`;
+    occ[s.id].forEach((v,o)=>{ const [bx,by]=boxXY(s.id,o);
+      h+=`<rect class="ob" x="${bx}" y="${by}" width="${BX}" height="${BX}" rx="2" data-sub="${s.id}" data-o="${o}"/>`;
+      const nw=opt.newest&&opt.newest.sub===s.id&&opt.newest.o===o;
+      if(v>=1) h+=arrowSVG(bx+12,by,true,nw&&opt.newest.spin===1?'drop':'');
+      if(v>=2) h+=arrowSVG(bx+26,by,false,nw&&opt.newest.spin===2?'drop':'');
+    }); });
+  if(opt.jump){ const [x1,y1]=boxXY(opt.jump.from,opt.jump.fo), [x2,y2]=boxXY(opt.jump.to,opt.jump.to_o);
+    h+=`<path class="jump" d="M${x1+BX/2},${y1} C${x1+120},${y1-80} ${x2-60},${y2-60} ${x2+BX/2},${y2-4}"/><polygon points="${x2+BX/2-6},${y2-12} ${x2+BX/2+6},${y2-12} ${x2+BX/2},${y2-2}" fill="var(--accent)"/>`; }
+  if(opt.removed){ const [bx,by]=boxXY(opt.removed.sub,opt.removed.o); h+=`<g class="fade">${arrowSVG(bx+(opt.removed.spin===2?26:12),by,opt.removed.spin===1,'')}</g>`; }
+  return h+'</svg>';
+}
+
+const W={Z:26,events:[],k:0,playing:false,timer:0,speed:1};
+const U={occ:emptyOcc(),hist:[],msg:null};
+let simMode='watch';
+function buildEvents(Z){
+  const ev=[]; let left=Z, count=0;
+  for(const s of SUBS){ if(!left) break;
+    for(let o=0;o<s.k&&left;o++){ count++; left--;
+      let rule,msg;
+      if(o===0){ rule='aufbau'; msg=`Electron ${count} → ${s.id}. ${s.id==='4s'?'4s is lower in energy than 3d, so it fills first.':s.id==='3d'?'4s is full, so 3d fills next. 3d is lower in energy than 4p.':s.id==='1s'?'1s is the lowest-energy sub-shell.':'The sub-shells below are full, so the next lowest energy sub-shell, '+s.id+', starts to fill.'}`; }
+      else { rule='hund'; msg=`Electron ${count} → an empty ${s.id} orbital, same spin. Hund's rule: electrons occupy orbitals singly before pairing.`; }
+      ev.push({t:'add',sub:s.id,o,spin:1,rule,msg}); }
+    for(let o=0;o<s.k&&left;o++){ count++; left--;
+      ev.push({t:'add',sub:s.id,o,spin:2,rule:'pauli',msg: s.k===1?`Electron ${count} pairs up in ${s.id} with opposite spin. ${s.id} is now full (Pauli: max 2 per orbital).`:`Electron ${count}: every ${s.id} orbital has one electron, so this one pairs up with opposite spin (Pauli).`}); }
+  }
+  if(Z===24) ev.push({t:'jump',from:'4s',fo:0,to:'3d',to_o:4,rule:'exception',msg:'Chromium is an exception. One 4s electron moves into the empty 3d orbital, giving [Ar] 3d⁵ 4s¹. A half-filled 3d sub-shell is more stable.'});
+  if(Z===29) ev.push({t:'jump',from:'4s',fo:0,to:'3d',to_o:4,rule:'exception',msg:'Copper is an exception. One 4s electron moves into 3d, giving [Ar] 3d¹⁰ 4s¹. A full 3d sub-shell is more stable.'});
+  return ev;
+}
+function replay(events,k){ const o=emptyOcc(); let charge=0;
+  for(let i=0;i<k;i++){ const e=events[i];
+    if(e.t==='add'||e.t==='ionadd'){ o[e.sub][e.o]=e.spin; if(e.t==='ionadd') charge--; }
+    else if(e.t==='jump'){ o[e.from][e.fo]--; o[e.to][e.to_o]++; }
+    else if(e.t==='rem'){ o[e.sub][e.o]--; charge++; } }
+  return {occ:o,charge}; }
+function nextAdd(occ){ const s=SUBS.find(s=>occ[s.id].reduce((a,b)=>a+b,0)<s.max); if(!s) return null; const a=occ[s.id]; let o=a.indexOf(0); let spin=1; if(o<0){ o=a.indexOf(1); spin=2; } return {sub:s.id,o,spin}; }
+function nextRem(occ){ const c=occCounts(occ); const s=removalSub(c); if(!s) return null; const a=occ[s.id]; let o=a.lastIndexOf(2); let spin=2; if(o<0){ o=a.lastIndexOf(1); spin=1; } return {sub:s.id,o,spin}; }
+
+function setRule(r){ document.querySelectorAll('.rule').forEach(x=>x.classList.toggle('on',x.dataset.rule===r)); }
+function kvHTML(Z,c,charge,extra){
+  const N=total(c); const core=coreFor(N); const short=core&&coreFits(c,core)?cfgHTML(c,core):null;
+  return `<dt>Species</dt><dd><span class="big">${sp(Z,charge)}</span> <span class="note">${cap(NM[Z-1])}${charge?' ion':''}, Z = ${Z}</span></dd>
+   <dt>Electrons</dt><dd>${extra||N}</dd>
+   <dt>Full</dt><dd>${N?cfgHTML(c):'—'}</dd>
+   ${short?`<dt>Shorthand</dt><dd>${short}</dd>`:''}
+   <dt>Unpaired</dt><dd>${unpaired(c)}</dd>
+   <dt>Block</dt><dd>${blockOf(Z)}-block${Z===2?' <span class="note">(placed with the noble gases)</span>':''}</dd>`;
+}
+function renderSim(){
+  const capEl=document.getElementById('simCap'), diag=document.getElementById('diag'), kv=document.getElementById('simKV');
+  if(simMode==='watch'){
+    const {occ,charge}=replay(W.events,W.k); const last=W.events[W.k-1];
+    const opt={}; if(last){ if(last.t==='add'||last.t==='ionadd'){ opt.newest=last; opt.active=last.sub; } if(last.t==='jump'){ opt.jump=last; opt.newest={sub:last.to,o:last.to_o,spin:occ[last.to][last.to_o]}; opt.active='3d'; } if(last.t==='rem'){ opt.removed=last; opt.active=last.sub; } }
+    diag.innerHTML=diagramSVG(occ,opt);
+    capEl.className='caption'; capEl.innerHTML= last? last.msg : `Press <b>Play</b> or <b>Next electron</b> to fill ${NM[W.Z-1]} (${W.Z} electrons).`;
+    setRule(last?last.rule:null);
+    kv.innerHTML=kvHTML(W.Z,occCounts(occ),charge, `${total(occCounts(occ))}${charge||W.k<atomLen()?'':''}`);
+    const atEnd=W.k>=W.events.length, full=W.k>=atomLen();
+    document.getElementById('wStep').disabled=atEnd; document.getElementById('wBack').disabled=W.k===0;
+    document.getElementById('ionRem').disabled=!full||charge>=4||total(occCounts(occ))===0;
+    document.getElementById('ionAdd').disabled=!full||charge<=-3;
+    document.getElementById('wPlay').textContent=W.playing?'Pause':'Play'; document.getElementById('wPlay').disabled=atEnd&&!W.playing;
+  } else {
+    const c=occCounts(U.occ); diag.innerHTML=diagramSVG(U.occ,{clickable:true,newest:U.newest});
+    kv.innerHTML=kvHTML(W.Z,c,0,`${total(c)} of ${W.Z} placed`);
+    capEl.className='caption'+(U.msg&&U.msg.type?' '+U.msg.type:''); capEl.innerHTML=U.msg?U.msg.text:`Click the orbital boxes to place ${NM[W.Z-1]}'s ${W.Z} electrons. Each click adds one electron to that orbital.`;
+    setRule(U.msg?U.msg.rule:null);
+    document.getElementById('uExc').hidden=!(U.msg&&U.msg.exc);
+    document.getElementById('uUndo').disabled=!U.hist.length;
+  }
+}
+function atomLen(){ return buildEventsCache.len; }
+const buildEventsCache={len:0};
+function selectZ(Z){ W.Z=Z; stopPlay(); W.events=buildEvents(Z); buildEventsCache.len=W.events.length; W.k=0; U.occ=emptyOcc(); U.hist=[]; U.msg=null; U.newest=null;
+  document.querySelectorAll('#simPT button').forEach(b=>b.classList.toggle('on',+b.dataset.sim===Z)); renderSim(); }
+function stepW(){ if(W.k<W.events.length){ W.k++; renderSim(); } else stopPlay(); }
+function stopPlay(){ W.playing=false; clearTimeout(W.timer); }
+function playLoop(){ if(!W.playing) return; if(W.k>=W.events.length){ stopPlay(); renderSim(); return; } stepW(); const e=W.events[W.k-1]; const base=e&&e.t==='jump'?2600:(e&&e.rule==='aufbau'?1500:900); W.timer=setTimeout(playLoop, base/W.speed); }
+document.getElementById('wPlay').onclick=()=>{ if(W.playing){ stopPlay(); renderSim(); } else { W.playing=true; renderSim(); playLoop(); } };
+document.getElementById('wStep').onclick=()=>{ stopPlay(); stepW(); };
+document.getElementById('wBack').onclick=()=>{ stopPlay(); if(W.k>0){ W.k--; renderSim(); } };
+document.getElementById('wReset').onclick=()=>{ stopPlay(); W.events=W.events.slice(0,atomLen()); W.k=0; renderSim(); };
+document.getElementById('wAll').onclick=()=>{ stopPlay(); W.events=W.events.slice(0,atomLen()); W.k=atomLen(); renderSim(); };
+document.getElementById('wSpeed').oninput=e=>{ W.speed=+e.target.value; };
+document.getElementById('ionRem').onclick=()=>{ stopPlay(); W.events=W.events.slice(0,W.k); const {occ,charge}=replay(W.events,W.k);
+  if(charge<0){ // undo a gained electron first
+    const r=nextRem(occ); W.events.push({t:'rem',...r,rule:'ion',msg:`Removing an electron from ${r.sub}: the ion now has ${total(occCounts(occ))-1} electrons.`});
+  } else { const r=nextRem(occ); if(!r) return; const c=occCounts(occ);
+    const msg = r.sub==='4s'&&c['3d']>0 ? `Remove an electron from <b>4s</b>. For transition metals, 4s electrons are lost <b>before</b> 3d electrons, even though 4s filled first.` : `Remove an electron from <b>${r.sub}</b>, the outermost, highest-energy occupied sub-shell.`;
+    W.events.push({t:'rem',...r,rule:'ion',msg}); }
+  W.k++; renderSim(); };
+document.getElementById('ionAdd').onclick=()=>{ stopPlay(); W.events=W.events.slice(0,W.k); const {occ}=replay(W.events,W.k); const a=nextAdd(occ); if(!a) return;
+  W.events.push({t:'ionadd',...a,rule:'ion',msg:`Add an electron: it goes into the next available orbital, in <b>${a.sub}</b>.`}); W.k++; renderSim(); };
+
+// You fill it
+document.getElementById('diag').addEventListener('click',e=>{
+  if(simMode!=='you') return; const r=e.target.closest('rect.ob'); if(!r) return;
+  const s=r.dataset.sub, o=+r.dataset.o, Z=W.Z, occ=U.occ, c=occCounts(occ), N=total(c), sub=SUB[s];
+  const bad=(text,rule)=>{ U.msg={text,type:'bad',rule}; U.newest=null; renderSim(); };
+  if(N>=Z) return bad(`${cap(NM[Z-1])} has only ${Z} electrons, and they are all placed.`,null);
+  if(occ[s][o]>=2) return bad('Pauli: an orbital holds a maximum of two electrons, with opposite spins. This one is full.','pauli');
+  const excOK = (Z===24||Z===29) && s==='3d' && c['4s']>=1 && SUBS.slice(0,5).every(x=>c[x.id]===x.max);
+  const lower=SUBS.slice(0,sub.i).find(x=>c[x.id]<x.max);
+  if(lower && !excOK) return bad(`Not yet. ${lower.id} is lower in energy and isn't full. Fill sub-shells in order: 1s 2s 2p 3s 3p 4s 3d 4p.`,'aufbau');
+  if(occ[s][o]===1 && occ[s].includes(0)) return bad(`Hund's rule: put one electron into each ${s} orbital before any pair up.`,'hund');
+  U.hist.push(JSON.stringify(occ)); occ[s][o]++; U.newest={sub:s,o,spin:occ[s][o]};
+  const c2=occCounts(occ), N2=total(c2);
+  if(N2===Z){ if(same(c2,configOf(Z))) U.msg={text:`Correct! ${cap(NM[Z-1])}: ${cfgHTML(c2)}`,type:'good',rule:null};
+    else U.msg={text:`That follows the filling rules, but ${NM[Z-1]} is an exception. ${Z===24?'A half-filled':'A full'} 3d sub-shell is more stable, so one 4s electron moves into 3d.`,type:'',rule:'exception',exc:true}; }
+  else U.msg={text:`${N2} of ${Z} placed. ${occ[s][o]===2?'Paired with opposite spin.':''}`,type:'',rule:occ[s][o]===2?'pauli':(occ[s].filter(v=>v).length>1?'hund':'aufbau')};
+  renderSim();
+});
+document.getElementById('uUndo').onclick=()=>{ if(U.hist.length){ U.occ=JSON.parse(U.hist.pop()); U.msg=null; U.newest=null; renderSim(); } };
+document.getElementById('uClear').onclick=()=>{ U.occ=emptyOcc(); U.hist=[]; U.msg=null; U.newest=null; renderSim(); };
+document.getElementById('uFill').onclick=()=>{ U.hist.push(JSON.stringify(U.occ)); const c=configOf(W.Z); const o=emptyOcc(); SUBS.forEach(s=>o[s.id]=hundOcc(c[s.id],s.k)); U.occ=o; U.newest=null; U.msg={text:`${cap(NM[W.Z-1])}: ${cfgHTML(c)}`,type:'good'}; renderSim(); };
+document.getElementById('uExc').onclick=()=>{ U.hist.push(JSON.stringify(U.occ)); U.occ['4s'][0]--; U.occ['3d'][4]++; U.newest={sub:'3d',o:4,spin:U.occ['3d'][4]}; U.msg={text:`One 4s electron has moved into 3d: ${cfgHTML(configOf(W.Z),'Ar')}. Correct!`,type:'good',rule:'exception'}; renderSim(); };
+document.querySelectorAll('[data-sm]').forEach(b=>b.onclick=()=>{ simMode=b.dataset.sm; stopPlay(); document.querySelectorAll('[data-sm]').forEach(x=>x.classList.toggle('on',x===b));
+  document.getElementById('watchCtl').hidden=simMode!=='watch'; document.getElementById('ionCtl').hidden=simMode!=='watch'; document.getElementById('youCtl').hidden=simMode!=='you'; renderSim(); });
+const simPT=document.getElementById('simPT'); simPT.innerHTML=ptHTML('sim');
+simPT.onclick=e=>{ const b=e.target.closest('[data-sim]'); if(b) selectZ(+b.dataset.sim); };
+
+/* ---------- TOOLKIT ---------- */
+const LAD=[['1s',2,'He'],['2s',4,'Be'],['2p',10,'Ne'],['3s',12,'Mg'],['3p',18,'Ar'],['4s',20,'Ca'],['3d',30,'Zn'],['4p',36,'Kr']];
+const ladder=document.getElementById('ladder');
+ladder.innerHTML=LAD.map(([s,t,e],i)=>`${i?'<span class="larr">→</span>':''}<div class="lchip" data-li="${i}"><div class="s">${s}</div><div class="c">${t} e⁻ · ${e}</div></div>`).join('');
+let ladT=[];
+document.getElementById('ladGo').onclick=()=>{ ladT.forEach(clearTimeout); ladT=[]; const chips=[...ladder.querySelectorAll('.lchip')]; chips.forEach(c=>c.classList.remove('on','now'));
+  chips.forEach((c,i)=>ladT.push(setTimeout(()=>{ chips.forEach(x=>x.classList.remove('now')); c.classList.add('on','now');
+    document.getElementById('ladNote').innerHTML= LAD[i][0]==='4s'?'4s fills <b>before</b> 3d because it is lower in energy.':LAD[i][0]==='3d'?'3d fills after 4s, from scandium to zinc: these are the d-block elements.':`${LAD[i][0]} full: ${LAD[i][1]} electrons in total, reached at ${LAD[i][2]}.`; }, 300+i*900))); };
+const RC=[
+  ['Lowest energy first','Electrons fill the lowest-energy sub-shell available.',[[true,'4s before 3d','<span class="mb"><span class="lab">4s</span><span class="bx"><span class="u">↑</span><span class="d">↓</span></span></span> <span class="mb"><span class="lab">3d</span><span class="bx"></span><span class="bx"></span><span class="bx"></span><span class="bx"></span><span class="bx"></span></span>'],[false,'3d before 4s','<span class="mb"><span class="lab">4s</span><span class="bx"></span></span> <span class="mb"><span class="lab">3d</span><span class="bx"><span class="u">↑</span></span><span class="bx"><span class="u">↑</span></span><span class="bx"></span><span class="bx"></span><span class="bx"></span></span>']]],
+  ['Pauli','An orbital holds a maximum of two electrons, and they have opposite spins.',[[true,'',patternHTML([2])],[false,'same spin','<span class="mb"><span class="bx"><span class="u">↑↑</span></span></span>'],[false,'three','<span class="mb"><span class="bx" style="font-size:16px"><span class="u">↑↑</span><span class="d">↓</span></span></span>']]],
+  ['Hund\'s rule','In a sub-shell, electrons go into separate orbitals with parallel spins before they pair up.',[[true,'2p³',patternHTML([1,1,1])],[false,'paired early',patternHTML([2,1,0])],[false,'spins opposite','<span class="mb"><span class="bx"><span class="u">↑</span></span><span class="bx"><span class="d">↓</span></span><span class="bx"><span class="u">↑</span></span></span>']]]];
+document.getElementById('ruleCards').innerHTML=RC.map(([t,d,ex])=>`<div class="card rulecard"><h3>${t}</h3><p>${d}</p><div class="okx">${ex.map(([ok,lab,html])=>`<div><span class="t ${ok?'y':'n'}">${ok?'✓ Right':'✗ Wrong'}</span>${html}${lab?` <span class="note">${lab}</span>`:''}</div>`).join('')}</div></div>`).join('');
+const blkPT=document.getElementById('blkPT'); blkPT.innerHTML=ptHTML('blk');
+function showBlk(Z){ const c=configOf(Z); const b=blockOf(Z); let last='1s'; SUBS.forEach(s=>{ if(aufbau(Z)[s.id]>0) last=s.id; });
+  document.getElementById('blkOut').innerHTML=`<b>${cap(NM[Z-1])}</b> (${Z}): <span class="cfg">${cfgHTML(c, coreFor(Z)&&coreFits(c,coreFor(Z))?coreFor(Z):null)}</span>. Highest-energy sub-shell being filled: <b>${last}</b>, so it is in the <b>${b}-block</b>.${Z===2?' Helium is 1s², but it sits with the noble gases because its outer shell is full.':''}`;
+  blkPT.querySelectorAll('button').forEach(x=>x.classList.toggle('on',+x.dataset.blk===Z)); }
+blkPT.onclick=e=>{ const b=e.target.closest('[data-blk]'); if(b) showBlk(+b.dataset.blk); };
+showBlk(16);
+const tq=document.getElementById('toolQs');
+standaloneMCQ(tq,'t1',{q:'How many orbitals are in a d sub-shell?',opts:[['5',1,'5 orbitals × 2 electrons = 10 electrons.'],['10',0,'10 is the number of electrons, not orbitals.'],['3',0,'That is a p sub-shell.'],['2',0,'Every orbital holds 2 electrons; a d sub-shell has 5 orbitals.']]});
+standaloneMCQ(tq,'t2',{q:'Which sub-shell fills straight after 4s?',opts:[['3d',1,'3d is lower in energy than 4p, so it fills next (Sc to Zn).'],['4p',0,'3d is lower in energy than 4p.'],['4d',0,'4d is much higher in energy.'],['3p',0,'3p is already full by argon.']]});
+standaloneMCQ(tq,'t3',{q:'What does the 2 in 3s<sup>2</sup> tell you?',opts:[['There are two electrons in the 3s sub-shell',1,''],['It is the second shell',0,'The shell number is the 3 at the front.'],['The 3s sub-shell has two orbitals',0,'An s sub-shell has one orbital.'],['The atom has a 2+ charge',0,'Charges are written on the symbol, not in the configuration.']]});
+standaloneMCQ(tq,'t4',{q:'Two electrons in the same orbital must…',opts:[['have opposite spins',1,'This is the Pauli principle.'],['have the same spin',0,'They must have opposite spins.'],['be in different sub-shells',0,'They are in the same orbital, so the same sub-shell.'],['have different charges',0,'All electrons have the same charge.']]});
+
+/* ---------- boot ---------- */
+['a','b','c','d','e','f'].forEach(buildSection);
+updateBadges();
+selectZ(26);
+let start='sim'; try{ const h=location.hash.replace('#',''); if(h) start=h; }catch(e){}
+showTab(start);
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,506 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Ethanal + KCN Mechanism</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+:root{
+  /* Layout: 3D model with step notes alongside, synced curly-arrow scheme below. Single light theme to match the simulation set. */
+  --bg:#efe8dc; --panel:#fbf8f2; --ink:#2b231b; --muted:#74675a; --line:#dacdb7;
+  --accent:#8b4a1f; --accent-soft:#f3e4cb; --arrow:#b3271e; --electron:#c27a12;
+  --display:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  --body:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --chem:"Helvetica Neue",Helvetica,Arial,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5}
+.wrap{max-width:1200px;margin:0 auto;padding-block:18px 32px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:14px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 20px}
+h1{font-family:var(--display);font-weight:600;font-size:clamp(22px,3vw,32px);margin:0;text-wrap:balance;letter-spacing:-.01em}
+h1 small{font-family:var(--body);font-weight:400;font-size:.5em;color:var(--muted);letter-spacing:0;margin-left:8px}
+.cond{font-size:13px;color:var(--muted)}
+.cond b{color:var(--ink);font-weight:600}
+.top{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:14px;align-items:stretch}
+@media (max-width:920px){.top{grid-template-columns:minmax(0,1fr)}}
+.viewer{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;height:min(56vh,520px);min-height:300px;touch-action:none}
+canvas{width:100%;height:100%;display:block;cursor:grab}
+canvas:active{cursor:grabbing}
+.legend{position:absolute;left:10px;bottom:8px;display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--muted);pointer-events:none}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{width:11px;height:11px;border-radius:50%;display:inline-block;border:1px solid rgba(0,0,0,.25)}
+.hint{position:absolute;right:10px;top:8px;font-size:12px;color:var(--muted);pointer-events:none}
+.badge{position:absolute;left:10px;top:8px;font-size:12px;font-weight:600;color:var(--accent);background:var(--accent-soft);border:1px solid var(--line);padding:2px 8px;border-radius:999px}
+.notes{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.eyebrow{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.notes h2{font-family:var(--display);font-size:24px;font-weight:600;margin:0;line-height:1.15}
+.notes p{margin:0}
+.tip{border-top:1px solid var(--line);padding-top:10px;font-size:14px;color:var(--ink)}
+.tip b{color:var(--arrow)}
+.controls{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
+.group{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.group .lab{font-size:12px;color:var(--muted);margin-right:2px}
+button{font:inherit;font-size:14px;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:7px 12px;cursor:pointer;line-height:1.2}
+button:hover{border-color:var(--accent)}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button[aria-pressed="true"],.chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+button.primary{background:var(--ink);color:#fff;border-color:var(--ink);font-weight:600}
+button:disabled{opacity:.4;cursor:default}
+.chip{font-size:13px;padding:6px 10px}
+.chip.done{background:var(--accent-soft)}
+.chip .n{font-variant-numeric:tabular-nums;opacity:.7;margin-right:4px}
+.mech{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px 8px}
+.mech-head{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:4px 12px}
+.mech-head h3{font-family:var(--display);font-weight:600;font-size:19px;margin:0}
+.mech-head span{font-size:12px;color:var(--muted)}
+.scroll{overflow-x:auto}
+svg#scheme{display:block;width:100%;min-width:720px;height:auto}
+#scheme text{font-family:var(--chem);fill:var(--ink)}
+#scheme .at{font-size:24px;dominant-baseline:central}
+#scheme .delta{font-size:16px;font-style:italic;fill:var(--accent);dominant-baseline:central}
+#scheme .chg{font-size:20px;font-weight:700;dominant-baseline:central}
+#scheme .cap{font-family:var(--body);font-size:14px;fill:var(--muted);text-anchor:middle}
+#scheme .rxlab{font-family:var(--body);font-size:12px;fill:var(--muted);text-anchor:middle}
+#scheme .star{font-size:22px;font-weight:700;fill:var(--arrow);dominant-baseline:central}
+#scheme .bd{stroke:var(--ink);stroke-width:2;stroke-linecap:round}
+#scheme .lp{fill:var(--electron)}
+#scheme .panel{transition:opacity .5s}
+#scheme .ghost{opacity:.13}
+#scheme .hl{fill:var(--accent-soft);opacity:0;transition:opacity .4s}
+#scheme .hl.on{opacity:1}
+#scheme .rx{transition:opacity .5s}
+#scheme .curly path.c{fill:none;stroke:var(--arrow);stroke-width:2.6;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset .9s ease-in-out}
+#scheme .curly polygon{fill:var(--arrow);opacity:0;transition:opacity .2s}
+#scheme .curly.on path.c{stroke-dashoffset:0}
+#scheme .curly.on polygon{opacity:1;transition-delay:.8s}
+#scheme .curly .num{font-family:var(--body);font-size:12px;font-weight:700;fill:var(--arrow);opacity:0;transition:opacity .3s .6s}
+#scheme .curly.on .num{opacity:1}
+@media (prefers-reduced-motion:reduce){#scheme *{transition:none!important}}
+footer{font-size:12px;color:var(--muted)}
+kbd{font-family:var(--body);font-size:11px;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 4px;background:var(--panel)}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Ethanal + KCN <small>Nucleophilic addition</small></h1>
+    <div class="cond">Reagents: <b>KCN</b>, then <b>dilute H₂SO₄</b> · Product: <b>2-hydroxypropanenitrile</b></div>
+  </header>
+
+  <div class="top">
+    <div class="viewer" id="viewer">
+      <canvas id="cv" aria-label="3D ball-and-stick animation of the reaction"></canvas>
+      <div class="badge" id="faceBadge">CN⁻ attacks from above</div>
+      <div class="hint">Drag to rotate</div>
+      <div class="legend">
+        <span><i style="background:#3d3732"></i>C</span>
+        <span><i style="background:#f7f4ee"></i>H</span>
+        <span><i style="background:#c43a2c"></i>O</span>
+        <span><i style="background:#2f5ea8"></i>N</span>
+        <span><i style="background:#7a4fa3"></i>K⁺ (spectator)</span>
+        <span><i style="background:#c27a12"></i>electron pair</span>
+      </div>
+    </div>
+    <aside class="notes" aria-live="polite">
+      <div class="eyebrow" id="stepNum">Stage 1 of 5</div>
+      <h2 id="stepTitle">Reactants</h2>
+      <p id="stepBody"></p>
+      <p class="tip" id="stepTip"></p>
+    </aside>
+  </div>
+
+  <div class="controls">
+    <div class="group">
+      <button id="back" aria-label="Previous stage">◀ Back</button>
+      <button id="next" class="primary" aria-label="Next stage">Next ▶</button>
+      <button id="replay" aria-label="Replay this stage">↺ Replay</button>
+    </div>
+    <div class="group" id="chips"></div>
+    <div class="group">
+      <span class="lab">Attack from</span>
+      <button id="faceUp" aria-pressed="true">Above</button>
+      <button id="faceDown" aria-pressed="false">Below</button>
+    </div>
+    <div class="group">
+      <span class="lab">Speed</span>
+      <button data-speed="0.5" aria-pressed="false">Slow</button>
+      <button data-speed="1" aria-pressed="true">Normal</button>
+      <button data-speed="2" aria-pressed="false">Fast</button>
+    </div>
+    <div class="group">
+      <button id="spin" aria-pressed="false">Auto-rotate</button>
+      <button id="resetView">Reset view</button>
+    </div>
+  </div>
+
+  <section class="mech">
+    <div class="mech-head">
+      <h3>Curly-arrow mechanism</h3>
+      <span>Arrows appear in step with the model above</span>
+    </div>
+    <div class="scroll"><svg id="scheme" viewBox="70 18 920 242" role="img" aria-label="Curly arrow mechanism for the nucleophilic addition of cyanide to ethanal"></svg></div>
+  </section>
+  <footer>Keys: <kbd>→</kbd> next · <kbd>←</kbd> back · <kbd>R</kbd> replay</footer>
+</div>
+
+<script>
+(()=>{
+const DEG=Math.PI/180;
+const add=(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]];
+const sub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]];
+const mul=(a,k)=>[a[0]*k,a[1]*k,a[2]*k];
+const len=a=>Math.hypot(a[0],a[1],a[2]);
+const norm=a=>mul(a,1/len(a));
+const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+const lerp=(a,b,t)=>a+(b-a)*t;
+const lerp3=(a,b,t)=>[lerp(a[0],b[0],t),lerp(a[1],b[1],t),lerp(a[2],b[2],t)];
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const reduced=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- Stage text ---------- */
+const STEPS=[
+ {title:'Reactants',
+  body:'KCN supplies the cyanide ion, :CN⁻, which is the nucleophile. The acid supplies H⁺. Oxygen is more electronegative than carbon, so the C=O bond is polar and the carbonyl carbon is δ+. Ethanal is planar around that carbon (trigonal planar, 120°).',
+  tip:'<b>Why not HCN?</b> HCN is a very toxic gas, so KCN followed by dilute acid is used. KCN is also highly toxic.'},
+ {title:'Nucleophilic attack',
+  body:'The lone pair on the carbon of CN⁻ is attracted to the δ+ carbon. Arrow 1: that lone pair forms a new C–C bond. Arrow 2: the π-bond electrons of C=O move onto the oxygen.',
+  tip:'<b>Exam point:</b> arrow 1 starts at the lone pair on the C of CN⁻ (not the N, not the charge) and ends at the carbonyl carbon.'},
+ {title:'Intermediate',
+  body:'A new C–C bond has formed, so the carbon chain grows from two carbons to three. The central carbon is now tetrahedral (109.5°). Oxygen now holds the extra electron pair and carries a negative charge.',
+  tip:'<b>Exam point:</b> draw the intermediate with the − charge on O and a lone pair on O, ready for the next arrow.'},
+ {title:'Protonation',
+  body:'A lone pair on the O⁻ is donated to an H⁺ ion from the acid (arrow 3). This forms the O–H bond of the alcohol group.',
+  tip:'<b>Alternative:</b> if H–CN is shown as the proton source, add an arrow from the H–C bond onto the C, which regenerates CN⁻.'},
+ {title:'Product',
+  body:'2-hydroxypropanenitrile, CH₃CH(OH)CN. The carbon marked * has four different groups attached, so it is a chiral centre.',
+  tip:'<b>Racemic mixture:</b> the C=O group is planar, so CN⁻ is equally likely to attack from above or below. Each face gives one enantiomer, so a 50:50 mixture forms and the product is not optically active. Switch <i>Attack from</i> to see the other enantiomer.'}
+];
+
+/* ---------- 3D model ---------- */
+const ELEM={
+ C:{r:.36,col:'#3d3732',hi:'#8a817a',txt:'#f4efe6'},
+ O:{r:.34,col:'#c43a2c',hi:'#f08a7c',txt:'#fff'},
+ N:{r:.34,col:'#2f5ea8',hi:'#86a9e6',txt:'#fff'},
+ H:{r:.23,col:'#e9e3d9',hi:'#ffffff',txt:'#4a4038',stroke:true},
+ K:{r:.55,col:'#7a4fa3',hi:'#c4a3e4',txt:'#fff'}
+};
+const ATOMS=[['C1','C','C'],['O','O','O'],['CM','C','C'],['HM1','H','H'],['HM2','H','H'],['HM3','H','H'],['HA','H','H'],['CN','C','C'],['N','N','N'],['HP','H','H'],['K','K','K⁺']];
+const BONDS=[['C1','O','co'],['C1','CM','one'],['C1','HA','one'],['CM','HM1','one'],['CM','HM2','one'],['CM','HM3','one'],['CN','N','three'],['C1','CN','cc'],['O','HP','oh']];
+
+function geom(tet,s){
+  const a=tet?19.47*DEG:0,c=Math.cos(a),y=-s*Math.sin(a);
+  return {dO:[c,y,0],dM:[-.5*c,y,.866*c],dH:[-.5*c,y,-.866*c]};
+}
+function methylH(CM,dM){
+  let u=cross(dM,[0,1,0]); u=len(u)<1e-6?[0,0,1]:norm(u);
+  const v=cross(dM,u),out=[];
+  for(let i=0;i<3;i++){const p=(i*120+30)*DEG;
+    const perp=add(mul(u,Math.cos(p)),mul(v,Math.sin(p)));
+    out.push(add(CM,mul(add(mul(dM,.334),mul(perp,.943)),1.09)));}
+  return out;
+}
+function buildState(k,s){
+  const tet=k>=2,g=geom(tet,s),P={};
+  P.C1=[0,0,0];
+  P.O=mul(g.dO,tet?1.43:1.22);
+  P.CM=mul(g.dM,tet?1.53:1.50);
+  P.HA=mul(g.dH,1.09);
+  [P.HM1,P.HM2,P.HM3]=methylH(P.CM,g.dM);
+  const ap=norm([-.28,s,0]);
+  P.CN = k===0?mul(ap,4.1) : k===1?mul(ap,2.75) : [0,s*1.47,0];
+  const cnDir = k>=2?[0,s,0]:ap;
+  P.N=add(P.CN,mul(cnDir,1.16));
+  const ohDir=norm([.3,-s*.25,.92]);
+  P.HP = k<=2?[3.3,3.0,1.2] : k===3?add(P.O,mul(ohDir,2.1)) : add(P.O,mul(ohDir,.97));
+  P.K=[-3.4,-0.9,-1.8];
+  const LP={
+    cn:{p: k<=1?add(P.CN,mul(cnDir,-.42)):mul(P.CN,.5), d:mul(cnDir,-1), op:k<=1?1:0, glow:k===1?1:0},
+    o:{p: k>=4?add(P.O,mul(ohDir,.48)):add(P.O,mul(ohDir,.42)), d:ohDir, op:(k===2||k===3)?1:0, glow:k===3?1:0}
+  };
+  const B={co:k>=2?1:2, one:1, three:3, cc:k>=2?1:0, oh:k>=4?1:0};
+  const HINT={cc:k===1?1:0, oh:k===3?1:0};
+  const L={
+    cnMinus:k<=1?1:0, oMinus:(k===2||k===3)?1:0, hPlus:k<=3?1:0,
+    dPlus:k<=1?1:0, dMinus:k<=1?1:0, star:k===4?1:0
+  };
+  return {P,LP,B,HINT,L};
+}
+function interp(a,b,t){
+  const P={},LP={},B={},HINT={},L={};
+  for(const id in b.P) P[id]=lerp3(a.P[id],b.P[id],t);
+  for(const id in b.LP){const x=a.LP[id],y=b.LP[id];
+    const tt=y.op<x.op?Math.pow(t,3):t;
+    LP[id]={p:lerp3(x.p,y.p,t),d:norm(lerp3(x.d,y.d,t)),op:lerp(x.op,y.op,tt),glow:lerp(x.glow,y.glow,t)};}
+  for(const id in b.B) B[id]=lerp(a.B[id],b.B[id],t);
+  for(const id in b.HINT) HINT[id]=lerp(a.HINT[id],b.HINT[id],t);
+  for(const id in b.L) L[id]=lerp(a.L[id],b.L[id],t);
+  return {P,LP,B,HINT,L};
+}
+const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+
+/* ---------- state ---------- */
+let stage=0, face=1, speed=1, spin=false;
+let fromS=buildState(0,1), toS=fromS, tw=1, cur=fromS;
+const YAW0=0.0, PITCH0=0.55;
+let yaw=YAW0, pitch=PITCH0;
+const PIV=[0,1.3,0];
+
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+let W=0,H=0,U=40,D=13;
+function resize(){
+  const r=cv.getBoundingClientRect(),dpr=window.devicePixelRatio||1;
+  W=r.width;H=r.height;cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  U=Math.min(H/8.0,W/10.5);
+}
+new ResizeObserver(resize).observe(cv);resize();
+
+function project(p){
+  const x=p[0]-PIV[0],y=p[1]-PIV[1],z=p[2]-PIV[2];
+  const cy=Math.cos(yaw),sy=Math.sin(yaw);
+  const x1=x*cy+z*sy,z1=-x*sy+z*cy;
+  const cp=Math.cos(pitch),sp=Math.sin(pitch);
+  const y2=y*cp-z1*sp,z2=y*sp+z1*cp;
+  const k=D/(D+z2);
+  return {x:W/2+x1*U*k,y:H/2-y2*U*k,z:z2,k};
+}
+
+function drawBond(a,b,order,hint,width){
+  const dx=b.x-a.x,dy=b.y-a.y,L=Math.hypot(dx,dy)||1,nx=-dy/L,ny=dx/L;
+  const k=(a.k+b.k)/2, sep=.17*U*k;
+  ctx.strokeStyle='#5f5246';ctx.lineCap='round';
+  const line=(off,alpha,w,dash)=>{
+    if(alpha<=.01)return;
+    ctx.globalAlpha=alpha;ctx.lineWidth=w;ctx.setLineDash(dash||[]);
+    ctx.beginPath();ctx.moveTo(a.x+nx*off,a.y+ny*off);ctx.lineTo(b.x+nx*off,b.y+ny*off);ctx.stroke();
+  };
+  if(order>2.5){const w=width*.6;line(-sep,1,w);line(0,1,w);line(sep,1,w);}
+  else if(order>=1){const s2=clamp(order-1,0,1),w=width*(1-.3*s2);
+    line(-sep/2*s2,1,w);line(sep/2*s2,s2,w);}
+  else{
+    line(0,order,width);
+    if(hint>.01) line(0,.55*hint*(1-order),width*.55,[U*.12,U*.1]);
+  }
+  ctx.globalAlpha=1;ctx.setLineDash([]);
+}
+function drawAtom(s,el,label){
+  const e=ELEM[el],r=e.r*U*s.k;
+  const g=ctx.createRadialGradient(s.x-r*.35,s.y-r*.4,r*.1,s.x,s.y,r);
+  g.addColorStop(0,e.hi);g.addColorStop(1,e.col);
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(s.x,s.y,r,0,7);ctx.fill();
+  ctx.lineWidth=1;ctx.strokeStyle=e.stroke?'#a59886':'rgba(0,0,0,.25)';ctx.stroke();
+  ctx.fillStyle=e.txt;ctx.font=`600 ${Math.round(r*(label.length>1?.85:1.0))}px Helvetica Neue,Arial,sans-serif`;
+  ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(label,s.x,s.y+1);
+}
+function badge(s,r,text,op,kind){
+  if(op<=.02)return;
+  ctx.globalAlpha=op;
+  const x=s.x+r*.9,y=s.y-r*.95;
+  if(kind==='delta'){
+    ctx.font=`italic 600 ${Math.round(U*.38)}px Georgia,serif`;ctx.fillStyle='#8b4a1f';
+    ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(text,x,y);
+  }else if(kind==='star'){
+    ctx.font=`700 ${Math.round(U*.6)}px Helvetica Neue,Arial,sans-serif`;ctx.fillStyle='#b3271e';
+    ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text,x,y);
+  }else{
+    const rr=U*.19;
+    ctx.fillStyle='#fff';ctx.strokeStyle='#2b231b';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.arc(x,y,rr,0,7);ctx.fill();ctx.stroke();
+    ctx.strokeStyle='#2b231b';ctx.lineWidth=2;ctx.beginPath();
+    ctx.moveTo(x-rr*.5,y);ctx.lineTo(x+rr*.5,y);
+    if(text==='+'){ctx.moveTo(x,y-rr*.5);ctx.lineTo(x,y+rr*.5);}
+    ctx.stroke();
+  }
+  ctx.globalAlpha=1;
+}
+function drawLP(lp,time){
+  if(lp.op<=.02)return;
+  const c=project(lp.p),e=project(add(lp.p,mul(lp.d,.3)));
+  let dx=e.x-c.x,dy=e.y-c.y,L=Math.hypot(dx,dy);
+  let nx,ny; if(L<1){nx=1;ny=0;}else{nx=-dy/L;ny=dx/L;}
+  if(lp.glow>.02){
+    const pulse=reduced?.5:.5+.5*Math.sin(time*5);
+    ctx.globalAlpha=lp.op*lp.glow*(.25+.25*pulse);
+    const g=ctx.createRadialGradient(c.x,c.y,0,c.x,c.y,U*.45*c.k);
+    g.addColorStop(0,'#f2b84b');g.addColorStop(1,'rgba(242,184,75,0)');
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(c.x,c.y,U*.45*c.k,0,7);ctx.fill();
+  }
+  ctx.globalAlpha=lp.op;ctx.fillStyle='#c27a12';
+  const off=U*.09*c.k,rr=U*.06*c.k;
+  for(const sgn of[-1,1]){ctx.beginPath();ctx.arc(c.x+nx*off*sgn,c.y+ny*off*sgn,rr,0,7);ctx.fill();}
+  ctx.globalAlpha=1;
+}
+
+function render(time){
+  ctx.clearRect(0,0,W,H);
+  const P={};
+  ATOMS.forEach(([id],i)=>{
+    const p=cur.P[id];
+    const j=reduced?0:.022;
+    P[id]=add(p,[j*Math.sin(time*7.1+i*1.7),j*Math.sin(time*6.3+i*2.3),j*Math.sin(time*5.7+i*0.9)]);
+  });
+  const S={};for(const id in P)S[id]=project(P[id]);
+  const items=[];
+  for(const [a,b,key] of BONDS){
+    const order=cur.B[key],hint=cur.HINT[key]||0;
+    if(order<.01&&hint<.01)continue;
+    items.push({z:(S[a].z+S[b].z)/2+.05,draw:()=>drawBond(S[a],S[b],order,hint,.12*U*(S[a].k+S[b].k)/2)});
+  }
+  for(const [id,el,label] of ATOMS) items.push({z:S[id].z,draw:()=>drawAtom(S[id],el,label)});
+  items.sort((p,q)=>q.z-p.z).forEach(it=>it.draw());
+  drawLP(cur.LP.cn,time);drawLP(cur.LP.o,time);
+  const r=(id)=>ELEM[ATOMS.find(a=>a[0]===id)[1]].r*U*S[id].k;
+  badge(S.CN,r('CN'),'−',cur.L.cnMinus,'chg');
+  badge(S.O,r('O'),'−',cur.L.oMinus,'chg');
+  badge(S.HP,r('HP'),'+',cur.L.hPlus,'chg');
+  badge(S.C1,r('C1'),'δ+',cur.L.dPlus,'delta');
+  badge(S.O,r('O'),'δ−',cur.L.dMinus,'delta');
+  badge(S.C1,r('C1'),'*',cur.L.star,'star');
+}
+
+let last=performance.now();
+function loop(now){
+  const dt=Math.min(.05,(now-last)/1000);last=now;
+  if(tw<1){tw=Math.min(1,tw+dt*speed/2.4);cur=interp(fromS,toS,ease(tw));}
+  if(spin&&!drag)yaw+=dt*.35;
+  render(now/1000);
+  requestAnimationFrame(loop);
+}
+
+/* drag to rotate */
+let drag=null;
+cv.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY,yaw,pitch};cv.setPointerCapture(e.pointerId);});
+cv.addEventListener('pointermove',e=>{if(!drag)return;
+  yaw=drag.yaw+(e.clientX-drag.x)*.01;
+  pitch=clamp(drag.pitch+(e.clientY-drag.y)*.01,-1.4,1.4);});
+const endDrag=()=>{drag=null};
+cv.addEventListener('pointerup',endDrag);cv.addEventListener('pointercancel',endDrag);
+
+/* ---------- curly-arrow scheme (SVG) ---------- */
+const NS='http://www.w3.org/2000/svg',svg=document.getElementById('scheme');
+function mk(tag,attrs,parent,text){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(text!=null)e.textContent=text;(parent||svg).appendChild(e);return e;}
+const T=(g,x,y,s,cls='at',anchor='middle')=>mk('text',{x,y,class:cls,'text-anchor':anchor},g,s);
+const Ln=(g,x1,y1,x2,y2)=>mk('line',{x1,y1,x2,y2,class:'bd'},g);
+const pair=(g,x,y,vertical)=>{const o=6;
+  mk('circle',{cx:vertical?x:x-o,cy:vertical?y-o:y,r:2.6,class:'lp'},g);
+  mk('circle',{cx:vertical?x:x+o,cy:vertical?y+o:y,r:2.6,class:'lp'},g);};
+function curly(p0,c,p1,num,numPos){
+  const g=mk('g',{class:'curly'});
+  let dx=p1[0]-c[0],dy=p1[1]-c[1];const L=Math.hypot(dx,dy);dx/=L;dy/=L;
+  const hl=12,hw=6.5,base=[p1[0]-dx*hl,p1[1]-dy*hl];
+  const end=[p1[0]-dx*9,p1[1]-dy*9];
+  mk('path',{class:'c',d:`M${p0[0]},${p0[1]} Q${c[0]},${c[1]} ${end[0]},${end[1]}`,pathLength:1},g);
+  mk('polygon',{points:`${p1[0]},${p1[1]} ${base[0]-dy*hw},${base[1]+dx*hw} ${base[0]+dy*hw},${base[1]-dx*hw}`},g);
+  if(num) mk('text',{x:numPos[0],y:numPos[1],class:'num','text-anchor':'middle'},g,num);
+  return g;
+}
+function skeleton(g,cx){
+  T(g,cx,150,'C');
+  Ln(g,cx-10,162,cx-36,185);T(g,cx-38,200,'H₃C','at','end');
+  Ln(g,cx+10,162,cx+36,185);T(g,cx+46,200,'H');
+}
+function rxArrow(x1,x2,label){
+  const g=mk('g',{class:'rx'});
+  mk('line',{x1,y1:150,x2:x2-10,y2:150,class:'bd'},g);
+  mk('polygon',{points:`${x2},150 ${x2-13},144 ${x2-13},156`,style:'fill:var(--ink)'},g);
+  T(g,(x1+x2)/2,136,label,'rxlab');
+  return g;
+}
+
+const hl1=mk('rect',{x:84,y:30,width:200,height:226,rx:12,class:'hl'});
+const hl2=mk('rect',{x:462,y:30,width:230,height:226,rx:12,class:'hl'});
+const hl3=mk('rect',{x:800,y:30,width:180,height:226,rx:12,class:'hl'});
+
+/* panel 1: ethanal + cyanide */
+const p1=mk('g',{class:'panel'});
+{ const cx=220; skeleton(p1,cx);
+  T(p1,cx,72,'O'); Ln(p1,cx-6,89,cx-6,133); Ln(p1,cx+6,89,cx+6,133);
+  pair(p1,cx,51,false); pair(p1,cx-21,72,true);
+  T(p1,cx+24,138,'δ+','delta','start'); T(p1,cx+22,54,'δ−','delta','start');
+  T(p1,150,150,'N≡C','at','end'); pair(p1,157,150,true); T(p1,142,124,'−','chg');
+  T(p1,185,240,'ethanal','cap');
+}
+/* panel 2: alkoxide intermediate + H+ */
+const p2=mk('g',{class:'panel'});
+{ const cx=560; skeleton(p2,cx);
+  T(p2,cx,72,'O'); Ln(p2,cx,89,cx,133);
+  pair(p2,cx,51,false); pair(p2,cx-21,72,true); pair(p2,cx+21,72,true);
+  T(p2,cx+30,46,'−','chg');
+  Ln(p2,cx-12,150,cx-36,150); T(p2,cx-38,150,'N≡C','at','end');
+  T(p2,664,58,'H⁺');
+  T(p2,575,240,'intermediate','cap');
+}
+/* panel 3: product */
+const p3=mk('g',{class:'panel'});
+{ const cx=900; skeleton(p3,cx);
+  T(p3,cx,72,'O'); Ln(p3,cx,89,cx,133); Ln(p3,cx+12,72,cx+28,72); T(p3,cx+40,72,'H');
+  Ln(p3,cx-12,150,cx-36,150); T(p3,cx-38,150,'N≡C','at','end');
+  T(p3,cx+20,134,'*','star');
+  T(p3,890,240,'2-hydroxypropanenitrile','cap');
+}
+const rxA=rxArrow(305,440,'step 1');
+const rxB=rxArrow(712,792,'step 2');
+const a1=curly([160,143],[176,104],[207,139],'1',[174,108]);
+const a2=curly([227,113],[264,104],[234,84],'2',[262,94]);
+const a3=curly([586,62],[612,22],[648,52],'3',[612,30]);
+
+function syncScheme(){
+  const vis=(g,on)=>g.classList.toggle('ghost',!on);
+  vis(p2,stage>=2);vis(rxA,stage>=2);vis(p3,stage>=4);vis(rxB,stage>=4);
+  a1.classList.toggle('on',stage>=1);a2.classList.toggle('on',stage>=1);a3.classList.toggle('on',stage>=3);
+  hl1.classList.toggle('on',stage<=1);hl2.classList.toggle('on',stage===2||stage===3);hl3.classList.toggle('on',stage===4);
+}
+
+/* ---------- controls ---------- */
+const chipsEl=document.getElementById('chips');
+const chips=STEPS.map((s,i)=>{const b=document.createElement('button');b.className='chip';
+  b.innerHTML=`<span class="n">${i+1}</span>${s.title}`;b.onclick=()=>go(i);chipsEl.appendChild(b);return b;});
+function syncUI(){
+  const s=STEPS[stage];
+  document.getElementById('stepNum').textContent=`Stage ${stage+1} of ${STEPS.length}`;
+  document.getElementById('stepTitle').textContent=s.title;
+  document.getElementById('stepBody').textContent=s.body;
+  document.getElementById('stepTip').innerHTML=s.tip;
+  chips.forEach((c,i)=>{c.classList.toggle('on',i===stage);c.classList.toggle('done',i<stage);c.setAttribute('aria-current',i===stage?'step':'false');});
+  document.getElementById('back').disabled=stage===0;
+  document.getElementById('next').disabled=stage===STEPS.length-1;
+  document.getElementById('faceBadge').textContent=stage===4
+    ?(face>0?'Attack from above → one enantiomer':'Attack from below → the other enantiomer')
+    :(face>0?'CN⁻ attacks from above':'CN⁻ attacks from below');
+  syncScheme();
+}
+function go(k,replay){
+  k=clamp(k,0,STEPS.length-1);
+  fromS=replay?buildState(Math.max(0,k-1),face):cur;
+  toS=buildState(k,face);stage=k;tw=reduced?1:0;
+  if(reduced)cur=toS;
+  if(replay){a1.classList.remove('on');a2.classList.remove('on');a3.classList.remove('on');svg.getBoundingClientRect();}
+  syncUI();
+}
+function setFace(f){
+  face=f;stage=0;fromS=toS=cur=buildState(0,face);tw=1;
+  document.getElementById('faceUp').setAttribute('aria-pressed',f>0);
+  document.getElementById('faceDown').setAttribute('aria-pressed',f<0);
+  if(f<0){pitch=-Math.abs(PITCH0);}else{pitch=PITCH0;}
+  syncUI();
+}
+document.getElementById('next').onclick=()=>go(stage+1);
+document.getElementById('back').onclick=()=>go(stage-1);
+document.getElementById('replay').onclick=()=>go(stage,true);
+document.getElementById('faceUp').onclick=()=>setFace(1);
+document.getElementById('faceDown').onclick=()=>setFace(-1);
+document.querySelectorAll('[data-speed]').forEach(b=>b.onclick=()=>{
+  speed=+b.dataset.speed;document.querySelectorAll('[data-speed]').forEach(x=>x.setAttribute('aria-pressed',x===b));});
+const spinBtn=document.getElementById('spin');
+spinBtn.onclick=()=>{spin=!spin;spinBtn.setAttribute('aria-pressed',spin);};
+document.getElementById('resetView').onclick=()=>{yaw=YAW0;pitch=face>0?PITCH0:-PITCH0;};
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT')return;
+  if(e.key==='ArrowRight'){go(stage+1);e.preventDefault();}
+  else if(e.key==='ArrowLeft'){go(stage-1);e.preventDefault();}
+  else if(e.key==='r'||e.key==='R')go(stage,true);
+});
+
+syncUI();
+requestAnimationFrame(loop);
+})();
+</script>
+
+</body></html>
