@@ -1,0 +1,648 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Acids and pH Explained</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bitter:wght@600;700&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: one page at a time, like a revision booklet. Progress strip on top, page content in the middle, Back/Next at the bottom. Single light cream theme by choice. */
+:root{
+  color-scheme:light;
+  --paper:#f5ecdc; --card:#fffaf0; --ink:#3a2817; --ink-2:#6e5640; --rule:#e0cfb2;
+  --accent:#9a5422; --accent-soft:#f3e0c8; --accent-ink:#fffaf0;
+  --good:#2f7d4a; --good-soft:#e1f0e4; --bad:#b23a2c; --bad-soft:#f8e1dc;
+  --water:#d9e9ee; --glass:#8a7a68;
+  --hplus:#c63a2b; --strong:#3d8a57; --weak:#6b4fa0; --citric:#c4831a; --methanoic:#2f7a8f;
+  --mg:#9ea3a8; --bubble:#ffffff; --hbond:#fdfbf6;
+  --font-display:"Bitter",Georgia,"Times New Roman",serif;
+  --font-body:"Atkinson Hyperlegible","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --font-mono:"JetBrains Mono",ui-monospace,Consolas,"Courier New",monospace;
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--font-body);font-size:18px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 40px}
+.wrap{max-width:960px;margin:0 auto}
+h1,h2,h3{font-family:var(--font-display);text-wrap:balance;line-height:1.2;margin:0}
+h1{font-size:clamp(1.9rem,5vw,2.6rem)}
+h2{font-size:clamp(1.5rem,3.6vw,2rem)}
+h3{font-size:1.15rem}
+p{margin:0;max-width:66ch}
+.mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.eyebrow{font-size:.78rem;text-transform:uppercase;letter-spacing:.12em;color:var(--accent);font-weight:700}
+
+.topbar{padding-block:22px 14px;display:grid;gap:12px;border-bottom:2px solid var(--rule)}
+.topbar .row{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px}
+.progress{display:flex;gap:4px}
+.progress button{flex:1;height:10px;padding:0;border:none;border-radius:5px;background:var(--rule);cursor:pointer}
+.progress button.done{background:var(--accent-soft);box-shadow:inset 0 0 0 1.5px var(--accent)}
+.progress button.cur{background:var(--accent)}
+.pagecount{font-size:.9rem;color:var(--ink-2)}
+
+.page{padding-block:28px 10px;display:grid;gap:18px}
+.prose{display:grid;gap:12px}
+.bench{background:var(--card);border:1.5px solid var(--rule);border-radius:14px;padding:18px;display:grid;gap:14px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media (max-width:760px){.grid4{grid-template-columns:repeat(2,1fr)}}
+.grid2>*,.grid4>*{min-width:0}
+
+.key{background:var(--accent-soft);border-radius:12px;padding:14px 18px;display:grid;gap:6px}
+.key .eyebrow{color:var(--accent)}
+.key p{font-size:1.05rem}
+.think{border:2px dashed var(--accent);border-radius:12px;padding:12px 16px;font-size:.98rem}
+.think b{color:var(--accent)}
+
+.beaker{display:grid;gap:6px}
+.beaker canvas{width:100%;aspect-ratio:400/330;display:block;max-width:100%}
+.beaker .name{font-family:var(--font-display);font-weight:700}
+.beaker .sub{color:var(--ink-2);font-size:.88rem;font-family:var(--font-body);font-weight:400}
+.stats{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:.9rem;color:var(--ink-2)}
+.stats b{color:var(--ink);font-family:var(--font-mono)}
+.eq{font-family:var(--font-mono);font-size:.98rem;background:var(--paper);border-radius:8px;padding:8px 12px;overflow-x:auto;white-space:nowrap}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.88rem;color:var(--ink-2)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.dot{width:14px;height:14px;border-radius:50%;display:inline-block;border:1.5px solid var(--ink-2)}
+.note{font-size:.9rem;color:var(--ink-2)}
+
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+button{font:inherit;font-size:.98rem;font-weight:700;border-radius:10px;padding:9px 16px;cursor:pointer;border:1.5px solid var(--accent);background:var(--card);color:var(--accent)}
+button.primary{background:var(--accent);color:var(--accent-ink)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+label.toggle{display:flex;gap:8px;align-items:center;font-size:.95rem;color:var(--ink-2);cursor:pointer}
+
+/* MCQ */
+.mcq{background:var(--card);border:1.5px solid var(--rule);border-radius:14px;padding:16px 18px;display:grid;gap:10px}
+.mcq .qhead{display:flex;gap:10px;align-items:baseline}
+.mcq .qnum{font-family:var(--font-mono);font-weight:700;color:var(--accent);font-size:.9rem;white-space:nowrap}
+.mcq .qtext{font-weight:700}
+.opts{display:grid;gap:8px}
+.opt{display:flex;gap:12px;align-items:flex-start;text-align:left;font-weight:400;color:var(--ink);border:1.5px solid var(--rule);background:var(--paper);padding:10px 14px;border-radius:10px}
+.opt .let{font-family:var(--font-mono);font-weight:700;color:var(--accent);min-width:1.2em}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt.right{background:var(--good-soft);border-color:var(--good)}
+.opt.right .let{color:var(--good)}
+.opt.wrong{background:var(--bad-soft);border-color:var(--bad)}
+.opt.wrong .let{color:var(--bad)}
+.opt:disabled{cursor:default;opacity:1}
+.fb{font-size:.95rem;padding:10px 14px;border-radius:10px}
+.fb.good{background:var(--good-soft);color:var(--good)}
+.fb.bad{background:var(--bad-soft);color:var(--bad)}
+.fb b{display:block}
+
+/* pH */
+.phbar{position:relative;height:26px;border-radius:6px;background:linear-gradient(90deg,#d7262b 0%,#ee5a24 14%,#f39c12 28%,#f1c40f 38%,#9ccc3c 48%,#2e9e4f 52%,#1b8f8f 62%,#1f5fbf 74%,#3b3b9e 86%,#5b2a86 100%);margin-top:22px}
+.phbar .mk{position:absolute;top:-8px;width:3px;height:42px;background:var(--ink);transition:left .5s ease;border-radius:2px}
+.phbar .mk::after{content:attr(data-v);position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-family:var(--font-mono);font-size:.8rem;font-weight:700;color:var(--ink);white-space:nowrap}
+.phticks{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:.72rem;color:var(--ink-2);margin-top:4px}
+.box canvas{width:100%;aspect-ratio:3/2;display:block;background:var(--water);border-radius:10px;border:2px solid var(--glass)}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.readout .cell{background:var(--paper);border-radius:10px;padding:10px 12px;min-width:0}
+.readout .k{font-size:.76rem;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-2)}
+.readout .v{font-family:var(--font-mono);font-size:1.3rem;font-weight:700;overflow-wrap:anywhere}
+.readout .v.big{font-size:2.2rem;color:var(--accent)}
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}
+@media (max-width:760px){.split{grid-template-columns:1fr}}
+input[type=range]{width:100%;accent-color:var(--accent)}
+
+.ladder{display:grid;overflow-x:auto}
+.lrow{display:grid;grid-template-columns:60px minmax(0,1fr) minmax(0,1fr);gap:10px;padding:6px 10px;border-radius:8px;font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:.95rem}
+.lrow.head{font-family:var(--font-body);font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-2)}
+.lrow.cur{background:var(--accent);color:var(--accent-ink)}
+.lstep{font-size:.78rem;color:var(--accent);padding-left:80px}
+
+.seesaw{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.seesaw div{border:2px solid var(--accent);border-radius:12px;padding:14px;text-align:center;font-family:var(--font-display);font-size:1.2rem;background:var(--card)}
+.seesaw small{display:block;font-family:var(--font-body);font-size:.88rem;color:var(--ink-2);margin-top:4px}
+
+table.data{border-collapse:collapse;width:100%;font-size:.95rem}
+table.data th,table.data td{padding:8px 10px;border-bottom:1px solid var(--rule);text-align:left}
+table.data th{font-size:.76rem;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-2)}
+table.data td.n{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto}
+.swatch{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:8px;vertical-align:-1px}
+
+.race{display:grid;gap:8px}
+.rrow{display:grid;grid-template-columns:110px minmax(0,1fr) 44px;gap:10px;align-items:center;font-size:.92rem}
+.rbar{height:16px;background:var(--paper);border-radius:8px;overflow:hidden}
+.rbar i{display:block;height:100%;width:0;border-radius:8px;transition:width .25s}
+.rrow .n{font-family:var(--font-mono);text-align:right}
+
+.summary{display:grid;gap:10px;padding-left:0;list-style:none;margin:0}
+.summary li{background:var(--card);border:1.5px solid var(--rule);border-radius:10px;padding:12px 16px}
+
+.score{font-family:var(--font-display);font-size:1.6rem;color:var(--accent)}
+.examq{background:var(--card);border:1.5px solid var(--rule);border-radius:14px;padding:18px;display:grid;gap:14px}
+.part{display:grid;gap:8px;padding-top:12px;border-top:1px dashed var(--rule)}
+.part:first-of-type{border-top:none;padding-top:0}
+.part .ptext{display:flex;justify-content:space-between;gap:14px;align-items:baseline}
+.part .marks{font-family:var(--font-mono);font-size:.85rem;color:var(--ink-2);white-space:nowrap}
+textarea{font:inherit;font-size:.98rem;width:100%;min-height:80px;padding:10px 12px;border-radius:10px;border:1.5px solid var(--rule);background:var(--paper);color:var(--ink);resize:vertical}
+details.ms{border-radius:10px;background:var(--good-soft);padding:8px 14px}
+details.ms summary{cursor:pointer;font-weight:700;color:var(--good)}
+details.ms ul{margin:8px 0 4px;padding-left:20px;color:var(--ink)}
+
+.pager{display:flex;justify-content:space-between;gap:10px;margin-top:28px;padding-top:18px;border-top:2px solid var(--rule)}
+.pager button{min-width:120px}
+@media (prefers-reduced-motion:reduce){.phbar .mk,.rbar i{transition:none}}
+</style>
+
+<div class="wrap">
+<div class="topbar">
+  <div class="row"><div><div class="eyebrow">GCSE Chemistry · Higher tier</div><h1>Acids and pH Explained</h1></div><span class="pagecount" id="pc"></span></div>
+  <div class="progress" id="prog" aria-label="Pages"></div>
+</div>
+
+<!-- 1 -->
+<section class="page" data-title="What is an acid?">
+  <div class="eyebrow">Page 1</div><h2>What makes something an acid?</h2>
+  <div class="prose">
+    <p>When an acid dissolves in water, its molecules can split up into <b>ions</b>. Every acid makes the same ion: the <b>hydrogen ion, H⁺</b>.</p>
+    <p>It is the H⁺ ions that make a solution acidic. More H⁺ ions in the same volume of solution means a more acidic solution.</p>
+  </div>
+  <div class="key"><div class="eyebrow">Key word</div><p><b>Ionise</b>: when a molecule splits into ions. For an acid, HA → H⁺ + A⁻.</p></div>
+  <div class="think"><b>Think:</b> hydrochloric acid is HCl. Which two ions does it make when it ionises?</div>
+  <div class="mcq" data-q="p1a"></div>
+  <div class="mcq" data-q="p1b"></div>
+</section>
+
+<!-- 2 -->
+<section class="page" data-title="Strong acids">
+  <div class="eyebrow">Page 2</div><h2>Strong acids split up completely</h2>
+  <div class="prose"><p>Press the button to add 30 hydrochloric acid molecules to water. Watch what happens to <b>every</b> molecule.</p></div>
+  <div class="bench">
+    <div class="controls"><button class="primary" data-act="add" data-sims="strongA">Add 30 HCl molecules</button><button data-act="reset" data-sims="strongA">Reset</button></div>
+    <div class="beaker" style="max-width:520px;width:100%;justify-self:center">
+      <canvas data-sim="strongA" aria-label="30 HCl molecules all ionise"></canvas>
+      <div class="stats"><span>Molecules left <b data-stat="strongA:mol">0</b></span><span>H⁺ ions <b data-stat="strongA:h">0</b></span><span>Ionised <b data-stat="strongA:pct">0%</b></span></div>
+      <div class="eq">HCl(aq) → H⁺(aq) + Cl⁻(aq)</div>
+    </div>
+    <div class="legend"><span><i class="dot" style="background:var(--hbond)"></i>H in a molecule</span><span><i class="dot" style="background:var(--hplus)"></i>H⁺ ion</span><span><i class="dot" style="background:var(--strong)"></i>Cl⁻ ion</span></div>
+  </div>
+  <div class="key"><div class="eyebrow">Key idea</div><p>A <b>strong acid</b> is <b>completely ionised</b> in water. Every molecule splits into ions. Examples: hydrochloric, nitric and sulfuric acid.</p></div>
+  <div class="mcq" data-q="p2a"></div>
+</section>
+
+<!-- 3 -->
+<section class="page" data-title="Weak acids">
+  <div class="eyebrow">Page 3</div><h2>Weak acids only partly split up</h2>
+  <div class="prose"><p>Now add 30 ethanoic acid molecules (the acid in vinegar). Count how many split up. Then keep watching: do the <i>same</i> molecules stay split?</p></div>
+  <div class="bench">
+    <div class="controls"><button class="primary" data-act="add" data-sims="weakA">Add 30 ethanoic acid molecules</button><button data-act="reset" data-sims="weakA">Reset</button></div>
+    <div class="beaker" style="max-width:520px;width:100%;justify-self:center">
+      <canvas data-sim="weakA" aria-label="30 ethanoic acid molecules, about 6 ionise"></canvas>
+      <div class="stats"><span>Molecules left <b data-stat="weakA:mol">0</b></span><span>H⁺ ions <b data-stat="weakA:h">0</b></span><span>Ionised <b data-stat="weakA:pct">0%</b></span></div>
+      <div class="eq">CH₃COOH(aq) ⇌ CH₃COO⁻(aq) + H⁺(aq)</div>
+    </div>
+    <div class="legend"><span><i class="dot" style="background:var(--hbond)"></i>H in a molecule</span><span><i class="dot" style="background:var(--hplus)"></i>H⁺ ion</span><span><i class="dot" style="background:var(--weak)"></i>ethanoate, shown as "A"</span></div>
+    <p class="note">We've exaggerated the numbers so you can see them. In real vinegar-strength acid, only about 1 molecule in 75 splits up.</p>
+  </div>
+  <div class="key"><div class="eyebrow">Key idea</div><p>A <b>weak acid</b> is only <b>partially ionised</b> in water. The reaction is <b>reversible</b> (⇌): ions keep joining back together while other molecules split, so the number of H⁺ ions stays about the same. Examples: ethanoic, citric and carbonic acid.</p></div>
+  <div class="mcq" data-q="p3a"></div>
+  <div class="mcq" data-q="p3b"></div>
+</section>
+
+<!-- 4 -->
+<section class="page" data-title="Strong vs concentrated">
+  <div class="eyebrow">Page 4</div><h2>Side by side: strong and weak</h2>
+  <div class="bench">
+    <div class="controls"><button class="primary" data-act="add" data-sims="strongB,weakB">Add 30 molecules to both</button><button data-act="reset" data-sims="strongB,weakB">Reset</button></div>
+    <div class="grid2">
+      <div class="beaker"><div class="name">Hydrochloric <span class="sub">strong</span></div><canvas data-sim="strongB" aria-label="Strong acid"></canvas><div class="stats"><span>H⁺ ions <b data-stat="strongB:h">0</b></span></div></div>
+      <div class="beaker"><div class="name">Ethanoic <span class="sub">weak</span></div><canvas data-sim="weakB" aria-label="Weak acid"></canvas><div class="stats"><span>H⁺ ions <b data-stat="weakB:h">0</b></span></div></div>
+    </div>
+  </div>
+  <div class="prose">
+    <h3>Watch out: strong does NOT mean concentrated</h3>
+    <p><b>Strong or weak</b> is about <i>what fraction</i> of the molecules ionise.</p>
+    <p><b>Concentrated or dilute</b> is about <i>how much</i> acid is dissolved in each dm³ of water.</p>
+    <p>So you can have a dilute strong acid, or a concentrated weak acid.</p>
+  </div>
+  <div class="mcq" data-q="p4a"></div>
+  <div class="mcq" data-q="p4b"></div>
+</section>
+
+<!-- 5 -->
+<section class="page" data-title="pH and H⁺">
+  <div class="eyebrow">Page 5</div><h2>pH tells you how many H⁺ ions there are</h2>
+  <div class="prose"><p>Here is the tricky part. The <b>more</b> H⁺ ions there are, the <b>lower</b> the pH. When one goes up, the other goes down. This is called an <b>inverse relationship</b>.</p></div>
+  <div class="seesaw">
+    <div>More H⁺ ions ⇒ <span style="color:var(--hplus)">lower pH</span><small>more acidic</small></div>
+    <div>Fewer H⁺ ions ⇒ higher pH<small>less acidic, closer to 7</small></div>
+  </div>
+  <div class="bench">
+    <h3>Move the slider</h3>
+    <input type="range" id="sl" min="1" max="6" step="1" value="1" aria-label="pH">
+    <div class="split">
+      <div style="display:grid;gap:12px;min-width:0">
+        <div class="readout">
+          <div class="cell"><div class="k">pH</div><div class="v big" id="sl-ph">1</div></div>
+          <div class="cell"><div class="k">[H⁺] in mol/dm³</div><div class="v" id="sl-c">0.1</div></div>
+        </div>
+        <div class="cell" style="background:var(--paper);border-radius:10px;padding:10px 12px" id="sl-x">Compared with pH 1: the same</div>
+        <div><div class="phbar"><div class="mk" id="sl-mk" data-v="pH 1" style="left:7%"></div></div>
+        <div class="phticks"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span></div></div>
+      </div>
+      <div class="box" style="min-width:0"><canvas id="sl-box" aria-label="H+ ions in a sample"></canvas><p class="note" id="sl-cap"></p></div>
+    </div>
+  </div>
+  <div class="key"><div class="eyebrow">Key idea</div><p>Each time the pH goes <b>down by 1</b>, there are <b>10 times more</b> H⁺ ions. Each time it goes <b>up by 1</b>, there are <b>10 times fewer</b>.</p></div>
+  <div class="mcq" data-q="p5a"></div>
+  <div class="mcq" data-q="p5b"></div>
+</section>
+
+<!-- 6 -->
+<section class="page" data-title="Bigger jumps">
+  <div class="eyebrow">Page 6</div><h2>Bigger jumps: multiply by 10 each step</h2>
+  <div class="prose"><p>If the pH changes by more than 1, multiply by 10 for <b>each</b> step.</p></div>
+  <div class="bench">
+    <div class="tablewrap"><table class="data">
+      <thead><tr><th>pH change</th><th>Working</th><th>Change in H⁺</th></tr></thead>
+      <tbody>
+        <tr><td class="n">1</td><td class="n">10</td><td class="n">10 times</td></tr>
+        <tr><td class="n">2</td><td class="n">10 × 10</td><td class="n">100 times</td></tr>
+        <tr><td class="n">3</td><td class="n">10 × 10 × 10</td><td class="n">1000 times</td></tr>
+        <tr><td class="n">4</td><td class="n">10 × 10 × 10 × 10</td><td class="n">10 000 times</td></tr>
+      </tbody>
+    </table></div>
+    <p class="note">Tip: count the number of 10s, or count the zeros. A pH change of 3 gives 1 followed by 3 zeros: 1000.</p>
+  </div>
+  <div class="think"><b>Worked example:</b> lemon juice has pH 2 and coffee has pH 5. Which has more H⁺ ions, and how many times more? <br>Lemon juice has the lower pH, so it has more H⁺. The difference is 5 − 2 = 3 steps: 10 × 10 × 10 = <b>1000 times more</b>.</div>
+  <div class="mcq" data-q="p6a"></div>
+  <div class="mcq" data-q="p6b"></div>
+</section>
+
+<!-- 7 -->
+<section class="page" data-title="Dilution">
+  <div class="eyebrow">Page 7</div><h2>Adding water: dilution</h2>
+  <div class="prose"><p>Diluting <b>× 10</b> means making the volume 10 times bigger with water, for example 10 cm³ of acid made up to 100 cm³. The same H⁺ ions are spread through 10 times the space, so there are 10 times fewer in each cm³. The pH goes <b>up by 1</b>.</p></div>
+  <div class="bench">
+    <div class="controls">
+      <button class="primary" id="d-x10">Dilute × 10</button><button id="d-x100">Dilute × 100</button><button id="d-back">Undo</button><button id="d-reset">Start again</button>
+    </div>
+    <div class="split">
+      <div style="display:grid;gap:12px;min-width:0">
+        <div class="readout">
+          <div class="cell"><div class="k">[H⁺] mol/dm³</div><div class="v" id="d-dec">0.10</div></div>
+          <div class="cell"><div class="k">pH</div><div class="v big" id="d-ph">1.0</div></div>
+        </div>
+        <div class="cell" style="background:var(--paper);border-radius:10px;padding:10px 12px" id="d-cmp">Starting solution</div>
+        <div class="box"><canvas id="d-box" aria-label="H+ ions in the same sample volume"></canvas></div>
+        <p class="note" id="d-cap"></p>
+      </div>
+      <div style="display:grid;gap:8px;align-content:start;min-width:0">
+        <div class="controls"><span class="note">Start with:</span>
+          <button data-start="1,1" class="sb primary">0.10</button><button data-start="5,2" class="sb">0.050</button><button data-start="2,2" class="sb">0.020</button>
+        </div>
+        <div class="ladder" id="d-ladder"></div>
+      </div>
+    </div>
+  </div>
+  <div class="key"><div class="eyebrow">Exam trick</div><p>pH values like <b>1.3</b> follow the same rule. 0.050 mol/dm³ has pH 1.3, so diluting × 10 gives pH <b>2.3</b>, and × 100 gives pH <b>3.3</b>. Just add 1 for each × 10. No calculator needed.</p></div>
+  <div class="mcq" data-q="p7a"></div>
+  <div class="mcq" data-q="p7b"></div>
+  <div class="mcq" data-q="p7c"></div>
+</section>
+
+<!-- 8 -->
+<section class="page" data-title="Weak acids compared">
+  <div class="eyebrow">Page 8</div><h2>Some weak acids are weaker than others</h2>
+  <div class="prose"><p>All four beakers have the <b>same concentration</b> of acid (0.10 mol/dm³). The more molecules that ionise, the more H⁺ ions there are, so the <b>lower</b> the pH.</p></div>
+  <div class="bench">
+    <div class="controls"><button class="primary" data-act="add" data-sims="r0,r1,r2,r3">Add 30 molecules to each</button><button data-act="reset" data-sims="r0,r1,r2,r3">Reset</button></div>
+    <div class="grid4" id="g8"></div>
+    <div class="tablewrap"><table class="data">
+      <thead><tr><th>Acid</th><th>Type</th><th>pH</th><th>Shown ionised</th></tr></thead>
+      <tbody>
+        <tr><td><span class="swatch" style="background:var(--strong)"></span>Hydrochloric</td><td>strong</td><td class="n">1.0</td><td class="n">30 / 30</td></tr>
+        <tr><td><span class="swatch" style="background:var(--citric)"></span>Citric</td><td>weak</td><td class="n">2.1</td><td class="n">12 / 30</td></tr>
+        <tr><td><span class="swatch" style="background:var(--methanoic)"></span>Methanoic</td><td>weak</td><td class="n">2.4</td><td class="n">9 / 30</td></tr>
+        <tr><td><span class="swatch" style="background:var(--weak)"></span>Ethanoic</td><td>weak</td><td class="n">2.9</td><td class="n">6 / 30</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+  <div class="mcq" data-q="p8a"></div>
+</section>
+
+<!-- 9 -->
+<section class="page" data-title="Rate of reaction">
+  <div class="eyebrow">Page 9</div><h2>Why stronger acids react faster</h2>
+  <div class="prose">
+    <p>Magnesium reacts with the <b>H⁺ ions</b>, not with the whole acid molecules:</p>
+    <div class="eq">Mg(s) + 2H⁺(aq) → Mg²⁺(aq) + H₂(g)</div>
+    <p>Add the acids, then the magnesium. Watch which beaker fizzes fastest.</p>
+  </div>
+  <div class="bench">
+    <div class="controls"><button class="primary" data-act="add" data-sims="m0,m1,m2,m3" id="m-add">1. Add acids</button><button data-act="mg" data-sims="m0,m1,m2,m3" id="m-mg" disabled>2. Add magnesium</button><button data-act="reset" data-sims="m0,m1,m2,m3">Reset</button></div>
+    <div class="grid4" id="g9"></div>
+    <div class="race" id="race"></div>
+  </div>
+  <div class="key"><div class="eyebrow">Key idea</div><p>At the same concentration, a stronger acid has <b>more H⁺ ions in the same volume</b>. More H⁺ ions means <b>more frequent collisions</b> with the magnesium, so the <b>rate of reaction is faster</b>.</p></div>
+  <div class="think"><b>Keep watching:</b> all four beakers end up making the same amount of hydrogen. In a weak acid, when H⁺ ions get used up, more molecules ionise to replace them. It just takes longer.</div>
+  <div class="mcq" data-q="p9a"></div>
+  <div class="mcq" data-q="p9b"></div>
+</section>
+
+<!-- 10 -->
+<section class="page" data-title="Summary">
+  <div class="eyebrow">Page 10</div><h2>Summary</h2>
+  <ul class="summary">
+    <li><b>Acids</b> produce H⁺ ions in water.</li>
+    <li>A <b>strong acid</b> is completely ionised. A <b>weak acid</b> is only partially ionised (reversible, ⇌).</li>
+    <li><b>Strong/weak</b> = fraction ionised. <b>Concentrated/dilute</b> = amount of acid per dm³.</li>
+    <li><b>More H⁺ = lower pH.</b> pH down by 1 = 10 times more H⁺.</li>
+    <li>A pH change of 2 = 100 times; 3 = 1000 times.</li>
+    <li>Diluting × 10 raises the pH by 1, but the pH can never go above 7 by adding water.</li>
+    <li>At the same concentration, stronger acids have more H⁺, so they react <b>faster</b> (more frequent collisions).</li>
+  </ul>
+  <p>Next: a 12-question quiz, then exam questions.</p>
+</section>
+
+<!-- 11 quiz -->
+<section class="page" data-title="Quiz">
+  <div class="eyebrow">Page 11</div><h2>Quiz: 12 questions</h2>
+  <p>One try per question. Your score appears at the bottom.</p>
+  <div id="quiz" style="display:grid;gap:14px"></div>
+  <div class="bench" style="text-align:center"><div class="score" id="qscore">0 / 12 answered</div><div><button id="qretry">Try the quiz again</button></div></div>
+</section>
+
+<!-- 12 exam -->
+<section class="page" data-title="Exam questions">
+  <div class="eyebrow">Page 12</div><h2>Exam questions</h2>
+  <p>Write your answers, then check them against the mark scheme. 19 marks in total.</p>
+
+  <div class="examq">
+    <h3>Question 1 · Strong and weak acids</h3>
+    <div class="part"><div class="ptext"><span><b>1.1</b> Hydrochloric acid is a strong acid. What is meant by a <i>strong acid</i>?</span><span class="marks">[1 mark]</span></div><textarea data-ans="1.1" aria-label="Answer 1.1"></textarea>
+      <details class="ms"><summary>Mark scheme</summary><ul><li>(acid that is) completely / fully ionised in aqueous solution (1)</li><li>Do not accept "concentrated" or "dissociates" without "completely".</li></ul></details></div>
+    <div class="part"><div class="ptext"><span><b>1.2</b> Ethanoic acid is a weak acid. Complete the equation for the ionisation of ethanoic acid.<br><span class="mono">CH₃COOH ____ CH₃COO⁻ + ____</span></span><span class="marks">[2 marks]</span></div><textarea data-ans="1.2" aria-label="Answer 1.2"></textarea>
+      <details class="ms"><summary>Mark scheme</summary><ul><li>⇌ (reversible arrow) (1)</li><li>H⁺ (1)</li></ul></details></div>
+    <div class="part"><div class="ptext"><span><b>1.3</b> A student says "a dilute solution of hydrochloric acid is a weak acid". Explain why the student is wrong.</span><span class="marks">[2 marks]</span></div><textarea data-ans="1.3" aria-label="Answer 1.3"></textarea>
+      <details class="ms"><summary>Mark scheme</summary><ul><li>Dilute refers to the amount (concentration) of acid per volume / dm³ (1)</li><li>Hydrochloric acid is still completely ionised, so it is still a strong acid (1)</li></ul></details></div>
+  </div>
+
+  <div class="examq">
+    <h3>Question 2 · pH and concentration</h3>
+    <p>A student diluted some hydrochloric acid and measured the pH each time.</p>
+    <div class="tablewrap"><table class="data"><thead><tr><th>[H⁺] in mol/dm³</th><th>pH</th></tr></thead><tbody>
+      <tr><td class="n">0.10</td><td class="n">1.0</td></tr><tr><td class="n">0.010</td><td class="n">2.0</td></tr><tr><td class="n">0.0010</td><td class="n">X</td></tr><tr><td class="n">0.000 10</td><td class="n">4.0</td></tr></tbody></table></div>
+    <div class="part"><div class="ptext"><span><b>2.1</b> Give the value of X.</span><span class="marks">[1 mark]</span></div><textarea data-ans="2.1" aria-label="Answer 2.1"></textarea>
+      <details class="ms"><summary>Mark scheme</summary><ul><li>3.0 (1)</li></ul></details></div>
+    <div class="part"><div class="ptext"><span><b>2.2</b> Describe the relationship between the concentration of hydrogen ions and pH shown in the table.</span><span class="marks">[2 marks]</span></div><textarea data-ans="2.2" aria-label="Answer 2.2"></textarea>
+      <details class="ms"><summary>Mark scheme</summary><ul><li>As the concentration of H⁺ ions decreases, the pH increases (1)</li><li>Each decrease by a factor of 10 increases the pH by 1 (1)</li></ul></details></div>
+    <div class="part"><div class="ptext"><span><b>2.3</b> A solution of hydrochloric acid with [H⁺] = 0.050 mol/dm³ has a pH of 1.3. The student dilutes 10 cm³ of this solution to 1000 cm³ with water. Determine the pH of the new solution.</span><span class="marks">[2 marks]</span></div><textarea data-ans="2.3" aria-label="Answer 2.3"></textarea>
+      <details class="ms"><summary>Mark scheme</summary><ul><li>Concentration decreases by a factor of 100 (1)</li><li>pH = 3.3 (1)</li><li>Correct answer with no working scores 2 marks.</li></ul></details></div>
+    <div class="part"><div class="ptext"><span><b>2.4</b> Solution A has a pH of 2. Solution B has a pH of 6. How many times greater is the hydrogen ion concentration in solution A than in solution B?</span><span class="marks">[1 mark]</span></div><textarea data-ans="2.4" aria-label="Answer 2.4"></textarea>
+      <details class="ms"><summary>Mark scheme</summary><ul><li>10 000 (times) (1)</li></ul></details></div>
+  </div>
+
+  <div class="examq">
+    <h3>Question 3 · Comparing acids</h3>
+    <p>A teacher measured the pH of two acids. Both had a concentration of 0.10 mol/dm³.</p>
+    <div class="tablewrap"><table class="data"><thead><tr><th>Acid</th><th>pH</th></tr></thead><tbody><tr><td>Hydrochloric acid</td><td class="n">1.0</td></tr><tr><td>Ethanoic acid</td><td class="n">2.9</td></tr></tbody></table></div>
+    <div class="part"><div class="ptext"><span><b>3.1</b> Explain why the two acids have different pH values, even though they have the same concentration.</span><span class="marks">[3 marks]</span></div><textarea data-ans="3.1" aria-label="Answer 3.1"></textarea>
+      <details class="ms"><summary>Mark scheme</summary><ul><li>Hydrochloric acid is completely ionised / is a strong acid (1)</li><li>Ethanoic acid is only partially ionised / is a weak acid (1)</li><li>So hydrochloric acid has a higher concentration of H⁺ ions (1)</li></ul></details></div>
+    <div class="part"><div class="ptext"><span><b>3.2</b> The teacher added equal pieces of magnesium ribbon to equal volumes of each acid. The hydrochloric acid produced bubbles faster. Explain why, in terms of particles.</span><span class="marks">[3 marks]</span></div><textarea data-ans="3.2" aria-label="Answer 3.2"></textarea>
+      <details class="ms"><summary>Mark scheme</summary><ul><li>Hydrochloric acid has a higher concentration of H⁺ ions / more H⁺ ions per unit volume (1)</li><li>So more frequent collisions (between H⁺ ions and magnesium) (1)</li><li>So the rate of reaction is faster (1)</li><li>Do not accept "more collisions" without reference to frequency / per second.</li></ul></details></div>
+    <div class="part"><div class="ptext"><span><b>3.3</b> Magnesium was in excess. Both reactions eventually produced the same total volume of hydrogen gas. Suggest why.</span><span class="marks">[2 marks]</span></div><textarea data-ans="3.3" aria-label="Answer 3.3"></textarea>
+      <details class="ms"><summary>Mark scheme</summary><ul><li>Both had the same amount (moles) of acid (1)</li><li>As H⁺ ions react in the ethanoic acid, more ethanoic acid molecules ionise (until all have reacted) (1)</li></ul></details></div>
+  </div>
+  <div class="bench"><p class="note">Total: Question 1 = 5 marks, Question 2 = 6 marks, Question 3 = 8 marks. 19 marks altogether. Your answers stay in this browser if you come back.</p></div>
+</section>
+
+<div class="pager"><button id="prev">← Back</button><button class="primary" id="next">Next →</button></div>
+</div>
+
+<script>
+(function(){
+"use strict";
+const root=document.documentElement;
+const C={};
+(function(){const s=getComputedStyle(root);["ink","ink-2","water","glass","hplus","strong","weak","citric","methanoic","mg","bubble","hbond"].forEach(k=>C[k]=s.getPropertyValue("--"+k).trim());})();
+const rnd=Math.random;
+
+/* ---------------- particle sim ---------------- */
+const LW=400,LH=330,LIQ={x:46,y:104,w:308,h:196},MG_TOP=LIQ.y+LIQ.h-14;
+function Sim(canvas,o){this.c=canvas;this.ctx=canvas.getContext("2d");this.o=o;this.reset();}
+const P=Sim.prototype;
+P.reset=function(){this.A=[];this.H=[];this.bub=[];this.fl=[];this.sched=[];this.frame=0;this.state="empty";this.mg=false;this.gas=0;this.hits=0;this.eq=0;};
+P.at=function(f,fn){this.sched.push({t:this.frame+f,fn});};
+P.add=function(){if(this.state!=="empty")return;this.state="dropping";
+  for(let i=0;i<this.o.n;i++){this.A.push({x:LIQ.x+22+rnd()*(LIQ.w-44),y:LIQ.y-20-rnd()*80,vx:(rnd()-.5)*.6,vy:1.5+rnd()*1.5,h:i,ang:rnd()*6.283,inl:false,tgt:false});
+    this.H.push({x:0,y:0,vx:0,vy:0,bond:i,seek:null,alive:true});}
+  this.at(75,()=>{this.state="mixed";const idx=this.A.map((_,i)=>i).sort(()=>rnd()-.5).slice(0,this.o.target);
+    idx.forEach((ai,k)=>this.at(Math.round(k*(this.o.target>20?2:9)+rnd()*25),()=>this.ionise(ai)));});};
+P.bp=function(a){return{x:a.x+Math.cos(a.ang)*11,y:a.y+Math.sin(a.ang)*11};};
+P.ionise=function(ai){const a=this.A[ai];if(a.h===null)return;const h=this.H[a.h],p=this.bp(a);
+  h.x=p.x;h.y=p.y;h.bond=null;a.h=null;const cx=Math.cos(a.ang),cy=Math.sin(a.ang);h.vx=cx*2.2;h.vy=cy*2.2;a.vx-=cx*.7;a.vy-=cy*.7;this.fl.push({x:p.x,y:p.y,t:0});};
+P.freeH=function(){return this.H.filter(h=>h.alive&&h.bond===null);};
+P.bonded=function(){const r=[];this.A.forEach((a,i)=>{if(a.h!==null)r.push(i);});return r;};
+P.addMg=function(){if(this.state!=="mixed"||this.mg)return;this.mg=true;this.H.forEach(h=>h.seek=null);this.A.forEach(a=>a.tgt=false);};
+P.consume=function(h){h.alive=false;this.hits++;if(this.hits%2===0){this.gas++;this.bub.push({x:h.x,y:MG_TOP-4,r:3,vy:-.5});}
+  if(this.o.weak)this.at(25+Math.floor(rnd()*40),()=>{const b=this.bonded();if(this.freeH().length<this.o.target&&b.length)this.ionise(b[Math.floor(rnd()*b.length)]);});};
+function cl(p,m){const s=Math.hypot(p.vx,p.vy);if(s>m){p.vx*=m/s;p.vy*=m/s;}}
+P.step=function(){
+  this.frame++;const due=this.sched.filter(s=>s.t<=this.frame);this.sched=this.sched.filter(s=>s.t>this.frame);due.forEach(s=>s.fn());
+  const bA=(this.mg?MG_TOP:LIQ.y+LIQ.h)-11;
+  for(const a of this.A){
+    if(!a.inl){a.vy+=.12;a.x+=a.vx;a.y+=a.vy;if(a.y>LIQ.y+12){a.inl=true;a.vy*=.25;}}
+    else{a.vx+=(rnd()-.5)*.22;a.vy+=(rnd()-.5)*.22;a.vx*=.97;a.vy*=.97;cl(a,.9);a.x+=a.vx;a.y+=a.vy;
+      if(a.x<LIQ.x+12){a.x=LIQ.x+12;a.vx=Math.abs(a.vx);}if(a.x>LIQ.x+LIQ.w-12){a.x=LIQ.x+LIQ.w-12;a.vx=-Math.abs(a.vx);}
+      if(a.y<LIQ.y+12){a.y=LIQ.y+12;a.vy=Math.abs(a.vy);}if(a.y>bA){a.y=bA;a.vy=-Math.abs(a.vy);}}
+    a.ang+=.012;if(a.h!==null){const h=this.H[a.h],p=this.bp(a);h.x=p.x;h.y=p.y;}
+  }
+  for(const h of this.H){if(!h.alive||h.bond!==null)continue;
+    if(h.seek!==null){const a=this.A[h.seek],dx=a.x-h.x,dy=a.y-h.y,d=Math.hypot(dx,dy)||1;h.vx+=dx/d*.22;h.vy+=dy/d*.22;cl(h,2.4);
+      if(d<14){const hi=this.H.indexOf(h),ai=h.seek;h.seek=null;a.tgt=false;h.bond=ai;a.h=hi;a.ang=Math.atan2(h.y-a.y,h.x-a.x);
+        this.at(45,()=>{const b=this.bonded().filter(i=>i!==ai);if(b.length)this.ionise(b[Math.floor(rnd()*b.length)]);});continue;}}
+    else{h.vx+=(rnd()-.5)*.4;h.vy+=(rnd()-.5)*.4;h.vx*=.97;h.vy*=.97;cl(h,1.7);}
+    h.x+=h.vx;h.y+=h.vy;
+    if(h.x<LIQ.x+6){h.x=LIQ.x+6;h.vx=Math.abs(h.vx);}if(h.x>LIQ.x+LIQ.w-6){h.x=LIQ.x+LIQ.w-6;h.vx=-Math.abs(h.vx);}
+    if(h.y<LIQ.y+6){h.y=LIQ.y+6;h.vy=Math.abs(h.vy);}
+    if(this.mg&&h.y>MG_TOP-5){if(rnd()<.5){this.consume(h);continue;}h.y=MG_TOP-5;h.vy=-Math.abs(h.vy);}
+    else if(h.y>LIQ.y+LIQ.h-6){h.y=LIQ.y+LIQ.h-6;h.vy=-Math.abs(h.vy);}
+  }
+  if(this.o.weak&&this.state==="mixed"&&!this.mg){this.eq++;
+    if(this.eq>110&&!this.H.some(h=>h.alive&&h.seek!==null)){const f=this.freeH();
+      if(f.length>=this.o.target&&f.length){const h=f[Math.floor(rnd()*f.length)];let best=-1,bd=1e9;
+        this.A.forEach((a,i)=>{if(a.h===null&&!a.tgt){const d=Math.hypot(a.x-h.x,a.y-h.y);if(d<bd){bd=d;best=i;}}});
+        if(best>=0){h.seek=best;this.A[best].tgt=true;}}
+      this.eq=0;}}
+  for(const b of this.bub){b.y+=b.vy;b.vy-=.018;b.r=Math.min(6,b.r+.03);b.x+=(rnd()-.5)*.6;}this.bub=this.bub.filter(b=>b.y>LIQ.y-2);
+  for(const f of this.fl)f.t++;this.fl=this.fl.filter(f=>f.t<24);
+};
+P.fit=function(){const w=this.c.clientWidth;if(!w)return;const d=window.devicePixelRatio||1;this.c.width=Math.round(w*d);this.c.height=Math.round(w*LH/LW*d);this.s=this.c.width/LW;};
+function circ(x,y,r,f,s,ctx){ctx.beginPath();ctx.arc(x,y,r,0,6.2832);ctx.fillStyle=f;ctx.fill();if(s){ctx.lineWidth=1.2;ctx.strokeStyle=s;ctx.stroke();}}
+P.draw=function(){if(!this.s)return;const ctx=this.ctx;ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,this.c.width,this.c.height);ctx.setTransform(this.s,0,0,this.s,0,0);
+  ctx.fillStyle=C.water;ctx.fillRect(LIQ.x,LIQ.y,LIQ.w,LIQ.h);
+  ctx.strokeStyle=C.glass;ctx.lineWidth=3.2;ctx.lineJoin="round";ctx.beginPath();ctx.moveTo(LIQ.x-14,LIQ.y-62);ctx.lineTo(LIQ.x-4,LIQ.y-56);ctx.lineTo(LIQ.x-4,LIQ.y+LIQ.h+4);ctx.lineTo(LIQ.x+LIQ.w+4,LIQ.y+LIQ.h+4);ctx.lineTo(LIQ.x+LIQ.w+4,LIQ.y-56);ctx.stroke();
+  ctx.lineWidth=1.4;for(let i=1;i<5;i++){const y=LIQ.y+LIQ.h-i*42;ctx.beginPath();ctx.moveTo(LIQ.x+LIQ.w-20,y);ctx.lineTo(LIQ.x+LIQ.w,y);ctx.stroke();}
+  ctx.textAlign="center";ctx.textBaseline="middle";
+  if(this.mg){ctx.fillStyle=C.mg;ctx.fillRect(LIQ.x+8,MG_TOP,LIQ.w-16,10);ctx.fillStyle=C.ink;ctx.font="bold 9px sans-serif";ctx.fillText("Mg ribbon",LIQ.x+LIQ.w/2,MG_TOP+5.5);}
+  if(this.state==="empty"){ctx.fillStyle=C["ink-2"];ctx.font="16px sans-serif";ctx.fillText("water",LIQ.x+LIQ.w/2,LIQ.y+LIQ.h/2);}
+  for(const b of this.bub){ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,6.2832);ctx.fillStyle=C.bubble;ctx.globalAlpha=.8;ctx.fill();ctx.globalAlpha=1;ctx.strokeStyle=C.glass;ctx.lineWidth=1;ctx.stroke();}
+  for(const f of this.fl){ctx.beginPath();ctx.arc(f.x,f.y,6+f.t*.9,0,6.2832);ctx.strokeStyle=C.hplus;ctx.globalAlpha=1-f.t/24;ctx.lineWidth=2;ctx.stroke();ctx.globalAlpha=1;}
+  const col=C[this.o.colour];
+  for(const a of this.A){
+    if(a.h!==null){const p=this.bp(a);ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(p.x,p.y);ctx.strokeStyle=C["ink-2"];ctx.lineWidth=2;ctx.stroke();
+      circ(p.x,p.y,5.5,C.hbond,C["ink-2"],ctx);ctx.fillStyle=C.ink;ctx.font="bold 7px sans-serif";ctx.fillText("H",p.x,p.y+.5);}
+    circ(a.x,a.y,9.5,col,null,ctx);ctx.fillStyle="#fff";ctx.font="bold 8px sans-serif";ctx.fillText(this.o.label,a.x,a.y+.5);
+    if(a.h===null){ctx.fillStyle=C.ink;ctx.font="bold 11px sans-serif";ctx.fillText("−",a.x+10,a.y-9);}
+  }
+  for(const h of this.H){if(!h.alive||h.bond!==null)continue;circ(h.x,h.y,5.5,C.hplus,null,ctx);ctx.fillStyle="#fff";ctx.font="bold 9px sans-serif";ctx.fillText("+",h.x,h.y+.5);}
+};
+P.stats=function(){const b=this.bonded().length,n=this.A.length;return{mol:b,h:this.freeH().length,pct:n?Math.round(100*(n-b)/n)+"%":"0%",gas:this.gas};};
+
+const SIMS={};
+function mk(id,canvas,o){SIMS[id]=new Sim(canvas,Object.assign({n:30},o));}
+const ACIDS=[{name:"Hydrochloric",sub:"pH 1.0",target:30,colour:"strong",label:"Cl",weak:false},{name:"Citric",sub:"pH 2.1",target:12,colour:"citric",label:"A",weak:true},
+  {name:"Methanoic",sub:"pH 2.4",target:9,colour:"methanoic",label:"A",weak:true},{name:"Ethanoic",sub:"pH 2.9",target:6,colour:"weak",label:"A",weak:true}];
+function grid(el,prefix,withGas){ACIDS.forEach((a,i)=>{const d=document.createElement("div");d.className="beaker";
+  d.innerHTML='<div class="name">'+a.name+' <span class="sub">'+a.sub+'</span></div><canvas data-sim="'+prefix+i+'" aria-label="'+a.name+' acid"></canvas><div class="stats"><span>H⁺ ions <b data-stat="'+prefix+i+':h">0</b></span>'+(withGas?'':'<span>Molecules <b data-stat="'+prefix+i+':mol">0</b></span>')+'</div>';
+  el.appendChild(d);});}
+grid(document.getElementById("g8"),"r",false);grid(document.getElementById("g9"),"m",true);
+const race=document.getElementById("race");
+race.innerHTML='<div class="rrow note"><span>Acid</span><span>Bubbles of H₂ made</span><span class="n">Total</span></div>'+ACIDS.map((a,i)=>'<div class="rrow"><span>'+a.name+'</span><span class="rbar"><i data-bar="m'+i+'" style="background:var(--'+a.colour+')"></i></span><span class="n" data-stat="m'+i+':gas">0</span></div>').join("");
+document.querySelectorAll("canvas[data-sim]").forEach(c=>{const id=c.dataset.sim;
+  if(id.startsWith("strong"))mk(id,c,{target:30,colour:"strong",label:"Cl",weak:false});
+  else if(id.startsWith("weak"))mk(id,c,{target:6,colour:"weak",label:"A",weak:true});
+  else{const a=ACIDS[+id.slice(1)];mk(id,c,a);}});
+document.querySelectorAll("[data-act]").forEach(b=>b.addEventListener("click",()=>{const ids=b.dataset.sims.split(",");const act=b.dataset.act;
+  ids.forEach(id=>{const s=SIMS[id];if(act==="add")s.add();else if(act==="reset")s.reset();else if(act==="mg")s.addMg();});
+  if(ids[0]==="m0"){const mg=document.getElementById("m-mg");if(act==="add")setTimeout(()=>mg.disabled=false,1800);if(act==="mg"||act==="reset")mg.disabled=true;}}));
+
+/* ---------------- dot boxes ---------------- */
+function DotBox(canvas){this.c=canvas;this.dots=[];this.n=-1;}
+DotBox.prototype.fit=function(){const w=this.c.clientWidth;if(!w)return;const d=window.devicePixelRatio||1;this.c.width=Math.round(w*d);this.c.height=Math.round(w*2/3*d);this.s=this.c.width/300;};
+DotBox.prototype.set=function(n){if(n===this.n)return;this.n=n;while(this.dots.length>n)this.dots.splice(Math.floor(rnd()*this.dots.length),1);
+  while(this.dots.length<n)this.dots.push({x:10+rnd()*280,y:10+rnd()*180,vx:(rnd()-.5)*.4,vy:(rnd()-.5)*.4});};
+DotBox.prototype.tick=function(){if(!this.s)return;const ctx=this.c.getContext("2d");ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,this.c.width,this.c.height);ctx.setTransform(this.s,0,0,this.s,0,0);
+  const r=this.dots.length>150?3:4.5;
+  for(const d of this.dots){d.vx+=(rnd()-.5)*.08;d.vy+=(rnd()-.5)*.08;d.vx*=.98;d.vy*=.98;d.x+=d.vx;d.y+=d.vy;
+    if(d.x<6||d.x>294)d.vx*=-1;if(d.y<6||d.y>194)d.vy*=-1;d.x=Math.max(6,Math.min(294,d.x));d.y=Math.max(6,Math.min(194,d.y));
+    ctx.beginPath();ctx.arc(d.x,d.y,r,0,6.2832);ctx.fillStyle=C.hplus;ctx.fill();}
+  if(!this.dots.length){ctx.fillStyle=C["ink-2"];ctx.font="13px sans-serif";ctx.textAlign="center";ctx.fillText("Fewer than 1 H⁺ ion in this sample",150,100);}};
+const slBox=new DotBox(document.getElementById("sl-box")),dBox=new DotBox(document.getElementById("d-box"));
+const boxes=[slBox,dBox];
+
+const SUP={"-":"⁻","0":"⁰","1":"¹","2":"²","3":"³","4":"⁴","5":"⁵","6":"⁶","7":"⁷","8":"⁸","9":"⁹"};
+const sup=s=>String(s).split("").map(c=>SUP[c]||c).join("");
+const fmt=n=>n.toLocaleString("en-GB");
+
+// slider
+const sl=document.getElementById("sl");
+function slRender(){const p=+sl.value;document.getElementById("sl-ph").textContent=p;
+  document.getElementById("sl-c").textContent="0."+"0".repeat(p-1)+"1";
+  document.getElementById("sl-x").innerHTML=p===1?"This is the most acidic setting.":"Compared with pH 1: <b>"+fmt(Math.pow(10,p-1))+" times fewer</b> H⁺ ions";
+  const m=document.getElementById("sl-mk");m.style.left=(p/14*100)+"%";m.dataset.v="pH "+p;
+  const n=Math.round(Math.pow(10,3-p));slBox.set(n);
+  document.getElementById("sl-cap").textContent=n>=1?"About "+n+" H⁺ ions in this sample (scaled).":"You would need "+fmt(Math.round(Math.pow(10,p-3)))+" boxes this size to find one H⁺ ion.";}
+sl.addEventListener("input",slRender);slRender();
+
+// dilution
+const OFF={1:0,2:-0.3,5:-0.7},MAXN=6;let D={m:1,n0:1,n:1,h:[]};
+const dec=(m,n)=>"0."+"0".repeat(n-1)+(m*10);
+const ph=(m,n)=>(n+OFF[m]).toFixed(1);
+function dRender(){const{m,n,n0}=D;document.getElementById("d-dec").textContent=dec(m,n);document.getElementById("d-ph").textContent=ph(m,n);
+  document.getElementById("d-cmp").innerHTML=n===n0?"Starting solution":"Diluted <b>"+fmt(Math.pow(10,n-n0))+"×</b> so pH has gone up by <b>"+(n-n0)+"</b>";
+  const c=m*Math.pow(10,3-n);const cnt=Math.round(c);dBox.set(cnt);
+  document.getElementById("d-cap").textContent=cnt>=1?"About "+cnt+" H⁺ ions in the same sample volume (scaled).":"You would need "+fmt(Math.round(1/c))+" boxes this size to find one H⁺ ion.";
+  let h='<div class="lrow head"><span>pH</span><span>[H⁺] mol/dm³</span><span>Standard form</span></div>';
+  for(let k=n0;k<=MAXN;k++){h+='<div class="lrow'+(k===n?" cur":"")+'"><span>'+ph(m,k)+'</span><span>'+dec(m,k)+'</span><span>'+m+'.0 × 10'+sup(-k)+'</span></div>';if(k<MAXN)h+='<div class="lstep">↓ dilute × 10 · pH + 1</div>';}
+  document.getElementById("d-ladder").innerHTML=h;
+  document.getElementById("d-x10").disabled=n>=MAXN;document.getElementById("d-x100").disabled=n>=MAXN-1;document.getElementById("d-back").disabled=!D.h.length;}
+const dil=k=>{if(D.n+k<=MAXN){D.h.push(D.n);D.n+=k;dRender();}};
+document.getElementById("d-x10").onclick=()=>dil(1);document.getElementById("d-x100").onclick=()=>dil(2);
+document.getElementById("d-back").onclick=()=>{if(D.h.length){D.n=D.h.pop();dRender();}};
+document.getElementById("d-reset").onclick=()=>{D.n=D.n0;D.h=[];dRender();};
+document.querySelectorAll(".sb").forEach(b=>b.onclick=()=>{const[m,n]=b.dataset.start.split(",").map(Number);D={m,n0:n,n,h:[]};
+  document.querySelectorAll(".sb").forEach(x=>x.classList.toggle("primary",x===b));dRender();});
+dRender();
+
+/* ---------------- MCQs ---------------- */
+const Q={
+ p1a:{q:"Which ion do all acids produce when they dissolve in water?",o:["OH⁻","H⁺","Cl⁻","Na⁺"],a:1,w:"All acids produce hydrogen ions, H⁺, in water. OH⁻ ions are made by alkalis."},
+ p1b:{q:"Hydrochloric acid, HCl, ionises in water. Which ions does it form?",o:["H⁺ and Cl⁻","H⁻ and Cl⁺","H₂ and Cl₂","OH⁻ and Cl⁻"],a:0,w:"HCl → H⁺ + Cl⁻. The hydrogen loses an electron to become H⁺."},
+ p2a:{q:"What is meant by a strong acid?",o:["An acid with a high concentration","An acid that is completely ionised in water","An acid that is very dangerous","An acid that only partly ionises"],a:1,w:"Strong means every molecule ionises. It says nothing about how much acid there is."},
+ p3a:{q:"What is meant by a weak acid?",o:["An acid with lots of water added","An acid that does not produce any H⁺ ions","An acid that is only partially ionised in water","An acid with a pH of 7"],a:2,w:"A weak acid only partly ionises, so only some of its molecules release H⁺ ions."},
+ p3b:{q:"What does the ⇌ symbol in the ethanoic acid equation tell you?",o:["The reaction only goes forwards","The reaction is reversible","The acid is concentrated","Heat is given out"],a:1,w:"⇌ means reversible. Ions can join back together to form molecules again, which is what you saw in the animation."},
+ p4a:{q:"A solution contains a small amount of hydrochloric acid dissolved in a large volume of water. How would you describe it?",o:["Concentrated and strong","Dilute and weak","Dilute and strong","Concentrated and weak"],a:2,w:"Small amount of acid per dm³ = dilute. Hydrochloric acid is always completely ionised = strong."},
+ p4b:{q:"Both beakers had 30 acid molecules. Why did the hydrochloric acid beaker have more H⁺ ions?",o:["It had more acid molecules","Hydrochloric acid is completely ionised but ethanoic acid is only partially ionised","Ethanoic acid reacts with the water","The ethanoic acid molecules were bigger"],a:1,w:"Same number of molecules, but all the HCl molecules ionise while only some of the ethanoic acid molecules do."},
+ p5a:{q:"Solution A has pH 2 and solution B has pH 4. Which statement is correct?",o:["B has more H⁺ ions than A","A has more H⁺ ions than B","They have the same number of H⁺ ions","B is more acidic than A"],a:1,w:"Lower pH means more H⁺ ions. pH 2 is lower than pH 4, so A has more."},
+ p5b:{q:"The pH of a solution goes down by 1. What happens to the concentration of H⁺ ions?",o:["It decreases by a factor of 10","It increases by 1","It increases by a factor of 10","It halves"],a:2,w:"pH down 1 = 10 times more H⁺ ions. Remember: the opposite direction, and in tens."},
+ p6a:{q:"How many times more H⁺ ions does a pH 1 solution have than a pH 3 solution?",o:["2 times","3 times","20 times","100 times"],a:3,w:"3 − 1 = 2 steps, so 10 × 10 = 100 times. A common mistake is to say 2 or 20."},
+ p6b:{q:"Stomach acid is pH 1. Rain water is pH 5. How many times more H⁺ ions are in stomach acid?",o:["4","40","1000","10 000"],a:3,w:"5 − 1 = 4 steps: 10 × 10 × 10 × 10 = 10 000."},
+ p7a:{q:"10 cm³ of acid with pH 2 is made up to 100 cm³ with water. What is the new pH?",o:["1","2","3","20"],a:2,w:"The volume is 10 times bigger, so H⁺ concentration is 10 times smaller, and the pH goes up by 1."},
+ p7b:{q:"An acid has [H⁺] = 0.050 mol/dm³ and pH 1.3. What is the pH of an acid with [H⁺] = 0.0050 mol/dm³?",o:["0.3","1.4","2.3","13"],a:2,w:"0.0050 is 10 times smaller than 0.050, so add 1 to the pH: 1.3 + 1 = 2.3."},
+ p7c:{q:"Hydrochloric acid with pH 3 is diluted 100 times. What is the new pH?",o:["4","5","103","300"],a:1,w:"100 times = 10 × 10, two steps. pH 3 + 2 = 5."},
+ p8a:{q:"Four acids all have the same concentration. Which one is ionised the most?",o:["Ethanoic, pH 2.9","Methanoic, pH 2.4","Citric, pH 2.1","They are all the same"],a:2,w:"At the same concentration, lowest pH = most H⁺ ions = most ionised. Of these, citric acid has the lowest pH."},
+ p9a:{q:"Why does magnesium react faster with hydrochloric acid than with ethanoic acid of the same concentration?",o:["Hydrochloric acid molecules are bigger","There are more H⁺ ions per unit volume, so collisions with magnesium are more frequent","Ethanoic acid is more dilute","The magnesium dissolves in ethanoic acid"],a:1,w:"More H⁺ ions in the same volume means more frequent collisions with the magnesium surface, so a faster rate."},
+ p9b:{q:"Which particles actually react with the magnesium?",o:["Whole acid molecules","Water molecules","H⁺ ions","Cl⁻ ions"],a:2,w:"Mg + 2H⁺ → Mg²⁺ + H₂. Only the H⁺ ions react."}
+};
+const QUIZ=[
+ {q:"Which of these is a weak acid?",o:["Nitric acid","Sulfuric acid","Citric acid","Hydrochloric acid"],a:2,w:"Weak acids include ethanoic, citric and carbonic acid. The other three are strong."},
+ {q:"Which of these is a strong acid?",o:["Ethanoic acid","Nitric acid","Carbonic acid","Citric acid"],a:1,w:"Nitric acid is completely ionised, so it is a strong acid."},
+ {q:"Which is the best description of a concentrated weak acid?",o:["A lot of acid per dm³ that is only partially ionised","A little acid per dm³ that is completely ionised","A lot of acid per dm³ that is completely ionised","A little acid per dm³ that is only partially ionised"],a:0,w:"Concentrated = a lot per dm³. Weak = partially ionised."},
+ {q:"Which solution has the highest concentration of H⁺ ions?",o:["pH 7","pH 5","pH 3","pH 1"],a:3,w:"The lowest pH has the most H⁺ ions."},
+ {q:"The pH of a solution increases from 2 to 3. What has happened to the H⁺ ion concentration?",o:["Increased by a factor of 10","Decreased by a factor of 10","Increased by 1","Decreased by 1"],a:1,w:"pH up 1 = H⁺ concentration ÷ 10."},
+ {q:"How many times greater is the H⁺ concentration at pH 2 than at pH 5?",o:["3","30","300","1000"],a:3,w:"Three steps: 10 × 10 × 10 = 1000."},
+ {q:"0.020 mol/dm³ hydrochloric acid has pH 1.7. What is the pH of 0.000 20 mol/dm³ hydrochloric acid?",o:["2.7","3.7","1.9","17"],a:1,w:"0.000 20 is 100 times smaller (two steps), so pH 1.7 + 2 = 3.7."},
+ {q:"25 cm³ of an acid with pH 3 is made up to 250 cm³ with water. What is the new pH?",o:["2","3.25","4","30"],a:2,w:"The volume is 10 times bigger, so the pH goes up by 1, to 4."},
+ {q:"A pH 5 acid is diluted with lots of water. What will the pH get closer to?",o:["0","7","10","14"],a:1,w:"Adding water takes the pH towards 7 (neutral). It can never go above 7 by diluting an acid."},
+ {q:"Two weak acids have the same concentration. Acid X has pH 2.4 and acid Y has pH 3.1. Which is true?",o:["Y is more ionised than X","X is more ionised than Y","They are equally ionised","X is more concentrated than Y"],a:1,w:"Same concentration, so the lower pH (X) must come from more ionisation."},
+ {q:"Equal pieces of magnesium are added to 0.1 mol/dm³ hydrochloric acid and 0.1 mol/dm³ ethanoic acid. What would you observe?",o:["Both fizz at the same rate","Ethanoic acid fizzes faster","Hydrochloric acid fizzes faster","Only hydrochloric acid fizzes"],a:2,w:"Both react, but hydrochloric acid has more H⁺ ions, so it fizzes faster."},
+ {q:"Why does a higher concentration of H⁺ ions increase the rate of reaction with magnesium?",o:["The H⁺ ions have more energy","There are more frequent collisions between H⁺ ions and magnesium","The activation energy is lower","The magnesium gets hotter"],a:1,w:"More particles in the same volume means more frequent collisions. The energy of each collision has not changed."}
+];
+const L="ABCD";
+function buildMCQ(el,d,num,quiz){
+  el.innerHTML='<div class="qhead"><span class="qnum">'+num+'</span><span class="qtext">'+d.q+'</span></div><div class="opts">'+d.o.map((o,i)=>'<button class="opt" data-i="'+i+'"><span class="let">'+L[i]+'</span><span>'+o+'</span></button>').join("")+'</div><div class="fb" hidden aria-live="polite"></div>';
+  const fb=el.querySelector(".fb"),btns=[...el.querySelectorAll(".opt")];
+  btns.forEach(b=>b.onclick=()=>{const i=+b.dataset.i,ok=i===d.a;
+    if(ok||quiz){btns.forEach(x=>x.disabled=true);btns[d.a].classList.add("right");}
+    if(!ok){b.classList.add("wrong");if(!quiz)b.disabled=true;}
+    fb.hidden=false;fb.className="fb "+(ok?"good":"bad");
+    fb.innerHTML=ok?"<b>Correct!</b>"+d.w:(quiz?"<b>Not quite. The answer is "+L[d.a]+".</b>"+d.w:"<b>Not quite. Have another go.</b>");
+    if(ok&&!quiz)fb.innerHTML="<b>Correct!</b>"+d.w;
+    if(quiz){el.dataset.done=ok?"1":"0";updScore();}});
+}
+let num=0;document.querySelectorAll(".mcq[data-q]").forEach(el=>{num++;buildMCQ(el,Q[el.dataset.q],"Check "+num,false);});
+const qwrap=document.getElementById("quiz");
+function buildQuiz(){qwrap.innerHTML="";QUIZ.forEach((d,i)=>{const el=document.createElement("div");el.className="mcq";qwrap.appendChild(el);buildMCQ(el,d,"Q"+(i+1),true);});updScore();}
+function updScore(){const all=[...qwrap.querySelectorAll(".mcq")];const done=all.filter(e=>e.dataset.done!==undefined);const right=done.filter(e=>e.dataset.done==="1").length;
+  document.getElementById("qscore").textContent=done.length<all.length?(done.length+" / "+all.length+" answered · "+right+" correct so far"):("You scored "+right+" / "+all.length);}
+document.getElementById("qretry").onclick=()=>{buildQuiz();qwrap.scrollIntoView({behavior:"smooth"});};
+buildQuiz();
+
+// exam answers kept in this browser
+document.querySelectorAll("textarea[data-ans]").forEach(t=>{const k="acidsph-"+t.dataset.ans;
+  try{const v=localStorage.getItem(k);if(v)t.value=v;}catch(e){}
+  t.addEventListener("input",()=>{try{localStorage.setItem(k,t.value);}catch(e){}});});
+
+/* ---------------- paging ---------------- */
+const pages=[...document.querySelectorAll(".page")];let cur=0;const seen=new Set();
+const prog=document.getElementById("prog");
+pages.forEach((p,i)=>{const b=document.createElement("button");b.title=(i+1)+". "+p.dataset.title;b.setAttribute("aria-label","Page "+(i+1)+": "+p.dataset.title);b.onclick=()=>go(i);prog.appendChild(b);});
+function go(i){cur=Math.max(0,Math.min(pages.length-1,i));seen.add(cur);
+  pages.forEach((p,k)=>p.hidden=k!==cur);
+  [...prog.children].forEach((b,k)=>{b.className=k===cur?"cur":(seen.has(k)?"done":"");});
+  document.getElementById("pc").textContent="Page "+(cur+1)+" of "+pages.length+" · "+pages[cur].dataset.title;
+  document.getElementById("prev").disabled=cur===0;const nx=document.getElementById("next");nx.disabled=cur===pages.length-1;
+  nx.textContent=cur===pages.length-1?"Finished":"Next →";
+  requestAnimationFrame(()=>{Object.values(SIMS).forEach(s=>s.fit());boxes.forEach(b=>b.fit());});
+  try{history.replaceState(null,"","#p"+(cur+1));}catch(e){}
+  window.scrollTo({top:0,behavior:"auto"});}
+document.getElementById("prev").onclick=()=>go(cur-1);document.getElementById("next").onclick=()=>go(cur+1);
+window.addEventListener("resize",()=>{Object.values(SIMS).forEach(s=>s.fit());boxes.forEach(b=>b.fit());});
+const h=/^#p(\d+)$/.exec(location.hash);go(h?(+h[1]-1):0);
+
+/* ---------------- loop ---------------- */
+function loop(){const page=pages[cur];
+  for(const id in SIMS){const s=SIMS[id];if(page.contains(s.c)){s.step();s.draw();}}
+  boxes.forEach(b=>{if(page.contains(b.c))b.tick();});
+  page.querySelectorAll("[data-stat]").forEach(e=>{const[id,k]=e.dataset.stat.split(":");const v=String(SIMS[id].stats()[k]);if(e.textContent!==v)e.textContent=v;});
+  page.querySelectorAll("[data-bar]").forEach(e=>{e.style.width=(SIMS[e.dataset.bar].gas/15*100)+"%";});
+  requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
+})();
+</script>
+
+</body></html>

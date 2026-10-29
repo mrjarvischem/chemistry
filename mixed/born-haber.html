@@ -1,0 +1,588 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Born–Haber Steps</title>
+<style>
+:root{
+  --bg:#EDE6D9; --panel:#FBF8F2; --ink:#2A2119; --muted:#6E5E4D; --line:#D8CCB9;
+  --accent:#7A4A26; --accent-soft:#F4E4CF; --endo:#B7372A; --exo:#1D6A8F; --chip:#F3ECE0;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{background:var(--bg)}
+body{color:var(--ink);font:15px/1.45 "Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;padding:0 16px;padding-block:14px 28px}
+.wrap{max-width:1340px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px}
+h1{font-size:23px;margin:0;letter-spacing:-.01em;text-wrap:balance}
+.spec{color:var(--muted);font-size:13px}
+.tabs{display:flex;flex-wrap:wrap;gap:6px}
+button{font:inherit;cursor:pointer;color:var(--ink)}
+button:focus-visible{outline:3px solid var(--exo);outline-offset:2px}
+.tab{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:7px 12px;font-weight:600;font-size:14px}
+.tab:hover{border-color:var(--accent)}
+.tab[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.main{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:12px;align-items:start}
+@media (max-width:1000px){.main{grid-template-columns:1fr}}
+.stage{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+canvas{display:block;width:100%;max-width:100%;aspect-ratio:960/560}
+.cap{padding:12px 18px;font-size:19px;line-height:1.4;border-top:1px solid var(--line);min-height:3.4em;text-wrap:pretty}
+.ctrl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:0 18px 14px}
+.btn{background:var(--chip);border:1px solid var(--line);border-radius:8px;padding:8px 16px;font-weight:600}
+.btn:hover:not(:disabled){border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn:disabled{opacity:.4;cursor:default}
+.dots{display:flex;gap:6px;margin-left:auto;align-items:center;color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}
+.dot{width:11px;height:11px;border-radius:50%;border:2px solid var(--accent);background:transparent}
+.dot.on{background:var(--accent)}
+aside{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:14px}
+.lbl{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:700;margin-bottom:4px}
+.name{font-size:18px;font-weight:700;margin:0;text-wrap:balance}
+.eq{font-size:21px;font-weight:600;padding:10px 12px;background:var(--chip);border-radius:8px;border:1px solid var(--line)}
+.def p{margin:0;font-size:16px}
+.def b{color:var(--accent);background:var(--accent-soft);padding:0 3px;border-radius:3px}
+.dh{font-size:21px;font-weight:700;font-variant-numeric:tabular-nums}
+.dh small{font-size:14px;font-weight:600;margin-left:6px}
+.dh.endo{color:var(--endo)} .dh.exo{color:var(--exo)}
+.key{font-size:14.5px;border-left:4px solid var(--accent);padding:6px 10px;background:var(--accent-soft);border-radius:0 6px 6px 0}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{background:var(--chip);border:1px solid var(--line);border-radius:999px;padding:5px 14px;font-weight:600}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+table{border-collapse:collapse;width:100%;font-size:13.5px;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:4px 6px;border-bottom:1px solid var(--line)}
+th{font-size:11.5px;color:var(--muted);font-weight:700}
+.bars{display:flex;flex-direction:column;gap:4px;font-size:13px;font-variant-numeric:tabular-nums}
+.bar{display:grid;grid-template-columns:56px 1fr 44px;gap:6px;align-items:center}
+.bar .t{height:12px;background:var(--chip);border-radius:3px;overflow:hidden}
+.bar .f{height:100%;background:#C7B59C}
+.bar.cur{font-weight:700}
+.bar.cur .f{background:var(--accent)}
+.note{font-size:12.5px;color:var(--muted);margin:0}
+.cmp{display:flex;flex-direction:column;gap:6px;font-size:14px}
+.prog{flex:0 0 140px;height:9px;background:var(--chip);border:1px solid var(--line);border-radius:5px;overflow:hidden}
+.prog span{display:block;height:100%;background:var(--accent)}
+.cyc tr[data-go]{cursor:pointer}
+.cyc tr[data-go]:hover td{background:var(--chip)}
+.cyc tr.todo td{color:var(--muted)}
+.cyc tr.done td{font-weight:600}
+.cyc tr.cur td{background:var(--accent-soft);font-weight:700}
+.cyc td.endo{color:var(--endo)} .cyc td.exo{color:var(--exo)}
+.cyc tr.todo td.endo,.cyc tr.todo td.exo{color:var(--muted)}
+.calc{font-size:14px;line-height:1.65;background:var(--chip);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Born–Haber Steps</h1>
+    <span class="spec">AQA A-level Chemistry · 3.1.8.1 Born–Haber cycles · step with ← → or the buttons</span>
+  </header>
+  <nav class="tabs" id="tabs" role="tablist"></nav>
+  <div class="main">
+    <section class="stage">
+      <canvas id="cv" aria-label="Animation of the current Born–Haber step"></canvas>
+      <div class="cap" id="cap" aria-live="polite"></div>
+      <div class="ctrl">
+        <button class="btn" id="back">◀ Back</button>
+        <button class="btn" id="replay">Replay step</button>
+        <button class="btn primary" id="next">Next ▶</button>
+        <button class="btn" id="reset">Reset</button>
+        <div class="dots" id="dots"></div>
+      </div>
+    </section>
+    <aside>
+      <div><div class="lbl">Enthalpy change</div><p class="name" id="name"></p></div>
+      <div class="eq" id="eq"></div>
+      <div class="def"><div class="lbl">Definition</div><p id="def"></p></div>
+      <div class="dh" id="dh"></div>
+      <div class="key" id="key"></div>
+      <div id="extra"></div>
+    </aside>
+  </div>
+</div>
+
+<script>
+(()=>{
+const FONT='"Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif';
+const C={ink:'#2A2119',muted:'#6E5E4D',line:'#D8CCB9',panel:'#FBF8F2',accent:'#7A4A26',endo:'#B7372A',exo:'#1D6A8F',elec:'#2F3E8C',nuc:'#9A4B2C',ring:'#C2B198'};
+const W=960,H=560;
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- helpers ---------- */
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const lerp=(a,b,t)=>a+(b-a)*t;
+const ease=p=>p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
+const rgb=h=>{h=h.replace('#','');return[0,2,4].map(i=>parseInt(h.substr(i,2),16))};
+const tint=(h,t)=>{const[r,g,b]=rgb(h);const f=v=>Math.round(v+(255-v)*t);return`rgb(${f(r)},${f(g)},${f(b)})`};
+const darken=(h,t)=>{const[r,g,b]=rgb(h);const f=v=>Math.round(v*(1-t));return`rgb(${f(r)},${f(g)},${f(b)})`};
+const lum=h=>{const[r,g,b]=rgb(h);return(0.299*r+0.587*g+0.114*b)/255};
+
+function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
+function circle(x,y,r,fill,stroke,lw){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);if(fill){ctx.fillStyle=fill;ctx.fill()}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=lw||1.5;ctx.stroke()}}
+function text(s,x,y,o={}){ctx.save();ctx.globalAlpha=o.al??1;ctx.font=`${o.w||500} ${o.s||16}px ${FONT}`;ctx.textAlign=o.a||'center';ctx.textBaseline='middle';
+  if(o.bg){const w=ctx.measureText(s).width,hh=(o.s||16)*1.3;const x0=o.a==='left'?x:o.a==='right'?x-w:x-w/2;ctx.fillStyle=o.bg;ctx.fillRect(x0-4,y-hh/2,w+8,hh)}
+  ctx.fillStyle=o.c||C.ink;ctx.fillText(s,x,y);ctx.restore()}
+function fitText(s,x,y,maxW,o={}){let size=o.s||17;ctx.save();ctx.font=`${o.w||500} ${size}px ${FONT}`;while(ctx.measureText(s).width>maxW&&size>11){size--;ctx.font=`${o.w||500} ${size}px ${FONT}`}ctx.restore();text(s,x,y,{...o,s:size})}
+function ball(x,y,r,col,al=1){ctx.save();ctx.globalAlpha=al;const g=ctx.createRadialGradient(x-r*.35,y-r*.4,r*.1,x,y,r);g.addColorStop(0,tint(col,.55));g.addColorStop(.7,col);g.addColorStop(1,darken(col,.15));circle(x,y,r,g,darken(col,.35),1.5);ctx.restore()}
+function arrow(x1,y1,x2,y2,col,w=3,head=12,al=1,dash){const L=Math.hypot(x2-x1,y2-y1);if(L<head*0.9||al<=0)return;const a=Math.atan2(y2-y1,x2-x1);ctx.save();ctx.globalAlpha=al;ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=w;ctx.lineCap='round';if(dash)ctx.setLineDash(dash);
+  ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2-Math.cos(a)*head*.8,y2-Math.sin(a)*head*.8);ctx.stroke();ctx.setLineDash([]);
+  ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-Math.cos(a-.45)*head,y2-Math.sin(a-.45)*head);ctx.lineTo(x2-Math.cos(a+.45)*head,y2-Math.sin(a+.45)*head);ctx.closePath();ctx.fill();ctx.restore()}
+function wavy(x1,y1,x2,y2,col,w=3.5,al=1,ph=0){const L=Math.hypot(x2-x1,y2-y1);if(L<20||al<=0)return;const a=Math.atan2(y2-y1,x2-x1);ctx.save();ctx.globalAlpha=al;ctx.translate(x1,y1);ctx.rotate(a);ctx.strokeStyle=col;ctx.lineWidth=w;ctx.lineCap='round';ctx.beginPath();const end=L-15;
+  for(let s=0;s<=end;s+=2){const amp=7*Math.max(0,Math.min(1,s/10,(end-s)/10));const y=amp*Math.sin(s/6-ph);s?ctx.lineTo(s,y):ctx.moveTo(s,y)}ctx.stroke();
+  ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(L,0);ctx.lineTo(L-17,-9);ctx.lineTo(L-17,9);ctx.closePath();ctx.fill();ctx.restore()}
+function electron(x,y,al=1,glow=0){ctx.save();ctx.globalAlpha=al;if(glow>0)circle(x,y,13,`rgba(214,160,40,${0.45*glow})`);circle(x,y,6.5,C.elec,'#1B2458',1);ctx.strokeStyle='#fff';ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(x-3,y);ctx.lineTo(x+3,y);ctx.stroke();ctx.restore()}
+function ring(cx,cy,r,n,rot,glow=0){for(let k=0;k<n;k++){const a=rot+k*2*Math.PI/n;electron(cx+r*Math.cos(a),cy+r*Math.sin(a),1,glow)}}
+function nucleus(cx,cy,lab){ball(cx,cy,24,C.nuc);text(lab,cx,cy+1,{c:'#fff',w:700,s:15})}
+function bracketIon(cx,cy,r,charge,al=1){if(al<=0)return;ctx.save();ctx.globalAlpha=al;ctx.strokeStyle=C.ink;ctx.lineWidth=3;ctx.beginPath();
+  ctx.moveTo(cx-r+14,cy-r);ctx.lineTo(cx-r,cy-r);ctx.lineTo(cx-r,cy+r);ctx.lineTo(cx-r+14,cy+r);
+  ctx.moveTo(cx+r-14,cy-r);ctx.lineTo(cx+r,cy-r);ctx.lineTo(cx+r,cy+r);ctx.lineTo(cx+r-14,cy+r);ctx.stroke();ctx.restore();
+  text(charge,cx+r+8,cy-r+4,{a:'left',s:26,w:700,al})}
+function shieldBand(cx,cy,r,al){if(al<=0)return;circle(cx,cy,r,`rgba(122,74,38,${0.10*al})`);ctx.save();ctx.globalAlpha=al*.7;ctx.setLineDash([5,5]);circle(cx,cy,r,null,C.accent,1.5);ctx.restore()}
+function attraction(cx,ex,cy,ref,al,mult=1,label='electrostatic attraction'){if(al<=0)return;const d=ex-cx;const s=Math.min(1.6,(ref/d)**2)*mult;if(s<0.05)return;
+  const len=Math.min(48,18+26*s),w=1.5+3.2*s,a1=ex-11,a2=cx+28;
+  if(a1-len>a2+len){ctx.save();ctx.globalAlpha=al*.6;ctx.strokeStyle=C.accent;ctx.lineWidth=1.5;ctx.setLineDash([4,5]);ctx.beginPath();ctx.moveTo(a2+len,cy);ctx.lineTo(a1-len,cy);ctx.stroke();ctx.restore()}
+  arrow(a1,cy,a1-len,cy,C.accent,w,10+4*s,al);arrow(a2,cy,a2+len,cy,C.accent,w,10+4*s,al);
+  if(label)text(label,(a1+a2)/2,cy-24,{s:14,w:700,c:C.accent,al,bg:'rgba(251,248,242,.9)'})}
+function waves(x,y,t,al){if(al<=0)return;for(let k=0;k<3;k++){const q=((t*55+k*33)%100);circle(x,y,14+q,null,`rgba(29,106,143,${(1-q/100)*0.75*al})`,3)}}
+function tag(s,al=1){text(s,20,26,{a:'left',s:18,w:700,c:C.accent,al})}
+function corner(s,al=1,c=C.accent){text(s,700,26,{a:'right',s:16,w:700,c,al})}
+function callout(lines,al=1){if(al<=0)return;ctx.save();ctx.globalAlpha=al;rr(16,448,694,98,12);ctx.fillStyle='#FFFDF8';ctx.fill();ctx.strokeStyle=C.accent;ctx.lineWidth=2;ctx.stroke();ctx.restore();
+  lines.forEach((L,i)=>fitText(L.t,34,474+i*28,660,{a:'left',s:17,w:L.b?700:500,c:L.c||C.ink,al}))}
+function energyPanel(from,to,dH,frac){const x0=728,y0=20,w=214,h=520;rr(x0,y0,w,h,12);ctx.fillStyle='#F6F1E8';ctx.fill();ctx.strokeStyle=C.line;ctx.lineWidth=1.2;ctx.stroke();
+  text('ENERGY',x0+w/2,y0+22,{s:13,w:700,c:C.muted});
+  const endo=dH>0,yA=endo?440:130,yB=endo?130:440,col=endo?C.endo:C.exo,ax=x0+46;
+  ctx.strokeStyle=C.ink;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x0+18,yA);ctx.lineTo(x0+w-18,yA);ctx.stroke();
+  fitText(from,x0+w/2,endo?yA+22:yA-20,w-24,{s:16,w:600});
+  if(frac>0){const y=lerp(yA,yB,frac);arrow(ax,yA,ax,y,col,5,16);
+    const ym=(yA+y)/2;text('ΔH',ax+18,ym-26,{a:'left',s:15,w:700,c:col});
+    text(`${endo?'+':'−'}${Math.round(Math.abs(dH)*frac)}`,ax+18,ym,{a:'left',s:24,w:700,c:col});
+    text('kJ mol⁻¹',ax+18,ym+24,{a:'left',s:14,w:600,c:col});
+    text(endo?'endothermic: energy in':'exothermic: energy out',x0+w/2,y0+h-22,{s:13.5,w:700,c:col})}
+  if(frac>=1){ctx.strokeStyle=C.ink;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x0+18,yB);ctx.lineTo(x0+w-18,yB);ctx.stroke();fitText(to,x0+w/2,endo?yB-20:yB+22,w-24,{s:16,w:600})}}
+
+/* ---------- data ---------- */
+const METALS={Na:{sym:'Na',col:'#D8A23E',val:1,dH:107},Mg:{sym:'Mg',col:'#9FAAB5',val:2,dH:148},K:{sym:'K',col:'#A98BC4',val:1,dH:89}};
+const IONS={Na:{sym:'Na',z:1,r:102,col:'#D8A23E'},K:{sym:'K',z:1,r:138,col:'#A98BC4'},Mg:{sym:'Mg',z:2,r:72,col:'#8E9AA6'},
+            Cl:{sym:'Cl',z:-1,r:181,col:'#6AA84F'},Br:{sym:'Br',z:-1,r:196,col:'#A5552F'},O:{sym:'O',z:-2,r:140,col:'#D0524A'}};
+const SUP={'1':'⁺','2':'²⁺','-1':'⁻','-2':'²⁻'}, SUPH={'1':'+','2':'2+','-1':'−','-2':'2−'};
+const LE={NaCl:787,NaBr:751,Na2O:2481,KCl:717,KBr:689,K2O:2238,MgCl2:2526,MgBr2:2440,MgO:3845};
+const LE_ORDER=['NaCl','NaBr','Na2O','KCl','KBr','K2O','MgCl2','MgBr2','MgO'];
+const chargeDensity=ion=>{const r=ion.r*1e-9;return Math.abs(ion.z)*1.602e-19/(4/3*Math.PI*r**3)}; // C mm^-3
+const gcd=(a,b)=>b?gcd(b,a%b):a;
+const sub=n=>n>1?'₂':'';
+const htmlF=k=>k.replace(/(\d)/g,'<sub>$1</sub>');
+const canvF=k=>k.replace(/2/g,'₂');
+
+/* ---------- scene: metal atomisation ---------- */
+const GM=[[95,110],[610,110],[95,335],[615,335],[262,95],[445,390]];
+const metal={tab:'Atomise metal',opt:{m:'Mg'},
+  name(){return'Enthalpy of atomisation of a metal'},
+  eq(){const m=this.opt.m;return`${m}(s) → ${m}(g)`},
+  def(){return'The enthalpy change when <b>1 mole of gaseous atoms</b> is formed from the element in its standard state.'},
+  dH(){return METALS[this.opt.m].dH},
+  key(){return'Always endothermic: the metallic bonding must be broken. The value is for 1 mole of gaseous atoms, however many atoms are drawn.'},
+  energy(){const m=this.opt.m;return{from:m+'(s)',to:m+'(g)',dH:this.dH()}},
+  get stages(){const m=this.opt.m,ion=m+(METALS[m].val==1?'⁺':'²⁺');return[
+    {c:`Solid ${m}: ${ion} ions held in a sea of delocalised electrons (metallic bonding). 6 atoms are shown.`},
+    {c:'Energy is supplied to overcome the metallic bonding, the attraction between the positive ions and the delocalised electrons.',d:1800},
+    {c:`The atoms separate completely. Each takes back its outer electron${METALS[m].val>1?'s':''} and becomes a gaseous ${m} atom.`,d:2800},
+    {c:`The definition counts <b>1 mole</b> of ${m}(g) formed (6.02 × 10²³ atoms), not the 6 drawn here.`,d:900}]},
+  frac(st,p){return st==0?0:st==1?.3*p:st==2?.3+.7*p:1},
+  panel(el){el.innerHTML='<div class="lbl">Metal</div><div class="chips">'+Object.keys(METALS).map(k=>`<button class="chip" data-m="${k}" aria-pressed="${k==this.opt.m}">${k}</button>`).join('')+'</div>';
+    el.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{this.opt.m=b.dataset.m;setStage(0)})},
+  draw(st,p,t){const m=METALS[this.opt.m];
+    const lat=[...Array(6)].map((_,i)=>[355+((i%3)-1)*68,262+(Math.floor(i/3)-.5)*68]);
+    const sepOf=i=>st<2?0:st==2?ease(clamp(p*1.6-i*.12,0,1)):1;
+    const boxA=st<2?1:st==2?1-clamp(p*2,0,1):0;
+    if(boxA>0){ctx.save();ctx.globalAlpha=boxA;rr(243,184,224,156,22);ctx.fillStyle='rgba(47,62,140,0.07)';ctx.fill();ctx.strokeStyle='rgba(47,62,140,0.35)';ctx.setLineDash([5,5]);ctx.lineWidth=1.5;ctx.stroke();ctx.restore()}
+    if(st==0)text('sea of delocalised electrons',355,362,{s:14,w:600,c:C.elec});
+    const ha=st==1?clamp(p*2,0,1):st==2?1-clamp(p*2.5,0,1):0;
+    if(ha>0){const ph=t*8;wavy(355,72,355,178,C.endo,4,ha,ph);wavy(355,452,355,346,C.endo,4,ha,ph);wavy(130,262,237,262,C.endo,4,ha,ph);wavy(580,262,473,262,C.endo,4,ha,ph);text('energy in',372,86,{a:'left',s:16,w:700,c:C.endo,al:ha})}
+    const pos=[];
+    for(let i=0;i<6;i++){const s=sepOf(i);const vib=st==1?4*p:st==2?4*(1-s):0;
+      const jx=vib*Math.sin(t*23+i*1.3),jy=vib*Math.cos(t*19+i*2.1);
+      const gx=GM[i][0]+10*Math.sin(t*.7+i),gy=GM[i][1]+10*Math.cos(t*.6+i*1.7);
+      const x=lerp(lat[i][0],gx,s)+jx,y=lerp(lat[i][1],gy,s)+jy;pos.push([x,y,s]);
+      if(s>.4){ctx.save();ctx.globalAlpha=clamp((s-.4)/.6,0,1);circle(x,y,40,null,C.ring,1.2);ctx.restore()}
+      ball(x,y,lerp(28,32,s),m.col);
+      text(s<.5?m.sym+(m.val==1?'⁺':'²⁺'):m.sym,x,y+1,{s:15,w:700})}
+    const ne=6*m.val;
+    for(let k=0;k<ne;k++){const o=k%6,idx=Math.floor(k/6),[ax,ay,s]=pos[o];
+      const sx=255+200*(.5+.46*Math.sin(t*(.8+.07*k)+k*2.3)),sy=196+132*(.5+.44*Math.sin(t*(.65+.05*k)+k*1.7));
+      const an=t*1.4+idx*Math.PI+o*1.1;electron(lerp(sx,ax+40*Math.cos(an),s),lerp(sy,ay+40*Math.sin(an),s))}
+    const formed=pos.filter(q=>q[2]>=.999).length;
+    tag(st<2||(st==2&&formed<3)?`${m.sym}(s): metallic lattice`:`${m.sym}(g): separate gaseous atoms`);
+    if(st>=2)corner(`gaseous atoms formed: ${formed}`);
+    if(st==3)callout([{t:'Only 6 atoms are drawn. The definition is for 1 mole of gaseous atoms formed.',b:1,c:C.accent},
+      {t:`1 mol of ${m.sym}(g) = 6.02 × 10²³ atoms, so each atom here stands for about 1.0 × 10²³ atoms.`},
+      {t:`ΔH(atomisation) = +${m.dH} kJ mol⁻¹, per mole of ${m.sym}(g) formed.`,b:1,c:C.endo}],p)}};
+
+/* ---------- scene: non-metal atomisation (Cl2 / O2) ---------- */
+const MOLS=[[190,205,.3],[360,300,-.5],[530,195,1.1]];
+const GCL=[[80,120],[240,90],[150,375],[560,385],[440,92],[640,150]];
+const DIA={Cl:{el:'Cl',nm:'chlorine',col:'#6AA84F',r:30,d:21,E:243,dH:122,bond:'Cl–Cl',pairs:1},
+           O:{el:'O',nm:'oxygen',col:'#D0524A',r:27,d:18,E:498,dH:249,bond:'O=O',pairs:2}};
+function chipPanel(el,scene,key,label,list){el.innerHTML=`<div class="lbl">${label}</div><div class="chips">`+list.map(([v,l])=>`<button class="chip" data-v="${v}" aria-pressed="${scene.opt[key]==v}">${l}</button>`).join('')+'</div>';
+  el.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{scene.opt[key]=b.dataset.v;setStage(0)})}
+const diatomic={tab:'Atomise non-metal',opt:{el:'Cl'},
+  X(){return DIA[this.opt.el]},
+  name(){return`Enthalpy of atomisation of ${this.X().nm}`},
+  eq(){const e=this.opt.el;return`½${e}<sub>2</sub>(g) → ${e}(g)`},
+  def(){return'The enthalpy change when <b>1 mole of gaseous atoms</b> is formed from the element in its standard state.'},
+  dH(){return this.X().dH},
+  key(){const X=this.X();return`Per mole of ${X.el} <b>atoms</b>, so only ½ mol of ${X.el}₂ is broken: ΔH(atomisation) = ½ × E(${X.bond}) = ½ × ${X.E} = +${X.dH} kJ mol⁻¹.`},
+  energy(){const e=this.opt.el;return{from:`½${e}₂(g)`,to:`${e}(g)`,dH:this.X().dH}},
+  get stages(){const X=this.X(),e=X.el,Nm=X.nm[0].toUpperCase()+X.nm.slice(1);return[
+    {c:`${Nm} is already a gas, made of ${e}₂ molecules. Here are 3 molecules.`},
+    {c:X.pairs==1?'Energy is supplied to break the covalent Cl–Cl bond (one shared pair of electrons).':'Energy is supplied to break the covalent O=O double bond (two shared pairs of electrons).',d:1800},
+    {c:`Each molecule splits into 2 separate ${e} atoms, each keeping ${X.pairs==1?'one electron from the shared pair':'two electrons from the shared pairs'}. 3 molecules → 6 atoms.`,d:2800},
+    {c:`Atomisation is per <b>1 mole of ${e} atoms</b> formed, so the equation uses ½${e}₂.`,d:900}]},
+  frac(st,p){return st==0?0:st==1?.3*p:st==2?.3+.7*p:1},
+  panel(el){chipPanel(el,this,'el','Element',[['Cl','Cl₂'],['O','O₂']])},
+  draw(st,p,t){const X=this.X(),e=X.el;let broken=0;
+    const ha=st==1?clamp(p*2,0,1):st==2?1-clamp(p*2.5,0,1):0;
+    MOLS.forEach(([mx,my,a0],m)=>{
+      const s=st<2?0:st==2?ease(clamp(p*1.5-m*.2,0,1)):1;if(s>=.999)broken++;
+      const a=a0+.25*Math.sin(t*.5+m),cx=mx+8*Math.sin(t*.6+m),cy=my+8*Math.cos(t*.5+m*2);
+      const d=X.d+(st==1?5*p*Math.abs(Math.sin(t*20+m)):0);
+      if(ha>0)wavy(cx,cy-120,cx,cy-46,C.endo,3.5,ha,t*8);
+      const P=[-1,1].map((sd,j)=>{const i=m*2+j;const gx=GCL[i][0]+10*Math.sin(t*.7+i),gy=GCL[i][1]+10*Math.cos(t*.6+i*1.3);
+        return[lerp(cx+sd*d*Math.cos(a),gx,s),lerp(cy+sd*d*Math.sin(a),gy,s)]});
+      P.forEach(q=>ball(q[0],q[1],X.r,X.col));P.forEach(q=>text(e,q[0],q[1]+1,{s:16,w:700}));
+      if(s<.3){const mx2=(P[0][0]+P[1][0])/2,my2=(P[0][1]+P[1][1])/2,nx=-Math.sin(a),ny=Math.cos(a),ax=Math.cos(a),ay=Math.sin(a);
+        if(X.pairs==1){electron(mx2+nx*7,my2+ny*7);electron(mx2-nx*7,my2-ny*7)}
+        else for(const sa of[-1,1])for(const sn of[-1,1])electron(mx2+ax*6*sa+nx*8*sn,my2+ay*6*sa+ny*8*sn)}
+      else{const dx=P[1][0]-P[0][0],dy=P[1][1]-P[0][1],L=Math.hypot(dx,dy)||1,ux=dx/L,uy=dy/L,R=X.r-5;
+        if(X.pairs==1){electron(P[0][0]+ux*R,P[0][1]+uy*R);electron(P[1][0]-ux*R,P[1][1]-uy*R)}
+        else for(const sn of[-1,1]){electron(P[0][0]+ux*R-uy*8*sn,P[0][1]+uy*R+ux*8*sn);electron(P[1][0]-ux*R-uy*8*sn,P[1][1]-uy*R+ux*8*sn)}}});
+    if(ha>0)text('energy in',20,60,{a:'left',s:16,w:700,c:C.endo,al:ha});
+    tag(broken<3?`${e}₂(g): 3 molecules`:`${e}(g): 6 separate atoms`);
+    corner(`${e}₂ broken: ${broken}   ${e} atoms formed: ${broken*2}`);
+    if(st==3)callout([{t:`3 ${e}₂ molecules → 6 ${e} atoms. The definition is per 1 mole of ${e} ATOMS formed.`,b:1,c:C.accent},
+      {t:`½${e}₂(g) → ${e}(g)    ΔH(atomisation) = ½ × E(${X.bond}) = ½ × ${X.E} = +${X.dH} kJ mol⁻¹`,b:1,c:C.endo},
+      {t:e=='Cl'?'A cycle for MgCl₂ needs 2 mol of Cl atoms, so it uses 2 × (+122) = +244 kJ.':'O=O is a double bond, stronger than Cl–Cl, so this value is larger.'}],p)}};
+
+/* ---------- scene: 1st IE (Na / Mg) ---------- */
+const IE1D={Mg:{nm:'magnesium',p:12,conf:'2,8,2',ion:'2,8,1',v:738,n:2},Na:{nm:'sodium',p:11,conf:'2,8,1',ion:'2,8',v:496,n:1}};
+const ie1={tab:'1st IE',opt:{m:'Mg'},
+  D(){return IE1D[this.opt.m]},
+  name(){return`First ionisation energy of ${this.D().nm}`},
+  eq(){const m=this.opt.m;return`${m}(g) → ${m}<sup>+</sup>(g) + e<sup>−</sup>`},
+  def(){return'The enthalpy change when <b>1 mole of electrons</b> is removed from <b>1 mole of gaseous atoms</b> to form 1 mole of gaseous 1+ ions.'},
+  dH(){return this.D().v},
+  key(){return'Always endothermic: energy is needed to overcome the electrostatic attraction between the nucleus and the outer electron.'},
+  energy(){const m=this.opt.m;return{from:`${m}(g)`,to:`${m}⁺(g) + e⁻(g)`,dH:this.D().v}},
+  get stages(){const m=this.opt.m,D=this.D();return[
+    {c:`A gaseous ${m} atom: ${D.p} protons, electrons arranged ${D.conf}. The outer electron${D.n>1?'s are':' is'} in the 3s subshell.`},
+    {c:`The outer electron is held by electrostatic attraction to the ${D.p}+ nucleus. The 10 inner electrons shield it from the full nuclear charge.`,d:1400},
+    {c:'Energy is supplied to overcome this attraction. The outer electron is removed completely.',d:2600},
+    {c:`1 mole of ${m}⁺(g) ions and 1 mole of electrons are formed.`,d:900}]},
+  frac(st,p){return st<2?0:st==2?p:1},
+  panel(el){chipPanel(el,this,'m','Element',[['Na','Na'],['Mg','Mg']])},
+  draw(st,p,t){const m=this.opt.m,D=this.D(),cx=290,cy=285,R=[44,88,138];const shA=st==0?0:st==1?p:1;const lost=D.n==1&&st==3;
+    shieldBand(cx,cy,110,st<3?shA:lost?0:.4);(lost?R.slice(0,2):R).forEach(r=>circle(cx,cy,r,null,C.ring,1.4));nucleus(cx,cy,D.p+'+');
+    const gl=st==1||st==2?shA*.6:0;ring(cx,cy,R[0],2,t*.8,gl);ring(cx,cy,R[1],8,t*.45,gl);
+    if(D.n==2)electron(cx-R[2],cy);
+    const ex=st<2?cx+R[2]:st==2?lerp(cx+R[2],655,ease(p)):655,ey=st==3?cy+4*Math.sin(t*1.5):cy;
+    if(st>=1&&st<3)attraction(cx,ex,cy,R[2],st==1?p:1);
+    electron(ex,ey,1,st>=1&&st<3?1:0);
+    if(st==2){const al=p<.85?1:(1-p)/.15;wavy(ex-70,cy-125,ex-9,cy-14,C.endo,4,al,t*8);text('energy in',ex-78,cy-140,{s:16,w:700,c:C.endo,al})}
+    if(st>=1&&st<3)text('10 inner electrons shield the outer electron',cx,cy+170,{s:14,w:600,c:C.accent,al:shA});
+    if(st==3){bracketIon(cx,cy,lost?108:156,'+',p);text(`${m}⁺(g)   ${D.ion}`,cx,cy+(lost?134:182),{s:18,w:700,al:p});text('e⁻(g)',655,cy-28,{s:17,w:700,c:C.elec})}
+    tag(st<3?`${m}(g)   ${D.conf}`:`${m}⁺(g) + e⁻(g)`)}};
+
+/* ---------- scene: 2nd IE Mg ---------- */
+const ie2={tab:'2nd IE (Mg)',
+  name(){return'Second ionisation energy of magnesium'},
+  eq(){return'Mg<sup>+</sup>(g) → Mg<sup>2+</sup>(g) + e<sup>−</sup>'},
+  def(){return'The enthalpy change when <b>1 mole of electrons</b> is removed from <b>1 mole of gaseous 1+ ions</b> to form 1 mole of gaseous 2+ ions.'},
+  dH(){return 1451},
+  key(){return'2nd IE > 1st IE. The electron is still in 3s with the same shielding, but it is removed from a positive ion: less electron repulsion, smaller radius, so a stronger attraction.'},
+  energy(){return{from:'Mg⁺(g)',to:'Mg²⁺(g) + e⁻(g)',dH:1451}},
+  stages:[{c:'Mg⁺(g): 12 protons but only 11 electrons (2,8,1). The ion is slightly smaller than the Mg atom (dashed ring).'},
+    {c:'Shielding: the 10 inner electrons in shells 1 and 2 shield the 3s electron from the nucleus. This is the same shielding as for the 1st IE.',d:1400},
+    {c:'The electron is now being removed from a positive ion. With less repulsion between electrons it sits closer to the nucleus, so the attraction is stronger.',d:1400},
+    {c:'More energy must be supplied to overcome this stronger attraction.',d:2800},
+    {c:'1 mole of Mg²⁺(g) formed. The 2nd IE is almost twice the 1st IE.',d:900}],
+  frac(st,p){return st<3?0:st==3?p:1},
+  draw(st,p,t){const cx=290,cy=285,R=[44,88,130];
+    const shA=st==0?0:st==1?p:1;
+    if(st==0){ctx.save();ctx.setLineDash([6,6]);circle(cx,cy,140,null,C.muted,1.4);ctx.restore();text('outer shell in the Mg atom',cx,cy-152,{s:13,w:600,c:C.muted,al:.9})}
+    shieldBand(cx,cy,106,st<4?shA:.4);
+    (st<4?R:R.slice(0,2)).forEach(r=>circle(cx,cy,r,null,C.ring,1.4));nucleus(cx,cy,'12+');
+    const gl=st==1?p:st==2||st==3?.5:0;ring(cx,cy,R[0],2,t*.8,gl);ring(cx,cy,R[1],8,t*.45,gl);
+    const ex=st<3?cx+R[2]:st==3?lerp(cx+R[2],655,ease(p)):655,ey=st==4?cy+4*Math.sin(t*1.5):cy;
+    if(st>=2&&st<4)attraction(cx,ex,cy,R[2],st==2?p:1,1.45,'stronger attraction');
+    electron(ex,ey,1,st>=1&&st<4?1:0);
+    if(st==2){const al=p;[['12 protons, only 11 electrons'],['less repulsion between electrons'],['smaller ion: electron closer to nucleus']].forEach((l,i)=>text('• '+l[0],468,110+i*26,{a:'left',s:14.5,w:600,c:C.accent,al}))}
+    if(st==3){const al=p<.85?1:(1-p)/.15;wavy(ex-80,cy-130,ex-10,cy-14,C.endo,5,al,t*8);wavy(ex-20,cy-140,ex+2,cy-16,C.endo,5,al,t*8+1.5);text('more energy in',ex-80,cy-146,{s:16,w:700,c:C.endo,al})}
+    if(st>=1&&st<4)text('10 inner electrons shield (same as for 1st IE)',cx,cy+176,{s:14,w:600,c:C.accent,al:shA});
+    if(st<4)bracketIon(cx,cy,150,'+');
+    if(st==4){bracketIon(cx,cy,108,'2+',p);text('Mg²⁺(g)   2,8',cx,cy+134,{s:18,w:700,al:p});text('e⁻(g)',655,cy-28,{s:17,w:700,c:C.elec});
+      const bx=440,by=400,bw=240*p;text('1st IE',bx,by,{a:'left',s:14,w:700});ctx.fillStyle=tint(C.endo,.45);ctx.fillRect(bx+54,by-9,bw*738/1451,18);text('738',bx+60+bw*738/1451,by,{a:'left',s:14,w:700,c:C.endo,al:p});
+      text('2nd IE',bx,by+30,{a:'left',s:14,w:700});ctx.fillStyle=C.endo;ctx.fillRect(bx+54,by+21,bw*.72,18);text('1451',bx+60+bw*.72,by+30,{a:'left',s:14,w:700,c:C.endo,al:p});
+      text('kJ mol⁻¹',bx+54,by+58,{a:'left',s:13,w:600,c:C.muted,al:p})}
+    tag(st<4?'Mg⁺(g)   2,8,1':'Mg²⁺(g) + e⁻(g)')}};
+
+/* ---------- scene: 1st EA (O / Cl) ---------- */
+const OUT6=[1,2,3,5,6,7].map(k=>k*Math.PI/4), OUT7=[1,2,3,4,5,6,7].map(k=>k*Math.PI/4);
+const ATOM={O:{nm:'oxygen',R:[42,100],inner:[2],p:8,sh:64,conf:'2,6',ion:'2,7',v:-141,nIn:2},
+            Cl:{nm:'chlorine',R:[38,72,108],inner:[2,8],p:17,sh:90,conf:'2,8,7',ion:'2,8,8',v:-349,nIn:10}};
+function atomDraw(cx,cy,A,outer,t,shA,gl){shieldBand(cx,cy,A.sh,shA);A.R.forEach(r=>circle(cx,cy,r,null,C.ring,1.4));nucleus(cx,cy,A.p+'+');
+  A.inner.forEach((n,i)=>ring(cx,cy,A.R[i],n,t*(.8-.35*i),gl));const Ro=A.R[A.R.length-1],w=.04*Math.sin(t*.9);outer.forEach(a=>electron(cx+Ro*Math.cos(a+w),cy+Ro*Math.sin(a+w)))}
+function oAtom(cx,cy,outer,t,shA,gl){atomDraw(cx,cy,ATOM.O,outer,t,shA,gl)}
+const ea1={tab:'1st EA',opt:{el:'O'},
+  A(){return ATOM[this.opt.el]},
+  name(){return`First electron affinity of ${this.A().nm}`},
+  eq(){const e=this.opt.el;return`${e}(g) + e<sup>−</sup> → ${e}<sup>−</sup>(g)`},
+  def(){return'The enthalpy change when <b>1 mole of gaseous atoms</b> gains <b>1 mole of electrons</b> to form 1 mole of gaseous 1− ions.'},
+  dH(){return this.A().v},
+  key(){return'Exothermic: the incoming electron is attracted to the nucleus, so energy is released as it is gained.'},
+  energy(){const e=this.opt.el;return{from:`${e}(g) + e⁻(g)`,to:`${e}⁻(g)`,dH:this.A().v}},
+  get stages(){const e=this.opt.el,A=this.A();return[
+    {c:`A gaseous ${e} atom (${A.conf}) and a free electron some distance away.`},
+    {c:`The electron is attracted to the ${A.p}+ nucleus. ${A.nIn==2?'Only the 2 inner electrons shield it, so the attraction is felt strongly.':'The 10 inner electrons shield it, but the attraction is still strong.'}`,d:2200},
+    {c:'The electron enters the outer shell. A new electrostatic attraction forms, so energy is released.',d:2200},
+    {c:`1 mole of ${e}⁻(g) ions formed: exothermic.`,d:900}]},
+  frac(st,p){return st<2?0:st==2?p:1},
+  panel(el){chipPanel(el,this,'el','Element',[['O','O'],['Cl','Cl']])},
+  draw(st,p,t){const e=this.opt.el,A=this.A(),cx=280,cy=285,Ro=A.R[A.R.length-1],land=cx+Ro,near=land+110;
+    const shA=st==0?0:st==1?p:st==2?1:.4;
+    atomDraw(cx,cy,A,e=='O'?OUT6:OUT7,t,shA,st>0&&st<3?.5*shA:0);
+    const ex=st==0?650:st==1?lerp(650,near,ease(p)):st==2?lerp(near,land,ease(p)):land,ey=st==0?cy+5*Math.sin(t*1.3):cy;
+    if(st>=1&&st<3)attraction(cx,ex,cy,Ro,st==1?clamp(p*2,0,1):1-clamp((p-.7)/.3,0,1),1,'attraction to nucleus');
+    electron(ex,ey,1,st<3?1:0);
+    if(st==0)text('e⁻',ex,ey-24,{s:16,w:700,c:C.elec});
+    if(st>=1&&st<3)text(`${A.nIn} inner electrons shield`,cx,cy+Ro+28,{s:14,w:600,c:C.accent,al:shA});
+    const ra=st==2?clamp((p-.45)/.3,0,1):st==3?1:0;
+    if(ra>0){waves(land,cy,t,ra);wavy(land+18,cy-20,land+100,cy-110,C.exo,4,ra,t*8);wavy(land+18,cy+20,land+100,cy+110,C.exo,4,ra,t*8);text('energy released',land+112,cy-126,{a:'left',s:16,w:700,c:C.exo,al:ra})}
+    if(st==3){bracketIon(cx,cy,Ro+18,'−',p);text(`${e}⁻(g)   ${A.ion}`,cx,cy+Ro+46,{s:18,w:700,al:p})}
+    tag(st<3?`${e}(g)   ${A.conf}`:`${e}⁻(g)`)}};
+
+/* ---------- scene: 2nd EA O ---------- */
+function repulsion(edge,ex,cy,al){if(al<=0)return;const g=Math.max(8,ex-edge);const s=Math.min(1.5,70/g);const len=18+22*s,w=1.5+3*s;
+  arrow(ex+11,cy,ex+11+len,cy,C.endo,w,10+4*s,al);arrow(edge-4,cy,edge-4-len,cy,C.endo,w,10+4*s,al);
+  text('repulsion',(edge+ex)/2,cy-26,{s:15,w:700,c:C.endo,al,bg:'rgba(251,248,242,.9)'})}
+const ea2={tab:'2nd EA (O)',
+  name(){return'Second electron affinity of oxygen'},
+  eq(){return'O<sup>−</sup>(g) + e<sup>−</sup> → O<sup>2−</sup>(g)'},
+  def(){return'The enthalpy change when <b>1 mole of gaseous 1− ions</b> gains <b>1 mole of electrons</b> to form 1 mole of gaseous 2− ions.'},
+  dH(){return 798},
+  key(){return'Endothermic: the electron is added to a negative ion. Energy is needed to overcome the repulsion between O⁻ and e⁻.'},
+  energy(){return{from:'O⁻(g) + e⁻(g)',to:'O²⁻(g)',dH:798}},
+  stages:[{c:'O⁻(g) has 9 electrons but only 8 protons, so it carries an overall negative charge.'},
+    {c:'An approaching electron is repelled by the negative ion. On its own it is pushed back.',d:2600},
+    {c:'Energy must be supplied to force the electron in against the repulsion.',d:2800},
+    {c:'1 mole of O²⁻(g) ions formed: endothermic.',d:900}],
+  frac(st,p){return st<2?0:st==2?p:1},
+  draw(st,p,t){const cx=280,cy=285,edge=cx+118;
+    oAtom(cx,cy,OUT7,t,0,0);
+    const ex=st==0?650:st==1?650-150*Math.sin(Math.PI*p):st==2?lerp(650,380,ease(p)):380,ey=st==0?cy+5*Math.sin(t*1.3):cy;
+    if(st==1)repulsion(edge,ex,cy,clamp(p*3,0,1)*clamp(1.4-Math.abs(p-.5)*1.2,0,1)+.25);
+    if(st==2)repulsion(edge,ex,cy,clamp((ex-edge-14)/40,0,1));
+    electron(ex,ey,1,st<3?1:0);
+    if(st==0)text('e⁻',ex,ey-24,{s:16,w:700,c:C.elec});
+    if(st==2){const al=p<.85?1:(1-p)/.15;wavy(ex+95,cy-115,ex+12,cy-14,C.endo,4.5,al,t*8);text('energy in',ex+100,cy-130,{s:16,w:700,c:C.endo,al})}
+    bracketIon(cx,cy,118,st<3?'−':'2−');
+    if(st==1)text('both negative',(edge+ex)/2,cy+30,{s:14,w:600,c:C.endo,al:clamp(p*3,0,1)});
+    if(st==3){text('O²⁻(g)   2,8',cx,cy+146,{s:18,w:700,al:p});
+      callout([{t:'The incoming electron is repelled by the negative O⁻ ion.',b:1,c:C.accent},
+        {t:'The energy needed to overcome this repulsion is greater than any energy released by attraction to the nucleus.'},
+        {t:'So the 2nd electron affinity is endothermic: +798 kJ mol⁻¹.',b:1,c:C.endo}],p)}
+    tag(st<3?'O⁻(g)   2,7':'O²⁻(g)')}};
+
+/* ---------- scene: lattice enthalpy ---------- */
+function mulberry(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const layCache={};
+function layout(cat,an){const key=cat+an;if(layCache[key])return layCache[key];
+  const c=IONS[cat],a=IONS[an];let nc=-a.z,na=c.z;const g=gcd(nc,na);nc/=g;na/=g;
+  let s=c.r+a.r;if(na>nc)s=Math.max(s,2*a.r);if(nc>na)s=Math.max(s,2*c.r);s*=0.2*1.02;
+  const rnd=mulberry(key.length*977+key.charCodeAt(0)*31+key.charCodeAt(key.length-1));
+  const cells=[...Array(24).keys()];for(let i=23;i>0;i--){const j=Math.floor(rnd()*(i+1));[cells[i],cells[j]]=[cells[j],cells[i]]}
+  const ions=[];let k=0;
+  for(let j=0;j<4;j++)for(let i=0;i<6;i++){
+    const type=nc==na?((i+j)%2==0?'c':'a'):na>nc?((i+2*j)%3==0?'c':'a'):((i+2*j)%3==0?'a':'c');
+    const ion=type=='c'?c:a;const cell=cells[k];
+    ions.push({ion,lat:[365+(i-2.5)*s,250+(j-1.5)*s],gas:[50+105*(cell%6+.5)+(rnd()-.5)*40,75+85*(Math.floor(cell/6)+.5)+(rnd()-.5)*40],i:k});k++}
+  const rmax=Math.max(c.r,a.r)*.2;
+  const F=`${cat}${nc>1?nc:''}${an}${na>1?na:''}`;
+  const L={ions,nc,na,F,cx:365,cy:250,minX:365-2.5*s-rmax,maxX:365+2.5*s+rmax,minY:250-1.5*s-rmax,maxY:250+1.5*s+rmax};
+  return layCache[key]=L}
+const lattice={tab:'Lattice enthalpy',opt:{cat:'Na',an:'Cl',mode:'form'},
+  L(){return layout(this.opt.cat,this.opt.an)},
+  gasStr(html){const{cat,an}=this.opt,L=this.L(),c=IONS[cat],a=IONS[an];
+    return html?`${L.nc>1?L.nc:''}${cat}<sup>${SUPH[c.z]}</sup>(g) + ${L.na>1?L.na:''}${an}<sup>${SUPH[a.z]}</sup>(g)`
+               :`${L.nc>1?L.nc:''}${cat}${SUP[c.z]}(g) + ${L.na>1?L.na:''}${an}${SUP[a.z]}(g)`},
+  name(){return this.opt.mode=='form'?'Lattice enthalpy of formation':'Lattice enthalpy of dissociation'},
+  eq(){const F=htmlF(this.L().F)+'(s)';return this.opt.mode=='form'?`${this.gasStr(1)} → ${F}`:`${F} → ${this.gasStr(1)}`},
+  def(){return this.opt.mode=='form'?'The enthalpy change when <b>1 mole of a solid ionic compound</b> is formed from its gaseous ions.'
+    :'The enthalpy change when <b>1 mole of a solid ionic compound</b> is broken up into its gaseous ions.'},
+  dH(){const v=LE[this.L().F];return this.opt.mode=='form'?-v:v},
+  key(){return'Formation is exothermic; dissociation is endothermic. Same size, opposite sign. Higher ionic charge and smaller radius give a higher charge density, a stronger attraction and a larger lattice enthalpy.'},
+  energy(){const F=canvF(this.L().F)+'(s)',g=this.gasStr(0);return this.opt.mode=='form'?{from:g,to:F,dH:this.dH()}:{from:F,to:g,dH:this.dH()}},
+  get stages(){const F=canvF(this.L().F);return this.opt.mode=='form'?[
+    {c:`1 mole of ${F} worth of gaseous ions, far apart: no attraction between them yet.`},
+    {c:'Oppositely charged ions attract each other and move together.',d:2600},
+    {c:'The ionic lattice forms. Electrostatic attractions are made, so energy is released.',d:2000},
+    {c:`1 mole of solid ${F} formed: exothermic.`,d:900}]:[
+    {c:`1 mole of solid ${F}: ions held in a lattice by strong electrostatic attraction.`},
+    {c:'Energy is supplied to overcome the attractions between the oppositely charged ions.',d:1800},
+    {c:'The ions separate completely into gaseous ions, far apart.',d:2600},
+    {c:`1 mole of ${F} broken into gaseous ions: endothermic.`,d:900}]},
+  frac(st,p){return this.opt.mode=='form'?(st==0?0:st==1?.25*p:st==2?.25+.75*p:1):(st==0?0:st==1?.3*p:st==2?.3+.7*p:1)},
+  panel(el){const o=this.opt,L=this.L(),c=IONS[o.cat],a=IONS[o.an];
+    const chip=(k,v,lab)=>`<button class="chip" data-k="${k}" data-v="${v}" aria-pressed="${o[k]==v}">${lab}</button>`;
+    const row=ion=>`<tr><td><b>${ion.sym}<sup>${SUPH[ion.z]}</sup></b></td><td>${SUPH[ion.z]}</td><td>${ion.r}</td><td>${chargeDensity(ion).toFixed(ion.z==2?0:1)}</td></tr>`;
+    el.innerHTML=`<div class="cmp">
+      <div><div class="lbl">Change</div><div class="chips">${chip('mode','form','Formation')}${chip('mode','diss','Dissociation')}</div></div>
+      <div><div class="lbl">Cation</div><div class="chips">${chip('cat','Na','Na⁺')}${chip('cat','K','K⁺')}${chip('cat','Mg','Mg²⁺')}</div></div>
+      <div><div class="lbl">Anion</div><div class="chips">${chip('an','Cl','Cl⁻')}${chip('an','Br','Br⁻')}${chip('an','O','O²⁻')}</div></div>
+      <table><thead><tr><th>Ion</th><th>Charge</th><th>Radius / pm</th><th>Charge density / C mm⁻³</th></tr></thead><tbody>${row(c)}${row(a)}</tbody></table>
+      <div><div class="lbl">Lattice enthalpy magnitude / kJ mol⁻¹</div><div class="bars">${LE_ORDER.map(k=>`<div class="bar${k==L.F?' cur':''}"><span>${htmlF(k)}</span><span class="t"><span class="f" style="display:block;width:${(LE[k]/3791*100).toFixed(1)}%"></span></span><span>${LE[k]}</span></div>`).join('')}</div></div>
+      <p class="note">Ions drawn to scale (ionic radii). MgO value chosen so the MgO Born–Haber cycle closes; data-book values vary slightly by source.</p></div>`;
+    el.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{o[b.dataset.k]=b.dataset.v;setStage(0)})},
+  draw(st,p,t){const o=this.opt,L=this.L(),form=o.mode=='form',n=L.ions.length;
+    const sepOf=i=>{const q=ease(clamp(p*1.5-(i/n)*.5,0,1));return form?(st==0?1:st==1?1-q:0):(st<2?0:st==2?q:1)};
+    const vib=form?.8:(st==1?.8+3.5*p:st==2?4.3:.8);
+    const draw1=(I,s)=>{const gx=I.gas[0]+8*Math.sin(t*.9+I.i),gy=I.gas[1]+8*Math.cos(t*.8+I.i*1.7);
+      const v=vib*(1-s),x=lerp(I.lat[0],gx,s)+v*Math.sin(t*21+I.i*1.9),y=lerp(I.lat[1],gy,s)+v*Math.cos(t*17+I.i*2.3);
+      const r=I.ion.r*.2;ball(x,y,r,I.ion.col);
+      text(I.ion.sym+SUP[I.ion.z],x,y+1,{s:clamp(r*.55,10,16),w:700,c:lum(I.ion.col)<.5?'#fff':C.ink})};
+    const order=[...L.ions].sort((a,b)=>b.ion.r-a.ion.r);
+    order.forEach(I=>draw1(I,sepOf(I.i)));
+    const{minX,maxX,minY,maxY,cx,cy}=L,ph=t*8;
+    if(form&&st>=2){const ra=st==2?clamp(p*2,0,1):1;waves(cx,cy,t,ra*.8);
+      wavy(cx,minY-6,cx,minY-62,C.exo,4,ra,ph);wavy(cx,maxY+6,cx,maxY+62,C.exo,4,ra,ph);wavy(minX-6,cy,minX-62,cy,C.exo,4,ra,ph);wavy(maxX+6,cy,maxX+62,cy,C.exo,4,ra,ph);
+      text('energy released',cx+14,minY-40,{a:'left',s:16,w:700,c:C.exo,al:ra})}
+    if(!form&&(st==1||st==2)){const ha=st==1?clamp(p*2,0,1):1-clamp(p*2.5,0,1);
+      wavy(cx,minY-64,cx,minY-8,C.endo,4,ha,ph);wavy(cx,maxY+64,cx,maxY+8,C.endo,4,ha,ph);wavy(minX-64,cy,minX-8,cy,C.endo,4,ha,ph);wavy(maxX+64,cy,maxX+8,cy,C.endo,4,ha,ph);
+      text('energy in',cx+14,minY-40,{a:'left',s:16,w:700,c:C.endo,al:ha})}
+    const F=canvF(L.F),gasNow=form?st<2&&!(st==1&&p>.8):st>=2&&!(st==2&&p<.4);
+    tag(gasNow?`${this.gasStr(0)}: gaseous ions`:`${F}(s): ionic lattice`);
+    if(st<3)corner('ionic radii drawn to scale',1,C.muted);
+    if(st==3){const v=LE[L.F],rank=[...LE_ORDER].sort((a,b)=>LE[b]-LE[a]).indexOf(L.F)+1,c=IONS[o.cat],a=IONS[o.an];
+      callout([{t:`${F}: lattice enthalpy of ${form?'formation':'dissociation'} = ${form?'−':'+'}${v} kJ mol⁻¹  (${rank===1?'largest':'#'+rank} of the 9)`,b:1,c:form?C.exo:C.endo},
+        {t:`${c.sym}${SUP[c.z]}: charge ${SUPH[c.z]}, radius ${c.r} pm      ${a.sym}${SUP[a.z]}: charge ${SUPH[a.z]}, radius ${a.r} pm`},
+        {t:'Higher charges + smaller ions → higher charge density → stronger attraction → larger lattice enthalpy.',b:1,c:C.accent}],p)}}};
+
+/* ---------- scene: full Born–Haber cycle ---------- */
+const inst=(s,opt)=>{const o=Object.create(s);o.opt={...(s.opt||{}),...opt};return o};
+const fmt=v=>(v>0?'+':'−')+Math.abs(v);
+const CYC={
+  NaCl:{F:'NaCl',dfH:-411,L0:'Na(s) + ½Cl₂(g)',eq:'Na(s) + ½Cl<sub>2</sub>(g) → NaCl(s)',steps:[
+    {n:'ΔatH(Na)',v:107,to:'Na(g) + ½Cl₂(g)',sc:inst(metal,{m:'Na'})},
+    {n:'ΔatH(Cl)',v:122,to:'Na(g) + Cl(g)',sc:inst(diatomic,{el:'Cl'})},
+    {n:'IE₁(Na)',v:496,to:'Na⁺(g) + e⁻ + Cl(g)',sc:inst(ie1,{m:'Na'})},
+    {n:'EA₁(Cl)',v:-349,to:'Na⁺(g) + Cl⁻(g)',sc:inst(ea1,{el:'Cl'})},
+    {n:'ΔlattH(NaCl)',v:-787,to:'NaCl(s)',sc:inst(lattice,{cat:'Na',an:'Cl',mode:'form'})}]},
+  MgO:{F:'MgO',dfH:-602,L0:'Mg(s) + ½O₂(g)',eq:'Mg(s) + ½O<sub>2</sub>(g) → MgO(s)',steps:[
+    {n:'ΔatH(Mg)',v:148,to:'Mg(g) + ½O₂(g)',sc:inst(metal,{m:'Mg'})},
+    {n:'ΔatH(O)',v:249,to:'Mg(g) + O(g)',sc:inst(diatomic,{el:'O'})},
+    {n:'IE₁(Mg)',v:738,to:'Mg⁺(g) + e⁻ + O(g)',sc:inst(ie1,{m:'Mg'})},
+    {n:'IE₂(Mg)',v:1451,to:'Mg²⁺(g) + 2e⁻ + O(g)',sc:inst(ie2,{})},
+    {n:'EA₁(O)',v:-141,to:'Mg²⁺(g) + e⁻ + O⁻(g)',sc:inst(ea1,{el:'O'})},
+    {n:'EA₂(O)',v:798,to:'Mg²⁺(g) + O²⁻(g)',sc:inst(ea2,{})},
+    {n:'ΔlattH(MgO)',v:-3845,to:'MgO(s)',sc:inst(lattice,{cat:'Mg',an:'O',mode:'form'})}]}};
+
+function along(pts,u){const seg=[];let L=0;for(let i=1;i<pts.length;i++){const d=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]);seg.push(d);L+=d}
+  let r=u*L;for(let i=0;i<seg.length;i++){if(r<=seg[i]){const f=seg[i]?r/seg[i]:0;return[lerp(pts[i][0],pts[i+1][0],f),lerp(pts[i][1],pts[i+1][1],f)]}r-=seg[i]}return pts[pts.length-1]}
+
+function drawCycle(D,k,p,t,mode){
+  const n=D.steps.length,E=[0];D.steps.forEach(S=>E.push(E[E.length-1]+S.v));
+  const Emax=Math.max(...E),Emin=Math.min(...E),Y=v=>52+(Emax-v)/(Emax-Emin)*418;
+  const sp=80,X=D.steps.map((_,i)=>i<n-1?172+i*sp:172+(n-1)*sp+12),XF=96,LX=728,XB=700;
+  const prog=i=>mode=='start'?0:mode=='end'?1:i<k?1:i==k?ease(p):0;
+  const lvlA=i=>i==0||i==n?1:clamp((prog(i-1)-.75)/.25,0,1);
+  const BG='rgba(251,248,242,.92)';
+  tag(`Born–Haber cycle: ${D.F}`);
+  arrow(40,500,40,60,C.muted,2,10);text('enthalpy',50,66,{a:'left',s:13,w:600,c:C.muted});
+  const ord=[...Array(n+1).keys()].sort((a,b)=>Y(E[a])-Y(E[b])),LY=[];let prev=-99;
+  ord.forEach(i=>{const y=Math.max(Y(E[i]),prev+20);LY[i]=y;prev=y});
+  for(let i=0;i<=n;i++){const al=lvlA(i);if(al<=0)continue;const y=Y(E[i]),xa=i==0||i==n?66:X[i-1]-26;
+    ctx.save();ctx.globalAlpha=al;ctx.strokeStyle=C.ink;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(xa,y);ctx.lineTo(XB,y);ctx.stroke();
+    ctx.lineWidth=1.2;ctx.strokeStyle=C.muted;ctx.beginPath();ctx.moveTo(XB,y);ctx.lineTo(XB+6,y);ctx.lineTo(LX-6,LY[i]);ctx.stroke();ctx.restore();
+    text(i==0?D.L0:D.steps[i-1].to,LX,LY[i],{a:'left',s:14.5,w:600,al})}
+  const fA=mode=='start'?ease(p):1,yf0=Y(0),yf1=Y(D.dfH);
+  arrow(XF,yf0,XF,lerp(yf0,yf1,fA),C.exo,mode=='start'?5:3.5,mode=='start'?15:12);
+  const fl=clamp((fA-.6)/.4,0,1);text(`ΔfH(${D.F})`,XF+9,(yf0+yf1)/2-9,{a:'left',s:12.5,w:700,al:fl,bg:BG});text(fmt(D.dfH),XF+9,(yf0+yf1)/2+9,{a:'left',s:14.5,w:700,c:C.exo,al:fl,bg:BG});
+  D.steps.forEach((S,i)=>{const pr=prog(i);if(pr<=0)return;const y0=Y(E[i]),y1=Y(E[i+1]),col=S.v>0?C.endo:C.exo,cur=mode=='step'&&i==k;
+    arrow(X[i],y0,X[i],lerp(y0,y1,pr),col,cur?5:3.5,cur?15:12);
+    const al=clamp((pr-.6)/.4,0,1),mid=(y0+y1)/2,last=i==n-1,lx=last?X[i]-9:X[i]+9,a=last?'right':'left';
+    text(S.n,lx,mid-9,{a,s:12.5,w:700,al,bg:BG});text(fmt(S.v),lx,mid+9,{a,s:14.5,w:700,c:col,al,bg:BG})});
+  if(mode=='end'){const u=((t*.2)%1.25)/1.1,uu=clamp(u,0,1);
+    const ind=[[X[0],Y(0)]];for(let i=0;i<n;i++){ind.push([X[i],Y(E[i+1])]);if(i<n-1)ind.push([X[i+1],Y(E[i+1])])}
+    const[a1,b1]=along([[XF,yf0],[XF,yf1]],uu),[a2,b2]=along(ind,uu);
+    circle(a1,b1,14,'rgba(214,160,40,.4)');circle(a1,b1,7,C.accent);circle(a2,b2,14,'rgba(214,160,40,.4)');circle(a2,b2,7,C.accent);
+    text('same start, same finish → same total ΔH',XB,Y(D.dfH)+26,{a:'right',s:14,w:700,c:C.accent,bg:BG})}
+  text('drawn to scale · values in kJ mol⁻¹',940,544,{a:'right',s:13,w:600,c:C.muted})}
+
+const cycle={tab:'Full cycle',opt:{cmp:'NaCl',anim:'on'},_c:{},
+  D(){return CYC[this.opt.cmp]},
+  list(){const key=this.opt.cmp+this.opt.anim;if(this._c[key])return this._c[key];const D=this.D(),n=D.steps.length,L=[];
+    L.push({type:'start',c:`The cycle starts with the elements in their standard states. ΔfH(${D.F}) = ${fmt(D.dfH)} kJ mol⁻¹ is the direct route to 1 mole of solid ${D.F}.`,d:1600});
+    D.steps.forEach((S,k)=>{const pre=`<b>Step ${k+1} of ${n}:</b> `;
+      if(this.opt.anim=='on')S.sc.stages.forEach((sg,j)=>L.push({type:'sub',k,sc:S.sc,st:j,c:pre+sg.c,d:sg.d}));
+      L.push({type:'step',k,sc:S.sc,c:pre+`add ${S.n} = ${fmt(S.v)} kJ mol⁻¹ to the cycle. ${S.v>0?'Endothermic, so the arrow goes up.':'Exothermic, so the arrow goes down.'}`,d:1500})});
+    L.push({type:'end',c:`Hess's law: both routes start at ${D.L0} and finish at ${D.F}(s), so ΔfH equals the sum of the indirect route.`,d:1});
+    return this._c[key]=L},
+  get stages(){return this.list()},
+  E(st){return this.list()[st]},
+  name(st){const e=this.E(st),D=this.D();return e.type=='start'?`Born–Haber cycle for ${D.F}`:e.type=='end'?`Hess's law: lattice enthalpy of ${D.F}`:e.sc.name()},
+  eq(st){const e=this.E(st),D=this.D();return e.type=='start'?D.eq:e.type=='end'?'ΔfH = Σ indirect route':e.sc.eq()},
+  def(st){const e=this.E(st);return e.type=='start'?'Enthalpy of formation: the enthalpy change when <b>1 mole of a compound</b> is formed from its elements in their standard states under standard conditions.'
+    :e.type=='end'?'The enthalpy change for a reaction is <b>independent of the route taken</b>, provided the start and finish are the same.':e.sc.def()},
+  dH(st){const e=this.E(st),D=this.D();return e.type=='start'?D.dfH:e.type=='end'?D.steps[D.steps.length-1].v:e.sc.dH()},
+  key(st){const e=this.E(st),D=this.D();if(e.type=='start')return'Build the indirect route one step at a time: gaseous atoms, then gaseous ions, then the solid lattice.';
+    if(e.type=='end')return`Rearranged, the lattice enthalpy is the unknown: ${D.steps[D.steps.length-1].n} = ΔfH − (sum of the other steps).`;return e.sc.key()},
+  energy(st){const e=this.E(st);return e.type=='sub'?e.sc.energy():null},
+  frac(st,p){const e=this.E(st);return e.type=='sub'?e.sc.frac(e.st,p):0},
+  panel(el,st){const o=this.opt,D=this.D(),L=this.list(),e=L[st],n=D.steps.length,cur=e.type=='start'?-1:e.type=='end'?n:e.k;
+    const chip=(k,v,lab)=>`<button class="chip" data-k="${k}" data-v="${v}" aria-pressed="${o[k]==v}">${lab}</button>`;
+    const state=k=>e.type=='end'||k<cur||(e.type=='step'&&k==cur)?'done':k==cur?'cur':'todo';
+    const first=k=>L.findIndex(x=>x.k===k);
+    const cls=v=>v>0?'endo':'exo';
+    let rows=`<tr class="${e.type=='start'?'cur':'done'}" data-go="0"><td>ΔfH(${D.F}) <span class="note">direct route</span></td><td class="exo">${fmt(D.dfH)}</td></tr>`;
+    D.steps.forEach((S,k)=>{const s=state(k);rows+=`<tr class="${s}" data-go="${first(k)}"><td>${S.n}</td><td class="${cls(S.v)}">${s=='todo'?'?':fmt(S.v)}</td></tr>`});
+    const lat=D.steps[n-1],oth=D.steps.slice(0,-1),sum=oth.reduce((a,S)=>a+S.v,0);
+    const calc=e.type=='end'?`<div class="calc"><div class="lbl">Calculation</div>${lat.n} = ΔfH − (${oth.map(S=>S.n).join(' + ')})<br>= ${fmt(D.dfH)} − (${oth.map((S,i)=>i?(S.v>0?'+ ':'− ')+Math.abs(S.v):fmt(S.v)).join(' ')})<br>= ${fmt(D.dfH)} − (${fmt(sum)})<br><b>= ${fmt(lat.v)} kJ mol⁻¹</b></div>`
+      :'<p class="note">Click a row to jump to that step.</p>';
+    el.innerHTML=`<div class="cmp">
+      <div><div class="lbl">Compound</div><div class="chips">${chip('cmp','NaCl','NaCl')}${chip('cmp','MgO','MgO')}</div></div>
+      <div><div class="lbl">Particle animations</div><div class="chips">${chip('anim','on','Show')}${chip('anim','off','Cycle only')}</div></div>
+      <table class="cyc"><thead><tr><th>Step</th><th>ΔH / kJ mol⁻¹</th></tr></thead><tbody>${rows}</tbody></table>${calc}</div>`;
+    el.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{o[b.dataset.k]=b.dataset.v;setStage(0)});
+    el.querySelectorAll('tr[data-go]').forEach(r=>r.onclick=()=>setStage(+r.dataset.go))},
+  draw(st,p,t){const e=this.E(st),D=this.D();if(e.type=='sub')return e.sc.draw(e.st,p,t);
+    drawCycle(D,e.type=='start'?-1:e.type=='end'?D.steps.length:e.k,p,t,e.type)}};
+
+/* ---------- engine ---------- */
+const SCENES=[metal,diatomic,ie1,ie2,ea1,ea2,lattice,cycle];
+let si=0,st=0,t0=performance.now();
+const $=id=>document.getElementById(id);
+function sc(){return SCENES[si]}
+function renderTabs(){$('tabs').innerHTML=SCENES.map((s,i)=>`<button class="tab" role="tab" aria-selected="${i==si}" data-i="${i}">${s.tab}</button>`).join('');
+  $('tabs').querySelectorAll('.tab').forEach(b=>b.onclick=()=>setScene(+b.dataset.i))}
+function renderPanel(){const s=sc(),stages=s.stages,dH=s.dH(st);
+  $('name').textContent=s.name(st);$('eq').innerHTML=s.eq(st);$('def').innerHTML=s.def(st);
+  const d=$('dh');d.className='dh '+(dH>0?'endo':'exo');d.innerHTML=`ΔH = ${dH>0?'+':'−'}${Math.abs(dH)} kJ mol<sup>−1</sup><small>${dH>0?'endothermic':'exothermic'}</small>`;
+  $('key').innerHTML=s.key(st);$('cap').innerHTML=stages[st].c;
+  const ex=$('extra');ex.innerHTML='';if(s.panel)s.panel(ex,st);
+  $('dots').innerHTML=`<span>Step ${st+1} of ${stages.length}</span>`+(stages.length>12
+    ?`<span class="prog"><span style="width:${(st/(stages.length-1)*100).toFixed(1)}%"></span></span>`
+    :stages.map((_,i)=>`<span class="dot${i<=st?' on':''}"></span>`).join(''));
+  $('back').disabled=st==0;$('next').disabled=st==stages.length-1}
+function setScene(i){si=i;st=0;t0=performance.now();renderTabs();renderPanel()}
+function setStage(s){st=clamp(s,0,sc().stages.length-1);t0=performance.now();renderPanel()}
+window.setStage=setStage;
+$('next').onclick=()=>setStage(st+1);$('back').onclick=()=>setStage(st-1);$('replay').onclick=()=>setStage(st);$('reset').onclick=()=>setStage(0);
+addEventListener('keydown',e=>{if(e.target.closest&&e.target.closest('button')&&(e.key===' '||e.key==='Enter'))return;
+  if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();setStage(st+1)}else if(e.key==='ArrowLeft'){e.preventDefault();setStage(st-1)}else if(e.key==='r'||e.key==='R')setStage(st)});
+let dpr=1,S=1;
+function resize(){const w=cv.clientWidth||W;dpr=window.devicePixelRatio||1;cv.width=Math.round(w*dpr);cv.height=Math.round(w*H/W*dpr);S=w/W}
+new ResizeObserver(resize).observe(cv);resize();
+function frame(now){const s=sc(),d=reduce?1:(s.stages[st].d||1);const p=clamp((now-t0)/d,0,1),t=now/1000;
+  ctx.setTransform(S*dpr,0,0,S*dpr,0,0);ctx.fillStyle=C.panel;ctx.fillRect(0,0,W,H);
+  s.draw(st,p,t);const e=s.energy(st);if(e)energyPanel(e.from,e.to,e.dH,s.frac(st,p));requestAnimationFrame(frame)}
+renderTabs();renderPanel();requestAnimationFrame(frame);
+})();
+</script>
+
+</body></html>

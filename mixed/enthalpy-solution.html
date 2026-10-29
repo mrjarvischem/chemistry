@@ -1,0 +1,392 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Enthalpy of Solution Cycle</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: animation stage left with caption + step controls beneath; data sidebar right; stacks on narrow screens.
+   Light single-theme by design (matches the rest of the simulation set; projector-friendly cream/brown). */
+:root{
+  --paper:#F4EEE3; --panel:#FFFCF6; --ink:#33251A; --muted:#7B6753; --rule:#E3D7C4;
+  --accent:#8C4A1C; --accent-soft:#F3E4D3; --endo:#B23A2B; --exo:#1E7568;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  color-scheme:light;
+}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.45}
+.wrap{max-width:1380px;margin:0 auto;padding-block:16px 28px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px;margin-bottom:14px}
+h1{font-family:var(--serif);font-size:28px;margin:2px 0 0;font-weight:600;letter-spacing:-.01em;text-wrap:balance}
+.sub{color:var(--muted);font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:600}
+.tabs{display:flex;gap:4px;background:var(--rule);padding:4px;border-radius:10px;flex-wrap:wrap}
+.tab{border:0;background:transparent;font:600 14px var(--sans);color:var(--muted);padding:8px 14px;border-radius:7px;cursor:pointer}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{background:var(--panel);color:var(--ink);box-shadow:0 1px 2px rgba(60,40,20,.18)}
+.main{display:grid;grid-template-columns:minmax(0,1fr) 350px;gap:16px;align-items:start}
+@media (max-width:980px){.main{grid-template-columns:minmax(0,1fr)}}
+.stagebox{background:var(--panel);border:1px solid var(--rule);border-radius:12px;overflow:hidden;min-width:0}
+#stage{display:block;width:100%;height:auto;aspect-ratio:1000/560;max-width:100%}
+.capbar{display:flex;gap:12px 18px;align-items:center;border-top:1px solid var(--rule);padding:12px 14px;flex-wrap:wrap}
+.captxt{flex:1 1 320px;min-width:0}
+.stepno{font:700 11px var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:3px}
+.cap{font-size:17px;line-height:1.45;min-height:3em}
+.ctrls{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.btn{border:1px solid var(--rule);background:var(--paper);color:var(--ink);font:600 14px var(--sans);padding:9px 14px;border-radius:8px;cursor:pointer}
+.btn:hover{border-color:var(--muted)}
+.btn:disabled{opacity:.4;cursor:default}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#FFF8EF}
+.btn:focus-visible,.tab:focus-visible,.chip:focus-visible,input:focus-visible,tr.row:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.dots{display:flex;gap:5px;margin-right:6px}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--rule);border:0;padding:0;cursor:pointer}
+.dot.on{background:var(--accent)}
+aside{display:flex;flex-direction:column;gap:12px;min-width:0}
+.card{background:var(--panel);border:1px solid var(--rule);border-radius:12px;padding:14px}
+.card.key{background:var(--accent-soft);border-color:transparent}
+.lbl{font:700 11px var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips+.lbl{margin-top:12px}
+.chip{border:1px solid var(--rule);background:var(--paper);color:var(--ink);font:600 14px var(--sans);padding:6px 11px;border-radius:999px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--panel)}
+.name{font-family:var(--serif);font-size:20px;font-weight:600;margin:0 0 6px}
+.def{margin:0 0 10px;color:var(--ink)}
+.eq{font-family:var(--serif);font-size:17px;padding:8px 10px;background:var(--paper);border-radius:8px;margin-bottom:10px;overflow-x:auto}
+.dh{font:600 26px var(--serif);font-variant-numeric:tabular-nums}
+.dh small{font-size:14px;color:var(--muted);font-family:var(--sans);font-weight:500}
+.endo{color:var(--endo)} .exo{color:var(--exo)}
+#mini{display:block;width:100%;height:auto;aspect-ratio:320/180;margin-top:6px}
+.key p{margin:0}
+.key p+p{margin-top:8px}
+table.steps{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+table.steps td{padding:7px 4px;border-bottom:1px solid var(--rule);vertical-align:top}
+table.steps td:last-child{text-align:right;font-weight:700;white-space:nowrap}
+tr.row{cursor:pointer}
+tr.row:hover td{background:var(--paper)}
+tr.row.cur td{background:var(--accent-soft)}
+tr.total td{border-bottom:0;border-top:2px solid var(--ink);font-size:16px}
+.calc{margin-top:10px;font-family:var(--serif);font-size:16px;line-height:1.5}
+.data{display:grid;grid-template-columns:1fr 92px;gap:6px 10px;align-items:center}
+.data label{font-size:14px}
+.data input{width:100%;font:600 15px var(--sans);padding:6px 8px;border:1px solid var(--rule);border-radius:6px;background:var(--paper);color:var(--ink);text-align:right;font-variant-numeric:tabular-nums}
+.note{font-size:12.5px;color:var(--muted);margin-top:8px}
+.linkbtn{background:none;border:0;padding:0;color:var(--accent);font:600 13px var(--sans);text-decoration:underline;cursor:pointer;margin-top:8px}
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <div class="sub">AQA A-level Chemistry · 3.1.8 Thermodynamics</div>
+      <h1>Enthalpy of solution</h1>
+    </div>
+    <div class="tabs" role="tablist" id="tabs">
+      <button class="tab" role="tab" data-s="lattice" id="tab-lattice">Lattice enthalpy</button>
+      <button class="tab" role="tab" data-s="hydration" id="tab-hydration">Hydration enthalpy</button>
+      <button class="tab" role="tab" data-s="cycle" id="tab-cycle">Full cycle</button>
+    </div>
+  </header>
+
+  <div class="main">
+    <section class="stagebox">
+      <canvas id="stage" width="1000" height="560" aria-label="Animation"></canvas>
+      <div class="capbar">
+        <div class="captxt">
+          <div class="stepno" id="stepno">Step 1 of 4</div>
+          <div class="cap" id="cap"></div>
+        </div>
+        <div class="ctrls">
+          <div class="dots" id="dots"></div>
+          <button class="btn" id="back" aria-label="Previous step">◀ Back</button>
+          <button class="btn" id="replay">Replay</button>
+          <button class="btn primary" id="next">Next ▶</button>
+        </div>
+      </div>
+    </section>
+    <aside id="side"></aside>
+  </div>
+</div>
+
+<script>
+(()=>{
+const W=1000,H=560,RS=0.16;
+const SANS='system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif';
+const SERIF='"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif';
+const C={ink:'#33251A',muted:'#7B6753',rule:'#E3D7C4',panel:'#FFFCF6',paper:'#F4EEE3',endo:'#B23A2B',exo:'#1E7568',accent:'#8C4A1C',O:'#D04A3C',H:'#F4EFE6'};
+const reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- data (kJ mol⁻¹); ionic radii in pm ---------- */
+const DEF_ION={
+  Li:{sym:'Li',q:1,r:76,col:'#C0567A',hyd:-519},
+  Na:{sym:'Na',q:1,r:102,col:'#7357C2',hyd:-406},
+  K:{sym:'K',q:1,r:138,col:'#C47E25',hyd:-322},
+  Mg:{sym:'Mg',q:2,r:72,col:'#3A73BF',hyd:-1920},
+  Ca:{sym:'Ca',q:2,r:100,col:'#2B8F94',hyd:-1650},
+  F:{sym:'F',q:-1,r:133,col:'#8DAE2E',hyd:-506},
+  Cl:{sym:'Cl',q:-1,r:181,col:'#4C9439',hyd:-364},
+  Br:{sym:'Br',q:-1,r:196,col:'#99462A',hyd:-335}};
+const DEF_CMP={
+  NaCl:{cat:'Na',an:'Cl',n:1,L:787}, KCl:{cat:'K',an:'Cl',n:1,L:711}, LiCl:{cat:'Li',an:'Cl',n:1,L:853},
+  NaF:{cat:'Na',an:'F',n:1,L:918}, KBr:{cat:'K',an:'Br',n:1,L:679},
+  MgCl2:{cat:'Mg',an:'Cl',n:2,L:2526}, CaCl2:{cat:'Ca',an:'Cl',n:2,L:2258}};
+const clone=o=>JSON.parse(JSON.stringify(o));
+let ION=clone(DEF_ION),CMP=clone(DEF_CMP);
+
+const SUP={'1':'⁺','2':'²⁺','-1':'⁻','-2':'²⁻'};
+const SUPH={'1':'<sup>+</sup>','2':'<sup>2+</sup>','-1':'<sup>−</sup>','-2':'<sup>2−</sup>'};
+const it=id=>ION[id].sym+SUP[ION[id].q];
+const itH=id=>ION[id].sym+SUPH[ION[id].q];
+const fm=c=>ION[CMP[c].cat].sym+ION[CMP[c].an].sym+(CMP[c].n>1?'₂':'');
+const fmH=c=>ION[CMP[c].cat].sym+ION[CMP[c].an].sym+(CMP[c].n>1?'<sub>2</sub>':'');
+const nA=c=>CMP[c].n>1?CMP[c].n:'';
+const sg=v=>(v>0?'+':v<0?'−':'')+Math.abs(Math.round(v));
+const par=v=>v<0?'('+sg(v)+')':sg(v);
+const cls=v=>v>0?'endo':'exo';
+const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
+const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+const lerp=(a,b,t)=>a+(b-a)*t;
+function lerpAng(a,b,t){let d=((b-a+Math.PI)%(2*Math.PI)+2*Math.PI)%(2*Math.PI)-Math.PI;return a+d*t}
+function rng(seed){let s=seed>>>0;return()=>{s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function hash(str){let h=2166136261;for(const ch of str)h=Math.imul(h^ch.charCodeAt(0),16777619);return h>>>0}
+function mix(h,t,white){const n=parseInt(h.slice(1),16);let r=n>>16,g=n>>8&255,b=n&255;const v=white?255:0;return`rgb(${Math.round(r+(v-r)*t)},${Math.round(g+(v-g)*t)},${Math.round(b+(v-b)*t)})`}
+
+/* ---------- canvas ---------- */
+const cv=document.getElementById('stage'),ctx=cv.getContext('2d');
+function fitCanvas(c,w,h){const r=c.getBoundingClientRect();const d=window.devicePixelRatio||1;const pw=Math.max(1,Math.round(r.width*d)),ph=Math.max(1,Math.round(r.width*h/w*d));if(c.width!==pw||c.height!==ph){c.width=pw;c.height=ph}return[c.width/w,c.height/h]}
+
+function ball(x,y,r,col,edge){const g=ctx.createRadialGradient(x-r*.35,y-r*.35,r*.1,x,y,r);g.addColorStop(0,mix(col,.55,1));g.addColorStop(1,col);ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();ctx.strokeStyle=edge;ctx.lineWidth=1;ctx.stroke()}
+const ionR=(id,k=1)=>ION[id].r*RS*k;
+function drawIon(x,y,id,k=1){const I=ION[id],r=ionR(id,k);ball(x,y,r,I.col,mix(I.col,.35,0));
+  const fs=clamp(r*.62,11,26);ctx.font=`700 ${fs}px ${SANS}`;ctx.textAlign='center';ctx.textBaseline='middle';
+  const t=it(id);ctx.lineJoin='round';ctx.lineWidth=3.2;ctx.strokeStyle=mix(I.col,.5,0);ctx.strokeText(t,x,y+1);ctx.fillStyle='#fff';ctx.fillText(t,x,y+1)}
+const WG={L:13,rO:9,rH:5.5,half:104.5/2*Math.PI/180};
+function wAtoms(x,y,a,k){const L=WG.L*k;return{O:[x,y],H1:[x+L*Math.cos(a-WG.half),y+L*Math.sin(a-WG.half)],H2:[x+L*Math.cos(a+WG.half),y+L*Math.sin(a+WG.half)]}}
+function drawWater(x,y,a,k=1){const A=wAtoms(x,y,a,k);ball(A.H1[0],A.H1[1],WG.rH*k,C.H,'#A99C88');ball(A.H2[0],A.H2[1],WG.rH*k,C.H,'#A99C88');ball(x,y,WG.rO*k,C.O,mix(C.O,.35,0))}
+/* target for a water molecule in the hydration shell of an ion, direction th from the ion */
+function shell(ix,iy,rI,th,k,cat,gap){const ux=Math.cos(th),uy=Math.sin(th);
+  if(cat){const d=rI+gap+WG.rO*k;return{x:ix+ux*d,y:iy+uy*d,a:th,ux,uy,fx:ix+ux*d,fy:iy+uy*d,fr:WG.rO*k}}
+  const dh=rI+gap+WG.rH*k,hx=ix+ux*dh,hy=iy+uy*dh;
+  return{x:hx+ux*WG.L*k,y:hy+uy*WG.L*k,a:th+Math.PI+WG.half,ux,uy,fx:hx,fy:hy,fr:WG.rH*k}}
+function arrow(x1,y1,x2,y2,col,w=3,hs=12,dash){const len=Math.hypot(x2-x1,y2-y1);if(len<1)return;const a=Math.atan2(y2-y1,x2-x1),h=Math.min(hs,len*.7);
+  ctx.save();ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=w;if(dash)ctx.setLineDash(dash);
+  ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2-Math.cos(a)*h*.8,y2-Math.sin(a)*h*.8);ctx.stroke();ctx.setLineDash([]);
+  ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-h*Math.cos(a-.42),y2-h*Math.sin(a-.42));ctx.lineTo(x2-h*Math.cos(a+.42),y2-h*Math.sin(a+.42));ctx.closePath();ctx.fill();ctx.restore()}
+function txt(s,x,y,o={}){ctx.font=o.font||`500 15px ${SANS}`;ctx.fillStyle=o.col||C.ink;ctx.textAlign=o.al||'left';ctx.textBaseline=o.bl||'alphabetic';ctx.fillText(s,x,y)}
+function pill(s,x,y,o={}){ctx.font=o.font||`600 15px ${SANS}`;const w=ctx.measureText(s).width+20,h=o.h||28;const lx=o.al==='center'?x-w/2:o.al==='right'?x-w:x;
+  ctx.fillStyle=o.bg||'rgba(255,252,246,.94)';ctx.strokeStyle=o.edge||C.rule;ctx.lineWidth=1;ctx.beginPath();ctx.roundRect(lx,y-h/2,w,h,h/2);ctx.fill();ctx.stroke();
+  txt(s,lx+10,y+1,{font:o.font||`600 15px ${SANS}`,col:o.col||C.ink,bl:'middle'})}
+function dashLine(x1,y1,x2,y2,col,alpha=1){ctx.save();ctx.globalAlpha*=alpha;ctx.strokeStyle=col;ctx.lineWidth=2.2;ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.restore()}
+function pulses(x,y,r0,t,col,alpha=1){ctx.save();for(let i=0;i<3;i++){const ph=reduce?.3+i*.25:((t/1400)+i/3)%1;ctx.globalAlpha=(1-ph)*.6*alpha;ctx.strokeStyle=col;ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,y,r0+ph*70,0,Math.PI*2);ctx.stroke()}ctx.restore()}
+function energyIn(cx,cy,R,t,col,alpha=1){ctx.save();for(let i=0;i<10;i++){const a=i/10*Math.PI*2+.3,ph=reduce?.5:(t/1100+i*.17)%1;ctx.globalAlpha=Math.sin(ph*Math.PI)*alpha;const r1=R+70-ph*40,r2=r1-28;arrow(cx+Math.cos(a)*r1,cy+Math.sin(a)*r1,cx+Math.cos(a)*r2,cy+Math.sin(a)*r2,col,3.5,11)}ctx.restore()}
+function deltaLabel(x,y,sym,dir,col){/* δ label */ctx.font=`italic 700 ${15}px ${SERIF}`;ctx.fillStyle=col;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('δ'+(sym>0?'+':'−'),x,y)}
+
+/* ---------- lattice layout ---------- */
+const memo={};
+function lattice(c,cols,rows,cx,cy,gap){const key=[c,cols,rows,cx,cy,gap,ION[CMP[c].cat].r,ION[CMP[c].an].r].join();if(memo[key])return memo[key];
+  const M=CMP[c],d=ionR(M.cat)+ionR(M.an)+gap,ions=[];
+  for(let r=0;r<rows;r++)for(let q=0;q<cols;q++){const cat=M.n===1?(q+r)%2===0:((q-r)%3+3)%3===0;ions.push({id:cat?M.cat:M.an,cat,q,r,x:cx+(q-(cols-1)/2)*d,y:cy+(r-(rows-1)/2)*d})}
+  const pairs=[];for(let i=0;i<ions.length;i++)for(let j=i+1;j<ions.length;j++){const a=ions[i],b=ions[j];if(a.cat!==b.cat&&Math.abs(a.q-b.q)+Math.abs(a.r-b.r)===1)pairs.push([i,j])}
+  return memo[key]={ions,pairs,d,R:Math.hypot(cols*d,rows*d)/2}}
+function attractionLines(ions,pairs,P,alpha){if(alpha<=0)return;for(const[i,j]of pairs){const a=P[i],b=P[j],dx=b[0]-a[0],dy=b[1]-a[1],l=Math.hypot(dx,dy);if(l<1)continue;const ux=dx/l,uy=dy/l,ra=ionR(ions[i].id),rb=ionR(ions[j].id);if(l-ra-rb<2)continue;dashLine(a[0]+ux*ra,a[1]+uy*ra,b[0]-ux*rb,b[1]-uy*rb,C.accent,alpha)}}
+
+/* =============== SCENE: lattice =============== */
+const sceneLattice={opt:{c:'NaCl',mode:'diss'},
+  geo(){const c=this.opt.c,n=CMP[c].n,L=lattice(c,6,n>1?3:4,500,280,12);const key='g'+c+ION[CMP[c].an].r;
+    if(!memo[key]){const R=rng(hash(c)),pts=[],minD=2*ionR(CMP[c].an)+26;for(const ion of L.ions){let best=null;for(let k=0;k<300;k++){const p=[60+R()*880,50+R()*440];if(pts.every(q=>Math.hypot(q[0]-p[0],q[1]-p[1])>minD)){best=p;break}}pts.push(best||[60+R()*880,50+R()*440])}memo[key]=pts}
+    return{L,G:memo[key]}},
+  stages(){const c=this.opt.c,F=fmH(c),M=CMP[c];
+    if(this.opt.mode==='diss')return[
+      {c:`Solid ${F} is a giant ionic lattice. Oppositely charged ions are held together by strong electrostatic attractions in all directions.`},
+      {c:`Energy is supplied to overcome the strong electrostatic attractions between the oppositely charged ions.`,d:2400},
+      {c:`The ions separate completely to form gaseous ions, so far apart that they no longer attract each other.`,d:2600},
+      {c:`Dissociating 1 mole of ${F} into gaseous ions is <b>endothermic</b>: Δ<sub>L</sub>H = <b class="endo">${sg(M.L)} kJ mol⁻¹</b>.`}];
+    return[
+      {c:`Separate gaseous ${itH(M.cat)} and ${itH(M.an)} ions, far apart from each other.`},
+      {c:`Oppositely charged ions attract each other and come together.`,d:2600},
+      {c:`A lattice forms. Energy is released as the electrostatic attractions form.`,d:2200},
+      {c:`Forming 1 mole of solid ${F} from its gaseous ions is <b>exothermic</b>: Δ<sub>L</sub>H = <b class="exo">${sg(-M.L)} kJ mol⁻¹</b>.`}]},
+  render(s,p,t){const{L,G}=this.geo(),diss=this.opt.mode==='diss';let f,amp=0;
+    if(diss){f=s<2?0:s===2?ease(p):1;amp=s===1?5*p:s===2?5*(1-p):0}else{f=s===0?1:s===1?1-ease(p):0}
+    const P=L.ions.map((ion,i)=>[lerp(ion.x,G[i][0],f)+Math.sin(t*.025+i*1.7)*amp+Math.sin(t*.0012+i)*f*5,lerp(ion.y,G[i][1],f)+Math.cos(t*.023+i*2.3)*amp+Math.cos(t*.0011+i*1.3)*f*5]);
+    attractionLines(L.ions,L.pairs,P,clamp(1-f*1.6));
+    L.ions.forEach((ion,i)=>drawIon(P[i][0],P[i][1],ion.id));
+    if(diss&&(s===1||(s===2&&p<.35))){energyIn(500,280,L.R,t,C.endo,s===1?clamp(p*3):1-p/.35);pill('energy supplied',500,30,{al:'center',col:C.endo})}
+    if(!diss&&s===2){pulses(500,280,L.R*.8,t,C.exo);pill('energy released',500,30,{al:'center',col:C.exo})}
+    if(f<.4)this.legend(1-f*2.5);
+    if(s===3){const n=L.ions.length,M=CMP[this.opt.c];pill(`The ${n} ions drawn stand for 1 mol of ${fm(this.opt.c)} (6.02 × 10²³ formula units)`,500,530,{al:'center',font:`500 15px ${SANS}`})}
+    if(f>.6)txt('gaseous ions (spacing not to scale)',985,548,{al:'right',col:C.muted,font:`italic 14px ${SANS}`})},
+  legend(a){ctx.save();ctx.globalAlpha=a;dashLine(24,538,64,538,C.accent);txt('electrostatic attraction',72,543,{col:C.muted,font:`500 14px ${SANS}`});ctx.restore()},
+  mini(s,p){const diss=this.opt.mode==='diss',c=this.opt.c,M=CMP[c];const fr=s===0?0:s===1?.5*p:s===2?.5+.5*p:1;
+    return{low:fm(c)+'(s)',high:`${it(M.cat)}(g) + ${nA(c)}${it(M.an)}(g)`,dH:diss?M.L:-M.L,fr}},
+  info(){const c=this.opt.c,M=CMP[c],diss=this.opt.mode==='diss',F=fmH(c),gas=`${itH(M.cat)}(g) + ${nA(c)}${itH(M.an)}(g)`;
+    return diss?{name:'Enthalpy of lattice dissociation',def:'The enthalpy change when <b>1 mole</b> of a solid ionic compound is completely dissociated into its gaseous ions.',eq:`${F}(s) → ${gas}`,dH:M.L}
+      :{name:'Enthalpy of lattice formation',def:'The enthalpy change when <b>1 mole</b> of a solid ionic compound is formed from its gaseous ions.',eq:`${gas} → ${F}(s)`,dH:-M.L}},
+  key(){return`<p>The two definitions describe the same process in opposite directions, so they have the same size but opposite signs.</p><p>Smaller ions and ions with larger charges attract more strongly, giving larger lattice enthalpies. Compare MgCl<sub>2</sub> (${sg(CMP.MgCl2.L)}) with NaCl (${sg(CMP.NaCl.L)}).</p>`},
+  options(){return chipGroup('Compound','c',Object.keys(CMP).map(k=>[k,fmH(k)]))+chipGroup('Definition','mode',[['diss','Dissociation'],['form','Formation']])}
+};
+
+/* =============== SCENE: hydration =============== */
+const sceneHyd={opt:{ion:'Na'},
+  waters(){const key='w'+this.opt.ion;if(!memo[key]){const R=rng(hash(key)),w=[];for(let i=0;i<6;i++){const a=i/6*Math.PI*2+R()*.7,r=245+R()*70;w.push({x:clamp(500+Math.cos(a)*r,40,960),y:clamp(290+Math.sin(a)*r*.75,40,520),a:R()*Math.PI*2})}memo[key]=w}return memo[key]},
+  stages(){const id=this.opt.ion,I=ION[id],cat=I.q>0,T=itH(id);return[
+    {c:`A gaseous ${T} ion and some water molecules. Water is polar: the O atom is δ− and the H atoms are δ+.`},
+    {c:cat?`The positive ion attracts the δ− oxygen of water molecules. They move in and turn so that <b>oxygen</b> points towards the ion.`:`The negative ion attracts the δ+ hydrogen of water molecules. They move in and turn so that a <b>hydrogen</b> points towards the ion.`,d:2800},
+    {c:cat?`Attractions form between the <b>δ− oxygen of water and the positive ion</b>. Energy is released, so hydration is exothermic.`:`Attractions form between the <b>δ+ hydrogen of water and the negative ion</b>. Energy is released, so hydration is exothermic.`,d:2400},
+    {c:`For 1 mole of gaseous ${T} ions becoming aqueous ions: Δ<sub>hyd</sub>H = <b class="exo">${sg(I.hyd)} kJ mol⁻¹</b>.`},
+    {c:`Smaller ions and ions with a larger charge have a higher <b>charge density</b>. They attract water molecules more strongly, so their hydration enthalpy is more exothermic.`,d:1400}]},
+  render(s,p,t){const id=this.opt.ion,I=ION[id],cat=I.q>0;let cx=500,cy=290,k=1.8;
+    if(s===4){const e=ease(p);cx=lerp(500,230,e);k=lerp(1.8,1.45,e)}
+    const rI=ionR(id,k),gap=8*k,m=s===0?0:s===1?ease(p):1,W0=this.waters();
+    const tg=W0.map((w,i)=>shell(cx,cy,rI,i/6*Math.PI*2-Math.PI/2+(cat?0:Math.PI/6),k,cat,gap));
+    const pos=W0.map((w,i)=>{const T=tg[i],bob=(1-m)*4;return{x:lerp(w.x,T.x,m)+Math.sin(t*.002+i)*bob,y:lerp(w.y,T.y,m)+Math.cos(t*.0017+i*2)*bob,a:lerpAng(w.a,T.a,m)}});
+    if(s>=2){const al=s===2?clamp(p*2.5):1;tg.forEach(T=>dashLine(cx+T.ux*rI,cy+T.uy*rI,T.fx-T.ux*T.fr,T.fy-T.uy*T.fr,C.accent,al))}
+    if(s===2)pulses(cx,cy,rI+gap+30*k,t,C.exo,clamp(p*3));
+    pos.forEach(w=>drawWater(w.x,w.y,w.a,k));
+    drawIon(cx,cy,id,k);
+    if(s===0)pos.forEach(w=>{const A=wAtoms(w.x,w.y,w.a,k);deltaLabel(w.x-Math.cos(w.a)*(WG.rO*k+12),w.y-Math.sin(w.a)*(WG.rO*k+12),-1,0,C.O);[A.H1,A.H2].forEach(h=>{const ux=(h[0]-w.x)/(WG.L*k),uy=(h[1]-w.y)/(WG.L*k);deltaLabel(h[0]+ux*(WG.rH*k+10),h[1]+uy*(WG.rH*k+10),1,0,C.muted)})});
+    if(m>.95&&s<4)tg.forEach(T=>{const px=-T.uy,py=T.ux,o=T.fr+12;deltaLabel(T.fx+px*o,T.fy+py*o,cat?-1:1,0,cat?C.O:C.muted)});
+    if(s===2||s===3){const al=s===2?clamp(p*2):1;ctx.save();ctx.globalAlpha=al;pill(cat?`Attraction between the δ− oxygen of water and the positive ion`:`Attraction between the δ+ hydrogen of water and the negative ion`,500,32,{al:'center',col:C.accent});ctx.restore();
+      ctx.save();ctx.globalAlpha=al;dashLine(24,538,64,538,C.accent);txt(cat?'ion–δ− oxygen attraction':'ion–δ+ hydrogen attraction',72,543,{col:C.muted,font:`500 14px ${SANS}`});ctx.restore()}
+    if(s===2)pill('energy released',985,540,{al:'right',col:C.exo});
+    if(s===4){ctx.save();ctx.globalAlpha=ease(p);this.chart();ctx.restore()}},
+  chart(){const ids=['Li','Na','K','Mg','Ca','F','Cl','Br'],x0=490,base=118,sc=360/2000;
+    txt('Enthalpy of hydration / kJ mol⁻¹',x0,48,{font:`600 16px ${SANS}`});
+    ctx.strokeStyle=C.ink;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x0,base);ctx.lineTo(985,base);ctx.stroke();
+    ids.forEach((id,i)=>{const I=ION[id],x=x0+18+i*56+(i>=5?24:0),h=-I.hyd*sc,sel=id===this.opt.ion;
+      ctx.globalAlpha=sel?1:.38;ctx.fillStyle=I.col;ctx.fillRect(x,base,40,h);ctx.globalAlpha=1;
+      txt(it(id),x+20,base-10,{al:'center',font:`${sel?700:500} 15px ${SANS}`,col:sel?C.ink:C.muted});
+      txt(sg(I.hyd),x+20,base+h+18,{al:'center',font:`${sel?700:500} 14px ${SANS}`,col:sel?C.exo:C.muted});
+      txt(I.r+' pm',x+20,base+h+35,{al:'center',font:`12px ${SANS}`,col:C.muted})});
+    txt('cations',x0+18+2*56+20,82,{al:'center',col:C.muted,font:`italic 13px ${SANS}`});txt('anions',x0+18+6*56+24+20,82,{al:'center',col:C.muted,font:`italic 13px ${SANS}`});
+    txt('Ionic radius shown under each bar.',x0,540,{col:C.muted,font:`13px ${SANS}`})},
+  mini(s,p){const id=this.opt.ion;return{high:it(id)+'(g)',low:it(id)+'(aq)',dH:ION[id].hyd,fr:s<2?0:s===2?p:1}},
+  info(){const id=this.opt.ion;return{name:'Enthalpy of hydration',def:'The enthalpy change when <b>1 mole</b> of gaseous ions become aqueous ions.',eq:`${itH(id)}(g) + aq → ${itH(id)}(aq)`,dH:ION[id].hyd}},
+  key(){const cat=ION[this.opt.ion].q>0;return`<p><b>AQA wording:</b> the attraction is between the ${cat?'δ− oxygen':'δ+ hydrogen'} of a water molecule and the ${cat?'positive':'negative'} ion.</p><p>Hydration is always exothermic because attractions form and energy is released.</p>`},
+  options(){return chipGroup('Cation','ion',['Li','Na','K','Mg','Ca'].map(k=>[k,itH(k)]))+chipGroup('Anion','ion',['F','Cl','Br'].map(k=>[k,itH(k)]))}
+};
+
+/* =============== SCENE: full cycle =============== */
+const sceneCycle={opt:{c:'NaCl',conv:'diss'},
+  vals(){const M=CMP[this.opt.c],hc=ION[M.cat].hyd,ha=ION[M.an].hyd*M.n;return{L:M.L,hc,ha,sol:M.L+hc+ha,M}},
+  geo(){const c=this.opt.c,M=CMP[c],key='cy'+c+ION[M.cat].r+ION[M.an].r;if(memo[key])return memo[key];
+    const two=M.n>1,L=lattice(c,two?3:2,2,280,290,6),sx=(two?175:250)/L.d,sy=(two?240:250)/L.d;
+    const G=L.ions.map(i=>[280+(i.x-280)*sx,290+(i.y-290)*sy]);const R=rng(hash(key)),W=L.ions.map(()=>Array.from({length:6},()=>{const a=R()*Math.PI*2;return{dx:Math.cos(a)*360,dy:Math.sin(a)*360,a:R()*Math.PI*2}}));
+    return memo[key]={L,G,W}},
+  stages(){const c=this.opt.c,v=this.vals(),M=v.M,F=fmH(c),Ct=itH(M.cat),At=itH(M.an),diss=this.opt.conv==='diss';return[
+    {c:`Target: Δ<sub>sol</sub>H for ${F}(s) + aq → ${Ct}(aq) + ${nA(c)}${At}(aq). Use a Hess's law cycle that goes via the gaseous ions.`},
+    {c:diss?`<b>Step 1 · Lattice dissociation.</b> Energy overcomes the attractions between ions to give gaseous ions: <b class="endo">${sg(v.L)}</b>.`:`<b>Step 1 · Break the lattice.</b> This is the reverse of lattice formation (${sg(-v.L)}), so the sign changes: <b class="endo">${sg(v.L)}</b>.`,d:3200},
+    {c:`<b>Step 2 · Hydrate the ${Ct} ions.</b> Attractions form between the δ− oxygen of water and the positive ions: <b class="exo">${sg(v.hc)}</b>.`,d:2800},
+    {c:`<b>Step 3 · Hydrate the ${At} ions.</b> Attractions form between the δ+ hydrogen of water and the negative ions: ${M.n>1?`2 × ${par(ION[M.an].hyd)} = `:''}<b class="exo">${sg(v.ha)}</b>.`,d:2800},
+    {c:`<b>Hess's law:</b> Δ<sub>sol</sub>H = ${sg(v.L)} ${v.hc<0?'−':'+'} ${Math.abs(v.hc)} ${v.ha<0?'−':'+'} ${Math.abs(v.ha)} = <b class="${cls(v.sol)}">${sg(v.sol)} kJ mol⁻¹</b>. ${v.sol>0?'Endothermic: more energy is needed to break up the lattice than is released when the ions are hydrated.':'Exothermic: more energy is released when the ions are hydrated than is needed to break up the lattice.'}`,d:1200}]},
+  render(s,p,t){const{L,G,W}=this.geo(),M=CMP[this.opt.c],k=1,gap=6;
+    const f=s<1?0:s===1?ease(clamp((p-.35)/.65)):1,amp=s===1?5*clamp(p/.35)*(1-clamp((p-.35)/.65)):0;
+    const P=L.ions.map((ion,i)=>[lerp(ion.x,G[i][0],f)+Math.sin(t*.025+i*1.7)*amp+Math.sin(t*.0012+i)*f*3*(s===1?1:0),lerp(ion.y,G[i][1],f)+Math.cos(t*.023+i*2.3)*amp]);
+    const mC=s<2?0:s===2?ease(clamp(p/.7)):1,mA=s<3?0:s===3?ease(clamp(p/.7)):1;
+    ctx.save();ctx.beginPath();ctx.rect(0,0,566,H);ctx.clip();
+    attractionLines(L.ions,L.pairs,P,clamp(1-f*1.6));
+    L.ions.forEach((ion,i)=>{const m=ion.cat?mC:mA;if(m<=0)return;const rI=ionR(ion.id);
+      W[i].forEach((w,j)=>{const T=shell(P[i][0],P[i][1],rI,j/6*Math.PI*2-Math.PI/2+(ion.cat?0:Math.PI/6),k,ion.cat,gap);
+        if(m>.97)dashLine(P[i][0]+T.ux*rI,P[i][1]+T.uy*rI,T.fx-T.ux*T.fr,T.fy-T.uy*T.fr,C.accent,clamp((m-.97)/.03));
+        drawWater(lerp(T.x+w.dx,T.x,m),lerp(T.y+w.dy,T.y,m),lerpAng(w.a,T.a,m),k)})});
+    L.ions.forEach((ion,i)=>drawIon(P[i][0],P[i][1],ion.id));
+    if(s===1&&p<.5)energyIn(280,290,L.R,t,C.endo,p<.4?clamp(p*4):1-(p-.4)/.1);
+    L.ions.forEach((ion,i)=>{if((s===2&&ion.cat&&p>.6)||(s===3&&!ion.cat&&p>.6))pulses(P[i][0],P[i][1],ionR(ion.id)+40,t,C.exo,clamp((p-.6)*5))});
+    ctx.restore();
+    const ct=it(M.cat),at=nA(this.opt.c)+it(M.an);
+    const lab=[fm(this.opt.c)+'(s)',`${ct}(g) + ${at}(g)`,`${ct}(aq) + ${at}(g)`,`${ct}(aq) + ${at}(aq)`,`${ct}(aq) + ${at}(aq)`][s];
+    pill(lab,16,30,{font:`600 15px ${SANS}`});
+    if(s===1&&p<.5)pill('energy supplied',550,30,{al:'right',col:C.endo});
+    if((s===2||s===3)&&p>.6)pill('energy released',550,30,{al:'right',col:C.exo});
+    if(s>=1)txt('ions and water drawn far apart for clarity',16,548,{col:C.muted,font:`italic 13px ${SANS}`});
+    ctx.strokeStyle=C.rule;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(574,20);ctx.lineTo(574,540);ctx.stroke();
+    this.diagram(s,p)},
+  diagram(s,p){const v=this.vals(),M=v.M,c=this.opt.c,diss=this.opt.conv==='diss';
+    const Es=0,Eg=v.L,Ec=v.L+v.hc,Ea=v.sol,lo=Math.min(Es,Ec,Ea),hi=Eg,Y=E=>500-(E-lo)/(hi-lo)*385;
+    const rv=(n,start)=>s<n?0:s>n?1:clamp((p-start)/(1-start));
+    const r1=rv(1,.45),r2=rv(2,.55),r3=rv(3,.55),r4=rv(4,0);
+    txt('Enthalpy diagram (to scale)',592,40,{font:`700 12px ${SANS}`,col:C.muted});
+    arrow(592,512,592,96,C.muted,1.5,9);txt('H',598,104,{font:`italic 600 15px ${SERIF}`,col:C.muted});
+    const ct=it(M.cat),at=nA(c)+it(M.an);
+    const level=(x1,x2,y,lab,al,lx,ly,a)=>{if(a<=0)return;ctx.save();ctx.globalAlpha=a;ctx.strokeStyle=C.ink;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x1,y);ctx.lineTo(x2,y);ctx.stroke();txt(lab,lx,y+ly,{al,font:`600 14px ${SANS}`});ctx.restore()};
+    const val=(x,y,al,name,v2,a)=>{if(a<=0)return;ctx.save();ctx.globalAlpha=a;txt(name,x,y-4,{al,font:`500 12.5px ${SANS}`,col:C.muted});txt(sg(v2),x,y+15,{al,font:`700 17px ${SANS}`,col:v2>0?C.endo:C.exo});ctx.restore()};
+    const grow=(x,y1,y2,fr,col)=>{if(fr>0)arrow(x,y1,x,lerp(y1,y2,fr),col,3.2,13)};
+    const yS=Y(Es),yG=Y(Eg),yC=Y(Ec),yA=Y(Ea);
+    level(612,745,yS,fm(c)+'(s)','left',612,20,1);
+    level(612,990,yG,`${ct}(g) + ${at}(g)`,'left',612,-10,clamp(r1*3));
+    if(diss)grow(662,yS,yG,r1,C.endo);else grow(662,yG,yS,r1,C.exo);
+    val(674,(yS+yG)/2,'left',diss?'lattice dissociation':'lattice formation',diss?v.L:-v.L,r1);
+    level(830,990,yC,`${ct}(aq) + ${at}(g)`,'right',990,-10,clamp(r2*3));
+    grow(845,yG,yC,r2,C.exo);val(836,(yG+yC)/2,'right',`hydration ${ct}`,v.hc,r2);
+    level(830,990,yA,`${ct}(aq) + ${at}(aq)`,'right',990,22,clamp(r3*3));
+    grow(975,yC,yA,r3,C.exo);val(966,(yC+yA)/2,'right',`hydration ${at}`,v.ha,r3);
+    if(r4>0){ctx.save();ctx.globalAlpha=r4;arrow(745,yS,830,yA,v.sol>0?C.endo:C.exo,2.6,11,[6,5]);
+      const ly=Math.min(yS,yA)-16;txt('ΔH(solution)',787,ly-17,{al:'center',font:`500 12.5px ${SANS}`,col:C.muted});txt(sg(v.sol),787,ly,{al:'center',font:`700 17px ${SANS}`,col:v.sol>0?C.endo:C.exo});ctx.restore()}},
+  info(){const c=this.opt.c,M=CMP[c];return{name:'Enthalpy of solution',def:'The enthalpy change when <b>1 mole</b> of an ionic substance dissolves in enough water to form a solution in which the ions are far apart and do not interact.',eq:`${fmH(c)}(s) + aq → ${itH(M.cat)}(aq) + ${nA(c)}${itH(M.an)}(aq)`,dH:stage>=4?this.vals().sol:null}},
+  key(){return this.opt.conv==='diss'?`<p>Δ<sub>sol</sub>H = Δ<sub>L</sub>H(dissociation) + ΣΔ<sub>hyd</sub>H</p><p>Multiply the hydration enthalpy by the number of each ion in the formula.</p>`
+      :`<p>Δ<sub>sol</sub>H = ΣΔ<sub>hyd</sub>H − Δ<sub>L</sub>H(formation)</p><p>The cycle breaks the lattice, which is the reverse of formation, so its sign changes.</p>`},
+  options(){return chipGroup('Compound','c',Object.keys(CMP).map(k=>[k,fmH(k)]))+chipGroup('Lattice enthalpy data given as','conv',[['diss','Dissociation (+)'],['form','Formation (−)']])},
+  table(){const v=this.vals(),M=v.M,diss=this.opt.conv==='diss',a=ION[M.an].hyd;
+    const rows=[[1,diss?'Lattice dissociation, Δ<sub>L</sub>H':`Reverse of lattice formation, −(${sg(-v.L)})`,sg(v.L)],
+      [2,`Hydration of ${itH(M.cat)}`,sg(v.hc)],[3,`Hydration of ${M.n>1?'2 ':''}${itH(M.an)}`,M.n>1?`2 × ${par(a)} = ${sg(v.ha)}`:sg(v.ha)]];
+    let h=`<table class="steps">`+rows.map(([n,l,val])=>`<tr class="row${stage===n?' cur':''}" tabindex="0" data-step="${n}"><td>${l}</td><td class="${stage>=n?(n===1?'endo':'exo'):''}">${stage>=n?val:'?'}</td></tr>`).join('')+
+      `<tr class="total row${stage===4?' cur':''}" tabindex="0" data-step="4"><td>Δ<sub>sol</sub>H</td><td class="${stage>=4?cls(v.sol):''}">${stage>=4?sg(v.sol)+' kJ mol⁻¹':'?'}</td></tr></table>`;
+    if(stage>=4)h+=`<div class="calc">${diss?`Δ<sub>sol</sub>H = Δ<sub>L</sub>H + Δ<sub>hyd</sub>H(${itH(M.cat)}) + ${M.n>1?'2':''}Δ<sub>hyd</sub>H(${itH(M.an)})<br>= ${sg(v.L)} + ${par(v.hc)} + ${M.n>1?`2 × ${par(a)}`:par(v.ha)}`
+      :`Δ<sub>sol</sub>H = Δ<sub>hyd</sub>H(${itH(M.cat)}) + ${M.n>1?'2':''}Δ<sub>hyd</sub>H(${itH(M.an)}) − Δ<sub>L</sub>H(formation)<br>= ${par(v.hc)} + ${M.n>1?`2 × ${par(a)}`:par(v.ha)} − ${par(-v.L)}`}<br>= <b class="${cls(v.sol)}">${sg(v.sol)} kJ mol⁻¹</b></div>`;
+    return h},
+  dataPanel(){const v=this.vals(),M=v.M,diss=this.opt.conv==='diss';return`<div class="lbl">Data values (kJ mol⁻¹)</div><div class="data">
+    <label for="inL">${diss?'Δ<sub>L</sub>H dissociation':'Δ<sub>L</sub>H formation'} ${fmH(this.opt.c)}</label><input id="inL" type="number" step="1" value="${diss?v.L:-v.L}">
+    <label for="inC">Δ<sub>hyd</sub>H ${itH(M.cat)}</label><input id="inC" type="number" step="1" value="${ION[M.cat].hyd}">
+    <label for="inA">Δ<sub>hyd</sub>H ${itH(M.an)}</label><input id="inA" type="number" step="1" value="${ION[M.an].hyd}"></div>
+    <div class="note">Change these to match your data booklet or a question. Hydration values are shared by every compound containing that ion.</div><button class="linkbtn" id="resetData">Restore default values</button>`}
+};
+
+const SCENES={lattice:sceneLattice,hydration:sceneHyd,cycle:sceneCycle};
+let cur='lattice',stage=0,t0=performance.now();
+const sc=()=>SCENES[cur];
+function chipGroup(label,key,list){const o=sc().opt;return`<div class="lbl">${label}</div><div class="chips">`+list.map(([v,l])=>`<button class="chip" data-k="${key}" data-v="${v}" aria-pressed="${o[key]===v}">${l}</button>`).join('')+`</div>`}
+
+/* ---------- mini energy diagram ---------- */
+function drawMini(m){const c=document.getElementById('mini');if(!c)return;const[sx,sy]=fitCanvas(c,320,180);const x=c.getContext('2d');x.setTransform(sx,0,0,sy,0,0);x.clearRect(0,0,320,180);
+  const yl=145,yh=42,up=m.dH>0,col=up?C.endo:C.exo;x.strokeStyle=C.ink;x.lineWidth=3;
+  x.beginPath();x.moveTo(30,yh);x.lineTo(300,yh);x.moveTo(30,yl);x.lineTo(300,yl);x.stroke();
+  x.font=`600 14px ${SANS}`;x.fillStyle=C.ink;x.textAlign='right';x.textBaseline='alphabetic';x.fillText(m.high,300,yh-8);x.fillText(m.low,300,yl+20);
+  if(m.fr>0){const y1=up?yl:yh,y2=up?yh:yl,ye=lerp(y1,y2,m.fr);
+    x.strokeStyle=col;x.fillStyle=col;x.lineWidth=3.2;x.beginPath();x.moveTo(70,y1);x.lineTo(70,ye-(up?-9:9));x.stroke();
+    x.beginPath();x.moveTo(70,ye);x.lineTo(63,ye+(up?13:-13));x.lineTo(77,ye+(up?13:-13));x.closePath();x.fill();
+    if(m.fr>=1){x.textAlign='left';x.font=`700 18px ${SANS}`;x.fillText(sg(m.dH),84,(yl+yh)/2+3);x.font=`500 12px ${SANS}`;x.fillStyle=C.muted;x.fillText('kJ mol⁻¹ · '+(up?'endothermic':'exothermic'),84,(yl+yh)/2+20)}}
+  x.font=`italic 11px ${SANS}`;x.fillStyle=C.muted;x.textAlign='left';x.fillText('not to scale',30,176)}
+
+/* ---------- sidebar + UI ---------- */
+const side=document.getElementById('side');
+function renderSide(){const S=sc();let h=`<div class="card" id="opts">${S.options()}</div><div class="card" id="infoCard"></div>`;
+  if(cur==='cycle')h+=`<div class="card"><div class="lbl">Hess's law · click a row to jump</div><div id="tbl"></div></div>`;
+  h+=`<div class="card key"><div class="lbl">Key point</div>${S.key()}</div>`;
+  if(cur==='cycle')h+=`<div class="card">${S.dataPanel()}</div>`;
+  side.innerHTML=h;
+  side.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{S.opt[b.dataset.k]=b.dataset.v;renderSide();go(0)});
+  if(cur==='cycle'){const M=CMP[S.opt.c];
+    side.querySelector('#inL').onchange=e=>{const v=parseFloat(e.target.value);if(!isNaN(v)){M.L=Math.abs(v);upd()}};
+    side.querySelector('#inC').onchange=e=>{const v=parseFloat(e.target.value);if(!isNaN(v)){ION[M.cat].hyd=-Math.abs(v);upd()}};
+    side.querySelector('#inA').onchange=e=>{const v=parseFloat(e.target.value);if(!isNaN(v)){ION[M.an].hyd=-Math.abs(v);upd()}};
+    side.querySelector('#resetData').onclick=()=>{ION=clone(DEF_ION);CMP=clone(DEF_CMP);for(const k in memo)delete memo[k];renderSide();upd()}}
+  upd()}
+function upd(){const S=sc(),st=S.stages(),info=S.info();
+  document.getElementById('cap').innerHTML=st[stage].c;
+  document.getElementById('stepno').textContent=`Step ${stage+1} of ${st.length}`;
+  document.getElementById('dots').innerHTML=st.map((_,i)=>`<button class="dot${i<=stage?' on':''}" data-i="${i}" aria-label="Go to step ${i+1}"></button>`).join('');
+  document.querySelectorAll('.dot').forEach(d=>d.onclick=()=>go(+d.dataset.i));
+  document.getElementById('back').disabled=stage===0;document.getElementById('next').disabled=stage===st.length-1;
+  const ic=document.getElementById('infoCard');
+  ic.innerHTML=`<p class="name">${info.name}</p><p class="def">${info.def}</p><div class="eq">${info.eq}</div><div class="dh ${info.dH==null?'':cls(info.dH)}">ΔH = ${info.dH==null?'?':sg(info.dH)} <small>kJ mol⁻¹${info.dH==null?'':info.dH>0?' · endothermic':' · exothermic'}</small></div>`+(cur!=='cycle'?`<canvas id="mini" width="320" height="180" aria-label="Energy level diagram"></canvas>`:'');
+  if(cur==='cycle'){const tb=document.getElementById('tbl');tb.innerHTML=S.table();tb.querySelectorAll('tr.row').forEach(r=>{r.onclick=()=>go(+r.dataset.step);r.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go(+r.dataset.step)}}})}
+  document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected',t.dataset.s===cur))}
+function go(s,complete){const n=sc().stages().length;stage=clamp(s,0,n-1);const d=sc().stages()[stage].d||0;t0=performance.now()-(complete?d:0);upd()}
+document.getElementById('next').onclick=()=>go(stage+1);
+document.getElementById('back').onclick=()=>go(stage-1,true);
+document.getElementById('replay').onclick=()=>go(stage);
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{cur=t.dataset.s;stage=0;renderSide();go(0)});
+addEventListener('keydown',e=>{if(e.target.matches&&e.target.matches('input'))return;if(e.key==='ArrowRight'||e.key==='PageDown'){e.preventDefault();go(stage+1)}else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(stage-1,true)}else if(e.key==='r'||e.key==='R')go(stage)});
+
+function frame(now){const[sx,sy]=fitCanvas(cv,W,H);ctx.setTransform(sx,0,0,sy,0,0);ctx.clearRect(0,0,W,H);ctx.fillStyle=C.panel;ctx.fillRect(0,0,W,H);
+  const S=sc(),d=S.stages()[stage].d||0,p=(!d||reduce)?1:clamp((now-t0)/d),t=reduce?0:now;
+  S.render(stage,p,t);if(S.mini)drawMini(S.mini(stage,p));requestAnimationFrame(frame)}
+renderSide();requestAnimationFrame(frame);
+})();
+</script>
+
+</body></html>

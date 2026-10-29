@@ -1,0 +1,334 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Gibbs Free Energy Grapher</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+:root{
+  /* Layout: graph-dominant bench — large ΔG–T plot left, instrument panel right, four-case strip beneath */
+  --paper:#f7f2e8; --panel:#fffdf8; --ink:#3a291c; --muted:#7a6553; --rule:#e2d6c2;
+  --line:#1f4e8c; --feas:#2c7a3a; --nofeas:#a9322a; --accent:#b0601a;
+  --feas-bg:rgba(44,122,58,.10); --nofeas-bg:rgba(169,50,42,.07);
+  --f-display:"Charter","Bitstream Charter","Iowan Old Style",Georgia,serif;
+  --f-body:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --f-mono:ui-monospace,"SF Mono","Cascadia Mono",Consolas,monospace;
+  color-scheme:light;
+}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45}
+.wrap{max-width:1280px;margin:0 auto;padding-block:20px 32px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:18px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 18px}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(1.5rem,3vw,2.1rem);margin:0;letter-spacing:-.01em;text-wrap:balance}
+.eq-head{font-family:var(--f-mono);font-size:clamp(.95rem,2vw,1.15rem);color:var(--muted)}
+.eq-head b{color:var(--ink)}
+.bench{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:18px;align-items:start}
+@media (max-width:900px){.bench{grid-template-columns:minmax(0,1fr)}}
+.plot{background:var(--panel);border:1px solid var(--rule);border-radius:10px;padding:10px;min-width:0}
+.canvas-box{position:relative;width:100%;aspect-ratio:16/11;max-width:100%}
+.canvas-box canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:ew-resize}
+.toggles{display:flex;flex-wrap:wrap;gap:6px 16px;padding:8px 4px 2px;font-size:.88rem;color:var(--muted)}
+.toggles label{display:flex;gap:6px;align-items:center;cursor:pointer}
+.side{display:grid;gap:14px;min-width:0}
+.card{background:var(--panel);border:1px solid var(--rule);border-radius:10px;padding:14px;display:grid;gap:12px}
+.lab{font-size:.72rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:600}
+select{font:inherit;font-size:.9rem;padding:6px 8px;border:1px solid var(--rule);border-radius:6px;background:var(--paper);color:var(--ink);width:100%}
+.ctrl{display:grid;gap:4px}
+.ctrl-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.ctrl-top span:first-child{font-weight:600}
+.val{font-family:var(--f-mono);font-variant-numeric:tabular-nums;font-size:.95rem}
+input[type=range]{width:100%;accent-color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.big{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.big .num{font-family:var(--f-mono);font-size:1.5rem;font-weight:700;font-variant-numeric:tabular-nums}
+.chip{font-size:.78rem;font-weight:700;padding:4px 10px;border-radius:999px;color:#fff;letter-spacing:.03em}
+.chip.yes{background:var(--feas)} .chip.no{background:var(--nofeas)} .chip.eq{background:var(--muted)}
+.working{font-family:var(--f-mono);font-size:.84rem;background:var(--paper);border-radius:6px;padding:8px 10px;overflow-x:auto;white-space:nowrap}
+table.map{width:100%;border-collapse:collapse;font-size:.88rem}
+table.map td{padding:5px 4px;border-top:1px solid var(--rule);vertical-align:top}
+table.map td:first-child{font-family:var(--f-mono);font-weight:700;width:2.2em;color:var(--line)}
+table.map td:last-child{font-family:var(--f-mono);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.verdict{font-size:.92rem;border-left:3px solid var(--accent);padding:2px 0 2px 10px}
+.cases{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media (max-width:760px){.cases{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.case{background:var(--panel);border:1.5px solid var(--rule);border-radius:10px;padding:10px;cursor:pointer;text-align:left;font:inherit;color:inherit;display:grid;gap:6px;transition:border-color .15s,transform .15s}
+.case:hover{transform:translateY(-1px)}
+.case.on{border-color:var(--accent);box-shadow:0 0 0 2px rgba(176,96,26,.18)}
+.case canvas{width:100%;aspect-ratio:4/3;display:block}
+.case .signs{font-family:var(--f-mono);font-weight:700;font-size:.9rem}
+.case .what{font-size:.85rem;color:var(--muted)}
+.notes{font-size:.85rem;color:var(--muted);max-width:75ch;display:grid;gap:4px}
+@media (prefers-reduced-motion:reduce){.case{transition:none}.case:hover{transform:none}}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Gibbs Free Energy Grapher</h1>
+    <div class="eq-head"><b>ΔG</b> = <b>ΔH</b> − <b>T</b>ΔS &nbsp;≡&nbsp; <b>y</b> = <b>c</b> + <b>m</b>x &nbsp;(m = −ΔS)</div>
+  </header>
+
+  <div class="bench">
+    <div class="plot">
+      <div class="canvas-box"><canvas id="main" aria-label="Graph of ΔG against temperature"></canvas></div>
+      <div class="toggles">
+        <label><input type="checkbox" id="tLabels" checked> Gradient &amp; intercept</label>
+        <label><input type="checkbox" id="tShade" checked> Shade feasible region</label>
+        <label><input type="checkbox" id="tStar" checked> Show T where ΔG = 0</label>
+        <label><input type="checkbox" id="tSeg" checked> Colour line by feasibility</label>
+      </div>
+    </div>
+
+    <div class="side">
+      <div class="card">
+        <div class="ctrl">
+          <span class="lab">Reaction</span>
+          <select id="preset"></select>
+        </div>
+        <div class="ctrl">
+          <div class="ctrl-top"><span>ΔH</span><span class="val" id="vH"></span></div>
+          <input type="range" id="sH" min="-300" max="300" step="1">
+        </div>
+        <div class="ctrl">
+          <div class="ctrl-top"><span>ΔS</span><span class="val" id="vS"></span></div>
+          <input type="range" id="sS" min="-300" max="300" step="1">
+        </div>
+        <div class="ctrl">
+          <div class="ctrl-top"><span>Temperature</span><span class="val" id="vT"></span></div>
+          <input type="range" id="sT" min="0" max="1500" step="1">
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="big"><span class="num" id="dG"></span><span class="chip" id="chip"></span></div>
+        <div class="working" id="work"></div>
+        <div class="verdict" id="verdict"></div>
+      </div>
+
+      <div class="card">
+        <span class="lab">Straight-line link</span>
+        <table class="map">
+          <tr><td>y</td><td>ΔG</td><td id="mY"></td></tr>
+          <tr><td>x</td><td>T</td><td>kelvin</td></tr>
+          <tr><td>m</td><td>gradient = −ΔS</td><td id="mM"></td></tr>
+          <tr><td>c</td><td>intercept (T = 0 K) = ΔH</td><td id="mC"></td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="cases" id="cases"></div>
+
+  <div class="notes">
+    <div>ΔS must be in kJ K⁻¹ mol⁻¹ to match ΔH, so divide J K⁻¹ mol⁻¹ by 1000. Temperature is always in kelvin.</div>
+    <div>The model assumes ΔH and ΔS stay constant as temperature changes. Feasible (ΔG ≤ 0) says nothing about rate: a feasible reaction can still be very slow if its activation energy is high.</div>
+    <div>Drag across the graph to change the temperature. Data are standard values per mole of equation as written.</div>
+  </div>
+</div>
+
+<script>
+(function(){
+const P=[
+ {id:'h2o2',name:'2H₂O₂(l) → 2H₂O(l) + O₂(g)',dH:-196,dS:126,c:1},
+ {id:'o3',name:'3O₂(g) → 2O₃(g)',dH:285,dS:-137,c:2},
+ {id:'haber',name:'N₂(g) + 3H₂(g) → 2NH₃(g)',dH:-92,dS:-198,c:3},
+ {id:'no2',name:'2NO₂(g) → N₂O₄(g)',dH:-57,dS:-176,c:3},
+ {id:'caco3',name:'CaCO₃(s) → CaO(s) + CO₂(g)',dH:178,dS:161,c:4},
+ {id:'nh4cl',name:'NH₄Cl(s) → NH₃(g) + HCl(g)',dH:176,dS:285,c:4}
+];
+const CASES=[
+ {c:1,signs:'ΔH −  ΔS +',what:'Feasible at all temperatures',dH:-150,dS:200,p:'h2o2'},
+ {c:2,signs:'ΔH +  ΔS −',what:'Never feasible',dH:150,dS:-200,p:'o3'},
+ {c:3,signs:'ΔH −  ΔS −',what:'Feasible below a certain T',dH:-200,dS:-250,p:'haber'},
+ {c:4,signs:'ΔH +  ΔS +',what:'Feasible above a certain T',dH:200,dS:250,p:'caco3'}
+];
+const TMAX=1500,YMIN=-500,YMAX=500;
+const S={dH:-92,dS:-198,T:298};
+const $=id=>document.getElementById(id);
+const css=getComputedStyle(document.documentElement);
+const C=n=>css.getPropertyValue(n).trim();
+const MONO=C('--f-mono'),BODY=C('--f-body');
+const fm=(n,dp=0)=>{const v=Number(n.toFixed(dp));return (v<0?'−':'')+Math.abs(v).toFixed(dp)};
+const fs=(n,dp=0)=>{const v=Number(n.toFixed(dp));return (v>0?'+':v<0?'−':'')+Math.abs(v).toFixed(dp)};
+const G=T=>S.dH-T*S.dS/1000;
+const caseOf=(h,s)=>h<0&&s>0?1:h>0&&s<0?2:h<0&&s<0?3:h>0&&s>0?4:0;
+
+// presets
+const sel=$('preset');
+sel.innerHTML='<option value="custom">Custom values</option>'+P.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+sel.value='haber';
+sel.onchange=()=>{const p=P.find(x=>x.id===sel.value);if(p){S.dH=p.dH;S.dS=p.dS;sync();}};
+['sH','sS','sT'].forEach(id=>$(id).addEventListener('input',e=>{
+  const v=+e.target.value;
+  if(id==='sH'){S.dH=v;sel.value='custom'} if(id==='sS'){S.dS=v;sel.value='custom'} if(id==='sT')S.T=v;
+  update();
+}));
+['tLabels','tShade','tStar','tSeg'].forEach(id=>$(id).addEventListener('change',draw));
+
+function sync(){$('sH').value=S.dH;$('sS').value=S.dS;$('sT').value=S.T;update();}
+
+// ---------- main canvas ----------
+const cv=$('main'),ctx=cv.getContext('2d');
+let W=0,H=0,M={l:70,r:20,t:18,b:50};
+function size(){const r=cv.getBoundingClientRect(),d=window.devicePixelRatio||1;W=r.width;H=r.height;cv.width=W*d;cv.height=H*d;ctx.setTransform(d,0,0,d,0,0);
+  M.l=W<500?52:70;M.b=W<500?40:50;draw();}
+const sx=t=>M.l+t/TMAX*(W-M.l-M.r);
+const sy=g=>M.t+(YMAX-g)/(YMAX-YMIN)*(H-M.t-M.b);
+const tx=x=>Math.max(0,Math.min(TMAX,Math.round((x-M.l)/(W-M.l-M.r)*TMAX)));
+
+function label(text,x,y,{color=C('--ink'),align='left',base='middle',bg=true,font}={}){
+  ctx.font=font||`600 ${fsz}px ${MONO}`;ctx.textAlign=align;ctx.textBaseline=base;
+  if(bg){const w=ctx.measureText(text).width,h=fsz*1.35;let x0=align==='left'?x:align==='right'?x-w:x-w/2;
+    let y0=base==='middle'?y-h/2:base==='bottom'?y-h:y;ctx.fillStyle='rgba(255,253,248,.9)';ctx.fillRect(x0-3,y0,w+6,h);}
+  ctx.fillStyle=color;ctx.fillText(text,x,y);
+}
+let fsz=12;
+function draw(){
+  if(!W)return;
+  fsz=Math.max(10.5,Math.min(14,W/62));
+  ctx.clearRect(0,0,W,H);
+  const L=M.l,R=W-M.r,T0=M.t,B=H-M.b,y0=sy(0);
+  // shading
+  if($('tShade').checked){
+    ctx.fillStyle=C('--nofeas-bg');ctx.fillRect(L,T0,R-L,y0-T0);
+    ctx.fillStyle=C('--feas-bg');ctx.fillRect(L,y0,R-L,B-y0);
+    ctx.font=`700 ${fsz}px ${BODY}`;ctx.textAlign='right';ctx.textBaseline='top';
+    ctx.fillStyle=C('--nofeas');ctx.fillText('ΔG > 0  not feasible',R-8,T0+6);
+    ctx.textBaseline='bottom';ctx.fillStyle=C('--feas');ctx.fillText('ΔG < 0  feasible',R-8,B-6);
+  }
+  // grid
+  ctx.lineWidth=1;ctx.strokeStyle=C('--rule');ctx.beginPath();
+  for(let t=250;t<=TMAX;t+=250){ctx.moveTo(sx(t)+.5,T0);ctx.lineTo(sx(t)+.5,B);}
+  for(let g=YMIN;g<=YMAX;g+=100){ctx.moveTo(L,sy(g)+.5);ctx.lineTo(R,sy(g)+.5);}
+  ctx.stroke();
+  // axes
+  ctx.strokeStyle=C('--ink');ctx.lineWidth=1.5;ctx.beginPath();
+  ctx.moveTo(L,T0);ctx.lineTo(L,B);ctx.moveTo(L,y0);ctx.lineTo(R,y0);ctx.stroke();
+  ctx.fillStyle=C('--muted');ctx.font=`${fsz}px ${MONO}`;
+  ctx.textAlign='center';ctx.textBaseline='top';
+  for(let t=0;t<=TMAX;t+=250)ctx.fillText(t,sx(t),B+5);
+  ctx.textAlign='right';ctx.textBaseline='middle';
+  for(let g=YMIN;g<=YMAX;g+=200)ctx.fillText(fm(g),L-6,sy(g));
+  ctx.fillStyle=C('--ink');ctx.font=`600 ${fsz}px ${BODY}`;ctx.textAlign='center';ctx.textBaseline='bottom';
+  ctx.fillText('T / K',(L+R)/2,H-2);
+  ctx.save();ctx.translate(12,(T0+B)/2);ctx.rotate(-Math.PI/2);ctx.textBaseline='middle';ctx.fillText('ΔG / kJ mol⁻¹',0,0);ctx.restore();
+
+  ctx.save();ctx.beginPath();ctx.rect(L,T0,R-L,B-T0);ctx.clip();
+
+  // T* where ΔG = 0
+  const Ts=S.dS!==0?S.dH/(S.dS/1000):NaN;
+  const hasTs=isFinite(Ts)&&Ts>0&&Ts<=TMAX;
+
+  // line
+  const seg=$('tSeg').checked;
+  const pieces=hasTs?[[0,Ts],[Ts,TMAX]]:[[0,TMAX]];
+  ctx.lineWidth=3.2;ctx.lineCap='round';
+  for(const [a,b] of pieces){
+    const mid=G((a+b)/2);
+    ctx.strokeStyle=seg?(mid<=0?C('--feas'):C('--nofeas')):C('--line');
+    ctx.beginPath();ctx.moveTo(sx(a),sy(G(a)));ctx.lineTo(sx(b),sy(G(b)));ctx.stroke();
+  }
+
+  const showLab=$('tLabels').checked;
+  // gradient triangle
+  if(showLab){
+    const t1=300,t2=700,g1=G(t1),g2=G(t2);
+    ctx.strokeStyle=C('--line');ctx.lineWidth=1.5;ctx.setLineDash([5,4]);
+    ctx.beginPath();ctx.moveTo(sx(t1),sy(g1));ctx.lineTo(sx(t2),sy(g1));ctx.lineTo(sx(t2),sy(g2));ctx.stroke();ctx.setLineDash([]);
+    const up=g2>g1;
+    label('Δx = 400 K',(sx(t1)+sx(t2))/2,sy(g1)+(up?fsz:-fsz),{color:C('--line'),align:'center'});
+    if(S.dS!==0) label('Δy = '+fs(g2-g1,1),sx(t2)+8,(sy(g1)+sy(g2))/2,{color:C('--line')});
+    const mtxt='m = −ΔS = '+fs(-S.dS/1000,3)+' kJ K⁻¹ mol⁻¹';
+    const my=up?Math.max(sy(g2),T0+40)-fsz*1.6:Math.min(sy(g2),B-40)+fsz*1.6;
+    label(mtxt,sx(t2)+8,S.dS===0?sy(g1)-fsz*1.6:my,{color:C('--line')});
+  }
+
+  // T* marker
+  if(hasTs&&$('tStar').checked){
+    ctx.strokeStyle=C('--ink');ctx.lineWidth=1.2;ctx.setLineDash([3,4]);
+    ctx.beginPath();ctx.moveTo(sx(Ts),T0);ctx.lineTo(sx(Ts),B);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle=C('--panel');ctx.strokeStyle=C('--ink');ctx.lineWidth=2;
+    ctx.beginPath();ctx.arc(sx(Ts),y0,6,0,7);ctx.fill();ctx.stroke();
+    const right=sx(Ts)<R-170;
+    label('T = ΔH/ΔS = '+Math.round(Ts)+' K',sx(Ts)+(right?9:-9),T0+(H-M.t-M.b)*.5-fsz*2.2,{align:right?'left':'right'});
+  }
+
+  // current T marker
+  const gT=G(S.T);
+  ctx.strokeStyle=C('--accent');ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(sx(S.T),B);ctx.lineTo(sx(S.T),sy(gT));ctx.lineTo(L,sy(gT));ctx.stroke();
+  ctx.fillStyle=C('--accent');ctx.beginPath();ctx.arc(sx(S.T),sy(gT),6.5,0,7);ctx.fill();
+  const rt=sx(S.T)<R-150;
+  label(S.T+' K → ΔG = '+fm(gT,1),sx(S.T)+(rt?11:-11),sy(gT)+(gT>0?fsz*1.4:-fsz*1.4),{color:C('--accent'),align:rt?'left':'right'});
+
+  ctx.restore();
+
+  // intercept (drawn over axis)
+  if(showLab){
+    ctx.fillStyle=C('--line');ctx.strokeStyle=C('--panel');ctx.lineWidth=2;
+    ctx.beginPath();ctx.arc(L,sy(S.dH),6.5,0,7);ctx.fill();ctx.stroke();
+    label('c = ΔH = '+fm(S.dH),L+12,sy(S.dH)+(S.dH>=0?-fsz*1.3:fsz*1.3),{color:C('--line')});
+  }
+}
+
+// drag on graph
+let drag=false;
+const setFromEvt=e=>{const r=cv.getBoundingClientRect();S.T=tx(e.clientX-r.left);$('sT').value=S.T;update();};
+cv.addEventListener('pointerdown',e=>{drag=true;cv.setPointerCapture(e.pointerId);setFromEvt(e);});
+cv.addEventListener('pointermove',e=>{if(drag)setFromEvt(e);});
+cv.addEventListener('pointerup',()=>drag=false);
+cv.addEventListener('pointercancel',()=>drag=false);
+
+// ---------- case cards ----------
+const box=$('cases');
+CASES.forEach(k=>{
+  const b=document.createElement('button');b.className='case';b.id='case'+k.c;b.type='button';
+  b.innerHTML=`<canvas></canvas><span class="signs">${k.signs}</span><span class="what">${k.what}</span>`;
+  b.onclick=()=>{const p=P.find(x=>x.id===k.p);S.dH=p.dH;S.dS=p.dS;sel.value=p.id;sync();};
+  box.appendChild(b);k.el=b;
+});
+function drawMini(k){
+  const c=k.el.querySelector('canvas'),r=c.getBoundingClientRect(),d=window.devicePixelRatio||1;
+  if(!r.width)return;c.width=r.width*d;c.height=r.height*d;const x=c.getContext('2d');x.setTransform(d,0,0,d,0,0);
+  const w=r.width,h=r.height,l=14,rr=w-6,t=6,bb=h-12,mid=(t+bb)/2;
+  const px=T=>l+T/TMAX*(rr-l),py=g=>mid-g/450*(bb-t)/2;
+  x.fillStyle=C('--nofeas-bg');x.fillRect(l,t,rr-l,mid-t);x.fillStyle=C('--feas-bg');x.fillRect(l,mid,rr-l,bb-mid);
+  x.strokeStyle=C('--ink');x.lineWidth=1.2;x.beginPath();x.moveTo(l,t);x.lineTo(l,bb);x.moveTo(l,mid);x.lineTo(rr,mid);x.stroke();
+  const g=T=>k.dH-T*k.dS/1000,ts=k.dH/(k.dS/1000),has=ts>0&&ts<TMAX;
+  x.save();x.beginPath();x.rect(l,t,rr-l,bb-t);x.clip();x.lineWidth=2.6;x.lineCap='round';
+  (has?[[0,ts],[ts,TMAX]]:[[0,TMAX]]).forEach(([a,b])=>{x.strokeStyle=g((a+b)/2)<=0?C('--feas'):C('--nofeas');x.beginPath();x.moveTo(px(a),py(g(a)));x.lineTo(px(b),py(g(b)));x.stroke();});
+  x.restore();
+  x.fillStyle=C('--muted');x.font=`10px ${MONO}`;x.textAlign='right';x.textBaseline='top';x.fillText('T',rr,mid+2);
+  x.save();x.translate(2,t+2);x.textAlign='left';x.fillText('ΔG',0,0);x.restore();
+}
+
+// ---------- readouts ----------
+function update(){
+  $('vH').textContent=fs(S.dH)+' kJ mol⁻¹';
+  $('vS').textContent=fs(S.dS)+' J K⁻¹ mol⁻¹';
+  $('vT').textContent=S.T+' K ('+fm(S.T-273,0)+' °C)';
+  const g=G(S.T),gr=Number(g.toFixed(1));
+  $('dG').textContent='ΔG = '+fm(g,1)+' kJ mol⁻¹';
+  const chip=$('chip');
+  if(gr<0){chip.textContent='FEASIBLE';chip.className='chip yes'}
+  else if(gr>0){chip.textContent='NOT FEASIBLE';chip.className='chip no'}
+  else{chip.textContent='ΔG = 0';chip.className='chip eq'}
+  const dSk=S.dS/1000;
+  $('work').textContent=`ΔG = (${fm(S.dH)}) − (${S.T} × ${fm(dSk,3)}) = ${fm(g,1)}`;
+  $('mY').textContent=fm(g,1)+' kJ mol⁻¹';
+  $('mM').textContent=fs(-dSk,3)+' kJ K⁻¹ mol⁻¹';
+  $('mC').textContent=fm(S.dH)+' kJ mol⁻¹';
+  const k=caseOf(S.dH,S.dS),Ts=S.dS?S.dH/dSk:NaN;
+  let v;
+  if(k===1)v='ΔH negative, ΔS positive: ΔG is negative at every temperature. Always feasible.';
+  else if(k===2)v='ΔH positive, ΔS negative: ΔG is positive at every temperature. Never feasible.';
+  else if(k===3)v=`Both negative: feasible below ${Math.round(Ts)} K (${Math.round(Ts-273)} °C). Raising T makes −TΔS more positive.`;
+  else if(k===4)v=`Both positive: feasible above ${Math.round(Ts)} K (${Math.round(Ts-273)} °C). The TΔS term overtakes ΔH.`;
+  else if(S.dS===0)v='ΔS = 0: the line is horizontal, so ΔG = ΔH at every temperature.';
+  else v='ΔH = 0: the line passes through the origin, so the sign of ΔS alone decides feasibility.';
+  $('verdict').textContent=v;
+  CASES.forEach(c=>c.el.classList.toggle('on',c.c===k));
+  draw();
+}
+
+new ResizeObserver(()=>{size();CASES.forEach(drawMini);}).observe(document.querySelector('.wrap'));
+sync();
+})();
+</script>
+
+</body></html>

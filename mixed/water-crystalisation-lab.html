@@ -1,0 +1,655 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Water of Crystallisation</title>
+<style>
+/* Layout: header strip → bench scene beside a procedure panel → calculation sheet beneath. Single light theme to match the simulation set. */
+:root{
+  --bg:#f4efe5; --panel:#fffcf6; --ink:#2a2017; --muted:#6c5f50; --line:#e2d7c5;
+  --brown:#7a4a26; --brown-d:#58331a; --brown-l:#f2e6d6;
+  --water:#2b6c93; --good:#2f7a3e; --good-l:#e4f1e3; --bad:#b0392c; --bad-l:#f7e3df; --warn:#9a5d12; --warn-l:#f8ecd8;
+  --f-display:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  --f-body:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  --f-mono:ui-monospace,"SFMono-Regular",Consolas,Menlo,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45}
+.wrap{max-width:1260px;margin:0 auto;padding-inline:16px;padding-block:18px 48px;display:grid;gap:18px}
+h1,h2,h3{font-family:var(--f-display);font-weight:600;text-wrap:balance;margin:0;color:var(--brown-d)}
+h1{font-size:clamp(1.6rem,3.2vw,2.2rem);line-height:1.1}
+h2{font-size:1.35rem}
+h3{font-size:1.02rem}
+.eyebrow{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--brown);margin:0 0 4px;font-weight:600}
+.lede{margin:6px 0 0;color:var(--muted);max-width:60ch}
+header.top{display:flex;flex-wrap:wrap;gap:14px 24px;align-items:flex-end;justify-content:space-between}
+.picker{display:flex;flex-direction:column;gap:8px;align-items:flex-end;min-width:0}
+.chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
+.chip{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:999px;padding:6px 12px;font:inherit;font-size:.86rem;cursor:pointer;display:flex;gap:7px;align-items:center}
+.chip .dot{width:11px;height:11px;border-radius:50%;border:1px solid rgba(0,0,0,.25)}
+.chip[aria-pressed="true"]{background:var(--brown);border-color:var(--brown);color:#fff}
+.chip:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid #d99a52;outline-offset:2px}
+.picker-row{display:flex;gap:14px;align-items:center;flex-wrap:wrap;justify-content:flex-end;font-size:.86rem;color:var(--muted)}
+.picker-row label{display:flex;gap:6px;align-items:center;cursor:pointer}
+
+.main{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:18px;align-items:start}
+@media (max-width:980px){.main{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px}
+.scene-card{padding:10px;display:grid;gap:10px;min-width:0}
+canvas{width:100%;height:auto;display:block;border-radius:8px;aspect-ratio:900/420;max-width:100%}
+.obs{display:grid;gap:4px;font-size:.86rem;min-height:3.2em}
+.obs p{margin:0;padding:5px 10px;border-radius:6px;background:var(--brown-l);color:var(--brown-d)}
+.obs p.warn{background:var(--warn-l);color:var(--warn)}
+.obs p.bad{background:var(--bad-l);color:var(--bad)}
+.obs p:not(:first-child){opacity:.7}
+
+.panel{padding:14px;display:grid;gap:14px;min-width:0}
+.hint{background:var(--brown-l);border-radius:8px;padding:10px 12px;font-size:.9rem;color:var(--brown-d)}
+.hint b{display:block;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px;color:var(--brown)}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+button.act{font:inherit;font-size:.88rem;font-weight:600;padding:9px 10px;border-radius:8px;border:1px solid var(--brown);background:var(--brown);color:#fff;cursor:pointer;line-height:1.2}
+button.act.sec{background:var(--panel);color:var(--brown-d)}
+button.act:disabled{opacity:.38;cursor:not-allowed}
+button.act:not(:disabled):hover{filter:brightness(1.08)}
+.wide{grid-column:1/-1}
+fieldset{border:1px solid var(--line);border-radius:10px;padding:10px 12px 12px;margin:0;display:grid;gap:9px}
+legend{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--brown);font-weight:600;padding:0 4px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:.86rem}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{font:inherit;font-size:.8rem;border:0;background:transparent;padding:5px 10px;cursor:pointer;color:var(--ink)}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--brown-d);color:#fff}
+input[type=range]{width:120px;accent-color:var(--brown)}
+.tv{font-family:var(--f-mono);font-size:.82rem;min-width:3.5em;text-align:right}
+
+table{width:100%;border-collapse:collapse;font-size:.84rem}
+th{text-align:left;font-weight:600;color:var(--muted);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;border-bottom:1px solid var(--line);padding:5px 4px}
+td{padding:6px 4px;border-bottom:1px dashed var(--line);font-variant-numeric:tabular-nums}
+td.n{font-family:var(--f-mono);text-align:right}
+td.n.dif{color:var(--muted)}
+tr.const td{background:var(--good-l)}
+.empty-row td{color:var(--muted);font-style:italic}
+.status{display:flex;gap:8px;flex-wrap:wrap}
+.pill{font-size:.75rem;font-weight:600;padding:3px 9px;border-radius:999px;background:var(--brown-l);color:var(--brown-d)}
+.pill.good{background:var(--good-l);color:var(--good)}
+.pill.warn{background:var(--warn-l);color:var(--warn)}
+
+.calc{padding:18px;display:grid;gap:16px}
+.calc-head{display:flex;flex-wrap:wrap;gap:10px 20px;justify-content:space-between;align-items:baseline}
+.ar{display:flex;flex-wrap:wrap;gap:6px;font-size:.8rem}
+.ar span{font-family:var(--f-mono);background:var(--brown-l);padding:2px 7px;border-radius:5px;color:var(--brown-d)}
+.calc-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:20px}
+@media (max-width:860px){.calc-grid{grid-template-columns:minmax(0,1fr)}}
+ol.steps{list-style:none;margin:0;padding:0;display:grid;gap:8px;counter-reset:s}
+ol.steps li{display:grid;grid-template-columns:26px minmax(0,1fr) 120px 28px;gap:10px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;counter-increment:s}
+ol.steps li::before{content:counter(s);font-family:var(--f-display);font-weight:600;color:var(--brown);font-size:1.05rem;text-align:center}
+.st-lab{font-size:.9rem;min-width:0}
+.st-lab small{display:block;color:var(--muted);font-size:.78rem}
+.inp{display:flex;align-items:center;gap:4px}
+.inp input{width:100%;min-width:0;font-family:var(--f-mono);font-size:.9rem;padding:6px 7px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink)}
+.inp i{font-style:normal;color:var(--muted);font-size:.78rem;white-space:nowrap}
+.mark{font-weight:700;text-align:center;font-size:1.05rem}
+.mark.ok{color:var(--good)} .mark.no{color:var(--bad)}
+li.ok{border-color:#9cc79f} li.no{border-color:#e0a59b}
+@media (max-width:520px){ol.steps li{grid-template-columns:22px minmax(0,1fr) 28px}.inp{grid-column:2/3}.mark{grid-row:1/3;grid-column:3}}
+.calc-actions{display:flex;gap:8px;flex-wrap:wrap}
+.working{border-left:3px solid var(--brown);padding:4px 0 4px 14px;display:grid;gap:10px;font-size:.9rem;min-width:0}
+.working p{margin:0}
+.working .eq{font-family:var(--f-mono);font-size:.84rem;background:var(--brown-l);padding:6px 9px;border-radius:6px;overflow-x:auto;white-space:nowrap}
+.verdict{border-radius:10px;padding:12px 14px;display:grid;gap:6px;font-size:.9rem}
+.verdict.good{background:var(--good-l)} .verdict.warn{background:var(--warn-l)}
+.verdict ul{margin:0;padding-left:18px;display:grid;gap:4px}
+.locked{color:var(--muted);font-style:italic;font-size:.9rem;margin:0}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <p class="eyebrow">Practical simulation · Hydrated salts</p>
+      <h1>Water of crystallisation</h1>
+      <p class="lede">Weigh a crucible, add a hydrated salt, heat to constant mass, then work out <i>x</i> in the formula.</p>
+    </div>
+    <div class="picker">
+      <div class="chips" id="chips" role="group" aria-label="Choose a hydrated salt"></div>
+      <div class="picker-row">
+        <label><input type="checkbox" id="mystery"> Hide the value of <i>x</i></label>
+        <button class="act sec" id="btnNew" type="button">New experiment</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="main">
+    <section class="card scene-card" aria-label="Laboratory bench">
+      <canvas id="scene" width="900" height="420" aria-label="Bench with balance, reagent bottle, tripod and Bunsen burner, and desiccator"></canvas>
+      <div class="obs" id="obs" aria-live="polite"></div>
+    </section>
+
+    <aside class="card panel" aria-label="Procedure">
+      <div class="hint" id="hint"></div>
+      <div class="btns">
+        <button class="act" id="btnWeigh" type="button">Place on balance</button>
+        <button class="act" id="btnRecord" type="button">Record mass</button>
+        <button class="act sec wide" id="btnAdd" type="button">Add a spatula of solid</button>
+        <button class="act wide" id="btnHeat" type="button">Heat crucible</button>
+        <button class="act sec" id="btnDes" type="button">Cool in desiccator</button>
+        <button class="act sec" id="btnBench" type="button">Cool on bench</button>
+      </div>
+      <fieldset>
+        <legend>Heating</legend>
+        <div class="row"><span>Flame</span>
+          <div class="seg" id="segPower"><button type="button" data-v="gentle" aria-pressed="true">Gentle</button><button type="button" data-v="strong" aria-pressed="false">Strong</button></div></div>
+        <div class="row"><span>Lid</span>
+          <div class="seg" id="segLid"><button type="button" data-v="on" aria-pressed="false">On</button><button type="button" data-v="ajar" aria-pressed="true">Ajar</button><button type="button" data-v="off" aria-pressed="false">Off</button></div></div>
+        <div class="row"><label for="time">Time</label><span style="display:flex;gap:8px;align-items:center"><input type="range" id="time" min="1" max="6" step="1" value="3"><span class="tv" id="timeV">3 min</span></span></div>
+      </fieldset>
+      <div>
+        <h3 style="margin-bottom:6px">Results</h3>
+        <table aria-label="Mass readings">
+          <thead><tr><th>Reading</th><th style="text-align:right">Mass / g</th><th style="text-align:right">Change / g</th></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+      <div class="status" id="status"></div>
+    </aside>
+  </div>
+
+  <section class="card calc" aria-label="Calculation">
+    <div class="calc-head">
+      <div><p class="eyebrow">Analysis</p><h2>Calculate the value of <i>x</i></h2></div>
+      <div class="ar" id="arList"></div>
+    </div>
+    <div id="calcBody"></div>
+  </section>
+</div>
+
+<script>
+(function(){
+"use strict";
+const AR={H:1.0,O:16.0,S:32.1,Cl:35.5,Mg:24.3,Ca:40.1,Co:58.9,Cu:63.5,Zn:65.4,Ba:137.3};
+const MRW=18.0;
+const SALTS=[
+ {id:'cuso4',name:'copper(II) sulfate',anh:'CuSO₄',html:'CuSO<sub>4</sub>',Mr:159.6,x:5,hyd:'#2f7fd0',anhC:'#ecebe4',k:1.0,hygro:1.0,mrWork:'63.5 + 32.1 + (4 × 16.0)',
+  obs:'Blue crystals are turning white. Steam condenses on the lid.'},
+ {id:'mgso4',name:'magnesium sulfate',anh:'MgSO₄',html:'MgSO<sub>4</sub>',Mr:120.4,x:7,hyd:'#f6f6f2',anhC:'#fbfbf8',k:0.85,hygro:0.7,mrWork:'24.3 + 32.1 + (4 × 16.0)',
+  obs:'Colourless crystals melt in their own water, then dry to a white powder.'},
+ {id:'bacl2',name:'barium chloride',anh:'BaCl₂',html:'BaCl<sub>2</sub>',Mr:208.3,x:2,hyd:'#f3f4f4',anhC:'#fbfbf9',k:1.2,hygro:0.25,mrWork:'137.3 + (2 × 35.5)',
+  obs:'White crystals crumble to a white powder. Steam is given off.'},
+ {id:'cocl2',name:'cobalt(II) chloride',anh:'CoCl₂',html:'CoCl<sub>2</sub>',Mr:129.9,x:6,hyd:'#c8405e',anhC:'#2c5cb4',k:1.0,hygro:1.6,mrWork:'58.9 + (2 × 35.5)',
+  obs:'Pink crystals turn violet, then blue. Steam is given off.'},
+ {id:'znso4',name:'zinc sulfate',anh:'ZnSO₄',html:'ZnSO<sub>4</sub>',Mr:161.5,x:7,hyd:'#f5f5f1',anhC:'#fbfbf8',k:0.9,hygro:0.6,mrWork:'65.4 + 32.1 + (4 × 16.0)',
+  obs:'Colourless crystals turn into a white powder. Steam is given off.'},
+ {id:'caso4',name:'calcium sulfate',anh:'CaSO₄',html:'CaSO<sub>4</sub>',Mr:136.2,x:2,hyd:'#f2f0ea',anhC:'#faf9f5',k:0.55,hygro:0.3,mrWork:'40.1 + 32.1 + (4 × 16.0)',
+  obs:'White powder gives off steam slowly. Gypsum needs a hot flame.'}
+];
+const W=900,H=420;
+const SPOT={bench:{x:620,b:368},balance:{x:170,b:292},tripod:{x:470,b:262},desiccator:{x:740,b:329}};
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const $=id=>document.getElementById(id);
+const cv=$('scene'),ctx=cv.getContext('2d');
+const rand=(a,b)=>a+Math.random()*(b-a);
+const lerp=(a,b,t)=>a+(b-a)*t;
+const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+const f3=v=>v.toFixed(3);
+
+let st, steam=[], grains=[];
+
+function fresh(saltId){
+  const salt=SALTS.find(s=>s.id===saltId)||SALTS[0];
+  st={salt,mystery:$('mystery').checked,
+    c:{mass:+rand(19.5,27.5).toFixed(3),anh:0,water:0,W0:0,anh0:0,T:22,pos:'bench',x:SPOT.bench.x,b:SPOT.bench.b,strongMin:0,decomp:0},
+    readings:[],heated:false,busy:false,settleUntil:0,noise:0,flame:null,heatClock:0,heatDur:0,
+    lid:st?st.lid:'ajar',power:st?st.power:'gentle',desLid:0,spat:null,
+    err:{spit:0,bench:false,decomp:false},obs:[],heats:0,firstHeat:true,lowSteamSaid:false,calcShown:false,marks:null};
+  steam=[];grains=[];
+  renderChips();renderTable();renderCalc();
+  note('Crucible and lid ready on the bench. Bottle of hydrated '+salt.name+' beside the balance.');
+}
+function hydFormula(s,html){
+  const xs=st.mystery?'<i>x</i>':s.x;
+  if(html) return s.html+'·'+xs+'H<sub>2</sub>O';
+  return s.anh+'·'+(st.mystery?'x':s.x)+'H₂O';
+}
+function note(t,cls){st.obs.unshift({t,cls});st.obs=st.obs.slice(0,3);
+  $('obs').innerHTML=st.obs.map(o=>`<p class="${o.cls||''}">${o.t}</p>`).join('');}
+
+/* ---------- chips ---------- */
+function renderChips(){
+  $('chips').innerHTML=SALTS.map(s=>`<button type="button" class="chip" data-id="${s.id}" aria-pressed="${s.id===st.salt.id}"><span class="dot" style="background:${s.hyd}"></span>${s.html}·${st.mystery?'<i>x</i>':s.x}H<sub>2</sub>O</button>`).join('');
+}
+$('chips').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b||st.busy)return;fresh(b.dataset.id);});
+$('mystery').addEventListener('change',()=>{st.mystery=$('mystery').checked;renderChips();renderCalc();});
+$('btnNew').addEventListener('click',()=>{if(!st.busy)fresh(st.salt.id);});
+
+/* ---------- settings ---------- */
+function seg(id,key){$(id).addEventListener('click',e=>{const b=e.target.closest('button');if(!b||st.busy)return;st[key]=b.dataset.v;
+  [...$(id).children].forEach(x=>x.setAttribute('aria-pressed',x===b));});}
+seg('segPower','power');seg('segLid','lid');
+$('time').addEventListener('input',()=>{$('timeV').textContent=$('time').value+' min';});
+
+/* ---------- physics helpers ---------- */
+const saltMass=()=>st.c.anh+st.c.water;
+const trueMass=()=>st.c.mass+saltMass();
+const hotOffset=()=>Math.min(0.035,Math.max(0,st.c.T-30)*0.00009);
+function reading(now){
+  if(st.c.pos!=='balance')return 0;
+  let m=trueMass()-hotOffset()+st.noise;
+  if(now<st.settleUntil)m+=rand(-0.03,0.03);
+  return m;
+}
+const settled=()=>st.c.pos==='balance'&&performance.now()>=st.settleUntil;
+const frac=()=>st.c.W0>0?Math.min(1,st.c.water/st.c.W0):1;
+
+function animate(dur,fn){return new Promise(res=>{const t0=performance.now();
+  (function step(now){const p=Math.min(1,(now-t0)/dur);fn(p,now);p<1?requestAnimationFrame(step):res();})(t0);});}
+
+async function moveTo(spot){
+  const c=st.c;if(c.pos===spot)return;
+  const fx=c.x,fb=c.b,to=SPOT[spot];
+  if(c.pos==='desiccator'||spot==='desiccator')await animate(reduce?1:350,p=>st.desLid=p);
+  c.pos='moving';
+  await animate(reduce?1:750,p=>{const e=ease(p);c.x=lerp(fx,to.x,e);c.b=lerp(fb,to.b,e)-Math.sin(Math.PI*p)*70;});
+  c.pos=spot;c.x=to.x;c.b=to.b;
+  if(st.desLid>0)await animate(reduce?1:350,p=>st.desLid=1-p);
+  if(spot==='balance'){st.settleUntil=performance.now()+1000;st.noise=[-0.001,0,0,0.001][Math.floor(Math.random()*4)];}
+}
+
+/* ---------- actions ---------- */
+async function run(fn){if(st.busy)return;st.busy=true;updateUI();try{await fn();}finally{st.busy=false;updateUI();}}
+
+$('btnWeigh').onclick=()=>run(async()=>{
+  await moveTo('balance');
+  if(st.c.T>60)note('The crucible is still hot. Hot air rising off it makes the reading unstable and too low.','warn');
+});
+
+$('btnAdd').onclick=()=>run(async()=>{
+  const dm=rand(0.22,0.45);
+  st.spat={x:300,y:300,a:0,load:1};
+  const p0={x:300,y:300},p1={x:st.c.x+34,y:st.c.b-62};
+  await animate(reduce?1:450,p=>{const e=ease(p);st.spat.x=lerp(p0.x,p1.x,e);st.spat.y=lerp(p0.y,p1.y,e)-Math.sin(Math.PI*p)*30;});
+  await animate(reduce?1:420,p=>{st.spat.a=p*0.55;if(Math.random()<.7)grains.push({x:st.spat.x-26+rand(-4,4),y:st.spat.y+4,vx:rand(-10,10),vy:rand(10,40),life:1.2,col:st.salt.hyd,stop:st.c.b-8});st.spat.load=1-p;});
+  const Mh=st.salt.Mr+st.salt.x*MRW;
+  st.c.anh+=dm*st.salt.Mr/Mh;st.c.water+=dm*st.salt.x*MRW/Mh;st.c.W0=st.c.water;st.c.anh0=st.c.anh;
+  st.settleUntil=performance.now()+900;
+  await animate(reduce?1:420,p=>{const e=ease(p);st.spat.a=0.55*(1-p);st.spat.x=lerp(p1.x,p0.x,e);st.spat.y=lerp(p1.y,p0.y,e);});
+  st.spat=null;
+});
+
+$('btnRecord').onclick=()=>{
+  if(st.busy||!settled())return;
+  const n=st.readings.length;let label;
+  if(n===0)label='Empty crucible + lid';
+  else if(n===1)label='Crucible + lid + hydrated salt';
+  else{label='After heating '+(n-1);st.heated=false;}
+  const v=+f3(reading(performance.now()));
+  st.readings.push({label,v,hot:st.c.T>60,bench:st.benchSince||false});
+  st.benchSince=false;
+  renderTable();renderCalc();updateUI();
+  if(isConstant())note('Constant mass reached: the last two readings agree to within 0.01 g.');
+};
+
+$('btnHeat').onclick=()=>run(async()=>{
+  if(st.c.pos!=='tripod')await moveTo('tripod');
+  const D=+$('time').value,strong=st.power==='strong',lid=st.lid,s=st.salt,c=st.c;
+  const fStart=frac();
+  let spitTotal=0;
+  if(strong&&lid==='off'&&fStart>0.35)spitTotal=rand(0.015,0.04);
+  let spitLeft=spitTotal,spitSaid=false,decompSaid=false;
+  st.flame=strong?'strong':'gentle';st.heatDur=D;st.heatClock=0;
+  if(st.firstHeat){note(s.obs);st.firstHeat=false;}
+  if(s.id==='caso4'&&!strong&&fStart>0.3)note('Water is coming off very slowly. Gypsum needs a hotter flame.','warn');
+  const SPEED=reduce?3:1.25; // simulated minutes per real second
+  await new Promise(res=>{let last=performance.now();
+    (function step(now){const dMin=Math.min(0.05,(now-last)/1000)*SPEED;last=now;st.heatClock+=dMin;
+      const target=strong?650:380;c.T+=(target-c.T)*(1-Math.exp(-dMin/0.4));
+      if(c.T>105&&c.water>0){
+        let k=(strong?0.95:0.5)*s.k*(lid==='off'?1.15:1)*(lid==='on'?0.9:1);
+        if(s.id==='caso4'&&!strong)k*=0.55;
+        const dw=c.water*(1-Math.exp(-k*dMin));c.water-=dw;
+        const r=c.W0>0?dw/dMin/c.W0:0;
+        if(Math.random()<Math.min(1,r*6+0.02*(r>0.004)))spawnSteam(lid);
+      }
+      if(spitLeft>0&&st.heatClock<D*0.5){
+        const amt=Math.min(spitLeft,spitTotal*dMin/(D*0.5)),tot=saltMass();
+        c.anh-=c.anh*amt/tot;c.water-=c.water*amt/tot;spitLeft-=amt;st.err.spit+=amt;
+        if(Math.random()<.5)grains.push({x:c.x+rand(-10,10),y:c.b-30,vx:rand(-90,90),vy:rand(-160,-90),life:1.5,col:mixHex(s.anhC,s.hyd,frac()),stop:370});
+        if(!spitSaid){note('Crackling! Solid is spitting out of the open crucible.','bad');spitSaid=true;}
+      }
+      if(s.id==='cuso4'&&strong){c.strongMin+=dMin;
+        if(c.strongMin>12&&frac()<0.04){const d=c.anh*0.006*dMin;c.anh-=d;c.decomp+=d;st.err.decomp=true;
+          if(!decompSaid){note('The white powder is darkening. Copper(II) sulfate is starting to decompose to black copper(II) oxide.','bad');decompSaid=true;}}}
+      st.heatClock<D?requestAnimationFrame(step):res();})(last);});
+  st.flame=null;st.heated=true;st.heats++;
+  if(st.heats>1&&frac()<0.03&&!st.lowSteamSaid){note('Hardly any steam now: nearly all the water has gone.');st.lowSteamSaid=true;}
+});
+
+$('btnDes').onclick=()=>run(async()=>{
+  await moveTo('desiccator');
+  const T0=st.c.T;
+  await animate(reduce?300:2600,p=>{st.c.T=22+(T0-22)*Math.exp(-p*6);});
+  st.c.T=22.5;
+  note('Cooled in the desiccator. The dry air stops the anhydrous salt absorbing moisture.');
+});
+$('btnBench').onclick=()=>run(async()=>{
+  await moveTo('bench');
+  const T0=st.c.T,c=st.c;
+  const regain=frac()<0.3?Math.min(c.W0-c.water,c.W0*0.03*st.salt.hygro):0;
+  const w0=c.water;
+  await animate(reduce?300:3600,p=>{c.T=22+(T0-22)*Math.exp(-p*5);c.water=w0+regain*p;});
+  c.T=23;
+  if(regain>0){st.err.bench=true;st.benchSince=true;note('Cooled in open air. The anhydrous salt has absorbed some water vapour from the air.','warn');}
+  else note('Cooled on the bench.');
+});
+
+function canRecord(){
+  if(st.busy||st.c.pos!=='balance')return false;
+  const n=st.readings.length;
+  if(n===0)return st.c.anh===0;
+  if(n===1)return saltMass()>=1.0;
+  return st.heated;
+}
+function isConstant(){const h=st.readings.slice(2);return h.length>=2&&Math.abs(h[h.length-1].v-h[h.length-2].v)<=0.0100001;}
+
+function updateUI(){
+  const c=st.c,n=st.readings.length,b=st.busy;
+  $('btnWeigh').disabled=b||c.pos==='balance';
+  $('btnRecord').disabled=!canRecord()||!settled();
+  $('btnAdd').disabled=b||c.pos!=='balance'||n!==1||saltMass()>3.3;
+  $('btnHeat').disabled=b||n<2;
+  $('btnDes').disabled=b||n<2||c.pos==='desiccator'||c.T<40;
+  $('btnBench').disabled=b||n<2||c.pos==='bench'||c.T<40;
+  let h,t;
+  const hot=c.T>60;
+  if(n===0){t='Step 1';h=c.pos!=='balance'?'Weigh the empty crucible with its lid.':'Wait for the reading to settle, then record the mass.';}
+  else if(n===1){t='Step 2';h=saltMass()<1.0?'Add the hydrated salt with the spatula. Aim for between 1.5 g and 2.5 g.':(saltMass()<1.5?'At least 1.5 g gives a more accurate result. Add more, or record the mass.':'Record the mass of the crucible, lid and hydrated salt.');}
+  else if(n===2&&!st.heated){t='Step 3';h='Heat the crucible. Start with a gentle flame and the lid ajar so steam can escape.';}
+  else if(st.heated){t='Step 4';
+    if(c.pos==='tripod')h='Let the crucible cool before you weigh it. A desiccator stops the solid absorbing water.';
+    else if(c.pos!=='balance')h='Weigh the crucible, lid and solid, then record the mass.';
+    else h=hot?'The crucible is still hot. A hot crucible gives a low reading.':'Record the mass.';}
+  else if(isConstant()){t='Done';h='Constant mass reached. Complete the calculation below.';}
+  else{t='Repeat';h=n===3?'Heat, cool and weigh again to check that all the water has gone.':'Repeat heating, cooling and weighing until two readings agree to within 0.01 g.';}
+  $('hint').innerHTML=`<b>${t}</b>${h}`;
+  const pills=[];
+  if(n>=3)pills.push(isConstant()?'<span class="pill good">Constant mass ✓</span>':'<span class="pill warn">Not yet at constant mass</span>');
+  if(st.heats)pills.push(`<span class="pill">Heated ${st.heats}×</span>`);
+  $('status').innerHTML=pills.join('');
+}
+
+function renderTable(){
+  const r=st.readings;
+  if(!r.length){$('tbody').innerHTML='<tr class="empty-row"><td colspan="3">No readings yet</td></tr>';return;}
+  const cst=isConstant();
+  $('tbody').innerHTML=r.map((x,i)=>{
+    const d=i>=3?f3(x.v-r[i-1].v):'';
+    const cls=cst&&i>=r.length-2?' class="const"':'';
+    return `<tr${cls}><td>${x.label}${x.hot?' <span title="weighed hot" style="color:var(--bad)">●</span>':''}</td><td class="n">${f3(x.v)}</td><td class="n dif">${d}</td></tr>`;}).join('');
+}
+
+/* ---------- calculation ---------- */
+$('arList').innerHTML='<span style="background:none;padding:0;font-family:var(--f-body);color:var(--muted)">A<sub>r</sub>:</span>'+['H','O','S','Cl','Mg','Ca','Co','Cu','Zn','Ba'].map(e=>`<span>${e} ${AR[e].toFixed(1)}</span>`).join('');
+
+function expected(){
+  const r=st.readings,m1=r[0].v,m2=r[1].v,m3=r[r.length-1].v;
+  const hyd=+(m2-m1).toFixed(3),anh=+(m3-m1).toFixed(3),water=+(hyd-anh).toFixed(3);
+  const nA=anh/st.salt.Mr,nW=water/MRW,ratio=nW/nA;
+  return {m1,m2,m3,hyd,anh,water,Mr:st.salt.Mr,nA,nW,ratio,x:Math.round(ratio)};
+}
+const STEPS=[
+ {k:'hyd',lab:'Mass of hydrated salt',sub:'(crucible + lid + hydrated salt) − (crucible + lid)',u:'g',tol:(v,e)=>Math.abs(v-e)<=0.0015},
+ {k:'anh',lab:'Mass of anhydrous salt',sub:'(final constant mass) − (crucible + lid)',u:'g',tol:(v,e)=>Math.abs(v-e)<=0.0015},
+ {k:'water',lab:'Mass of water lost',sub:'mass of hydrated salt − mass of anhydrous salt',u:'g',tol:(v,e)=>Math.abs(v-e)<=0.0025},
+ {k:'Mr',lab:'Mr of anhydrous salt',sub:'add up the Ar values',u:'',tol:(v,e)=>Math.abs(v-e)<=0.15},
+ {k:'nA',lab:'Moles of anhydrous salt',sub:'mass ÷ Mr',u:'mol',tol:(v,e)=>Math.abs(v-e)/e<=0.012},
+ {k:'nW',lab:'Moles of water',sub:'mass of water ÷ 18.0',u:'mol',tol:(v,e)=>Math.abs(v-e)/e<=0.012},
+ {k:'ratio',lab:'Ratio of moles',sub:'moles of water ÷ moles of anhydrous salt',u:'',tol:(v,e)=>Math.abs(v-e)/e<=0.02},
+ {k:'x',lab:'Value of x',sub:'nearest whole number',u:'',tol:(v,e)=>v===e}
+];
+function renderCalc(){
+  const box=$('calcBody');
+  if(st.readings.length<3){box.innerHTML=`<p class="locked">Record at least one mass after heating to unlock the calculation for ${hydFormula(st.salt,true)}.</p>`;return;}
+  const keep={};STEPS.forEach(s=>{const el=$('in-'+s.k);if(el)keep[s.k]=el.value;});
+  const warn=isConstant()?'':`<p class="pill warn" style="justify-self:start">Readings have not reached constant mass yet. Your value of x may be too low.</p>`;
+  box.innerHTML=`<div class="calc-grid"><div style="display:grid;gap:12px;min-width:0">${warn}
+    <p style="margin:0">Find <i>x</i> in ${hydFormula(st.salt,true)} using your results.</p>
+    <ol class="steps">${STEPS.map(s=>`<li id="li-${s.k}"><div class="st-lab">${s.k==='Mr'?'M<sub>r</sub> of '+st.salt.html:s.lab}<small>${s.sub.replace('Ar','A<sub>r</sub>')}</small></div>
+      <label class="inp"><input id="in-${s.k}" inputmode="decimal" autocomplete="off" aria-label="${s.lab}"><i>${s.u}</i></label><span class="mark" id="mk-${s.k}" aria-live="polite"></span></li>`).join('')}</ol>
+    <div class="calc-actions"><button class="act" id="btnCheck" type="button">Check answers</button><button class="act sec" id="btnWork" type="button">${st.calcShown?'Hide':'Show'} worked solution</button></div>
+  </div><div id="workBox" style="min-width:0"></div></div>`;
+  STEPS.forEach(s=>{if(keep[s.k])$('in-'+s.k).value=keep[s.k];});
+  $('btnCheck').onclick=check;
+  $('btnWork').onclick=()=>{st.calcShown=!st.calcShown;renderCalc();};
+  if(st.marks)check();
+  renderWork();
+}
+function check(){
+  const e=expected();let all=true;st.marks=true;
+  STEPS.forEach(s=>{const raw=$('in-'+s.k).value.trim();const mk=$('mk-'+s.k),li=$('li-'+s.k);
+    li.classList.remove('ok','no');
+    if(raw===''){mk.textContent='';mk.className='mark';all=false;return;}
+    const v=parseFloat(raw.replace(/[×x]\s*10\^?/i,'e'));
+    const ok=isFinite(v)&&s.tol(v,e[s.k]);
+    mk.textContent=ok?'✓':'✗';mk.className='mark '+(ok?'ok':'no');li.classList.add(ok?'ok':'no');if(!ok)all=false;});
+  if(all&&!st.calcShown){st.calcShown=true;renderCalc();}
+}
+const sf=(v,n=3)=>{const s=Number(v.toPrecision(n));return Math.abs(s)<0.001?s.toExponential(n-1).replace('e',' × 10^'):String(s);};
+function renderWork(){
+  const box=$('workBox');if(!box)return;
+  if(!st.calcShown){box.innerHTML=`<div class="working"><p class="st-lab" style="color:var(--muted)">Work through each step, then check your answers. The worked solution uses your own readings.</p></div>`;return;}
+  const e=expected(),s=st.salt;
+  const pct=(e.ratio-s.x)/s.x*100;
+  const unc=0.002/e.water*100;
+  const reasons=[];
+  if(!isConstant())reasons.push('The solid was not heated to constant mass, so some water was still there. The mass of water lost is too small, so x comes out too low.');
+  if(st.err.spit>0.003)reasons.push(`About ${st.err.spit.toFixed(3)} g of solid spat out when it was heated strongly with the lid off. That mass loss was counted as water, so x comes out too high.`);
+  if(st.err.decomp)reasons.push('Strong heating for too long began to decompose the anhydrous copper(II) sulfate. The extra mass loss was counted as water, so x comes out too high.');
+  const last=st.readings[st.readings.length-1];
+  if(last.hot)reasons.push('The final mass was recorded while the crucible was hot. Rising hot air gives a low reading, so the water lost looks larger and x comes out too high.');
+  if(st.readings.slice(2).some(r=>r.bench))reasons.push('The crucible cooled in open air, so the anhydrous salt absorbed water vapour. The final mass is too high, so x comes out too low.');
+  const good=Math.abs(pct)<3&&!reasons.length;
+  box.innerHTML=`<div class="working">
+    <h3>Worked solution</h3>
+    <p>Mass of hydrated salt</p><div class="eq">${f3(e.m2)} − ${f3(e.m1)} = ${f3(e.hyd)} g</div>
+    <p>Mass of anhydrous salt</p><div class="eq">${f3(e.m3)} − ${f3(e.m1)} = ${f3(e.anh)} g</div>
+    <p>Mass of water lost</p><div class="eq">${f3(e.hyd)} − ${f3(e.anh)} = ${f3(e.water)} g</div>
+    <p>M<sub>r</sub> of ${s.html}</p><div class="eq">${s.mrWork} = ${s.Mr.toFixed(1)}</div>
+    <p>Moles</p><div class="eq">n(${s.anh}) = ${f3(e.anh)} ÷ ${s.Mr.toFixed(1)} = ${sf(e.nA)} mol</div><div class="eq">n(H₂O) = ${f3(e.water)} ÷ 18.0 = ${sf(e.nW)} mol</div>
+    <p>Ratio</p><div class="eq">${sf(e.nW)} ÷ ${sf(e.nA)} = ${e.ratio.toFixed(2)}  →  x = ${e.x}</div>
+    <p>Formula: <b>${s.html}·${e.x}H<sub>2</sub>O</b></p>
+    <div class="verdict ${good?'good':'warn'}">
+      <b>Accepted formula: ${s.html}·${s.x}H<sub>2</sub>O</b>
+      <span>Your ratio of ${e.ratio.toFixed(2)} is ${Math.abs(pct).toFixed(1)}% ${pct>=0?'above':'below'} the accepted value of ${s.x}.</span>
+      <span style="color:var(--muted);font-size:.84rem">The mass of water comes from two readings, each ±0.001 g, so its uncertainty is ±0.002 g: ${unc.toFixed(2)}% of ${f3(e.water)} g.</span>
+      ${reasons.length?'<ul>'+reasons.map(r=>`<li>${r}</li>`).join('')+'</ul>':(good?'<span>Good technique. The small difference comes from the resolution of the balance and a trace of water left in the solid.</span>':'')}
+    </div></div>`;
+}
+
+/* ---------- particles ---------- */
+function spawnSteam(lid){
+  const c=st.c;let x,y;
+  if(lid==='off'){x=c.x+rand(-14,14);y=c.b-42;}
+  else if(lid==='ajar'){x=c.x-24+rand(-3,3);y=c.b-44;}
+  else{x=c.x+(Math.random()<.5?-29:29);y=c.b-41;}
+  steam.push({x,y,vx:rand(-6,6),vy:rand(-34,-22),r:rand(3,6),life:1,max:rand(1.4,2.2)});
+}
+function updateParticles(dt){
+  for(const p of steam){p.x+=p.vx*dt;p.y+=p.vy*dt;p.r+=dt*6;p.life-=dt/p.max;}
+  steam=steam.filter(p=>p.life>0);
+  for(const g of grains){g.vy+=420*dt;g.x+=g.vx*dt;g.y+=g.vy*dt;g.life-=dt;if(g.y>g.stop){g.y=g.stop;g.vx=0;g.vy=0;g.life=Math.min(g.life,.15);}}
+  grains=grains.filter(g=>g.life>0);
+}
+
+/* ---------- drawing ---------- */
+function hexRgb(h){const n=parseInt(h.slice(1),16);return[(n>>16)&255,(n>>8)&255,n&255];}
+function mixHex(a,b,t){const A=hexRgb(a),B=hexRgb(b);return`rgb(${A.map((v,i)=>Math.round(v+(B[i]-v)*t)).join(',')})`;}
+function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function saltColour(){
+  const s=st.salt;let col=mixHex(s.anhC,s.hyd,Math.pow(frac(),0.8));
+  if(st.c.decomp>0){const d=Math.min(1,st.c.decomp/(st.c.anh0*0.25));const m=col.match(/\d+/g).map(Number),k=[43,38,34];
+    col=`rgb(${m.map((v,i)=>Math.round(v+(k[i]-v)*d*.9)).join(',')})`;}
+  return col;
+}
+function drawRoom(){
+  const g=ctx.createLinearGradient(0,0,0,370);g.addColorStop(0,'#efe8dc');g.addColorStop(1,'#e4d9c6');
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,370);
+  ctx.strokeStyle='rgba(120,90,60,.08)';ctx.lineWidth=1;
+  for(let y=40;y<370;y+=46){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+  const b=ctx.createLinearGradient(0,368,0,H);b.addColorStop(0,'#8c5b35');b.addColorStop(1,'#6e4325');
+  ctx.fillStyle=b;ctx.fillRect(0,368,W,H-368);
+  ctx.fillStyle='#5a3519';ctx.fillRect(0,368,W,3);
+  ctx.strokeStyle='rgba(40,20,5,.18)';
+  for(let i=0;i<6;i++){ctx.beginPath();ctx.moveTo(0,382+i*7);ctx.bezierCurveTo(300,378+i*7,600,388+i*7,W,380+i*7);ctx.stroke();}
+}
+function drawBalance(now){
+  ctx.fillStyle='rgba(60,40,20,.15)';rr(84,306,182,66,8);ctx.fill();
+  const g=ctx.createLinearGradient(0,300,0,368);g.addColorStop(0,'#f1eee8');g.addColorStop(1,'#d8d3c9');
+  ctx.fillStyle=g;rr(78,300,184,68,8);ctx.fill();ctx.strokeStyle='#a9a294';ctx.lineWidth=1.2;ctx.stroke();
+  ctx.fillStyle='#38332c';rr(96,311,148,44,5);ctx.fill();
+  ctx.fillStyle='#b8c6a0';rr(101,315,138,34,3);ctx.fill();
+  const v=reading(now);
+  ctx.fillStyle='#1d2616';ctx.font='bold 23px '+getComputedStyle(document.documentElement).getPropertyValue('--f-mono');
+  ctx.textAlign='right';ctx.textBaseline='alphabetic';ctx.fillText(f3(Math.max(0,v)),222,341);
+  ctx.font='bold 13px sans-serif';ctx.fillText('g',234,341);
+  if(st.c.pos==='balance'&&!settled()){ctx.fillStyle='#1d2616';ctx.beginPath();ctx.arc(108,322,2.5,0,7);ctx.fill();}
+  ctx.textAlign='left';ctx.fillStyle='#7d7568';ctx.font='10px sans-serif';ctx.fillText('d = 0.001 g',98,364);
+  ctx.fillStyle='#9ba0a4';ctx.fillRect(164,292,12,9);
+  ctx.beginPath();ctx.ellipse(170,292,58,7,0,0,Math.PI*2);const pg=ctx.createLinearGradient(112,0,228,0);pg.addColorStop(0,'#aeb3b7');pg.addColorStop(.5,'#e3e6e8');pg.addColorStop(1,'#9fa4a8');ctx.fillStyle=pg;ctx.fill();ctx.strokeStyle='#7f858a';ctx.stroke();
+}
+function drawBottle(){
+  const s=st.salt;
+  ctx.fillStyle='rgba(60,40,20,.15)';ctx.fillRect(274,366,62,4);
+  ctx.fillStyle='rgba(215,232,236,.55)';rr(270,316,60,52,6);ctx.fill();ctx.strokeStyle='rgba(80,110,120,.7)';ctx.lineWidth=1.2;ctx.stroke();
+  ctx.save();rr(272,318,56,48,5);ctx.clip();ctx.fillStyle=s.hyd;ctx.fillRect(272,334,56,34);
+  ctx.fillStyle='rgba(0,0,0,.12)';for(let i=0;i<40;i++){ctx.fillRect(273+(i*37)%54,336+(i*13)%30,2,2);}ctx.restore();
+  ctx.fillStyle='#58331a';rr(276,305,48,13,3);ctx.fill();
+  ctx.fillStyle='#fffdf6';rr(275,328,50,26,2);ctx.fill();ctx.strokeStyle='#c9bda8';ctx.lineWidth=1;ctx.stroke();
+  ctx.fillStyle='#2a2017';ctx.textAlign='center';ctx.font='bold 8px sans-serif';ctx.fillText('HYDRATED',300,338);
+  ctx.font='10px sans-serif';ctx.fillText(hydFormula(s),300,350);ctx.textAlign='left';
+  if(!st.spat){ctx.save();ctx.translate(345,365);ctx.rotate(-0.06);drawSpatula(0,false);ctx.restore();}
+}
+function drawSpatula(load,_){
+  ctx.fillStyle='#b9bec2';ctx.fillRect(0,-1.5,46,3);
+  ctx.beginPath();ctx.ellipse(-6,0,11,4,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#868b90';ctx.lineWidth=1;ctx.stroke();
+  if(load>0){ctx.fillStyle=st.salt.hyd;ctx.beginPath();ctx.ellipse(-6,-2,9*load,4*load,0,Math.PI,0);ctx.fill();}
+}
+function drawTripodBack(now){
+  ctx.fillStyle='#b8b2a7';ctx.fillRect(388,364,166,5);ctx.fillStyle='#9e978b';ctx.fillRect(388,369,166,2);
+  ctx.strokeStyle='#5b5b5b';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(470,250);ctx.lineTo(470,362);ctx.stroke();
+  // Bunsen
+  ctx.strokeStyle='#c76b2c';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(446,362);ctx.quadraticCurveTo(420,366,394,363);ctx.stroke();
+  ctx.fillStyle='#3d3d3d';ctx.beginPath();ctx.ellipse(470,365,28,5,0,0,Math.PI*2);ctx.fill();ctx.fillRect(446,356,48,9);
+  const bg=ctx.createLinearGradient(463,0,477,0);bg.addColorStop(0,'#8c9095');bg.addColorStop(.5,'#d3d6d9');bg.addColorStop(1,'#80858a');
+  ctx.fillStyle=bg;ctx.fillRect(463,316,14,42);ctx.fillStyle='#6b6f73';ctx.fillRect(460,338,20,7);
+  ctx.fillStyle='#222';ctx.fillRect(465,340,4,3);
+  ctx.strokeStyle='#4a4a4a';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(440,248);ctx.lineTo(500,248);ctx.stroke();
+  ctx.fillStyle='#f4f1ea';rr(446,245,48,5,2);ctx.fill();
+  drawFlame(now);
+}
+function drawFlame(now){
+  if(!st.flame)return;
+  const s=st.flame==='strong',x=470,y=316,f=1+0.06*Math.sin(now/37)+0.05*Math.sin(now/61);
+  const h=(s?56:44)*f,w=s?12:10;
+  ctx.beginPath();ctx.moveTo(x-w,y);ctx.quadraticCurveTo(x-w*1.05,y-h*.55,x,y-h);ctx.quadraticCurveTo(x+w*1.05,y-h*.55,x+w,y);ctx.closePath();
+  ctx.fillStyle=s?'rgba(70,95,240,.42)':'rgba(90,110,235,.32)';ctx.fill();
+  const h2=h*(s?.42:.55);ctx.beginPath();ctx.moveTo(x-w*.6,y);ctx.quadraticCurveTo(x-w*.4,y-h2*.6,x,y-h2);ctx.quadraticCurveTo(x+w*.4,y-h2*.6,x+w*.6,y);ctx.closePath();
+  ctx.fillStyle=s?'rgba(110,210,255,.85)':'rgba(80,140,250,.6)';ctx.fill();
+}
+function drawTripodFront(){
+  ctx.strokeStyle='#4a4a4a';ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(424,248);ctx.lineTo(470,258);ctx.lineTo(516,248);ctx.stroke();
+  ctx.fillStyle='#f4f1ea';ctx.save();ctx.translate(447,253);ctx.rotate(0.21);rr(-14,-2.5,28,5,2);ctx.fill();ctx.restore();
+  ctx.save();ctx.translate(493,253);ctx.rotate(-0.21);rr(-14,-2.5,28,5,2);ctx.fill();ctx.restore();
+  ctx.strokeStyle='#333';ctx.lineWidth=5;ctx.beginPath();ctx.ellipse(470,251,48,6,0,0,Math.PI);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(424,252);ctx.lineTo(410,366);ctx.moveTo(516,252);ctx.lineTo(530,366);ctx.stroke();
+}
+function drawDesBack(){
+  const cx=740;
+  ctx.fillStyle='rgba(60,40,20,.12)';ctx.fillRect(695,366,90,4);
+  ctx.beginPath();ctx.moveTo(668,268);ctx.bezierCurveTo(668,330,690,358,700,360);ctx.lineTo(780,360);ctx.bezierCurveTo(790,358,812,330,812,268);ctx.closePath();
+  ctx.fillStyle='rgba(205,228,232,.35)';ctx.fill();
+  ctx.save();ctx.clip();ctx.fillStyle='#3f6fb5';ctx.fillRect(660,336,160,26);
+  ctx.fillStyle='rgba(255,255,255,.35)';for(let i=0;i<70;i++){ctx.beginPath();ctx.arc(672+(i*29)%138,339+(i*11)%20,1.6,0,7);ctx.fill();}ctx.restore();
+  ctx.fillStyle='#f3f0ea';ctx.fillRect(676,329,128,4);ctx.fillStyle='#bdb7ab';for(let i=0;i<8;i++)ctx.fillRect(684+i*15,330,4,2);
+}
+function drawDesFront(){
+  const cx=740;
+  ctx.beginPath();ctx.moveTo(668,268);ctx.bezierCurveTo(668,330,690,358,700,360);ctx.lineTo(780,360);ctx.bezierCurveTo(790,358,812,330,812,268);
+  ctx.strokeStyle='rgba(70,105,115,.8)';ctx.lineWidth=1.6;ctx.stroke();
+  ctx.fillStyle='rgba(205,228,232,.15)';ctx.fill();
+  ctx.fillStyle='rgba(205,228,232,.7)';ctx.fillRect(660,262,160,7);ctx.strokeStyle='rgba(70,105,115,.8)';ctx.strokeRect(660,262,160,7);
+  ctx.fillStyle='rgba(205,228,232,.6)';ctx.fillRect(704,360,72,7);ctx.strokeRect(704,360,72,7);
+  ctx.strokeStyle='rgba(255,255,255,.7)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(678,285);ctx.quadraticCurveTo(680,325,698,348);ctx.stroke();
+  const dx=st.desLid*62,dy=-st.desLid*28;
+  ctx.save();ctx.translate(dx,dy);
+  ctx.beginPath();ctx.moveTo(660,262);ctx.bezierCurveTo(664,236,700,228,740,228);ctx.bezierCurveTo(780,228,816,236,820,262);ctx.closePath();
+  ctx.fillStyle='rgba(205,228,232,.4)';ctx.fill();ctx.strokeStyle='rgba(70,105,115,.8)';ctx.lineWidth=1.6;ctx.stroke();
+  ctx.fillStyle='rgba(205,228,232,.9)';rr(731,215,18,14,3);ctx.fill();ctx.stroke();
+  ctx.restore();
+  ctx.fillStyle='#6c5f50';ctx.font='10px sans-serif';ctx.textAlign='center';ctx.fillText('desiccator',740,386);ctx.fillText('balance',170,386);ctx.fillText('tripod & Bunsen burner',470,386);ctx.textAlign='left';
+}
+function drawCrucible(){
+  const c=st.c,x=c.x,b=c.b,top=b-40,th=28,bh=17;
+  const lidState=c.pos==='tripod'?st.lid:'on';
+  // body
+  ctx.beginPath();ctx.moveTo(x-th,top);ctx.lineTo(x-bh,b-4);ctx.quadraticCurveTo(x,b+2,x+bh,b-4);ctx.lineTo(x+th,top);ctx.closePath();
+  const g=ctx.createLinearGradient(x-th,0,x+th,0);g.addColorStop(0,'#d6d1c6');g.addColorStop(.45,'#fbfaf6');g.addColorStop(1,'#cbc5b9');
+  ctx.fillStyle=g;ctx.fill();ctx.strokeStyle='#9b9487';ctx.lineWidth=1.3;ctx.stroke();
+  // cutaway inner + contents
+  ctx.save();ctx.beginPath();ctx.moveTo(x-th+4,top+2);ctx.lineTo(x-bh+3,b-7);ctx.quadraticCurveTo(x,b-2,x+bh-3,b-7);ctx.lineTo(x+th-4,top+2);ctx.closePath();
+  ctx.fillStyle='#ebe7de';ctx.fill();ctx.clip();
+  const m=saltMass();
+  if(m>0.001){const hgt=Math.min(31,5+21*Math.sqrt(m/3)*(0.75+0.25*frac()));const sy=b-4-hgt;
+    ctx.fillStyle=saltColour();ctx.fillRect(x-th,sy,th*2,hgt+6);
+    ctx.fillStyle='rgba(0,0,0,.10)';for(let i=0;i<28;i++){const px=x-th+((i*53)%56),py=sy+2+((i*17)%Math.max(2,hgt));ctx.fillRect(px,py,2,2);}
+    ctx.fillStyle='rgba(255,255,255,.25)';ctx.fillRect(x-th,sy,th*2,2);}
+  ctx.restore();
+  // rim
+  ctx.beginPath();ctx.ellipse(x,top,th,3,0,0,Math.PI*2);ctx.strokeStyle='#9b9487';ctx.lineWidth=1.2;ctx.stroke();
+  if(c.T>420){ctx.save();ctx.globalAlpha=Math.min(.55,(c.T-420)/450);ctx.beginPath();ctx.moveTo(x-th,top);ctx.lineTo(x-bh,b-4);ctx.quadraticCurveTo(x,b+2,x+bh,b-4);ctx.lineTo(x+th,top);ctx.closePath();
+    const gg=ctx.createLinearGradient(0,b,0,top);gg.addColorStop(0,'#ff6a1a');gg.addColorStop(1,'rgba(255,140,40,0)');ctx.fillStyle=gg;ctx.fill();ctx.restore();}
+  // lid
+  if(lidState==='off')drawLid(562,368,0);
+  else if(lidState==='ajar')drawLid(x+11,top-3,-0.17);
+  else drawLid(x,top-1,0);
+  if(c.pos==='moving'){ctx.strokeStyle='#5d6368';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x+70,b-130);ctx.lineTo(x+27,top+6);ctx.moveTo(x+78,b-122);ctx.lineTo(x+29,top+12);ctx.stroke();}
+}
+function drawLid(x,y,a){
+  ctx.save();ctx.translate(x,y);ctx.rotate(a);
+  ctx.beginPath();ctx.ellipse(0,0,31,4,0,0,Math.PI*2);ctx.fillStyle='#ece8df';ctx.fill();ctx.strokeStyle='#9b9487';ctx.lineWidth=1.2;ctx.stroke();
+  ctx.beginPath();ctx.ellipse(0,-3,22,4,0,Math.PI,0);ctx.fillStyle='#f6f3ec';ctx.fill();ctx.stroke();
+  ctx.fillStyle='#e5e0d5';rr(-5,-11,10,6,2);ctx.fill();ctx.stroke();
+  ctx.restore();
+}
+function drawHUD(){
+  const c=st.c;
+  ctx.fillStyle='rgba(255,252,246,.88)';rr(12,12,232,st.flame?50:30,7);ctx.fill();ctx.strokeStyle='#e2d7c5';ctx.lineWidth=1;ctx.stroke();
+  ctx.fillStyle='#2a2017';ctx.font='12px sans-serif';
+  ctx.fillText('Crucible temperature',22,31);
+  ctx.font='bold 12px sans-serif';ctx.textAlign='right';ctx.fillStyle=c.T>60?'#b0392c':'#2a2017';ctx.fillText(Math.round(c.T)+' °C',234,31);ctx.textAlign='left';
+  if(st.flame){ctx.fillStyle='#2a2017';ctx.font='12px sans-serif';ctx.fillText('Heating ('+st.flame+')',22,51);
+    ctx.textAlign='right';ctx.font='bold 12px sans-serif';ctx.fillText(Math.min(st.heatClock,st.heatDur).toFixed(1)+' / '+st.heatDur+' min',234,51);ctx.textAlign='left';}
+}
+function draw(now){
+  ctx.setTransform(cv.width/W,0,0,cv.height/H,0,0);
+  drawRoom();drawBalance(now);drawBottle();drawTripodBack(now);drawDesBack();
+  drawCrucible();
+  drawTripodFront();drawDesFront();
+  for(const p of steam){ctx.fillStyle=`rgba(235,240,244,${Math.max(0,p.life)*.75})`;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.fill();}
+  for(const g of grains){ctx.fillStyle=g.col;ctx.fillRect(g.x,g.y,2.4,2.4);}
+  if(st.spat){ctx.save();ctx.translate(st.spat.x,st.spat.y);ctx.rotate(-st.spat.a);ctx.scale(-1,1);drawSpatula(st.spat.load);ctx.restore();}
+  drawHUD();
+}
+function resize(){const r=cv.getBoundingClientRect(),d=Math.min(2,window.devicePixelRatio||1);cv.width=Math.round(r.width*d)||W;cv.height=Math.round(r.width*d*H/W)||H;}
+addEventListener('resize',resize);
+
+let last=performance.now(),uiTick=0;
+function frame(now){
+  const dt=Math.min(.05,(now-last)/1000);last=now;
+  if(!st.flame&&!st.busy){const tau=st.c.pos==='balance'?25:12;st.c.T+=(22-st.c.T)*(1-Math.exp(-dt/tau));}
+  updateParticles(dt);draw(now);
+  if((uiTick+=dt)>.15){uiTick=0;updateUI();}
+  requestAnimationFrame(frame);
+}
+st=null;fresh('cuso4');resize();requestAnimationFrame(frame);
+})();
+</script>
+
+</body></html>

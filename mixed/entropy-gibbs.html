@@ -1,0 +1,809 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Entropy to Gibbs Free Energy</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: header + tab bar; each tab is a two-pane bench (animation/graph stage | teaching notes) that stacks on narrow screens.
+   Single light theme by choice: matches the rest of the A-level animation collection for projector use. */
+:root{
+  --bg:#F2EFE8; --panel:#FFFDF8; --sunk:#F7F4EE; --ink:#2A251F; --muted:#6B6155; --line:#DDD5C7;
+  --brown:#7A4A22; --S:#1D6A73; --S-soft:#DCEDEE; --H:#A3372A; --H-soft:#F5E1DD; --G:#4A3E8E; --G-soft:#E6E3F3;
+  --ok:#2E7A3B; --ok-soft:#E1F0E2; --no:#A3372A; --no-soft:#F6E2DE;
+  --head:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  --body:"Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",sans-serif;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,"SF Mono",monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5}
+.wrap{max-width:1240px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px 40px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 18px;margin-bottom:12px}
+h1{font-family:var(--head);font-size:clamp(1.6rem,3.2vw,2.3rem);margin:0;font-weight:600;letter-spacing:.2px;text-wrap:balance}
+h1 .s{color:var(--S)} h1 .h{color:var(--H)} h1 .g{color:var(--G)}
+.eq-hero{font-family:var(--head);font-size:1.25rem;color:var(--muted)}
+.eq-hero b{color:var(--G);font-weight:600}
+nav{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;border-bottom:2px solid var(--line);margin-bottom:16px}
+nav button{font:600 .95rem var(--body);background:none;border:0;padding:10px 14px;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-2px;cursor:pointer;white-space:nowrap}
+nav button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--brown)}
+nav button:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--S);outline-offset:2px}
+.bench{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:900px){.bench{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px 16px;min-width:0}
+.stack{display:grid;gap:14px;min-width:0}
+h2{font-family:var(--head);font-size:1.3rem;margin:0 0 6px;font-weight:600;text-wrap:balance}
+h3{font-size:.78rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:0 0 8px;font-weight:700}
+p{margin:0 0 8px} p:last-child{margin-bottom:0}
+ul.pts{margin:0;padding-left:20px;display:grid;gap:6px}
+canvas{display:block;width:100%;border-radius:6px;background:var(--sunk);border:1px solid var(--line)}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+button.btn{font:600 .92rem var(--body);padding:8px 14px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+button.btn:hover{border-color:var(--brown)}
+button.btn.primary{background:var(--brown);border-color:var(--brown);color:#FFF8EE}
+button.btn.on{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+button.chip{font:600 .85rem var(--body);padding:6px 11px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+button.chip[aria-pressed="true"]{background:var(--S);border-color:var(--S);color:#fff}
+.slider{display:flex;align-items:center;gap:10px;flex:1 1 260px;min-width:0}
+.slider label{font-weight:600;white-space:nowrap}
+.slider input[type=range]{flex:1;min-width:0;accent-color:var(--brown)}
+.slider output,.numbox{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:600}
+input.numbox{width:6.5em;padding:5px 6px;border:1px solid var(--line);border-radius:5px;background:var(--panel);color:var(--ink);font-size:.95rem}
+.big{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:1.6rem;font-weight:700}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;align-items:baseline}
+.kv dt{color:var(--muted);font-size:.9rem} .kv dd{margin:0;font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:600}
+.tS{color:var(--S)} .tH{color:var(--H)} .tG{color:var(--G)}
+.pill{display:inline-block;padding:2px 10px;border-radius:999px;font-weight:700;font-size:.85rem}
+.pill.ok{background:var(--ok-soft);color:var(--ok)} .pill.no{background:var(--no-soft);color:var(--no)} .pill.mid{background:var(--sunk);color:var(--muted);border:1px solid var(--line)}
+.ladder{display:grid;gap:5px}
+.ladder .row{display:grid;grid-template-columns:8.5em 1fr 3.4em;gap:8px;align-items:center;font-size:.9rem}
+.ladder .bar{height:12px;border-radius:3px;background:var(--S)}
+.ladder .val{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right}
+.callout{border-left:4px solid var(--brown);background:var(--sunk);padding:8px 12px;border-radius:0 6px 6px 0;font-size:.95rem}
+.equation{font-family:var(--head);font-size:clamp(1.15rem,2.4vw,1.55rem);line-height:1.4;overflow-x:auto}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:.93rem}
+th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{font-size:.75rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+td.side{color:var(--muted);text-align:left}
+.steps{display:grid;gap:10px}
+.step{border:1px solid var(--line);border-radius:8px;padding:10px 14px;background:var(--panel)}
+.step .n{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.step h4{margin:2px 0 6px;font-size:1.05rem}
+.step .work{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:.95rem;overflow-x:auto;white-space:nowrap;line-height:1.8}
+.step .work .ans{font-weight:700;padding:1px 6px;border-radius:4px}
+.step.S{border-left:5px solid var(--S)} .step.S .ans{background:var(--S-soft);color:var(--S)}
+.step.H{border-left:5px solid var(--H)} .step.H .ans{background:var(--H-soft);color:var(--H)}
+.step.G{border-left:5px solid var(--G)} .step.G .ans{background:var(--G-soft);color:var(--G)}
+.step.P{border-left:5px solid var(--brown)}
+.step.locked{background:var(--sunk);color:var(--muted);border-style:dashed}
+.quad{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.quad button{text-align:left;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--panel);cursor:pointer;font:inherit;color:var(--ink)}
+.quad button:hover{border-color:var(--G)}
+.quad .sg{font-family:var(--mono);font-weight:700;font-size:.9rem}
+.quad .ex{font-size:.85rem;color:var(--muted)}
+details summary{cursor:pointer;font-weight:600}
+select{font:600 .95rem var(--body);padding:7px 10px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--ink);max-width:100%}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.82rem;color:var(--muted);margin-top:8px}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{width:11px;height:11px;border-radius:50%;display:inline-block;border:1px solid rgba(0,0,0,.25)}
+.board{display:grid;gap:10px;justify-content:center;padding:18px;margin-top:12px;background:var(--sunk);border:1px solid var(--line);border-radius:10px}
+.hole{width:clamp(26px,7vw,46px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 50% 40%,#CFC6B6,#EAE4D8 70%);box-shadow:inset 0 3px 5px rgba(42,37,31,.35)}
+.hole.full{background:radial-gradient(circle at 35% 30%,#8FD0D6,#1D6A73 65%,#0F4248);box-shadow:0 2px 3px rgba(42,37,31,.35)}
+.minis{display:flex;flex-wrap:wrap;gap:8px}
+.mini{display:grid;gap:2px;padding:4px;border:1px solid var(--line);border-radius:5px;background:var(--panel)}
+.mini i{width:8px;height:8px;border-radius:50%;background:#DCD4C6;display:block}
+.mini i.f{background:var(--S)}
+.mini.cur{outline:2px solid var(--brown);outline-offset:1px}
+.formula{font-family:var(--mono);font-weight:700;color:var(--S);white-space:nowrap}
+.work-f{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:.95rem;line-height:1.8;margin-top:6px;overflow-x:auto}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+</style>
+
+<div class="wrap">
+<header>
+  <h1><span class="s">Entropy</span>, <span class="h">Enthalpy</span> &amp; <span class="g">Gibbs</span></h1>
+  <div class="eq-hero"><b>ΔG</b> = ΔH − TΔS</div>
+</header>
+
+<nav role="tablist" aria-label="Sections">
+  <button role="tab" id="tab-states" aria-selected="true" data-tab="states">1 · Entropy &amp; states</button>
+  <button role="tab" id="tab-marbles" aria-selected="false" data-tab="marbles">2 · Counting arrangements</button>
+  <button role="tab" id="tab-diamond" aria-selected="false" data-tab="diamond">3 · Diamond &amp; graphite</button>
+  <button role="tab" id="tab-react" aria-selected="false" data-tab="react">4 · Entropy in reactions</button>
+  <button role="tab" id="tab-gibbs" aria-selected="false" data-tab="gibbs">5 · Gibbs free energy</button>
+  <button role="tab" id="tab-calc" aria-selected="false" data-tab="calc">6 · Worked calculations</button>
+</nav>
+
+<!-- ============ TAB 1 ============ -->
+<section id="p-states" role="tabpanel">
+  <div class="bench">
+    <div class="stack">
+      <div class="card">
+        <h2>Heating water from 0 K</h2>
+        <canvas id="cvWater" style="aspect-ratio:600/380"></canvas>
+        <div class="controls">
+          <div class="slider"><label for="tSlider">T</label><input type="range" id="tSlider" min="0" max="500" step="1" value="200"><output id="tOut">200 K</output></div>
+        </div>
+        <div class="controls">
+          <button class="btn primary" id="heatBtn">Heat steadily</button>
+          <button class="btn" data-t="5">Near 0 K</button>
+          <button class="btn" data-t="250">Ice, 250 K</button>
+          <button class="btn" data-t="298">Water, 298 K</button>
+          <button class="btn" data-t="420">Steam, 420 K</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Entropy of water against temperature</h3>
+        <canvas id="cvST" style="aspect-ratio:600/300"></canvas>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <h3>Now</h3>
+        <dl class="kv">
+          <dt>State</dt><dd id="stState">Solid (ice)</dd>
+          <dt>Entropy, S</dt><dd class="tS" id="stS">–</dd>
+        </dl>
+      </div>
+      <div class="card">
+        <h2>What entropy measures</h2>
+        <ul class="pts">
+          <li>Entropy, <b>S</b>, is a measure of disorder: the number of ways the particles, and their energy, can be arranged.</li>
+          <li>Units: <b>J K<sup>−1</sup> mol<sup>−1</sup></b> (joules, not kilojoules).</li>
+          <li>A perfect crystal at 0 K has <b>S = 0</b>. Above 0 K every substance, including every element, has a positive entropy.</li>
+          <li>S rises gradually on heating as particles vibrate and move more, then jumps at each change of state.</li>
+          <li>The jump on boiling (+109) is far bigger than on melting (+22): gas particles are free to occupy the whole container.</li>
+          <li>Solid &lt; liquid ≪ gas.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Standard entropies at 298 K / J K<sup>−1</sup> mol<sup>−1</sup></h3>
+        <div class="ladder" id="ladder"></div>
+        <p style="margin-top:10px;font-size:.88rem;color:var(--muted)">Harder, more rigid solids have the lowest values. Bigger, more complex gas molecules have more ways to rotate and vibrate, so higher values.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MARBLES ============ -->
+<section id="p-marbles" role="tabpanel" hidden>
+  <div class="bench">
+    <div class="stack">
+      <div class="card">
+        <h2>Marbles in a board</h2>
+        <div class="controls" style="margin-top:4px">
+          <div class="slider"><label for="mHoles">Holes, n</label><input type="range" id="mHoles" min="1" max="40" step="1" value="6"><output id="mHolesO">6</output></div>
+          <div class="slider"><label for="mMarb">Marbles, m</label><input type="range" id="mMarb" min="0" max="6" step="1" value="2"><output id="mMarbO">2</output></div>
+        </div>
+        <div class="board" id="board" aria-label="Board showing one arrangement"></div>
+        <div class="controls">
+          <button class="btn primary" id="mStep">Step through every arrangement</button>
+          <button class="btn" id="mShuffle">Random arrangement</button>
+        </div>
+        <p id="mCounter" style="margin-top:8px;color:var(--muted);font-variant-numeric:tabular-nums"></p>
+      </div>
+      <div class="card">
+        <h3 id="mAllTitle">All arrangements</h3>
+        <div class="minis" id="minis"></div>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <h3>Number of arrangements</h3>
+        <div class="big tS" id="mW">15</div>
+        <div class="work-f" id="mWork"></div>
+      </div>
+      <div class="card">
+        <h3>Give the marbles more room</h3>
+        <p id="mDouble"></p>
+      </div>
+      <div class="card">
+        <h2>From marbles to entropy</h2>
+        <ul class="pts">
+          <li>The number of ways of arranging <i>m</i> identical marbles in <i>n</i> holes is<br><span class="formula">W = n! ÷ ( m! × (n − m)! )</span></li>
+          <li>Boltzmann linked this to entropy: <span class="formula">S = k ln W</span>, where k = 1.38 × 10<sup>−23</sup> J K<sup>−1</sup>.</li>
+          <li>More space (more holes) gives far more arrangements. This is why a gas, which can spread through the whole container, has a much higher entropy than a solid.</li>
+          <li>For a mole of particles, W is unimaginably large, so we work with S in J K<sup>−1</sup> mol<sup>−1</sup> instead.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ DIAMOND ============ -->
+<section id="p-diamond" role="tabpanel" hidden>
+  <div class="bench">
+    <div class="stack">
+      <div class="card">
+        <h2>Why diamond has such a low entropy</h2>
+        <canvas id="cvDiam" style="aspect-ratio:600/360"></canvas>
+        <div class="controls">
+          <div class="slider"><label for="dT">T</label><input type="range" id="dT" min="0" max="1000" step="1" value="298"><output id="dTO">298 K</output></div>
+          <button class="btn on" id="dSpin">Pause rotation</button>
+        </div>
+        <p style="font-size:.85rem;color:var(--muted);margin-top:8px">Vibrations are exaggerated equally in both structures so they can be seen. Bond lengths and layer spacing are to scale.</p>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <h3>Standard entropy at 298 K</h3>
+        <dl class="kv">
+          <dt>C (diamond)</dt><dd class="tS">2.4 J K<sup>−1</sup> mol<sup>−1</sup></dd>
+          <dt>C (graphite)</dt><dd class="tS">5.7 J K<sup>−1</sup> mol<sup>−1</sup></dd>
+          <dt>for scale, CO<sub>2</sub>(g)</dt><dd class="tS">213.6 J K<sup>−1</sup> mol<sup>−1</sup></dd>
+        </dl>
+      </div>
+      <div class="card">
+        <h2>Diamond</h2>
+        <ul class="pts">
+          <li>Every carbon atom has four strong covalent bonds in a rigid 3D tetrahedral network.</li>
+          <li>The atoms are locked in place. They can only vibrate very slightly about fixed positions.</li>
+          <li>There are very few ways to arrange the atoms or spread energy among them, so W is small and S is the lowest of any element.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h2>Graphite</h2>
+        <ul class="pts">
+          <li>Each atom has three covalent bonds within flat hexagonal layers.</li>
+          <li>The layers are held together only by weak forces, so they can flex, ripple and slide.</li>
+          <li>More ways to move means more ways to spread the energy, so graphite's entropy is higher, though still very low.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TAB 2 ============ -->
+<section id="p-react" role="tabpanel" hidden>
+  <div class="bench">
+    <div class="stack">
+      <div class="card">
+        <div class="controls" id="rxChips" style="margin-top:0;margin-bottom:10px"></div>
+        <canvas id="cvReact" style="aspect-ratio:600/360"></canvas>
+        <div class="legend">
+          <span><i style="background:#ECEAE4"></i>H</span><span><i style="background:#3A3A3C"></i>C</span><span><i style="background:#2D5DB0"></i>N</span><span><i style="background:#CF3B2B"></i>O</span><span><i style="background:#3F9A44"></i>Cl</span><span><i style="background:#C79A2B"></i>Ca</span><span><i style="background:#8E9AA5"></i>Mg</span>
+        </div>
+        <div class="controls">
+          <button class="btn primary" id="reactBtn">React</button>
+          <button class="btn" id="resetBtn">Reset</button>
+        </div>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <h3>Equation</h3>
+        <div class="equation" id="rxEq"></div>
+        <p id="rxName" style="color:var(--muted);margin-top:4px"></p>
+      </div>
+      <div class="card">
+        <h3>Moles of gas in the equation</h3>
+        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+          <div><div class="big" id="gBefore">0</div><div style="font-size:.85rem;color:var(--muted)">reactants</div></div>
+          <div class="big" style="color:var(--muted)">→</div>
+          <div><div class="big" id="gAfter">0</div><div style="font-size:.85rem;color:var(--muted)">products</div></div>
+        </div>
+        <p id="rxPredict" style="margin-top:10px"></p>
+      </div>
+      <div class="card">
+        <h3>Check with data</h3>
+        <p id="rxData" class="tS" style="font-family:var(--mono);font-weight:700" hidden></p>
+        <button class="btn" id="revealS">Reveal ΔS from data</button>
+      </div>
+      <div class="callout">Count moles of <b>gas</b>. More gas particles after the reaction means more disorder, so ΔS is positive. Fewer means ΔS is negative.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TAB 3 ============ -->
+<section id="p-gibbs" role="tabpanel" hidden>
+  <div class="bench">
+    <div class="stack">
+      <div class="card">
+        <h2>ΔG against temperature</h2>
+        <canvas id="cvGT" style="aspect-ratio:600/380"></canvas>
+        <div class="controls">
+          <div class="slider"><label for="ghS" class="tH">ΔH</label><input type="range" id="ghS" min="-400" max="400" step="0.1" value="178.3"><input class="numbox" id="ghN" type="number" step="0.1" value="178.3" aria-label="ΔH in kJ per mol"><span style="font-size:.85rem">kJ mol<sup>−1</sup></span></div>
+          <div class="slider"><label for="gsS" class="tS">ΔS</label><input type="range" id="gsS" min="-400" max="400" step="0.1" value="160.4"><input class="numbox" id="gsN" type="number" step="0.1" value="160.4" aria-label="ΔS in J per K per mol"><span style="font-size:.85rem">J K<sup>−1</sup> mol<sup>−1</sup></span></div>
+          <div class="slider"><label for="gtS">T</label><input type="range" id="gtS" min="0" max="2000" step="1" value="298"><output id="gtO">298 K</output></div>
+        </div>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <h3>At this temperature</h3>
+        <dl class="kv">
+          <dt>ΔG</dt><dd class="tG" id="gG">–</dd>
+          <dt>Feasible?</dt><dd id="gF">–</dd>
+          <dt>ΔG = 0 at</dt><dd id="gT0">–</dd>
+        </dl>
+      </div>
+      <div class="card">
+        <h3>The four cases (click to load real data)</h3>
+        <div class="quad" id="quad"></div>
+      </div>
+      <div class="card">
+        <h2>Reading the graph</h2>
+        <ul class="pts">
+          <li>A reaction is <b>feasible</b> when <b>ΔG ≤ 0</b>.</li>
+          <li>ΔG = ΔH − TΔS is a straight line, y = mx + c: the <b>intercept is ΔH</b> and the <b>gradient is −ΔS</b>.</li>
+          <li>Convert ΔS to kJ K<sup>−1</sup> mol<sup>−1</sup> (÷ 1000) before using it with ΔH in kJ mol<sup>−1</sup>.</li>
+          <li>Where the line crosses ΔG = 0, <b>T = ΔH ÷ ΔS</b>.</li>
+          <li>Feasible does not mean fast. A large activation energy can make a feasible reaction too slow to observe.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TAB 4 ============ -->
+<section id="p-calc" role="tabpanel" hidden>
+  <div class="bench">
+    <div class="stack">
+      <div class="card">
+        <div class="controls" style="margin-top:0">
+          <button class="btn" id="cPrev" aria-label="Previous reaction">←</button>
+          <select id="cSel" aria-label="Choose a reaction"></select>
+          <button class="btn" id="cNext" aria-label="Next reaction">→</button>
+        </div>
+        <div class="equation" id="cEq" style="margin-top:12px"></div>
+        <div class="tablewrap" style="margin-top:12px"><table id="cTable"></table></div>
+        <p style="font-size:.85rem;color:var(--muted);margin-top:8px">Standard values at 298 K. Note that elements have Δ<sub>f</sub>H<sup>⦵</sup> = 0 but their entropy is not zero.</p>
+      </div>
+      <div class="card">
+        <div class="controls" style="margin-top:0">
+          <div class="slider"><label for="cT">T for ΔG</label><input type="range" id="cT" min="0" max="2000" step="1" value="298"><input class="numbox" id="cTN" type="number" min="0" max="5000" step="1" value="298" aria-label="Temperature in kelvin"><span>K</span></div>
+        </div>
+        <canvas id="cvCalc" style="aspect-ratio:600/320;margin-top:10px"></canvas>
+        <p id="cNote" class="callout" style="margin-top:12px"></p>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="controls" style="margin-top:0">
+        <button class="btn primary" id="sNext">Show next step</button>
+        <button class="btn" id="sAll">Show all</button>
+        <button class="btn" id="sHide">Hide all</button>
+      </div>
+      <div class="steps" id="steps"></div>
+      <details class="card">
+        <summary>Full data table</summary>
+        <div class="tablewrap" style="margin-top:10px"><table id="dataAll"></table></div>
+      </details>
+    </div>
+  </div>
+</section>
+</div>
+
+<script>
+(()=>{
+const UJ='J K<sup>−1</sup> mol<sup>−1</sup>', UK='kJ mol<sup>−1</sup>', UKK='kJ K<sup>−1</sup> mol<sup>−1</sup>';
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const C={ink:css('--ink'),muted:css('--muted'),line:css('--line'),S:css('--S'),H:css('--H'),G:css('--G'),ok:css('--ok'),no:css('--no'),okS:css('--ok-soft'),noS:css('--no-soft'),panel:css('--panel'),brown:css('--brown'),sunk:css('--sunk')};
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- Data: standard values at 298 K ---------- */
+const SP={
+ 'H2O(l)':{S:69.9,H:-285.8},'H2O(g)':{S:188.7,H:-241.8},
+ 'CaCO3(s)':{S:92.9,H:-1206.9},'CaO(s)':{S:39.7,H:-635.1},'CO2(g)':{S:213.6,H:-393.5},
+ 'N2(g)':{S:191.6,H:0},'H2(g)':{S:130.6,H:0},'NH3(g)':{S:192.3,H:-46.1},'O2(g)':{S:205.0,H:0},
+ 'Mg(s)':{S:32.7,H:0},'MgO(s)':{S:26.9,H:-601.7},
+ 'NH4Cl(s)':{S:94.6,H:-314.4},'HCl(g)':{S:186.8,H:-92.3},
+ 'NO2(g)':{S:240.0,H:33.2},'N2O4(g)':{S:304.2,H:9.2},
+ 'C(s, graphite)':{S:5.7,H:0},'C(s, diamond)':{S:2.4,H:1.9},
+ 'NaHCO3(s)':{S:101.7,H:-950.8},'Na2CO3(s)':{S:135.0,H:-1130.7},
+ 'CH4(g)':{S:186.2,H:-74.8},'H2O2(l)':{S:109.6,H:-187.8},
+ 'ZnO(s)':{S:43.6,H:-348.3},'Zn(s)':{S:41.6,H:0},'CO(g)':{S:197.6,H:-110.5},
+ 'Fe2O3(s)':{S:87.4,H:-824.2},'Al(s)':{S:28.3,H:0},'Al2O3(s)':{S:50.9,H:-1675.7},'Fe(s)':{S:27.3,H:0}
+};
+const R=[
+ {id:'caco3',name:'Thermal decomposition of calcium carbonate',r:[[1,'CaCO3(s)']],p:[[1,'CaO(s)'],[1,'CO2(g)']],groups:12,
+  note:'Lime kilns run at around 1100–1300 K, just above the temperature where ΔG becomes negative.'},
+ {id:'haber',name:'Haber process',eq:true,r:[[1,'N2(g)'],[3,'H2(g)']],p:[[2,'NH3(g)']],groups:4,
+  note:'Feasible only below about 464 K, yet the industrial process runs at about 700 K. At low temperature the rate is far too slow: a compromise between feasibility (and yield) and rate.'},
+ {id:'boil',name:'Boiling water',r:[[1,'H2O(l)']],p:[[1,'H2O(g)']],groups:14,
+  note:'The calculated temperature (about 370 K) is close to the real boiling point of 373 K. It is not exact because ΔH and ΔS were measured at 298 K and change slightly with temperature.'},
+ {id:'nh4cl',name:'Thermal decomposition of ammonium chloride',eq:true,r:[[1,'NH4Cl(s)']],p:[[1,'NH3(g)'],[1,'HCl(g)']],groups:10,
+  note:'Heated in a test tube, NH₄Cl decomposes at the hot end, and the gases recombine as white solid in the cooler part of the tube, where ΔG for decomposition is positive again.'},
+ {id:'no2',name:'Dimerisation of nitrogen dioxide',eq:true,r:[[2,'NO2(g)']],p:[[1,'N2O4(g)']],groups:8,
+  note:'ΔG = 0 at about 325 K. Warm a sealed tube of NO₂/N₂O₄ and it turns darker brown as the equilibrium shifts towards NO₂.'},
+ {id:'mg',name:'Burning magnesium',r:[[2,'Mg(s)'],[1,'O2(g)']],p:[[2,'MgO(s)']],groups:8,
+  note:'Feasible at room temperature, but magnesium ribbon needs heating to start burning: a high activation energy, not a thermodynamic barrier.'},
+ {id:'nahco3',name:'Thermal decomposition of sodium hydrogencarbonate',r:[[2,'NaHCO3(s)']],p:[[1,'Na2CO3(s)'],[1,'CO2(g)'],[1,'H2O(g)']],
+  note:'Becomes feasible a little above 400 K, which is why baking powder releases CO₂ in a hot oven.'},
+ {id:'h2o2',name:'Decomposition of hydrogen peroxide',r:[[2,'H2O2(l)']],p:[[2,'H2O(l)'],[1,'O2(g)']],groups:7,
+  note:'ΔH negative and ΔS positive: feasible at every temperature. It is still slow without a catalyst such as MnO₂.'},
+ {id:'diamond',name:'Graphite turning into diamond',r:[[1,'C(s, graphite)']],p:[[1,'C(s, diamond)']],
+  note:'ΔH positive and ΔS negative: ΔG is positive at every temperature, so never feasible at standard pressure. Diamonds survive because the reverse change has a huge activation energy.'},
+ {id:'zno',name:'Reduction of zinc oxide by carbon',r:[[1,'ZnO(s)'],[1,'C(s, graphite)']],p:[[1,'Zn(s)'],[1,'CO(g)']],
+  note:'Feasible above about 1250 K. Carbon reduction of metal oxides needs a high temperature because it is driven by the entropy gain from forming CO gas.'},
+ {id:'ch4',name:'Complete combustion of methane',r:[[1,'CH4(g)'],[2,'O2(g)']],p:[[1,'CO2(g)'],[2,'H2O(l)']],
+  note:'ΔS is negative (3 mol gas → 1 mol gas), but ΔH is so negative that the reaction is feasible up to about 3700 K.'},
+ {id:'thermite',name:'Thermite reaction',r:[[1,'Fe2O3(s)'],[2,'Al(s)']],p:[[1,'Al2O3(s)'],[2,'Fe(s)']],
+  note:'No gases involved, so ΔS is small. The very negative ΔH dominates and the reaction is feasible at any practical temperature.'}
+];
+const r1=x=>Math.round(x*10)/10;
+const num=x=>(x<0?'−':'')+Math.abs(x).toFixed(1);
+const sgn=(x,dp=1)=>(x<0?'−':x>0?'+':'')+Math.abs(x).toFixed(dp);
+const par=x=>x<0?'('+num(x)+')':num(x);
+const fF=f=>f.replace(/([A-Za-z\)])(\d+)/g,'$1<sub>$2</sub>');
+const gasN=arr=>arr.reduce((a,[n,s])=>a+(/\(g\)/.test(s)?n:0),0);
+function side(arr){return arr.map(([n,s])=>(n>1?n+' ':'')+fF(s)).join(' + ');}
+function eqHTML(rx){return side(rx.r)+(rx.eq?' ⇌ ':' → ')+side(rx.p);}
+function calc(rx){const sum=(a,k)=>r1(a.reduce((t,[n,s])=>t+n*SP[s][k],0));
+ const Sp=sum(rx.p,'S'),Sr=sum(rx.r,'S'),Hp=sum(rx.p,'H'),Hr=sum(rx.r,'H');
+ return {Sp,Sr,Hp,Hr,dS:r1(Sp-Sr),dH:r1(Hp-Hr),gr:gasN(rx.r),gp:gasN(rx.p)};}
+function terms(arr,k){return arr.map(([n,s])=>(n>1?n+' × ':'')+par(SP[s][k])).join(' + ');}
+
+/* ---------- Canvas helper ---------- */
+function Stage(c,onfit){const st={c,ctx:c.getContext('2d'),w:0,h:0};
+ st.fit=()=>{const w=c.clientWidth,h=c.clientHeight;if(!w||!h)return;const d=Math.min(window.devicePixelRatio||1,2);
+  if(c.width!==Math.round(w*d)||c.height!==Math.round(h*d)){c.width=Math.round(w*d);c.height=Math.round(h*d);}
+  st.ctx.setTransform(d,0,0,d,0,0);st.w=w;st.h=h;st.d=d;onfit&&onfit();};
+ new ResizeObserver(st.fit).observe(c);return st;}
+
+/* ---------- Atoms & molecules ---------- */
+const EL={H:{r:4.2,c:'#ECEAE4',hi:'#FFFFFF',e:'#8C8579'},C:{r:6.5,c:'#3A3A3C',hi:'#86868C',e:'#1E1E20'},
+ N:{r:6.3,c:'#2D5DB0',hi:'#86A9E8',e:'#1B3A73'},O:{r:6.3,c:'#CF3B2B',hi:'#F39586',e:'#8A2318'},
+ Cl:{r:7.2,c:'#3F9A44',hi:'#93D592',e:'#24602A'},Ca:{r:7.6,c:'#C79A2B',hi:'#F2D684',e:'#7F5F14'},
+ Mg:{r:7.2,c:'#8E9AA5',hi:'#D8DEE4',e:'#58626B'}};
+const MOL={
+ H2O:[['O',0,0],['H',-7,5],['H',7,5]],
+ H2O2:[['O',-5,0],['O',5,0],['H',-10,-6],['H',10,6]],
+ CO2:[['O',-11,0],['O',11,0],['C',0,0]],
+ CaCO3:[['O',5,-10],['O',-3,7],['O',13,7],['C',5,0],['Ca',-13,-1]],
+ CaO:[['Ca',-7,0],['O',7,0]],
+ N2:[['N',-5,0],['N',5,0]], H2:[['H',-3.5,0],['H',3.5,0]], O2:[['O',-5.5,0],['O',5.5,0]],
+ NH3:[['N',0,0],['H',0,-9],['H',-8,5],['H',8,5]],
+ NH4Cl:[['N',-7,0],['H',-13,-6],['H',-13,6],['H',-1,-6],['H',-1,6],['Cl',11,0]],
+ HCl:[['H',-7,0],['Cl',3,0]],
+ NO2:[['N',0,-2],['O',-9,4],['O',9,4]],
+ N2O4:[['O',-12,-7],['O',-12,7],['O',12,-7],['O',12,7],['N',-5,0],['N',5,0]],
+ Mg:[['Mg',0,0]], MgO:[['Mg',-7,0],['O',7,0]]
+};
+function atom(ctx,el,x,y,s){const e=EL[el],r=e.r*s;const g=ctx.createRadialGradient(x-r*.35,y-r*.4,r*.1,x,y,r);
+ g.addColorStop(0,e.hi);g.addColorStop(1,e.c);ctx.beginPath();ctx.arc(x,y,r,0,6.2832);ctx.fillStyle=g;ctx.fill();
+ ctx.lineWidth=0.9;ctx.strokeStyle=e.e;ctx.stroke();}
+function drawMol(ctx,key,x,y,ang,s=1,alpha=1){const L=MOL[key];if(!L)return;ctx.save();ctx.globalAlpha=alpha;ctx.translate(x,y);ctx.rotate(ang);
+ for(const [el,dx,dy] of L) atom(ctx,el,dx*s,dy*s,s);ctx.restore();}
+const keyOf=sp=>sp.replace(/\(.*\)$/,'');
+const phaseOf=sp=>/\(g\)/.test(sp)?'g':/\(l\)/.test(sp)?'l':'s';
+
+/* =================== TAB 1: water states =================== */
+const WS={W:600,H:380,L:160,Rw:440,top:28,floor:362,mols:[],T:200,heating:false,t:0};
+for(let r=0;r<5;r++)for(let c=0;c<8;c++){const hx=300+(c-3.5)*26,hy=WS.floor-14-r*25;
+ WS.mols.push({hx,hy,x:hx,y:hy,vx:0,vy:0,a:0,ph:Math.random()*6.28,ph2:Math.random()*6.28,va:(Math.random()-.5)*5});}
+function Swater(T){
+ if(T<=273.15) return 41.35*Math.pow(Math.max(T,0)/273.15,1.15);
+ if(T<373.15) return 63.35+75.3*Math.log(T/273.15);
+ return 195.9+33.6*Math.log(T/373.15);}
+const stateOf=T=>T<273.15?'s':T<373.15?'l':'g';
+function stepWater(dt){
+ WS.t+=dt;const t=WS.t,T=WS.T,st=stateOf(T),ms=WS.mols;
+ if(WS.heating){WS.T=Math.min(500,WS.T+18*dt);if(WS.T>=500){WS.heating=false;heatBtn.textContent='Heat steadily';heatBtn.classList.remove('on');}syncT(false);}
+ if(st==='s'){const amp=0.3+4.2*(T/273.15),k=Math.min(1,dt*4);
+  for(const m of ms){const tx=m.hx+amp*Math.sin(t*9+m.ph),ty=m.hy+amp*Math.sin(t*11+m.ph2);
+   m.x+=(tx-m.x)*k;m.y+=(ty-m.y)*k;m.vx=m.vy=0;m.a+=(0.05*amp*Math.sin(t*7+m.ph)-m.a)*k;}return;}
+ const vt=st==='l'?2.8*Math.sqrt(T):8.5*Math.sqrt(T),g=st==='l'?700:0,rr=st==='l'?22:20;
+ for(const m of ms){
+  if(m.vx===0&&m.vy===0){const a=Math.random()*6.28;m.vx=Math.cos(a)*vt;m.vy=Math.sin(a)*vt;}
+  if(st==='l'){m.vx+=(Math.random()-.5)*vt*.7;m.vy+=(Math.random()-.5)*vt*.7;}
+  m.vy+=g*dt;
+  const sp=Math.hypot(m.vx,m.vy)||1,f=1+(vt/sp-1)*Math.min(1,dt*(st==='l'?4:2));m.vx*=f;m.vy*=f;
+  m.x+=m.vx*dt;m.y+=m.vy*dt;m.a+=m.va*dt*(st==='g'?1.6:.7);
+  const lo=WS.L+12,hi=WS.Rw-12,top=WS.top+12,bot=WS.floor-12;
+  if(m.x<lo){m.x=lo;m.vx=Math.abs(m.vx);} if(m.x>hi){m.x=hi;m.vx=-Math.abs(m.vx);}
+  if(m.y<top){m.y=top;m.vy=Math.abs(m.vy);} if(m.y>bot){m.y=bot;m.vy=-Math.abs(m.vy)*(st==='l'?.3:1);}
+ }
+ for(let i=0;i<ms.length;i++)for(let j=i+1;j<ms.length;j++){const a=ms[i],b=ms[j];let dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy);
+  if(d<rr&&d>0.01){const nx=dx/d,ny=dy/d,o=(rr-d)/2;a.x-=nx*o;a.y-=ny*o;b.x+=nx*o;b.y+=ny*o;
+   const rv=(b.vx-a.vx)*nx+(b.vy-a.vy)*ny;if(rv<0){const im=st==='g'?rv:rv*.6;a.vx+=im*nx;a.vy+=im*ny;b.vx-=im*nx;b.vy-=im*ny;}}}
+}
+const stW=Stage(document.getElementById('cvWater'));
+function drawWater(){const {ctx,w,h}=stW;if(!w)return;ctx.clearRect(0,0,w,h);const s=w/WS.W;ctx.save();ctx.scale(s,s);
+ // container
+ ctx.fillStyle='rgba(29,106,115,0.05)';ctx.fillRect(WS.L,WS.top,WS.Rw-WS.L,WS.floor-WS.top);
+ ctx.strokeStyle=C.muted;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(WS.L,WS.top-6);ctx.lineTo(WS.L,WS.floor);ctx.lineTo(WS.Rw,WS.floor);ctx.lineTo(WS.Rw,WS.top-6);ctx.stroke();
+ ctx.setLineDash([5,5]);ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(WS.L,WS.top);ctx.lineTo(WS.Rw,WS.top);ctx.stroke();ctx.setLineDash([]);
+ for(const m of WS.mols) drawMol(ctx,'H2O',m.x,m.y,m.a,1);
+ // readouts
+ const st=stateOf(WS.T);ctx.fillStyle=C.ink;ctx.font='700 30px '+css('--mono');ctx.textAlign='left';
+ ctx.fillText(Math.round(WS.T)+' K',14,58);
+ ctx.font='600 15px '+css('--body');ctx.fillStyle=C.muted;ctx.fillText(st==='s'?'solid (ice)':st==='l'?'liquid water':'gas (steam)',14,80);
+ ctx.textAlign='right';ctx.fillStyle=C.S;ctx.font='700 30px '+css('--mono');ctx.fillText(Swater(WS.T).toFixed(0),WS.W-14,58);
+ ctx.font='600 13px '+css('--body');ctx.fillStyle=C.muted;ctx.fillText('S / J K⁻¹ mol⁻¹',WS.W-14,80);
+ ctx.restore();}
+
+const stST=Stage(document.getElementById('cvST'),()=>drawST());
+function drawST(){const {ctx,w,h}=stST;if(!w)return;ctx.clearRect(0,0,w,h);
+ const m={l:52,r:14,t:14,b:38},pw=w-m.l-m.r,ph=h-m.t-m.b,X=T=>m.l+T/500*pw,Y=S=>m.t+ph-S/220*ph;
+ ctx.font='12px '+css('--body');ctx.strokeStyle=C.line;ctx.fillStyle=C.muted;ctx.lineWidth=1;
+ for(let S=0;S<=200;S+=50){ctx.beginPath();ctx.moveTo(m.l,Y(S));ctx.lineTo(w-m.r,Y(S));ctx.stroke();ctx.textAlign='right';ctx.fillText(S,m.l-6,Y(S)+4);}
+ for(let T=0;T<=500;T+=100){ctx.textAlign='center';ctx.fillText(T,X(T),h-m.b+16);}
+ ctx.fillText('T / K',m.l+pw/2,h-6);
+ ctx.save();ctx.translate(13,m.t+ph/2);ctx.rotate(-Math.PI/2);ctx.fillText('S / J K⁻¹ mol⁻¹',0,0);ctx.restore();
+ // shaded state bands
+ ctx.fillStyle='rgba(29,106,115,0.06)';ctx.fillRect(X(273.15),m.t,X(373.15)-X(273.15),ph);
+ ctx.fillStyle='rgba(29,106,115,0.12)';ctx.fillRect(X(373.15),m.t,X(500)-X(373.15),ph);
+ ctx.fillStyle=C.muted;ctx.font='600 11px '+css('--body');ctx.textAlign='center';
+ ctx.fillText('SOLID',X(136),m.t+14);ctx.fillText('LIQUID',X(323),m.t+14);ctx.fillText('GAS',X(437),m.t+14);
+ // curve
+ ctx.strokeStyle=C.S;ctx.lineWidth=2.6;ctx.beginPath();
+ for(let T=0;T<=273.15;T+=2)T===0?ctx.moveTo(X(T),Y(Swater(T))):ctx.lineTo(X(T),Y(Swater(T)));
+ ctx.lineTo(X(273.15),Y(41.35));ctx.lineTo(X(273.15),Y(63.35));
+ for(let T=274;T<373.15;T+=2)ctx.lineTo(X(T),Y(Swater(T)));
+ ctx.lineTo(X(373.15),Y(86.84));ctx.lineTo(X(373.15),Y(195.9));
+ for(let T=374;T<=500;T+=2)ctx.lineTo(X(T),Y(Swater(T)));ctx.stroke();
+ ctx.fillStyle=C.ink;ctx.font='600 12px '+css('--body');ctx.textAlign='left';
+ ctx.fillText('melting +22',X(273.15)+5,Y(48));ctx.fillText('boiling +109',X(373.15)+5,Y(140));
+ // marker
+ const T=WS.T,S=Swater(T);ctx.setLineDash([3,4]);ctx.strokeStyle=C.muted;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(X(T),m.t+ph);ctx.lineTo(X(T),Y(S));ctx.stroke();ctx.setLineDash([]);
+ ctx.beginPath();ctx.arc(X(T),Y(S),6,0,6.2832);ctx.fillStyle=C.brown;ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();}
+
+const tSlider=document.getElementById('tSlider'),tOut=document.getElementById('tOut'),heatBtn=document.getElementById('heatBtn');
+let lastST=-1;
+function syncT(fromSlider){if(fromSlider)WS.T=+tSlider.value;else tSlider.value=Math.round(WS.T);
+ tOut.textContent=Math.round(WS.T)+' K';const st=stateOf(WS.T);
+ document.getElementById('stState').textContent=st==='s'?'Solid (ice)':st==='l'?'Liquid':'Gas (steam)';
+ document.getElementById('stS').innerHTML=Swater(WS.T).toFixed(1)+' '+UJ;
+ if(Math.round(WS.T)!==lastST){lastST=Math.round(WS.T);drawST();}}
+tSlider.addEventListener('input',()=>{WS.heating=false;heatBtn.textContent='Heat steadily';heatBtn.classList.remove('on');syncT(true);});
+heatBtn.addEventListener('click',()=>{WS.heating=!WS.heating;if(WS.heating&&WS.T>=499)WS.T=0;heatBtn.textContent=WS.heating?'Pause heating':'Heat steadily';heatBtn.classList.toggle('on',WS.heating);});
+document.querySelectorAll('[data-t]').forEach(b=>b.addEventListener('click',()=>{WS.heating=false;heatBtn.textContent='Heat steadily';heatBtn.classList.remove('on');WS.T=+b.dataset.t;syncT(false);}));
+syncT(false);
+
+const LAD=[['C (diamond)',2.4],['C (graphite)',5.7],['Fe(s)',27.3],['H₂O(l)',69.9],['Br₂(l)',152.2],['H₂O(g)',188.7],['CO₂(g)',213.6],['C₄H₁₀(g)',310.1]];
+document.getElementById('ladder').innerHTML=LAD.map(([n,v])=>`<div class="row"><span>${n}</span><div><div class="bar" style="width:${v/310.1*100}%"></div></div><span class="val">${v.toFixed(1)}</span></div>`).join('');
+
+/* =================== TAB 2: reaction entropy =================== */
+const RS={W:600,H:360,L:16,Rw:584,top:16,floor:346,live:[],groups:[],rx:null,mode:'before'};
+const ANIM=R.filter(r=>r.groups);
+let uid=0,now=0;
+function newMol(sp,x,y){const ph=phaseOf(sp),a=Math.random()*6.28,v=80+Math.random()*70;
+ return {sp,key:keyOf(sp),ph,x,y,vx:ph==='g'?Math.cos(a)*v:0,vy:ph==='g'?Math.sin(a)*v:0,ang:ph==='g'?Math.random()*6.28:0,va:(Math.random()-.5)*3,born:-9,alpha:1,id:uid++,p1:Math.random()*6.28,p2:Math.random()*6.28};}
+function condensedTop(){const n=RS.live.filter(m=>m.ph!=='g'&&!m.dying).length;const cols=18;return RS.floor-Math.ceil(n/cols)*24-6;}
+function slotMap(){const cs=RS.live.filter(m=>m.ph!=='g'&&!m.dying).sort((a,b)=>a.id-b.id);const cols=18,sx=30,sy=24,map={};
+ cs.forEach((m,k)=>{const row=Math.floor(k/cols),inRow=Math.min(cols,cs.length-row*cols),col=k%cols;
+  map[m.id]={x:RS.W/2+(col-(inRow-1)/2)*sx,y:RS.floor-13-row*sy};});return map;}
+function setupRx(id){RS.rx=ANIM.find(r=>r.id===id);RS.live=[];RS.groups=[];RS.mode='before';
+ for(let g=0;g<RS.rx.groups;g++){const grp={re:[],start:0,begun:false,swapped:false,done:false};
+  for(const [n,sp] of RS.rx.r)for(let k=0;k<n;k++){const m=newMol(sp,40+Math.random()*520,40+Math.random()*180);m.grp=g;grp.re.push(m);RS.live.push(m);}
+  RS.groups.push(grp);}
+ const map=slotMap();for(const m of RS.live)if(map[m.id]){m.x=map[m.id].x;m.y=map[m.id].y;}
+ document.getElementById('rxEq').innerHTML=eqHTML(RS.rx);document.getElementById('rxName').textContent=RS.rx.name;
+ const c=calc(RS.rx);document.getElementById('gBefore').textContent=c.gr;document.getElementById('gAfter').textContent=c.gp;
+ document.getElementById('rxPredict').innerHTML=c.gp>c.gr?'<span class="pill ok">Prediction: ΔS positive</span> more moles of gas formed.':c.gp<c.gr?'<span class="pill no">Prediction: ΔS negative</span> fewer moles of gas.':'<span class="pill mid">No change in gas moles</span> ΔS will be small; use data.';
+ const d=document.getElementById('rxData');d.hidden=true;d.innerHTML=`ΔS = ${sgn(c.dS)} ${UJ}`;document.getElementById('revealS').hidden=false;
+ document.getElementById('reactBtn').disabled=false;
+ document.querySelectorAll('#rxChips .chip').forEach(b=>b.setAttribute('aria-pressed',b.dataset.id===id?'true':'false'));}
+function startReaction(){if(RS.mode!=='before')return;RS.mode='reacting';const order=RS.groups.map((g,i)=>i).sort(()=>Math.random()-.5);
+ const spread=Math.min(0.35,4/RS.groups.length);order.forEach((gi,k)=>{RS.groups[gi].start=now+0.1+k*spread+Math.random()*0.15;});
+ document.getElementById('reactBtn').disabled=true;}
+function stepReact(dt){
+ if(RS.mode==='reacting'){let all=true;
+  for(const g of RS.groups){if(g.done)continue;all=false;if(now<g.start)continue;
+   if(!g.begun){g.begun=true;g.cx=g.re.reduce((a,m)=>a+m.x,0)/g.re.length;g.cy=g.re.reduce((a,m)=>a+m.y,0)/g.re.length;
+    for(const m of g.re){m.dying=true;m.sx=m.x;m.sy=m.y;}}
+   const p=(now-g.start)/(reduce?0.3:0.9);
+   if(p<0.5){const e=p/0.5,ee=e*e*(3-2*e);for(const m of g.re){m.x=m.sx+(g.cx-m.sx)*ee;m.y=m.sy+(g.cy-m.sy)*ee;m.alpha=1-0.55*e;}}
+   else if(!g.swapped){g.swapped=true;RS.live=RS.live.filter(m=>!g.re.includes(m));
+    const prods=[];for(const [n,sp] of RS.rx.p)for(let k=0;k<n;k++)prods.push(sp);
+    prods.forEach((sp,i)=>{const m=newMol(sp,g.cx+(i-(prods.length-1)/2)*16,g.cy);m.born=now;RS.live.push(m);});}
+   if(p>=1)g.done=true;}
+  if(all){RS.mode='after';}}
+ const map=slotMap(),ct=condensedTop();
+ for(const m of RS.live){if(m.dying)continue;
+  if(m.ph==='g'){m.x+=m.vx*dt;m.y+=m.vy*dt;m.ang+=m.va*dt;
+   if(m.x<RS.L+14){m.x=RS.L+14;m.vx=Math.abs(m.vx);}if(m.x>RS.Rw-14){m.x=RS.Rw-14;m.vx=-Math.abs(m.vx);}
+   if(m.y<RS.top+14){m.y=RS.top+14;m.vy=Math.abs(m.vy);}if(m.y>ct-12){m.y=ct-12;m.vy=-Math.abs(m.vy);}}
+  else{const s=map[m.id];if(!s)continue;const amp=m.ph==='l'?5:1.2,f=m.ph==='l'?2.2:9;
+   const tx=s.x+amp*Math.sin(now*f+m.p1),ty=s.y+amp*0.6*Math.sin(now*f*1.3+m.p2),k=Math.min(1,dt*(m.ph==='l'?3:4));
+   m.x+=(tx-m.x)*k;m.y+=(ty-m.y)*k;if(m.ph==='l')m.ang=0.4*Math.sin(now*1.5+m.p1);}}
+}
+const stR=Stage(document.getElementById('cvReact'));
+function drawReact(){const {ctx,w,h}=stR;if(!w)return;ctx.clearRect(0,0,w,h);const s=w/RS.W;ctx.save();ctx.scale(s,s);
+ ctx.strokeStyle=C.muted;ctx.lineWidth=2.5;ctx.strokeRect(RS.L,RS.top,RS.Rw-RS.L,RS.floor-RS.top);
+ for(const m of RS.live){const age=now-m.born,sc=age<0.35?0.5+0.5*(age/0.35):1;drawMol(ctx,m.key,m.x,m.y,m.ang,sc,m.dying?m.alpha:Math.min(1,0.45+age*2));}
+ const gas=RS.live.filter(m=>m.ph==='g'&&!m.dying).length;
+ ctx.fillStyle='rgba(255,253,248,0.88)';ctx.fillRect(RS.L+8,RS.top+8,186,30);
+ ctx.fillStyle=C.ink;ctx.font='700 15px '+css('--body');ctx.textAlign='left';ctx.fillText('Gas particles in box: '+gas,RS.L+16,RS.top+28);
+ const lab=RS.mode==='before'?'Reactants':RS.mode==='reacting'?'Reacting…':'Products';
+ ctx.textAlign='right';ctx.fillStyle=C.muted;ctx.font='600 14px '+css('--body');ctx.fillText(lab,RS.Rw-12,RS.top+28);
+ ctx.restore();}
+document.getElementById('rxChips').innerHTML=ANIM.map(r=>`<button class="chip" data-id="${r.id}" aria-pressed="false">${eqHTML(r)}</button>`).join('');
+document.querySelectorAll('#rxChips .chip').forEach(b=>b.addEventListener('click',()=>setupRx(b.dataset.id)));
+document.getElementById('reactBtn').addEventListener('click',startReaction);
+document.getElementById('resetBtn').addEventListener('click',()=>setupRx(RS.rx.id));
+document.getElementById('revealS').addEventListener('click',e=>{document.getElementById('rxData').hidden=false;e.target.hidden=true;});
+setupRx('caco3');
+
+/* =================== Gibbs graph (shared) =================== */
+function niceStep(range,n){const raw=range/n,p=Math.pow(10,Math.floor(Math.log10(raw))),m=raw/p;return (m<1.5?1:m<3?2:m<7?5:10)*p;}
+function drawGT(st,dH,dS,T,Tmax){const {ctx,w,h}=st;if(!w)return;ctx.clearRect(0,0,w,h);
+ const m={l:62,r:18,t:18,b:42},pw=w-m.l-m.r,ph=h-m.t-m.b;
+ const g0=dH,g1=dH-Tmax*dS/1000;let lo=Math.min(0,g0,g1),hi=Math.max(0,g0,g1);if(hi-lo<20){const c=(hi+lo)/2;lo=Math.min(lo,c-10);hi=Math.max(hi,c+10);}
+ const pad=(hi-lo)*0.12;lo-=pad;hi+=pad;
+ const X=t=>m.l+t/Tmax*pw,Y=g=>m.t+(hi-g)/(hi-lo)*ph;
+ // regions
+ ctx.fillStyle=C.okS;ctx.fillRect(m.l,Y(0),pw,m.t+ph-Y(0));ctx.fillStyle=C.noS;ctx.fillRect(m.l,m.t,pw,Y(0)-m.t);
+ ctx.font='600 11px '+css('--body');ctx.textAlign='right';
+ ctx.fillStyle=C.no;if(Y(0)-m.t>18)ctx.fillText('NOT FEASIBLE  ΔG > 0',w-m.r-6,m.t+14);
+ ctx.fillStyle=C.ok;if(m.t+ph-Y(0)>18)ctx.fillText('FEASIBLE  ΔG ≤ 0',w-m.r-6,m.t+ph-6);
+ // grid & ticks
+ ctx.font='12px '+css('--body');ctx.strokeStyle='rgba(42,37,31,0.12)';ctx.lineWidth=1;ctx.fillStyle=C.muted;
+ const ys=niceStep(hi-lo,6);for(let g=Math.ceil(lo/ys)*ys;g<=hi;g+=ys){ctx.beginPath();ctx.moveTo(m.l,Y(g));ctx.lineTo(w-m.r,Y(g));ctx.stroke();ctx.textAlign='right';ctx.fillText(Math.round(g*10)/10===0?'0':(g<0?'−':'')+Math.abs(Math.round(g*10)/10),m.l-6,Y(g)+4);}
+ const xs=niceStep(Tmax,6);for(let t=0;t<=Tmax+1e-6;t+=xs){ctx.textAlign='center';ctx.fillText(Math.round(t),X(t),m.t+ph+16);}
+ ctx.fillText('T / K',m.l+pw/2,h-6);
+ ctx.save();ctx.translate(14,m.t+ph/2);ctx.rotate(-Math.PI/2);ctx.fillText('ΔG / kJ mol⁻¹',0,0);ctx.restore();
+ ctx.strokeStyle=C.ink;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(m.l,Y(0));ctx.lineTo(w-m.r,Y(0));ctx.stroke();
+ ctx.beginPath();ctx.moveTo(m.l,m.t);ctx.lineTo(m.l,m.t+ph);ctx.stroke();
+ // crossing
+ const T0=dS!==0?dH*1000/dS:NaN;
+ if(T0>0&&T0<=Tmax){ctx.setLineDash([4,4]);ctx.strokeStyle=C.G;ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(X(T0),Y(0));ctx.lineTo(X(T0),m.t+ph);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle=C.G;ctx.font='700 12px '+css('--body');ctx.textAlign=X(T0)>w-110?'right':'left';ctx.fillText('ΔG = 0 at '+T0.toFixed(0)+' K',X(T0)+(X(T0)>w-110?-6:6),Y(0)+(dS>0?-8:16));}
+ // line
+ ctx.strokeStyle=C.G;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(X(0),Y(g0));ctx.lineTo(X(Tmax),Y(g1));ctx.stroke();
+ // intercept label
+ ctx.fillStyle=C.H;ctx.font='700 12px '+css('--body');ctx.textAlign='left';ctx.fillText('intercept = ΔH',m.l+6,Y(g0)+(g1>g0?16:-8));
+ ctx.fillStyle=C.S;ctx.textAlign='right';const gm=(g0+g1)/2;ctx.fillText('gradient = −ΔS',X(Tmax*0.75),Y(dH-Tmax*0.75*dS/1000)+(dS>0?-10:18));
+ // marker
+ if(T>=0&&T<=Tmax){const gT=dH-T*dS/1000;ctx.beginPath();ctx.arc(X(T),Y(gT),6.5,0,6.2832);ctx.fillStyle=C.brown;ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();}
+}
+function verdict(dH,dS){const T0=dH*1000/dS;
+ if(dH<0&&dS>0)return 'ΔG is negative at every temperature: always feasible.';
+ if(dH>0&&dS<0)return 'ΔG is positive at every temperature: never feasible.';
+ if(dH>0&&dS>0)return `Feasible above ${T0.toFixed(0)} K.`;
+ if(dH<0&&dS<0)return `Feasible below ${T0.toFixed(0)} K.`;
+ if(dS===0)return dH<=0?'Feasible at all temperatures.':'Never feasible.';
+ return dS>0?'Feasible at all temperatures above 0 K.':'Feasible only at 0 K.';}
+
+/* =================== TAB 3 =================== */
+const stG=Stage(document.getElementById('cvGT'),()=>updG());
+
+const ghS_=document.getElementById('ghS'),ghN_=document.getElementById('ghN'),gsS_=document.getElementById('gsS'),gsN_=document.getElementById('gsN'),gtS_=document.getElementById('gtS');
+function updG(){const dH=+ghN_.value||0,dS=+gsN_.value||0,T=+gtS_.value;document.getElementById('gtO').textContent=T+' K';
+ const G=dH-T*dS/1000;document.getElementById('gG').innerHTML=sgn(G)+' '+UK;
+ document.getElementById('gF').innerHTML=G<=0?'<span class="pill ok">Feasible</span>':'<span class="pill no">Not feasible</span>';
+ const T0=dS!==0?dH*1000/dS:NaN;document.getElementById('gT0').textContent=(T0>0&&isFinite(T0))?T0.toFixed(0)+' K':'never (no positive T)';
+ drawGT(stG,dH,dS,T,2000);}
+function link(sl,nb){sl.addEventListener('input',()=>{nb.value=sl.value;updG();});nb.addEventListener('input',()=>{sl.value=nb.value;updG();});}
+link(ghS_,ghN_);link(gsS_,gsN_);gtS_.addEventListener('input',updG);
+const QUAD=[['h2o2','ΔH −, ΔS +','Always feasible'],['haber','ΔH −, ΔS −','Feasible at low T'],['caco3','ΔH +, ΔS +','Feasible at high T'],['diamond','ΔH +, ΔS −','Never feasible']];
+document.getElementById('quad').innerHTML=QUAD.map(([id,sg,v])=>{const rx=R.find(r=>r.id===id);return `<button data-id="${id}"><div class="sg">${sg}</div><div style="font-weight:600">${v}</div><div class="ex">${eqHTML(rx)}</div></button>`;}).join('');
+document.querySelectorAll('#quad button').forEach(b=>b.addEventListener('click',()=>{const c=calc(R.find(r=>r.id===b.dataset.id));
+ ghS_.value=ghN_.value=c.dH;gsS_.value=gsN_.value=c.dS;updG();}));
+updG();
+
+/* =================== TAB 4 =================== */
+const cSel=document.getElementById('cSel');cSel.innerHTML=R.map((r,i)=>`<option value="${i}">${r.name}</option>`).join('');
+const cT=document.getElementById('cT'),cTN=document.getElementById('cTN');let shown=0;
+const stC=Stage(document.getElementById('cvCalc'),()=>renderCalc());
+function renderCalc(){const rx=R[+cSel.value],c=calc(rx),T=Math.max(0,+cTN.value||0);
+ document.getElementById('cEq').innerHTML=eqHTML(rx);
+ const rows=[...rx.r.map(x=>['reactant',...x]),...rx.p.map(x=>['product',...x])];
+ document.getElementById('cTable').innerHTML=`<tr><th>Species</th><th></th><th>Moles</th><th>S<sup>⦵</sup> / ${UJ}</th><th>Δ<sub>f</sub>H<sup>⦵</sup> / ${UK}</th></tr>`+
+  rows.map(([role,n,s])=>`<tr><td>${fF(s)}</td><td class="side">${role}</td><td>${n}</td><td class="tS">${SP[s].S.toFixed(1)}</td><td class="tH">${num(SP[s].H)}</td></tr>`).join('');
+ const dSk=Number((c.dS/1000).toFixed(4)),G=r1(c.dH-T*dSk),T0=c.dH/dSk;
+ const pred=c.gp>c.gr?`${c.gr} mol gas → ${c.gp} mol gas: more gas, so ΔS should be <b>positive</b>.`:c.gp<c.gr?`${c.gr} mol gas → ${c.gp} mol gas: less gas, so ΔS should be <b>negative</b>.`:`${c.gr} mol gas → ${c.gp} mol gas: no change, so ΔS will be small. Compare the order of the solids/liquids.`;
+ let tline;
+ if(c.dH>0&&c.dS>0)tline=`<div>ΔH and ΔS both positive, so ΔG becomes negative <b>above</b> this temperature.</div>`;
+ else if(c.dH<0&&c.dS<0)tline=`<div>ΔH and ΔS both negative, so ΔG is negative <b>below</b> this temperature.</div>`;
+ const steps=[
+  {k:'P',t:'Predict the sign of ΔS',b:`<p>${pred}</p>`},
+  {k:'S',t:'Entropy change, ΔS',b:`<div class="work">ΔS = ΣS(products) − ΣS(reactants)<br>ΔS = (${terms(rx.p,'S')}) − (${terms(rx.r,'S')})<br>ΔS = ${num(c.Sp)} − ${num(c.Sr)} = <span class="ans">${sgn(c.dS)} ${UJ}</span></div>`},
+  {k:'H',t:'Enthalpy change, ΔH',b:`<div class="work">ΔH = ΣΔ<sub>f</sub>H(products) − ΣΔ<sub>f</sub>H(reactants)<br>ΔH = (${terms(rx.p,'H')}) − (${terms(rx.r,'H')})<br>ΔH = ${par(c.Hp)} − ${par(c.Hr)} = <span class="ans">${sgn(c.dH)} ${UK}</span></div>`},
+  {k:'G',t:`Gibbs free energy change at ${T} K`,b:`<div class="work">ΔS = ${sgn(c.dS)} ÷ 1000 = ${sgn(dSk,4)} ${UKK}<br>ΔG = ΔH − TΔS<br>ΔG = ${par(c.dH)} − (${T} × ${par(dSk)})<br>ΔG = <span class="ans">${sgn(G)} ${UK}</span></div><p style="margin-top:6px">${G<=0?'<span class="pill ok">ΔG ≤ 0: feasible</span>':'<span class="pill no">ΔG &gt; 0: not feasible</span>'} at ${T} K.</p>`},
+  {k:'G',t:'Temperature at which the reaction becomes feasible',b:(c.dH>0&&c.dS<0)||(c.dH<0&&c.dS>0)?
+    `<p>ΔH is ${c.dH>0?'positive':'negative'} and ΔS is ${c.dS>0?'positive':'negative'}, so −TΔS is ${c.dS>0?'negative':'positive'} at every temperature.</p><p><span class="pill ${c.dH<0?'ok':'no'}">${c.dH<0?'Feasible at all temperatures':'Never feasible'}</span></p>`:
+    `<div class="work">At the boundary ΔG = 0, so T = ΔH ÷ ΔS<br>T = ${par(c.dH)} ÷ ${par(dSk)} = <span class="ans">${T0.toFixed(0)} K</span></div>${tline}`}
+ ];
+ document.getElementById('steps').innerHTML=steps.map((s,i)=>i<shown?`<div class="step ${s.k}"><div class="n">Step ${i+1}</div><h4>${s.t}</h4>${s.b}</div>`:`<div class="step locked"><div class="n">Step ${i+1}</div><h4 style="margin-bottom:0">${s.t}</h4></div>`).join('');
+ document.getElementById('sNext').disabled=shown>=steps.length;
+ document.getElementById('cNote').textContent=shown>=steps.length?rx.note:'Reveal all the steps to see the chemistry behind the answer.';
+ if(shown>=3)drawGT(stC,c.dH,c.dS,Math.min(T,2000),2000);else{const {ctx,w,h}=stC;if(w){ctx.clearRect(0,0,w,h);ctx.fillStyle=C.muted;ctx.font='600 14px '+css('--body');ctx.textAlign='center';ctx.fillText('The ΔG–T graph appears once ΔS and ΔH are revealed',w/2,h/2);}}
+}
+cSel.addEventListener('change',()=>{shown=0;renderCalc();});
+document.getElementById('cPrev').addEventListener('click',()=>{cSel.value=(+cSel.value-1+R.length)%R.length;shown=0;renderCalc();});
+document.getElementById('cNext').addEventListener('click',()=>{cSel.value=(+cSel.value+1)%R.length;shown=0;renderCalc();});
+document.getElementById('sNext').addEventListener('click',()=>{shown++;renderCalc();});
+document.getElementById('sAll').addEventListener('click',()=>{shown=5;renderCalc();});
+document.getElementById('sHide').addEventListener('click',()=>{shown=0;renderCalc();});
+cT.addEventListener('input',()=>{cTN.value=cT.value;renderCalc();});cTN.addEventListener('input',()=>{cT.value=Math.min(2000,+cTN.value||0);renderCalc();});
+document.getElementById('dataAll').innerHTML=`<tr><th>Species</th><th>S<sup>⦵</sup> / ${UJ}</th><th>Δ<sub>f</sub>H<sup>⦵</sup> / ${UK}</th></tr>`+
+ Object.entries(SP).map(([s,v])=>`<tr><td>${fF(s)}</td><td class="tS">${v.S.toFixed(1)}</td><td class="tH">${num(v.H)}</td></tr>`).join('');
+renderCalc();
+
+/* =================== MARBLES =================== */
+const $=id=>document.getElementById(id);
+const mH=$('mHoles'),mM=$('mMarb');let mSet=[],mCombos=null,mIdx=0,mStepping=false,mTimer=0;
+function binom(n,k){let r=1n;for(let i=1;i<=k;i++)r=r*BigInt(n-k+i)/BigInt(i);return r;}
+const lnF=n=>{let s=0;for(let i=2;i<=n;i++)s+=Math.log(i);return s;};
+const lnW=(n,k)=>lnF(n)-lnF(k)-lnF(n-k);
+function fmtBig(b){const s=b.toString();if(s.length<=12)return Number(s).toLocaleString('en-GB');return s[0]+'.'+s.slice(1,3)+' × 10<sup>'+(s.length-1)+'</sup>';}
+function fmtSci(x){if(x===0)return '0';const e=Math.floor(Math.log10(Math.abs(x)));return (x/Math.pow(10,e)).toFixed(2)+' × 10<sup>'+(e<0?'−':'')+Math.abs(e)+'</sup>';}
+const fact=n=>{let r=1n;for(let i=2;i<=n;i++)r*=BigInt(i);return r;};
+const mCols=n=>n<=8?n:Math.ceil(Math.sqrt(n*1.8));
+function combos(n,k){const out=[],cur=[];(function rec(s){if(cur.length===k){out.push(cur.slice());return;}for(let i=s;i<=n-(k-cur.length);i++){cur.push(i);rec(i+1);cur.pop();}})(0);return out;}
+function drawBoard(){const n=+mH.value,cols=mCols(n),b=$('board');b.style.gridTemplateColumns=`repeat(${cols},auto)`;
+ const S=new Set(mSet);b.innerHTML=Array.from({length:n},(_,i)=>`<div class="hole${S.has(i)?' full':''}"></div>`).join('');
+ document.querySelectorAll('.mini').forEach((el,i)=>el.classList.toggle('cur',mCombos&&i===mIdx));
+ $('mCounter').textContent=mCombos?`Showing arrangement ${mIdx+1} of ${mCombos.length}`:'';}
+function updMarbles(){const n=+mH.value;mM.max=n;if(+mM.value>n)mM.value=n;const k=+mM.value;
+ $('mHolesO').textContent=n;$('mMarbO').textContent=k;mStepping=false;$('mStep').textContent='Step through every arrangement';$('mStep').classList.remove('on');
+ const W=binom(n,k),lw=lnW(n,k);$('mW').innerHTML='W = '+fmtBig(W);
+ let work=`W = ${n}! ÷ (${k}! × ${n-k}!)`;
+ if(n<=12)work+=`<br>W = ${fact(n).toLocaleString('en-GB')} ÷ (${fact(k).toLocaleString('en-GB')} × ${fact(n-k).toLocaleString('en-GB')})<br>W = <b>${W.toLocaleString('en-GB')}</b>`;
+ work+=`<br>ln W = ${lw.toFixed(2)}<br>S = k ln W = ${fmtSci(1.38e-23*lw)} J K<sup>−1</sup>`;$('mWork').innerHTML=work;
+ const W2=binom(2*n,k),ratio=Math.exp(lnW(2*n,k)-lw);
+ $('mDouble').innerHTML=k===0?'With no marbles there is only one arrangement however many holes there are.':`Double the board to <b>${2*n}</b> holes with the same ${k} marble${k>1?'s':''} and W becomes <b>${fmtBig(W2)}</b>, which is ${ratio<1e6?ratio.toLocaleString('en-GB',{maximumFractionDigits:1}):fmtSci(ratio)} times as many arrangements. This is what happens to the entropy when a gas expands into twice the volume.`;
+ if(W<=252n){mCombos=combos(n,k);mIdx=0;mSet=mCombos[0];$('mAllTitle').textContent=`All ${mCombos.length} arrangement${mCombos.length>1?'s':''}`;
+  $('minis').innerHTML=mCombos.map(c=>{const S=new Set(c);return `<div class="mini" style="grid-template-columns:repeat(${mCols(n)},8px)">${Array.from({length:n},(_,i)=>`<i${S.has(i)?' class="f"':''}></i>`).join('')}</div>`;}).join('');
+  $('mStep').disabled=false;}
+ else{mCombos=null;$('mAllTitle').textContent='All arrangements';$('minis').innerHTML=`<p style="color:var(--muted)">Too many to draw (${fmtBig(W)}). Reduce the holes or marbles to see every arrangement.</p>`;$('mStep').disabled=true;randomSet();}
+ drawBoard();}
+function randomSet(){const n=+mH.value,k=+mM.value,idx=[...Array(n).keys()];for(let i=n-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[idx[i],idx[j]]=[idx[j],idx[i]];}mSet=idx.slice(0,k).sort((a,b)=>a-b);
+ if(mCombos)mIdx=mCombos.findIndex(c=>c.join()===mSet.join());}
+mH.addEventListener('input',updMarbles);mM.addEventListener('input',updMarbles);
+$('mShuffle').addEventListener('click',()=>{mStepping=false;$('mStep').textContent='Step through every arrangement';$('mStep').classList.remove('on');randomSet();drawBoard();});
+$('mStep').addEventListener('click',()=>{if(!mCombos)return;mStepping=!mStepping;if(mStepping&&mIdx>=mCombos.length-1)mIdx=-1;if(mStepping){mTimer=1;}
+ $('mStep').textContent=mStepping?'Pause':'Step through every arrangement';$('mStep').classList.toggle('on',mStepping);});
+$('minis').addEventListener('click',e=>{const el=e.target.closest('.mini');if(!el||!mCombos)return;mIdx=[...$('minis').children].indexOf(el);mSet=mCombos[mIdx];drawBoard();});
+function stepMarbles(dt){if(!mStepping||!mCombos)return;mTimer+=dt;const per=mCombos.length>60?0.25:0.6;
+ if(mTimer>=per){mTimer=0;mIdx++;if(mIdx>=mCombos.length){mIdx=mCombos.length-1;mStepping=false;$('mStep').textContent='Step through every arrangement';$('mStep').classList.remove('on');}mSet=mCombos[mIdx];drawBoard();}}
+updMarbles();
+
+/* =================== DIAMOND vs GRAPHITE =================== */
+const DI={ang:0.5,spin:!reduce,T:298,t:0};
+const DIA=(()=>{const a=0.357,base=[[0,0,0],[0,.5,.5],[.5,0,.5],[.5,.5,0]],P=[];
+ for(let i=-2;i<=2;i++)for(let j=-2;j<=2;j++)for(let k=-2;k<=2;k++)for(const b of base)for(const o of [0,.25]){
+  const p=[(i+b[0]+o)*a,(j+b[1]+o)*a,(k+b[2]+o)*a];if(Math.hypot(...p)<0.40)P.push({p,ph:[Math.random()*6.28,Math.random()*6.28,Math.random()*6.28]});}
+ const B=[];for(let i=0;i<P.length;i++)for(let j=i+1;j<P.length;j++)if(Math.hypot(P[i].p[0]-P[j].p[0],P[i].p[1]-P[j].p[1],P[i].p[2]-P[j].p[2])<0.16)B.push([i,j]);
+ const c=P.findIndex(q=>Math.hypot(...q.p)<1e-6);return {P,B,c};})();
+const GRA=(()=>{const a=0.142,s3=Math.sqrt(3),P=[];
+ [-1,0,1].forEach((L,li)=>{const sh=L===0?[s3*a/2,a/2]:[0,0];
+  for(let i=-5;i<=5;i++)for(let j=-5;j<=5;j++)for(const bs of [[0,0],[s3*a/2,a/2]]){
+   const x=i*s3*a+j*s3*a/2+bs[0]+sh[0]-s3*a/4,z=j*1.5*a+bs[1]+sh[1]-a/4;
+   if(x*x+z*z<0.36*0.36)P.push({p:[x,L*0.335,z],L,ph:[Math.random()*6.28,Math.random()*6.28,Math.random()*6.28]});}});
+ const B=[];for(let i=0;i<P.length;i++)for(let j=i+1;j<P.length;j++)if(P[i].L===P[j].L&&Math.hypot(P[i].p[0]-P[j].p[0],P[i].p[2]-P[j].p[2])<0.15)B.push([i,j]);
+ let c=-1,best=9;P.forEach((q,i)=>{if(q.L===0){const d=Math.hypot(q.p[0],q.p[2]);if(d<best){best=d;c=i;}}});return {P,B,c};})();
+const stD=Stage($('cvDiam'));
+function drawStruct(ctx,S,cx,cy,disp){const sc=290,F=2.6,ca=Math.cos(DI.ang),sa=Math.sin(DI.ang),tl=0.42,ct=Math.cos(tl),st=Math.sin(tl);
+ const pr=S.P.map((q,i)=>{const [dx,dy,dz]=disp(q);const x=q.p[0]+dx,y=q.p[1]+dy,z=q.p[2]+dz;
+  const x1=x*ca-z*sa,z1=x*sa+z*ca,y2=y*ct-z1*st,z2=y*st+z1*ct,s=F/(F+z2);return {X:cx+x1*sc*s,Y:cy-y2*sc*s,z:z2,s};});
+ const hot=new Set(S.B.filter(([i,j])=>i===S.c||j===S.c).map(b=>b.join()));
+ const items=[];S.B.forEach(b=>items.push({t:'b',b,z:(pr[b[0]].z+pr[b[1]].z)/2+0.02}));pr.forEach((p,i)=>items.push({t:'a',i,z:p.z}));
+ items.sort((a,b)=>b.z-a.z);
+ for(const it of items){if(it.t==='b'){const [i,j]=it.b,a=pr[i],b=pr[j],h=hot.has(it.b.join());ctx.strokeStyle=h?C.brown:'rgba(80,76,70,0.75)';ctx.lineWidth=(h?3.4:2.4)*(a.s+b.s)/2;ctx.beginPath();ctx.moveTo(a.X,a.Y);ctx.lineTo(b.X,b.Y);ctx.stroke();}
+  else{const p=pr[it.i],r=6.2*p.s,h=it.i===S.c;const g=ctx.createRadialGradient(p.X-r*.35,p.Y-r*.4,r*.1,p.X,p.Y,r);
+   g.addColorStop(0,h?'#E9B98A':'#8A8A90');g.addColorStop(1,h?C.brown:'#2F2F33');ctx.beginPath();ctx.arc(p.X,p.Y,r,0,6.2832);ctx.fillStyle=g;ctx.fill();ctx.strokeStyle='#1A1A1C';ctx.lineWidth=0.8;ctx.stroke();}}}
+function drawDiamond(dt){const {ctx,w,h}=stD;if(!w)return;DI.t+=dt;if(DI.spin)DI.ang+=dt*0.35;const t=DI.t,A=Math.sqrt(DI.T/298);
+ ctx.clearRect(0,0,w,h);const s=w/600;ctx.save();ctx.scale(s,s);
+ ctx.strokeStyle=C.line;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(300,20);ctx.lineTo(300,340);ctx.stroke();
+ drawStruct(ctx,DIA,150,195,q=>{const v=0.0045*A;return [v*Math.sin(t*31+q.ph[0]),v*Math.sin(t*29+q.ph[1]),v*Math.sin(t*33+q.ph[2])];});
+ drawStruct(ctx,GRA,450,195,q=>{const v=0.0045*A,x=q.p[0],z=q.p[2];
+  return [v*Math.sin(t*31+q.ph[0])+0.014*A*Math.sin(t*1.6+q.L*2.1),
+          v*Math.sin(t*29+q.ph[1])+0.028*A*Math.sin(9*x+6*z-t*4.5+q.L*2.3),
+          v*Math.sin(t*33+q.ph[2])+0.010*A*Math.sin(t*1.3+q.L*1.7)];});
+ ctx.fillStyle=C.ink;ctx.font='700 17px '+css('--head');ctx.textAlign='center';ctx.fillText('Diamond',150,34);ctx.fillText('Graphite',450,34);
+ ctx.font='600 12.5px '+css('--body');ctx.fillStyle=C.muted;ctx.fillText('4 strong bonds per atom, rigid 3D network',150,52);ctx.fillText('3 bonds per atom; layers flex and slide',450,52);
+ ctx.fillStyle=C.S;ctx.font='700 15px '+css('--mono');ctx.fillText('S = 2.4',150,336);ctx.fillText('S = 5.7',450,336);
+ ctx.restore();}
+$('dT').addEventListener('input',()=>{DI.T=+$('dT').value;$('dTO').textContent=DI.T+' K';});
+$('dSpin').addEventListener('click',e=>{DI.spin=!DI.spin;e.target.textContent=DI.spin?'Pause rotation':'Rotate';e.target.classList.toggle('on',DI.spin);});
+if(!DI.spin){$('dSpin').textContent='Rotate';$('dSpin').classList.remove('on');}
+
+/* =================== Tabs & loop =================== */
+let active='states';
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>{active=b.dataset.tab;
+ document.querySelectorAll('nav button').forEach(x=>x.setAttribute('aria-selected',x===b?'true':'false'));
+ document.querySelectorAll('section[role=tabpanel]').forEach(s=>s.hidden=s.id!=='p-'+active);
+ requestAnimationFrame(()=>{[stW,stST,stR,stG,stC,stD].forEach(s=>s.fit());});}));
+let last=performance.now();
+function loop(ts){const dt=Math.min(0.05,(ts-last)/1000);last=ts;now+=dt;
+ if(active==='states'){stepWater(dt);drawWater();}
+ else if(active==='react'){stepReact(dt);drawReact();}
+ else if(active==='diamond'){drawDiamond(dt);}
+ else if(active==='marbles'){stepMarbles(dt);}
+ requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
+})();
+</script>
+
+</body></html>

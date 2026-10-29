@@ -1,0 +1,591 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Electrochemical Cell Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: two half-cell control cards + conditions; apparatus beside an electrode-potential ladder; particle view beside the calculation panel. Single light theme for projector use. */
+:root{
+  --bg:#f3ead9; --panel:#fbf6ec; --ink:#35251a; --brown:#76461f; --brown-2:#a5683a;
+  --line:#dac7a6; --muted:#7d6550; --ok:#3d7a37; --no:#a3402c; --warn:#a86f12; --chip:#efe3cc;
+  --neg:#24548f; --pos:#a3402c;
+  --display:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  --body:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+html,body{background:var(--bg);color:var(--ink)}
+body{font-family:var(--body);font-size:15px;line-height:1.45}
+.wrap{max-width:1560px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:14px 28px;display:grid;gap:14px}
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:8px 20px;border-bottom:2px solid var(--brown);padding-bottom:8px}
+h1{font-family:var(--display);font-size:clamp(26px,3.2vw,38px);margin:0;color:var(--brown);text-wrap:balance}
+.sub{margin:2px 0 0;color:var(--muted)}
+.card{background:var(--panel);border:1.5px solid var(--line);border-radius:14px;padding:12px;min-width:0}
+.eyebrow{font-size:11.5px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:700}
+.controls{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.1fr);gap:14px}
+@media (max-width:1000px){.controls{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.controls .cond{grid-column:1/-1}}
+@media (max-width:640px){.controls{grid-template-columns:minmax(0,1fr)}}
+.hc{display:grid;gap:8px;align-content:start}
+.hc .top{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.role{font-size:12.5px;font-weight:700;padding:2px 9px;border-radius:12px;color:#fff;background:#9b8670}
+.role.neg{background:var(--neg)}.role.pos{background:var(--pos)}
+select{font:inherit;font-size:16px;padding:7px 10px;border-radius:8px;border:1.5px solid var(--line);background:#fff;color:var(--ink);width:100%}
+.eqline{font-family:var(--mono);font-size:14px;background:#fff;border:1px solid var(--line);border-radius:7px;padding:5px 8px;overflow-x:auto;white-space:nowrap}
+.sl{display:grid;grid-template-columns:7.5em minmax(0,1fr) 5.6em;gap:8px;align-items:center;font-size:14px}
+.sl output{font-family:var(--mono);font-size:13.5px;text-align:right;font-variant-numeric:tabular-nums}
+.sl .nm{font-weight:600}
+input[type=range]{accent-color:var(--brown);width:100%}
+.mini{font:inherit;font-size:13px;border:1.5px solid var(--line);background:#fff;border-radius:7px;padding:3px 9px;cursor:pointer;color:var(--ink)}
+.mini:hover{background:var(--chip)}
+.seg{display:flex;flex-wrap:wrap;background:#fff;border:1.5px solid var(--line);border-radius:10px;padding:3px;gap:3px}
+.seg button,.btn{font:inherit;font-size:14.5px;border:0;background:transparent;color:var(--ink);padding:7px 11px;border-radius:7px;cursor:pointer;white-space:nowrap}
+.seg button:hover,.btn:hover{background:var(--chip)}
+.seg button[aria-pressed="true"]{background:var(--brown);color:#fff8ec}
+.btn{background:#fff;border:1.5px solid var(--line)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--brown-2);outline-offset:2px}
+.cond{display:grid;gap:10px;align-content:start}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.stage{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,290px);gap:14px;align-items:stretch}
+@media (max-width:900px){.stage{grid-template-columns:minmax(0,1fr)}}
+canvas{display:block;width:100%;height:auto}
+#app{aspect-ratio:860/510}
+#ladder{aspect-ratio:270/540}
+@media (max-width:900px){#ladder{max-width:340px;margin:0 auto}}
+#zoom{aspect-ratio:732/300;border-radius:10px;border:1.5px solid var(--line)}
+#hist{aspect-ratio:420/130}
+figcaption,.cap{font-size:13px;color:var(--muted);margin-top:6px}
+.lower{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:14px;align-items:start}
+@media (max-width:1050px){.lower{grid-template-columns:minmax(0,1fr)}}
+h2{font-family:var(--display);font-size:21px;margin:0 0 6px;color:var(--brown)}
+#zStatus{margin:0 0 8px;font-size:14.5px;min-height:2.9em}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:9px;font-size:13px}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.dot{width:13px;height:13px;border-radius:50%;display:inline-block;border:1px solid rgba(0,0,0,.25)}
+.big{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline}
+.emf{font-family:var(--mono);font-size:34px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink)}
+.calc{display:grid;gap:10px;margin-top:8px}
+.calc h4{margin:0 0 3px;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.mono{font-family:var(--mono);font-size:14px;background:#fff;border:1px solid var(--line);border-radius:7px;padding:6px 9px;overflow-x:auto;white-space:nowrap}
+.mono.neg{border-left:5px solid var(--neg)}.mono.pos{border-left:5px solid var(--pos)}
+.why{font-size:14px;margin:4px 0 0}
+.note{font-size:13px;color:var(--warn);margin:4px 0 0}
+.foot{font-size:13px;color:var(--muted)}
+[hidden]{display:none!important}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Electrochemical Cell Lab</h1>
+      <p class="sub">Build a cell from two half-cells, then change concentration, pressure or temperature and watch E and the cell EMF respond.</p>
+    </div>
+    <div class="row">
+      <button class="btn" id="convBtn" title="Put the more negative half-cell on the left">Arrange conventionally</button>
+      <button class="btn" id="resetBtn">Reset to standard</button>
+      <button class="btn" id="pauseBtn">Pause</button>
+    </div>
+  </header>
+
+  <section class="controls">
+    <div class="card hc" id="hc0"></div>
+    <div class="card hc" id="hc1"></div>
+    <div class="card cond">
+      <div class="eyebrow">Conditions and circuit</div>
+      <div class="sl"><span class="nm">Temperature</span><input id="temp" type="range" min="273" max="373" step="1" value="298"><output id="tempOut">298 K</output></div>
+      <div class="row"><button class="mini" id="t298">Set 298 K</button><span class="cap" style="margin:0">Same temperature in both beakers.</span></div>
+      <div class="seg" id="circSeg">
+        <button data-c="v" aria-pressed="true">Voltmeter only (no current)</button>
+        <button data-c="l" aria-pressed="false">Close switch (current flows)</button>
+      </div>
+      <div class="sl"><span class="nm">Sim speed</span><input id="speed" type="range" min="0.5" max="8" step="0.5" value="1"><output id="speedOut">1×</output></div>
+    </div>
+  </section>
+
+  <section class="stage">
+    <figure class="card" style="margin:0">
+      <canvas id="app" width="860" height="510" aria-label="Electrochemical cell apparatus"></canvas>
+      <figcaption id="appCap">The voltmeter's red lead is on the right electrode, so it reads E(right) − E(left).</figcaption>
+    </figure>
+    <figure class="card" style="margin:0">
+      <canvas id="ladder" width="270" height="540" aria-label="Electrode potential scale"></canvas>
+      <figcaption>Hollow ring: E° at 298 K, 1.00 mol dm⁻³, 100 kPa. Solid dot: E under the chosen conditions.</figcaption>
+    </figure>
+  </section>
+
+  <section class="lower">
+    <div class="card">
+      <h2>Particle view at each electrode</h2>
+      <p id="zStatus"></p>
+      <canvas id="zoom" width="732" height="300" aria-label="Particle view of both electrode surfaces"></canvas>
+      <div class="legend" id="legend"></div>
+    </div>
+    <div class="card" id="calc"></div>
+  </section>
+
+  <p class="foot">E° values from the AQA data booklet. E under non-standard conditions is calculated with the Nernst equation, E = E° − (RT/nF) ln Q. The Nernst equation is not on the AQA specification, but it gives the same direction of change as the Le Chatelier argument you are expected to use. E° values are defined at 298 K; this model does not include the small change of E° itself with temperature, so temperature only acts through the (RT/nF) ln Q term. Spectator ions (sulfate, nitrate) are not shown in the particle view.</p>
+</div>
+
+<script>
+(function(){
+"use strict";
+const TAU=Math.PI*2,R=8.314,F=96485;
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const SUPD={'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
+const sup=n=>String(n).split('').map(d=>SUPD[d]).join('');
+
+/* ---------- data ---------- */
+const SP={
+  Mg2:{t:'Mg²⁺',col:'#8f96a0'},Zn2:{t:'Zn²⁺',col:'#7f8b97'},Fe2:{t:'Fe²⁺',col:'#6fa152',soln:[150,195,110,.35]},
+  Ni2:{t:'Ni²⁺',col:'#3a9450',soln:[60,165,90,.55]},Pb2:{t:'Pb²⁺',col:'#737a88'},Cu2:{t:'Cu²⁺',col:'#2d6db5',soln:[45,115,200,.55]},
+  Ag1:{t:'Ag⁺',col:'#8c939e'},H:{t:'H⁺',col:'#e6d6ae'},H2:{t:'H₂',col:'#fbfbfb'},
+  Fe3:{t:'Fe³⁺',col:'#c4831a',soln:[205,145,35,.6]},VO2p:{t:'VO₂⁺',col:'#c9a514',soln:[225,195,40,.6]},VOp:{t:'VO²⁺',col:'#2f62c0',soln:[40,100,205,.6]},
+  Cr2O7:{t:'Cr₂O₇²⁻',col:'#dc6d16',soln:[235,120,20,.65]},Cr3:{t:'Cr³⁺',col:'#2f7d4a',soln:[40,125,70,.55]},
+  MnO4:{t:'MnO₄⁻',col:'#76268c',soln:[120,30,140,.8]},Mn2:{t:'Mn²⁺',col:'#dba7b9',soln:[240,200,215,.25]},
+  Mg:{t:'Mg'},Zn:{t:'Zn'},Fe:{t:'Fe'},Ni:{t:'Ni'},Pb:{t:'Pb'},Cu:{t:'Cu'},Ag:{t:'Ag'},H2O:{t:'H₂O'}
+};
+const M=(sym,ion,E0,n,col)=>({name:`${SP[ion].t}/${sym}`,kind:'metal',E0,n,ox:[[ion,1,'aq']],red:[[sym,1,'s']],metalCol:col,elec:sym});
+const HC={
+  Mg:M('Mg','Mg2',-2.37,2,'#c3c7cc'),
+  Zn:M('Zn','Zn2',-0.76,2,'#a9b3ba'),
+  Fe:M('Fe','Fe2',-0.44,2,'#6f6b67'),
+  Ni:M('Ni','Ni2',-0.25,2,'#aaa592'),
+  Pb:M('Pb','Pb2',-0.13,2,'#6d7380'),
+  Cu:M('Cu','Cu2',+0.34,2,'#c4733f'),
+  Ag:M('Ag','Ag1',+0.80,1,'#d7dbe1'),
+  SHE:{name:'H⁺/H₂ (SHE)',kind:'gas',E0:0,n:2,ox:[['H',2,'aq']],red:[['H2',1,'g']],elec:'Pt'},
+  FeR:{name:'Fe³⁺/Fe²⁺',kind:'redox',E0:0.77,n:1,ox:[['Fe3',1,'aq']],red:[['Fe2',1,'aq']],elec:'Pt'},
+  V:{name:'VO₂⁺/VO²⁺',kind:'redox',E0:1.00,n:1,ox:[['VO2p',1,'aq'],['H',2,'aq']],red:[['VOp',1,'aq'],['H2O',1,'l']],elec:'Pt'},
+  Cr:{name:'Cr₂O₇²⁻/Cr³⁺',kind:'redox',E0:1.33,n:6,ox:[['Cr2O7',1,'aq'],['H',14,'aq']],red:[['Cr3',2,'aq'],['H2O',7,'l']],elec:'Pt'},
+  Mn:{name:'MnO₄⁻/Mn²⁺',kind:'redox',E0:1.51,n:5,ox:[['MnO4',1,'aq'],['H',8,'aq']],red:[['Mn2',1,'aq'],['H2O',4,'l']],elec:'Pt'}
+};
+const GROUPS=[['Metal | metal ion',['Mg','Zn','Fe','Ni','Pb','Cu','Ag']],['Reference',['SHE']],['Inert Pt electrode (two oxidation states)',['FeR','V','Cr','Mn']]];
+const STATE={aq:'(aq)',s:'(s)',l:'(l)',g:'(g)'};
+const coef=v=>v===1?'':String(v);
+function halfEq(k){const d=HC[k];return d.ox.map(([i,v,s])=>coef(v)+SP[i].t+STATE[s]).join(' + ')+` + ${coef(d.n)}e⁻ ⇌ `+d.red.map(([i,v,s])=>coef(v)+SP[i].t+STATE[s]).join(' + ')}
+function aqSpecies(k){const d=HC[k];const out=[];for(const[i,,s]of[...d.ox,...d.red])if(s==='aq'&&!out.includes(i))out.push(i);return out}
+
+/* ---------- state ---------- */
+const S={T:298,load:false,paused:false,speed:1,t:0,half:[null,null],hist:[],histT:0,syncT:0};
+function mkHalf(key){const c={};aqSpecies(key).forEach(i=>c[i]=1);return{key,c,p:100}}
+S.half=[mkHalf('Zn'),mkHalf('Cu')];
+function lnQ(h){const d=HC[h.key];let q=0;
+  for(const[i,v,s]of d.red){if(s==='aq')q+=v*Math.log(h.c[i]);if(s==='g')q+=v*Math.log(h.p/100)}
+  for(const[i,v,s]of d.ox){if(s==='aq')q-=v*Math.log(h.c[i]);if(s==='g')q-=v*Math.log(h.p/100)}
+  return q}
+function Ecalc(h,T){const d=HC[h.key];return d.E0-R*(T||S.T)/(d.n*F)*lnQ(h)}
+const Es=()=>[Ecalc(S.half[0]),Ecalc(S.half[1])];
+function roles(){const[a,b]=Es();if(Math.abs(a-b)<5e-5)return null;return a<b?{an:0,ca:1}:{an:1,ca:0}}
+const VOL=0.1; // dm3 per beaker
+function current(){const[a,b]=Es();const emf=Math.abs(b-a);return S.load?Math.min(.003,emf*.004):0} // mol e- per s
+
+/* ---------- formatting ---------- */
+const fmtE=v=>(v>=0?'+':'−')+Math.abs(v).toFixed(3)+' V';
+const fmtC=c=>c>=0.01?c.toFixed(c>=1?2:3):c>=1e-4?c.toFixed(5):c.toExponential(2);
+function qExpr(k){const d=HC[k];const term=([i,v,s])=>s==='aq'?`[${SP[i].t}]${v>1?sup(v):''}`:s==='g'?`(p${SP[i].t}/p°)${v>1?sup(v):''}`:'';
+  const num=d.red.map(term).filter(Boolean),den=d.ox.map(term).filter(Boolean);
+  const N=num.length?num.join(''):'1',D=den.join('');return D?`${N} / ${den.length>1?'('+D+')':D}`:N}
+function qNum(h){const d=HC[h.key];const term=([i,v,s])=>s==='aq'?`${fmtC(h.c[i])}${v>1?sup(v):''}`:s==='g'?`(${h.p}/100)${v>1?sup(v):''}`:'';
+  const num=d.red.map(term).filter(Boolean),den=d.ox.map(term).filter(Boolean);
+  const N=num.length?num.join('×'):'1',D=den.join('×');return D?`${N} / ${den.length>1?'('+D+')':D}`:N}
+function cellPart(k,side){const d=HC[k];const o=SP[d.ox[0][0]].t+'(aq)',r=d.red[0];const rr=SP[r[0]].t+STATE[r[2]];
+  if(d.kind==='metal')return side==='an'?`${rr} | ${o}`:`${o} | ${rr}`;
+  if(d.kind==='gas')return side==='an'?`Pt(s) | H₂(g) | H⁺(aq)`:`H⁺(aq) | H₂(g) | Pt(s)`;
+  return side==='an'?`Pt(s) | ${rr}, ${o}`:`${o}, ${rr} | Pt(s)`}
+const gcd=(a,b)=>b?gcd(b,a%b):a;
+function overall(anK,caK){
+  const A=HC[anK],C=HC[caK],L=A.n*C.n/gcd(A.n,C.n),ma=L/A.n,mc=L/C.n,net=new Map();
+  const add=(i,s,v)=>{const e=net.get(i)||{i,s,v:0};e.v+=v;net.set(i,e)};
+  A.red.forEach(([i,v,s])=>add(i,s,-v*ma));C.ox.forEach(([i,v,s])=>add(i,s,-v*mc));
+  A.ox.forEach(([i,v,s])=>add(i,s,v*ma));C.red.forEach(([i,v,s])=>add(i,s,v*mc));
+  const all=[...net.values()].filter(e=>Math.abs(e.v)>1e-9);
+  if(!all.length)return null;
+  const g=all.reduce((a,e)=>gcd(a,Math.abs(Math.round(e.v))),0)||1;
+  const side=sign=>all.filter(e=>Math.sign(e.v)===sign).map(e=>coef(Math.abs(e.v)/g)+SP[e.i].t+STATE[e.s]).join(' + ');
+  return{eq:side(-1)+' → '+side(1),n:L/g};
+}
+
+/* ---------- colour helpers ---------- */
+function rgb(h){h=h.replace('#','');return[parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]}
+const mixW=(h,t)=>{const[r,g,b]=rgb(h);return`rgb(${r+(255-r)*t|0},${g+(255-g)*t|0},${b+(255-b)*t|0})`};
+const dark=(h,t)=>{const[r,g,b]=rgb(h);return`rgb(${r*(1-t)|0},${g*(1-t)|0},${b*(1-t)|0})`};
+const lum=h=>{const[r,g,b]=rgb(h);return(.299*r+.587*g+.114*b)/255};
+let FONT='sans-serif';
+function ball(ctx,x,y,r,col,label){
+  const g=ctx.createRadialGradient(x-r*.4,y-r*.4,r*.12,x,y,r);g.addColorStop(0,mixW(col,.6));g.addColorStop(1,col);
+  ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.fillStyle=g;ctx.fill();ctx.lineWidth=1.2;ctx.strokeStyle=dark(col,.38);ctx.stroke();
+  if(label){const fs=label.length>4?Math.max(8,r*.62):label.length>3?Math.max(8.5,r*.72):Math.max(8.5,Math.min(12.5,r*.88));
+    ctx.font=`700 ${fs}px ${FONT}`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=lum(col)>.62?'#2a1d12':'#fff';ctx.fillText(label,x,y+.5)}
+}
+function halo(ctx,text,x,y,col,size,align){ctx.font=`700 ${size}px ${FONT}`;ctx.textAlign=align||'center';ctx.textBaseline='middle';
+  ctx.lineWidth=4;ctx.strokeStyle='rgba(255,252,244,.92)';ctx.strokeText(text,x,y);ctx.fillStyle=col;ctx.fillText(text,x,y)}
+function solnColour(h){
+  let r=0,g=0,b=0,a=0;
+  for(const i of aqSpecies(h.key)){const s=SP[i].soln;if(!s)continue;const w=s[3]*clamp((Math.log10(h.c[i])+3)/3.3,0,1);r+=s[0]*w;g+=s[1]*w;b+=s[2]*w;a+=w}
+  if(a<.02)return'rgba(205,225,232,.28)';return`rgba(${r/a|0},${g/a|0},${b/a|0},${Math.min(.75,a*.8+.08)})`;
+}
+function fit(cv,w,h){const dpr=Math.min(window.devicePixelRatio||1,2.5),cw=cv.clientWidth||w;const W=Math.round(cw*dpr),H=Math.round(cw*h/w*dpr);if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H}return W/w}
+function rrect(ctx,x,y,w,h,r){ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x,y,w,h,r);else ctx.rect(x,y,w,h)}
+function poly(ctx,p){ctx.beginPath();ctx.moveTo(p[0][0],p[0][1]);for(let i=1;i<p.length;i++)ctx.lineTo(p[i][0],p[i][1])}
+function plen(p){let L=0;for(let i=1;i<p.length;i++)L+=Math.hypot(p[i][0]-p[i-1][0],p[i][1]-p[i-1][1]);return L}
+function ppt(p,d){for(let i=1;i<p.length;i++){const l=Math.hypot(p[i][0]-p[i-1][0],p[i][1]-p[i-1][1]);if(d<=l){const k=d/l;return[p[i-1][0]+(p[i][0]-p[i-1][0])*k,p[i-1][1]+(p[i][1]-p[i-1][1])*k]}d-=l}return p[p.length-1]}
+
+/* ---------- particle view (one panel per electrode) ---------- */
+const PW=360,PH=300,PEW=46,GAP=12,SLOT=22,ZW=PW*2+GAP;
+function newPanel(i){return{i,key:null,parts:[],slots:[],acts:[],elec:[],floats:[]}}
+const panels=[newPanel(0),newPanel(1)];
+const radius=i=>i==='H'?6:i==='Cr2O7'?16:i==='MnO4'||i==='VO2p'||i==='VOp'?13:11;
+function targets(h){const d=HC[h.key],n=c=>clamp(Math.round(8+3*Math.log10(c)),1,14);
+  if(d.kind==='metal')return{ox:n(h.c[d.ox[0][0]]),red:0};
+  if(d.kind==='gas')return{ox:n(h.c.H),red:clamp(Math.round(1+h.p/40),1,6)};
+  return{ox:n(h.c[d.ox[0][0]]),red:n(h.c[d.red[0][0]])}}
+function wallX(P,y){if(!P.slots.length)return PEW;const s=P.slots[clamp(Math.floor(y/SLOT),0,P.slots.length-1)];return PEW+s.d*20}
+function mkP(P,sp,x,y){const d=HC[P.key],id=sp==='ox'?d.ox[0][0]:d.red[0][0];return{sp,id,x,y,vx:rnd(-30,30),vy:rnd(-30,30),r:id==='H2'?9:radius(id),busy:false}}
+function initPanel(P,h){
+  Object.assign(P,{key:h.key,parts:[],acts:[],elec:[],floats:[]});
+  P.slots=HC[h.key].kind==='metal'?Array.from({length:Math.ceil(PH/SLOT)},()=>({d:Math.random()<.8?2:1})):[];
+  syncPanel(P,h,true);
+}
+function syncPanel(P,h,all){
+  const tg=targets(h);
+  for(const sp of['ox','red']){
+    for(let guard=0;guard<(all?30:1);guard++){
+      const list=P.parts.filter(p=>p.sp===sp&&!p.busy);const want=tg[sp];
+      if(list.length<want){const p=mkP(P,sp,all?rnd(PEW+60,PW-14):PW-14,rnd(14,PH-14));P.parts.push(p)}
+      else if(list.length>want){list.sort((a,b)=>b.x-a.x);P.parts.splice(P.parts.indexOf(list[0]),1)}
+      else break;
+    }
+  }
+}
+function nearest(P,sp,k){return P.parts.filter(p=>p.sp===sp&&!p.busy).sort((a,b)=>a.x-b.x).slice(0,k||3)}
+function addElec(P,n,from,to,delay){for(let k=0;k<Math.min(n,6);k++)P.elec.push({x0:from[0],y0:from[1]+(k-(n-1)/2)*7,x1:to[0],y1:to[1]+(k-(n-1)/2)*5,t:-(delay||0)-k*.09,dur:.45})}
+function pfloat(P,x,y,text,col){P.floats.push({x:clamp(x,PEW+70,PW-70),y:clamp(y,16,PH-14),text,col,life:2,max:2});if(P.floats.length>4)P.floats.shift()}
+function tryRed(P,h){
+  const d=HC[h.key],n=d.n,o=SP[d.ox[0][0]].t;
+  if(d.kind==='metal'){const p=nearest(P,'ox',3)[Math.random()*3|0];if(!p)return;
+    let cand=P.slots.map((s,i)=>({s,i})).filter(o=>o.s.d<3);if(!cand.length){P.slots.forEach(s=>s.d=1);cand=P.slots.map((s,i)=>({s,i}))}
+    cand.sort((a,b)=>Math.abs(a.i*SLOT+11-p.y)-Math.abs(b.i*SLOT+11-p.y));const sl=cand[Math.random()*Math.min(3,cand.length)|0];
+    p.busy=true;P.acts.push({type:'red',kind:'metal',ps:[p],sl,t:0,from:[[p.x,p.y]],to:[[PEW+sl.s.d*20+10,sl.i*SLOT+11]]});
+    pfloat(P,p.x+60,p.y-16,`${o} gains ${n}e⁻`,'#24548f');return}
+  if(d.kind==='redox'){const p=nearest(P,'ox',3)[Math.random()*3|0];if(!p)return;p.busy=true;
+    P.acts.push({type:'red',kind:'redox',ps:[p],t:0,from:[[p.x,p.y]],to:[[PEW+p.r+2,clamp(p.y,p.r,PH-p.r)]]});
+    pfloat(P,p.x+60,p.y-16,`${o} gains ${n}e⁻`,'#24548f');return}
+  const hs=nearest(P,'ox',2);if(hs.length<2)return;hs.forEach(p=>p.busy=true);const y=clamp((hs[0].y+hs[1].y)/2,20,PH-20);
+  P.acts.push({type:'red',kind:'gas',ps:hs,t:0,from:hs.map(p=>[p.x,p.y]),to:[[PEW+8,y-8],[PEW+8,y+8]]});
+  pfloat(P,PEW+120,y-20,'2H⁺ + 2e⁻ → H₂','#24548f');
+}
+function tryOx(P,h){
+  const d=HC[h.key],n=d.n,r0=SP[d.red[0][0]].t;
+  if(d.kind==='metal'){let cand=P.slots.map((s,i)=>({s,i})).filter(o=>o.s.d>=1);if(!cand.length){P.slots.forEach(s=>s.d=2);cand=P.slots.map((s,i)=>({s,i}))}
+    const sl=cand[Math.random()*cand.length|0];sl.s.d--;
+    const p=mkP(P,'ox',PEW+sl.s.d*20+10,sl.i*SLOT+11);p.busy=true;P.parts.push(p);
+    P.acts.push({type:'ox',kind:'metal',ps:[p],t:0,from:[[p.x,p.y]],to:[[p.x+rnd(50,80),p.y+rnd(-20,20)]]});
+    pfloat(P,p.x+80,p.y-16,`${r0} loses ${n}e⁻`,'#2f6e28');return}
+  if(d.kind==='redox'){const p=nearest(P,'red',3)[Math.random()*3|0];if(!p)return;p.busy=true;
+    P.acts.push({type:'ox',kind:'redox',ps:[p],t:0,from:[[p.x,p.y]],to:[[PEW+p.r+2,clamp(p.y,p.r,PH-p.r)]]});
+    pfloat(P,p.x+60,p.y-16,`${r0} loses ${n}e⁻`,'#2f6e28');return}
+  const p=nearest(P,'red',1)[0];if(!p)return;p.busy=true;
+  P.acts.push({type:'ox',kind:'gas',ps:[p],t:0,from:[[p.x,p.y]],to:[[PEW+10,clamp(p.y,20,PH-20)]]});
+  pfloat(P,PEW+120,p.y-20,'H₂ → 2H⁺ + 2e⁻','#2f6e28');
+}
+function stepAct(P,h,a,dt){
+  a.t+=dt;const d=HC[h.key],n=d.n,MOVE=.45,EL=.55;
+  const metalOx=a.kind==='metal'&&a.type==='ox';
+  // phase timing: metal oxidation = electrons first then leave; everything else = move, then electrons
+  const tMove=metalOx?[EL,EL+MOVE]:[0,MOVE],tE=metalOx?[0,EL]:[MOVE,MOVE+EL];
+  if(!a.eDone&&a.t>=tE[0]){a.eDone=true;const p=a.ps[0];const surf=[PEW-12,a.to[0][1]];
+    const atP=metalOx?[a.from[0][0],a.from[0][1]]:[a.to[0][0],a.to[0][1]];
+    if(a.type==='red')addElec(P,n,surf,atP,0);else addElec(P,n,atP,[PEW-14,atP[1]-24],0)}
+  const k=clamp((a.t-tMove[0])/(tMove[1]-tMove[0]),0,1),e=k*k*(3-2*k);
+  a.ps.forEach((p,j)=>{if(a.t>=tMove[0]){p.x=a.from[j][0]+(a.to[j][0]-a.from[j][0])*e;p.y=a.from[j][1]+(a.to[j][1]-a.from[j][1])*e}});
+  if(a.t<Math.max(tMove[1],tE[1]))return false;
+  // finish
+  if(a.kind==='metal'){if(a.type==='red'){P.parts.splice(P.parts.indexOf(a.ps[0]),1);a.sl.s.d=Math.min(3,a.sl.s.d+1)}else{a.ps[0].busy=false;a.ps[0].vx=40}}
+  else if(a.kind==='redox'){const p=a.ps[0];p.sp=a.type==='red'?'red':'ox';p.id=p.sp==='ox'?d.ox[0][0]:d.red[0][0];p.r=radius(p.id);p.busy=false;p.vx=60}
+  else if(a.type==='red'){a.ps.forEach(p=>P.parts.splice(P.parts.indexOf(p),1));const m=mkP(P,'red',PEW+12,a.to[0][1]+8);m.vx=55;P.parts.push(m)}
+  else{const p=a.ps[0];P.parts.splice(P.parts.indexOf(p),1);for(const dy of[-9,9]){const q=mkP(P,'ox',p.x+4,p.y+dy);q.vx=50;P.parts.push(q)}}
+  return true;
+}
+function stepPanel(P,h,dt,role,frac){
+  const damp=Math.pow(.1,dt),kick=330*Math.sqrt(dt);
+  for(const p of P.parts){if(p.busy)continue;
+    p.vx=p.vx*damp+(Math.random()-.5)*kick;p.vy=p.vy*damp+(Math.random()-.5)*kick;
+    p.x+=p.vx*dt;p.y+=p.vy*dt;const wl=wallX(P,p.y);
+    if(p.x-p.r<wl){p.x=wl+p.r;p.vx=Math.abs(p.vx)*.5}if(p.x+p.r>PW){p.x=PW-p.r;p.vx=-Math.abs(p.vx)*.5}
+    if(p.y-p.r<0){p.y=p.r;p.vy=Math.abs(p.vy)*.5}if(p.y+p.r>PH){p.y=PH-p.r;p.vy=-Math.abs(p.vy)*.5}}
+  const Q=P.parts;for(let i=0;i<Q.length;i++){const a=Q[i];if(a.busy)continue;for(let j=i+1;j<Q.length;j++){const b=Q[j];if(b.busy)continue;
+    const dx=b.x-a.x,dy=b.y-a.y,Rr=a.r+b.r-1,d2=dx*dx+dy*dy;if(d2<Rr*Rr&&d2>.01){const d=Math.sqrt(d2),o=(Rr-d)/d/2;a.x-=dx*o;a.y-=dy*o;b.x+=dx*o;b.y+=dy*o}}}
+  for(let i=P.acts.length-1;i>=0;i--)if(stepAct(P,h,P.acts[i],dt))P.acts.splice(i,1);
+  // event rates: equal at equilibrium; biased when current flows
+  let rRed=.8,rOx=.8;
+  if(role==='an'){rOx=.8+2.6*frac;rRed=.8*(1-frac)+.1}else if(role==='ca'){rRed=.8+2.6*frac;rOx=.8*(1-frac)+.1}
+  if(P.acts.length<3){if(Math.random()<rRed*dt)tryRed(P,h);if(Math.random()<rOx*dt)tryOx(P,h)}
+  for(let i=P.elec.length-1;i>=0;i--){const e=P.elec[i];e.t+=dt;if(e.t>e.dur)P.elec.splice(i,1)}
+  for(let i=P.floats.length-1;i>=0;i--){const f=P.floats[i];f.life-=dt;f.y-=7*dt;if(f.life<=0)P.floats.splice(i,1)}
+}
+function drawPanel(ctx,P,h,ox,role,E){
+  const d=HC[h.key];ctx.save();ctx.translate(ox,0);ctx.beginPath();ctx.rect(0,0,PW,PH);ctx.clip();
+  ctx.fillStyle='#eef2ef';ctx.fillRect(0,0,PW,PH);ctx.fillStyle=solnColour(h);ctx.fillRect(0,0,PW,PH);
+  // electrode
+  const col=d.kind==='metal'?d.metalCol:d.kind==='gas'?'#4b4a4d':'#c9ccd2';
+  const g=ctx.createLinearGradient(0,0,PEW,0);g.addColorStop(0,dark(col,.25));g.addColorStop(.6,mixW(col,.25));g.addColorStop(1,dark(col,.1));
+  ctx.fillStyle=g;ctx.fillRect(0,0,PEW,PH);
+  if(d.kind==='metal')for(let i=0;i<P.slots.length;i++){const s=P.slots[i];for(let k=0;k<s.d;k++)ball(ctx,PEW+k*20+10,i*SLOT+11,10,d.metalCol,d.elec)}
+  // excess-electron marks (cartoon: more marks = greater tendency to release electrons = more negative E)
+  const nm=Math.round(clamp((1.7-E)*3.4,1,14));
+  for(let k=0;k<nm;k++){const y=((k*73)%PH)+10,x=8+(k*29)%(PEW-16);halo(ctx,'e⁻',x+4,y,'#5a4300',10)}
+  if(role){const dir=role==='an'?-1:1;for(let i=0;i<6;i++){const y=((S.t*60*dir+i*50)%PH+PH)%PH;ctx.beginPath();ctx.arc(PEW/2,y,4.5,0,TAU);ctx.fillStyle='#ffd23f';ctx.fill();ctx.strokeStyle='#7d5f00';ctx.lineWidth=1;ctx.stroke()}}
+  for(const p of P.parts){if(p.id==='H2'){ball(ctx,p.x-4,p.y,6,'#fbfbfb','H');ball(ctx,p.x+4,p.y,6,'#fbfbfb','H')}else ball(ctx,p.x,p.y,p.r,SP[p.id].col,SP[p.id].t);
+    if(p.busy){ctx.beginPath();ctx.arc(p.x,p.y,p.r+4,0,TAU);ctx.strokeStyle='#e0b500';ctx.lineWidth=2;ctx.stroke()}}
+  for(const e of P.elec){if(e.t<0)continue;const k=Math.min(1,e.t/e.dur),s=k*k*(3-2*k),x=e.x0+(e.x1-e.x0)*s,y=e.y0+(e.y1-e.y0)*s;
+    ctx.beginPath();ctx.arc(x,y,4.5,0,TAU);ctx.fillStyle='#ffd23f';ctx.fill();ctx.strokeStyle='#7d5f00';ctx.lineWidth=1.1;ctx.stroke()}
+  for(const f of P.floats){ctx.globalAlpha=Math.min(1,f.life/(f.max*.4));halo(ctx,f.text,f.x,f.y,f.col,12.5);ctx.globalAlpha=1}
+  // panel label
+  const lab=`${P.i?'Right':'Left'}: ${d.name}  ·  ${d.kind==='metal'?d.elec:'Pt'} electrode`;
+  ctx.font=`700 12.5px ${FONT}`;const w=ctx.measureText(lab).width+14;
+  ctx.fillStyle='rgba(53,37,26,.8)';rrect(ctx,PW-w-6,6,w,22,6);ctx.fill();ctx.fillStyle='#fff6e6';ctx.textAlign='right';ctx.textBaseline='middle';ctx.fillText(lab,PW-13,17.5);
+  if(role){const t=role==='an'?'oxidation (net)':'reduction (net)';halo(ctx,t,PW-12,PH-14,role==='an'?'#24548f':'#a3402c',13,'right')}
+  ctx.restore();
+}
+
+/* ---------- apparatus ---------- */
+const AW=860,AH=510,EX=[180,680],ETOP=150,LIQ=262,BTOP=222,BBOT=462,LOADY=128;
+let bubbles=[];
+function drawApp(){
+  const sc=fit(appC,AW,AH),ctx=actx;ctx.setTransform(sc,0,0,sc,0,0);ctx.clearRect(0,0,AW,AH);
+  const[E0,E1]=Es(),ro=roles(),I=current(),flow=I>1e-7;
+  ctx.fillStyle='#d8c39d';ctx.fillRect(0,AH-36,AW,36);ctx.fillStyle='#b99d70';ctx.fillRect(0,AH-36,AW,3);
+  ctx.lineCap='round';ctx.lineJoin='round';
+  // wires to voltmeter
+  poly(ctx,[[EX[0],ETOP],[EX[0],64],[386,64]]);ctx.strokeStyle='#2c2724';ctx.lineWidth=5;ctx.stroke();
+  poly(ctx,[[EX[1],ETOP],[EX[1],64],[474,64]]);ctx.strokeStyle='#b0372a';ctx.stroke();
+  // load branch
+  ctx.strokeStyle='#6b4a2e';ctx.lineWidth=4;poly(ctx,[[EX[0],LOADY],[300,LOADY]]);ctx.stroke();poly(ctx,[[346,LOADY],[EX[1],LOADY]]);ctx.stroke();
+  for(const x of EX){ctx.beginPath();ctx.arc(x,LOADY,5,0,TAU);ctx.fillStyle='#3a2a1e';ctx.fill()}
+  ctx.beginPath();ctx.arc(300,LOADY,4,0,TAU);ctx.arc(346,LOADY,4,0,TAU);ctx.fillStyle='#3a2a1e';ctx.fill();
+  ctx.beginPath();ctx.moveTo(300,LOADY);S.load?ctx.lineTo(346,LOADY):ctx.lineTo(340,LOADY-20);ctx.strokeStyle='#3a2a1e';ctx.lineWidth=4;ctx.stroke();
+  ctx.font=`600 12px ${FONT}`;ctx.fillStyle='#5a4030';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(S.load?'switch closed':'switch open',323,LOADY+18);
+  const bx=560,by=LOADY;
+  if(flow){const gl=ctx.createRadialGradient(bx,by,3,bx,by,46);gl.addColorStop(0,`rgba(255,221,110,${clamp(I/.002,.25,.85)})`);gl.addColorStop(1,'rgba(255,221,110,0)');ctx.fillStyle=gl;ctx.fillRect(bx-46,by-46,92,92)}
+  ctx.beginPath();ctx.arc(bx,by,15,0,TAU);ctx.fillStyle=flow?'#fff3b8':'#fffdf6';ctx.fill();ctx.strokeStyle='#6d5a48';ctx.lineWidth=1.8;ctx.stroke();
+  ctx.beginPath();ctx.moveTo(bx-10,by+10);ctx.lineTo(bx+10,by-10);ctx.moveTo(bx-10,by-10);ctx.lineTo(bx+10,by+10);ctx.stroke();
+  ctx.fillStyle='#5a4030';ctx.fillText('lamp',bx,by+26);
+  // voltmeter
+  ctx.beginPath();ctx.arc(430,64,46,0,TAU);ctx.fillStyle='#5d3f2a';ctx.fill();ctx.strokeStyle='#3e2717';ctx.lineWidth=2;ctx.stroke();
+  rrect(ctx,394,46,72,30,5);ctx.fillStyle='#1d2a1f';ctx.fill();
+  const Vr=E1-E0;ctx.font=`700 17px ui-monospace,Menlo,Consolas,monospace`;ctx.fillStyle='#9cf09a';ctx.textAlign='center';ctx.fillText((Vr>=0?'+':'−')+Math.abs(Vr).toFixed(2),430,62);
+  ctx.font=`700 13px ${FONT}`;ctx.fillStyle='#fbefd9';ctx.fillText('V',430,94);
+  ctx.font=`600 11px ${FONT}`;ctx.fillText('COM',398,96-8);ctx.fillText('+',462,88);
+  // beakers
+  for(let s=0;s<2;s++){
+    const h=S.half[s],d=HC[h.key],x0=EX[s]-110,x1=EX[s]+130;
+    ctx.save();ctx.beginPath();ctx.rect(x0,LIQ,x1-x0,BBOT-LIQ);ctx.clip();
+    ctx.fillStyle=solnColour(h);ctx.fillRect(x0,LIQ,x1-x0,BBOT-LIQ);ctx.restore();
+    drawElectrode(ctx,s,h,d);
+    // bubbles
+    ctx.strokeStyle='rgba(70,80,90,.6)';ctx.lineWidth=1;
+    for(const b of bubbles)if(b.s===s){ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,TAU);ctx.fillStyle='rgba(255,255,255,.5)';ctx.fill();ctx.stroke()}
+    ctx.strokeStyle='#8c7b66';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x0-6,BTOP-4);ctx.lineTo(x0,BTOP);ctx.lineTo(x0,BBOT-6);ctx.quadraticCurveTo(x0,BBOT,x0+8,BBOT);ctx.lineTo(x1-8,BBOT);ctx.quadraticCurveTo(x1,BBOT,x1,BBOT-6);ctx.lineTo(x1,BTOP);ctx.lineTo(x1+6,BTOP-4);ctx.stroke();
+    ctx.strokeStyle='rgba(90,110,120,.5)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x0,LIQ);ctx.lineTo(x1,LIQ);ctx.stroke();
+    // labels
+    const E=s?E1:E0,role=ro?(ro.an===s?'an':'ca'):null;
+    ctx.textAlign='center';ctx.font=`700 15px ${FONT}`;ctx.fillStyle='#35251a';ctx.fillText(d.name,(x0+x1)/2,BBOT+16);
+    ctx.font=`600 13.5px ui-monospace,Menlo,Consolas,monospace`;ctx.fillStyle=role==='an'?'#24548f':role==='ca'?'#a3402c':'#5a4030';ctx.fillText('E = '+fmtE(E),(x0+x1)/2,BBOT+34);
+    if(role){const tx=EX[s]-30,ty=ETOP+4;ctx.beginPath();ctx.arc(tx,ty,13,0,TAU);ctx.fillStyle=role==='an'?'#24548f':'#a3402c';ctx.fill();
+      ctx.font=`700 18px ${FONT}`;ctx.fillStyle='#fff';ctx.fillText(role==='an'?'−':'+',tx,ty+1);
+      ctx.font=`600 12px ${FONT}`;ctx.fillStyle=role==='an'?'#24548f':'#a3402c';ctx.textAlign='right';ctx.fillText(role==='an'?'negative electrode':'positive electrode',tx-18,ty)}
+    ctx.textAlign='left';ctx.font=`600 12px ${FONT}`;ctx.fillStyle='#5a4030';ctx.fillText(`${S.T} K`,x1-44,BTOP+18);
+  }
+  // salt bridge
+  const sb=[[282,345],[282,190],[578,190],[578,345]];
+  poly(ctx,sb);ctx.strokeStyle='#9d8b72';ctx.lineWidth=28;ctx.stroke();poly(ctx,sb);ctx.strokeStyle='#f1e7cf';ctx.lineWidth=22;ctx.stroke();
+  ctx.font=`600 12.5px ${FONT}`;ctx.fillStyle='#5a4030';ctx.textAlign='center';ctx.fillText('salt bridge: filter paper soaked in KNO₃(aq)',430,214);
+  if(flow&&ro){const L=plen(sb);const toward=ro.ca===1?1:-1;
+    for(let k=0;k<10;k++){const base=((S.t*30+k*L/10)%L);
+      const dK=toward>0?base:L-base,[x,y]=ppt(sb,dK);ctx.beginPath();ctx.arc(x,y-4,4,0,TAU);ctx.fillStyle='#7a55a8';ctx.fill();
+      const dN=toward>0?L-base:base,[x2,y2]=ppt(sb,(dN+L/20)%L);ctx.beginPath();ctx.arc(x2,y2+4,4,0,TAU);ctx.fillStyle='#d1891e';ctx.fill()}
+    ctx.font=`600 11.5px ${FONT}`;ctx.fillStyle='#7a55a8';ctx.fillText('K⁺ → towards + electrode',430,170);ctx.fillStyle='#b56f10';ctx.fillText('NO₃⁻ → towards − electrode',430,232)}
+  // electrons in the external circuit
+  if(flow&&ro){const a=EX[ro.an],c=EX[ro.ca],path=[[a,ETOP],[a,LOADY],[c,LOADY],[c,ETOP]],L=plen(path);
+    for(let d=(S.t*45)%26;d<L;d+=26){const[x,y]=ppt(path,d);ctx.beginPath();ctx.arc(x,y,4,0,TAU);ctx.fillStyle='#ffd23f';ctx.fill();ctx.strokeStyle='#7d5f00';ctx.lineWidth=1;ctx.stroke()}}
+  // banner
+  ctx.textAlign='left';ctx.font=`700 14.5px ${FONT}`;
+  if(!ro){ctx.fillStyle='#7d6550';ctx.fillText('EMF = 0: no tendency for electrons to flow',14,22)}
+  else if(!S.load){ctx.fillStyle='#3d7a37';ctx.fillText('High-resistance voltmeter: no current,',14,22);ctx.fillText('reading = EMF',14,40)}
+  else{ctx.fillStyle='#a86f12';ctx.fillText('Current flowing: concentrations change',14,22);ctx.fillText('and the EMF falls towards zero',14,40)}
+}
+function drawElectrode(ctx,s,h,d){
+  const x=EX[s];
+  if(d.kind==='metal'){const g=ctx.createLinearGradient(x-13,0,x+13,0);g.addColorStop(0,dark(d.metalCol,.3));g.addColorStop(.45,mixW(d.metalCol,.35));g.addColorStop(1,dark(d.metalCol,.25));
+    ctx.fillStyle=g;rrect(ctx,x-13,ETOP,26,425-ETOP,3);ctx.fill();ctx.font=`700 13px ${FONT}`;ctx.fillStyle=lum(d.metalCol)>.6?'#35251a':'#fff';ctx.textAlign='center';ctx.fillText(d.elec,x,ETOP+60);return}
+  if(d.kind==='redox'){ctx.strokeStyle='#9aa0a8';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x,ETOP);ctx.lineTo(x,360);ctx.stroke();
+    ctx.fillStyle='#dfe2e6';rrect(ctx,x-14,360,28,62,2);ctx.fill();ctx.strokeStyle='#8e939c';ctx.lineWidth=1;ctx.stroke();
+    ctx.font=`700 12px ${FONT}`;ctx.fillStyle='#35251a';ctx.textAlign='center';ctx.fillText('Pt',x,392);return}
+  // SHE: glass hood, platinised Pt, hydrogen supply
+  ctx.fillStyle='rgba(255,255,255,.35)';ctx.fillRect(x-20,ETOP+20,40,400-ETOP-20);
+  ctx.strokeStyle='#8c7b66';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x-20,400);ctx.lineTo(x-20,ETOP+20);ctx.lineTo(x+20,ETOP+20);ctx.lineTo(x+20,400);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(x+20,ETOP+40);ctx.lineTo(x+62,ETOP+40);ctx.moveTo(x+20,ETOP+52);ctx.lineTo(x+62,ETOP+52);ctx.stroke();
+  ctx.font=`600 12px ${FONT}`;ctx.fillStyle='#5a4030';ctx.textAlign='left';ctx.fillText(`H₂(g) in, ${h.p} kPa`,x+66,ETOP+46);
+  ctx.strokeStyle='#9aa0a8';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x,ETOP);ctx.lineTo(x,350);ctx.stroke();
+  ctx.fillStyle='#2e2c2d';rrect(ctx,x-11,350,22,42,2);ctx.fill();
+  ctx.font=`600 10.5px ${FONT}`;ctx.fillStyle='#fff';ctx.textAlign='center';ctx.fillText('Pt',x,371);
+}
+function stepApp(dt){
+  for(let s=0;s<2;s++){const d=HC[S.half[s].key];if(d.kind!=='gas')continue;const rate=2+S.half[s].p/30;
+    if(Math.random()<rate*dt)bubbles.push({s,x:EX[s]+rnd(-16,16),y:400,r:rnd(2,4),vy:-rnd(25,40)})}
+  for(let i=bubbles.length-1;i>=0;i--){const b=bubbles[i];b.y+=b.vy*dt;b.x+=Math.sin(S.t*4+i)*5*dt;if(b.y<LIQ+3)bubbles.splice(i,1)}
+}
+
+/* ---------- ladder ---------- */
+const LW=270,LH=540,EMAX=1.7,EMIN=-2.5,yE=E=>22+(EMAX-E)/(EMAX-EMIN)*(LH-44);
+function drawLadder(){
+  const sc=fit(ladC,LW,LH),ctx=lctx;ctx.setTransform(sc,0,0,sc,0,0);ctx.clearRect(0,0,LW,LH);
+  const ax=70;
+  const g=ctx.createLinearGradient(0,yE(EMAX),0,yE(EMIN));g.addColorStop(0,'rgba(163,64,44,.14)');g.addColorStop(1,'rgba(36,84,143,.14)');
+  ctx.fillStyle=g;ctx.fillRect(ax-8,yE(EMAX),16,yE(EMIN)-yE(EMAX));
+  ctx.strokeStyle='#76461f';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(ax,yE(EMAX));ctx.lineTo(ax,yE(EMIN));ctx.stroke();
+  ctx.font=`600 11.5px ui-monospace,Menlo,Consolas,monospace`;ctx.fillStyle='#7d6550';ctx.textAlign='right';ctx.textBaseline='middle';
+  for(let v=-2.5;v<=1.51;v+=0.5){const y=yE(v);ctx.beginPath();ctx.moveTo(ax-6,y);ctx.lineTo(ax,y);ctx.strokeStyle='#76461f';ctx.lineWidth=1.5;ctx.stroke();ctx.fillText((v>0?'+':v<0?'−':'')+Math.abs(v).toFixed(1),ax-10,y)}
+  ctx.save();ctx.translate(14,LH/2);ctx.rotate(-Math.PI/2);ctx.textAlign='center';ctx.font=`700 12px ${FONT}`;ctx.fillStyle='#5a4030';ctx.fillText('E / V',0,0);ctx.restore();
+  ctx.font=`600 11px ${FONT}`;ctx.textAlign='left';ctx.fillStyle='#a3402c';ctx.fillText('stronger oxidising agents ↑',ax+8,10);ctx.fillStyle='#24548f';ctx.fillText('stronger reducing agents ↓',ax+8,LH-9);
+  // all half-cells (labels spread out to avoid collisions)
+  const keys=Object.keys(HC).sort((a,b)=>HC[b].E0-HC[a].E0);let lastY=-99;const ly={};
+  for(const k of keys){let y=yE(HC[k].E0);if(y<lastY+15)y=lastY+15;ly[k]=y;lastY=y}
+  const sel=S.half.map(h=>h.key);
+  for(const k of keys){const y0=yE(HC[k].E0),y=ly[k],on=sel.includes(k);
+    ctx.strokeStyle=on?'#76461f':'rgba(118,70,31,.35)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(ax+8,y0);ctx.lineTo(ax+22,y);ctx.lineTo(ax+28,y);ctx.stroke();
+    ctx.font=`${on?700:500} 12px ${FONT}`;ctx.fillStyle=on?'#35251a':'#8d7964';ctx.textAlign='left';ctx.fillText(`${HC[k].name}  ${HC[k].E0>=0?'+':'−'}${Math.abs(HC[k].E0).toFixed(2)}`,ax+31,y)}
+  // selected: E° ring and actual E dot
+  const Ev=Es(),ro=roles();
+  S.half.forEach((h,s)=>{const c=ro?(ro.an===s?'#24548f':'#a3402c'):'#76461f';const y0=yE(HC[h.key].E0),y1=yE(clamp(Ev[s],EMIN,EMAX)),x=ax-26-s*16;
+    ctx.beginPath();ctx.arc(ax,y0,6,0,TAU);ctx.strokeStyle=c;ctx.lineWidth=2;ctx.stroke();
+    if(Math.abs(y1-y0)>2){ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(ax,y0);ctx.lineTo(ax,y1);ctx.stroke();ctx.setLineDash([])}
+    ctx.beginPath();ctx.arc(ax,y1,5,0,TAU);ctx.fillStyle=c;ctx.fill();
+    ctx.font=`700 11px ${FONT}`;ctx.fillStyle=c;ctx.textAlign='right';ctx.fillText(s?'R':'L',ax-9,y1-9)});
+  if(ro){const ya=yE(clamp(Ev[ro.an],EMIN,EMAX)),yc=yE(clamp(Ev[ro.ca],EMIN,EMAX)),bx=ax-48;
+    ctx.strokeStyle='#3d7a37';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(bx+6,ya);ctx.lineTo(bx,ya);ctx.lineTo(bx,yc);ctx.lineTo(bx+6,yc);ctx.stroke();
+    ctx.save();ctx.translate(bx-8,(ya+yc)/2);ctx.rotate(-Math.PI/2);ctx.font=`700 12px ${FONT}`;ctx.fillStyle='#3d7a37';ctx.textAlign='center';
+    ctx.fillText('EMF '+Math.abs(Ev[1]-Ev[0]).toFixed(3)+' V',0,0);ctx.restore()}
+}
+
+/* ---------- EMF history chart ---------- */
+function drawHist(){
+  const cv=document.getElementById('hist');if(!cv)return;const HW=420,HH=130,sc=fit(cv,HW,HH),ctx=cv.getContext('2d');ctx.setTransform(sc,0,0,sc,0,0);ctx.clearRect(0,0,HW,HH);
+  const x0=44,x1=HW-10,y0=10,y1=HH-26,pts=S.hist;
+  const vmax=Math.max(.2,...pts.map(p=>p.v))*1.1,tmax=Math.max(30,pts.length?pts[pts.length-1].t:0);
+  ctx.strokeStyle='#e4d6bd';ctx.lineWidth=1;ctx.font=`600 10.5px ui-monospace,Menlo,Consolas,monospace`;ctx.fillStyle='#7d6550';ctx.textAlign='right';ctx.textBaseline='middle';
+  for(let k=0;k<=3;k++){const v=vmax*k/3,y=y1-(y1-y0)*k/3;ctx.beginPath();ctx.moveTo(x0,y);ctx.lineTo(x1,y);ctx.stroke();ctx.fillText(v.toFixed(2),x0-5,y)}
+  ctx.textAlign='center';ctx.fillText('time / s →',(x0+x1)/2,HH-8);ctx.textAlign='left';ctx.fillText('0',x0,HH-8);ctx.textAlign='right';ctx.fillText(tmax.toFixed(0),x1,HH-8);
+  if(pts.length<2){ctx.textAlign='center';ctx.fillStyle='#8d7964';ctx.font=`600 12px ${FONT}`;ctx.fillText('Close the switch to record the EMF as the cell runs.',(x0+x1)/2,(y0+y1)/2);return}
+  ctx.beginPath();pts.forEach((p,i)=>{const x=x0+(x1-x0)*p.t/tmax,y=y1-(y1-y0)*p.v/vmax;i?ctx.lineTo(x,y):ctx.moveTo(x,y)});
+  ctx.strokeStyle='#76461f';ctx.lineWidth=2.2;ctx.stroke();
+  const L=pts[pts.length-1];ctx.beginPath();ctx.arc(x0+(x1-x0)*L.t/tmax,y1-(y1-y0)*L.v/vmax,4,0,TAU);ctx.fillStyle='#76461f';ctx.fill();
+}
+
+/* ---------- UI ---------- */
+const $=id=>document.getElementById(id);
+const appC=$('app'),ladC=$('ladder'),zC=$('zoom'),actx=appC.getContext('2d'),lctx=ladC.getContext('2d'),zctx=zC.getContext('2d');
+function buildHC(s){
+  const h=S.half[s],d=HC[h.key];
+  const opts=GROUPS.map(([g,ks])=>`<optgroup label="${g}">${ks.map(k=>`<option value="${k}" ${k===h.key?'selected':''}>${HC[k].name}   (E° ${HC[k].E0>=0?'+':'−'}${Math.abs(HC[k].E0).toFixed(2)} V)</option>`).join('')}</optgroup>`).join('');
+  let sl=aqSpecies(h.key).map(i=>`<div class="sl"><span class="nm">[${SP[i].t}]</span><input type="range" id="c${s}_${i}" data-s="${s}" data-i="${i}" min="-3" max="0.30103" step="0.01" value="${Math.log10(clamp(h.c[i],.001,2))}"><output id="o${s}_${i}">${fmtC(h.c[i])}</output></div>`).join('');
+  if(d.kind==='gas')sl+=`<div class="sl"><span class="nm">p(H₂) / kPa</span><input type="range" id="p${s}" data-s="${s}" min="10" max="200" step="5" value="${h.p}"><output id="po${s}">${h.p}</output></div>`;
+  $('hc'+s).innerHTML=`<div class="top"><span class="eyebrow">${s?'Right':'Left'} half-cell</span><span class="role" id="role${s}"></span></div>
+    <label class="sr" for="sel${s}" hidden>${s?'Right':'Left'} half-cell</label>
+    <select id="sel${s}" data-s="${s}">${opts}</select>
+    <div class="eqline">${halfEq(h.key)}</div>${sl}
+    <div class="row"><button class="mini" data-std="${s}">Standard conditions</button><span class="cap" style="margin:0">Concentrations in mol dm⁻³</span></div>`;
+}
+function refreshSliders(){
+  S.half.forEach((h,s)=>{for(const i of aqSpecies(h.key)){const el=$(`c${s}_${i}`),o=$(`o${s}_${i}`);if(el&&document.activeElement!==el)el.value=Math.log10(clamp(h.c[i],.001,2));if(o)o.textContent=fmtC(h.c[i])}});
+}
+function resetDyn(full){S.hist=[];S.histT=0;if(full){initPanel(panels[0],S.half[0]);initPanel(panels[1],S.half[1]);bubbles=[]}}
+document.querySelector('.controls').addEventListener('change',e=>{const t=e.target;if(t.tagName==='SELECT'){const s=+t.dataset.s;S.half[s]=mkHalf(t.value);buildHC(s);resetDyn(true);renderCalc()}});
+document.querySelector('.controls').addEventListener('input',e=>{const t=e.target;
+  if(t.id&&t.id[0]==='c'&&t.dataset.i){const s=+t.dataset.s;S.half[s].c[t.dataset.i]=Math.pow(10,+t.value);$(`o${s}_${t.dataset.i}`).textContent=fmtC(S.half[s].c[t.dataset.i]);resetDyn(false);renderCalc()}
+  else if(t.id&&t.id[0]==='p'&&t.dataset.s){const s=+t.dataset.s;S.half[s].p=+t.value;$('po'+s).textContent=t.value;resetDyn(false);renderCalc()}});
+document.querySelector('.controls').addEventListener('click',e=>{const b=e.target.closest('[data-std]');if(!b)return;const s=+b.dataset.std;S.half[s]=mkHalf(S.half[s].key);buildHC(s);resetDyn(false);renderCalc()});
+$('temp').addEventListener('input',e=>{S.T=+e.target.value;$('tempOut').textContent=S.T+' K';renderCalc()});
+$('t298').addEventListener('click',()=>{S.T=298;$('temp').value=298;$('tempOut').textContent='298 K';renderCalc()});
+$('speed').addEventListener('input',e=>{S.speed=+e.target.value;$('speedOut').textContent=S.speed+'×'});
+$('circSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;S.load=b.dataset.c==='l';
+  document.querySelectorAll('#circSeg button').forEach(x=>x.setAttribute('aria-pressed',x===b));if(S.load){S.hist=[];S.histT=0}renderCalc()});
+$('convBtn').addEventListener('click',()=>{const[a,b]=Es();if(a>b){S.half.reverse();panels.reverse();panels[0].i=0;panels[1].i=1;buildHC(0);buildHC(1);renderCalc()}});
+$('resetBtn').addEventListener('click',()=>{S.half=S.half.map(h=>mkHalf(h.key));S.T=298;$('temp').value=298;$('tempOut').textContent='298 K';buildHC(0);buildHC(1);resetDyn(true);renderCalc()});
+$('pauseBtn').addEventListener('click',()=>{S.paused=!S.paused;$('pauseBtn').textContent=S.paused?'Play':'Pause'});
+document.addEventListener('keydown',e=>{if(e.key===' '&&!(e.target.closest&&e.target.closest('input,select,button'))){e.preventDefault();S.paused=!S.paused;$('pauseBtn').textContent=S.paused?'Play':'Pause'}});
+
+function explainHalf(h,E){
+  const d=HC[h.key],dE=E-d.E0,q=lnQ(h);
+  const changed=[];for(const i of aqSpecies(h.key))if(Math.abs(h.c[i]-1)>.005)changed.push(`[${SP[i].t}] = ${fmtC(h.c[i])}`);
+  if(d.kind==='gas'&&h.p!==100)changed.push(`p(H₂) = ${h.p} kPa`);
+  let t='';
+  if(Math.abs(q)<1e-6){t='All species at standard concentration/pressure, so ln Q = 0 and E = E°.';if(S.T!==298)t+=' Changing temperature does not alter E here, because RT/nF multiplies ln Q, which is zero.'}
+  else{t=`${changed.join(', ')}. `+(dE>0?'Compared with standard conditions, the equilibrium shifts to the right: the oxidised form accepts electrons more readily, so E is more positive than E°.':'Compared with standard conditions, the equilibrium shifts to the left: the reduced form releases electrons more readily, so E is less positive than E°.');
+    if(S.T!==298)t+=` At ${S.T} K the (RT/nF) ln Q term is ${S.T>298?'larger':'smaller'} in size than at 298 K.`}
+  return t;
+}
+function renderCalc(){
+  const[E0,E1]=Es(),ro=roles(),T=S.T;
+  S.half.forEach((h,s)=>{const el=$('role'+s);if(!el)return;if(!ro){el.className='role';el.textContent='no net reaction'}
+    else if(ro.an===s){el.className='role neg';el.textContent='− electrode · oxidation'}else{el.className='role pos';el.textContent='+ electrode · reduction'}});
+  const halfBlock=(h,s,E)=>{const d=HC[h.key],cls=ro?(ro.an===s?'neg':'pos'):'';const k=(R*T/(d.n*F));
+    return`<div><h4>${s?'Right':'Left'}: ${d.name}</h4>
+      <div class="mono ${cls}">E = E° − (RT/${d.n}F) ln Q,  Q = ${qExpr(h.key)}</div>
+      <div class="mono ${cls}">E = ${d.E0>=0?'+':'−'}${Math.abs(d.E0).toFixed(2)} − (${k.toExponential(3)}) × ln(${qNum(h)}) = <b>${fmtE(E)}</b></div>
+      <p class="why">${explainHalf(h,E)}</p></div>`};
+  let html=`<h2>Cell EMF</h2><div class="big"><span class="emf">${Math.abs(E1-E0).toFixed(3)} V</span><span>voltmeter reads <b>${(E1-E0>=0?'+':'−')+Math.abs(E1-E0).toFixed(3)} V</b> (E<sub>right</sub> − E<sub>left</sub>) at ${T} K</span></div><div class="calc">`;
+  if(ro){const A=S.half[ro.an],C=S.half[ro.ca],ov=overall(A.key,C.key),Ec=(ro.ca?E1:E0)-(ro.an?E1:E0);
+    html+=`<div><h4>Conventional cell representation (negative electrode on the left)</h4><div class="mono">${cellPart(A.key,'an')} || ${cellPart(C.key,'ca')}</div>
+      <div class="mono">E<sub>cell</sub> = E<sub>right</sub> − E<sub>left</sub> = ${fmtE(ro.ca?E1:E0)} − (${fmtE(ro.an?E1:E0)}) = <b>${fmtE(Ec)}</b></div></div>`;
+    if(ov){const dG=-ov.n*F*Ec/1000;
+      html+=`<div><h4>Overall reaction (spontaneous direction)</h4><div class="mono">${ov.eq}</div>
+        <p class="why">Electrons flow through the external circuit from the ${HC[A.key].name} electrode (oxidation) to the ${HC[C.key].name} electrode (reduction). ΔG = −nFE<sub>cell</sub> = −${ov.n} × 96485 × ${Ec.toFixed(3)} = <b>${dG.toFixed(1)} kJ mol⁻¹</b>, so the reaction is feasible.</p></div>`}
+    else html+=`<div><h4>Concentration cell</h4><p class="why">Both half-cells are the same couple, so there is no overall chemical change. The EMF comes only from the difference in concentration: the more dilute side has the more negative E and acts as the negative electrode. Running the cell evens out the concentrations until the EMF is zero.</p></div>`;
+  }else html+=`<div><p class="why">Both electrodes have the same potential, so EMF = 0 and there is no tendency for electrons to flow. If the switch is closed, the cell has reached equilibrium (it is "flat").</p></div>`;
+  html+=halfBlock(S.half[0],0,E0)+halfBlock(S.half[1],1,E1);
+  html+=`<div><h4>EMF while current flows</h4><canvas id="hist" width="420" height="130" aria-label="EMF against time"></canvas></div>`;
+  html+='</div>';
+  if(S.half.some(h=>h.key==='Ag'))html+=`<p class="note">With a silver half-cell the salt bridge must be KNO₃, not KCl: chloride ions would precipitate silver chloride.</p>`;
+  $('calc').innerHTML=html;
+  // particle view status + legend
+  let z;
+  if(!S.load||!ro)z='<b>No current:</b> at each electrode the forward and backward reactions happen at equal rates (dynamic equilibrium). The yellow e⁻ marks show the electrons each electrode keeps. More marks means a greater tendency to release electrons, so a more negative E.';
+  else z=`<b>Current flowing:</b> at the negative electrode (${HC[S.half[ro.an].key].name}) oxidation outpaces reduction, and electrons leave through the wire. At the positive electrode (${HC[S.half[ro.ca].key].name}) reduction outpaces oxidation, using the electrons that arrive.`;
+  $('zStatus').innerHTML=z;
+  const seen=new Map();S.half.forEach(h=>{const d=HC[h.key];[d.ox[0][0],d.red[0][0]].forEach(i=>{if(SP[i].col)seen.set(i,SP[i].col)})});
+  $('legend').innerHTML=[...seen].map(([i,c])=>`<span><i class="dot" style="background:${c}"></i>${SP[i].t}</span>`).join('')+`<span><i class="dot" style="background:#ffd23f"></i>electron</span>`;
+  drawHist();
+}
+
+/* ---------- loop ---------- */
+function stepLoad(dt){
+  const I=current();if(I<=0)return;const ro=roles();if(!ro)return;
+  const A=S.half[ro.an],C=S.half[ro.ca],dA=HC[A.key],dC=HC[C.key];
+  const xa=I*dt/dA.n/VOL,xc=I*dt/dC.n/VOL;
+  for(const[i,v,s]of dA.ox)if(s==='aq')A.c[i]+=v*xa;for(const[i,v,s]of dA.red)if(s==='aq')A.c[i]=Math.max(1e-7,A.c[i]-v*xa);
+  for(const[i,v,s]of dC.ox)if(s==='aq')C.c[i]=Math.max(1e-7,C.c[i]-v*xc);for(const[i,v,s]of dC.red)if(s==='aq')C.c[i]+=v*xc;
+}
+let last=performance.now(),uiT=0;
+function frame(now){
+  const dt=clamp((now-last)/1000,0,.05);last=now;FONT=getComputedStyle(document.body).fontFamily;
+  if(!S.paused){
+    const sdt=dt*S.speed;S.t+=dt;
+    stepLoad(sdt);
+    const ro=roles(),I=current(),frac=clamp(I/.0015,0,1);
+    panels.forEach((P,s)=>stepPanel(P,S.half[s],dt,(S.load&&ro&&I>1e-7)?(ro.an===s?'an':'ca'):null,frac));
+    stepApp(dt);
+    S.syncT+=dt;if(S.syncT>.35){S.syncT=0;panels.forEach((P,s)=>syncPanel(P,S.half[s],false))}
+    if(S.load&&ro!==undefined){S.histT+=sdt;const last=S.hist[S.hist.length-1];if(!last||S.histT-last.t>=.5){const[a,b]=Es();S.hist.push({t:S.histT,v:Math.abs(b-a)});if(S.hist.length>600)S.hist.shift()}}
+    uiT+=dt;if(uiT>.25&&S.load){uiT=0;refreshSliders();renderCalc()}
+  }
+  drawApp();drawLadder();
+  const sc=fit(zC,ZW,PH);zctx.setTransform(sc,0,0,sc,0,0);zctx.clearRect(0,0,ZW,PH);
+  const ro=roles(),I=current(),Ev=Es();
+  panels.forEach((P,s)=>drawPanel(zctx,P,S.half[s],s*(PW+GAP),(S.load&&ro&&I>1e-7)?(ro.an===s?'an':'ca'):null,Ev[s]));
+  requestAnimationFrame(frame);
+}
+buildHC(0);buildHC(1);resetDyn(true);renderCalc();
+requestAnimationFrame(frame);
+})();
+</script>
+
+</body></html>
