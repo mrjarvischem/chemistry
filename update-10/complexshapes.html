@@ -1,0 +1,521 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Ligands and Complex Shapes</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: three lesson stages stacked — ligand cards grid → Cu substitution explorer (3D viewer + panel) → Co stepwise animation (3D viewer + panel) */
+:root{
+  --bg:#f6f2ea; --panel:#fffdf8; --stage:#fbf8f2; --ink:#33281f; --muted:#6f6256; --line:#e2d7c6;
+  --accent:#7b4a26; --accent-ink:#fff; --coord:#c2410c; --cov:#0f766e; --soft:#f3e7da; --grey:#9a9087;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --eqf:"Cambria Math",Cambria,Georgia,serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px 48px}
+.wrap{max-width:1240px;margin:0 auto;display:flex;flex-direction:column;gap:26px}
+h1{font-family:var(--serif);font-weight:600;font-size:clamp(1.6rem,2.8vw,2.2rem);margin:0;line-height:1.15;text-wrap:balance}
+.sub{color:var(--muted);margin:4px 0 0;max-width:70ch}
+section.block{display:flex;flex-direction:column;gap:14px}
+.sechead{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;border-bottom:2px solid var(--line);padding-bottom:6px}
+.sechead .n{font-family:var(--serif);font-size:1.6rem;color:var(--accent);font-weight:700}
+.sechead h2{font-family:var(--serif);font-size:1.45rem;margin:0;font-weight:600;text-wrap:balance}
+.sechead p{margin:0;color:var(--muted);flex-basis:100%}
+.ligs{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.lig{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.lig h3{margin:0;font-size:1.05rem}
+.lig .fm{font-family:var(--eqf);font-size:1.1rem;color:var(--muted)}
+.lig svg{width:100%;height:auto;max-height:130px;background:var(--stage);border-radius:8px}
+.lig svg text{font-family:var(--sans)}
+.facts{display:flex;flex-wrap:wrap;gap:6px}
+.pill{font-size:.78rem;font-weight:700;padding:2px 9px;border-radius:999px;border:1px solid var(--line);background:var(--stage)}
+.pill.d{background:var(--coord);color:#fff;border-color:var(--coord)}
+.lig p{margin:0;font-size:.9rem;color:var(--muted)}
+.lpkey{display:flex;gap:18px;flex-wrap:wrap;font-size:.88rem;color:var(--muted)}
+.lpkey b{color:var(--coord)}
+.shapes{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.shape{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 12px;display:grid;grid-template-columns:70px 1fr;gap:10px;align-items:center;transition:border-color .2s,background .2s}
+.shape.cur{border:2px solid var(--accent);background:var(--soft)}
+.shape svg{width:70px;height:70px}
+.shape b{display:block}
+.shape span{font-size:.85rem;color:var(--muted)}
+.rxbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.rxbar .lab{font-weight:700;color:var(--muted);font-size:.85rem;margin-right:4px}
+.chip{font-family:var(--eqf);font-size:1.12rem;padding:6px 14px;border-radius:999px;border:1.5px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+button:focus-visible{outline:3px solid var(--coord);outline-offset:2px}
+.main{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(280px,1fr);gap:16px;align-items:start}
+@media (max-width:900px){.main{grid-template-columns:1fr}}
+.stagebox{display:flex;flex-direction:column;gap:10px;min-width:0}
+.stage{position:relative;width:100%;aspect-ratio:16/10;max-width:100%;background:var(--stage);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.stage canvas{display:block;width:100%;height:100%;touch-action:pan-y;cursor:grab}
+.tag{position:absolute;left:12px;top:10px;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--panel);border:1px solid var(--line);padding:2px 8px;border-radius:6px;pointer-events:none}
+.count{position:absolute;right:12px;top:10px;font-size:.85rem;background:var(--panel);border:1px solid var(--line);padding:3px 10px;border-radius:6px;pointer-events:none;font-variant-numeric:tabular-nums}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{font:inherit;font-weight:600;padding:8px 14px;border-radius:8px;border:1.5px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn[aria-pressed="true"]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.spacer{flex:1}
+.eqbox{background:var(--panel);border:2px solid var(--accent);border-radius:10px;padding:10px 14px;min-width:0}
+.eqbox .lab{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.eq{font-family:var(--eqf);font-size:1.4rem;overflow-x:auto;white-space:nowrap;padding:4px 0 2px}
+.eq.small{font-size:1.1rem;color:var(--muted)}
+.eq .in{color:#1d4ed8;font-weight:700} .eq .out{color:var(--accent);font-weight:700}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;min-width:0}
+.panel h3{font-family:var(--serif);font-size:1.25rem;margin:0 0 8px;font-weight:600;text-wrap:balance}
+.panel h4{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:14px 0 6px}
+.panel p{margin:0 0 9px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:0;font-variant-numeric:tabular-nums}
+.kv dt{color:var(--muted)} .kv dd{margin:0;font-weight:700}
+.swatches{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.sw{display:flex;align-items:center;gap:8px;font-size:.9rem}
+.sw i{width:34px;height:46px;border-radius:0 0 10px 10px;border:2px solid #b9ae9f;border-top:none;display:inline-block;transition:background .6s}
+.note{font-size:.9rem;border-left:4px solid var(--grey);padding:8px 12px;background:var(--stage);border-radius:0 8px 8px 0;margin-top:10px}
+.dots{display:flex;gap:6px;align-items:center}
+.dots span{width:14px;height:14px;border-radius:50%;border:2px solid var(--accent);background:transparent;transition:background .3s}
+.dots span.on{background:var(--accent)}
+.steps{list-style:none;margin:6px 0 0;padding:0;font-family:var(--eqf);font-size:1rem;color:var(--muted);display:flex;flex-direction:column;gap:2px;overflow-x:auto}
+.steps li{white-space:nowrap;padding:1px 6px;border-radius:5px}
+.steps li.cur{background:var(--soft);color:var(--ink);font-weight:700}
+.steps li.done{color:var(--ink)}
+.quiz{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:12px}
+.qhead{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.qhead h3{font-family:var(--serif);font-size:1.25rem;margin:0;font-weight:600}
+.qscore{margin-left:auto;font-variant-numeric:tabular-nums}
+.qlist{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:16px 24px}
+.q{min-width:0;border-top:1px solid var(--line);padding-top:10px}
+.qp{margin:0 0 8px;font-weight:600}
+.qp .qn{color:var(--accent);margin-right:6px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+@media (max-width:480px){.opts{grid-template-columns:1fr}.qlist{grid-template-columns:1fr}}
+.opt{text-align:left;font:inherit;padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;background:var(--stage);color:var(--ink);cursor:pointer}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt:disabled{cursor:default}
+.opt.right{border-color:#15803d;background:#e3f3e7}
+.opt.wrong{border-color:#b91c1c;background:#f9e3e1}
+.qx{font-size:.9rem;color:var(--muted);margin:6px 0 0}
+.qx b.ok{color:#15803d} .qx b.no{color:#b91c1c}
+.shape.go{cursor:pointer}
+.shape.go:hover{border-color:var(--accent)}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Ligands, shapes and ligand substitution</h1>
+    <p class="sub">Start with the ligands and their lone pairs, then watch them replace water around Cu<sup>2+</sup> and Co<sup>2+</sup>. Drag any 3D model to rotate it.</p>
+  </header>
+
+  <section class="block">
+    <div class="sechead"><span class="n">1</span><h2>Meet the ligands</h2>
+      <p>A ligand donates a lone pair of electrons to the metal ion to form a co-ordinate bond. Count the lone pairs it can use at the same time: that is its denticity.</p></div>
+    <div class="lpkey"><span><b>●●</b> lone pair used to bond to the metal</span><span><b style="color:var(--grey)">●●</b> other lone pairs</span></div>
+    <div class="ligs" id="ligs"></div>
+    <div class="quiz" id="quiz1"></div>
+  </section>
+
+  <section class="block">
+    <div class="sechead"><span class="n">2</span><h2>Substitution reactions of [Cu(H<sub>2</sub>O)<sub>6</sub>]<sup>2+</sup></h2>
+      <p>Choose a ligand to add, then press Substitute. The waters that leave stay on screen, so you can count the particles on each side.</p></div>
+    <div class="shapes" id="shapes"></div>
+    <div class="rxbar" id="rxbar"><span class="lab">Add:</span></div>
+    <div class="main">
+      <div class="stagebox">
+        <div class="stage"><canvas id="cuCv" aria-label="3D model of the copper complex"></canvas><div class="tag" id="cuTag">Before</div><div class="count" id="cuCount"></div></div>
+        <div class="controls">
+          <button class="btn primary" id="cuPlay" type="button">Substitute ▶</button>
+          <button class="btn" id="cuReset" type="button">Reset</button>
+          <span class="spacer"></span>
+          <button class="btn" id="cuSpin" type="button" aria-pressed="true">Auto-rotate</button>
+        </div>
+        <div class="eqbox"><div class="lab" id="cuEqLab">Equation</div><div class="eq" id="cuEq"></div></div>
+      </div>
+      <aside class="panel" id="cuPanel" aria-live="polite"></aside>
+    </div>
+    <div class="quiz" id="quiz2"></div>
+  </section>
+
+  <section class="block">
+    <div class="sechead"><span class="n">3</span><h2>Cobalt: ammonia replaces all six waters</h2>
+      <p>The substitution happens one ligand at a time. Step through it, or play all six.</p></div>
+    <div class="main">
+      <div class="stagebox">
+        <div class="stage"><canvas id="coCv" aria-label="3D model of the cobalt complex"></canvas><div class="tag" id="coTag">[Co(H₂O)₆]²⁺</div><div class="count">7 particles each side</div></div>
+        <div class="controls">
+          <button class="btn primary" id="coStep" type="button">Next step ▶</button>
+          <button class="btn" id="coAll" type="button">Play all ▶▶</button>
+          <button class="btn" id="coReset" type="button">Reset</button>
+          <span class="spacer"></span>
+          <div class="dots" id="coDots" aria-label="Waters replaced"></div>
+          <button class="btn" id="coSpin" type="button" aria-pressed="true">Auto-rotate</button>
+        </div>
+        <div class="eqbox">
+          <div class="lab" id="coEqLab">Overall equation</div>
+          <div class="eq" id="coEq"></div>
+          <ul class="steps" id="coSteps"></ul>
+        </div>
+      </div>
+      <aside class="panel" id="coPanel"></aside>
+    </div>
+  </section>
+
+  <section class="block" id="other">
+    <div class="sechead"><span class="n">4</span><h2>Linear and square planar complexes</h2>
+      <p>Not every complex is octahedral. Choose an example and press Form complex.</p></div>
+    <div class="rxbar" id="shbar"><span class="lab">Example:</span></div>
+    <div class="main">
+      <div class="stagebox">
+        <div class="stage"><canvas id="shCv" aria-label="3D model of a linear or square planar complex"></canvas><div class="tag" id="shTag">Before</div></div>
+        <div class="controls">
+          <button class="btn primary" id="shPlay" type="button">Form complex ▶</button>
+          <button class="btn" id="shReset" type="button">Reset</button>
+          <span class="spacer"></span>
+          <button class="btn" id="shSpin" type="button" aria-pressed="true">Auto-rotate</button>
+        </div>
+        <div class="eqbox"><div class="lab" id="shEqLab"></div><div class="eq" id="shEq"></div></div>
+      </div>
+      <aside class="panel" id="shPanel"></aside>
+    </div>
+    <div class="quiz" id="quiz3"></div>
+  </section>
+</div>
+
+<script>
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const F=s=>s.replace(/\^\{([^}]+)\}/g,(m,a)=>'<sup>'+a.replace(/-/g,'−')+'</sup>').replace(/_(\d+)/g,'<sub>$1</sub>');
+
+/* ================= 1. ligand cards ================= */
+const LP=(x1,y1,x2,y2,c)=>`<circle cx="${x1}" cy="${y1}" r="3.6" fill="${c}"/><circle cx="${x2}" cy="${y2}" r="3.6" fill="${c}"/>`;
+const D='#c2410c',G='#9a9087';
+const T=(x,y,s,o='')=>`<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central" font-size="22" font-weight="700" fill="#33281f" ${o}>${s}</text>`;
+const Ln=(a,b,c,d)=>`<line x1="${a}" y1="${b}" x2="${c}" y2="${d}" stroke="#5c5047" stroke-width="2.5" stroke-linecap="round"/>`;
+const LIGS=[
+ {name:'Water',fm:'H<sub>2</sub>O',ch:'neutral',dent:'monodentate',bonds:'1 co-ordinate bond',donor:'O',
+  text:'Two lone pairs on O, but only one is used to bond to the metal.',
+  svg:`<svg viewBox="0 0 220 125">${Ln(100,66,68,94)}${Ln(120,66,152,94)}${T(110,62,'O','fill="#c2410c"')}${T(60,100,'H')}${T(160,100,'H')}${LP(90,40,98,33,D)}${LP(122,33,130,40,G)}</svg>`},
+ {name:'Ammonia',fm:'NH<sub>3</sub>',ch:'neutral',dent:'monodentate',bonds:'1 co-ordinate bond',donor:'N',
+  text:'One lone pair on N. Similar in size to H<sub>2</sub>O, so it can replace water one for one.',
+  svg:`<svg viewBox="0 0 220 125">${Ln(100,68,70,96)}${Ln(110,72,110,100)}${Ln(120,68,150,96)}${T(110,60,'N','fill="#c2410c"')}${T(62,104,'H')}${T(110,110,'H')}${T(158,104,'H')}${LP(104,34,116,34,D)}</svg>`},
+ {name:'Chloride ion',fm:'Cl<sup>−</sup>',ch:'1−',dent:'monodentate',bonds:'1 co-ordinate bond',donor:'Cl',
+  text:'Four lone pairs, one used. Cl<sup>−</sup> is larger than H<sub>2</sub>O, so only four fit round the metal: tetrahedral.',
+  svg:`<svg viewBox="0 0 220 125">${T(110,64,'Cl','fill="#c2410c"')}<text x="150" y="34" font-size="22" font-weight="700" fill="#33281f">−</text>${LP(104,38,116,38,D)}${LP(82,58,82,70,G)}${LP(138,58,138,70,G)}${LP(104,90,116,90,G)}</svg>`},
+ {name:'1,2-diaminoethane (en)',fm:'H<sub>2</sub>NCH<sub>2</sub>CH<sub>2</sub>NH<sub>2</sub>',ch:'neutral',dent:'bidentate',bonds:'2 co-ordinate bonds',donor:'2 N',
+  text:'A lone pair on each nitrogen. The chain is long enough for both N atoms to reach the same metal ion.',
+  svg:`<svg viewBox="0 0 280 125"><text x="44" y="72" text-anchor="end" font-size="18" font-weight="700" fill="#33281f">H<tspan font-size="13" dy="5">2</tspan></text>${T(56,66,'N','fill="#c2410c"')}${Ln(68,66,94,66)}<text x="116" y="72" text-anchor="middle" font-size="18" font-weight="700" fill="#33281f">CH<tspan font-size="13" dy="5">2</tspan></text>${Ln(138,66,152,66)}<text x="175" y="72" text-anchor="middle" font-size="18" font-weight="700" fill="#33281f">CH<tspan font-size="13" dy="5">2</tspan></text>${Ln(197,66,222,66)}${T(234,66,'N','fill="#c2410c"')}<text x="246" y="72" font-size="18" font-weight="700" fill="#33281f">H<tspan font-size="13" dy="5">2</tspan></text>${LP(50,42,62,42,D)}${LP(228,42,240,42,D)}</svg>`},
+ {name:'Ethanedioate',fm:'C<sub>2</sub>O<sub>4</sub><sup>2−</sup>',ch:'2−',dent:'bidentate',bonds:'2 co-ordinate bonds',donor:'2 O⁻',
+  text:'The two negatively charged O atoms each donate a lone pair. Also called oxalate.',
+  svg:`<svg viewBox="0 0 240 130">${T(95,66,'C')}${T(145,66,'C')}${Ln(107,66,133,66)}${Ln(91,32,91,52)}${Ln(99,32,99,52)}${Ln(141,32,141,52)}${Ln(149,32,149,52)}${T(95,20,'O')}${T(145,20,'O')}${Ln(86,76,68,94)}${Ln(154,76,172,94)}${T(60,104,'O','fill="#c2410c"')}${T(180,104,'O','fill="#c2410c"')}<text x="34" y="100" font-size="20" font-weight="700" fill="#33281f">−</text><text x="194" y="100" font-size="20" font-weight="700" fill="#33281f">−</text>${LP(54,124,66,124,D)}${LP(174,124,186,124,D)}</svg>`},
+ {name:'EDTA⁴⁻',fm:'(⁻OOCCH<sub>2</sub>)<sub>2</sub>NCH<sub>2</sub>CH<sub>2</sub>N(CH<sub>2</sub>COO⁻)<sub>2</sub>',ch:'4−',dent:'hexadentate',bonds:'6 co-ordinate bonds',donor:'2 N + 4 O⁻',
+  text:'Six donor atoms: both N atoms and one O⁻ from each of the four carboxylate groups. It wraps right round the metal ion.',
+  svg:`<svg viewBox="0 0 320 140" font-size="15" font-weight="700" fill="#33281f">
+   <text x="96" y="34" text-anchor="end"><tspan fill="#c2410c">⁻O</tspan>OC–CH<tspan font-size="11" dy="4">2</tspan></text>
+   <text x="224" y="34">CH<tspan font-size="11" dy="4">2</tspan><tspan dy="-4">–COO</tspan><tspan fill="#c2410c">⁻</tspan></text>
+   <text x="96" y="118" text-anchor="end"><tspan fill="#c2410c">⁻O</tspan>OC–CH<tspan font-size="11" dy="4">2</tspan></text>
+   <text x="224" y="118">CH<tspan font-size="11" dy="4">2</tspan><tspan dy="-4">–COO</tspan><tspan fill="#c2410c">⁻</tspan></text>
+   <text x="112" y="80" text-anchor="middle" font-size="19" fill="#c2410c">N</text><text x="208" y="80" text-anchor="middle" font-size="19" fill="#c2410c">N</text>
+   <text x="160" y="80" text-anchor="middle">–CH<tspan font-size="11" dy="4">2</tspan><tspan dy="-4">CH</tspan><tspan font-size="11" dy="4">2</tspan><tspan dy="-4">–</tspan></text>
+   ${Ln(104,64,90,42)}${Ln(104,82,90,104)}${Ln(216,64,230,42)}${Ln(216,82,230,104)}
+   ${LP(107,94,117,94,D)}${LP(203,94,213,94,D)}</svg>`}
+];
+document.getElementById('ligs').innerHTML=LIGS.map(l=>`<article class="lig"><h3>${l.name}</h3><div class="fm">${l.fm}</div>${l.svg}
+ <div class="facts"><span class="pill d">${l.dent}</span><span class="pill">${l.bonds}</span><span class="pill">charge: ${l.ch}</span><span class="pill">donor: ${l.donor}</span></div><p>${l.text}</p></article>`).join('');
+
+/* shapes strip */
+const SH=[
+ {k:'oct',n:'Octahedral',d:'6 ligands, 90°',s:'<line x1="35" y1="35" x2="35" y2="6"/><line x1="35" y1="35" x2="35" y2="64"/><line x1="35" y1="35" x2="8" y2="38"/><line x1="35" y1="35" x2="62" y2="32"/><line x1="35" y1="35" x2="20" y2="52" stroke-width="5"/><line x1="35" y1="35" x2="50" y2="18" stroke-dasharray="3 3"/>'},
+ {k:'tet',n:'Tetrahedral',d:'4 ligands, 109.5°',s:'<line x1="35" y1="35" x2="35" y2="6"/><line x1="35" y1="35" x2="9" y2="50"/><line x1="35" y1="35" x2="42" y2="62" stroke-width="5"/><line x1="35" y1="35" x2="60" y2="46" stroke-dasharray="3 3"/>'},
+ {k:'sq',n:'Square planar',d:'4 ligands, 90°: cisplatin',s:'<line x1="35" y1="35" x2="8" y2="44"/><line x1="35" y1="35" x2="62" y2="26"/><line x1="35" y1="35" x2="22" y2="16"/><line x1="35" y1="35" x2="48" y2="54"/>'},
+ {k:'lin',n:'Linear',d:'2 ligands, 180°: [Ag(NH₃)₂]⁺',s:'<line x1="35" y1="35" x2="6" y2="35"/><line x1="35" y1="35" x2="64" y2="35"/>'}
+];
+document.getElementById('shapes').innerHTML=SH.map(s=>`<div class="shape" data-k="${s.k}"><svg viewBox="0 0 70 70"><g stroke="#5c5047" stroke-width="3" stroke-linecap="round">${s.s}</g><circle cx="35" cy="35" r="8" fill="#c27a3c"/></svg><div><b>${s.n}</b><span>${s.d}</span></div></div>`).join('');
+const markShape=k=>document.querySelectorAll('.shape').forEach(e=>e.classList.toggle('cur',e.dataset.k===k));
+
+/* ================= 3D geometry ================= */
+const add=(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]],sub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]],mul=(a,s)=>[a[0]*s,a[1]*s,a[2]*s];
+const dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2],cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+const len=a=>Math.hypot(...a),norm=a=>mul(a,1/(len(a)||1)),clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
+const perp=u=>{const p=norm(cross(u,Math.abs(u[1])<.9?[0,1,0]:[1,0,0]));return[p,cross(u,p)];};
+const rot=(v,ax,t)=>{const c=Math.cos(t),s=Math.sin(t);return add(add(mul(v,c),mul(cross(ax,v),s)),mul(ax,dot(ax,v)*(1-c)));};
+const OCT={py:[0,1,0],ny:[0,-1,0],px:[1,0,0],nx:[-1,0,0],pz:[0,0,1],nz:[0,0,-1]};
+const TET=[[1,1,1],[1,-1,-1],[-1,1,-1],[-1,-1,1]].map(norm);
+
+function mk(){return{atoms:[],bonds:[],donors:[]};}
+function at(u,el,p){u.atoms.push({el,p});return u.atoms.length-1;}
+function addH2(u,iA,n1,n2){const A=u.atoms[iA].p,b=norm(sub(A,mul(add(n1,n2),.5))),m=norm(cross(sub(n1,A),sub(n2,A)));
+  for(const s of[1,-1]){const h=at(u,'H',add(A,mul(norm(add(mul(b,.58),mul(m,.81*s))),1)));u.bonds.push([iA,h,'s']);}}
+function water(v,d=2.05){const u=mk(),[p]=perp(v),O=mul(v,d),a=52.25*Math.PI/180;const o=at(u,'O',O);u.donors.push(o);
+  for(const s of[1,-1]){const h=at(u,'H',add(O,mul(add(mul(v,Math.cos(a)),mul(p,s*Math.sin(a))),.97)));u.bonds.push([o,h,'s']);}return u;}
+function ammonia(v,d=2.1){const u=mk(),[p,q]=perp(v),N=mul(v,d),a=68*Math.PI/180;const n=at(u,'N',N);u.donors.push(n);
+  for(let k=0;k<3;k++){const t=k*2*Math.PI/3+.4;const h=at(u,'H',add(N,mul(add(mul(v,Math.cos(a)),mul(add(mul(p,Math.cos(t)),mul(q,Math.sin(t))),Math.sin(a))),1.01)));u.bonds.push([n,h,'s']);}return u;}
+function chloride(v,d=2.3){const u=mk();u.donors.push(at(u,'Cl',mul(v,d)));return u;}
+function bridge(u,iA,iB,o,n,f,lift,elA,elB){ // two ring atoms between donors A,B
+  const A=u.atoms[iA].p,B=u.atoms[iB].p;
+  const c1=at(u,elA,add(add(A,mul(sub(B,A),f)),add(mul(o,lift),mul(n,.28))));
+  const c2=at(u,elB,add(add(B,mul(sub(A,B),f)),add(mul(o,lift),mul(n,-.28))));
+  u.bonds.push([iA,c1,'s'],[c1,c2,'s'],[c2,iB,'s']);return[c1,c2];}
+function en(v1,v2){const u=mk(),o=norm(add(v1,v2)),n=norm(cross(v1,v2));
+  const a=at(u,'N',mul(v1,2.12)),b=at(u,'N',mul(v2,2.12));u.donors.push(a,b);
+  const[c1,c2]=bridge(u,a,b,o,n,.25,1.12,'C','C');
+  addH2(u,a,[0,0,0],u.atoms[c1].p);addH2(u,b,[0,0,0],u.atoms[c2].p);
+  addH2(u,c1,u.atoms[a].p,u.atoms[c2].p);addH2(u,c2,u.atoms[b].p,u.atoms[c1].p);return u;}
+function carboxO(u,iC,nbA,nbB){const C=u.atoms[iC].p,b=norm(sub(C,mul(add(nbA,nbB),.5)));const o=at(u,'O',add(C,mul(b,1.22)));u.bonds.push([iC,o,'d']);}
+function oxalate(v1,v2){const u=mk(),o=norm(add(v1,v2)),n=norm(cross(v1,v2));
+  const a=at(u,'O',mul(v1,2.0)),b=at(u,'O',mul(v2,2.0));u.donors.push(a,b);
+  const[c1,c2]=bridge(u,a,b,o,n,.23,1.05,'C','C');
+  carboxO(u,c1,u.atoms[a].p,u.atoms[c2].p);carboxO(u,c2,u.atoms[b].p,u.atoms[c1].p);return u;}
+function edta(){const u=mk();
+  const N1=at(u,'N',mul(OCT.px,2.15)),N2=at(u,'N',mul(OCT.py,2.15));u.donors.push(N1,N2);
+  const[b1,b2]=bridge(u,N1,N2,norm(add(OCT.px,OCT.py)),[0,0,1],.25,1.12,'C','C');
+  addH2(u,b1,u.atoms[N1].p,u.atoms[b2].p);addH2(u,b2,u.atoms[N2].p,u.atoms[b1].p);
+  const arm=(iN,vO)=>{const vN=norm(u.atoms[iN].p),O=at(u,'O',mul(vO,2.0));u.donors.push(O);
+    const[ca,cb]=bridge(u,iN,O,norm(add(vN,vO)),norm(cross(vN,vO)),.25,1.1,'C','C');
+    addH2(u,ca,u.atoms[iN].p,u.atoms[cb].p);carboxO(u,cb,u.atoms[O].p,u.atoms[ca].p);};
+  arm(N1,OCT.pz);arm(N1,OCT.ny);arm(N2,OCT.nz);arm(N2,OCT.nx);return u;}
+
+/* ================= renderer ================= */
+const COL={O:['#f6a197','#c8382d'],H:['#ffffff','#cfc9c2'],N:['#9fb3f7','#3653c9'],C:['#9a9a9a','#3f3f3f'],Cl:['#a6dcae','#3f8f4e'],Cu:['#f0c39a','#b86a2c'],Co:['#d9b6e6','#86509f'],Ag:['#ffffff','#9aa1a8'],Pt:['#e2e7ee','#6b7a90']};
+const RAD={O:.4,H:.23,N:.42,C:.36,Cl:.62,M:.62};
+const ease=t=>t<.5?4*t*t*t:1-(-2*t+2)**3/2;
+class Viewer{
+  constructor(cv,metal){this.cv=cv;this.ctx=cv.getContext('2d');this.metal=metal;this.yaw=.55;this.pitch=.32;this.auto=!reduce;this.units=[];this.events=[];this.T=0;this.stopAt=0;this.onUpdate=null;
+    new ResizeObserver(()=>{const r=cv.getBoundingClientRect(),d=Math.min(2,devicePixelRatio||1);cv.width=Math.round(r.width*d);cv.height=Math.round(r.height*d);}).observe(cv);
+    let dr=null;cv.addEventListener('pointerdown',e=>{dr={x:e.clientX,y:e.clientY};cv.setPointerCapture(e.pointerId);cv.style.cursor='grabbing';});
+    cv.addEventListener('pointermove',e=>{if(!dr)return;this.yaw+=(e.clientX-dr.x)*.01;this.pitch=clamp(this.pitch+(e.clientY-dr.y)*.01,-1.4,1.4);dr={x:e.clientX,y:e.clientY};});
+    const up=()=>{dr=null;cv.style.cursor='';};cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);}
+  freeOff(u,sign,R=6.1){const c=mul(u.donors.reduce((s,i)=>add(s,u.atoms[i].p),[0,0,0]),1/u.donors.length);
+    let d=len(c)>.4?norm(c):norm([.75,.5,.45]);const ax=Math.abs(d[1])>.8?[1,0,0]:[0,1,0];d=rot(d,ax,sign*.5);return sub(mul(d,R),c);}
+  load(units,events){this.units=units;this.events=events;this.T=0;this.stopAt=0;this.apply();}
+  apply(){for(const e of this.events){const u=e.u,p=reduce?(this.T>=e.start?1:0):clamp((this.T-e.start)/e.dur);
+    if(e.type==='out'){u.off=mul(u.offEnd,ease(p));u.cb=1-clamp(p*4);u.lp=1-u.cb;}
+    else{u.off=mul(u.offStart,1-ease(p));u.cb=clamp((p-.86)/.14);u.lp=1-u.cb;}}}
+  tick(dt){if(this.auto&&!reduce)this.yaw+=dt*.25;
+    if(this.T<this.stopAt){this.T=Math.min(this.stopAt,this.T+dt);this.apply();this.onUpdate&&this.onUpdate();}
+    this.draw();}
+  draw(){const{ctx,cv}=this,w=cv.width,h=cv.height;if(!w)return;ctx.fillStyle='#fbf8f2';ctx.fillRect(0,0,w,h);
+    const sc=Math.min(w,h*1.25)/16.5,cx=w/2,cy=h/2,Dd=20,cyw=Math.cos(this.yaw),syw=Math.sin(this.yaw),cp=Math.cos(this.pitch),sp=Math.sin(this.pitch);
+    const P=p=>{const x=p[0]*cyw+p[2]*syw,z1=-p[0]*syw+p[2]*cyw,y=p[1]*cp-z1*sp,z=p[1]*sp+z1*cp,f=Dd/(Dd-z);return{x:cx+x*f*sc,y:cy-y*f*sc,z,f};};
+    const items=[],M=P([0,0,0]),rM=RAD.M*M.f*sc;
+    items.push({z:M.z,fn:()=>this.sphere(M,rM,this.metal.el,1,this.metal.lab)});
+    for(const u of this.units){const wp=u.atoms.map(a=>P(add(a.p,u.off)));
+      u.atoms.forEach((a,i)=>items.push({z:wp[i].z,fn:()=>this.sphere(wp[i],RAD[a.el]*wp[i].f*sc,a.el,1,a.el==='H'?'':a.el)}));
+      u.bonds.forEach(([i,j,t])=>items.push({z:(wp[i].z+wp[j].z)/2-.35,fn:()=>this.bond(wp[i],wp[j],t,sc*wp[i].f)}));
+      if(u.cb>0)u.donors.forEach(i=>items.push({z:(wp[i].z+M.z)/2-.35,fn:()=>this.coord(wp[i],M,RAD[u.atoms[i].el]*wp[i].f*sc,rM,u.cb,sc)}));
+      if(u.lp>.02)u.donors.forEach(i=>{const a=u.atoms[i],t=norm(mul(a.p,-1)),base=add(a.p,u.off),q=P(add(base,mul(t,RAD[a.el]+.2))),q2=P(add(base,mul(t,RAD[a.el]+.8)));
+        items.push({z:Math.max(q.z,wp[i].z)+.5,fn:()=>this.lp(q,q2,u.lp,sc)});});}
+    items.sort((a,b)=>a.z-b.z).forEach(i=>i.fn());}
+  sphere(p,r,el,a,lab){const ctx=this.ctx,c=COL[el]||COL[this.metal.el];ctx.globalAlpha=a;
+    const g=ctx.createRadialGradient(p.x-r*.35,p.y-r*.38,r*.08,p.x,p.y,r);g.addColorStop(0,c[0]);g.addColorStop(1,c[1]);
+    ctx.beginPath();ctx.arc(p.x,p.y,r,0,6.2832);ctx.fillStyle=g;ctx.fill();ctx.lineWidth=Math.max(1,r*.06);ctx.strokeStyle='rgba(40,30,20,.45)';ctx.stroke();
+    if(lab){ctx.fillStyle=(el==='H'||el==='Ag'||el==='Pt')?'#222':'#fff';ctx.font=`700 ${Math.round(r*(lab.length>2?.62:.85))}px system-ui,sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(lab,p.x,p.y+r*.04);}
+    ctx.globalAlpha=1;}
+  bond(a,b,t,s){const ctx=this.ctx;ctx.strokeStyle='#857b70';ctx.lineCap='round';
+    if(t==='d'){const dx=b.x-a.x,dy=b.y-a.y,l=Math.hypot(dx,dy)||1,nx=-dy/l*s*.09,ny=dx/l*s*.09;ctx.lineWidth=s*.08;
+      for(const k of[1,-1]){ctx.beginPath();ctx.moveTo(a.x+nx*k,a.y+ny*k);ctx.lineTo(b.x+nx*k,b.y+ny*k);ctx.stroke();}}
+    else{ctx.lineWidth=s*.13;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();}}
+  coord(d,m,rd,rm,a,sc){const ctx=this.ctx,dx=m.x-d.x,dy=m.y-d.y,l=Math.hypot(dx,dy);if(l<rd+rm+2)return;const ux=dx/l,uy=dy/l;
+    const sx=d.x+ux*rd,sy=d.y+uy*rd,ex=m.x-ux*rm,ey=m.y-uy*rm,hs=sc*.24;ctx.globalAlpha=a;ctx.strokeStyle=ctx.fillStyle='#c2410c';ctx.lineWidth=sc*.1;
+    ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(ex-ux*hs*.8,ey-uy*hs*.8);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(ex,ey);ctx.lineTo(ex-ux*hs-uy*hs*.55,ey-uy*hs+ux*hs*.55);ctx.lineTo(ex-ux*hs+uy*hs*.55,ey-uy*hs-ux*hs*.55);ctx.closePath();ctx.fill();ctx.globalAlpha=1;}
+  lp(q,q2,a,sc){const ctx=this.ctx,dx=q2.x-q.x,dy=q2.y-q.y,l=Math.hypot(dx,dy)||1,nx=-dy/l,ny=dx/l,r=sc*.085,g=sc*.12;
+    ctx.globalAlpha=a;ctx.fillStyle='#c2410c';for(const k of[1,-1]){ctx.beginPath();ctx.arc(q.x+nx*g*k,q.y+ny*g*k,r,0,6.2832);ctx.fill();}ctx.globalAlpha=1;}
+}
+
+/* ================= 2. copper explorer ================= */
+const CUAQ='[Cu(H_2O)_6]^{2+}';
+const RX=[
+ {k:'nh3',btn:'NH_3',title:'Excess concentrated ammonia',shape:'oct',shapeN:'Octahedral',cn:'6 → 6',ang:'90°',
+  eq:`${CUAQ} + <span class="in">4NH_3</span> → [Cu(<span class="in">NH_3</span>)_4(H_2O)_2]^{2+} + <span class="out">4H_2O</span>`,
+  from:['Pale blue','#9fcbee'],to:['Deep blue','#2346b8'],pIn:5,pOut:5,charge:'2+ → 2+',
+  type:'Partial substitution: four waters are replaced, the two axial waters stay.',
+  note:'A little ammonia first gives a pale blue precipitate, Cu(H<sub>2</sub>O)<sub>4</sub>(OH)<sub>2</sub>, because NH<sub>3</sub> is acting as a base. That is acid–base, not substitution. In excess the precipitate dissolves to give this deep blue complex.',
+  build:()=>{const keep=['py','ny'],sw=['px','pz','nx','nz'];return{keep,sw,inc:sw.map(s=>ammonia(OCT[s]))};}},
+ {k:'cl',btn:'Cl^{-}',title:'Concentrated hydrochloric acid',shape:'tet',shapeN:'Tetrahedral',cn:'6 → 4',ang:'109.5°',
+  eq:`${CUAQ} + <span class="in">4Cl^{-}</span> ⇌ [Cu<span class="in">Cl_4</span>]^{2-} + <span class="out">6H_2O</span>`,
+  from:['Pale blue','#9fcbee'],to:['Yellow (looks green while mixed with blue)','#d6c33a'],pIn:5,pOut:7,charge:'2+ → 2−',
+  type:'Co-ordination number and shape change, because Cl⁻ ligands are larger than water so only four fit around Cu²⁺.',
+  note:'The charge changes too: 2+ from Cu²⁺ plus 4 × 1− gives 2−. Adding water pushes the equilibrium back to the blue aqua ion.',
+  build:()=>({keep:[],sw:Object.keys(OCT),inc:TET.map(v=>chloride(v))})},
+ {k:'en',btn:'en',title:'1,2-diaminoethane',shape:'oct',shapeN:'Octahedral',cn:'6 → 6',ang:'90°',
+  eq:`${CUAQ} + <span class="in">3H_2NCH_2CH_2NH_2</span> → [Cu(<span class="in">H_2NCH_2CH_2NH_2</span>)_3]^{2+} + <span class="out">6H_2O</span>`,
+  from:['Pale blue','#9fcbee'],to:['Deep violet-blue','#3b37a8'],pIn:4,pOut:7,charge:'2+ → 2+',
+  type:'Each en is bidentate, so three en ligands replace all six waters.',
+  note:'4 particles become 7, so entropy increases. Similar Cu–N and Cu–O bonds are broken and made, so ΔH is small and ΔG is negative. This is the chelate effect.',
+  build:()=>({keep:[],sw:Object.keys(OCT),inc:[['px','py'],['nx','pz'],['ny','nz']].map(([a,b])=>en(OCT[a],OCT[b]))})},
+ {k:'ox',btn:'C_2O_4^{2-}',title:'Ethanedioate ions',shape:'oct',shapeN:'Octahedral',cn:'6 → 6',ang:'90°',
+  eq:`${CUAQ} + <span class="in">2C_2O_4^{2-}</span> → [Cu(<span class="in">C_2O_4</span>)_2(H_2O)_2]^{2-} + <span class="out">4H_2O</span>`,
+  from:['Pale blue','#9fcbee'],to:['Blue','#4b8fd6'],pIn:3,pOut:5,charge:'2+ → 2−',
+  type:'Two bidentate ethanedioate ions replace four waters. Two waters stay in the axial positions.',
+  note:'Charge: 2+ plus 2 × 2− gives 2−. 3 particles become 5, so entropy increases.',
+  build:()=>({keep:['py','ny'],sw:['px','pz','nx','nz'],inc:[['px','pz'],['nx','nz']].map(([a,b])=>oxalate(OCT[a],OCT[b]))})},
+ {k:'edta',btn:'EDTA^{4-}',title:'EDTA⁴⁻',shape:'oct',shapeN:'Octahedral',cn:'6 → 6',ang:'90°',
+  eq:`${CUAQ} + <span class="in">EDTA^{4-}</span> → [Cu(<span class="in">EDTA</span>)]^{2-} + <span class="out">6H_2O</span>`,
+  from:['Pale blue','#9fcbee'],to:['Deeper blue','#3a76c6'],pIn:2,pOut:7,charge:'2+ → 2−',
+  type:'One hexadentate EDTA⁴⁻ forms six co-ordinate bonds and replaces all six waters.',
+  note:'2 particles become 7: a large increase in entropy, so the complex is very stable. This is why EDTA titrations can measure metal ion concentrations.',
+  build:()=>({keep:[],sw:Object.keys(OCT),inc:[edta()]})}
+];
+const cuV=new Viewer(document.getElementById('cuCv'),{el:'Cu',lab:'Cu²⁺'});
+let rx=RX[0],cuDone=false;
+const rxbar=document.getElementById('rxbar');
+RX.forEach(r=>{const b=document.createElement('button');b.className='chip';b.type='button';b.innerHTML=F(r.btn);b.dataset.k=r.k;b.onclick=()=>setRx(r.k);rxbar.appendChild(b);});
+function buildCu(){
+  const{keep,sw,inc}=rx.build(),units=[],ev=[];
+  keep.forEach(s=>{const u=water(OCT[s]);Object.assign(u,{off:[0,0,0],cb:1,lp:0});units.push(u);});
+  sw.forEach((s,i)=>{const u=water(OCT[s]);u.offEnd=cuV.freeOff(u,1);Object.assign(u,{off:[0,0,0],cb:1,lp:0});units.push(u);ev.push({u,type:'out',start:i*.14,dur:1.1});});
+  inc.forEach((u,i)=>{u.offStart=cuV.freeOff(u,-1,rx.k==='edta'?6.6:6.1);units.push(u);ev.push({u,type:'in',start:.85+i*.18,dur:1.4});});
+  cuV.load(units,ev);cuV.total=Math.max(...ev.map(e=>e.start+e.dur));cuDone=false;
+}
+function setRx(k){rx=RX.find(r=>r.k===k);document.querySelectorAll('#rxbar .chip').forEach(c=>c.setAttribute('aria-pressed',c.dataset.k===k));buildCu();cuUI();}
+function cuUI(){
+  const prog=cuV.total?cuV.T/cuV.total:0,done=prog>=1;
+  document.getElementById('cuTag').textContent=prog===0?'Before':done?'After':'Substituting…';
+  document.getElementById('cuCount').textContent=done?`Particles after: ${rx.pOut}`:`Particles before: ${rx.pIn}`;
+  document.getElementById('cuEq').innerHTML=F(rx.eq);
+  document.getElementById('cuEqLab').textContent=rx.title;
+  document.getElementById('cuPlay').textContent=done?'Replay ▶':'Substitute ▶';
+  markShape(done?rx.shape:'oct');
+  if(done===cuDone&&document.getElementById('cuPanel').dataset.k===rx.k)return;cuDone=done;
+  const dS=rx.pOut>rx.pIn?'increases':rx.pOut<rx.pIn?'decreases':'about the same';
+  const P=document.getElementById('cuPanel');P.dataset.k=rx.k;
+  P.innerHTML=`<h3>${rx.title}</h3>
+   <div class="swatches"><span class="sw"><i style="background:${rx.from[1]}"></i>${rx.from[0]}</span><span>→</span><span class="sw"><i style="background:${done?rx.to[1]:'transparent'}"></i>${done?rx.to[0]:'?'}</span></div>
+   <h4>Product</h4>
+   <dl class="kv"><dt>Shape</dt><dd>${done?rx.shapeN:'?'}</dd><dt>Bond angle</dt><dd>${done?rx.ang:'?'}</dd><dt>Co-ordination no.</dt><dd>${rx.cn}</dd><dt>Charge on complex</dt><dd>${rx.charge}</dd><dt>Particles</dt><dd>${rx.pIn} → ${rx.pOut} (entropy ${dS})</dd></dl>
+   <p style="margin-top:10px">${rx.type}</p><div class="note">${rx.note}</div>`;
+}
+cuV.onUpdate=cuUI;
+document.getElementById('cuPlay').onclick=()=>{if(cuV.T>=cuV.total){cuV.T=0;cuV.apply();}cuV.stopAt=cuV.total;};
+document.getElementById('cuReset').onclick=()=>{buildCu();document.getElementById('cuPanel').dataset.k='';cuUI();};
+document.getElementById('cuSpin').onclick=e=>{cuV.auto=!cuV.auto;e.currentTarget.setAttribute('aria-pressed',cuV.auto);};
+
+/* ================= 3. cobalt ================= */
+const coV=new Viewer(document.getElementById('coCv'),{el:'Co',lab:'Co²⁺'});
+const ORDER=['px','py','pz','nx','ny','nz'],STEP=2.1;
+const comp=n=>n===0?'[Co(H_2O)_6]^{2+}':n===6?'[Co(NH_3)_6]^{2+}':`[Co(H_2O)${6-n>1?'_'+(6-n):''}(NH_3)${n>1?'_'+n:''}]^{2+}`;
+function buildCo(){const units=[],ev=[];
+  ORDER.forEach((s,i)=>{const w=water(OCT[s]);w.offEnd=coV.freeOff(w,1);Object.assign(w,{off:[0,0,0],cb:1,lp:0});
+    const a=ammonia(OCT[s]);a.offStart=coV.freeOff(a,-1);units.push(w,a);
+    ev.push({u:w,type:'out',start:i*STEP,dur:1},{u:a,type:'in',start:i*STEP+.6,dur:1.3});});
+  coV.load(units,ev);}
+function coUI(){
+  const T=coV.T,done=Math.min(6,Math.floor((T+.21)/STEP)),moving=coV.T<coV.stopAt,cur=moving?Math.floor(T/STEP):-1;
+  const n=moving?cur:done;
+  document.getElementById('coTag').innerHTML=F(comp(done));
+  document.getElementById('coDots').innerHTML=Array.from({length:6},(_,i)=>`<span class="${i<done?'on':''}"></span>`).join('');
+  document.getElementById('coEq').innerHTML=F(`[Co(H_2O)_6]^{2+} + <span class="in">6NH_3</span> → [Co(<span class="in">NH_3</span>)_6]^{2+} + <span class="out">6H_2O</span>`);
+  document.getElementById('coSteps').innerHTML=Array.from({length:6},(_,i)=>`<li class="${i===n&&moving?'cur':i<done?'done':''}">Step ${i+1}: ${F(comp(i))} + ${F('NH_3')} → ${F(comp(i+1))} + ${F('H_2O')}</li>`).join('');
+  document.getElementById('coStep').disabled=done>=6||moving;document.getElementById('coAll').disabled=done>=6||moving;
+  const mix=(a,b,t)=>'#'+[0,2,4].map(i=>Math.round(parseInt(a.substr(i+1,2),16)*(1-t)+parseInt(b.substr(i+1,2),16)*t).toString(16).padStart(2,'0')).join('');
+  const sw=document.getElementById('coSw');if(sw)sw.style.background=mix('#e9a6bb','#d4b067',done/6);
+  const sl=document.getElementById('coSwL');if(sl)sl.textContent=done===0?'Pink':done===6?'Pale brown / straw':'Changing…';
+}
+coV.onUpdate=coUI;
+document.getElementById('coPanel').innerHTML=`<h3>Why can all six waters be replaced?</h3>
+  <p>NH<sub>3</sub> and H<sub>2</sub>O are a similar size and both are uncharged, so ammonia can take each water’s place one for one.</p>
+  <dl class="kv"><dt>Co-ordination no.</dt><dd>6 → 6</dd><dt>Shape</dt><dd>Octahedral throughout</dd><dt>Bond angle</dt><dd>90°</dd><dt>Charge</dt><dd>2+ → 2+ (both ligands neutral)</dd><dt>Particles</dt><dd>7 → 7</dd></dl>
+  <h4>Colour of solution</h4>
+  <div class="swatches"><span class="sw"><i id="coSw" style="background:#e9a6bb"></i><span id="coSwL">Pink</span></span></div>
+  <div class="note">Compare copper: excess NH<sub>3</sub> only replaces four of the six waters, giving [Cu(NH<sub>3</sub>)<sub>4</sub>(H<sub>2</sub>O)<sub>2</sub>]<sup>2+</sup>.</div>
+  <div class="note">In the test tube, a little ammonia first gives a blue precipitate, Co(H<sub>2</sub>O)<sub>4</sub>(OH)<sub>2</sub>, which dissolves in excess to give [Co(NH<sub>3</sub>)<sub>6</sub>]<sup>2+</sup>. Left in air, it is slowly oxidised to [Co(NH<sub>3</sub>)<sub>6</sub>]<sup>3+</sup> and darkens.</div>`;
+document.getElementById('coStep').onclick=()=>{const done=Math.floor((coV.T+.21)/STEP);coV.T=done*STEP;coV.stopAt=(done+1)*STEP-.2;};
+document.getElementById('coAll').onclick=()=>{coV.stopAt=6*STEP-.2;};
+document.getElementById('coReset').onclick=()=>{buildCo();coUI();};
+document.getElementById('coSpin').onclick=e=>{coV.auto=!coV.auto;e.currentTarget.setAttribute('aria-pressed',coV.auto);};
+if(reduce){['cuSpin','coSpin'].forEach(id=>document.getElementById(id).setAttribute('aria-pressed','false'));}
+
+/* ================= 4. linear & square planar ================= */
+const shV=new Viewer(document.getElementById('shCv'),{el:'Ag',lab:'Ag⁺'});
+const plat=(swap,keep)=>()=>{const units=[],ev=[];
+  keep.forEach(s=>{const u=chloride(OCT[s]);Object.assign(u,{off:[0,0,0],cb:1,lp:0});units.push(u);});
+  swap.forEach((s,i)=>{const u=chloride(OCT[s]);u.offEnd=shV.freeOff(u,1);Object.assign(u,{off:[0,0,0],cb:1,lp:0});units.push(u);ev.push({u,type:'out',start:i*.15,dur:1.1});
+    const a=ammonia(OCT[s],2.05);a.offStart=shV.freeOff(a,-1);units.push(a);ev.push({u:a,type:'in',start:.8+i*.2,dur:1.4});});
+  return{units,ev};};
+const EX=[
+ {k:'ag',btn:'[Ag(NH_3)_2]^{+}',metal:{el:'Ag',lab:'Ag⁺'},lab:'Making the Tollens’ reagent complex',
+  eq:'Ag^{+} + <span class="in">2NH_3</span> → [Ag(<span class="in">NH_3</span>)_2]^{+}',
+  build:()=>{const units=[],ev=[];[OCT.px,OCT.nx].forEach((v,i)=>{const a=ammonia(v);a.offStart=shV.freeOff(a,-1);units.push(a);ev.push({u:a,type:'in',start:i*.25,dur:1.5});});return{units,ev};},
+  panel:`<h3>Diamminesilver(I) ion</h3><dl class="kv"><dt>Shape</dt><dd>Linear</dd><dt>Bond angle</dt><dd>180°</dd><dt>Co-ordination no.</dt><dd>2</dd><dt>Charge</dt><dd>1+ (NH<sub>3</sub> is neutral)</dd><dt>Colour</dt><dd>Colourless</dd></dl>
+   <p style="margin-top:10px">This is the active ion in <b>Tollens’ reagent</b>. An aldehyde reduces it to silver metal, giving a silver mirror. Ketones don’t react.</p>
+   <div class="eq small">${F('[Ag(NH_3)_2]^{+} + e^{-} → Ag + 2NH_3')}</div>
+   <div class="note">Ag<sup>+</sup> has a full 4d<sup>10</sup> subshell, so there are no d–d transitions and the complex is colourless.</div>`},
+ {k:'cis',btn:'cisplatin',metal:{el:'Pt',lab:'Pt²⁺'},lab:'Making cisplatin',
+  eq:'[PtCl_4]^{2-} + <span class="in">2NH_3</span> → [Pt(<span class="in">NH_3</span>)_2Cl_2] + <span class="out">2Cl^{-}</span>',
+  build:plat(['px','pz'],['nx','nz']),
+  panel:`<h3>Cisplatin, [Pt(NH<sub>3</sub>)<sub>2</sub>Cl<sub>2</sub>]</h3><dl class="kv"><dt>Shape</dt><dd>Square planar</dd><dt>Bond angle</dt><dd>90°</dd><dt>Co-ordination no.</dt><dd>4</dd><dt>Charge</dt><dd>0 (Pt²⁺ + 2 × Cl⁻)</dd><dt>Isomer</dt><dd>cis: the two Cl ligands are next to each other</dd></dl>
+   <h4>Anticancer drug</h4><p>Inside a cell the Cl<sup>−</sup> ligands are replaced by water. Platinum then forms co-ordinate bonds to nitrogen atoms on guanine bases in DNA. This stops the DNA replicating, so cancer cells can’t divide.</p>
+   <div class="note">It also damages healthy cells, causing side effects such as hair loss, so it is given in small doses.</div>`},
+ {k:'trans',btn:'transplatin',metal:{el:'Pt',lab:'Pt²⁺'},lab:'Making transplatin (for comparison)',
+  eq:'[PtCl_4]^{2-} + <span class="in">2NH_3</span> → [Pt(<span class="in">NH_3</span>)_2Cl_2] + <span class="out">2Cl^{-}</span>',
+  build:plat(['px','nx'],['pz','nz']),
+  panel:`<h3>Transplatin</h3><dl class="kv"><dt>Shape</dt><dd>Square planar</dd><dt>Bond angle</dt><dd>90°</dd><dt>Co-ordination no.</dt><dd>4</dd><dt>Isomer</dt><dd>trans: the two Cl ligands are opposite each other (180°)</dd></dl>
+   <p style="margin-top:10px">Same formula as cisplatin, different arrangement: the two are <b>cis–trans isomers</b>.</p>
+   <div class="note">Transplatin is not an effective anticancer drug, because it can’t bind to DNA in the same way. Switch back to cisplatin to compare the two models.</div>`}
+];
+let ex=EX[0];
+const shbar=document.getElementById('shbar');
+EX.forEach(e=>{const b=document.createElement('button');b.className='chip';b.type='button';b.dataset.k=e.k;b.innerHTML=F(e.btn);b.onclick=()=>setEx(e.k);shbar.appendChild(b);});
+function buildEx(){shV.metal=ex.metal;const{units,ev}=ex.build();shV.load(units,ev);shV.total=Math.max(...ev.map(e=>e.start+e.dur));}
+function shUI(){const done=shV.T>=shV.total;
+  document.getElementById('shTag').textContent=shV.T===0?'Before':done?'After':'Forming…';
+  document.getElementById('shPlay').textContent=done?'Replay ▶':'Form complex ▶';}
+function setEx(k){ex=EX.find(e=>e.k===k);document.querySelectorAll('#shbar .chip').forEach(c=>c.setAttribute('aria-pressed',c.dataset.k===k));
+  buildEx();document.getElementById('shEq').innerHTML=F(ex.eq);document.getElementById('shEqLab').textContent=ex.lab;document.getElementById('shPanel').innerHTML=ex.panel;shUI();}
+shV.onUpdate=shUI;
+document.getElementById('shPlay').onclick=()=>{if(shV.T>=shV.total){shV.T=0;shV.apply();}shV.stopAt=shV.total;};
+document.getElementById('shReset').onclick=()=>{buildEx();shUI();};
+document.getElementById('shSpin').onclick=e=>{shV.auto=!shV.auto;e.currentTarget.setAttribute('aria-pressed',shV.auto);};
+if(reduce)document.getElementById('shSpin').setAttribute('aria-pressed','false');
+document.querySelectorAll('.shape').forEach(el=>{const t={lin:'ag',sq:'cis'}[el.dataset.k];if(!t)return;el.classList.add('go');el.tabIndex=0;el.setAttribute('role','button');
+  const go=()=>{setEx(t);document.getElementById('other').scrollIntoView({behavior:reduce?'auto':'smooth'});};el.onclick=go;el.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go();}};});
+setEx('ag');
+
+/* ================= quizzes ================= */
+function quiz(id,title,qs){const el=document.getElementById(id);
+  const render=()=>{let score=0;
+    el.innerHTML=`<div class="qhead"><h3>${title}</h3><span class="qscore">Score: <b>0</b> / ${qs.length}</span><button class="btn" type="button">Start again</button></div>
+     <ol class="qlist">${qs.map((q,i)=>{const o=q.o.map((t,j)=>({t,ok:j===0})).sort(()=>Math.random()-.5);
+       return `<li class="q"><p class="qp"><span class="qn">Q${i+1}</span>${F(q.q)}</p><div class="opts">${o.map(x=>`<button class="opt" type="button" data-ok="${x.ok?1:0}">${F(x.t)}</button>`).join('')}</div><p class="qx" hidden></p></li>`;}).join('')}</ol>`;
+    el.querySelector('.qhead .btn').onclick=render;
+    el.querySelectorAll('.q').forEach((li,i)=>li.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
+      const ok=b.dataset.ok==='1';li.querySelectorAll('.opt').forEach(x=>{x.disabled=true;if(x.dataset.ok==='1')x.classList.add('right');});
+      if(!ok)b.classList.add('wrong');else score++;
+      const x=li.querySelector('.qx');x.hidden=false;x.innerHTML=`<b class="${ok?'ok':'no'}">${ok?'Correct.':'Not quite.'}</b> ${F(qs[i].x)}`;
+      el.querySelector('.qscore b').textContent=score;}));};
+  render();}
+quiz('quiz1','Quick quiz: ligands',[
+ {q:'What must a molecule or ion have to act as a ligand?',o:['A lone pair of electrons','A negative charge','Unpaired d electrons','A C=O double bond'],x:'A ligand donates a lone pair to the metal ion to form a co-ordinate bond. Neutral ligands such as H_2O and NH_3 work fine.'},
+ {q:'Which ligand is hexadentate?',o:['EDTA^{4-}','1,2-diaminoethane','Ethanedioate','Ammonia'],x:'EDTA^{4-} has six donor atoms (2 N and 4 O^{-}), so it forms six co-ordinate bonds.'},
+ {q:'How many co-ordinate bonds does one 1,2-diaminoethane ligand form?',o:['2','1','4','6'],x:'It is bidentate: one lone pair on each of its two nitrogen atoms.'},
+ {q:'Which are the donor atoms in ethanedioate, C_2O_4^{2-}?',o:['The two negatively charged O atoms','The two C atoms','All four O atoms','One C and one O'],x:'Each O^{-} donates a lone pair, so ethanedioate is bidentate.'},
+ {q:'Which ligand is too large for six to fit around Cu^{2+}?',o:['Cl^{-}','NH_3','H_2O','1,2-diaminoethane'],x:'Only four Cl^{-} ions fit, giving tetrahedral [CuCl_4]^{2-}.'},
+ {q:'What is the charge on the EDTA ligand?',o:['4−','2−','6−','0'],x:'Four carboxylate groups, each COO^{-}, give EDTA^{4-}.'}
+]);
+quiz('quiz2','Quick quiz: substitution in copper complexes',[
+ {q:'What forms when excess concentrated ammonia is added to [Cu(H_2O)_6]^{2+}?',o:['[Cu(NH_3)_4(H_2O)_2]^{2+}','[Cu(NH_3)_6]^{2+}','Cu(H_2O)_4(OH)_2','[CuCl_4]^{2-}'],x:'Only four waters are replaced. Cu(H_2O)_4(OH)_2 is the precipitate formed with a little ammonia.'},
+ {q:'What is the shape of [CuCl_4]^{2-}?',o:['Tetrahedral','Square planar','Octahedral','Linear'],x:'Four large Cl^{-} ligands arrange themselves at 109.5°.'},
+ {q:'What colour is a solution containing [CuCl_4]^{2-}?',o:['Yellow','Deep blue','Pink','Colourless'],x:'Yellow on its own; it often looks green when mixed with blue [Cu(H_2O)_6]^{2+}.'},
+ {q:'What is the overall charge on [Cu(C_2O_4)_2(H_2O)_2]?',o:['2−','2+','0','4−'],x:'Cu^{2+} (+2) + 2 × C_2O_4^{2-} (−4) + 2 × H_2O (0) = 2−.'},
+ {q:'How many particles are on the right of: [Cu(H_2O)_6]^{2+} + 3en → [Cu(en)_3]^{2+} + 6H_2O?',o:['7','4','3','9'],x:'1 complex + 6 waters = 7, up from 4 on the left.'},
+ {q:'Why is the reaction with EDTA^{4-} so favourable?',o:['Entropy increases: 2 particles become 7','ΔH is very negative','EDTA^{4-} is a stronger acid than water','The co-ordination number increases'],x:'Similar bonds are broken and made, so ΔH is small. The large increase in entropy makes ΔG negative: the chelate effect.'},
+ {q:'What happens to the co-ordination number when Cl^{-} replaces water around Cu^{2+}?',o:['6 → 4','6 → 6','4 → 6','6 → 2'],x:'Cl^{-} is larger than H_2O, so only four fit.'}
+]);
+quiz('quiz3','Quick quiz: cobalt, linear and square planar',[
+ {q:'Why can NH_3 replace all six water ligands in [Co(H_2O)_6]^{2+}?',o:['NH_3 and H_2O are similar in size and both uncharged','NH_3 is bidentate','NH_3 is larger than H_2O','NH_3 is negatively charged'],x:'Similar size and charge means a one-for-one swap with no change in co-ordination number.'},
+ {q:'What colour is a solution of [Co(NH_3)_6]^{2+}?',o:['Pale brown / straw','Pink','Deep blue','Green'],x:'Pink [Co(H_2O)_6]^{2+} becomes straw-coloured. It darkens in air as it is oxidised to cobalt(III).'},
+ {q:'What are the shape and bond angle of [Ag(NH_3)_2]^{+}?',o:['Linear, 180°','Tetrahedral, 109.5°','Square planar, 90°','Bent, 104.5°'],x:'Two ligands, co-ordination number 2, arranged in a straight line.'},
+ {q:'What is [Ag(NH_3)_2]^{+} used for?',o:['Tollens’ reagent, to tell aldehydes from ketones','Treating cancer','Titrating metal ions','Testing for halide ions'],x:'Aldehydes reduce it to a silver mirror; ketones don’t.'},
+ {q:'What are the shape and bond angle of cisplatin?',o:['Square planar, 90°','Tetrahedral, 109.5°','Octahedral, 90°','Linear, 180°'],x:'Pt^{2+} with four ligands in one plane.'},
+ {q:'Cisplatin and transplatin are an example of which kind of isomerism?',o:['Cis–trans (geometric) isomerism','Optical isomerism','Structural isomerism','No isomerism: they are the same'],x:'Same formula, but the Cl ligands are at 90° in cis and 180° in trans.'},
+ {q:'How does cisplatin stop cancer cells dividing?',o:['Pt bonds to N atoms on guanine in DNA, preventing replication','It oxidises the DNA','The Cl^{-} ions poison the cell','It precipitates the cell’s proteins'],x:'After Cl^{-} is replaced by water, Pt forms co-ordinate bonds to DNA.'}
+]);
+
+/* ================= loop ================= */
+setRx('nh3');buildCo();coUI();
+let last=performance.now();
+function loop(t){const dt=Math.min(.05,(t-last)/1000);last=t;cuV.tick(dt);coV.tick(dt);shV.tick(dt);requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
+</script>
+
+</body></html>

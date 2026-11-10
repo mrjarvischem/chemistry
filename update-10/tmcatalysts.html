@@ -1,0 +1,453 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Transition Metal Catalysts</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: header → sticky tab bar → per tab: step pills, visual (animated SVG) | text + checks, prev/next, then end-of-tab quiz */
+:root{
+  --bg:#f6f2ea; --panel:#fffdf8; --stage:#fbf8f2; --ink:#33281f; --muted:#6f6256; --line:#e2d7c6;
+  --accent:#7b4a26; --accent-ink:#fff; --hot:#c2410c; --soft:#f3e7da; --good:#15803d; --bad:#b91c1c; --blue:#2f5f9e;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --eqf:"Cambria Math",Cambria,Georgia,serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15.5px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px 48px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:1240px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+h1{font-family:var(--serif);font-weight:600;font-size:clamp(1.6rem,2.8vw,2.2rem);margin:0;line-height:1.15;text-wrap:balance}
+.sub{color:var(--muted);margin:4px 0 0;max-width:78ch}
+.tabbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;gap:4px;overflow-x:auto;border-bottom:2px solid var(--line);padding-top:6px}
+.tabb{font:inherit;font-weight:700;white-space:nowrap;padding:9px 14px;border:none;background:none;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;display:flex;align-items:center;gap:8px}
+.tabb span{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;border:1.5px solid currentColor;font-size:.78rem}
+.tabb[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
+.tabb[aria-selected="true"] span{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+section.block{display:flex;flex-direction:column;gap:14px}
+.eqbox{background:var(--panel);border:2px solid var(--accent);border-radius:10px;padding:8px 14px;min-width:0}
+.eqbox .lab{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.eq{font-family:var(--eqf);font-size:1.3rem;overflow-x:auto;white-space:nowrap;padding:2px 0}
+.pills{display:flex;flex-wrap:wrap;gap:6px}
+.pill{font:inherit;font-size:.85rem;font-weight:600;padding:5px 11px;border-radius:999px;border:1.5px solid var(--line);background:var(--panel);color:var(--muted);cursor:pointer;display:flex;gap:6px;align-items:center}
+.pill b{color:var(--accent)}
+.pill.chk{border-style:dashed}
+.pill[aria-current="step"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.pill[aria-current="step"] b{color:var(--accent-ink)}
+.pill.done{color:var(--ink)}
+.walk{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(300px,1fr);gap:16px;align-items:start}
+@media (max-width:920px){.walk{grid-template-columns:1fr}}
+.vis{background:var(--stage);border:1px solid var(--line);border-radius:12px;overflow:hidden;min-width:0}
+.vis svg{display:block;width:100%;height:auto}
+.txt{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;min-width:0}
+.txt .sn{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.txt h3{font-family:var(--serif);font-size:1.3rem;margin:2px 0 10px;font-weight:600;text-wrap:balance}
+.txt p{margin:0 0 10px}
+.txt ul{margin:0 0 10px;padding-left:20px}
+.txt .eq{font-size:1.15rem;background:var(--stage);border:1px solid var(--line);border-radius:8px;padding:6px 10px;margin:6px 0 10px}
+.nav{display:flex;gap:8px;align-items:center;margin-top:12px}
+.btn{font:inherit;font-weight:600;padding:8px 14px;border-radius:8px;border:1.5px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn[aria-pressed="true"]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--hot);outline-offset:2px}
+.spacer{flex:1}
+.check{border:2px dashed var(--accent);border-radius:10px;padding:12px 14px;background:var(--soft);margin-top:6px}
+.check .ck{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);font-weight:800}
+.check p.q{font-weight:600;margin:4px 0 8px}
+.opts{display:grid;grid-template-columns:1fr;gap:6px}
+.opt{text-align:left;font:inherit;padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);cursor:pointer}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt:disabled{cursor:default}
+.opt.right{border-color:var(--good);background:#e3f3e7}
+.opt.wrong{border-color:var(--bad);background:#f9e3e1}
+.fb{font-size:.92rem;margin:8px 0 0}
+.fb b.ok{color:var(--good)} .fb b.no{color:var(--bad)}
+.model{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin-top:8px}
+.model ol{margin:4px 0 0;padding-left:20px}
+textarea{width:100%;min-height:80px;font:inherit;padding:8px;border-radius:8px;border:1.5px solid var(--line);background:var(--panel);color:var(--ink);resize:vertical}
+.slider{display:flex;align-items:center;gap:8px;font-weight:600;margin:6px 0}
+.slider input{flex:1;min-width:0}
+.slider output{min-width:70px;text-align:right;font-variant-numeric:tabular-nums}
+.meter{margin:6px 0}
+.meter .ml{display:flex;justify-content:space-between;font-size:.85rem}
+.meter .ml b{font-variant-numeric:tabular-nums}
+.meter .mb{height:12px;border-radius:6px;background:var(--line);overflow:hidden}
+.meter .mb i{display:block;height:100%;border-radius:6px;transition:width .25s}
+.verdict{border-left:4px solid var(--accent);background:var(--stage);padding:8px 12px;border-radius:0 8px 8px 0;font-size:.93rem;margin-top:8px}
+.quiz{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:12px}
+.qhead{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.qhead h3{font-family:var(--serif);font-size:1.25rem;margin:0;font-weight:600}
+.qscore{margin-left:auto;font-variant-numeric:tabular-nums}
+.qlist{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:16px 24px}
+@media (max-width:480px){.qlist{grid-template-columns:1fr}}
+.q{min-width:0;border-top:1px solid var(--line);padding-top:10px}
+.qp{margin:0 0 8px;font-weight:600}
+.qp .qn{color:var(--accent);margin-right:6px}
+.qlist .opts{grid-template-columns:1fr 1fr}
+@media (max-width:480px){.qlist .opts{grid-template-columns:1fr}}
+.qx{font-size:.9rem;color:var(--muted);margin:6px 0 0}
+.qx b.ok{color:var(--good)} .qx b.no{color:var(--bad)}
+svg text{font-family:var(--sans)}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Transition metal catalysts</h1>
+    <p class="sub">Three catalysts from the AQA specification. Step through each one, answer the checks as you go, then try the quiz at the end of the tab.</p>
+  </header>
+  <nav class="tabbar" id="tabbar" role="tablist" aria-label="Catalysts"></nav>
+
+  <section class="block tabpanel" data-tab="v2o5">
+    <div class="eqbox"><div class="lab">Contact process · heterogeneous catalyst</div><div class="eq">2SO<sub>2</sub>(g) + O<sub>2</sub>(g) ⇌ 2SO<sub>3</sub>(g)   ΔH = −197 kJ mol<sup>−1</sup></div></div>
+    <div class="pills" id="pills-v2o5"></div>
+    <div class="walk"><div class="vis" id="vis-v2o5"></div><div class="txt" id="txt-v2o5"></div></div>
+    <div class="quiz" id="quiz-v2o5"></div>
+  </section>
+
+  <section class="block tabpanel" data-tab="fe">
+    <div class="eqbox"><div class="lab">Peroxodisulfate and iodide · homogeneous catalyst</div><div class="eq">S<sub>2</sub>O<sub>8</sub><sup>2−</sup>(aq) + 2I<sup>−</sup>(aq) → 2SO<sub>4</sub><sup>2−</sup>(aq) + I<sub>2</sub>(aq)</div></div>
+    <div class="pills" id="pills-fe"></div>
+    <div class="walk"><div class="vis" id="vis-fe"></div><div class="txt" id="txt-fe"></div></div>
+    <div class="quiz" id="quiz-fe"></div>
+  </section>
+
+  <section class="block tabpanel" data-tab="haber">
+    <div class="eqbox"><div class="lab">Haber process · heterogeneous catalyst</div><div class="eq">N<sub>2</sub>(g) + 3H<sub>2</sub>(g) ⇌ 2NH<sub>3</sub>(g)   ΔH = −92 kJ mol<sup>−1</sup></div></div>
+    <div class="pills" id="pills-haber"></div>
+    <div class="walk"><div class="vis" id="vis-haber"></div><div class="txt" id="txt-haber"></div></div>
+    <div class="quiz" id="quiz-haber"></div>
+  </section>
+</div>
+
+<script>
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const F=s=>s.replace(/\^\{([^}]+)\}/g,(m,a)=>'<sup>'+a.replace(/-/g,'−')+'</sup>').replace(/_(\d+)/g,'<sub>$1</sub>');
+
+/* ================= SVG animation engine =================
+   Every animated item gets 9 keyframes (positions + opacity) on a shared clock. */
+const K=[0,.12,.25,.37,.5,.62,.75,.87,1],KT=K.join(';');
+const rep=(v,n=9)=>Array(n).fill(v);
+function anim(it,dur){const pos=it.pos?(Array.isArray(it.pos[0])?it.pos:rep(it.pos)):rep([0,0]),op=it.op||rep(1);
+  const tr=`<animateTransform attributeName="transform" type="translate" values="${pos.map(p=>p.join(',')).join(';')}" keyTimes="${KT}" dur="${dur}s" repeatCount="indefinite"/>`;
+  const oa=`<animate attributeName="opacity" values="${op.join(';')}" keyTimes="${KT}" dur="${dur}s" repeatCount="indefinite" ${it.disc?'calcMode="discrete"':''}/>`;
+  return `<g transform="translate(${pos[0].join(',')})" opacity="${op[0]}">${tr}${oa}${it.body}</g>`;}
+const ball=(r,fill,lab='',lc='#fff',stroke='rgba(0,0,0,.35)')=>`<circle r="${r}" fill="${fill}" stroke="${stroke}" stroke-width="1.5"/>${lab?`<text text-anchor="middle" dominant-baseline="central" font-size="${r>18?14:12}" font-weight="700" fill="${lc}">${lab}</text>`:''}`;
+const pillS=(w,h,fill,lab,lc='#fff')=>`<rect x="${-w/2}" y="${-h/2}" width="${w}" height="${h}" rx="${h/2}" fill="${fill}" stroke="rgba(0,0,0,.35)" stroke-width="1.5"/><text text-anchor="middle" dominant-baseline="central" font-size="14" font-weight="700" fill="${lc}">${lab}</text>`;
+const tx=(t,sz=15,fill='#33281f',w=700,anc='middle')=>`<text text-anchor="${anc}" font-size="${sz}" font-weight="${w}" fill="${fill}">${t}</text>`;
+const scene=(items,dur=9,bg='')=>`<svg viewBox="0 0 600 360" role="img">${bg}${items.map(i=>typeof i==='string'?i:anim(i,dur)).join('')}</svg>`;
+const add=(p,d)=>p.map(q=>[q[0]+d[0],q[1]+d[1]]);
+const cap=(t,op)=>({pos:[300,30],op,disc:true,body:`<rect x="-280" y="-18" width="560" height="30" rx="8" fill="#fffdf8" stroke="#e2d7c6"/>${tx(t,14,'#33281f',700).replace('<text','<text y="3"')}`});
+const D1=[1,1,1,0,0,0,0,0,1],D2=[0,0,0,1,1,0,0,0,0],D3=[0,0,0,0,0,1,1,1,0];
+
+/* ---------- colours ---------- */
+const C={O:'#d0453b',S:'#e3c03a',V5:'#c98a2e',V4:'#3d6fb5',N:'#3653c9',H:'#ffffff',Fe:'#8f98a3',fe2:'#b7d9a8',fe3:'#d9a05b',I:'#7a4ea3',I2:'#7a3e14',S2O8:'#7c93ad',SO4:'#a9b8c9'};
+
+/* ================= V2O5 scenes ================= */
+function vSurface(){let s=`<rect x="30" y="252" width="540" height="96" rx="6" fill="#e8c77d"/><text x="300" y="340" text-anchor="middle" font-size="13" font-weight="700" fill="#6b4a12">V₂O₅ catalyst surface (solid)</text>`;
+  for(const x of[120,200,280,360,440,520])s+=`<g transform="translate(${x},296)">${ball(17,'#c98a2e')}</g>`;return s;}
+const vLab=(x,t,op)=>({pos:[x,323],op,disc:true,body:tx(t,12,t.includes('⁵')?'#7a4c0c':'#1f4f8f',800)});
+function vStep1(){const S=[[110,90],[200,140],[320,205],[320,205],[320,205],[420,140],[510,90],[560,70],[560,70]],op=[0,1,1,1,1,1,1,0,0];
+  const Ou=[[320,252],[320,252],[320,252],[320,229],[320,229],[420,164],[510,114],[560,94],[320,252]];
+  const items=[vSurface(),...[160,240,400,480].map(x=>`<g transform="translate(${x},252)">${ball(11,C.O)}</g>`),
+   {pos:[320,252],op:[0,0,0,1,1,1,1,1,0],disc:true,body:`<circle r="12" fill="none" stroke="#7a4c0c" stroke-width="2" stroke-dasharray="4 3"/>`},
+   {pos:Ou,op:[1,1,1,1,1,1,1,0,0],body:ball(11,C.O)},
+   {pos:add(S,[-22,-6]),op,body:ball(11,C.O)},{pos:add(S,[22,-6]),op,body:ball(11,C.O)},{pos:S,op,body:ball(14,C.S,'S','#5a4a00')},
+   {pos:add(S,[0,-30]),op:[0,1,1,1,0,0,0,0,0],disc:true,body:tx('SO₂',15,'#33281f')},{pos:add(S,[0,-30]),op:[0,0,0,0,1,1,1,0,0],disc:true,body:tx('SO₃',15,'#c2410c')},
+   ...[280,360].map(x=>vLab(x,'V⁵⁺',D1.map((v,i)=>i<3||i===8?1:0))),...[280,360].map(x=>vLab(x,'V⁴⁺',[0,0,0,1,1,1,1,1,0])),
+   ...[120,200,440,520].map(x=>`<g transform="translate(${x},323)">${tx('V⁵⁺',12,'#7a4c0c',800)}</g>`),
+   cap('1. SO₂ is adsorbed onto the V₂O₅ surface',[1,1,1,0,0,0,0,0,1]),cap('2. An O atom transfers from the catalyst to SO₂',[0,0,0,1,1,0,0,0,0]),cap('3. SO₃ desorbs. Two V atoms are reduced from +5 to +4',[0,0,0,0,0,1,1,1,0])];
+  return scene(items);}
+function vStep2(){const A=[[288,80],[288,140],[288,205],[262,228],[240,252],[240,252],[240,252],[240,252],[240,252]],B=[[312,80],[312,140],[312,205],[338,228],[400,252],[400,252],[400,252],[400,252],[400,252]],op=[0,1,1,1,1,1,1,1,0];
+  const items=[vSurface(),...[160,320,480].map(x=>`<g transform="translate(${x},252)">${ball(11,C.O)}</g>`),
+   ...[240,400].map(x=>({pos:[x,252],op:[1,1,1,1,0,0,0,0,1],disc:true,body:`<circle r="12" fill="none" stroke="#1f4f8f" stroke-width="2" stroke-dasharray="4 3"/>`})),
+   {pos:A,op,body:ball(11,C.O)},{pos:B,op,body:ball(11,C.O)},{pos:[300,108],op:[0,1,1,0,0,0,0,0,0],disc:true,body:tx('O₂',15)},
+   ...[200,280,360,440].map(x=>vLab(x,'V⁴⁺',[1,1,1,1,0,0,0,0,1])),...[200,280,360,440].map(x=>vLab(x,'V⁵⁺',[0,0,0,0,1,1,1,1,0])),
+   ...[120,520].map(x=>`<g transform="translate(${x},323)">${tx('V⁵⁺',12,'#7a4c0c',800)}</g>`),
+   cap('1. O₂ is adsorbed onto the reduced surface (V₂O₄)',[1,1,1,0,0,0,0,0,1]),cap('2. The O=O bond breaks; O atoms fill the gaps',[0,0,0,1,0,0,0,0,0]),cap('3. Four V atoms are oxidised from +4 back to +5: V₂O₅ is regenerated',[0,0,0,0,1,1,1,1,0])];
+  return scene(items);}
+const flowV=`<svg viewBox="0 0 600 360" role="img"><defs><marker id="fa" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" fill="#7b4a26"/></marker></defs>
+ ${[['Sulfur burner','S + O₂ → SO₂',30,'#f3e7da'],['Converter','2SO₂ + O₂ ⇌ 2SO₃','#','#f6e2b3'],['Absorber','SO₃ + H₂SO₄ → H₂S₂O₇',0,'#f3e7da']].map((b,i)=>`<rect x="${30+i*195}" y="110" width="160" height="120" rx="10" fill="${b[3]}" stroke="#b9a98f" stroke-width="2"/><text x="${110+i*195}" y="140" text-anchor="middle" font-size="15" font-weight="700" fill="#33281f">${b[0]}</text><text x="${110+i*195}" y="172" text-anchor="middle" font-size="12" fill="#33281f">${b[1]}</text>`).join('')}
+ <text x="305" y="198" text-anchor="middle" font-size="12" font-weight="700" fill="#7a4c0c">V₂O₅ beds, ~450 °C</text><text x="305" y="215" text-anchor="middle" font-size="12" fill="#6f6256">1–2 atm</text>
+ <line x1="192" y1="170" x2="222" y2="170" stroke="#7b4a26" stroke-width="3" marker-end="url(#fa)"/><line x1="387" y1="170" x2="417" y2="170" stroke="#7b4a26" stroke-width="3" marker-end="url(#fa)"/>
+ <text x="500" y="262" text-anchor="middle" font-size="12" fill="#6f6256">then + H₂O → 2H₂SO₄</text>
+ <text x="300" y="66" text-anchor="middle" font-size="16" font-weight="700" fill="#33281f">Making sulfuric acid: the Contact process</text>
+ <text x="300" y="310" text-anchor="middle" font-size="13" fill="#6f6256">Solid catalyst, gaseous reactants: different phases → heterogeneous</text></svg>`;
+const ladderV=`<svg viewBox="0 0 600 360" role="img">${[['+5','VO₂⁺','yellow','#e8c33a','V₂O₅'],['+4','VO²⁺','blue','#3d6fb5','V₂O₄'],['+3','V³⁺','green','#3f8f4e',''],['+2','V²⁺','violet','#7b4ea3','']].map((r,i)=>`<g transform="translate(0,${60+i*70})"><rect x="140" y="0" width="300" height="52" rx="8" fill="${i<2?'#fffdf8':'#f6f2ea'}" stroke="${i<2?'#7b4a26':'#e2d7c6'}" stroke-width="${i<2?2.5:1.5}"/><text x="170" y="33" font-size="20" font-weight="800" fill="#33281f">${r[0]}</text><rect x="220" y="12" width="28" height="28" rx="6" fill="${r[3]}"/><text x="260" y="32" font-size="15" fill="#33281f">${r[1]} (${r[2]} in solution)</text>${r[4]?`<text x="460" y="32" font-size="15" font-weight="700" fill="#7a4c0c">${r[4]}</text>`:''}</g>`).join('')}
+ <path d="M520,92 C560,110 560,140 520,158" fill="none" stroke="#c2410c" stroke-width="3" marker-end="url(#la)"/><path d="M500,158 C470,140 470,110 500,92" fill="none" stroke="#15803d" stroke-width="3" marker-end="url(#lb)"/>
+ <defs><marker id="la" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" fill="#c2410c"/></marker><marker id="lb" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" fill="#15803d"/></marker></defs>
+ <text x="300" y="30" text-anchor="middle" font-size="16" font-weight="700" fill="#33281f">Oxidation states of vanadium</text>
+ <text x="300" y="345" text-anchor="middle" font-size="13" fill="#6f6256">The catalyst cycles between +5 and +4</text></svg>`;
+function cycleSVG(L,R,top,bot,cl,cr,tc='#fff'){return `<svg viewBox="0 0 600 360" role="img"><defs><marker id="ah${L.length}" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" fill="#7b4a26"/></marker></defs>
+ <path id="cT" d="M170,190 C170,70 430,70 430,190" fill="none" stroke="#7b4a26" stroke-width="4" marker-end="url(#ah${L.length})"/>
+ <path d="M430,190 C430,310 170,310 170,190" fill="none" stroke="#7b4a26" stroke-width="4" marker-end="url(#ah${L.length})"/>
+ <circle cx="170" cy="190" r="52" fill="${cl}" stroke="rgba(0,0,0,.3)" stroke-width="2"/><text x="170" y="197" text-anchor="middle" font-size="20" font-weight="800" fill="${tc}">${L}</text>
+ <circle cx="430" cy="190" r="52" fill="${cr}" stroke="rgba(0,0,0,.3)" stroke-width="2"/><text x="430" y="197" text-anchor="middle" font-size="20" font-weight="800" fill="#fff">${R}</text>
+ <text x="300" y="52" text-anchor="middle" font-size="15" font-weight="700" fill="#33281f">${top[0]}</text><text x="300" y="72" text-anchor="middle" font-size="13" fill="#6f6256">${top[1]}</text>
+ <text x="300" y="322" text-anchor="middle" font-size="15" font-weight="700" fill="#33281f">${bot[0]}</text><text x="300" y="342" text-anchor="middle" font-size="13" fill="#6f6256">${bot[1]}</text>
+ <circle r="10" fill="#c2410c"><animateMotion dur="4s" repeatCount="indefinite" path="M170,190 C170,70 430,70 430,190 C430,310 170,310 170,190"/></circle></svg>`;}
+const adsSVG=`<svg viewBox="0 0 600 360" role="img"><text x="300" y="34" text-anchor="middle" font-size="16" font-weight="700" fill="#33281f">How strongly should reactants adsorb?</text>
+ ${[['Too weak','e.g. Ag','Reactants don’t stick long enough to react','#dbe6f5',.2],['Just right','e.g. Ni, Pt, Fe, V₂O₅','Bonds weaken, products leave','#e3f3e7',.6],['Too strong','e.g. W','Products can’t desorb: surface stays blocked','#f9e3e1',1]].map((c,i)=>{const x=105+i*195;return `<rect x="${x-85}" y="60" width="170" height="250" rx="10" fill="${c[3]}" stroke="#e2d7c6"/><text x="${x}" y="88" text-anchor="middle" font-size="16" font-weight="800" fill="#33281f">${c[0]}</text><text x="${x}" y="108" text-anchor="middle" font-size="12" fill="#6f6256">${c[1]}</text>
+  <rect x="${x-70}" y="200" width="140" height="22" rx="4" fill="#8f98a3"/><circle cx="${x}" cy="${200-14-(1-c[4])*55}" r="13" fill="#d0453b"/>${Array.from({length:Math.round(c[4]*3)},(_,j)=>`<line x1="${x-6+j*6}" y1="${200-(1-c[4])*55}" x2="${x-6+j*6}" y2="200" stroke="#33281f" stroke-width="2"/>`).join('')}
+  <foreignObject x="${x-78}" y="236" width="156" height="70"><div xmlns="http://www.w3.org/1999/xhtml" style="font:13px system-ui,sans-serif;color:#33281f;text-align:center">${c[2]}</div></foreignObject>`;}).join('')}</svg>`;
+const combineV=`<svg viewBox="0 0 600 360" role="img"><text x="300" y="40" text-anchor="middle" font-size="16" font-weight="700" fill="#33281f">Adding the two steps</text>
+ <g font-family="Cambria Math,Cambria,Georgia,serif" font-size="20" fill="#33281f">
+ <text x="40" y="110">2SO₂ + <tspan text-decoration="line-through" fill="#b91c1c">2V₂O₅</tspan> → 2SO₃ + <tspan text-decoration="line-through" fill="#b91c1c">2V₂O₄</tspan></text><text x="560" y="110" text-anchor="end" font-family="system-ui" font-size="13" fill="#6f6256">step 1 × 2</text>
+ <text x="40" y="160"><tspan text-decoration="line-through" fill="#b91c1c">2V₂O₄</tspan> + O₂ → <tspan text-decoration="line-through" fill="#b91c1c">2V₂O₅</tspan></text><text x="560" y="160" text-anchor="end" font-family="system-ui" font-size="13" fill="#6f6256">step 2</text>
+ <line x1="40" y1="185" x2="560" y2="185" stroke="#33281f" stroke-width="1.5"/>
+ <text x="40" y="225" font-weight="700">2SO₂ + O₂ → 2SO₃</text></g>
+ <text x="300" y="290" text-anchor="middle" font-size="14" fill="#6f6256">V₂O₅ is used in step 1 and remade in step 2, so it cancels:</text>
+ <text x="300" y="312" text-anchor="middle" font-size="14" font-weight="700" fill="#33281f">it is not used up overall. That is what makes it a catalyst.</text></svg>`;
+
+/* ================= Fe scenes ================= */
+const sol=(tint)=>`<rect x="20" y="50" width="560" height="290" rx="12" fill="#e4eff6">${tint?`<animate attributeName="fill" values="#e4eff6;#e4eff6;#e4eff6;#e4eff6;#ecdcb8;#e8c98d;#e8c98d;#e8c98d;#e4eff6" keyTimes="${KT}" dur="9s" repeatCount="indefinite"/>`:''}</rect><text x="560" y="330" text-anchor="end" font-size="12" fill="#6f6256">aqueous solution</text>`;
+function feRepel(){const a=[[90,195],[180,195],[240,195],[200,195],[110,195],[180,195],[240,195],[200,195],[90,195]],b=[[510,195],[420,195],[370,195],[410,195],[500,195],[420,195],[370,195],[410,195],[510,195]];
+  return scene([sol(),{pos:a,body:pillS(110,44,C.S2O8,'S₂O₈²⁻')},{pos:b,body:ball(26,C.I,'I⁻')},
+   {pos:[305,150],op:[0,0,1,1,0,0,1,1,0],disc:true,body:tx('− and − repel',16,'#b91c1c',800)},
+   `<g transform="translate(300,300)">${tx('Most collisions fail: high activation energy',14,'#33281f',600)}</g>`,cap('Uncatalysed: two negative ions must collide',rep(1))]);}
+function feStep1(){const s=[[300,190],[300,190],[300,190],[300,190],[300,190],[300,190],[300,190],[300,190],[300,190]];
+  const fA=[[120,110],[200,140],[262,165],[262,165],[262,165],[200,120],[140,90],[120,80],[120,110]],fB=[[480,280],[400,250],[338,215],[338,215],[338,215],[400,260],[460,290],[480,300],[480,280]];
+  const sA=[[300,190],[300,190],[300,190],[300,190],[280,190],[200,215],[130,250],[110,260],[300,190]],sB=[[300,190],[300,190],[300,190],[300,190],[320,190],[400,170],[470,140],[490,130],[300,190]];
+  return scene([sol(),{pos:s,op:[1,1,1,1,0,0,0,0,1],disc:true,body:pillS(110,44,C.S2O8,'S₂O₈²⁻')},
+   {pos:fA,op:[1,1,1,1,0,0,0,0,1],disc:true,body:ball(22,C.fe2,'Fe²⁺','#24451a')},{pos:fB,op:[1,1,1,1,0,0,0,0,1],disc:true,body:ball(22,C.fe2,'Fe²⁺','#24451a')},
+   {pos:fA,op:[0,0,0,0,1,1,1,1,0],disc:true,body:ball(22,C.fe3,'Fe³⁺','#4a2a00')},{pos:fB,op:[0,0,0,0,1,1,1,1,0],disc:true,body:ball(22,C.fe3,'Fe³⁺','#4a2a00')},
+   {pos:sA,op:[0,0,0,0,1,1,1,1,0],disc:true,body:pillS(76,36,C.SO4,'SO₄²⁻','#1f2937')},{pos:sB,op:[0,0,0,0,1,1,1,1,0],disc:true,body:pillS(76,36,C.SO4,'SO₄²⁻','#1f2937')},
+   {pos:[300,130],op:[0,1,1,0,0,0,0,0,0],disc:true,body:tx('+ and − attract',16,'#15803d',800)},
+   cap('Step 1: S₂O₈²⁻ oxidises Fe²⁺ to Fe³⁺',rep(1))]);}
+function feStep2(){const I1=[[120,280],[200,240],[270,205],[270,205],[290,195],[290,195],[290,195],[290,195],[120,280]],I2=[[480,110],[400,150],[330,185],[330,185],[310,195],[310,195],[310,195],[310,195],[480,110]];
+  const f1=[[120,110],[200,150],[262,180],[262,180],[200,130],[130,100],[110,90],[110,90],[120,110]],f2=[[480,280],[400,240],[338,210],[338,210],[400,260],[470,290],[490,300],[490,300],[480,280]];
+  return scene([sol(true),{pos:I1,op:[1,1,1,1,0,0,0,0,1],disc:true,body:ball(24,C.I,'I⁻')},{pos:I2,op:[1,1,1,1,0,0,0,0,1],disc:true,body:ball(24,C.I,'I⁻')},
+   {pos:[300,195],op:[0,0,0,0,1,1,1,1,0],disc:true,body:pillS(70,40,C.I2,'I₂')},
+   {pos:f1,op:[1,1,1,1,0,0,0,0,1],disc:true,body:ball(22,C.fe3,'Fe³⁺','#4a2a00')},{pos:f2,op:[1,1,1,1,0,0,0,0,1],disc:true,body:ball(22,C.fe3,'Fe³⁺','#4a2a00')},
+   {pos:f1,op:[0,0,0,0,1,1,1,1,0],disc:true,body:ball(22,C.fe2,'Fe²⁺','#24451a')},{pos:f2,op:[0,0,0,0,1,1,1,1,0],disc:true,body:ball(22,C.fe2,'Fe²⁺','#24451a')},
+   {pos:[300,135],op:[0,1,1,0,0,0,0,0,0],disc:true,body:tx('+ and − attract',16,'#15803d',800)},
+   {pos:[300,300],op:[0,0,0,0,1,1,1,1,0],disc:true,body:tx('Iodine forms: the solution turns yellow-brown',14,'#7a3e14',700)},
+   cap('Step 2: Fe³⁺ oxidises I⁻ to I₂, and Fe²⁺ is regenerated',rep(1))]);}
+const phaseSVG=`<svg viewBox="0 0 600 360" role="img"><text x="300" y="34" text-anchor="middle" font-size="16" font-weight="700" fill="#33281f">Homogeneous vs heterogeneous</text>
+ <rect x="30" y="60" width="255" height="250" rx="12" fill="#e4eff6" stroke="#b8c7d1"/><text x="157" y="86" text-anchor="middle" font-size="15" font-weight="800" fill="#33281f">Homogeneous</text>
+ ${[[70,140,C.fe2,'Fe²⁺'],[190,130,C.I,'I⁻'],[120,210,C.S2O8,''],[230,220,C.fe2,'Fe²⁺'],[80,270,C.I,'I⁻'],[200,280,C.I,'I⁻']].map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="18" fill="${p[2]}" stroke="rgba(0,0,0,.3)"/><text x="${p[0]}" y="${p[1]+4}" text-anchor="middle" font-size="11" font-weight="700" fill="${p[2]===C.I?'#fff':'#24451a'}">${p[3]||'S₂O₈'}</text>`).join('')}
+ <text x="157" y="330" text-anchor="middle" font-size="13" fill="#6f6256">catalyst and reactants all (aq)</text>
+ <rect x="315" y="60" width="255" height="250" rx="12" fill="#f4f0fa" stroke="#d4cbe0"/><text x="442" y="86" text-anchor="middle" font-size="15" font-weight="800" fill="#33281f">Heterogeneous</text>
+ <rect x="330" y="250" width="225" height="45" rx="4" fill="#8f98a3"/><text x="442" y="278" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">solid Fe or V₂O₅</text>
+ ${[[370,150],[450,130],[510,170],[400,215],[490,230]].map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="12" fill="#3653c9"/>`).join('')}
+ <text x="442" y="330" text-anchor="middle" font-size="13" fill="#6f6256">solid catalyst, gaseous reactants</text></svg>`;
+const eLadder=`<svg viewBox="0 0 600 360" role="img"><defs><marker id="ea" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" fill="#c2410c"/></marker></defs>
+ <text x="300" y="30" text-anchor="middle" font-size="16" font-weight="700" fill="#33281f">Electrode potentials</text>
+ <line x1="90" y1="50" x2="90" y2="330" stroke="#6f6256" stroke-width="2"/><text x="78" y="56" text-anchor="end" font-size="12" fill="#6f6256">+2.2</text><text x="78" y="330" text-anchor="end" font-size="12" fill="#6f6256">0</text>
+ <text x="50" y="190" transform="rotate(-90 50 190)" text-anchor="middle" font-size="13" font-weight="700" fill="#6f6256">E° / V</text>
+ ${[[2.01,'S₂O₈²⁻ + 2e⁻ ⇌ 2SO₄²⁻','#7c93ad'],[0.77,'Fe³⁺ + e⁻ ⇌ Fe²⁺','#d9a05b'],[0.54,'I₂ + 2e⁻ ⇌ 2I⁻','#7a4ea3']].map(r=>{const y=330-r[0]/2.2*280;return `<line x1="95" y1="${y}" x2="380" y2="${y}" stroke="${r[2]}" stroke-width="4"/><text x="100" y="${y-8}" font-size="14" font-weight="700" fill="#33281f">${r[1]}</text><text x="390" y="${y+5}" font-size="14" font-weight="800" fill="${r[2]}">+${r[0].toFixed(2)} V</text>`;}).join('')}
+ <path d="M470,${330-2.01/2.2*280+6} C520,150 520,200 470,${330-0.77/2.2*280-6}" fill="none" stroke="#c2410c" stroke-width="3" marker-end="url(#ea)"/>
+ <text x="530" y="170" font-size="12" font-weight="700" fill="#c2410c">step 1</text>
+ <path d="M470,${330-0.77/2.2*280+6} C500,${330-0.7/2.2*280} 500,${330-0.6/2.2*280} 470,${330-0.54/2.2*280-4}" fill="none" stroke="#c2410c" stroke-width="3" marker-end="url(#ea)"/>
+ <text x="510" y="${330-0.66/2.2*280}" font-size="12" font-weight="700" fill="#c2410c">step 2</text>
+ <text x="300" y="352" text-anchor="middle" font-size="13" fill="#6f6256">Fe³⁺/Fe²⁺ lies between the other two, so both steps are feasible</text></svg>`;
+
+/* ================= Haber scenes ================= */
+function feSurface(){let s=`<rect x="30" y="262" width="540" height="86" rx="6" fill="#c9ced4"/><text x="300" y="340" text-anchor="middle" font-size="13" font-weight="700" fill="#3f4650">iron catalyst surface (solid)</text>`;
+  for(let x=70;x<=530;x+=46)s+=`<g transform="translate(${x},280)">${ball(19,C.Fe,'Fe','#fff')}</g>`;return s;}
+function haberMech(){const N1=[[260,60],[275,140],[289,236],[245,240],[245,240],[245,240],[245,240],[200,130],[170,70]],N2=[[284,60],[299,140],[313,236],[355,240],[355,240],[355,240],[355,240],[400,130],[430,70]];
+  const op=[0,1,1,1,1,1,1,1,0],items=[feSurface()];
+  items.push({pos:N1,op,body:ball(13,C.N,'N')},{pos:N2,op,body:ball(13,C.N,'N')});
+  const Hstarts=[[90,70],[480,80],[540,140]],Hsurf=[[110,245],[460,245],[520,245]];
+  const dest=[[245,240],[355,240]],off=[[-17,-14],[17,-14],[0,-24]];let k=0;
+  Hstarts.forEach((h,i)=>{for(const s of[-1,1]){const n=k<3?0:1,o=off[k%3];k++;
+    const p=[[h[0]+s*9,h[1]],[h[0]+s*9+(Hsurf[i][0]-h[0])*.5,h[1]+(Hsurf[i][1]-h[1])*.5],[Hsurf[i][0]+s*9,Hsurf[i][1]],[Hsurf[i][0]+s*16,Hsurf[i][1]+2],
+      [(Hsurf[i][0]+dest[n][0])/2,245],[dest[n][0]+o[0],dest[n][1]+o[1]],[dest[n][0]+o[0],dest[n][1]+o[1]],[dest[n][0]+o[0]+(n?45:-45),dest[n][1]+o[1]-110],[dest[n][0]+o[0]+(n?75:-75),dest[n][1]+o[1]-170]];
+    items.push({pos:p,op,body:ball(8,C.H,'','#333','#8f877e')});}});
+  items.push({pos:[[272,48],[287,128],[300,215],[300,215],[300,215],[300,215],[300,215],[300,215],[300,215]],op:[0,1,1,0,0,0,0,0,0],disc:true,body:tx('N≡N',14,'#1f3a8a')});
+  items.push(...[[200,110],[400,110]].map(p=>({pos:p,op:[0,0,0,0,0,0,0,1,0],disc:true,body:tx('NH₃',15,'#1f3a8a')})));
+  items.push(cap('1. Adsorption: N₂ and H₂ bond weakly to the iron surface',[1,1,1,0,0,0,0,0,1]),cap('2. Bonds weaken and break: N≡N and H–H split into atoms',[0,0,0,1,0,0,0,0,0]),
+   cap('3. Reaction: H atoms join N atoms on the surface',[0,0,0,0,1,1,1,0,0]),cap('4. Desorption: NH₃ leaves, freeing the surface',[0,0,0,0,0,0,0,1,0]));
+  return scene(items,10);}
+function profile(){return `<svg viewBox="0 0 600 360" role="img"><defs><marker id="pa" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0L10,5L0,10z" fill="#33281f"/></marker></defs>
+ <line x1="60" y1="30" x2="60" y2="320" stroke="#6f6256" stroke-width="2"/><line x1="60" y1="320" x2="570" y2="320" stroke="#6f6256" stroke-width="2"/>
+ <text x="30" y="175" transform="rotate(-90 30 175)" text-anchor="middle" font-size="13" font-weight="700" fill="#6f6256">Energy</text><text x="315" y="345" text-anchor="middle" font-size="13" font-weight="700" fill="#6f6256">Progress of reaction</text>
+ <path d="M80,200 L160,200 C240,200 250,50 310,50 C370,50 390,260 460,260 L555,260" fill="none" stroke="#6f6256" stroke-width="3.5"/>
+ <path d="M80,200 L160,200 C230,200 245,140 310,140 C375,140 395,260 460,260 L555,260" fill="none" stroke="#c2410c" stroke-width="3.5" stroke-dasharray="10 6"/>
+ <line x1="300" y1="200" x2="300" y2="56" stroke="#6f6256" stroke-width="2" marker-end="url(#pa)"/><text x="292" y="100" text-anchor="end" font-size="13" font-weight="700" fill="#6f6256">Eₐ uncatalysed</text>
+ <line x1="330" y1="200" x2="330" y2="146" stroke="#c2410c" stroke-width="2" marker-end="url(#pa)"/><text x="338" y="185" font-size="13" font-weight="700" fill="#c2410c">Eₐ with Fe</text>
+ <line x1="160" y1="200" x2="340" y2="200" stroke="#9a9087" stroke-dasharray="3 4"/>
+ <line x1="520" y1="200" x2="520" y2="254" stroke="#33281f" stroke-width="2" marker-end="url(#pa)"/><line x1="480" y1="200" x2="530" y2="200" stroke="#9a9087" stroke-dasharray="3 4"/><text x="512" y="232" text-anchor="end" font-size="13" font-weight="700" fill="#33281f">ΔH = −92</text>
+ <text x="90" y="190" font-size="13" fill="#33281f">N₂ + 3H₂</text><text x="470" y="282" font-size="13" fill="#33281f">2NH₃</text>
+ <text x="390" y="40" font-size="12" fill="#6f6256">grey: uncatalysed · orange: with iron</text></svg>`;}
+const flowH=`<svg viewBox="0 0 600 360" role="img"><defs><marker id="ha" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" fill="#7b4a26"/></marker></defs>
+ <text x="300" y="30" text-anchor="middle" font-size="16" font-weight="700" fill="#33281f">Removing product and recycling</text>
+ <rect x="20" y="130" width="110" height="70" rx="8" fill="#f3e7da" stroke="#b9a98f" stroke-width="2"/><text x="75" y="160" text-anchor="middle" font-size="14" font-weight="700" fill="#33281f">N₂ + H₂</text><text x="75" y="180" text-anchor="middle" font-size="12" fill="#6f6256">1 : 3</text>
+ <rect x="170" y="120" width="120" height="90" rx="8" fill="#e8ecf0" stroke="#9aa5b1" stroke-width="2"/><text x="230" y="155" text-anchor="middle" font-size="14" font-weight="700" fill="#33281f">Compressor</text><text x="230" y="176" text-anchor="middle" font-size="12" fill="#6f6256">~200 atm</text>
+ <rect x="330" y="105" width="120" height="120" rx="8" fill="#f6e2b3" stroke="#b9a98f" stroke-width="2"/><text x="390" y="140" text-anchor="middle" font-size="14" font-weight="700" fill="#33281f">Reactor</text><text x="390" y="160" text-anchor="middle" font-size="12" fill="#6f6256">iron catalyst</text><text x="390" y="178" text-anchor="middle" font-size="12" fill="#6f6256">~450 °C</text><text x="390" y="206" text-anchor="middle" font-size="12" font-weight="700" fill="#c2410c">~15% converted</text>
+ <rect x="480" y="120" width="105" height="90" rx="8" fill="#dbe6f5" stroke="#9fb3cf" stroke-width="2"/><text x="532" y="155" text-anchor="middle" font-size="14" font-weight="700" fill="#33281f">Condenser</text><text x="532" y="175" text-anchor="middle" font-size="12" fill="#6f6256">cooled</text>
+ <line x1="132" y1="165" x2="166" y2="165" stroke="#7b4a26" stroke-width="3" marker-end="url(#ha)"/><line x1="292" y1="165" x2="326" y2="165" stroke="#7b4a26" stroke-width="3" marker-end="url(#ha)"/><line x1="452" y1="165" x2="476" y2="165" stroke="#7b4a26" stroke-width="3" marker-end="url(#ha)"/>
+ <line x1="532" y1="212" x2="532" y2="290" stroke="#2f5f9e" stroke-width="3" marker-end="url(#ha)"/><text x="532" y="312" text-anchor="middle" font-size="14" font-weight="700" fill="#2f5f9e">liquid NH₃ out</text>
+ <path d="M532,118 L532,70 L230,70 L230,116" fill="none" stroke="#15803d" stroke-width="3" stroke-dasharray="8 6" marker-end="url(#ha)"/><text x="380" y="62" text-anchor="middle" font-size="13" font-weight="700" fill="#15803d">unreacted N₂ and H₂ recycled</text>
+ <circle r="7" fill="#15803d"><animateMotion dur="3s" repeatCount="indefinite" path="M532,118 L532,70 L230,70 L230,116"/></circle>
+ <text x="300" y="345" text-anchor="middle" font-size="13" fill="#6f6256">Overall about 98% of the reactants end up as ammonia</text></svg>`;
+
+/* ---------- Haber data & explorer ---------- */
+// Equilibrium % NH3 (N2:H2 = 1:3), widely quoted data
+const HT=[200,300,400,500,600],HP=[10,25,50,100,200,400,1000];
+const HY=[[50.7,63.6,73.5,81.7,89.0,94.6,98.3],[14.7,27.4,39.5,52.5,66.7,79.7,92.6],[3.9,8.7,15.3,25.2,38.7,55.4,79.8],[1.2,2.9,5.6,10.6,18.3,31.9,57.5],[0.5,1.3,2.3,4.5,8.8,12.9,31.4]];
+function yieldAt(T,P){const lp=Math.log(P),lps=HP.map(Math.log);let j=0;while(j<HP.length-2&&lp>lps[j+1])j++;const u=Math.max(0,Math.min(1,(lp-lps[j])/(lps[j+1]-lps[j])));
+  const row=i=>HY[i][j]+(HY[i][j+1]-HY[i][j])*u;let i=0;while(i<HT.length-2&&T>HT[i+1])i++;const v=Math.max(0,Math.min(1,(T-HT[i])/(HT[i+1]-HT[i])));
+  const a=Math.log(row(i)),b=Math.log(row(i+1));return Math.exp(a+(b-a)*v);}
+const rateAt=(T,P,cat)=>(P/200)*Math.exp(-(cat?80e3:200e3)/8.314*(1/(T+273)-1/723))*(cat?1:Math.exp(-120e3/(8.314*723)));
+const perPass=(T,P,cat)=>yieldAt(T,P)*(1-Math.exp(-.8*rateAt(T,P,cat)));
+let hT=450,hP=200,hCat=true;
+function haberGraph(){const X=t=>60+(t-200)/400*500,Y=y=>300-y/100*260;let s=`<svg viewBox="0 0 600 360" role="img" aria-label="Yield against temperature">`;
+  s+=`<line x1="60" y1="40" x2="60" y2="300" stroke="#6f6256" stroke-width="2"/><line x1="60" y1="300" x2="560" y2="300" stroke="#6f6256" stroke-width="2"/>`;
+  for(let t=200;t<=600;t+=100)s+=`<line x1="${X(t)}" y1="300" x2="${X(t)}" y2="40" stroke="#eee6da"/><text x="${X(t)}" y="318" text-anchor="middle" font-size="12" fill="#6f6256">${t}</text>`;
+  for(let y=0;y<=100;y+=20)s+=`<line x1="60" y1="${Y(y)}" x2="560" y2="${Y(y)}" stroke="#eee6da"/><text x="52" y="${Y(y)+4}" text-anchor="end" font-size="12" fill="#6f6256">${y}</text>`;
+  s+=`<text x="310" y="345" text-anchor="middle" font-size="13" font-weight="700" fill="#6f6256">temperature / °C</text><text x="20" y="170" transform="rotate(-90 20 170)" text-anchor="middle" font-size="13" font-weight="700" fill="#6f6256">% NH₃</text>`;
+  const curve=(f,col,w,dash)=>{let d='';for(let t=200;t<=600;t+=5)d+=(t===200?'M':'L')+X(t).toFixed(1)+','+Y(f(t)).toFixed(1);return `<path d="${d}" fill="none" stroke="${col}" stroke-width="${w}" ${dash?`stroke-dasharray="${dash}"`:''}/>`;};
+  for(const P of[50,100,400]){s+=curve(t=>yieldAt(t,P),'#d9cbb6',2);const yy=Y(yieldAt(260,P));s+=`<text x="${X(260)+4}" y="${yy-4}" font-size="11" fill="#9a8a72">${P} atm</text>`;}
+  s+=curve(t=>yieldAt(t,hP),'#7b4a26',3.5);s+=curve(t=>perPass(t,hP,hCat),'#c2410c',3,'8 5');
+  const best=[...Array(81)].map((_,i)=>200+i*5).reduce((a,t)=>perPass(t,hP,hCat)>perPass(a,hP,hCat)?t:a,200);
+  if(hCat)s+=`<line x1="${X(best)}" y1="${Y(perPass(best,hP,hCat))}" x2="${X(best)}" y2="300" stroke="#c2410c" stroke-dasharray="2 4"/><text x="${X(best)}" y="${Y(perPass(best,hP,hCat))-10}" text-anchor="middle" font-size="11" font-weight="700" fill="#c2410c">best ≈ ${best} °C</text>`;
+  s+=`<circle cx="${X(hT)}" cy="${Y(yieldAt(hT,hP))}" r="7" fill="#7b4a26"/><circle cx="${X(hT)}" cy="${Y(perPass(hT,hP,hCat))}" r="6" fill="#c2410c"/>`;
+  s+=`<g font-size="12" font-weight="600"><line x1="330" y1="56" x2="356" y2="56" stroke="#7b4a26" stroke-width="3.5"/><text x="362" y="60" fill="#33281f">equilibrium yield at ${hP} atm</text>
+   <line x1="330" y1="76" x2="356" y2="76" stroke="#c2410c" stroke-width="3" stroke-dasharray="8 5"/><text x="362" y="80" fill="#33281f">actually converted per pass</text></g></svg>`;
+  return s;}
+function haberPanel(el){
+  el.innerHTML=`<div class="sn">Explore</div><h3>Choose the conditions</h3>
+   <label class="slider" for="hT">Temperature <input id="hT" type="range" min="200" max="600" step="10" value="${hT}"><output id="hTv"></output></label>
+   <label class="slider" for="hP">Pressure <input id="hP" type="range" min="10" max="400" step="10" value="${hP}"><output id="hPv"></output></label>
+   <div class="nav" style="margin:4px 0 8px"><button class="btn" id="hCat" type="button" aria-pressed="${hCat}">Iron catalyst: ${hCat?'on':'off'}</button><button class="btn" id="hInd" type="button">Use industrial conditions</button></div>
+   <div id="hMeters"></div><div class="verdict" id="hVer"></div>`;
+  const up=()=>{document.getElementById('hTv').textContent=hT+' °C';document.getElementById('hPv').textContent=hP+' atm';
+    const Y=yieldAt(hT,hP),R=rateAt(hT,hP,hCat),X=perPass(hT,hP,hCat),cost=hP/400;
+    const rl=R<1e-3?'far too slow':R<.15?'slow':R<.6?'moderate':R<2?'fast':'very fast';
+    const m=(l,v,w,c)=>`<div class="meter"><div class="ml"><span>${l}</span><b>${v}</b></div><div class="mb"><i style="width:${Math.max(2,Math.min(100,w))}%;background:${c}"></i></div></div>`;
+    document.getElementById('hMeters').innerHTML=m('Equilibrium yield',Y.toFixed(0)+'%',Y,'#7b4a26')+m('Rate of reaction',rl,R<1e-3?2:Math.log10(R*1000)/Math.log10(5000)*100,'#2f5f9e')+m('Converted per pass',X.toFixed(1)+'%',X*2,'#c2410c')+m('Cost of plant and compression, safety risk',cost<.3?'low':cost<.6?'moderate':'high',cost*100,'#b91c1c');
+    const v=[];if(!hCat)v.push('<b>Without the catalyst</b> the reaction is far too slow at any sensible temperature. The catalyst lets a useful rate be reached at a lower temperature, where the yield is better.');
+    else{if(hT<380)v.push('<b>Low temperature:</b> the equilibrium yield is high, because the forward reaction is exothermic. But the rate is too slow, and the iron catalyst is not active enough.');
+      else if(hT>500)v.push('<b>High temperature:</b> the rate is fast, but the equilibrium shifts left (endothermic direction), so the yield is low.');
+      else v.push('<b>Temperature:</b> a compromise. The yield is lower than at low temperature, but the rate is fast enough.');
+      if(hP<120)v.push('<b>Low pressure:</b> cheap and safe, but the yield and rate are both low.');
+      else if(hP>280)v.push('<b>High pressure:</b> higher yield and faster rate, but the plant is very expensive to build and run (compressors use a lot of energy) and more dangerous.');
+      else v.push('<b>Pressure:</b> high enough for a good yield and rate, without the huge cost of very high pressure.');
+      if(hT>=420&&hT<=480&&hP>=150&&hP<=250)v.push('These are close to the industrial conditions.');}
+    document.getElementById('hVer').innerHTML=v.join('<br>');document.getElementById('vis-haber').innerHTML=haberGraph();};
+  el.querySelector('#hT').oninput=e=>{hT=+e.target.value;up();};el.querySelector('#hP').oninput=e=>{hP=+e.target.value;up();};
+  el.querySelector('#hCat').onclick=e=>{hCat=!hCat;e.currentTarget.setAttribute('aria-pressed',hCat);e.currentTarget.textContent='Iron catalyst: '+(hCat?'on':'off');up();};
+  el.querySelector('#hInd').onclick=()=>{hT=450;hP=200;hCat=true;el.querySelector('#hT').value=450;el.querySelector('#hP').value=200;const c=el.querySelector('#hCat');c.setAttribute('aria-pressed','true');c.textContent='Iron catalyst: on';up();};
+  up();}
+function tGraph(){const X=t=>60+(t-250)/350*480,Y=v=>290-v*240;let s=`<svg viewBox="0 0 600 360" role="img"><text x="300" y="30" text-anchor="middle" font-size="16" font-weight="700" fill="#33281f">Temperature: yield against rate (200 atm)</text>
+  <rect x="${X(400)}" y="45" width="${X(480)-X(400)}" height="245" fill="#f3e7da"/><text x="${(X(400)+X(480))/2}" y="62" text-anchor="middle" font-size="12" font-weight="700" fill="#7b4a26">compromise</text>
+  <line x1="60" y1="45" x2="60" y2="290" stroke="#6f6256" stroke-width="2"/><line x1="60" y1="290" x2="545" y2="290" stroke="#6f6256" stroke-width="2"/>`;
+  for(let t=300;t<=600;t+=100)s+=`<text x="${X(t)}" y="308" text-anchor="middle" font-size="12" fill="#6f6256">${t}</text>`;
+  s+=`<text x="300" y="332" text-anchor="middle" font-size="13" font-weight="700" fill="#6f6256">temperature / °C</text>`;
+  let a='',b='';for(let t=250;t<=600;t+=5){a+=(t===250?'M':'L')+X(t)+','+Y(yieldAt(t,200)/80);b+=(t===250?'M':'L')+X(t)+','+Y(Math.min(1,rateAt(t,200,true)/10));}
+  s+=`<path d="${a}" fill="none" stroke="#7b4a26" stroke-width="3.5"/><path d="${b}" fill="none" stroke="#2f5f9e" stroke-width="3.5"/>
+  <text x="${X(270)}" y="${Y(yieldAt(270,200)/80)-10}" font-size="13" font-weight="700" fill="#7b4a26">equilibrium yield</text><text x="${X(585)}" y="${Y(rateAt(585,200,true)/10)+4}" text-anchor="end" font-size="13" font-weight="700" fill="#2f5f9e">rate</text>
+  <text x="300" y="352" text-anchor="middle" font-size="12" fill="#6f6256">Rate curve is illustrative; yield from equilibrium data</text></svg>`;return s;}
+function pGraph(){const X=p=>60+p/400*480,Y=v=>290-v*240;let s=`<svg viewBox="0 0 600 360" role="img"><text x="300" y="30" text-anchor="middle" font-size="16" font-weight="700" fill="#33281f">Pressure: yield against cost (450 °C)</text>
+  <rect x="${X(150)}" y="45" width="${X(250)-X(150)}" height="245" fill="#f3e7da"/><text x="${X(200)}" y="62" text-anchor="middle" font-size="12" font-weight="700" fill="#7b4a26">compromise</text>
+  <line x1="60" y1="45" x2="60" y2="290" stroke="#6f6256" stroke-width="2"/><line x1="60" y1="290" x2="545" y2="290" stroke="#6f6256" stroke-width="2"/>`;
+  for(let p=0;p<=400;p+=100)s+=`<text x="${X(p)}" y="308" text-anchor="middle" font-size="12" fill="#6f6256">${p}</text>`;
+  s+=`<text x="300" y="332" text-anchor="middle" font-size="13" font-weight="700" fill="#6f6256">pressure / atm</text>`;
+  let a='',b='';for(let p=10;p<=400;p+=5){a+=(p===10?'M':'L')+X(p)+','+Y(yieldAt(450,p)/50);b+=(p===10?'M':'L')+X(p)+','+Y(Math.min(1,.05+Math.pow(p/400,1.6)*.9));}
+  s+=`<path d="${a}" fill="none" stroke="#7b4a26" stroke-width="3.5"/><path d="${b}" fill="none" stroke="#b91c1c" stroke-width="3.5" stroke-dasharray="9 6"/>
+  <text x="${X(40)}" y="${Y(yieldAt(450,120)/50)-20}" font-size="13" font-weight="700" fill="#7b4a26">equilibrium yield</text><text x="${X(290)}" y="${Y(.05+Math.pow(300/400,1.6)*.9)+26}" font-size="13" font-weight="700" fill="#b91c1c">cost and safety risk</text>
+  <text x="300" y="352" text-anchor="middle" font-size="12" fill="#6f6256">Cost curve is illustrative</text></svg>`;return s;}
+
+/* ================= step content ================= */
+const STEPS={
+ v2o5:[
+  {t:'The reaction',vis:flowV,txt:`<p>Sulfur trioxide is made by oxidising sulfur dioxide. It is then absorbed to make sulfuric acid, one of the most produced chemicals in the world.</p><p>The catalyst is <b>vanadium(V) oxide, V₂O₅</b>, a solid. The reactants are gases, so the catalyst is in a different phase: a <b>heterogeneous</b> catalyst.</p><p>Typical conditions: about 450 °C and 1–2 atm.</p>`},
+  {t:'Why vanadium?',vis:ladderV,txt:`<p>Transition metals have <b>variable oxidation states</b>. Vanadium can easily switch between +5 and +4.</p><p>That lets V₂O₅ act as a go-between: it takes electrons from SO₂, then passes them on to O₂. This is an alternative route with a lower activation energy.</p>`},
+  {t:'Step 1: V is reduced',vis:vStep1(),txt:`<p>SO₂ is adsorbed onto the surface and an oxygen atom transfers from the catalyst. SO₃ desorbs.</p><div class="eq">SO₂ + V₂O₅ → SO₃ + V₂O₄</div><ul><li>S is oxidised: +4 → +6</li><li>V is reduced: +5 → +4</li></ul>`},
+  {t:'Check',chk:{q:'In step 1, what happens to the oxidation state of vanadium?',o:['It decreases from +5 to +4','It increases from +4 to +5','It stays at +5','It decreases from +5 to +3'],x:'V₂O₅ loses an O atom to SO₂, so V is reduced from +5 to +4 in V₂O₄.'},vis:vStep1(),txt:`<p>Look back at the animation before you answer.</p>`},
+  {t:'Step 2: catalyst regenerated',vis:vStep2(),txt:`<p>O₂ is adsorbed onto the reduced surface. The O=O bond breaks and the O atoms fill the gaps, reoxidising the vanadium.</p><div class="eq">2V₂O₄ + O₂ → 2V₂O₅</div><ul><li>V is oxidised: +4 → +5</li><li>O is reduced: 0 → −2</li></ul>`},
+  {t:'Putting it together',vis:combineV,txt:`<p>Multiply step 1 by two and add step 2. V₂O₅ and V₂O₄ cancel, leaving the overall equation.</p><p>The catalyst takes part in the reaction but is regenerated, so it is not used up.</p>`},
+  {t:'The cycle',vis:cycleSVG('V₂O₅','V₂O₄',['SO₂ in → SO₃ out','V reduced: +5 → +4'],['O₂ in','V oxidised: +4 → +5'],'#c98a2e','#3d6fb5'),txt:`<p>The two steps form a <b>catalytic cycle</b>. Each turn of the cycle converts SO₂ into SO₃, and the catalyst ends where it started.</p>`},
+  {t:'Check',chk:{q:'Why is V₂O₅ described as a heterogeneous catalyst?',o:['It is in a different phase from the reactants','It has variable oxidation states','It speeds up the reaction','It is regenerated at the end'],x:'Solid catalyst, gaseous reactants: different phases.'},vis:cycleSVG('V₂O₅','V₂O₄',['SO₂ in → SO₃ out','V reduced: +5 → +4'],['O₂ in','V oxidised: +4 → +5'],'#c98a2e','#3d6fb5'),txt:`<p>Think about the physical state of each substance.</p>`},
+  {t:'Heterogeneous catalysts in general',vis:adsSVG,txt:`<ul><li><b>Adsorption strength</b> must be just right: strong enough to weaken bonds, weak enough to let products desorb.</li><li><b>Surface area:</b> reactions happen at the surface, so catalysts are spread thinly on a <b>support medium</b> (e.g. a ceramic honeycomb) to maximise surface area and minimise cost.</li><li><b>Poisoning:</b> impurities adsorb strongly and block active sites. This is why SO₂ is purified before it reaches the catalyst. Poisoning reduces efficiency and adds cost because the catalyst must be cleaned or replaced.</li></ul>`},
+  {t:'Explain it',explain:{q:'Explain, with equations, how vanadium(V) oxide acts as a catalyst in the Contact process. [3 marks]',a:['SO₂ + V₂O₅ → SO₃ + V₂O₄ (V reduced from +5 to +4)','2V₂O₄ + O₂ → 2V₂O₅ (V oxidised back to +5)','V₂O₅ is regenerated / not used up; V can change oxidation state, providing an alternative route with lower Eₐ']},vis:cycleSVG('V₂O₅','V₂O₄',['SO₂ in → SO₃ out','V reduced: +5 → +4'],['O₂ in','V oxidised: +4 → +5'],'#c98a2e','#3d6fb5'),txt:''}
+ ],
+ fe:[
+  {t:'Why it is slow',vis:feRepel(),txt:`<p>Peroxodisulfate ions oxidise iodide ions to iodine. Without a catalyst this is slow.</p><p>Both reactants are <b>negative ions</b>, so they repel each other. Only very energetic collisions succeed: the activation energy is high.</p>`},
+  {t:'Homogeneous catalysis',vis:phaseSVG,txt:`<p>Adding a little <b>Fe²⁺</b> speeds the reaction up. The Fe²⁺ ions are dissolved in the same solution as the reactants: a <b>homogeneous</b> catalyst.</p><p>A homogeneous catalyst works by forming an <b>intermediate species</b>. Here that is Fe³⁺.</p>`},
+  {t:'Step 1: Fe²⁺ is oxidised',vis:feStep1(),txt:`<div class="eq">S₂O₈²⁻ + 2Fe²⁺ → 2SO₄²⁻ + 2Fe³⁺</div><p>A negative ion meets positive ions, so they <b>attract</b>. This step has a much lower activation energy than the direct reaction.</p>`},
+  {t:'Step 2: Fe²⁺ is regenerated',vis:feStep2(),txt:`<div class="eq">2Fe³⁺ + 2I⁻ → 2Fe²⁺ + I₂</div><p>Again, positive ions meet negative ions. Fe²⁺ is formed again, so it is a catalyst. The iodine turns the solution yellow-brown.</p>`},
+  {t:'Check',chk:{q:'Why is the catalysed reaction faster?',o:['Each step is between oppositely charged ions, so Eₐ is lower','Fe²⁺ increases the concentration of I⁻','Fe²⁺ raises the temperature of the solution','The catalyst increases the energy of the collisions'],x:'Both steps involve ions of opposite charge, which attract. The alternative route has a lower activation energy.'},vis:feStep1(),txt:`<p>Compare the charges on the colliding ions in each route.</p>`},
+  {t:'Why iron works: E°',vis:eLadder,txt:`<p>The Fe³⁺/Fe²⁺ electrode potential (+0.77 V) lies <b>between</b> the other two half-equations.</p><ul><li>S₂O₈²⁻ (+2.01 V) is a stronger oxidising agent than Fe³⁺, so it can oxidise Fe²⁺.</li><li>Fe³⁺ (+0.77 V) is a stronger oxidising agent than I₂ (+0.54 V), so it can oxidise I⁻.</li></ul><p>Any catalyst for this reaction needs an E° in this window.</p>`},
+  {t:'Fe³⁺ works too',vis:cycleSVG('Fe²⁺','Fe³⁺',['S₂O₈²⁻ in → 2SO₄²⁻ out','Fe oxidised: +2 → +3'],['2I⁻ in → I₂ out','Fe reduced: +3 → +2'],C.fe2,C.fe3,'#24451a'),txt:`<p>The two steps form a cycle. Because it is a cycle, you can enter it at either point.</p><p>So <b>Fe³⁺</b> is also a catalyst: step 2 happens first, making Fe²⁺, then step 1.</p>`},
+  {t:'Check',chk:{q:'Which of these could also catalyse the reaction between S₂O₈²⁻ and I⁻?',o:['Fe³⁺','Zn²⁺','Na⁺','SO₄²⁻'],x:'Fe³⁺ enters the same cycle at step 2. Zn²⁺ and Na⁺ cannot change oxidation state.'},vis:cycleSVG('Fe²⁺','Fe³⁺',['S₂O₈²⁻ in → 2SO₄²⁻ out','Fe oxidised: +2 → +3'],['2I⁻ in → I₂ out','Fe reduced: +3 → +2'],C.fe2,C.fe3,'#24451a'),txt:`<p>Think about which ions can switch between oxidation states.</p>`},
+  {t:'Explain it',explain:{q:'Explain why Fe²⁺ ions catalyse the reaction between S₂O₈²⁻ and I⁻. Include equations. [4 marks]',a:['The uncatalysed reaction is slow because both reactants are negative ions, which repel (high Eₐ)','S₂O₈²⁻ + 2Fe²⁺ → 2SO₄²⁻ + 2Fe³⁺','2Fe³⁺ + 2I⁻ → 2Fe²⁺ + I₂','Each step involves oppositely charged ions, so Eₐ is lower; Fe²⁺ is regenerated']},vis:eLadder,txt:''}
+ ],
+ haber:[
+  {t:'The reaction',vis:profile(),txt:`<p>Ammonia is made from nitrogen (from air) and hydrogen (from methane). Most of it becomes fertiliser.</p><p>The catalyst is <b>iron</b>, a solid, with gaseous reactants: <b>heterogeneous</b>. It provides a route with a lower activation energy.</p><p>The catalyst does <b>not</b> change ΔH or the position of equilibrium.</p>`},
+  {t:'How iron works',vis:haberMech(),txt:`<ol style="padding-left:20px"><li><b>Adsorption:</b> N₂ and H₂ bond to the iron surface.</li><li><b>Bonds weaken and break:</b> the very strong N≡N (945 kJ mol⁻¹) is weakened and split into N atoms.</li><li><b>Reaction:</b> H atoms join the N atoms on the surface.</li><li><b>Desorption:</b> NH₃ leaves, freeing the active sites.</li></ol><p>Iron is often used with <b>promoters</b> (such as K₂O) that make it more effective.</p>`},
+  {t:'Check',chk:{q:'How does the iron catalyst affect the equilibrium yield of ammonia?',o:['No effect: it speeds up the forward and reverse reactions equally','It increases the yield','It decreases the yield','It shifts the equilibrium to the left'],x:'A catalyst lowers Eₐ for both directions, so equilibrium is reached faster but its position is unchanged.'},vis:profile(),txt:`<p>Look at the energy profile: what does the catalyst change?</p>`},
+  {t:'Explore the conditions',vis:'',mount:true,txt:''},
+  {t:'Temperature compromise',vis:tGraph(),txt:`<p>The forward reaction is <b>exothermic</b>. Le Chatelier: lowering the temperature shifts the equilibrium right, so <b>yield increases</b>.</p><p>But at low temperature the <b>rate is too slow</b>, and the iron catalyst is not active enough.</p><p>About <b>450 °C</b> is a compromise: a lower yield, but ammonia is made fast enough. The catalyst makes this compromise possible at a lower temperature than would otherwise be needed.</p>`},
+  {t:'Pressure compromise',vis:pGraph(),txt:`<p>4 moles of gas on the left, 2 on the right. Le Chatelier: higher pressure shifts the equilibrium right, so <b>yield increases</b>. Higher pressure also <b>increases the rate</b> (more frequent collisions).</p><p>But high pressure is <b>expensive</b>: thick-walled vessels, powerful compressors and a lot of energy. It is also more <b>dangerous</b>.</p><p>About <b>200 atm</b> gives a good yield and rate at an acceptable cost.</p>`},
+  {t:'Check',chk:{q:'Why is a temperature of about 450 °C used rather than 200 °C?',o:['At 200 °C the rate would be too slow, even though the yield is higher','At 200 °C the yield would be lower','The catalyst is used up at low temperatures','The reaction is endothermic'],x:'Lower temperature gives a higher yield (exothermic forward reaction) but the rate is unacceptably slow.'},vis:tGraph(),txt:`<p>Think about both yield and rate.</p>`},
+  {t:'Recycling',vis:flowH,txt:`<p>Only about 15% of the gases are converted in each pass through the reactor. Equilibrium isn’t reached, because the gases don’t stay long enough.</p><ul><li>The mixture is cooled: <b>ammonia condenses</b> and is removed as a liquid. Removing product also stops the reverse reaction.</li><li><b>Unreacted N₂ and H₂ are recycled</b>, so overall about 98% ends up as ammonia.</li></ul>`},
+  {t:'Explain it',explain:{q:'Explain why the Haber process is carried out at about 450 °C and 200 atm with an iron catalyst. [6 marks]',a:['Forward reaction exothermic: low T gives higher equilibrium yield, but rate too slow','450 °C is a compromise between yield and rate','Fewer moles of gas on the right: high P gives higher yield and faster rate','Very high P is expensive (equipment, energy for compressors) and dangerous; 200 atm is a compromise','Iron catalyst increases the rate (lower Eₐ) so a lower temperature can be used; it does not change the yield','Ammonia removed by condensing and unreacted gases recycled to give a high overall conversion']},vis:flowH,txt:''}
+ ]};
+
+/* ================= stepper ================= */
+const state={v2o5:0,fe:0,haber:0};
+function renderStep(k){const steps=STEPS[k],i=state[k],s=steps[i];
+  document.getElementById('pills-'+k).querySelectorAll('.pill').forEach((p,j)=>{p.toggleAttribute('aria-current',false);if(j===i)p.setAttribute('aria-current','step');p.classList.toggle('done',j<i);});
+  const V=document.getElementById('vis-'+k),Tx=document.getElementById('txt-'+k);
+  V.innerHTML=s.vis||'';
+  let h=`<div class="sn">Step ${i+1} of ${steps.length}</div><h3>${s.t}</h3>${s.txt||''}`;
+  if(s.chk){const o=s.chk.o.map((t,j)=>({t,ok:j===0})).sort(()=>Math.random()-.5);
+    h+=`<div class="check"><div class="ck">Check your understanding</div><p class="q">${s.chk.q}</p><div class="opts">${o.map(x=>`<button class="opt" type="button" data-ok="${x.ok?1:0}">${x.t}</button>`).join('')}</div><p class="fb" hidden></p></div>`;}
+  if(s.explain)h+=`<div class="check"><div class="ck">Exam-style check</div><p class="q">${s.explain.q}</p><label for="ta-${k}" style="font-size:.85rem;color:var(--muted)">Write your answer, then compare:</label><textarea id="ta-${k}"></textarea><div class="nav"><button class="btn" type="button" id="ms-${k}">Show mark scheme</button></div><div class="model" hidden id="mm-${k}"><b>Marking points</b><ol>${s.explain.a.map(a=>`<li>${a}</li>`).join('')}</ol></div></div>`;
+  h+=`<div class="nav"><button class="btn" type="button" data-nav="-1" ${i===0?'disabled':''}>← Back</button><span class="spacer"></span><button class="btn primary" type="button" data-nav="1">${i===steps.length-1?'Go to the quiz ↓':'Next →'}</button></div>`;
+  Tx.innerHTML=h;
+  if(s.mount){Tx.insertAdjacentHTML('afterbegin','<div id="hpan"></div>');Tx.querySelector('.sn:not(#hpan .sn)').remove();Tx.querySelector(':scope > h3').remove();haberPanel(document.getElementById('hpan'));}
+  Tx.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const ok=b.dataset.ok==='1';Tx.querySelectorAll('.opt').forEach(x=>{x.disabled=true;if(x.dataset.ok==='1')x.classList.add('right');});if(!ok)b.classList.add('wrong');
+    const f=Tx.querySelector('.fb');f.hidden=false;f.innerHTML=`<b class="${ok?'ok':'no'}">${ok?'Correct.':'Not quite.'}</b> ${s.chk.x}`;});
+  const ms=Tx.querySelector('#ms-'+k);if(ms)ms.onclick=()=>{Tx.querySelector('#mm-'+k).hidden=false;ms.remove();};
+  Tx.querySelectorAll('[data-nav]').forEach(b=>b.onclick=()=>{const d=+b.dataset.nav;if(d>0&&i===steps.length-1){document.getElementById('quiz-'+k).scrollIntoView({behavior:reduce?'auto':'smooth'});return;}state[k]=Math.max(0,Math.min(steps.length-1,i+d));renderStep(k);});
+  if(reduce)V.querySelectorAll('svg').forEach(s=>{try{s.pauseAnimations();s.setCurrentTime(4.5);}catch(e){}});}
+for(const k in STEPS){const P=document.getElementById('pills-'+k);STEPS[k].forEach((s,j)=>{const b=document.createElement('button');b.type='button';b.className='pill'+(s.chk||s.explain?' chk':'');b.innerHTML=`<b>${j+1}</b>${s.t}`;b.onclick=()=>{state[k]=j;renderStep(k);};P.appendChild(b);});renderStep(k);}
+
+/* ================= quizzes ================= */
+const QZ={
+ v2o5:['Contact process quiz',[
+  ['What is the catalyst in the Contact process?','V₂O₅','Fe','Pt','MnO₂','Vanadium(V) oxide.'],
+  ['Which equation shows the catalyst being regenerated?','2V₂O₄ + O₂ → 2V₂O₅','SO₂ + V₂O₅ → SO₃ + V₂O₄','2SO₂ + O₂ → 2SO₃','V₂O₅ → V₂O₄ + O','In this step V is oxidised from +4 back to +5.'],
+  ['What is the oxidation state of V in V₂O₄?','+4','+5','+2','+8','2x + 4(−2) = 0, so x = +4.'],
+  ['Which property of transition metals allows V₂O₅ to act as a catalyst?','Variable oxidation states','Coloured compounds','High melting points','Formation of complex ions','V switches between +5 and +4.'],
+  ['Why are heterogeneous catalysts spread on a support medium?','To give a large surface area and reduce the cost of catalyst','To stop the catalyst reacting','To increase the yield','To make the catalyst homogeneous','Reactions happen at the surface.'],
+  ['What is catalyst poisoning?','Impurities adsorb strongly and block active sites','The catalyst is used up in the reaction','The catalyst changes the position of equilibrium','The catalyst melts','Poisons reduce the surface available for reaction.']]],
+ fe:['Peroxodisulfate quiz',[
+  ['Why is the uncatalysed reaction between S₂O₈²⁻ and I⁻ slow?','Both are negative ions and repel, so Eₐ is high','It is endothermic','I⁻ is a weak reducing agent','S₂O₈²⁻ is insoluble','Collisions between like-charged ions rarely succeed.'],
+  ['Which is step 1 of the Fe²⁺-catalysed route?','S₂O₈²⁻ + 2Fe²⁺ → 2SO₄²⁻ + 2Fe³⁺','2Fe³⁺ + 2I⁻ → 2Fe²⁺ + I₂','Fe²⁺ + I⁻ → Fe + I','S₂O₈²⁻ + 2I⁻ → 2SO₄²⁻ + I₂','Fe²⁺ is oxidised to Fe³⁺ by S₂O₈²⁻.'],
+  ['What type of catalyst is Fe²⁺ in this reaction?','Homogeneous','Heterogeneous','Autocatalyst','Enzyme','All species are in aqueous solution.'],
+  ['Why can Fe³⁺ also catalyse this reaction?','The steps form a cycle, so it can start with step 2','Fe³⁺ is a stronger reducing agent than I⁻','Fe³⁺ reacts directly with S₂O₈²⁻','Fe³⁺ precipitates the sulfate','Fe³⁺ oxidises I⁻ first, forming Fe²⁺.'],
+  ['E°(Fe³⁺/Fe²⁺) = +0.77 V. Why is this suitable?','It lies between E° for I₂/I⁻ (+0.54 V) and S₂O₈²⁻/SO₄²⁻ (+2.01 V)','It is the most positive value','It is negative','It equals the E° for I₂/I⁻','Both steps are then thermodynamically feasible.'],
+  ['What colour change is seen as the reaction proceeds?','Colourless to yellow-brown','Purple to colourless','Blue to green','Yellow to orange','Iodine forms.']]],
+ haber:['Haber process quiz',[
+  ['What is the catalyst in the Haber process?','Iron','Platinum','Vanadium(V) oxide','Nickel','Iron, often with promoters.'],
+  ['Why does increasing pressure increase the equilibrium yield of NH₃?','There are fewer moles of gas on the right','The reaction is exothermic','The catalyst works better','It increases the rate','4 mol gas → 2 mol gas.'],
+  ['What happens to the equilibrium yield if the temperature is increased?','It decreases','It increases','It stays the same','It doubles','The forward reaction is exothermic; equilibrium shifts left.'],
+  ['Why isn’t a pressure of 1000 atm used?','Equipment and energy costs would be too high, and it would be dangerous','The yield would fall','The rate would fall','The catalyst would be poisoned','The extra yield doesn’t justify the cost.'],
+  ['How is a high overall conversion achieved even though only ~15% reacts per pass?','Ammonia is condensed out and unreacted gases are recycled','More catalyst is added each pass','The temperature is lowered each pass','The gases are kept in the reactor until equilibrium','Recycling gives about 98% overall.'],
+  ['What does the iron catalyst do?','Provides a route with a lower Eₐ, so equilibrium is reached faster','Increases the equilibrium yield','Makes the reaction more exothermic','Removes ammonia from the mixture','It does not change the position of equilibrium.'],
+  ['In the mechanism, which bond must be weakened on the surface?','N≡N','N–H','H–H only','Fe–Fe','N≡N is very strong (945 kJ mol⁻¹).']]]};
+function quiz(k){const[title,qs]=QZ[k],el=document.getElementById('quiz-'+k);let score=0;
+  el.innerHTML=`<div class="qhead"><h3>${title}</h3><span class="qscore">Score: <b>0</b> / ${qs.length}</span><button class="btn" type="button">Start again</button></div>
+   <ol class="qlist">${qs.map((q,i)=>{const o=q.slice(1,5).map((t,j)=>({t,ok:j===0})).sort(()=>Math.random()-.5);
+     return `<li class="q"><p class="qp"><span class="qn">Q${i+1}</span>${q[0]}</p><div class="opts">${o.map(x=>`<button class="opt" type="button" data-ok="${x.ok?1:0}">${x.t}</button>`).join('')}</div><p class="qx" hidden></p></li>`;}).join('')}</ol>`;
+  el.querySelector('.qhead .btn').onclick=()=>quiz(k);
+  el.querySelectorAll('.q').forEach((li,i)=>li.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const ok=b.dataset.ok==='1';
+    li.querySelectorAll('.opt').forEach(x=>{x.disabled=true;if(x.dataset.ok==='1')x.classList.add('right');});if(!ok)b.classList.add('wrong');else score++;
+    const x=li.querySelector('.qx');x.hidden=false;x.innerHTML=`<b class="${ok?'ok':'no'}">${ok?'Correct.':'Not quite.'}</b> ${qs[i][5]}`;el.querySelector('.qscore b').textContent=score;}));}
+Object.keys(QZ).forEach(quiz);
+
+/* ================= tabs ================= */
+const TABS=[['v2o5','V₂O₅: Contact process'],['fe','Fe²⁺: S₂O₈²⁻ + I⁻'],['haber','Fe: Haber process']];
+const tabbar=document.getElementById('tabbar');
+TABS.forEach(([k,t],i)=>{const b=document.createElement('button');b.type='button';b.className='tabb';b.role='tab';b.dataset.k=k;b.innerHTML=`<span>${i+1}</span>${t}`;b.onclick=()=>showTab(k);tabbar.appendChild(b);});
+function showTab(k){document.querySelectorAll('.tabpanel').forEach(p=>p.hidden=p.dataset.tab!==k);tabbar.querySelectorAll('.tabb').forEach(b=>b.setAttribute('aria-selected',b.dataset.k===k));
+  try{localStorage.setItem('cat-tab',k);}catch(e){}try{history.replaceState(null,'','#'+k);}catch(e){}}
+(function(){let k=(location.hash||'').slice(1);if(!TABS.some(t=>t[0]===k)){try{k=localStorage.getItem('cat-tab')||'';}catch(e){k='';}}if(!TABS.some(t=>t[0]===k))k='v2o5';showTab(k);})();
+</script>
+
+</body></html>

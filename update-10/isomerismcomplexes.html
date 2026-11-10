@@ -1,0 +1,386 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Isomerism in Complexes</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: header → sticky tab bar → panels (optical: mirror-stage + panel; cis/trans: twin-stage + panel; quiz) */
+:root{
+  --bg:#f6f2ea; --panel:#fffdf8; --stage:#fbf8f2; --ink:#33281f; --muted:#6f6256; --line:#e2d7c6;
+  --accent:#7b4a26; --accent-ink:#fff; --coord:#c2410c; --soft:#f3e7da; --good:#15803d; --bad:#b91c1c;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --eqf:"Cambria Math",Cambria,Georgia,serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px 48px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:1240px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+h1{font-family:var(--serif);font-weight:600;font-size:clamp(1.6rem,2.8vw,2.2rem);margin:0;line-height:1.15;text-wrap:balance}
+.sub{color:var(--muted);margin:4px 0 0;max-width:75ch}
+.tabbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;gap:4px;overflow-x:auto;border-bottom:2px solid var(--line);padding-top:6px}
+.tabb{font:inherit;font-weight:700;white-space:nowrap;padding:9px 14px;border:none;background:none;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;display:flex;align-items:center;gap:8px}
+.tabb span{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;border:1.5px solid currentColor;font-size:.78rem}
+.tabb[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
+.tabb[aria-selected="true"] span{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+section.block{display:flex;flex-direction:column;gap:14px}
+.sechead{border-bottom:2px solid var(--line);padding-bottom:6px}
+.sechead h2{font-family:var(--serif);font-size:1.45rem;margin:0;font-weight:600;text-wrap:balance}
+.sechead p{margin:2px 0 0;color:var(--muted);max-width:80ch}
+.rxbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.rxbar .lab{font-weight:700;color:var(--muted);font-size:.85rem;margin-right:4px}
+.chip{font-family:var(--eqf);font-size:1.08rem;padding:6px 14px;border-radius:999px;border:1.5px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+button:focus-visible{outline:3px solid var(--coord);outline-offset:2px}
+.main{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(280px,1fr);gap:16px;align-items:start}
+@media (max-width:920px){.main{grid-template-columns:1fr}}
+.stagebox{display:flex;flex-direction:column;gap:10px;min-width:0}
+.stage{position:relative;width:100%;aspect-ratio:16/9;max-width:100%;background:var(--stage);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.stage canvas{display:block;width:100%;height:100%;touch-action:pan-y;cursor:grab}
+.verdict{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);font-weight:700;padding:6px 14px;border-radius:999px;background:var(--panel);border:2px solid var(--line);white-space:nowrap;pointer-events:none;max-width:calc(100% - 24px);overflow:hidden;text-overflow:ellipsis}
+.verdict.y{border-color:var(--good);color:var(--good)} .verdict.n{border-color:var(--bad);color:var(--bad)}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{font:inherit;font-weight:600;padding:8px 14px;border-radius:8px;border:1.5px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn[aria-pressed="true"]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.spacer{flex:1}
+.rotrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.rotrow .lab{font-weight:700;color:var(--muted);font-size:.85rem}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;min-width:0}
+.panel h3{font-family:var(--eqf);font-size:1.35rem;margin:0 0 8px;font-weight:700}
+.panel h4{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:14px 0 6px}
+.panel p{margin:0 0 9px}
+.badge{display:inline-block;font-weight:700;font-size:.85rem;padding:3px 10px;border-radius:999px;margin-bottom:8px}
+.badge.y{background:#e3f3e7;color:var(--good)} .badge.n{background:var(--soft);color:var(--accent)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:0}
+.kv dt{color:var(--muted)} .kv dd{margin:0;font-weight:700}
+.note{font-size:.9rem;border-left:4px solid #9a9087;padding:8px 12px;background:var(--stage);border-radius:0 8px 8px 0;margin-top:10px}
+.cmp{width:100%;border-collapse:collapse;font-size:.93rem}
+.cmp th,.cmp td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+.cmp th{font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.sw{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin-right:6px;border:1px solid rgba(0,0,0,.2)}
+.quiz{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:12px}
+.qhead{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.qhead h3{font-family:var(--serif);font-size:1.25rem;margin:0;font-weight:600}
+.qscore{margin-left:auto;font-variant-numeric:tabular-nums}
+.qlist{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:16px 24px}
+@media (max-width:480px){.qlist{grid-template-columns:1fr}}
+.q{min-width:0;border-top:1px solid var(--line);padding-top:10px}
+.qp{margin:0 0 8px;font-weight:600}
+.qp .qn{color:var(--accent);margin-right:6px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+@media (max-width:480px){.opts{grid-template-columns:1fr}}
+.opt{text-align:left;font:inherit;padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;background:var(--stage);color:var(--ink);cursor:pointer}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt:disabled{cursor:default}
+.opt.right{border-color:var(--good);background:#e3f3e7}
+.opt.wrong{border-color:var(--bad);background:#f9e3e1}
+.qx{font-size:.9rem;color:var(--muted);margin:6px 0 0}
+.qx b.ok{color:var(--good)} .qx b.no{color:var(--bad)}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Isomerism in transition metal complexes</h1>
+    <p class="sub">Stereoisomers have the same formula and the same bonds, but a different arrangement in space. Drag any model to rotate it.</p>
+  </header>
+  <nav class="tabbar" id="tabbar" role="tablist" aria-label="Lesson parts"></nav>
+
+  <section class="block tabpanel" data-tab="optical">
+    <div class="sechead"><h2>Optical isomerism</h2>
+      <p>A complex has optical isomers if its mirror image cannot be superimposed on it. This happens with octahedral complexes containing two or three bidentate ligands, but only when there is no plane of symmetry.</p></div>
+    <div class="rxbar" id="opChips"><span class="lab">Complex:</span></div>
+    <div class="main">
+      <div class="stagebox">
+        <div class="stage"><canvas id="opCv" aria-label="A complex and its mirror image"></canvas><div class="verdict" id="opVerdict" hidden></div></div>
+        <div class="controls">
+          <button class="btn primary" id="opMode" type="button">Try to superimpose them</button>
+          <button class="btn" id="opPlane" type="button" aria-pressed="false">Show plane of symmetry</button>
+          <span class="spacer"></span>
+          <button class="btn" id="opSpin" type="button" aria-pressed="true">Auto-rotate</button>
+        </div>
+        <div class="rotrow" id="opRot" hidden>
+          <span class="lab">Rotate the mirror image 90°:</span>
+          <button class="btn" type="button" data-ax="1">↻ vertical axis</button>
+          <button class="btn" type="button" data-ax="0">↻ horizontal axis</button>
+          <button class="btn" type="button" data-ax="2">↻ front-to-back axis</button>
+          <button class="btn" id="opOver" type="button" aria-pressed="false">Place on top</button>
+          <button class="btn" id="opAll" type="button">Try all 24 rotations</button>
+        </div>
+      </div>
+      <aside class="panel" id="opPanel" aria-live="polite"></aside>
+    </div>
+  </section>
+
+  <section class="block tabpanel" data-tab="cistrans">
+    <div class="sechead"><h2>Cis–trans isomerism</h2>
+      <p>Cis: two identical ligands next to each other (90°). Trans: two identical ligands opposite each other (180°). It happens in octahedral and square planar complexes, but not in tetrahedral ones.</p></div>
+    <div class="rxbar" id="ctChips"><span class="lab">Complex:</span></div>
+    <div class="main">
+      <div class="stagebox">
+        <div class="stage"><canvas id="ctCv" aria-label="Cis and trans isomers side by side"></canvas></div>
+        <div class="controls">
+          <button class="btn" id="ctAngle" type="button" aria-pressed="true">Show bond angle</button>
+          <span class="spacer"></span>
+          <button class="btn" id="ctSpin" type="button" aria-pressed="true">Auto-rotate</button>
+        </div>
+      </div>
+      <aside class="panel" id="ctPanel"></aside>
+    </div>
+    <div class="panel">
+      <h4 style="margin-top:0">Which shapes can show cis–trans isomerism?</h4>
+      <div style="overflow-x:auto"><table class="cmp"><thead><tr><th>Shape</th><th>Co-ordination number</th><th>Angles between ligands</th><th>Cis–trans isomers?</th><th>Example</th></tr></thead><tbody>
+        <tr><td>Octahedral</td><td>6</td><td>90° or 180°</td><td><b>Yes</b></td><td>[Co(NH<sub>3</sub>)<sub>4</sub>Cl<sub>2</sub>]<sup>+</sup>, [Co(en)<sub>2</sub>Cl<sub>2</sub>]<sup>+</sup></td></tr>
+        <tr><td>Square planar</td><td>4</td><td>90° or 180°</td><td><b>Yes</b></td><td>[Pt(NH<sub>3</sub>)<sub>2</sub>Cl<sub>2</sub>]</td></tr>
+        <tr><td>Tetrahedral</td><td>4</td><td>all 109.5°</td><td><b>No</b></td><td>[Zn(NH<sub>3</sub>)<sub>2</sub>Cl<sub>2</sub>]</td></tr>
+        <tr><td>Linear</td><td>2</td><td>180°</td><td><b>No</b></td><td>[Ag(NH<sub>3</sub>)<sub>2</sub>]<sup>+</sup></td></tr>
+      </tbody></table></div>
+    </div>
+  </section>
+
+  <section class="block tabpanel" data-tab="quiz">
+    <div class="sechead"><h2>Check your understanding</h2><p>Answers are shuffled each time you start again.</p></div>
+    <div class="quiz" id="quiz"></div>
+  </section>
+</div>
+
+<script>
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const F=s=>s.replace(/\^\{([^}]+)\}/g,(m,a)=>'<sup>'+a.replace(/-/g,'−')+'</sup>').replace(/_(\d+)/g,'<sub>$1</sub>');
+
+/* ---------- vectors & matrices ---------- */
+const add=(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]],sub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]],mul=(a,s)=>[a[0]*s,a[1]*s,a[2]*s];
+const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+const len=a=>Math.hypot(...a),norm=a=>mul(a,1/(len(a)||1)),clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
+const perp=u=>{const p=norm(cross(u,Math.abs(u[1])<.9?[0,1,0]:[1,0,0]));return[p,cross(u,p)];};
+const I3=[[1,0,0],[0,1,0],[0,0,1]];
+const mm=(A,B)=>A.map(r=>[0,1,2].map(j=>r[0]*B[0][j]+r[1]*B[1][j]+r[2]*B[2][j]));
+const ap=(M,v)=>M.map(r=>r[0]*v[0]+r[1]*v[1]+r[2]*v[2]);
+function rotM(ax,t){const c=Math.cos(t),s=Math.sin(t);return ax===0?[[1,0,0],[0,c,-s],[0,s,c]]:ax===1?[[c,0,s],[0,1,0],[-s,0,c]]:[[c,-s,0],[s,c,0],[0,0,1]];}
+const MIR=[[-1,0,0],[0,1,0],[0,0,1]];
+const det=M=>M[0][0]*(M[1][1]*M[2][2]-M[1][2]*M[2][1])-M[0][1]*(M[1][0]*M[2][2]-M[1][2]*M[2][0])+M[0][2]*(M[1][0]*M[2][1]-M[1][1]*M[2][0]);
+const ROTS=[];(()=>{const P=[[0,1,2],[0,2,1],[1,0,2],[1,2,0],[2,0,1],[2,1,0]];
+  for(const p of P)for(let s=0;s<8;s++){const M=[0,1,2].map(i=>{const r=[0,0,0];r[p[i]]=(s>>i&1)?-1:1;return r;});if(det(M)>0)ROTS.push(M);}})();
+
+/* ---------- ligand geometry ---------- */
+const OCT={py:[0,1,0],ny:[0,-1,0],px:[1,0,0],nx:[-1,0,0],pz:[0,0,1],nz:[0,0,-1]};
+const TET=[[1,1,1],[1,-1,-1],[-1,1,-1],[-1,-1,1]].map(norm);
+function mk(t){return{type:t,atoms:[],bonds:[],donors:[]};}
+function at(u,el,p){u.atoms.push({el,p});return u.atoms.length-1;}
+function addH2(u,iA,n1,n2){const A=u.atoms[iA].p,b=norm(sub(A,mul(add(n1,n2),.5))),m=norm(cross(sub(n1,A),sub(n2,A)));
+  for(const s of[1,-1]){const h=at(u,'H',add(A,mul(norm(add(mul(b,.58),mul(m,.81*s))),1)));u.bonds.push([iA,h,'s']);}}
+function water(v,d=2.05){const u=mk('H2O'),[p]=perp(v),O=mul(v,d),a=52.25*Math.PI/180;const o=at(u,'O',O);u.donors.push(o);
+  for(const s of[1,-1]){const h=at(u,'H',add(O,mul(add(mul(v,Math.cos(a)),mul(p,s*Math.sin(a))),.97)));u.bonds.push([o,h,'s']);}return u;}
+function ammonia(v,d=2.1){const u=mk('NH3'),[p,q]=perp(v),N=mul(v,d),a=68*Math.PI/180;const n=at(u,'N',N);u.donors.push(n);
+  for(let k=0;k<3;k++){const t=k*2*Math.PI/3+.4;const h=at(u,'H',add(N,mul(add(mul(v,Math.cos(a)),mul(add(mul(p,Math.cos(t)),mul(q,Math.sin(t))),Math.sin(a))),1.01)));u.bonds.push([n,h,'s']);}return u;}
+function chloride(v,d=2.3){const u=mk('Cl');u.donors.push(at(u,'Cl',mul(v,d)));return u;}
+function bridge(u,iA,iB,o,n,f,lift,tw){const A=u.atoms[iA].p,B=u.atoms[iB].p;
+  const c1=at(u,'C',add(add(A,mul(sub(B,A),f)),add(mul(o,lift),mul(n,tw)))),c2=at(u,'C',add(add(B,mul(sub(A,B),f)),add(mul(o,lift),mul(n,-tw))));
+  u.bonds.push([iA,c1,'s'],[c1,c2,'s'],[c2,iB,'s']);return[c1,c2];}
+function en(a,b){const v1=OCT[a],v2=OCT[b],u=mk('en'),o=norm(add(v1,v2)),n=norm(cross(v1,v2));
+  const A=at(u,'N',mul(v1,2.12)),B=at(u,'N',mul(v2,2.12));u.donors.push(A,B);const[c1,c2]=bridge(u,A,B,o,n,.25,1.12,.28);
+  addH2(u,A,[0,0,0],u.atoms[c1].p);addH2(u,B,[0,0,0],u.atoms[c2].p);addH2(u,c1,u.atoms[A].p,u.atoms[c2].p);addH2(u,c2,u.atoms[B].p,u.atoms[c1].p);return u;}
+function carbO(u,iC,a,b){const C=u.atoms[iC].p,d=norm(sub(C,mul(add(a,b),.5)));u.bonds.push([iC,at(u,'O',add(C,mul(d,1.22))),'d']);}
+function ox(a,b){const v1=OCT[a],v2=OCT[b],u=mk('ox'),o=norm(add(v1,v2)),n=norm(cross(v1,v2));
+  const A=at(u,'O',mul(v1,2.0)),B=at(u,'O',mul(v2,2.0));u.donors.push(A,B);const[c1,c2]=bridge(u,A,B,o,n,.23,1.05,0);
+  carbO(u,c1,u.atoms[A].p,u.atoms[c2].p);carbO(u,c2,u.atoms[B].p,u.atoms[c1].p);return u;}
+const L1=(f,v)=>f(Array.isArray(v)?v:OCT[v]);
+
+/* ---------- renderer ---------- */
+const COL={O:['#f6a197','#c8382d'],H:['#ffffff','#cfc9c2'],N:['#9fb3f7','#3653c9'],C:['#9a9a9a','#3f3f3f'],Cl:['#a6dcae','#3f8f4e'],
+  Ni:['#c9e7c9','#4d8a57'],Cr:['#c9d3e6','#55678c'],Co:['#d9b6e6','#86509f'],Pt:['#e2e7ee','#6b7a90'],Zn:['#dfe3ea','#7d8796']};
+const RAD={O:.4,H:.23,N:.42,C:.36,Cl:.62,M:.62};
+const ease=t=>t<.5?4*t*t*t:1-(-2*t+2)**3/2;
+class Scene{
+  constructor(cv){this.cv=cv;this.ctx=cv.getContext('2d');this.yaw=.5;this.pitch=.4;this.auto=!reduce;this.lock=false;
+    new ResizeObserver(()=>{const r=cv.getBoundingClientRect(),d=Math.min(2,devicePixelRatio||1);cv.width=Math.round(r.width*d);cv.height=Math.round(r.height*d);}).observe(cv);
+    let dr=null;cv.addEventListener('pointerdown',e=>{dr={x:e.clientX,y:e.clientY};cv.setPointerCapture(e.pointerId);cv.style.cursor='grabbing';});
+    cv.addEventListener('pointermove',e=>{if(!dr)return;this.yaw+=(e.clientX-dr.x)*.01;this.pitch=clamp(this.pitch+(e.clientY-dr.y)*.01,-1.4,1.4);dr={x:e.clientX,y:e.clientY};this.onDrag&&this.onDrag();});
+    const up=()=>{dr=null;cv.style.cursor='';};cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);}
+  view(p){const cy=Math.cos(this.yaw),sy=Math.sin(this.yaw),cp=Math.cos(this.pitch),sp=Math.sin(this.pitch);
+    const x=p[0]*cy+p[2]*sy,z1=-p[0]*sy+p[2]*cy;return[x,p[1]*cp-z1*sp,p[1]*sp+z1*cp];}
+  begin(){const{ctx,cv}=this,w=cv.width,h=cv.height;ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='#fbf8f2';ctx.fillRect(0,0,w,h);
+    this.sc=Math.min(w/19,h/10.4);this.cx=w/2;this.cy=h/2+this.sc*.15;}
+  P(v,off){const f=20/(20-v[2]);return{x:this.cx+(v[0]+off)*f*this.sc,y:this.cy-v[1]*f*this.sc,z:v[2],f};}
+  items(mol,tf,off,alpha,items){const M=this.P(tf([0,0,0]),off),rM=RAD.M*M.f*this.sc;
+    items.push({z:M.z,fn:()=>this.sphere(M,rM,mol.metal,alpha,mol.lab)});
+    for(const u of mol.units){const wp=u.atoms.map(a=>this.P(tf(a.p),off));
+      u.atoms.forEach((a,i)=>items.push({z:wp[i].z,fn:()=>this.sphere(wp[i],RAD[a.el]*wp[i].f*this.sc,a.el,alpha,a.el==='H'?'':a.el)}));
+      u.bonds.forEach(([i,j,t])=>items.push({z:(wp[i].z+wp[j].z)/2-.35,fn:()=>this.bond(wp[i],wp[j],t,this.sc*wp[i].f,alpha)}));
+      u.donors.forEach(i=>items.push({z:(wp[i].z+M.z)/2-.35,fn:()=>this.coord(wp[i],M,RAD[u.atoms[i].el]*wp[i].f*this.sc,rM,alpha)}));}
+    return M;}
+  flush(items){items.sort((a,b)=>a.z-b.z).forEach(i=>i.fn());}
+  sphere(p,r,el,a,lab){const ctx=this.ctx,c=COL[el];ctx.globalAlpha=a;
+    const g=ctx.createRadialGradient(p.x-r*.35,p.y-r*.38,r*.08,p.x,p.y,r);g.addColorStop(0,c[0]);g.addColorStop(1,c[1]);
+    ctx.beginPath();ctx.arc(p.x,p.y,r,0,6.2832);ctx.fillStyle=g;ctx.fill();ctx.lineWidth=Math.max(1,r*.06);ctx.strokeStyle='rgba(40,30,20,.45)';ctx.stroke();
+    if(lab&&r>7){ctx.fillStyle=(el==='H'||el==='Pt'||el==='Zn'||el==='Ni'||el==='Cr')?'#222':'#fff';ctx.font=`700 ${Math.round(r*(lab.length>2?.6:.85))}px system-ui,sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(lab,p.x,p.y+r*.04);}
+    ctx.globalAlpha=1;}
+  bond(a,b,t,s,al){const ctx=this.ctx;ctx.globalAlpha=al;ctx.strokeStyle='#857b70';ctx.lineCap='round';
+    if(t==='d'){const dx=b.x-a.x,dy=b.y-a.y,l=Math.hypot(dx,dy)||1,nx=-dy/l*s*.09,ny=dx/l*s*.09;ctx.lineWidth=s*.08;
+      for(const k of[1,-1]){ctx.beginPath();ctx.moveTo(a.x+nx*k,a.y+ny*k);ctx.lineTo(b.x+nx*k,b.y+ny*k);ctx.stroke();}}
+    else{ctx.lineWidth=s*.13;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();}ctx.globalAlpha=1;}
+  coord(d,m,rd,rm,al){const ctx=this.ctx,dx=m.x-d.x,dy=m.y-d.y,l=Math.hypot(dx,dy);if(l<rd+rm+2)return;const ux=dx/l,uy=dy/l;
+    ctx.globalAlpha=al;ctx.strokeStyle='#c2410c';ctx.lineWidth=this.sc*.09;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(d.x+ux*rd,d.y+uy*rd);ctx.lineTo(m.x-ux*rm,m.y-uy*rm);ctx.stroke();ctx.globalAlpha=1;}
+  label(t,x,y,c='#33281f',sz=15,w=700){const ctx=this.ctx;ctx.font=`${w} ${Math.round(sz*this.sc/38)}px system-ui,sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=c;ctx.fillText(t,x,y);}
+}
+function mol(metal,lab,units){return{metal,lab,units};}
+
+/* ---------- tabs ---------- */
+const TABS=[['optical','Optical isomerism'],['cistrans','Cis–trans isomerism'],['quiz','Quiz']];
+const tabbar=document.getElementById('tabbar');
+TABS.forEach(([k,t],i)=>{const b=document.createElement('button');b.type='button';b.className='tabb';b.role='tab';b.dataset.k=k;b.innerHTML=`<span>${i+1}</span>${t}`;b.onclick=()=>showTab(k);tabbar.appendChild(b);});
+function showTab(k){document.querySelectorAll('.tabpanel').forEach(p=>p.hidden=p.dataset.tab!==k);tabbar.querySelectorAll('.tabb').forEach(b=>b.setAttribute('aria-selected',b.dataset.k===k));
+  try{localStorage.setItem('iso-tab',k);}catch(e){}try{history.replaceState(null,'','#'+k);}catch(e){}}
+
+/* ================= optical ================= */
+const OPX=[
+ {k:'en3',btn:'[Ni(en)_3]^{2+}',f:'[Ni(NH_2CH_2CH_2NH_2)_3]^{2+}',chiral:true,
+  build:()=>mol('Ni','Ni²⁺',[en('px','py'),en('nx','pz'),en('ny','nz')]),
+  text:`<p>Three bidentate 1,2-diaminoethane ligands wrap round the Ni<sup>2+</sup> ion like the blades of a propeller. The propeller can twist one way or the other.</p><p>There is no plane of symmetry, so the mirror image cannot be superimposed: there are <b>two optical isomers</b>.</p>`,
+  note:'[Co(en)<sub>3</sub>]<sup>3+</sup> and [Cr(C<sub>2</sub>O<sub>4</sub>)<sub>3</sub>]<sup>3−</sup> behave in the same way: any octahedral complex with three bidentate ligands is chiral.'},
+ {k:'cisox',btn:'cis-[Cr(C_2O_4)_2(H_2O)_2]^{-}',f:'cis-[Cr(C_2O_4)_2(H_2O)_2]^{-}',chiral:true,
+  build:()=>mol('Cr','Cr³⁺',[ox('py','nx'),ox('ny','nz'),water(OCT.pz),water(OCT.px)]),
+  text:`<p>Two bidentate ethanedioate ligands and two water ligands. The waters are <b>cis</b>: at 90° to each other.</p><p>There is no plane of symmetry, so the mirror image cannot be superimposed: there are <b>two optical isomers</b>.</p>`,
+  note:'So [Cr(C<sub>2</sub>O<sub>4</sub>)<sub>2</sub>(H<sub>2</sub>O)<sub>2</sub>]<sup>−</sup> has three stereoisomers in total: the trans isomer and a pair of cis optical isomers.'},
+ {k:'transox',btn:'trans-[Cr(C_2O_4)_2(H_2O)_2]^{-}',f:'trans-[Cr(C_2O_4)_2(H_2O)_2]^{-}',chiral:false,
+  build:()=>mol('Cr','Cr³⁺',[ox('px','pz'),ox('nx','nz'),water(OCT.py),water(OCT.ny)]),
+  plane:[[3.3,0,3.3],[3.3,0,-3.3],[-3.3,0,-3.3],[-3.3,0,3.3]],
+  text:`<p>The same ligands, but the waters are <b>trans</b>: at 180° to each other, above and below the metal.</p><p>Both ethanedioate ligands lie in one plane. That plane is a <b>plane of symmetry</b>, so the mirror image is the same molecule. Rotate the mirror image and it fits exactly: <b>no optical isomers</b>.</p>`,
+  note:'Use “Show plane of symmetry”, then “Try to superimpose them”: one 90° turn makes the mirror image match.'}
+];
+const opS=new Scene(document.getElementById('opCv'));
+let opx=OPX[0],opM=null,opSig='',opMode='mirror',opQ=I3,opAnim=null,opOff=0,opOffT=0,opPlane=false,opTried=0,opAll=null;
+const sigOf=(m,M)=>m.units.map(u=>u.type+':'+u.donors.map(i=>ap(M,norm(u.atoms[i].p)).map(x=>Math.round(x)).join(',')).sort().join('|')).sort().join('/');
+const opMatch=()=>sigOf(opM,mm(opQ,MIR))===opSig;
+const chips=(id,list,fn)=>{const bar=document.getElementById(id);list.forEach(x=>{const b=document.createElement('button');b.className='chip';b.type='button';b.dataset.k=x.k;b.innerHTML=F(x.btn);b.onclick=()=>fn(x.k);bar.appendChild(b);});};
+chips('opChips',OPX,setOp);
+function setOp(k){opx=OPX.find(x=>x.k===k);document.querySelectorAll('#opChips .chip').forEach(c=>c.setAttribute('aria-pressed',c.dataset.k===k));
+  opM=opx.build();opSig=sigOf(opM,I3);setOpMode('mirror');
+  document.getElementById('opPlane').hidden=!opx.plane;opPlane=false;document.getElementById('opPlane').setAttribute('aria-pressed','false');opPanel();}
+function setOpMode(m){opMode=m;opQ=I3;opAnim=null;opAll=null;opOffT=0;opTried=0;
+  document.getElementById('opRot').hidden=m!=='super';
+  document.getElementById('opMode').textContent=m==='super'?'Back to mirror images':'Try to superimpose them';
+  document.getElementById('opOver').setAttribute('aria-pressed','false');
+  if(m==='super'){opS.target={yaw:0,pitch:.42};opS.auto=false;document.getElementById('opSpin').setAttribute('aria-pressed','false');}
+  else opS.target=null;
+  opVerdict();opPanel();}
+function opVerdict(){const v=document.getElementById('opVerdict');if(opMode!=='super'){v.hidden=true;return;}v.hidden=false;
+  if(opAll){v.className='verdict';v.textContent=`Rotation ${Math.min(opAll.i+1,24)} of 24 … ${opAll.hits} match${opAll.hits===1?'':'es'}`;return;}
+  const ok=opMatch();v.className='verdict '+(ok?'y':'n');v.textContent=ok?'✓ They match: superimposable':'✗ Ligand positions don’t match';}
+function opPanel(){const x=opx,P=document.getElementById('opPanel');
+  let tail='';if(opMode==='super'){tail=x.chiral?`<h4>Your turn</h4><p>Rotate the mirror image and place it on top. You will never get every ligand to line up. Use “Try all 24 rotations” to check every way an octahedron can be turned.</p>`
+    :`<h4>Your turn</h4><p>Rotate the mirror image until it matches. A single 90° turn about the vertical axis is enough.</p>`;}
+  P.innerHTML=`<span class="badge ${x.chiral?'y':'n'}">${x.chiral?'Optical isomers: yes':'Optical isomers: no'}</span><h3>${F(x.f)}</h3>${x.text}${tail}
+   <h4>Optical isomers (enantiomers)</h4><p>Non-superimposable mirror images. They have identical chemical properties but rotate plane-polarised light in opposite directions.</p><div class="note">${x.note}</div>`;}
+document.getElementById('opMode').onclick=()=>setOpMode(opMode==='super'?'mirror':'super');
+document.getElementById('opPlane').onclick=e=>{opPlane=!opPlane;e.currentTarget.setAttribute('aria-pressed',opPlane);};
+document.getElementById('opSpin').onclick=e=>{opS.auto=!opS.auto;opS.target=null;e.currentTarget.setAttribute('aria-pressed',opS.auto);};
+document.querySelectorAll('#opRot [data-ax]').forEach(b=>b.onclick=()=>{if(opAnim||opAll)return;opTried++;opAnim={ax:+b.dataset.ax,t:0,base:opQ};});
+document.getElementById('opOver').onclick=e=>{opOffT=opOffT?0:1;e.currentTarget.setAttribute('aria-pressed',!!opOffT);};
+document.getElementById('opAll').onclick=()=>{if(opAll)return;opAnim=null;opOffT=1;document.getElementById('opOver').setAttribute('aria-pressed','true');opAll={i:0,t:0,hits:0,stop:!opx.chiral};opQ=ROTS[0];};
+opS.onDrag=()=>{opS.target=null;};
+function opStep(dt){
+  if(opS.target){const T=opS.target,k=1-Math.pow(.02,dt);let dy=((T.yaw-opS.yaw)%(2*Math.PI)+3*Math.PI)%(2*Math.PI)-Math.PI;opS.yaw+=dy*k;opS.pitch+=(T.pitch-opS.pitch)*k;}
+  else if(opS.auto)opS.yaw+=dt*.3;
+  if(opAnim){opAnim.t=Math.min(1,opAnim.t+dt/(reduce?.01:.6));opQ=mm(rotM(opAnim.ax,Math.PI/2*ease(opAnim.t)),opAnim.base);
+    if(opAnim.t>=1){opQ=mm(rotM(opAnim.ax,Math.PI/2),opAnim.base).map(r=>r.map(Math.round));opAnim=null;opVerdict();}}
+  if(opAll&&opOff>.97){opAll.t+=dt;if(opAll.t>.45){opAll.t=0;if(opMatch())opAll.hits++;
+      if(opAll.stop&&opAll.hits){const n=opAll.hits;opAll=null;opVerdict();document.getElementById('opVerdict').textContent='✓ Match found: the mirror image is the same molecule';return;}
+      opAll.i++;if(opAll.i>=24){const h=opAll.hits;opAll=null;const v=document.getElementById('opVerdict');v.className='verdict n';v.textContent=`✗ 0 of 24 rotations match: these are optical isomers`;return;}
+      opQ=ROTS[opAll.i];}opVerdict();}
+  opOff+=(opOffT-opOff)*(1-Math.pow(.01,dt));
+}
+function opDraw(){const S=opS;if(!S.cv.width)return;S.begin();const ctx=S.ctx,gap=4.6;
+  const tfL=p=>S.view(p);
+  const tfR=opMode==='mirror'?(p=>{const v=S.view(p);return[-v[0],v[1],v[2]];}):(p=>S.view(ap(opQ,ap(MIR,p))));
+  const offR=gap*(1-opOff),offL=-gap*(1-opOff);
+  if(opMode==='mirror'||opOff<.9){const g=ctx.createLinearGradient(S.cx-10,0,S.cx+10,0);g.addColorStop(0,'rgba(140,170,200,0)');g.addColorStop(.5,'rgba(140,170,200,.55)');g.addColorStop(1,'rgba(140,170,200,0)');
+    ctx.globalAlpha=1-opOff;ctx.fillStyle=g;ctx.fillRect(S.cx-10,S.sc*.6,20,S.cv.height-S.sc*1.4);ctx.globalAlpha=1;
+    if(opMode==='mirror')S.label('mirror',S.cx,S.sc*.4,'#5b7da0',13,600);}
+  const items=[];
+  const drawPlane=(tf,off,a)=>{if(!opPlane||!opx.plane)return;const pts=opx.plane.map(p=>S.P(tf(p),off));items.push({z:-99,fn:()=>{}});
+    items.push({z:0,fn:()=>{ctx.globalAlpha=.22*a;ctx.fillStyle='#d9a441';ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.closePath();ctx.fill();ctx.globalAlpha=.8*a;ctx.strokeStyle='#b07d1a';ctx.lineWidth=2;ctx.stroke();ctx.globalAlpha=1;}});};
+  S.items(opM,tfL,offL,1,items);drawPlane(tfL,offL,1);
+  if(opOff>.6){S.items(opM,tfR,offR,.5,items);}else{S.flush(items.splice(0));S.items(opM,tfR,offR,1,items);drawPlane(tfR,offR,1);}
+  S.flush(items);
+  const ly=S.cv.height-S.sc*.55;
+  if(opOff<.6){S.label(opMode==='mirror'?'Complex':'Original',S.cx+offL*S.sc,S.sc*.55,'#33281f',15);S.label('Mirror image',S.cx+offR*S.sc,S.sc*.55,'#33281f',15);}
+}
+
+/* ================= cis–trans ================= */
+const CTX=[
+ {k:'coam',btn:'[Co(NH_3)_4Cl_2]^{+}',shape:'Octahedral, co-ordination number 6',a:'90°',b:'180°',la:'cis',lb:'trans',
+  A:()=>mol('Co','Co³⁺',[chloride(OCT.px),chloride(OCT.py),...['nx','ny','pz','nz'].map(s=>ammonia(OCT[s]))]),
+  B:()=>mol('Co','Co³⁺',[chloride(OCT.py),chloride(OCT.ny),...['px','nx','pz','nz'].map(s=>ammonia(OCT[s]))]),
+  rows:[['cis','90°','#7a4a9a','Violet'],['trans','180°','#3f8a4a','Green']],
+  text:'<p>Four ammonia ligands and two chloride ligands around Co<sup>3+</sup>. The two Cl<sup>−</sup> can be next to each other or opposite each other.</p><p>The two isomers are different compounds with different colours.</p>'},
+ {k:'coen',btn:'[Co(en)_2Cl_2]^{+}',shape:'Octahedral, co-ordination number 6',a:'90°',b:'180°',la:'cis',lb:'trans',
+  A:()=>mol('Co','Co³⁺',[chloride(OCT.pz),chloride(OCT.px),en('py','nx'),en('ny','nz')]),
+  B:()=>mol('Co','Co³⁺',[chloride(OCT.py),chloride(OCT.ny),en('px','pz'),en('nx','nz')]),
+  rows:[['cis','90°','#7a4a9a','Violet'],['trans','180°','#3f8a4a','Green']],
+  text:'<p>Two bidentate en ligands and two chloride ligands. This is the same arrangement as the ethanedioate example on the optical isomerism tab.</p><p>The <b>cis</b> isomer has no plane of symmetry, so it also has a pair of optical isomers. In total there are <b>three stereoisomers</b>.</p>'},
+ {k:'pt',btn:'[Pt(NH_3)_2Cl_2]',shape:'Square planar, co-ordination number 4',a:'90°',b:'180°',la:'cis (cisplatin)',lb:'trans (transplatin)',
+  A:()=>mol('Pt','Pt²⁺',[chloride(OCT.px),chloride(OCT.pz),ammonia(OCT.nx),ammonia(OCT.nz)]),
+  B:()=>mol('Pt','Pt²⁺',[chloride(OCT.px),chloride(OCT.nx),ammonia(OCT.pz),ammonia(OCT.nz)]),
+  rows:[['cisplatin','90°','#e6d27a','Yellow, anticancer drug'],['transplatin','180°','#e6d27a','Yellow, not an effective drug']],
+  text:'<p>All four ligands lie in one plane around Pt<sup>2+</sup>.</p><p><b>Cisplatin</b> binds to two nitrogen atoms on neighbouring guanine bases in DNA, which stops cancer cells dividing. Transplatin’s Cl ligands point in opposite directions, so it can’t bind DNA in the same way.</p>'},
+ {k:'zn',btn:'[Zn(NH_3)_2Cl_2]',shape:'Tetrahedral, co-ordination number 4',a:'109.5°',b:'109.5°',la:'arrangement 1',lb:'arrangement 2',tet:true,
+  A:()=>mol('Zn','Zn²⁺',[chloride(TET[0]),chloride(TET[1]),ammonia(TET[2]),ammonia(TET[3])]),
+  B:()=>mol('Zn','Zn²⁺',[chloride(TET[0]),chloride(TET[2]),ammonia(TET[1]),ammonia(TET[3])]),
+  rows:[['arrangement 1','109.5°','#eeeeee','Colourless'],['arrangement 2','109.5°','#eeeeee','Same molecule']],
+  text:'<p>In a tetrahedron every pair of positions is 109.5° apart. There is no “next to” or “opposite”, so there is only one way to arrange two Cl and two NH<sub>3</sub>.</p><p><b>No cis–trans isomers.</b> Rotate the models: the two arrangements are the same molecule.</p>'}
+];
+const ctS=new Scene(document.getElementById('ctCv'));
+let ctx_=CTX[0],ctA=null,ctB=null,ctAngle=true;
+chips('ctChips',CTX,setCt);
+function setCt(k){ctx_=CTX.find(x=>x.k===k);document.querySelectorAll('#ctChips .chip').forEach(c=>c.setAttribute('aria-pressed',c.dataset.k===k));ctA=ctx_.A();ctB=ctx_.B();
+  const x=ctx_;document.getElementById('ctPanel').innerHTML=`<span class="badge ${x.tet?'n':'y'}">${x.tet?'Cis–trans isomers: no':'Cis–trans isomers: yes'}</span><h3>${F(x.btn)}</h3><dl class="kv"><dt>Shape</dt><dd>${x.shape}</dd></dl>${x.text}
+   <table class="cmp"><thead><tr><th>Isomer</th><th>Cl–M–Cl</th><th>Colour / use</th></tr></thead><tbody>${x.rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td><span class="sw" style="background:${r[2]}"></span>${r[3]}</td></tr>`).join('')}</tbody></table>`;}
+document.getElementById('ctAngle').onclick=e=>{ctAngle=!ctAngle;e.currentTarget.setAttribute('aria-pressed',ctAngle);};
+document.getElementById('ctSpin').onclick=e=>{ctS.auto=!ctS.auto;e.currentTarget.setAttribute('aria-pressed',ctS.auto);};
+function clPos(m){return m.units.filter(u=>u.type==='Cl').map(u=>u.atoms[0].p);}
+function ctDraw(){const S=ctS;if(!S.cv.width)return;S.begin();const gap=4.6,tf=p=>S.view(p),ctx=S.ctx;
+  for(const [m,off,lab,ang] of [[ctA,-gap,ctx_.la,ctx_.a],[ctB,gap,ctx_.lb,ctx_.b]]){const items=[];const M=S.items(m,tf,off,1,items);S.flush(items);
+    S.label(lab,S.cx+off*S.sc,S.sc*.55,'#33281f',17);
+    if(ctAngle){const c=clPos(m).map(p=>S.P(tf(p),off));ctx.setLineDash([6,5]);ctx.strokeStyle='#c2410c';ctx.lineWidth=2.5;
+      c.forEach(p=>{ctx.beginPath();ctx.moveTo(M.x,M.y);ctx.lineTo(p.x,p.y);ctx.stroke();});ctx.setLineDash([]);
+      const bx=(c[0].x+c[1].x)/2-M.x,by=(c[0].y+c[1].y)/2-M.y,bl=Math.hypot(bx,by);
+      const lx=bl>5?M.x+bx/bl*S.sc*1.15:M.x,ly=bl>5?M.y+by/bl*S.sc*1.15:M.y-S.sc*1.1;
+      ctx.font=`700 ${Math.round(S.sc*.42)}px system-ui,sans-serif`;const tw=ctx.measureText(ang).width+12;
+      ctx.fillStyle='rgba(255,253,248,.9)';ctx.fillRect(lx-tw/2,ly-S.sc*.28,tw,S.sc*.56);S.label(ang,lx,ly,'#c2410c',16);}}
+}
+
+/* ================= quiz ================= */
+const QS=[
+ {q:'Which complex has optical isomers?',o:['[Ni(en)_3]^{2+}','trans-[Co(NH_3)_4Cl_2]^{+}','[Cu(H_2O)_6]^{2+}','[CoCl_4]^{2-}'],x:'Three bidentate ligands make a propeller shape with no plane of symmetry.'},
+ {q:'Why does trans-[Cr(C_2O_4)_2(H_2O)_2]^{-} not have optical isomers?',o:['It has a plane of symmetry','Ethanedioate is bidentate','Water is a neutral ligand','Cr is in the +3 oxidation state'],x:'The plane containing both ethanedioate ligands is a plane of symmetry, so the mirror image is identical.'},
+ {q:'How many stereoisomers does [Co(en)_2Cl_2]^{+} have?',o:['3','2','4','1'],x:'trans, plus the cis isomer and its non-superimposable mirror image.'},
+ {q:'What is the Cl–Pt–Cl bond angle in transplatin?',o:['180°','90°','109.5°','120°'],x:'Trans ligands are opposite each other in the square plane.'},
+ {q:'Why do tetrahedral complexes not show cis–trans isomerism?',o:['Every pair of ligand positions is 109.5° apart','Tetrahedral complexes have only one type of ligand','The metal is too small','Tetrahedral complexes are always charged'],x:'There is no “next to” or “opposite” position in a tetrahedron.'},
+ {q:'How do a pair of optical isomers differ?',o:['They rotate plane-polarised light in opposite directions','They have different colours','They have different formulae','One is cis and the other trans'],x:'Enantiomers have the same chemical properties but opposite effects on plane-polarised light.'},
+ {q:'Which complex shows cis–trans isomerism but NOT optical isomerism?',o:['[Pt(NH_3)_2Cl_2]','[Ni(en)_3]^{2+}','[Co(en)_2Cl_2]^{+}','[Zn(NH_3)_2Cl_2]'],x:'Both square planar isomers lie flat, so each has a plane of symmetry. [Co(en)_2Cl_2]^{+} shows both types.'},
+ {q:'What colour is trans-[Co(NH_3)_4Cl_2]^{+}?',o:['Green','Violet','Pink','Colourless'],x:'Trans is green; cis is violet.'}
+];
+function quiz(){const el=document.getElementById('quiz');let score=0;
+  el.innerHTML=`<div class="qhead"><h3>Isomerism quiz</h3><span class="qscore">Score: <b>0</b> / ${QS.length}</span><button class="btn" type="button">Start again</button></div>
+   <ol class="qlist">${QS.map((q,i)=>{const o=q.o.map((t,j)=>({t,ok:j===0})).sort(()=>Math.random()-.5);
+     return `<li class="q"><p class="qp"><span class="qn">Q${i+1}</span>${F(q.q)}</p><div class="opts">${o.map(x=>`<button class="opt" type="button" data-ok="${x.ok?1:0}">${F(x.t)}</button>`).join('')}</div><p class="qx" hidden></p></li>`;}).join('')}</ol>`;
+  el.querySelector('.qhead .btn').onclick=quiz;
+  el.querySelectorAll('.q').forEach((li,i)=>li.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const ok=b.dataset.ok==='1';
+    li.querySelectorAll('.opt').forEach(x=>{x.disabled=true;if(x.dataset.ok==='1')x.classList.add('right');});if(!ok)b.classList.add('wrong');else score++;
+    const x=li.querySelector('.qx');x.hidden=false;x.innerHTML=`<b class="${ok?'ok':'no'}">${ok?'Correct.':'Not quite.'}</b> ${F(QS[i].x)}`;el.querySelector('.qscore b').textContent=score;}));}
+quiz();
+
+/* ================= loop ================= */
+setOp('en3');setCt('coam');
+(function(){let k=(location.hash||'').slice(1);if(!TABS.some(t=>t[0]===k)){try{k=localStorage.getItem('iso-tab')||'';}catch(e){k='';}}if(!TABS.some(t=>t[0]===k))k='optical';showTab(k);})();
+if(reduce){['opSpin','ctSpin'].forEach(id=>document.getElementById(id).setAttribute('aria-pressed','false'));}
+let last=performance.now();
+function loop(t){const dt=Math.min(.05,(t-last)/1000);last=t;opStep(dt);opDraw();if(ctS.auto)ctS.yaw+=dt*.3;ctDraw();requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
+</script>
+
+</body></html>

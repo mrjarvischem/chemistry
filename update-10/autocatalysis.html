@@ -1,0 +1,383 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Autocatalysis by Mn²⁺</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: header → sticky tab bar → (1) flask + particles | graphs, controls, live explanation; (2) repulsion anim, step cycle, energy profile; (3) quiz */
+:root{
+  --bg:#f6f2ea; --panel:#fffdf8; --stage:#fbf8f2; --ink:#33281f; --muted:#6f6256; --line:#e2d7c6;
+  --accent:#7b4a26; --accent-ink:#fff; --coord:#c2410c; --soft:#f3e7da; --good:#15803d; --bad:#b91c1c;
+  --mno4:#7b2d8e; --mn2:#e7a9c4; --mn3:#c0392b; --ox:#6b7280;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --eqf:"Cambria Math",Cambria,Georgia,serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px 48px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:1240px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+h1{font-family:var(--serif);font-weight:600;font-size:clamp(1.6rem,2.8vw,2.2rem);margin:0;line-height:1.15;text-wrap:balance}
+.sub{color:var(--muted);margin:4px 0 0;max-width:78ch}
+.tabbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;gap:4px;overflow-x:auto;border-bottom:2px solid var(--line);padding-top:6px}
+.tabb{font:inherit;font-weight:700;white-space:nowrap;padding:9px 14px;border:none;background:none;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;display:flex;align-items:center;gap:8px}
+.tabb span{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;border:1.5px solid currentColor;font-size:.78rem}
+.tabb[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
+.tabb[aria-selected="true"] span{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+section.block{display:flex;flex-direction:column;gap:14px}
+.sechead{border-bottom:2px solid var(--line);padding-bottom:6px}
+.sechead h2{font-family:var(--serif);font-size:1.45rem;margin:0;font-weight:600;text-wrap:balance}
+.sechead p{margin:2px 0 0;color:var(--muted);max-width:82ch}
+.eqbox{background:var(--panel);border:2px solid var(--accent);border-radius:10px;padding:10px 14px;min-width:0}
+.eqbox .lab{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.eq{font-family:var(--eqf);font-size:1.35rem;overflow-x:auto;white-space:nowrap;padding:3px 0}
+.eq .p{color:var(--mno4);font-weight:700}
+.main{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.45fr);gap:16px;align-items:start}
+@media (max-width:920px){.main{grid-template-columns:1fr}}
+.col{display:flex;flex-direction:column;gap:12px;min-width:0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;min-width:0}
+.card h3{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
+.cvwrap{position:relative;width:100%;max-width:100%}
+.cvwrap canvas{display:block;width:100%;height:100%}
+.flask{aspect-ratio:1/1}
+.graph{aspect-ratio:640/300}
+.graph.small{aspect-ratio:640/200}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{font:inherit;font-weight:600;padding:8px 14px;border-radius:8px;border:1.5px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn[aria-pressed="true"]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--coord);outline-offset:2px}
+.seg{display:inline-flex;border:1.5px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{font:inherit;font-weight:600;padding:8px 12px;border:none;background:var(--panel);color:var(--ink);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.slider{display:flex;align-items:center;gap:8px;font-weight:600;font-size:.92rem}
+.slider output{min-width:46px;font-variant-numeric:tabular-nums}
+.spacer{flex:1}
+.stagebadge{display:inline-block;font-weight:700;font-size:.85rem;padding:3px 10px;border-radius:999px;background:var(--soft);color:var(--accent);margin-bottom:6px}
+.panel p{margin:0 0 8px}
+.readout{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-variant-numeric:tabular-nums}
+.readout div{background:var(--stage);border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+.readout span{display:block;font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+.readout b{font-size:1.1rem}
+@media (max-width:480px){.readout{grid-template-columns:1fr}}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:.85rem;color:var(--muted)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:50%;vertical-align:-1px;margin-right:5px}
+.note{font-size:.9rem;border-left:4px solid #9a9087;padding:8px 12px;background:var(--stage);border-radius:0 8px 8px 0}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:920px){.two{grid-template-columns:1fr}}
+.steps{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px}
+.steps li{border:1.5px solid var(--line);border-radius:10px;padding:8px 12px;background:var(--stage);transition:border-color .3s,background .3s}
+.steps li.on{border-color:var(--accent);background:var(--soft)}
+.steps .t{font-weight:700;font-size:.85rem;color:var(--muted)}
+.steps .eq{font-size:1.15rem}
+.steps p{margin:2px 0 0;font-size:.9rem}
+svg text{font-family:var(--sans)}
+.quiz{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:12px}
+.qhead{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.qhead h3{font-family:var(--serif);font-size:1.25rem;margin:0;font-weight:600}
+.qscore{margin-left:auto;font-variant-numeric:tabular-nums}
+.qlist{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:16px 24px}
+@media (max-width:480px){.qlist{grid-template-columns:1fr}}
+.q{min-width:0;border-top:1px solid var(--line);padding-top:10px}
+.qp{margin:0 0 8px;font-weight:600}
+.qp .qn{color:var(--accent);margin-right:6px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+@media (max-width:480px){.opts{grid-template-columns:1fr}}
+.opt{text-align:left;font:inherit;padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;background:var(--stage);color:var(--ink);cursor:pointer}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt:disabled{cursor:default}
+.opt.right{border-color:var(--good);background:#e3f3e7}
+.opt.wrong{border-color:var(--bad);background:#f9e3e1}
+.qx{font-size:.9rem;color:var(--muted);margin:6px 0 0}
+.qx b.ok{color:var(--good)} .qx b.no{color:var(--bad)}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Autocatalysis: Mn²⁺ in the manganate(VII)–ethanedioate reaction</h1>
+    <p class="sub">An autocatalyst is a product of the reaction that catalyses the reaction itself. The reaction starts slowly, speeds up as the catalyst builds up, then slows as the reactants run out.</p>
+  </header>
+  <div class="eqbox"><div class="lab">Overall reaction (acidified, warmed to about 60 °C)</div>
+    <div class="eq">2<span class="p">MnO<sub>4</sub><sup>−</sup></span> + 16H<sup>+</sup> + 5C<sub>2</sub>O<sub>4</sub><sup>2−</sup> → 2Mn<sup>2+</sup> + 8H<sub>2</sub>O + 10CO<sub>2</sub></div></div>
+  <nav class="tabbar" id="tabbar" role="tablist" aria-label="Lesson parts"></nav>
+
+  <!-- ===== 1. simulation ===== -->
+  <section class="block tabpanel" data-tab="sim">
+    <div class="controls">
+      <button class="btn primary" id="go" type="button">Start reaction ▶</button>
+      <button class="btn" id="reset" type="button">Reset</button>
+      <span class="seg" role="group" aria-label="Mn2+ at start"><button type="button" id="noMn" aria-pressed="true">No Mn²⁺ added</button><button type="button" id="addMn" aria-pressed="false">Mn²⁺ added at start</button></span>
+      <label class="slider" for="temp">Temperature <input id="temp" type="range" min="20" max="80" step="5" value="60"><output id="tempV">60 °C</output></label>
+      <span class="spacer"></span>
+      <button class="btn" id="cmp" type="button" aria-pressed="false">Compare: normal reaction</button>
+      <label class="slider" for="spd">Speed <input id="spd" type="range" min="1" max="20" value="6"></label>
+    </div>
+    <div class="main">
+      <div class="col">
+        <div class="card"><h3>The reaction flask</h3><div class="cvwrap flask"><canvas id="flask" aria-label="Flask with purple solution fading as the reaction proceeds"></canvas></div>
+          <div class="legend"><span><i style="background:var(--mno4)"></i>MnO₄⁻ (purple)</span><span><i style="background:var(--ox)"></i>C₂O₄²⁻</span><span><i style="background:var(--mn2);border:1px solid #b46e8d"></i>Mn²⁺ (catalyst)</span></div></div>
+        <div class="readout"><div><span>Time</span><b id="rT">0 s</b></div><div><span>[MnO₄⁻] / 10⁻³ mol dm⁻³</span><b id="rA">2.00</b></div><div><span>[Mn²⁺] / 10⁻³ mol dm⁻³</span><b id="rM">0.00</b></div></div>
+      </div>
+      <div class="col">
+        <div class="card"><h3>Concentration of MnO₄⁻ against time</h3><div class="cvwrap graph"><canvas id="gA" aria-label="Concentration–time graph"></canvas></div></div>
+        <div class="card"><h3>Rate of reaction against time</h3><div class="cvwrap graph small"><canvas id="gR" aria-label="Rate–time graph"></canvas></div></div>
+        <div class="card panel" id="explain" aria-live="polite"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 2. mechanism ===== -->
+  <section class="block tabpanel" data-tab="how">
+    <div class="sechead"><h2>Why it starts slowly</h2><p>Both reactants are negative ions. They repel each other, so the activation energy of the direct reaction is high.</p></div>
+    <div class="two">
+      <div class="card"><h3>Collision view</h3><div class="cvwrap graph"><canvas id="coll" aria-label="Ions colliding"></canvas></div>
+        <div class="controls" style="margin-top:8px"><span class="seg" role="group"><button type="button" id="cA" aria-pressed="true">MnO₄⁻ + C₂O₄²⁻</button><button type="button" id="cB" aria-pressed="false">Mn³⁺ + C₂O₄²⁻</button></span></div></div>
+      <div class="card panel" id="collTxt"></div>
+    </div>
+    <div class="sechead"><h2>How Mn²⁺ provides a route with lower activation energy</h2><p>Manganese has variable oxidation states. Mn²⁺ is oxidised to Mn³⁺ by MnO₄⁻, then Mn³⁺ is reduced back to Mn²⁺ by C₂O₄²⁻. Each step is between oppositely charged ions.</p></div>
+    <div class="two">
+      <div class="col">
+        <ol class="steps" id="steps">
+          <li data-s="1"><span class="t">Step 1: Mn²⁺ is oxidised to Mn³⁺</span><div class="eq">4Mn<sup>2+</sup> + MnO<sub>4</sub><sup>−</sup> + 8H<sup>+</sup> → 5Mn<sup>3+</sup> + 4H<sub>2</sub>O</div><p>Positive Mn²⁺ attracts negative MnO₄⁻.</p></li>
+          <li data-s="2"><span class="t">Step 2: Mn³⁺ is reduced back to Mn²⁺</span><div class="eq">2Mn<sup>3+</sup> + C<sub>2</sub>O<sub>4</sub><sup>2−</sup> → 2Mn<sup>2+</sup> + 2CO<sub>2</sub></div><p>Positive Mn³⁺ attracts negative C₂O₄²⁻. Mn²⁺ is regenerated, so it is a catalyst.</p></li>
+          <li data-s="3"><span class="t">Why it is autocatalysis</span><p>Mn²⁺ is also a <b>product</b> of the overall reaction. As more forms, there is more catalyst, so the reaction speeds up.</p></li>
+        </ol>
+        <div class="controls"><button class="btn primary" id="stepNext" type="button">Next step ▶</button><button class="btn" id="stepReset" type="button">Start again</button></div>
+      </div>
+      <div class="card"><h3>The catalytic cycle</h3><svg id="cycle" viewBox="0 0 520 340" role="img" aria-label="Catalytic cycle between Mn2+ and Mn3+"></svg></div>
+    </div>
+    <div class="card"><h3>Energy profile</h3><svg id="profile" viewBox="0 0 760 330" role="img" aria-label="Energy profile for the uncatalysed and catalysed reactions" style="width:100%;height:auto"></svg>
+      <div class="note">This is <b>homogeneous</b> catalysis: catalyst and reactants are all in the same phase (aqueous). Compare Fe²⁺ catalysing S₂O₈²⁻ + I⁻, where the uncatalysed reaction is also slow because two negative ions must collide.</div></div>
+  </section>
+
+  <!-- ===== 3. quiz ===== -->
+  <section class="block tabpanel" data-tab="quiz">
+    <div class="sechead"><h2>Check your understanding</h2><p>Answers are shuffled each time you start again.</p></div>
+    <div class="quiz" id="quiz"></div>
+  </section>
+</div>
+
+<script>
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const F=s=>s.replace(/\^\{([^}]+)\}/g,(m,a)=>'<sup>'+a.replace(/-/g,'−')+'</sup>').replace(/_(\d+)/g,'<sub>$1</sub>');
+function fit(cv,W,H){const o={cv,ctx:cv.getContext('2d'),W,H,k:1};new ResizeObserver(()=>{const r=cv.getBoundingClientRect(),d=Math.min(2,devicePixelRatio||1);cv.width=Math.round(r.width*d);cv.height=Math.round(r.height*d);o.k=cv.width/W;}).observe(cv);return o;}
+function T(ctx,t,x,y,c,sz,w=400,al='left',bl='middle'){ctx.fillStyle=c;ctx.font=`${w} ${sz}px system-ui,sans-serif`;ctx.textAlign=al;ctx.textBaseline=bl;ctx.fillText(t,x,y);}
+
+/* ---------- tabs ---------- */
+const TABS=[['sim','Watch it happen'],['how','How Mn²⁺ catalyses it'],['quiz','Quiz']];
+const tabbar=document.getElementById('tabbar');
+TABS.forEach(([k,t],i)=>{const b=document.createElement('button');b.type='button';b.className='tabb';b.role='tab';b.dataset.k=k;b.innerHTML=`<span>${i+1}</span>${t}`;b.onclick=()=>showTab(k);tabbar.appendChild(b);});
+function showTab(k){document.querySelectorAll('.tabpanel').forEach(p=>p.hidden=p.dataset.tab!==k);tabbar.querySelectorAll('.tabb').forEach(b=>b.setAttribute('aria-selected',b.dataset.k===k));
+  try{localStorage.setItem('auto-tab',k);}catch(e){}try{history.replaceState(null,'','#'+k);}catch(e){}}
+
+/* =============== 1. kinetics model ===============
+   rate = [MnO4-] (k0 + k1[Mn2+]),  ethanedioate in excess.
+   [Mn2+] = [Mn2+]added + ([MnO4-]0 - [MnO4-]).  Arrhenius scaling, Ea ≈ 60 kJ/mol. */
+const A0=2.0e-3,K0=0.0015,K1=55,EA=60000;
+let temp=60,mnAdded=false,cmp=false,speed=6;
+let run=null,cur=0,playing=false,past=[];
+function arr(T){return Math.exp(-EA/8.314*(1/(T+273)-1/333));}
+function simulate(){const f=arr(temp),M0=mnAdded?1.0e-3:0,dt=.05;let A=A0,t=0;const pts=[{t:0,A,M:M0,r:A*(K0+K1*M0)*f}];
+  while(t<6000&&A>A0*.005){for(let i=0;i<20;i++){const M=M0+(A0-A);A-=A*(K0+K1*M)*f*dt;t+=dt;}const M=M0+(A0-A);pts.push({t,A,M,r:A*(K0+K1*M)*f});}
+  const tEnd=t;const half=pts.find(p=>p.A<=A0/2)?.t||tEnd;
+  const nice=[60,120,180,240,300,400,600,900,1200,1800,2400,3600,6000];const tmax=nice.find(n=>n>=tEnd*1.05)||6000;
+  const rmax=Math.max(...pts.map(p=>p.r));
+  // stage markers
+  const sStart=pts.find(p=>p.A<A0*.92)?.t??0, sFast=pts.reduce((a,b)=>b.r>a.r?b:a).t, sEnd=pts.find(p=>p.A<A0*.15)?.t??tEnd;
+  return{pts,tEnd,tmax,rmax,half,f,M0,sStart,sFast,sEnd,label:`${temp} °C, ${mnAdded?'Mn²⁺ added':'no Mn²⁺ added'}`};}
+function at(t){const p=run.pts;if(t<=0)return p[0];if(t>=run.tEnd)return p[p.length-1];let lo=0,hi=p.length-1;while(hi-lo>1){const m=(lo+hi)>>1;p[m].t<t?lo=m:hi=m;}const a=p[lo],b=p[hi],u=(t-a.t)/(b.t-a.t||1);return{t,A:a.A+(b.A-a.A)*u,M:a.M+(b.M-a.M)*u,r:a.r+(b.r-a.r)*u};}
+function reset(keep){if(keep&&run&&cur>0){past.unshift({run,col:['#b49cc0','#c9b28f','#9fb7c9'][past.length%3]});past=past.slice(0,3);}
+  run=simulate();cur=0;playing=false;setGo();initParticles();explain();readouts();}
+function setGo(){const b=document.getElementById('go');b.textContent=playing?'Pause ❚❚':cur>=run.tEnd?'Finished':cur>0?'Resume ▶':'Start reaction ▶';b.disabled=!playing&&cur>=run.tEnd;}
+document.getElementById('go').onclick=()=>{playing=!playing;setGo();};
+document.getElementById('reset').onclick=()=>reset(true);
+const segMn=v=>{mnAdded=v;document.getElementById('noMn').setAttribute('aria-pressed',!v);document.getElementById('addMn').setAttribute('aria-pressed',v);reset(true);};
+document.getElementById('noMn').onclick=()=>segMn(false);document.getElementById('addMn').onclick=()=>segMn(true);
+document.getElementById('temp').oninput=e=>{temp=+e.target.value;document.getElementById('tempV').textContent=temp+' °C';reset(true);};
+document.getElementById('cmp').onclick=e=>{cmp=!cmp;e.currentTarget.setAttribute('aria-pressed',cmp);explain();};
+document.getElementById('spd').oninput=e=>speed=+e.target.value;
+
+/* ---------- live explanation ---------- */
+let stageKey='';
+function stage(){if(cur===0)return'start';if(cur>=run.tEnd)return'done';const s=at(cur);
+  if(run.M0>0)return s.A>A0*.15?'fastNow':'end';
+  if(cur<run.sStart)return'slow';if(cur<run.sFast)return'accel';if(s.A>A0*.15)return'decel';return'end';}
+function explain(){const k=stage()+mnAdded+cmp;if(k===stageKey)return;stageKey=k;const s=stage(),E=document.getElementById('explain');
+  const T={
+   start:['Ready','Press <b>Start</b>. Watch the purple colour and the shape of the graph.'],
+   slow:['Stage 1: slow start','There is no Mn²⁺ yet, so the only route is the direct reaction between MnO₄⁻ and C₂O₄²⁻. Both are negative ions, so they repel and the activation energy is high.'],
+   accel:['Stage 2: speeding up','Mn²⁺ is a product. As it forms, it catalyses the reaction, so the rate <b>increases</b> even though the reactant concentrations are falling. The graph gets steeper.'],
+   decel:['Stage 3: slowing down','There is now plenty of catalyst, but MnO₄⁻ is running out. The rate falls and the graph levels off.'],
+   fastNow:['Catalyst present from the start','Mn²⁺ was added at the start, so there is no slow stage. The rate is greatest at the start and then falls, like a normal reaction.'],
+   end:['Nearly finished','Almost all the MnO₄⁻ has reacted, so the solution is almost colourless.'],
+   done:['Reaction complete',mnAdded?'With Mn²⁺ added, the curve has the normal shape: steepest at the start.':'The [MnO₄⁻]–time curve is S-shaped: slow, then fast, then slow. That shape is the signature of autocatalysis.']};
+  const[t,p]=T[s];E.innerHTML=`<span class="stagebadge">${t}</span><p>${p}</p>${cmp?'<p style="font-size:.9rem;color:var(--muted)">Dashed line: a normal (not autocatalysed) reaction with the same half-life. It is steepest at the start, because rate depends only on the falling reactant concentration.</p>':''}${temp<45?'<div class="note">At this temperature the reaction is very slow. In practice the mixture is warmed to about 60 °C.</div>':''}`;}
+
+/* ---------- graphs ---------- */
+const gA=fit(document.getElementById('gA'),640,300),gR=fit(document.getElementById('gR'),640,200);
+const PAD={l:58,r:14,t:14,b:38};
+function axes(g,ymax,ylab,ticksY,fmt){const{ctx,W,H}=g;const X0=PAD.l,X1=W-PAD.r,Y0=H-PAD.b,Y1=PAD.t;
+  ctx.strokeStyle='#e2d7c6';ctx.lineWidth=1;const nx=6;
+  for(let i=0;i<=nx;i++){const x=X0+(X1-X0)*i/nx;ctx.beginPath();ctx.moveTo(x,Y0);ctx.lineTo(x,Y1);ctx.stroke();T(ctx,Math.round(run.tmax*i/nx),x,Y0+14,'#6f6256',11,400,'center');}
+  for(let i=0;i<=ticksY;i++){const y=Y0-(Y0-Y1)*i/ticksY;ctx.beginPath();ctx.moveTo(X0,y);ctx.lineTo(X1,y);ctx.stroke();T(ctx,fmt(ymax*i/ticksY),X0-6,y,'#6f6256',11,400,'right');}
+  ctx.strokeStyle='#6f6256';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(X0,Y1);ctx.lineTo(X0,Y0);ctx.lineTo(X1,Y0);ctx.stroke();
+  T(ctx,'time / s',(X0+X1)/2,H-8,'#6f6256',12,600,'center');
+  ctx.save();ctx.translate(14,(Y0+Y1)/2);ctx.rotate(-Math.PI/2);T(ctx,ylab,0,0,'#6f6256',12,600,'center');ctx.restore();
+  return{X:t=>X0+(X1-X0)*Math.min(t,run.tmax)/run.tmax,Y:v=>Y0-(Y0-Y1)*v/ymax,X0,X1,Y0,Y1};}
+function line(ctx,pts,X,Y,key,col,w,upto,dash){ctx.strokeStyle=col;ctx.lineWidth=w;ctx.setLineDash(dash||[]);ctx.beginPath();let first=true;
+  for(const p of pts){if(p.t>upto)break;const x=X(p.t),y=Y(p[key]);first?ctx.moveTo(x,y):ctx.lineTo(x,y);first=false;}ctx.stroke();ctx.setLineDash([]);}
+function drawGraphs(){
+  if(gA.cv.width){const{ctx,k}=gA;ctx.setTransform(k,0,0,k,0,0);ctx.fillStyle='#fffdf8';ctx.fillRect(0,0,640,300);
+    const a=axes(gA,2.0,'[MnO₄⁻] / 10⁻³ mol dm⁻³',4,v=>v.toFixed(1)),Ys=v=>a.Y(v*1000);
+    for(const pr of past){if(pr.run.tmax!==run.tmax)continue;line(ctx,pr.run.pts,a.X,Ys,'A',pr.col,2,1e9);}
+    if(cmp){const kk=Math.LN2/run.half,pts=[];for(let t=0;t<=run.tmax;t+=run.tmax/200)pts.push({t,A:A0*Math.exp(-kk*t)});line(ctx,pts,a.X,Ys,'A','#6f6256',2,1e9,[7,6]);}
+    line(ctx,run.pts,a.X,Ys,'A','#7b2d8e',3.5,cur);
+    const s=at(cur);ctx.fillStyle='#7b2d8e';ctx.beginPath();ctx.arc(a.X(cur),Ys(s.A),5,0,6.283);ctx.fill();
+    if(!mnAdded&&cur>=run.tEnd){const lab=(t,txt,dx,dy)=>{const p=at(t),x=a.X(t),y=Ys(p.A);ctx.strokeStyle='#c2410c';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+dx,y+dy);ctx.stroke();
+        ctx.font='700 12px system-ui,sans-serif';const w=ctx.measureText(txt).width+10;const bx=Math.min(Math.max(x+dx-(dx<0?w:0),a.X0+2),a.X1-w);ctx.fillStyle='rgba(255,253,248,.92)';ctx.fillRect(bx,y+dy-10,w,20);T(ctx,txt,bx+5,y+dy,'#c2410c',12,700);};
+      lab(run.sStart*.5,'slow: no catalyst yet',30,40);lab(run.sFast,'fast: Mn²⁺ catalysing',26,-6);lab(Math.min(run.sEnd*1.15,run.tEnd*.9),'slows: MnO₄⁻ running out',-30,-50);}
+    // legend
+    let ly=PAD.t+8;const L=(c,t,d)=>{ctx.strokeStyle=c;ctx.lineWidth=3;ctx.setLineDash(d||[]);ctx.beginPath();ctx.moveTo(470,ly);ctx.lineTo(494,ly);ctx.stroke();ctx.setLineDash([]);T(ctx,t,500,ly,'#33281f',11,600);ly+=16;};
+    L('#7b2d8e',run.label);past.filter(p=>p.run.tmax===run.tmax).forEach(p=>L(p.col,p.run.label));if(cmp)L('#6f6256','normal reaction',[7,6]);}
+  if(gR.cv.width){const{ctx,k}=gR;ctx.setTransform(k,0,0,k,0,0);ctx.fillStyle='#fffdf8';ctx.fillRect(0,0,640,200);
+    const rm=run.rmax*1e5*1.1,a=axes(gR,rm,'rate / 10⁻⁵',3,v=>v.toFixed(v<10?1:0)),Ys=v=>a.Y(v*1e5);
+    line(ctx,run.pts,a.X,Ys,'r','#c2410c',3,cur);const s=at(cur);ctx.fillStyle='#c2410c';ctx.beginPath();ctx.arc(a.X(cur),Ys(s.r),4.5,0,6.283);ctx.fill();
+    T(ctx,'mol dm⁻³ s⁻¹',a.X1,PAD.t+6,'#6f6256',11,400,'right');}
+}
+
+/* ---------- flask + particles ---------- */
+const FL=fit(document.getElementById('flask'),500,500);
+let parts=[],bubbles=[],flashes=[];
+const BOX={x0:120,x1:380,y0:250,y1:440};
+function inFlask(x,y){const top=250,bot=440;if(y<top||y>bot)return false;const half=40+(y-top)/(bot-top)*130;return Math.abs(x-250)<half-8;}
+function rndIn(){for(let i=0;i<200;i++){const x=110+Math.random()*280,y=255+Math.random()*180;if(inFlask(x,y))return[x,y];}return[250,400];}
+function initParticles(){parts=[];const add=(t,n)=>{for(let i=0;i<n;i++){const[x,y]=rndIn();parts.push({t,x,y,vx:(Math.random()-.5),vy:(Math.random()-.5)});}};
+  add('A',20);add('C',56);add('M',Math.round(run.M0/A0*20));bubbles=[];flashes=[];}
+function syncParticles(){const s=at(cur),wantA=Math.round(s.A/A0*20),haveA=parts.filter(p=>p.t==='A').length;
+  for(let i=0;i<haveA-wantA;i++){const As=parts.filter(p=>p.t==='A'),Ms=parts.filter(p=>p.t==='M');let pick=As[Math.floor(Math.random()*As.length)];
+    if(Ms.length){let best=1e9;for(const a of As){for(const m of Ms){const d=(a.x-m.x)**2+(a.y-m.y)**2;if(d<best){best=d;pick=a;}}}}
+    pick.t='M';flashes.push({x:pick.x,y:pick.y,t:0});
+    const Cs=parts.filter(p=>p.t==='C');const n=(parts.filter(p=>p.t==='A').length%2)?3:2;for(let j=0;j<n&&Cs.length;j++){const c=Cs.splice(Math.floor(Math.random()*Cs.length),1)[0];parts.splice(parts.indexOf(c),1);}}
+}
+function stepParticles(dt){for(const p of parts){p.vx+=(Math.random()-.5)*.4;p.vy+=(Math.random()-.5)*.4;p.vx*=.92;p.vy*=.92;const nx=p.x+p.vx*dt*60,ny=p.y+p.vy*dt*60;if(inFlask(nx,ny)){p.x=nx;p.y=ny;}else{p.vx*=-1;p.vy*=-1;}}
+  if(playing){const s=at(cur),n=s.r/run.rmax*dt*14;if(Math.random()<n)bubbles.push({x:250+(Math.random()-.5)*160,y:430,v:40+Math.random()*30,r:2+Math.random()*3});}
+  bubbles.forEach(b=>{b.y-=b.v*dt;b.x+=(Math.random()-.5)*.6;});bubbles=bubbles.filter(b=>b.y>255&&inFlask(b.x,b.y));
+  flashes.forEach(f=>f.t+=dt);flashes=flashes.filter(f=>f.t<.6);}
+function drawFlask(){const{ctx,k}=FL;if(!FL.cv.width)return;ctx.setTransform(k,0,0,k,0,0);ctx.fillStyle='#fffdf8';ctx.fillRect(0,0,500,500);
+  const s=at(cur),fA=s.A/A0;
+  // water bath
+  ctx.fillStyle='#e8f0f5';ctx.fillRect(40,300,420,170);ctx.strokeStyle='#b8c7d1';ctx.lineWidth=2;ctx.strokeRect(40,300,420,170);T(ctx,`water bath ${temp} °C`,452,318,'#5b7da0',13,600,'right');
+  // flask outline path
+  const path=()=>{ctx.beginPath();ctx.moveTo(225,60);ctx.lineTo(225,190);ctx.lineTo(85,445);ctx.quadraticCurveTo(80,458,95,458);ctx.lineTo(405,458);ctx.quadraticCurveTo(420,458,415,445);ctx.lineTo(275,190);ctx.lineTo(275,60);};
+  // liquid
+  ctx.save();path();ctx.clip();const mix=(a,b,t)=>a.map((v,i)=>Math.round(v*(1-t)+b[i]*t));const c=mix([248,236,240],[110,30,130],Math.pow(fA,.85));
+  ctx.fillStyle=`rgb(${c.join(',')})`;ctx.fillRect(0,250,500,220);ctx.fillStyle='rgba(255,255,255,.35)';ctx.fillRect(0,250,500,4);
+  for(const b of bubbles){ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,6.283);ctx.strokeStyle='rgba(255,255,255,.85)';ctx.lineWidth=1.3;ctx.stroke();}
+  ctx.restore();
+  ctx.strokeStyle='#8f8476';ctx.lineWidth=4;ctx.lineJoin='round';path();ctx.stroke();
+  // particle inset
+  const ix=300,iy=40,iw=180,ih=150;ctx.fillStyle='#fbf8f2';ctx.strokeStyle='#c2410c';ctx.lineWidth=2;ctx.fillRect(ix,iy,iw,ih);ctx.strokeRect(ix,iy,iw,ih);
+  ctx.beginPath();ctx.moveTo(ix,iy+ih);ctx.lineTo(262,330);ctx.setLineDash([4,4]);ctx.stroke();ctx.setLineDash([]);
+  T(ctx,'particle view',ix+6,iy+12,'#6f6256',11,700);
+  ctx.save();ctx.beginPath();ctx.rect(ix,iy,iw,ih);ctx.clip();
+  const map=p=>[ix+(p.x-90)/320*iw,iy+18+(p.y-250)/200*(ih-22)];
+  for(const p of parts){const[x,y]=map(p);ctx.beginPath();if(p.t==='A'){ctx.arc(x,y,5,0,6.283);ctx.fillStyle='#7b2d8e';}else if(p.t==='C'){ctx.arc(x,y,3,0,6.283);ctx.fillStyle='#6b7280';}else{ctx.arc(x,y,5,0,6.283);ctx.fillStyle='#e7a9c4';}ctx.fill();if(p.t==='M'){ctx.strokeStyle='#b46e8d';ctx.lineWidth=1;ctx.stroke();}}
+  for(const f of flashes){const[x,y]=map(f);ctx.beginPath();ctx.arc(x,y,5+f.t*20,0,6.283);ctx.strokeStyle=`rgba(194,65,12,${1-f.t/.6})`;ctx.lineWidth=2;ctx.stroke();}
+  ctx.restore();
+  T(ctx,fA>.5?'purple':fA>.06?'pale purple':'colourless',250,480,'#33281f',14,700,'center');
+}
+function readouts(){const s=at(cur);document.getElementById('rT').textContent=Math.round(cur)+' s';document.getElementById('rA').textContent=(s.A*1000).toFixed(2);document.getElementById('rM').textContent=(s.M*1000).toFixed(2);}
+
+/* =============== 2. collision animation =============== */
+const CO=fit(document.getElementById('coll'),640,300);let cMode='A',cT=0;
+const cTxt={A:'<span class="stagebadge">Uncatalysed</span><p>MnO₄⁻ and C₂O₄²⁻ are both negative. As they approach, they <b>repel</b>. Only the few collisions with very high energy succeed, so the activation energy is high and the reaction is slow.</p><p>This is why the reaction is slow at the start, before any Mn²⁺ has formed.</p>',
+ B:'<span class="stagebadge">Catalysed step 2</span><p>Mn³⁺ is positive and C₂O₄²⁻ is negative, so they <b>attract</b>. The activation energy is much lower.</p><p>C₂O₄²⁻ is oxidised to CO₂; Mn³⁺ is reduced back to Mn²⁺, ready to react again.</p>'};
+const cSet=m=>{cMode=m;cT=0;document.getElementById('cA').setAttribute('aria-pressed',m==='A');document.getElementById('cB').setAttribute('aria-pressed',m==='B');document.getElementById('collTxt').innerHTML=cTxt[m];};
+document.getElementById('cA').onclick=()=>cSet('A');document.getElementById('cB').onclick=()=>cSet('B');
+function ion(ctx,x,y,r,fill,txt,tc='#fff'){ctx.beginPath();ctx.arc(x,y,r,0,6.283);ctx.fillStyle=fill;ctx.fill();ctx.strokeStyle='rgba(0,0,0,.3)';ctx.lineWidth=1.5;ctx.stroke();T(ctx,txt,x,y,tc,r>30?15:13,700,'center');}
+function drawColl(dt){const{ctx,k}=CO;if(!CO.cv.width)return;cT+=dt;const L=4.2;if(cT>L)cT=0;ctx.setTransform(k,0,0,k,0,0);ctx.fillStyle='#fbf8f2';ctx.fillRect(0,0,640,300);
+  const t=cT;
+  if(cMode==='A'){let d;if(t<1.6)d=420-260*(t/1.6);else if(t<2.1)d=160+20*Math.sin((t-1.6)/.5*Math.PI);else d=160+260*Math.min(1,(t-2.1)/1.6);
+    const x1=320-d/2,x2=320+d/2;ion(ctx,x1,150,40,'#7b2d8e','MnO₄⁻');ion(ctx,x2,150,34,'#6b7280','C₂O₄²⁻');
+    if(t>1.2&&t<2.6){ctx.strokeStyle='#b91c1c';ctx.lineWidth=3;for(const s of[-1,1]){const x=s<0?x1-50:x2+50;ctx.beginPath();ctx.moveTo(x,150);ctx.lineTo(x+s*40,150);ctx.stroke();ctx.beginPath();ctx.moveTo(x+s*40,150);ctx.lineTo(x+s*30,143);ctx.lineTo(x+s*30,157);ctx.fillStyle='#b91c1c';ctx.fill();}
+      T(ctx,'repel',320,92,'#b91c1c',18,700,'center');}
+    T(ctx,'− and − : high activation energy',320,262,'#33281f',15,600,'center');}
+  else{let d=t<1.6?420-340*(t/1.6)*(t/1.6):80;const x1=320-d/2,x2=320+d/2;
+    if(t<1.8){ion(ctx,x1,150,30,'#c0392b','Mn³⁺');ion(ctx,x2,150,34,'#6b7280','C₂O₄²⁻');if(t>.6){ctx.strokeStyle='#15803d';ctx.lineWidth=3;ctx.setLineDash([6,5]);ctx.beginPath();ctx.moveTo(x1+34,150);ctx.lineTo(x2-38,150);ctx.stroke();ctx.setLineDash([]);T(ctx,'attract',320,96,'#15803d',18,700,'center');}}
+    else{const u=Math.min(1,(t-1.8)/1.6);ion(ctx,280-u*120,150,26,'#e7a9c4','Mn²⁺','#5a2a40');ion(ctx,370+u*110,120-u*40,20,'#9aa1a8','CO₂','#222');ion(ctx,370+u*150,180+u*40,20,'#9aa1a8','CO₂','#222');
+      if(t<2.3){ctx.beginPath();ctx.arc(320,150,30+(t-1.8)*120,0,6.283);ctx.strokeStyle=`rgba(194,65,12,${1-(t-1.8)/.5})`;ctx.lineWidth=3;ctx.stroke();}}
+    T(ctx,'+ and − : low activation energy',320,262,'#33281f',15,600,'center');}
+}
+
+/* ---------- cycle svg ---------- */
+const cyc=document.getElementById('cycle');
+cyc.innerHTML=`<defs><marker id="ah" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#7b4a26"/></marker></defs>
+ <path id="arcTop" d="M150,170 C150,40 370,40 370,170" fill="none" stroke="#7b4a26" stroke-width="4" marker-end="url(#ah)"/>
+ <path id="arcBot" d="M370,170 C370,300 150,300 150,170" fill="none" stroke="#7b4a26" stroke-width="4" marker-end="url(#ah)"/>
+ <circle cx="150" cy="170" r="44" fill="#e7a9c4" stroke="#b46e8d" stroke-width="2"/><text x="150" y="176" text-anchor="middle" font-size="22" font-weight="700" fill="#5a2a40">Mn²⁺</text>
+ <circle cx="370" cy="170" r="44" fill="#c0392b" stroke="#8e2a1f" stroke-width="2"/><text x="370" y="176" text-anchor="middle" font-size="22" font-weight="700" fill="#fff">Mn³⁺</text>
+ <g id="cyc1"><text x="260" y="18" text-anchor="middle" font-size="15" font-weight="700" fill="#7b2d8e">MnO₄⁻ + H⁺ in</text><text x="260" y="38" text-anchor="middle" font-size="13" fill="#6f6256">step 1: oxidation of Mn²⁺</text><text x="260" y="98" text-anchor="middle" font-size="13" fill="#6f6256">H₂O out</text></g>
+ <g id="cyc2"><text x="260" y="300" text-anchor="middle" font-size="15" font-weight="700" fill="#4b5563">C₂O₄²⁻ in → 2CO₂ out</text><text x="260" y="320" text-anchor="middle" font-size="13" fill="#6f6256">step 2: reduction of Mn³⁺</text></g>
+ <text x="40" y="250" font-size="13" fill="#6f6256">+2</text><text x="455" y="250" font-size="13" fill="#6f6256">+3</text>
+ <circle id="dot" r="9" fill="#c2410c" opacity="0"/>`;
+let step=0,dotT=0;
+function setStep(s){step=s;dotT=0;document.querySelectorAll('#steps li').forEach(li=>li.classList.toggle('on',+li.dataset.s===s||(s===3)));
+  document.getElementById('cyc1').style.opacity=s===0||s===1||s===3?1:.3;document.getElementById('cyc2').style.opacity=s===0||s===2||s===3?1:.3;
+  document.getElementById('stepNext').disabled=s>=3;}
+document.getElementById('stepNext').onclick=()=>setStep(Math.min(3,step+1));document.getElementById('stepReset').onclick=()=>setStep(0);
+function animDot(dt){const dot=document.getElementById('dot');if(!step||document.querySelector('[data-tab=how]').hidden){dot.setAttribute('opacity',0);return;}
+  dotT+=dt/(reduce?.001:1.8);let u=dotT%(step===3?2:1);let path,f;if(step===1){path='arcTop';f=Math.min(1,dotT);}else if(step===2){path='arcBot';f=Math.min(1,dotT);}else{path=u<1?'arcTop':'arcBot';f=u<1?u:u-1;}
+  const el=document.getElementById(path),p=el.getPointAtLength(el.getTotalLength()*f);dot.setAttribute('cx',p.x);dot.setAttribute('cy',p.y);dot.setAttribute('opacity',1);}
+
+/* ---------- energy profile ---------- */
+(function(){const s=document.getElementById('profile');const R=210,P=250,y0=300;
+  s.innerHTML=`<line x1="60" y1="20" x2="60" y2="${y0}" stroke="#6f6256" stroke-width="2"/><line x1="60" y1="${y0}" x2="740" y2="${y0}" stroke="#6f6256" stroke-width="2"/>
+  <text x="24" y="160" transform="rotate(-90 24 160)" text-anchor="middle" font-size="14" font-weight="700" fill="#6f6256">Energy</text>
+  <text x="400" y="322" text-anchor="middle" font-size="14" font-weight="700" fill="#6f6256">Progress of reaction</text>
+  <path d="M80,${R} L170,${R} C260,${R} 300,40 390,40 C480,40 520,${P} 610,${P} L720,${P}" fill="none" stroke="#7b2d8e" stroke-width="4"/>
+  <path d="M80,${R} L170,${R} C215,${R} 225,130 260,130 C300,130 305,175 350,175 C395,175 410,148 450,148 C495,148 530,${P} 610,${P} L720,${P}" fill="none" stroke="#c2410c" stroke-width="4" stroke-dasharray="10 7"/>
+  <line x1="390" y1="${R}" x2="390" y2="48" stroke="#7b2d8e" stroke-width="2" marker-end="url(#ah2)"/><line x1="170" y1="${R}" x2="400" y2="${R}" stroke="#7b2d8e" stroke-width="1" stroke-dasharray="3 4"/>
+  <text x="400" y="108" font-size="16" font-weight="700" fill="#7b2d8e">Eₐ</text><text x="400" y="126" font-size="13" font-weight="700" fill="#7b2d8e">uncatalysed</text>
+  <line x1="260" y1="${R}" x2="260" y2="138" stroke="#c2410c" stroke-width="2" marker-end="url(#ah3)"/><text x="260" y="252" text-anchor="middle" font-size="13" font-weight="700" fill="#c2410c">Eₐ step 1</text>
+  <text x="350" y="162" text-anchor="middle" font-size="13" font-weight="700" fill="#6f6256">Mn³⁺</text>
+  <text x="70" y="${R+24}" font-size="13" fill="#33281f">2MnO₄⁻ + 5C₂O₄²⁻ + 16H⁺</text><text x="610" y="${P-12}" font-size="13" fill="#33281f">2Mn²⁺ + 10CO₂ + 8H₂O</text>
+  <g font-size="13" font-weight="600"><line x1="520" y1="40" x2="550" y2="40" stroke="#7b2d8e" stroke-width="4"/><text x="556" y="44" fill="#33281f">uncatalysed</text>
+  <line x1="520" y1="64" x2="550" y2="64" stroke="#c2410c" stroke-width="4" stroke-dasharray="10 7"/><text x="556" y="68" fill="#33281f">catalysed by Mn²⁺</text></g>
+  <defs><marker id="ah2" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#7b2d8e"/></marker>
+  <marker id="ah3" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#c2410c"/></marker></defs>`;})();
+
+/* =============== 3. quiz =============== */
+const QS=[
+ {q:'What is meant by autocatalysis?',o:['A product of the reaction acts as a catalyst for the reaction','The catalyst is used up and has to be replaced','The reaction catalyses a different reaction','A catalyst that works without heating'],x:'Here Mn^{2+} is a product, and it catalyses the reaction that makes it.'},
+ {q:'Which species is the autocatalyst in the reaction between MnO_4^{-} and C_2O_4^{2-}?',o:['Mn^{2+}','MnO_4^{-}','Mn^{3+}','H^{+}'],x:'Mn^{3+} is an intermediate; Mn^{2+} is the catalyst and a product.'},
+ {q:'Why is the reaction slow at the start?',o:['Both reactants are negative ions, so they repel and E_a is high','The concentration of MnO_4^{-} is too low','Mn^{2+} is used up','The temperature falls as the reaction starts'],x:'Collisions between two negative ions need a lot of energy.'},
+ {q:'What shape is the [MnO_4^{-}]–time graph without added Mn^{2+}?',o:['S-shaped: slow fall, then steep, then levels off','Steepest at the start, then levels off','A straight line','Rises, then falls'],x:'Slow at first (no catalyst), fast once Mn^{2+} builds up, then slow as MnO_4^{-} runs out.'},
+ {q:'Which equation is step 1 of the catalysed route?',o:['4Mn^{2+} + MnO_4^{-} + 8H^{+} → 5Mn^{3+} + 4H_2O','2Mn^{3+} + C_2O_4^{2-} → 2Mn^{2+} + 2CO_2','Mn^{2+} + C_2O_4^{2-} → Mn + 2CO_2','MnO_4^{-} + C_2O_4^{2-} → Mn^{2+} + 2CO_2'],x:'Mn^{2+} is oxidised to Mn^{3+} by MnO_4^{-}. Step 2 then reduces Mn^{3+} back to Mn^{2+}.'},
+ {q:'Why can manganese ions act as a catalyst here?',o:['Manganese has variable oxidation states','Manganese ions are coloured','Mn^{2+} forms a precipitate','Mn^{2+} is a strong oxidising agent'],x:'Mn switches between +2 and +3, giving an alternative route with lower E_a.'},
+ {q:'What happens if MnSO_4 is added at the start?',o:['There is no slow stage; the rate is fastest at the start','The reaction stops','The slow stage gets longer','The final amount of CO_2 increases'],x:'The catalyst is already present, so the curve looks like a normal reaction.'},
+ {q:'How could the rate of this reaction be followed?',o:['Colorimetry: measure the absorbance of purple MnO_4^{-}','Measure the pH only','Weigh the precipitate','Measure the conductivity of CO_2'],x:'Absorbance is proportional to [MnO_4^{-}]. Collecting CO_2 would also work.'},
+ {q:'Is Mn^{2+} a homogeneous or heterogeneous catalyst here?',o:['Homogeneous','Heterogeneous','Neither: it is a reactant','Both'],x:'Catalyst and reactants are all in aqueous solution.'}
+];
+function quiz(){const el=document.getElementById('quiz');let score=0;
+  el.innerHTML=`<div class="qhead"><h3>Autocatalysis quiz</h3><span class="qscore">Score: <b>0</b> / ${QS.length}</span><button class="btn" type="button">Start again</button></div>
+   <ol class="qlist">${QS.map((q,i)=>{const o=q.o.map((t,j)=>({t,ok:j===0})).sort(()=>Math.random()-.5);
+     return `<li class="q"><p class="qp"><span class="qn">Q${i+1}</span>${F(q.q)}</p><div class="opts">${o.map(x=>`<button class="opt" type="button" data-ok="${x.ok?1:0}">${F(x.t)}</button>`).join('')}</div><p class="qx" hidden></p></li>`;}).join('')}</ol>`;
+  el.querySelector('.qhead .btn').onclick=quiz;
+  el.querySelectorAll('.q').forEach((li,i)=>li.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const ok=b.dataset.ok==='1';
+    li.querySelectorAll('.opt').forEach(x=>{x.disabled=true;if(x.dataset.ok==='1')x.classList.add('right');});if(!ok)b.classList.add('wrong');else score++;
+    const x=li.querySelector('.qx');x.hidden=false;x.innerHTML=`<b class="${ok?'ok':'no'}">${ok?'Correct.':'Not quite.'}</b> ${F(QS[i].x)}`;el.querySelector('.qscore b').textContent=score;}));}
+
+/* =============== start =============== */
+reset(false);cSet('A');setStep(0);quiz();
+(function(){let k=(location.hash||'').slice(1);if(!TABS.some(t=>t[0]===k)){try{k=localStorage.getItem('auto-tab')||'';}catch(e){k='';}}if(!TABS.some(t=>t[0]===k))k='sim';showTab(k);})();
+let last=performance.now();
+function loop(t){const dt=Math.min(.05,(t-last)/1000);last=t;
+  if(playing){cur=Math.min(run.tEnd,cur+dt*speed*run.tmax/200);syncParticles();if(cur>=run.tEnd){playing=false;setGo();}explain();readouts();}
+  stepParticles(dt);drawFlask();drawGraphs();drawColl(dt);animDot(dt);requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
+</script>
+
+</body></html>

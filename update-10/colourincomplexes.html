@@ -1,0 +1,302 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Why Complexes Are Coloured</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: header + "what changes" tabs → dark optical bench (lamp → cuvette → screen) → energy level diagram | absorption spectrum + info */
+:root{
+  --bg:#f6f2ea; --panel:#fffdf8; --stage:#fbf8f2; --ink:#33281f; --muted:#6f6256; --line:#e2d7c6;
+  --accent:#7b4a26; --accent-ink:#fff; --bench:#1f1a16; --bench-ink:#efe6da; --soft:#f3e7da; --coord:#c2410c;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --eqf:"Cambria Math",Cambria,Georgia,serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px 44px}
+.wrap{max-width:1240px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+h1{font-family:var(--serif);font-weight:600;font-size:clamp(1.6rem,2.8vw,2.2rem);margin:0;line-height:1.15;text-wrap:balance}
+.sub{color:var(--muted);margin:4px 0 0;max-width:72ch}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;border-bottom:2px solid var(--line)}
+.tab{font:inherit;font-weight:700;padding:8px 14px;border:none;background:none;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px}
+.tab[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
+.grpbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.grpbar .intro{color:var(--muted);flex-basis:100%;margin:0}
+.chip{font-family:var(--eqf);font-size:1.15rem;padding:6px 14px;border-radius:999px;border:1.5px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.slider{display:flex;align-items:center;gap:10px;font-weight:600}
+.slider input{width:min(320px,60vw)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--coord);outline-offset:2px}
+.bench{position:relative;width:100%;aspect-ratio:1200/340;max-width:100%;background:var(--bench);border-radius:12px;overflow:hidden}
+.bench canvas,.card canvas{display:block;width:100%;height:100%}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{font:inherit;font-weight:600;padding:8px 14px;border-radius:8px;border:1.5px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.spacer{flex:1}
+.rate{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:.9rem}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:16px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:1fr}}
+.col{display:flex;flex-direction:column;gap:16px;min-width:0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;min-width:0}
+.card h2{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
+.cv-diag{aspect-ratio:560/440;width:100%;max-width:100%}
+.cv-spec{aspect-ratio:600/270;width:100%;max-width:100%}
+.panel h3{font-family:var(--eqf);font-size:1.5rem;margin:0 0 8px;font-weight:700}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;margin:0;font-variant-numeric:tabular-nums}
+.kv dt{color:var(--muted)} .kv dd{margin:0;font-weight:700}
+.obs{display:flex;gap:14px;align-items:center;margin:12px 0}
+.obs i{width:54px;height:72px;border-radius:0 0 14px 14px;border:2px solid #b9ae9f;border-top:none;display:block;flex:none;transition:background .4s}
+.obs b{display:block;font-size:1.1rem}
+.why{margin:0 0 10px}
+.calc{font-family:var(--eqf);font-size:1.05rem;background:var(--stage);border:1px solid var(--line);border-radius:8px;padding:8px 12px;overflow-x:auto;white-space:nowrap}
+.note{font-size:.9rem;border-left:4px solid #9a9087;padding:8px 12px;background:var(--stage);border-radius:0 8px 8px 0;margin-top:10px}
+.steps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Why are transition metal complexes coloured?</h1>
+    <p class="sub">White light shines through a solution of the complex. Photons whose energy matches the gap between the split d orbitals are absorbed. The rest reach the screen, and that mix is the colour we see.</p>
+  </header>
+
+  <div class="tabs" id="tabs" role="tablist"></div>
+  <div class="grpbar" id="grpbar"></div>
+
+  <div class="bench"><canvas id="beam" aria-label="Photons passing from a white light source through the solution to a screen"></canvas></div>
+  <div class="controls">
+    <button class="btn primary" id="split" type="button">Add ligands: split the d orbitals</button>
+    <button class="btn" id="play" type="button">Pause photons ❚❚</button>
+    <button class="btn" id="clear" type="button">Clear screen</button>
+    <span class="spacer"></span>
+    <label class="rate" for="rate">Photon rate <input id="rate" type="range" min="1" max="10" value="5"></label>
+  </div>
+
+  <div class="grid">
+    <div class="col">
+      <div class="card"><h2>d-orbital energy levels</h2><div class="cv-diag"><canvas id="diag" aria-label="Energy level diagram of the d orbitals"></canvas></div></div>
+      <div class="card">
+        <h2>How it works</h2>
+        <ol class="steps">
+          <li>In the free ion, all five 3d orbitals have the same energy.</li>
+          <li>Ligands bond to the ion and split the d orbitals into two energy levels.</li>
+          <li>A photon is absorbed when its energy equals the gap: ΔE = hν = hc/λ. An electron is promoted to the higher level.</li>
+          <li>The photons that aren’t absorbed are transmitted. We see the colour of the transmitted light.</li>
+        </ol>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card"><h2>Absorption spectrum</h2><div class="cv-spec"><canvas id="spec" aria-label="Absorption spectrum"></canvas></div></div>
+      <div class="card panel" id="info" aria-live="polite"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const F=s=>s.replace(/\^\{([^}]+)\}/g,(m,a)=>'<sup>'+a.replace(/-/g,'−')+'</sup>').replace(/_(\d+)/g,'<sub>$1</sub>');
+const plain=s=>s.replace(/\^\{([^}]+)\}/g,(m,a)=>a.replace(/2/g,'²').replace(/3/g,'³').replace(/4/g,'⁴').replace(/\+/g,'⁺').replace(/-/g,'⁻')).replace(/_(\d)/g,(m,a)=>'₀₁₂₃₄₅₆₇₈₉'[a]);
+
+/* ---------- data ---------- */
+const P={
+ cu_aq:{f:'[Cu(H_2O)_6]^{2+}',ion:'Cu^{2+}',d:9,geo:'oct',lig:'H_2O',lam:800,A:2.6,col:'Pale blue',
+  why:'Water ligands split the d orbitals by a fairly small amount. The absorption peak is in the infrared at about 800 nm, but its tail absorbs red light, so the solution looks pale blue.'},
+ cu_nh3:{f:'[Cu(NH_3)_4(H_2O)_2]^{2+}',ion:'Cu^{2+}',d:9,geo:'oct',lig:'NH_3 (and 2 H_2O)',lam:600,A:1.6,col:'Deep blue',
+  why:'NH_3 ligands split the d orbitals more than H_2O. ΔE is bigger, so a shorter wavelength (orange, about 600 nm) is absorbed and the solution looks deep blue.'},
+ cr2:{f:'[Cr(H_2O)_6]^{2+}',ion:'Cr^{2+} (+2)',d:4,geo:'oct',lig:'H_2O',lam:710,A:1.1,col:'Sky blue',
+  why:'Chromium in the +2 state. The smaller charge on the ion gives a smaller splitting, so red light near 710 nm is absorbed and it looks sky blue.'},
+ cr3:{f:'[Cr(H_2O)_6]^{3+}',ion:'Cr^{3+} (+3)',d:3,geo:'oct',lig:'H_2O',lam:575,A:1.2,col:'Violet',
+  why:'Chromium in the +3 state. The higher charge attracts the ligands more strongly and splits the d orbitals more. ΔE is bigger, so yellow-green light (about 575 nm) is absorbed and it looks violet.',
+  note:'Solutions of chromium(III) salts often look green, because ions such as Cl⁻ or SO₄²⁻ replace some of the water ligands.'},
+ co_aq:{f:'[Co(H_2O)_6]^{2+}',ion:'Co^{2+}',d:7,geo:'oct',lig:'H_2O',lam:515,A:0.55,col:'Pink',
+  why:'Octahedral, co-ordination number 6. Green light (about 515 nm) is absorbed, so the solution looks pink.'},
+ co_cl:{f:'[CoCl_4]^{2-}',ion:'Co^{2+}',d:7,geo:'tet',lig:'Cl^{-}',lam:690,A:1.9,col:'Blue',
+  why:'Tetrahedral, co-ordination number 4. With fewer ligands the d orbitals split less, and the pattern flips: two lower, three upper. ΔE is smaller, so red light (about 690 nm) is absorbed and it looks blue.'},
+ free:{f:'Cu^{2+} (free ion)',ion:'Cu^{2+}',d:9,geo:'free',lig:'none',lam:800,A:1.0,col:'Colourless',
+  why:'With no ligands, all five d orbitals have the same energy. There is no gap for a photon to match, so no visible light is absorbed.'},
+ zn:{f:'[Zn(H_2O)_6]^{2+}',ion:'Zn^{2+}',d:10,geo:'oct',lig:'H_2O',lam:480,A:0,col:'Colourless',
+  why:'Zn²⁺ is 3d¹⁰. The d orbitals are split, but the upper level is already full, so no electron can be promoted. Nothing is absorbed.'},
+ sc:{f:'[Sc(H_2O)_6]^{3+}',ion:'Sc^{3+}',d:0,geo:'oct',lig:'H_2O',lam:480,A:0,col:'Colourless',
+  why:'Sc³⁺ is 3d⁰. There are no d electrons to promote, so nothing is absorbed.'},
+ ti:{f:'[Ti(H_2O)_6]^{3+}',ion:'Ti^{3+}',d:1,geo:'oct',lig:'H_2O (or imagine others)',lam:500,A:1.3,col:'',
+  why:'One d electron. Drag the slider to change ΔE, as a different ligand, charge or shape would. Watch which photons are absorbed and what reaches the screen.'}
+};
+const G=[
+ {k:'lig',t:'Change the ligand',items:['cu_aq','cu_nh3'],intro:'Same metal, same oxidation state, same shape. Only the ligand changes.'},
+ {k:'ox',t:'Change the oxidation state',items:['cr2','cr3'],intro:'Same metal and ligand. Only the charge on the metal ion changes.'},
+ {k:'cn',t:'Change the co-ordination number',items:['co_aq','co_cl'],intro:'Same Co²⁺ ion. Six ligands (octahedral) or four (tetrahedral).'},
+ {k:'none',t:'Colourless examples',items:['free','sc','zn'],intro:'Three reasons why no visible light is absorbed.'},
+ {k:'exp',t:'Explore ΔE',items:['ti'],intro:'Set the energy gap yourself.'}
+];
+let grp=G[0],key='cu_aq',cur=P[key];
+let s=0,sTarget=0;            // 0 = free ion, 1 = split
+let playing=true,rate=5;
+
+/* ---------- light & colour ---------- */
+function wl2rgb(l){let r=0,g=0,b=0;
+  if(l<440){r=-(l-440)/60;b=1}else if(l<490){g=(l-440)/50;b=1}else if(l<510){g=1;b=-(l-510)/20}
+  else if(l<580){r=(l-510)/70;g=1}else if(l<645){r=1;g=-(l-645)/65}else r=1;
+  let f=l<420?.3+.7*(l-380)/40:l>700?.3+.7*(780-l)/80:1;f=Math.max(0,f);
+  return[r,g,b].map(c=>Math.pow(c*f,.8));}
+const SAMP=[];for(let l=390;l<=700;l+=5)SAMP.push([l,wl2rgb(l)]);
+const WREF=[0,1,2].map(i=>SAMP.reduce((a,x)=>a+x[1][i],0)/SAMP.length);
+const SIG=65;
+const canAbs=()=>cur.d>0&&cur.d<10&&cur.A>0&&cur.geo!=='free'&&s>0.01;
+const lamEff=()=>cur.lam/Math.max(s,.02);
+const absorb=l=>canAbs()?cur.A*Math.exp(-((l-lamEff())**2)/(2*SIG*SIG)):0;
+const trans=l=>Math.pow(10,-absorb(l));
+function obsColour(){const c=[0,1,2].map(i=>SAMP.reduce((a,x)=>a+trans(x[0])*x[1][i],0)/SAMP.reduce((a,x)=>a+x[1][i],0));return c;}
+const css=c=>`rgb(${c.map(v=>Math.round(Math.min(1,Math.max(0,v))*255)).join(',')})`;
+const regionName=l=>l<450?'violet':l<495?'blue':l<570?'green':l<590?'yellow':l<620?'orange':l<750?'red':'infrared (tail in the red)';
+const kJ=l=>119627/l;
+
+/* ---------- canvases ---------- */
+function setupCv(id,W,H){const cv=document.getElementById(id),ctx=cv.getContext('2d');const o={cv,ctx,W,H,k:1};
+  new ResizeObserver(()=>{const r=cv.getBoundingClientRect(),d=Math.min(2,devicePixelRatio||1);cv.width=Math.round(r.width*d);cv.height=Math.round(r.height*d);o.k=cv.width/W;}).observe(cv);return o;}
+const B=setupCv('beam',1200,340),D=setupCv('diag',560,440),S=setupCv('spec',600,270);
+
+/* ---------- photons ---------- */
+let photons=[],bursts=[],sparks=[],marks=[],spawnAcc=0;
+let sum=[0,0,0],emit=0;
+const CUV={x0:520,x1:680,y0:70,y1:280},SCR=1110;
+function spawn(){const l=400+Math.random()*300;photons.push({x:120,y:110+Math.random()*130,l,c:wl2rgb(l),done:false});emit+=1;}
+function stepBeam(dt){
+  const decay=Math.pow(.8,dt);sum=sum.map(v=>v*decay);emit*=decay;
+  if(playing){spawnAcc+=rate*dt*10;while(spawnAcc>=1){spawn();spawnAcc--;}}
+  for(const p of photons){p.x+=420*dt;
+    if(!p.done&&p.x>=(CUV.x0+CUV.x1)/2){p.done=true;if(Math.random()<1-trans(p.l)){p.dead=true;bursts.push({x:p.x,y:p.y,c:p.c,t:0});marks.push({l:p.l,t:0});excite(p);}}
+    if(!p.dead&&p.x>=SCR){p.dead=true;for(let i=0;i<3;i++)sum[i]+=p.c[i];sparks.push({y:p.y,c:p.c,t:0});}}
+  photons=photons.filter(p=>!p.dead);
+  bursts.forEach(b=>b.t+=dt);bursts=bursts.filter(b=>b.t<.5);
+  sparks.forEach(b=>b.t+=dt);sparks=sparks.filter(b=>b.t<.6);
+  marks.forEach(b=>b.t+=dt);marks=marks.filter(b=>b.t<2.5);
+}
+function screenColour(){if(emit<.5)return[0,0,0];return[0,1,2].map(i=>sum[i]/(emit*WREF[i]));}
+function drawBeam(){const{ctx,k}=B;ctx.setTransform(k,0,0,k,0,0);ctx.fillStyle='#1f1a16';ctx.fillRect(0,0,1200,340);
+  // bench rail
+  ctx.fillStyle='#2c251f';ctx.fillRect(0,300,1200,40);
+  // lamp
+  const lg=ctx.createRadialGradient(70,175,4,70,175,60);lg.addColorStop(0,'rgba(255,255,245,1)');lg.addColorStop(.4,'rgba(255,250,230,.55)');lg.addColorStop(1,'rgba(255,250,230,0)');
+  ctx.fillStyle=lg;ctx.beginPath();ctx.arc(70,175,60,0,6.283);ctx.fill();ctx.fillStyle='#fffdf0';ctx.beginPath();ctx.arc(70,175,18,0,6.283);ctx.fill();
+  ctx.fillStyle='#5a5047';ctx.fillRect(58,196,24,50);
+  txt(ctx,'White light',70,275,'#efe6da',15,'center',600);txt(ctx,'all visible wavelengths',70,293,'#a99c8d',12,'center');
+  // cuvette
+  const oc=obsColour(),cv=CUV;
+  ctx.fillStyle=`rgba(${oc.map(v=>Math.round(v*255)).join(',')},${canAbs()?.9:.12})`;ctx.fillRect(cv.x0+6,cv.y0+30,cv.x1-cv.x0-12,cv.y1-cv.y0-36);
+  ctx.strokeStyle='rgba(230,225,215,.75)';ctx.lineWidth=3;ctx.strokeRect(cv.x0,cv.y0,cv.x1-cv.x0,cv.y1-cv.y0);
+  txt(ctx,plain(cur.f),(cv.x0+cv.x1)/2,cv.y1+24,'#efe6da',16,'center',700);
+  txt(ctx,cur.geo==='free'?'no ligands':'solution of the complex',(cv.x0+cv.x1)/2,cv.y0-12,'#a99c8d',12,'center');
+  // photons as wave packets
+  for(const p of photons){const per=p.l/40,c=css(p.c);ctx.strokeStyle=c;ctx.lineWidth=2.4;ctx.beginPath();
+    for(let dx=-34;dx<=0;dx+=1.5){const env=Math.sin(Math.PI*(dx+34)/34),y=p.y+6*env*Math.sin(2*Math.PI*(p.x+dx)/per);dx===-34?ctx.moveTo(p.x+dx,y):ctx.lineTo(p.x+dx,y);}ctx.stroke();
+    ctx.fillStyle=c;ctx.beginPath();ctx.arc(p.x,p.y,3,0,6.283);ctx.fill();}
+  for(const b of bursts){const a=1-b.t/.5;ctx.strokeStyle=css(b.c);ctx.globalAlpha=a;ctx.lineWidth=2;ctx.beginPath();ctx.arc(b.x,b.y,4+b.t*40,0,6.283);ctx.stroke();ctx.globalAlpha=1;}
+  // screen
+  const sc=screenColour();ctx.fillStyle='#0d0b09';ctx.fillRect(SCR,40,40,250);
+  ctx.fillStyle=css(sc);ctx.globalAlpha=.95;ctx.fillRect(SCR,40,40,250);ctx.globalAlpha=1;
+  for(const h of sparks){ctx.globalAlpha=1-h.t/.6;ctx.fillStyle=css(h.c);ctx.beginPath();ctx.arc(SCR,h.y,5,0,6.283);ctx.fill();}ctx.globalAlpha=1;
+  ctx.strokeStyle='#8f8476';ctx.lineWidth=2;ctx.strokeRect(SCR,40,40,250);
+  txt(ctx,'Screen',SCR+20,312,'#efe6da',15,'center',600);txt(ctx,'colour we see',SCR+20,330,'#a99c8d',12,'center');
+  txt(ctx,'absorbed photons stop here',(cv.x0+cv.x1)/2,cv.y1+44,'#a99c8d',12,'center');
+  txt(ctx,'transmitted photons →',890,60,'#a99c8d',12,'center');
+}
+function txt(ctx,t,x,y,c,sz,al='left',w=400){ctx.fillStyle=c;ctx.font=`${w} ${sz}px system-ui,sans-serif`;ctx.textAlign=al;ctx.textBaseline='alphabetic';ctx.fillText(t,x,y);}
+
+/* ---------- energy diagram ---------- */
+let exc=null;const SUPD=['⁰','¹','²','³','⁴','⁵','⁶','⁷','⁸','⁹','¹⁰'];
+const occ=()=>{const o=[0,0,0,0,0],d=cur.d;for(let i=0;i<Math.min(d,5);i++)o[i]=1;for(let j=0;j<d-5;j++)o[j]=2;return o;};
+const groups=()=>cur.geo==='tet'?{L:[0,1],U:[2,3,4],drop:.6,rise:.4}:{L:[0,1,2],U:[3,4],drop:.4,rise:.6};
+const ease=t=>t<.5?2*t*t:1-(-2*t+2)**2/2;
+function orbPos(i){const yc=245,cx=300,sp=72,e=ease(s);const free={x:cx+(i-2)*sp,y:yc};
+  if(cur.geo==='free')return free;const g=groups(),dpx=kJ(cur.lam)*.62,inL=g.L.includes(i),grpA=inL?g.L:g.U,k=grpA.indexOf(i);
+  const tx=cx+(k-(grpA.length-1)/2)*sp,ty=inL?yc+g.drop*dpx:yc-g.rise*dpx;return{x:free.x+(tx-free.x)*e,y:free.y+(ty-free.y)*e};}
+function excite(p){if(exc||!canAbs())return;const o=occ(),g=groups();
+  const from=[...g.L].reverse().find(i=>o[i]===2)??[...g.L].reverse().find(i=>o[i]>0),to=g.U.find(i=>o[i]<2);if(from==null||to==null)return;
+  exc={from,to,c:p.c,l:p.l,t:0,toDown:o[to]===1,fromDown:o[from]===2};}
+function arrow(ctx,x,y,up,col){const h=26;ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=2.6;ctx.beginPath();
+  if(up){ctx.moveTo(x,y+h/2);ctx.lineTo(x,y-h/2);ctx.stroke();ctx.beginPath();ctx.moveTo(x,y-h/2);ctx.lineTo(x-6,y-h/2+8);ctx.lineTo(x,y-h/2+6);ctx.fill();}
+  else{ctx.moveTo(x,y-h/2);ctx.lineTo(x,y+h/2);ctx.stroke();ctx.beginPath();ctx.moveTo(x,y+h/2);ctx.lineTo(x+6,y+h/2-8);ctx.lineTo(x,y+h/2-6);ctx.fill();}}
+function drawDiag(dt){const{ctx,k}=D;ctx.setTransform(k,0,0,k,0,0);ctx.fillStyle='#fffdf8';ctx.fillRect(0,0,560,440);
+  // axis
+  ctx.strokeStyle='#6f6256';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(40,410);ctx.lineTo(40,30);ctx.stroke();ctx.beginPath();ctx.moveTo(40,24);ctx.lineTo(34,38);ctx.lineTo(46,38);ctx.fillStyle='#6f6256';ctx.fill();
+  ctx.save();ctx.translate(26,230);ctx.rotate(-Math.PI/2);txt(ctx,'Energy',0,0,'#6f6256',14,'center',700);ctx.restore();
+  const o=occ();if(exc){exc.t+=dt;if(exc.t>1.25)exc=null;}
+  const pos=[0,1,2,3,4].map(orbPos);
+  if(exc){if(exc.t<.95)o[exc.from]--;if(exc.t>=.35&&exc.t<.95)o[exc.to]++;}
+  pos.forEach((p,i)=>{ctx.strokeStyle='#33281f';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(p.x-26,p.y+18);ctx.lineTo(p.x+26,p.y+18);ctx.stroke();
+    if(o[i]>=1)arrow(ctx,p.x-8,p.y,true,'#33281f');if(o[i]>=2)arrow(ctx,p.x+8,p.y,false,'#33281f');});
+  if(exc&&exc.t<.95){const A=pos[exc.from],Bp=pos[exc.to],u=Math.min(1,exc.t/.35),ret=exc.t>.65?Math.min(1,(exc.t-.65)/.3):0,f=ease(u)*(1-ease(ret));
+    const ex=(exc.fromDown?A.x+8:A.x-8)+((exc.toDown?Bp.x+8:Bp.x-8)-(exc.fromDown?A.x+8:A.x-8))*f,ey=A.y+(Bp.y-A.y)*f;
+    ctx.shadowColor=css(exc.c);ctx.shadowBlur=14;arrow(ctx,ex,ey,!(exc.fromDown&&f<.5||exc.toDown&&f>=.5),'#c2410c');ctx.shadowBlur=0;
+    if(exc.t<.4){ctx.strokeStyle=css(exc.c);ctx.lineWidth=3;ctx.beginPath();const x1=60,x2=A.x-34;for(let x=x1;x<=x2;x+=2){const y=A.y+8*Math.sin((x-x1)/6);x===x1?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.stroke();
+      txt(ctx,`photon absorbed, ${Math.round(exc.l)} nm`,62,A.y+34,'#33281f',13,'left',600);}
+    if(exc.t>.65)txt(ctx,'electron drops back: energy released as heat',300,420,'#6f6256',13,'center');}
+  // labels
+  if(cur.geo==='free'||s<.05){txt(ctx,'Free ion: all five 3d orbitals have the same energy',300,150,'#33281f',15,'center',700);}
+  else if(s>.95){const g=groups(),yl=pos[g.L[0]].y+18,yu=pos[g.U[0]].y+18,xb=470;
+    ctx.strokeStyle='#c2410c';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(xb-8,yu);ctx.lineTo(xb,yu);ctx.lineTo(xb,yl);ctx.lineTo(xb-8,yl);ctx.stroke();
+    txt(ctx,'ΔE',xb+8,(yu+yl)/2+5,'#c2410c',20,'left',700);
+    txt(ctx,`${Math.round(kJ(cur.lam))} kJ mol⁻¹`,xb+8,(yu+yl)/2+24,'#c2410c',12,'left',600);
+    txt(ctx,'higher energy d orbitals',300,yu-46,'#6f6256',13,'center');txt(ctx,'lower energy d orbitals',300,yl+24,'#6f6256',13,'center');
+    txt(ctx,cur.geo==='tet'?'Tetrahedral: 2 lower, 3 upper':'Octahedral: 3 lower, 2 upper',540,32,'#6f6256',13,'right');}
+  txt(ctx,'3d'+SUPD[cur.d],540,410,'#33281f',16,'right',700);
+}
+
+/* ---------- spectrum ---------- */
+const X=l=>60+(l-380)/(800-380)*520,Ymax=2.0,Y=a=>220-a/Ymax*180;
+function drawSpec(){const{ctx,k}=S;ctx.setTransform(k,0,0,k,0,0);ctx.fillStyle='#fffdf8';ctx.fillRect(0,0,600,270);
+  for(let l=380;l<800;l+=2){ctx.fillStyle=l<=750?css(wl2rgb(Math.min(l,780))):'#d8d0c4';ctx.fillRect(X(l),226,X(l+2)-X(l)+.5,14);}
+  ctx.strokeStyle='#6f6256';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(60,30);ctx.lineTo(60,220);ctx.lineTo(580,220);ctx.stroke();
+  [400,500,600,700,800].forEach(l=>txt(ctx,l,X(l),256,'#6f6256',12,'center'));txt(ctx,'wavelength / nm',320,268,'#6f6256',12,'center');
+  txt(ctx,'infrared',X(775),222-6,'#9a9087',11,'center');
+  ctx.save();ctx.translate(20,125);ctx.rotate(-Math.PI/2);txt(ctx,'Absorbance',0,0,'#6f6256',13,'center',600);ctx.restore();
+  ctx.strokeStyle='#33281f';ctx.lineWidth=3;ctx.beginPath();for(let l=380;l<=800;l+=2){const y=Y(absorb(l));l===380?ctx.moveTo(X(l),y):ctx.lineTo(X(l),y);}ctx.stroke();
+  if(canAbs()){const le=lamEff();if(le<=800){ctx.setLineDash([5,5]);ctx.strokeStyle='#c2410c';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(X(le),30);ctx.lineTo(X(le),220);ctx.stroke();ctx.setLineDash([]);
+      txt(ctx,`λₘₐₓ ≈ ${Math.round(le)} nm`,Math.min(X(le)+6,500),44,'#c2410c',13,'left',700);}
+    else txt(ctx,'peak is beyond 800 nm (infrared)',570,44,'#c2410c',13,'right',700);}
+  else txt(ctx,'no visible light absorbed',320,120,'#6f6256',15,'center',700);
+  for(const m of marks){ctx.globalAlpha=1-m.t/2.5;ctx.fillStyle=css(wl2rgb(m.l));ctx.beginPath();ctx.arc(X(m.l),Y(absorb(m.l)),5,0,6.283);ctx.fill();ctx.strokeStyle='#33281f';ctx.lineWidth=1;ctx.stroke();}ctx.globalAlpha=1;
+}
+
+/* ---------- info panel ---------- */
+function info(){const I=document.getElementById('info'),oc=obsColour(),split=s>.95&&cur.geo!=='free';
+  const le=cur.lam,ab=canAbs()&&split;
+  let calc='';if(split&&cur.d>0&&cur.d<10){const J=6.63e-34*3.00e8/(le*1e-9);
+    calc=`<div class="calc">ΔE = hc/λ = (6.63×10<sup>−34</sup> × 3.00×10<sup>8</sup>) / (${le}×10<sup>−9</sup>) = ${(J*1e19).toFixed(2)}×10<sup>−19</sup> J per ion<br>× 6.02×10<sup>23</sup> = ${Math.round(J*6.02e23/1000)} kJ mol<sup>−1</sup></div>`;}
+  const colName=cur.col||(ab?'see the screen':'');
+  I.innerHTML=`<h3>${F(cur.f)}</h3>
+   <dl class="kv"><dt>Metal ion</dt><dd>${F(cur.ion)}, 3d<sup>${cur.d}</sup></dd><dt>Ligand</dt><dd>${F(cur.lig)}</dd>
+   <dt>Shape</dt><dd>${cur.geo==='free'?'none (free ion)':cur.geo==='tet'?'Tetrahedral, co-ordination number 4':'Octahedral, co-ordination number 6'}</dd>
+   <dt>Absorbs</dt><dd>${!split?'nothing yet: d orbitals not split':ab?`mainly ${regionName(le)} light (peak ≈ ${le} nm)`:'no visible light'}</dd></dl>
+   <div class="obs"><i style="background:${css(oc)}"></i><div><b>${split||cur.geo==='free'?colName:'Colourless (no splitting)'}</b><span style="color:var(--muted)">Observed colour: the transmitted light</span></div></div>
+   <p class="why">${!split&&cur.geo!=='free'?'Press <b>Add ligands</b> to split the d orbitals.':F(cur.why)}</p>${calc}${cur.note&&split?`<div class="note">${cur.note}</div>`:''}`;}
+
+/* ---------- controls ---------- */
+const tabs=document.getElementById('tabs'),bar=document.getElementById('grpbar');
+G.forEach(g=>{const b=document.createElement('button');b.className='tab';b.type='button';b.role='tab';b.textContent=g.t;b.dataset.k=g.k;b.onclick=()=>setGroup(g.k);tabs.appendChild(b);});
+function setGroup(k){grp=G.find(g=>g.k===k);tabs.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected',t.dataset.k===k));
+  bar.innerHTML=`<p class="intro">${grp.intro}</p>`+grp.items.map(i=>`<button class="chip" type="button" data-p="${i}">${F(P[i].f)}</button>`).join('')+
+   (k==='exp'?`<label class="slider" for="lam">Wavelength absorbed <input id="lam" type="range" min="380" max="800" step="5" value="${P.ti.lam}"> <span id="lamv"></span></label>`:'');
+  bar.querySelectorAll('.chip').forEach(c=>c.onclick=()=>setP(c.dataset.p));
+  const sl=document.getElementById('lam');if(sl)sl.oninput=()=>{P.ti.lam=+sl.value;lamLabel();info();};
+  setP(grp.items[0]);}
+function lamLabel(){const v=document.getElementById('lamv');if(v)v.textContent=`${P.ti.lam} nm → ΔE = ${Math.round(kJ(P.ti.lam))} kJ mol⁻¹`;}
+function setP(k){key=k;cur=P[k];bar.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed',c.dataset.p===k));exc=null;
+  const sb=document.getElementById('split');sb.disabled=cur.geo==='free';if(cur.geo==='free'){sTarget=0;}
+  splitLabel();lamLabel();info();}
+function splitLabel(){document.getElementById('split').textContent=sTarget?'Remove ligands: free ion':'Add ligands: split the d orbitals';}
+document.getElementById('split').onclick=()=>{sTarget=sTarget?0:1;exc=null;splitLabel();info();};
+document.getElementById('play').onclick=e=>{playing=!playing;e.currentTarget.textContent=playing?'Pause photons ❚❚':'Play photons ▶';};
+document.getElementById('clear').onclick=()=>{sum=[0,0,0];emit=0;photons=[];sparks=[];};
+document.getElementById('rate').oninput=e=>rate=+e.target.value;
+
+let last=performance.now(),infoState='';
+function loop(t){const dt=Math.min(.05,(t-last)/1000);last=t;
+  const prev=s;s+=Math.sign(sTarget-s)*Math.min(Math.abs(sTarget-s),dt*(reduce?99:.7));
+  const st=`${key}${s>.95}`;if(st!==infoState||(prev!==s&&Math.abs(prev-s)>0)){if(st!==infoState){infoState=st;info();}}
+  stepBeam(dt);if(B.cv.width)drawBeam();if(D.cv.width)drawDiag(dt);if(S.cv.width)drawSpec();requestAnimationFrame(loop);}
+setGroup('lig');requestAnimationFrame(loop);
+</script>
+
+</body></html>

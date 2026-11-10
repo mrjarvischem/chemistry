@@ -1,0 +1,439 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Dissolving Metal Salts</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: header with salt chips → stage (beaker canvas / zoomed complex SVG) + explanation panel → equations → comparison table */
+:root{
+  --bg:#f6f2ea; --panel:#fffdf8; --stage:#fbf8f2; --ink:#33281f; --muted:#6f6256; --line:#e2d7c6;
+  --accent:#7b4a26; --accent-ink:#fff;
+  --coord:#c2410c; --cov:#0f766e; --ion:#6d28d9; --cl:#3a8a4a; --o:#c8382d; --hgrey:#8f877e;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --eqf:"Cambria Math",Cambria,Georgia,serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px 40px}
+.wrap{max-width:1240px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px}
+h1{font-family:var(--serif);font-weight:600;font-size:clamp(1.5rem,2.6vw,2.1rem);margin:0;text-wrap:balance;line-height:1.15}
+.sub{color:var(--muted);margin:4px 0 0}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{font-family:var(--eqf);font-size:1.25rem;padding:6px 16px;border-radius:999px;border:1.5px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.chip small{font-family:var(--sans);font-size:.72rem;color:var(--muted);margin-left:6px}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.chip[aria-pressed="true"] small{color:#f1e2d4}
+button:focus-visible{outline:3px solid var(--coord);outline-offset:2px}
+.main{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(280px,1fr);gap:18px;align-items:start}
+@media (max-width:900px){.main{grid-template-columns:1fr}}
+.stagebox{display:flex;flex-direction:column;gap:10px;min-width:0}
+.stage{position:relative;width:100%;aspect-ratio:5/3;max-width:100%;background:var(--stage);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+canvas{display:block;width:100%;height:100%}
+.detail{position:absolute;inset:0;background:var(--stage);opacity:0;transition:opacity .45s}
+.detail.on{opacity:1}
+.detail svg{width:100%;height:100%;display:block}
+.tag{position:absolute;left:12px;top:10px;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--panel);border:1px solid var(--line);padding:2px 8px;border-radius:6px;pointer-events:none}
+.controls{display:flex;flex-wrap:wrap;gap:8px}
+.btn{font:inherit;font-weight:600;padding:8px 14px;border-radius:8px;border:1.5px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn[aria-pressed="true"]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn .sw{display:inline-block;width:18px;height:0;border-top:4px solid;vertical-align:middle;margin-right:6px}
+.btn .sw.dash{border-top-style:dashed}
+.spacer{flex:1}
+.legend{display:flex;flex-wrap:wrap;gap:16px;color:var(--muted);font-size:.85rem;align-items:center}
+.legend i{display:inline-block;border-radius:50%;vertical-align:middle;margin-right:6px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 20px;min-width:0}
+.panel h2{font-family:var(--serif);font-size:1.3rem;margin:0 0 8px;font-weight:600;text-wrap:balance}
+.panel h3{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:16px 0 6px}
+.panel p{margin:0 0 10px}
+.counts{display:grid;grid-template-columns:1fr auto;gap:4px 12px;font-variant-numeric:tabular-nums;margin:0}
+.counts dt{color:var(--muted)} .counts dd{margin:0;font-weight:700;text-align:right}
+.typelist{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px}
+.typelist button{all:unset;cursor:pointer;display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:start;padding:8px 10px;border-radius:8px;border:1px solid var(--line);width:100%;box-sizing:border-box}
+.typelist button:hover{border-color:var(--accent)}
+.typelist .sw{margin-top:9px;border-top:4px solid;width:28px}
+.typelist b{display:block}
+.warn{border-left:4px solid var(--coord);background:#fbefe6;padding:10px 12px;border-radius:0 8px 8px 0;margin-top:12px;font-size:.92rem}
+.eqsec{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 20px;display:flex;flex-direction:column;gap:14px}
+.eqsec h2{font-family:var(--serif);font-size:1.35rem;margin:0;font-weight:600}
+.eqgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.eqcard{border:1px solid var(--line);border-radius:10px;padding:12px 14px;min-width:0;background:var(--stage)}
+.eqcard .lab{font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.eqcard.key{border:2px solid var(--accent)}
+.eq{font-family:var(--eqf);font-size:1.4rem;margin:6px 0;overflow-x:auto;white-space:nowrap;padding-bottom:2px}
+.eqcard p{margin:0;font-size:.9rem;color:var(--muted)}
+.cx{color:var(--accent);font-weight:700}
+.clr{color:var(--cl);font-weight:700}
+.st{font-size:.75em;color:var(--muted)}
+.balance{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:.95rem}
+.balance span.box{border:1px solid var(--line);background:var(--stage);border-radius:8px;padding:5px 10px}
+.balance .op{font-weight:700;color:var(--muted)}
+.note{font-size:.92rem;border-left:4px solid var(--hgrey);padding:8px 12px;background:var(--stage);border-radius:0 8px 8px 0}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:680px;font-size:.95rem}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
+th{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+td.f{font-family:var(--eqf);font-size:1.1rem;white-space:nowrap}
+tr.cur td{background:#f3e7da}
+tbody tr{cursor:pointer}
+/* SVG detail */
+.bond .ln{stroke:var(--c);stroke-width:4.5;stroke-linecap:round}
+.bond .head{fill:var(--c)}
+.bond .hit{stroke:transparent;stroke-width:24;cursor:pointer;pointer-events:stroke}
+.bond{transition:opacity .25s}
+.coord{--c:var(--coord)} .cov{--c:var(--cov)} .ionic{--c:var(--ion)}
+.ionic .ln{stroke-dasharray:9 8}
+.etxt{font:700 15px var(--sans);pointer-events:none}
+#dsvg.test .bond:not(.rev){--c:#a39a90}
+#dsvg.test .bond:not(.rev) .etxt{opacity:0}
+#dsvg[data-hl="coord"] .bond:not(.coord),#dsvg[data-hl="cov"] .bond:not(.cov),#dsvg[data-hl="ionic"] .bond:not(.ionic){opacity:.13}
+#dsvg .lbl{transition:opacity .25s}
+#dsvg.test .lbl,#dsvg:not([data-hl="all"]) .lbl{opacity:0}
+#dsvg[data-hl="coord"] .lbl.coordL,#dsvg[data-hl="cov"] .lbl.covL,#dsvg[data-hl="ionic"] .lbl.ionL{opacity:1}
+#dsvg.test .lbl.coordL,#dsvg.test .lbl.covL,#dsvg.test .lbl.ionL{opacity:0}
+.lbl text{font:600 17px var(--sans);fill:var(--ink)}
+.lbl line{stroke:var(--muted);stroke-width:1.5}
+.atomtxt{font:700 20px var(--sans);text-anchor:middle;dominant-baseline:central;pointer-events:none}
+@media (prefers-reduced-motion:reduce){.detail,.bond,#dsvg .lbl{transition:none}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>What happens when a transition metal salt dissolves?</h1>
+      <p class="sub">Watch the lattice break up, then zoom in on one complex ion to sort out the three types of bonding.</p>
+    </div>
+    <div class="chips" id="chips" role="group" aria-label="Choose a salt"></div>
+  </header>
+
+  <div class="main">
+    <section class="stagebox">
+      <div class="stage">
+        <canvas id="cv" aria-label="Beaker showing the salt dissolving"></canvas>
+        <div class="detail" id="detail" hidden></div>
+        <div class="tag" id="tag">Beaker view</div>
+      </div>
+      <div class="controls" id="bctl">
+        <button class="btn primary" id="play" type="button">Dissolve ▶</button>
+        <button class="btn" id="reset" type="button">New crystal</button>
+        <span class="spacer"></span>
+        <button class="btn" id="zoom" type="button" disabled>Zoom in on one complex ⊕</button>
+      </div>
+      <div class="controls" id="dctl" hidden>
+        <button class="btn" data-hl="all" type="button" aria-pressed="true">All bonds</button>
+        <button class="btn" data-hl="coord" type="button"><span class="sw" style="color:var(--coord)"></span>Co-ordinate</button>
+        <button class="btn" data-hl="cov" type="button"><span class="sw" style="color:var(--cov)"></span>Covalent</button>
+        <button class="btn" data-hl="ionic" type="button"><span class="sw dash" style="color:var(--ion)"></span>Ionic</button>
+        <button class="btn" id="test" type="button" aria-pressed="false">Test me</button>
+        <span class="spacer"></span>
+        <button class="btn primary" id="back" type="button">⊖ Back to beaker</button>
+      </div>
+      <div class="legend" id="legend"></div>
+    </section>
+    <aside class="panel" id="panel" aria-live="polite"></aside>
+  </div>
+
+  <section class="eqsec" id="eqsec"></section>
+
+  <section class="eqsec">
+    <h2>The pattern across oxidation states</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Salt</th><th>Metal ion</th><th>Complex ion in solution</th><th>Free ions</th><th>Written as a compound</th><th>d electrons</th><th>Solution colour</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <p class="sub" style="margin:0">Water ligands are neutral, so the charge on the complex equals the oxidation state of the metal, and the number of Cl⁻ ions equals that charge.</p>
+  </section>
+</div>
+
+<script>
+const SALTS={
+  Cu:{sym:'Cu',q:2,n:2,name:'copper(II) chloride',os:'+2',ion:'#c27a3c',ionTxt:'#fff',sol:[55,130,215],solA:.34,d:'3d<sup>9</sup>',colour:'Blue',
+      note:'Solid copper(II) chloride crystals are usually the dihydrate, CuCl<sub>2</sub>·2H<sub>2</sub>O. Once dissolved, each Cu<sup>2+</sup> ion is surrounded by six water ligands, which gives the blue solution.'},
+  Co:{sym:'Co',q:3,n:3,name:'cobalt(III) chloride',os:'+3',ion:'#7656a6',ionTxt:'#fff',sol:[60,90,200],solA:.3,d:'3d<sup>6</sup>',colour:'Blue',
+      note:'[Co(H<sub>2</sub>O)<sub>6</sub>]<sup>3+</sup> is rarely seen: Co<sup>3+</sup> is a strong enough oxidising agent to oxidise water. Cobalt(III) is usually met with other ligands, e.g. [Co(NH<sub>3</sub>)<sub>6</sub>]<sup>3+</sup>. Don’t confuse it with pink [Co(H<sub>2</sub>O)<sub>6</sub>]<sup>2+</sup>.'},
+  Ti:{sym:'Ti',q:4,n:4,name:'titanium(IV) chloride',os:'+4',ion:'#a3acb5',ionTxt:'#22262a',sol:[0,0,0],solA:0,d:'3d<sup>0</sup>',colour:'Colourless',
+      note:'Use this one to practise the formula pattern. Real TiCl<sub>4</sub> is a covalent liquid, and Ti<sup>4+</sup> has such a high charge density that water is hydrolysed instead: TiCl<sub>4</sub> + 2H<sub>2</sub>O → TiO<sub>2</sub> + 4HCl. It is the extreme end of the trend that 3+ aqua ions are more acidic than 2+. With 3d<sup>0</sup> there are no d–d transitions, so it would be colourless.'}
+};
+const SUPQ={2:'²⁺',3:'³⁺',4:'⁴⁺'};
+let K='Cu', salt=SALTS.Cu;
+
+/* ---------- helpers for formula markup ---------- */
+const st=s=>`<span class="st">(${s})</span>`;
+const cxH=s=>`<span class="cx">[${s.sym}(H<sub>2</sub>O)<sub>6</sub>]<sup>${s.q}+</sup></span>`;
+const clH=s=>`<span class="clr">${s.n}Cl<sup>−</sup></span>`;
+const saltH=s=>`${s.sym}Cl<sub>${s.n}</sub>`;
+const cmpdH=s=>`<span class="cx">[${s.sym}(H<sub>2</sub>O)<sub>6</sub>]</span><span class="clr">Cl<sub>${s.n}</sub></span>`;
+
+/* ---------- chips, table, equations ---------- */
+const chips=document.getElementById('chips');
+for(const k in SALTS){const s=SALTS[k];const b=document.createElement('button');b.className='chip';b.type='button';b.dataset.k=k;
+  b.innerHTML=`${saltH(s)}<small>${s.sym} ${s.os}</small>`;b.onclick=()=>setSalt(k);chips.appendChild(b);}
+function renderTable(){
+  document.getElementById('tbody').innerHTML=Object.keys(SALTS).map(k=>{const s=SALTS[k];
+    return `<tr data-k="${k}" class="${k===K?'cur':''}"><td class="f">${saltH(s)}</td><td class="f">${s.sym}<sup>${s.q}+</sup></td><td class="f">${cxH(s)}</td><td class="f">${clH(s)}</td><td class="f">${cmpdH(s)}</td><td class="f">${s.d}</td><td>${s.colour}${k==='Ti'?' (in theory)':''}</td></tr>`}).join('');
+  document.querySelectorAll('#tbody tr').forEach(tr=>tr.onclick=()=>setSalt(tr.dataset.k));
+}
+function renderEq(){
+  const s=salt;
+  document.getElementById('eqsec').innerHTML=`
+  <h2>Writing the equations for ${s.name}</h2>
+  <div class="eqgrid">
+    <div class="eqcard key"><div class="lab">Dissolving the salt (the equation exams expect)</div>
+      <div class="eq">${saltH(s)}${st('s')} + 6H<sub>2</sub>O${st('l')} → ${cxH(s)}${st('aq')} + ${clH(s)}${st('aq')}</div>
+      <p>The six waters end up inside the complex. The chloride ions stay separate.</p></div>
+    <div class="eqcard"><div class="lab">The same particles written as one compound</div>
+      <div class="eq">${cmpdH(s)}</div>
+      <p>This is the formula of the solid compound. The ${s.q}+ charge on the complex is cancelled by ${s.n} Cl<sup>−</sup>, so no charge is written. Cl<sub>${s.n}</sub> sits <b>outside</b> the bracket because it is not bonded to ${s.sym}.</p></div>
+    <div class="eqcard"><div class="lab">Dissolving that compound</div>
+      <div class="eq">${cmpdH(s)}${st('s')} → ${cxH(s)}${st('aq')} + ${clH(s)}${st('aq')}</div>
+      <p>No water on the left this time: it is already inside the complex. The brackets split off from the Cl<sup>−</sup>.</p></div>
+  </div>
+  <div class="balance">
+    <span class="box">${s.sym} oxidation state <b>${s.os}</b></span><span class="op">+</span>
+    <span class="box">6 × H<sub>2</sub>O, charge <b>0</b></span><span class="op">=</span>
+    <span class="box">complex charge <b>${s.q}+</b></span><span class="op">→</span>
+    <span class="box">balanced by <b>${s.n} × Cl<sup>−</sup></b></span>
+  </div>
+  <div class="note"><b>Reality check.</b> ${s.note}</div>`;
+}
+
+/* ---------- simulation ---------- */
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const W={x0:218,x1:782,y0:162,y1:552};
+let lattice=[],ions=[],waters=[],playing=false,relT=0,view='beaker',cam={x:500,y:300,s:1},zoom=null,zoomReady=false;
+const rnd=(a,b)=>a+Math.random()*(b-a), d2=(a,b)=>(a.x-b.x)**2+(a.y-b.y)**2;
+
+function latBox(){const r=lattice.filter(p=>p.inL);if(!r.length)return null;
+  return{x0:Math.min(...r.map(p=>p.x))-12,x1:Math.max(...r.map(p=>p.x))+12,y0:Math.min(...r.map(p=>p.y))-12};}
+function setup(){
+  lattice=[];ions=[];const n=salt.n,cols=6,rows=(6*(n+1))/cols,sp=25;
+  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++)
+    lattice.push({t:((c+r)%(n+1)===0)?'M':'Cl',x:500-(cols-1)*sp/2+c*sp,y:540-r*sp,r,inL:true,vx:0,vy:0,age:0,rot:Math.random()*6.28,vr:0});
+  waters=[];const bb=latBox();
+  while(waters.length<160){const x=rnd(W.x0,W.x1),y=rnd(W.y0,W.y1);
+    if(bb&&x>bb.x0-6&&x<bb.x1+6&&y>bb.y0-6)continue;
+    waters.push({x,y,vx:rnd(-1,1),vy:rnd(-1,1),a:rnd(0,6.28),va:0,host:null,slot:0});}
+  relT=0;setPlaying(false);updatePanel();
+}
+function release(){
+  const rem=lattice.filter(p=>p.inL);if(!rem.length){setPlaying(false);return;}
+  const top=Math.max(...rem.map(p=>p.r)),cand=rem.filter(p=>p.r===top),p=cand[Math.floor(Math.random()*cand.length)];
+  p.inL=false;p.vy=-1.5;p.vx=rnd(-.7,.7);p.age=0;ions.push(p);
+  waters.filter(w=>!w.host).sort((a,b)=>d2(a,p)-d2(b,p)).slice(0,p.t==='M'?6:3).forEach((w,i)=>{w.host=p;w.slot=i;});
+  updatePanel();
+}
+function slot(w){const h=w.host;
+  if(h.t==='M'){const g=h.rot+w.slot*Math.PI/3;return{x:h.x+17*Math.cos(g),y:h.y+17*Math.sin(g),a:g};}
+  const g=h.rot+w.slot*2*Math.PI/3;return{x:h.x+21*Math.cos(g),y:h.y+21*Math.sin(g),a:g+Math.PI-0.91};}
+function bound(p,m,bb){
+  if(p.x<W.x0+m){p.x=W.x0+m;p.vx=Math.abs(p.vx);} if(p.x>W.x1-m){p.x=W.x1-m;p.vx=-Math.abs(p.vx);}
+  if(p.y<W.y0+m){p.y=W.y0+m;p.vy=Math.abs(p.vy);} if(p.y>W.y1-m){p.y=W.y1-m;p.vy=-Math.abs(p.vy);}
+  if(bb&&p.x>bb.x0-m&&p.x<bb.x1+m&&p.y>bb.y0-m){p.y=bb.y0-m;p.vy=-Math.abs(p.vy);}
+}
+function step(){
+  if(!playing)return;
+  relT+=1/60;if(relT>0.7){relT=0;release();}
+  const bb=latBox();
+  for(const p of ions){p.age+=1/60;p.vx+=(Math.random()-.5)*.16;p.vy+=(Math.random()-.5)*.16;p.vx*=.96;p.vy*=.96;
+    p.vr+=(Math.random()-.5)*.004;p.vr*=.97;p.rot+=p.vr;p.x+=p.vx;p.y+=p.vy;}
+  for(let i=0;i<ions.length;i++)for(let j=i+1;j<ions.length;j++){const a=ions[i],b=ions[j];
+    const dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy)||1;if(d<46){const f=(46-d)*.03;a.x-=dx/d*f;a.y-=dy/d*f;b.x+=dx/d*f;b.y+=dy/d*f;}}
+  for(const p of ions)bound(p,26,bb);
+  for(const w of waters){
+    if(w.host){const t=slot(w);w.x+=(t.x-w.x)*.12;w.y+=(t.y-w.y)*.12;let da=((t.a-w.a+Math.PI*3)%(Math.PI*2))-Math.PI;w.a+=da*.15;continue;}
+    w.vx+=(Math.random()-.5)*.35;w.vy+=(Math.random()-.5)*.35;w.vx*=.95;w.vy*=.95;
+    const sp=Math.hypot(w.vx,w.vy);if(sp>1.6){w.vx*=1.6/sp;w.vy*=1.6/sp;}
+    w.va+=(Math.random()-.5)*.04;w.va*=.95;w.a+=w.va;w.x+=w.vx;w.y+=w.vy;bound(w,6,bb);}
+}
+function drawWater(w){
+  for(const s of[-0.91,0.91]){const hx=w.x+7*Math.cos(w.a+s),hy=w.y+7*Math.sin(w.a+s);
+    ctx.beginPath();ctx.moveTo(w.x,w.y);ctx.lineTo(hx,hy);ctx.strokeStyle='#9a9087';ctx.lineWidth=1.2;ctx.stroke();
+    ctx.beginPath();ctx.arc(hx,hy,2.7,0,6.283);ctx.fillStyle='#fafafa';ctx.fill();ctx.strokeStyle='#8f877e';ctx.lineWidth=.8;ctx.stroke();}
+  ctx.beginPath();ctx.arc(w.x,w.y,4.6,0,6.283);ctx.fillStyle='#d0453b';ctx.fill();
+}
+function drawIon(p){
+  ctx.beginPath();
+  if(p.t==='M'){ctx.arc(p.x,p.y,8,0,6.283);ctx.fillStyle=salt.ion;ctx.fill();ctx.strokeStyle='rgba(0,0,0,.35)';}
+  else{ctx.arc(p.x,p.y,11,0,6.283);ctx.fillStyle='#4fa25d';ctx.fill();ctx.strokeStyle='#2d6b38';}
+  ctx.lineWidth=1.2;ctx.stroke();
+}
+function beakerPath(inset){const i=inset;ctx.beginPath();ctx.moveTo(205+i,i?150:95);ctx.lineTo(205+i,545);ctx.quadraticCurveTo(205+i,565-i,225,565-i);
+  ctx.lineTo(775,565-i);ctx.quadraticCurveTo(795-i,565-i,795-i,545);ctx.lineTo(795-i,i?150:95);}
+function draw(){
+  const k=cv.width/1000;
+  ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='#fbf8f2';ctx.fillRect(0,0,cv.width,cv.height);
+  ctx.setTransform(k*cam.s,0,0,k*cam.s,k*(500-cam.x*cam.s),k*(300-cam.y*cam.s));
+  // water
+  beakerPath(4);ctx.closePath();ctx.fillStyle='rgba(196,222,240,.45)';ctx.fill();
+  const f=ions.filter(p=>p.t==='M').length/6;
+  if(salt.solA>0&&f>0){ctx.fillStyle=`rgba(${salt.sol.join(',')},${salt.solA*f})`;ctx.fill();}
+  ctx.beginPath();ctx.moveTo(209,150);ctx.lineTo(791,150);ctx.strokeStyle='rgba(80,130,170,.6)';ctx.lineWidth=1.5;ctx.stroke();
+  // graduations
+  ctx.fillStyle='#8f8476';ctx.strokeStyle='#8f8476';ctx.lineWidth=1.5;ctx.font='12px system-ui,sans-serif';ctx.textAlign='right';
+  for(let i=1;i<=4;i++){const y=545-i*79;ctx.beginPath();ctx.moveTo(795,y);ctx.lineTo(778,y);ctx.stroke();ctx.fillText(i*50,774,y+4);}
+  ctx.textAlign='left';ctx.fillText('250 mL beaker',214,588);
+  // particles
+  for(const p of lattice)if(p.inL)drawIon(p);
+  for(const w of waters)if(!w.host)drawWater(w);
+  for(const p of ions){drawIon(p);for(const w of waters)if(w.host===p)drawWater(w);}
+  // glass
+  beakerPath(0);ctx.strokeStyle='#8f8476';ctx.lineWidth=4;ctx.lineJoin='round';ctx.stroke();
+  ctx.beginPath();ctx.moveTo(193,85);ctx.lineTo(205,95);ctx.moveTo(807,85);ctx.lineTo(795,95);ctx.stroke();
+  // lattice label
+  const bb=latBox();
+  if(bb&&cam.s<1.5){ctx.fillStyle='#6f6256';ctx.font='600 14px system-ui,sans-serif';ctx.textAlign='left';
+    ctx.fillText('ionic lattice',bb.x1+10,bb.y0+24);}
+  // zoom ring
+  if(zoom&&zoom.tgt){ctx.beginPath();ctx.arc(zoom.tgt.x,zoom.tgt.y,30,0,6.283);ctx.strokeStyle='#c2410c';ctx.lineWidth=2.5/cam.s;ctx.stroke();}
+}
+const ease=t=>t<.5?4*t*t*t:1-(-2*t+2)**3/2;
+function frame(){
+  if(view==='beaker')step();
+  if(zoom){zoom.t=Math.max(0,Math.min(1,zoom.t+zoom.dir*(reduce?1:1/55)));
+    const e=ease(zoom.t),T=zoom.tgt||{x:500,y:300},s=Math.exp(Math.log(7)*e),ps=1-e;
+    cam={s,x:T.x-(T.x-500)*ps/s,y:T.y-(T.y-300)*ps/s};
+    if(zoom.dir>0&&zoom.t>=1){zoom.dir=0;view='detail';showDetail(true);}
+    if(zoom.dir<0&&zoom.t<=0){view='beaker';zoom=null;cam={x:500,y:300,s:1};}
+  }
+  const ready=ions.some(p=>p.t==='M'&&p.age>1.4);
+  if(ready!==zoomReady){zoomReady=ready;document.getElementById('zoom').disabled=!ready;}
+  draw();requestAnimationFrame(frame);
+}
+function resize(){const r=cv.getBoundingClientRect(),dpr=Math.min(2,window.devicePixelRatio||1);cv.width=Math.round(r.width*dpr);cv.height=Math.round(r.width*.6*dpr);}
+new ResizeObserver(resize).observe(cv);
+
+/* ---------- zoomed-in complex (SVG) ---------- */
+let hl='all',testOn=false;
+const LIG=[{x:580,y:200,z:-1},{x:500,y:130,z:0},{x:695,y:285,z:0},{x:305,y:315,z:0},{x:500,y:470,z:0},{x:420,y:400,z:1}];
+const CLPOS=[{x:115,y:165},{x:885,y:435},{x:115,y:435},{x:885,y:165}];
+function detailSVG(){
+  const s=salt,M={x:500,y:300},R=v=>v.toFixed(1);
+  const lig=L=>{
+    const dx=L.x-M.x,dy=L.y-M.y,dl=Math.hypot(dx,dy),d={x:dx/dl,y:dy/dl},px={x:-d.y,y:d.x};
+    const rO=L.z<0?19:L.z>0?25:22,rH=L.z<0?11:13;
+    const S={x:L.x-d.x*(rO+2),y:L.y-d.y*(rO+2)},E={x:M.x+d.x*42,y:M.y+d.y*42};
+    const head=`${R(E.x)},${R(E.y)} ${R(E.x+d.x*18+px.x*9)},${R(E.y+d.y*18+px.y*9)} ${R(E.x+d.x*18-px.x*9)},${R(E.y+d.y*18-px.y*9)}`;
+    const mid={x:(S.x+E.x)/2+px.x*15,y:(S.y+E.y)/2+px.y*15};
+    let g=`<g style="opacity:${L.z<0?.62:1}">`;
+    g+=`<g class="bond coord" data-t="coord"><line class="hit" x1="${R(S.x)}" y1="${R(S.y)}" x2="${R(E.x)}" y2="${R(E.y)}"/><line class="ln" x1="${R(S.x)}" y1="${R(S.y)}" x2="${R(E.x+d.x*12)}" y2="${R(E.y+d.y*12)}"/><polygon class="head" points="${head}"/><text class="etxt" x="${R(mid.x)}" y="${R(mid.y)}" text-anchor="middle" dominant-baseline="central" fill="var(--o)">••</text></g>`;
+    const ang=Math.atan2(d.y,d.x),Hs=[];
+    for(const sg of[-0.91,0.91]){const h={x:L.x+40*Math.cos(ang+sg),y:L.y+40*Math.sin(ang+sg)};Hs.push(h);
+      const hd={x:(h.x-L.x)/40,y:(h.y-L.y)/40},hp={x:-hd.y,y:hd.x},m={x:(L.x+h.x)/2+hp.x*13*Math.sign(sg),y:(L.y+h.y)/2+hp.y*13*Math.sign(sg)};
+      g+=`<g class="bond cov" data-t="cov"><line class="hit" x1="${R(L.x)}" y1="${R(L.y)}" x2="${R(h.x)}" y2="${R(h.y)}"/><line class="ln" x1="${R(L.x)}" y1="${R(L.y)}" x2="${R(h.x)}" y2="${R(h.y)}"/><text class="etxt" x="${R(m.x)}" y="${R(m.y)}" text-anchor="middle" dominant-baseline="central"><tspan fill="var(--o)">•</tspan><tspan fill="#6b645d">×</tspan></text></g>`;}
+    g+=`<circle cx="${L.x}" cy="${L.y}" r="${rO}" fill="#d0453b" stroke="#8e2a22" stroke-width="1.5"/><text class="atomtxt" x="${L.x}" y="${L.y}" fill="#fff" style="font-size:${rO*.85}px">O</text>`;
+    for(const h of Hs)g+=`<circle cx="${R(h.x)}" cy="${R(h.y)}" r="${rH}" fill="#fafafa" stroke="#8f877e" stroke-width="1.5"/><text class="atomtxt" x="${R(h.x)}" y="${R(h.y)}" fill="#4a443e" style="font-size:${rH*1.1}px">H</text>`;
+    return g+'</g>';
+  };
+  let out=`<svg id="dsvg" viewBox="0 0 1000 600" data-hl="${hl}" class="${testOn?'test':''}" role="img" aria-label="Complex ion [${s.sym}(H2O)6]${s.q}+ with ${s.n} chloride ions">`;
+  // ionic
+  for(let i=0;i<s.n;i++){const c=CLPOS[i],bx=c.x<500?232:768,dir=c.x<500?1:-1;
+    out+=`<g class="bond ionic" data-t="ionic"><line class="hit" x1="${c.x+dir*36}" y1="${c.y}" x2="${bx}" y2="${c.y}"/><line class="ln" x1="${c.x+dir*38}" y1="${c.y}" x2="${bx-dir*6}" y2="${c.y}"/></g>`;
+    out+=`<circle cx="${c.x}" cy="${c.y}" r="34" fill="#4fa25d" stroke="#2d6b38" stroke-width="2"/><text class="atomtxt" x="${c.x}" y="${c.y}" fill="#fff">Cl⁻</text>`;}
+  // brackets
+  out+=`<path d="M252 70 H232 V530 H252 M748 70 H768 V530 H748" fill="none" stroke="var(--accent)" stroke-width="5"/><text x="776" y="72" style="font:700 32px var(--eqf);fill:var(--accent)">${s.q}+</text>`;
+  out+=lig(LIG[0]);
+  out+=`<circle cx="500" cy="300" r="40" fill="${s.ion}" stroke="rgba(0,0,0,.35)" stroke-width="2"/><text class="atomtxt" x="500" y="300" fill="${s.ionTxt}" style="font-size:23px">${s.sym}${SUPQ[s.q]}</text>`;
+  for(let i=1;i<LIG.length;i++)out+=lig(LIG[i]);
+  // labels
+  out+=`<g class="lbl coordL"><line x1="506" y1="404" x2="524" y2="420"/><text x="528" y="428">co-ordinate bond</text><text x="528" y="448" style="font-weight:400;font-size:15px">both electrons from O</text></g>`;
+  out+=`<g class="lbl covL"><line x1="522" y1="112" x2="580" y2="96"/><text x="584" y="96">covalent O–H bond</text><text x="584" y="115" style="font-weight:400;font-size:15px">one electron from each atom</text></g>`;
+  out+=`<g class="lbl ionL"><text x="115" y="226" text-anchor="middle">ionic attraction</text><text x="115" y="245" text-anchor="middle" style="font-weight:400;font-size:15px">to the whole complex</text></g>`;
+  out+=`<g class="lbl"><text x="300" y="392" text-anchor="middle">H₂O ligand</text></g>`;
+  out+=`<text x="500" y="572" text-anchor="middle" style="font:600 16px var(--sans);fill:var(--accent)">complex ion: everything inside the square brackets</text>`;
+  out+='</svg>';
+  const box=document.getElementById('detail');box.innerHTML=out;
+  box.querySelectorAll('.bond').forEach(b=>b.addEventListener('click',()=>bondClick(b)));
+}
+const found={coord:new Set(),cov:new Set(),ionic:new Set()};
+function bondClick(b){
+  const t=b.dataset.t;
+  if(testOn){b.classList.add('rev');const all=[...document.querySelectorAll('#dsvg .bond')];found[t].add(all.indexOf(b));updatePanel(t);}
+  else setHL(t);
+}
+function setHL(h){hl=h;const sv=document.getElementById('dsvg');if(sv)sv.dataset.hl=h;
+  document.querySelectorAll('#dctl [data-hl]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.hl===h&&!testOn));updatePanel();}
+function setTest(on){testOn=on;Object.values(found).forEach(s=>s.clear());
+  const sv=document.getElementById('dsvg');if(sv){sv.classList.toggle('test',on);sv.querySelectorAll('.rev').forEach(b=>b.classList.remove('rev'));}
+  document.getElementById('test').setAttribute('aria-pressed',on);document.getElementById('test').textContent=on?'Stop test':'Test me';
+  if(on){hl='all';const s2=document.getElementById('dsvg');if(s2)s2.dataset.hl='all';}
+  document.querySelectorAll('#dctl [data-hl]').forEach(b=>b.setAttribute('aria-pressed',!on&&b.dataset.hl===hl));updatePanel();}
+function showDetail(on){
+  const box=document.getElementById('detail');
+  document.getElementById('bctl').hidden=on;document.getElementById('dctl').hidden=!on;
+  document.getElementById('tag').textContent=on?`One complex ion, zoomed in`:'Beaker view';
+  if(on){detailSVG();box.hidden=false;requestAnimationFrame(()=>box.classList.add('on'));}
+  else{box.classList.remove('on');setTimeout(()=>{if(view!=='detail')box.hidden=true;},reduce?0:450);}
+  renderLegend();updatePanel();
+}
+
+/* ---------- panel ---------- */
+const TXT={
+  coord:s=>({h:'Co-ordinate (dative covalent) bonds',c:'var(--coord)',p:`<p>Each water ligand uses a <b>lone pair on its oxygen</b> to bond to the ${s.sym}<sup>${s.q}+</sup> ion. Both electrons in the shared pair come from oxygen, which is why the arrow points from O to the metal.</p><p>Water is acting as a Lewis base (electron pair donor) and the metal ion as a Lewis acid (electron pair acceptor).</p><p><b>6 co-ordinate bonds</b> → co-ordination number 6, octahedral shape, 90° bond angles.</p>`}),
+  cov:s=>({h:'Covalent bonds',c:'var(--cov)',p:`<p>These are the <b>O–H bonds inside each water ligand</b>. Each shared pair has one electron from oxygen and one from hydrogen.</p><p>They were already there before the salt dissolved and they don’t change when the complex forms.</p><p><b>12 covalent bonds</b> in the complex (2 per water × 6 waters).</p>`}),
+  ionic:s=>({h:'Ionic attraction',c:'var(--ion)',p:`<p>This is the electrostatic attraction between the positive complex ion [${s.sym}(H<sub>2</sub>O)<sub>6</sub>]<sup>${s.q}+</sup> and the <b>${s.n} Cl<sup>−</sup> ions</b>.</p><p>The chloride ions are <b>not bonded to ${s.sym}</b>. They are attracted to the whole complex, which is why they are written outside the square brackets.</p><p>In the solid [${s.sym}(H<sub>2</sub>O)<sub>6</sub>]Cl<sub>${s.n}</sub> this is ionic bonding. In solution the ions separate and are surrounded by water.</p>`})
+};
+function updatePanel(revealed){
+  const s=salt,P=document.getElementById('panel');
+  if(view!=='detail'){
+    const inL=lattice.filter(p=>p.inL).length,m=ions.filter(p=>p.t==='M').length,c=ions.filter(p=>p.t==='Cl').length;
+    P.innerHTML=`<h2>${saltH(s)} dissolving in water</h2>
+      <p>The solid is an ionic lattice of ${s.sym}<sup>${s.q}+</sup> and Cl<sup>−</sup> ions in a 1 : ${s.n} ratio. Water molecules pull ions off the surface one at a time.</p>
+      <p>Each ${s.sym}<sup>${s.q}+</sup> grabs <b>six water molecules</b>, bonding to the oxygen atoms. This makes the complex ion ${cxH(s)}.</p>
+      <p>Cl<sup>−</sup> ions are only loosely surrounded by water, with the δ+ hydrogen atoms pointing towards them. They stay <b>outside</b> the complex.</p>
+      <h3>Particle count</h3>
+      <dl class="counts"><dt>Ions still in the lattice</dt><dd>${inL}</dd><dt>[${s.sym}(H<sub>2</sub>O)<sub>6</sub>]<sup>${s.q}+</sup> in solution</dt><dd>${m}</dd><dt>Cl<sup>−</sup> in solution</dt><dd>${c}</dd></dl>
+      <p style="margin-top:12px;color:var(--muted);font-size:.9rem">${m?`Ratio check: ${c} Cl<sup>−</sup> for ${m} complex ion${m>1?'s':''}.`:'Press Dissolve to start.'} When a complex has formed, zoom in to see the bonding.</p>`;
+    return;
+  }
+  if(testOn){
+    const n={coord:found.coord.size,cov:found.cov.size,ionic:found.ionic.size};
+    let body=`<h2>Test: name each bond</h2><p>Ask students to name a bond, then click it to reveal the answer.</p>
+      <dl class="counts"><dt>Co-ordinate found</dt><dd>${n.coord} / 6</dd><dt>Covalent found</dt><dd>${n.cov} / 12</dd><dt>Ionic found</dt><dd>${n.ionic} / ${s.n}</dd></dl>`;
+    if(revealed){const x=TXT[revealed](s);body+=`<h3 style="color:${x.c}">That one is: ${x.h}</h3>${x.p}`;}
+    P.innerHTML=body;return;
+  }
+  if(hl==='all'){
+    P.innerHTML=`<h2>Three types of bonding in ${cmpdH(s)}</h2><p>Click a type, or click a bond on the diagram.</p>
+      <ul class="typelist">
+        <li><button type="button" data-go="coord"><span class="sw" style="border-color:var(--coord)"></span><span><b>Co-ordinate bonds × 6</b>O lone pair → ${s.sym}<sup>${s.q}+</sup>. Holds the ligands to the metal.</span></button></li>
+        <li><button type="button" data-go="cov"><span class="sw" style="border-color:var(--cov)"></span><span><b>Covalent bonds × 12</b>O–H inside each water ligand.</span></button></li>
+        <li><button type="button" data-go="ionic"><span class="sw" style="border-color:var(--ion);border-top-style:dashed"></span><span><b>Ionic attraction</b>Between the ${s.q}+ complex and ${s.n} Cl<sup>−</sup>, outside the brackets.</span></button></li>
+      </ul>
+      <div class="warn"><b>Common mistake:</b> putting Cl inside the bracket or drawing a bond from Cl to ${s.sym}. Everything inside the brackets is co-ordinately bonded to the metal; Cl<sup>−</sup> is not.</div>`;
+    P.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>setHL(b.dataset.go));return;
+  }
+  const x=TXT[hl](s);P.innerHTML=`<h2 style="color:${x.c}">${x.h}</h2>${x.p}`;
+}
+function renderLegend(){
+  const s=salt,L=document.getElementById('legend');
+  L.innerHTML=view==='detail'
+    ?`<span><b style="color:var(--o)">•</b> electron from O</span><span><b style="color:#6b645d">×</b> electron from H</span><span>Faded water ligand = behind the metal (octahedral, drawn in 3D)</span>`
+    :`<span><i style="width:12px;height:12px;background:${s.ion}"></i>${s.sym}<sup>${s.q}+</sup> ion</span><span><i style="width:16px;height:16px;background:#4fa25d"></i>Cl<sup>−</sup> ion</span><span><i style="width:9px;height:9px;background:#d0453b"></i>H<sub>2</sub>O (red O, white H)</span>`;
+}
+
+/* ---------- controls ---------- */
+function setPlaying(p){playing=p;const b=document.getElementById('play');b.textContent=p?'Pause ❚❚':(lattice.some(x=>x.inL)?'Dissolve ▶':'All dissolved');b.disabled=!p&&!lattice.some(x=>x.inL);}
+document.getElementById('play').onclick=()=>setPlaying(!playing);
+document.getElementById('reset').onclick=()=>setup();
+document.getElementById('zoom').onclick=()=>{
+  const c=ions.filter(p=>p.t==='M'&&p.age>1.4).sort((a,b)=>d2(a,{x:500,y:330})-d2(b,{x:500,y:330}))[0];if(!c)return;
+  zoom={t:0,dir:1,tgt:{x:c.x,y:c.y}};view='zoomIn';document.getElementById('bctl').hidden=true;
+};
+document.getElementById('back').onclick=()=>{setTest(false);setHL('all');view='zoomOut';if(!zoom)zoom={t:1,dir:-1,tgt:null};zoom.dir=-1;zoom.t=1;showDetail(false);};
+document.querySelectorAll('#dctl [data-hl]').forEach(b=>b.onclick=()=>{if(testOn)setTest(false);setHL(b.dataset.hl);});
+document.getElementById('test').onclick=()=>setTest(!testOn);
+function setSalt(k){K=k;salt=SALTS[k];
+  document.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed',c.dataset.k===k));
+  setup();renderEq();renderTable();renderLegend();
+  if(view==='detail'){zoom={t:1,dir:0,tgt:null};detailSVG();if(testOn)setTest(true);updatePanel();}
+}
+setSalt('Cu');resize();requestAnimationFrame(frame);
+</script>
+
+</body></html>

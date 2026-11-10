@@ -1,0 +1,665 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Oxidation State Workbench</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: species picker left, big working area centre, rules ladder right; stacks on narrow screens. Light-only by design to match the simulation set. */
+:root{
+  --paper:#f6efe3; --panel:#fffaf2; --ink:#3a2a1d; --muted:#7a6553; --line:#e3d5c0;
+  --accent:#8a4a1f; --accent-soft:#f1e0c8; --pos:#1d5a85; --pos-soft:#e0ecf5;
+  --neg:#a2302a; --neg-soft:#f7e2df; --zero:#6b5b4b; --zero-soft:#ece5da; --ok:#2e6a39; --ok-soft:#e1efe2;
+  --f-ui: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --f-chem: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --f-mono: ui-monospace, "Cascadia Mono", Consolas, Menlo, monospace;
+  color-scheme: light;
+}
+*{box-sizing:border-box}
+html,body{background:var(--paper);color:var(--ink)}
+body{font-family:var(--f-ui);font-size:16px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:14px 28px}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--pos);outline-offset:2px}
+sub,sup{font-size:.62em;line-height:0}
+.wrap{max-width:1500px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+
+header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;border-bottom:2px solid var(--ink);padding-bottom:10px}
+header h1{margin:0;font-size:1.55rem;letter-spacing:-.01em;text-wrap:balance}
+header h1 span{color:var(--muted);font-weight:500;font-size:.95rem;margin-left:10px}
+.tabs{display:flex;border:2px solid var(--ink);border-radius:8px;overflow:hidden}
+.tabs button{border:0;background:var(--panel);padding:8px 18px;font-weight:600}
+.tabs button[aria-pressed="true"]{background:var(--ink);color:var(--panel)}
+
+.grid{display:grid;grid-template-columns:290px minmax(0,1fr) 300px;gap:14px;align-items:start}
+@media (max-width:1150px){.grid{grid-template-columns:260px minmax(0,1fr)}.rules{grid-column:1/-1}}
+@media (max-width:760px){.grid{grid-template-columns:minmax(0,1fr)}}
+
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px}
+.label{font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:0 0 8px}
+
+/* picker */
+.picker{display:flex;flex-direction:column;gap:14px}
+.group{display:flex;flex-direction:column;gap:6px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--paper);border-radius:6px;padding:4px 9px;font-family:var(--f-chem);font-size:1rem;font-weight:600}
+.chip:hover{border-color:var(--accent)}
+.chip[aria-current="true"]{background:var(--accent);border-color:var(--accent);color:var(--panel)}
+.entry{display:flex;flex-direction:column;gap:8px}
+.entry-row{display:flex;gap:6px}
+.entry input{flex:1;min-width:0;border:2px solid var(--line);border-radius:6px;padding:7px 9px;font:600 1.05rem var(--f-chem);background:var(--panel);color:var(--ink)}
+.entry input:focus{border-color:var(--accent)}
+.btn{border:2px solid var(--ink);background:var(--ink);color:var(--panel);border-radius:6px;padding:7px 14px;font-weight:700}
+.btn.ghost{background:var(--panel);color:var(--ink)}
+.btn:disabled{opacity:.35;cursor:default}
+.charges{display:flex;gap:4px;flex-wrap:wrap}
+.charges button{flex:1;min-width:36px;border:1px solid var(--line);background:var(--paper);border-radius:5px;padding:4px 0;font-weight:700;font-variant-numeric:tabular-nums}
+.charges button[aria-pressed="true"]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.hint{font-size:.82rem;color:var(--muted);margin:0}
+.err{font-size:.9rem;color:var(--neg);font-weight:600;margin:0}
+
+/* stage */
+.stage{display:flex;flex-direction:column;gap:16px;min-width:0}
+.species{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 18px}
+.formula{font:700 clamp(2.8rem,6vw,4.6rem)/1.1 var(--f-chem);letter-spacing:.01em}
+.formula sup{font-size:.5em}.formula sub{font-size:.55em}
+.species-name{color:var(--muted);font-size:1.05rem}
+.note{background:var(--accent-soft);border-left:4px solid var(--accent);padding:8px 12px;border-radius:0 6px 6px 0;font-size:.95rem}
+
+.tiles{display:flex;flex-wrap:wrap;gap:12px}
+.tile{width:150px;border:2px solid var(--line);border-radius:10px;background:var(--panel);padding:10px 12px;display:flex;flex-direction:column;gap:6px;transition:border-color .2s, box-shadow .2s}
+.tile.active{border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
+.tile.target{border-style:dashed;border-color:var(--ink)}
+.tile-top{display:flex;justify-content:space-between;align-items:baseline}
+.sym{font:700 2.3rem/1 var(--f-chem)}
+.count{font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+.ename{font-size:.82rem;color:var(--muted);margin-top:-4px}
+.os{font:800 2rem/1 var(--f-chem);border-radius:7px;padding:8px 0;text-align:center;font-variant-numeric:tabular-nums}
+.os.unk{background:transparent;border:2px dashed var(--line);color:var(--line)}
+.os.p{background:var(--pos-soft);color:var(--pos)}
+.os.n{background:var(--neg-soft);color:var(--neg)}
+.os.z{background:var(--zero-soft);color:var(--zero)}
+.os .frac{font-size:.8em}
+.os-dec{font-size:.8rem;font-weight:600;color:var(--muted);text-align:center;min-height:1.1em}
+.rtag{font-size:.75rem;font-weight:700;color:var(--muted);text-align:center;min-height:1.1em}
+
+.equation{font:600 1.35rem/1.6 var(--f-chem);background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 14px;overflow-x:auto;white-space:nowrap}
+.equation .t{display:inline-block;padding:0 3px;border-radius:4px}
+.equation .x{background:var(--accent-soft);color:var(--accent)}
+.equation .q{color:#bfae98}
+.equation .eq{color:var(--muted);margin:0 6px}
+
+.explain{display:flex;gap:12px;align-items:flex-start;background:var(--panel);border:2px solid var(--ink);border-radius:10px;padding:12px 14px;min-height:84px}
+.badge{flex:none;background:var(--ink);color:var(--panel);font-weight:800;border-radius:6px;padding:3px 9px;font-size:.85rem;margin-top:3px}
+.badge.idle{background:var(--line);color:var(--muted)}
+.explain-text{font-size:1.15rem;min-width:0}
+.explain-text .m{font-family:var(--f-chem);font-weight:700;white-space:nowrap}
+.explain-text .final{display:block;margin-top:4px;font-weight:700;color:var(--ok)}
+
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.stepcount{margin-left:auto;color:var(--muted);font-weight:600;font-variant-numeric:tabular-nums}
+
+/* number line */
+.nl{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 18px 8px}
+.nl-track{position:relative;height:96px;margin:0 6px}
+.nl-axis{position:absolute;left:0;right:0;top:62px;height:3px;background:var(--ink)}
+.nl-tick{position:absolute;top:56px;width:2px;height:15px;background:var(--ink);transform:translateX(-1px)}
+.nl-num{position:absolute;top:74px;transform:translateX(-50%);font-weight:700;font-size:.9rem;font-variant-numeric:tabular-nums}
+.nl-zone{position:absolute;top:60px;height:7px;opacity:.35}
+.nl-mark{position:absolute;transform:translateX(-50%);font:800 1rem/1 var(--f-chem);padding:4px 7px;border-radius:5px;color:var(--panel);transition:left .4s ease, top .3s}
+.nl-mark::after{content:"";position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);border:6px solid transparent;border-bottom:0;border-top-color:inherit}
+.nl-cap{display:flex;justify-content:space-between;font-size:.78rem;color:var(--muted);font-weight:600}
+.nl-cap .r{color:var(--neg)} .nl-cap .o{color:var(--pos)}
+
+/* quiz */
+.quiz{display:flex;flex-direction:column;gap:10px}
+.quiz-q{font-size:1.25rem;font-weight:600}
+.answers{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:6px}
+@media (max-width:760px){.answers{grid-template-columns:repeat(6,minmax(0,1fr))}}
+.answers button{border:2px solid var(--line);background:var(--panel);border-radius:7px;padding:10px 0;font:800 1.2rem var(--f-chem);font-variant-numeric:tabular-nums}
+.answers button:hover:not(:disabled){border-color:var(--ink)}
+.answers button.right{background:var(--ok);border-color:var(--ok);color:var(--panel)}
+.answers button.wrong{background:var(--neg-soft);border-color:var(--neg);color:var(--neg)}
+.answers button:disabled{cursor:default}
+.verdict{font-weight:700;font-size:1.1rem;min-height:1.5em}
+.verdict.good{color:var(--ok)} .verdict.bad{color:var(--neg)}
+.score{font-weight:700;font-variant-numeric:tabular-nums;color:var(--muted)}
+
+/* rules */
+.rules ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;counter-reset:r}
+.rules li{border:1px solid var(--line);border-radius:7px;padding:7px 9px;font-size:.9rem;display:grid;grid-template-columns:auto 1fr;gap:2px 8px;transition:background .2s,border-color .2s}
+.rules li b{grid-column:2}
+.rules li small{grid-column:2;color:var(--muted);font-size:.8rem}
+.rules li .rn{grid-row:span 2;font-weight:800;color:var(--muted);font-size:.85rem;padding-top:1px}
+.rules li.used{background:var(--zero-soft)}
+.rules li.now{background:var(--accent-soft);border-color:var(--accent)}
+.rules li.now .rn{color:var(--accent)}
+.rules p{font-size:.82rem;color:var(--muted);margin:10px 0 0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Oxidation State Workbench <span>apply the rules in order, then balance the charge</span></h1>
+    <div class="tabs" role="group" aria-label="Mode">
+      <button id="modeExplore" aria-pressed="true">Worked examples</button>
+      <button id="modeQuiz" aria-pressed="false">Quiz</button>
+    </div>
+  </header>
+
+  <div class="grid">
+    <aside class="panel picker" id="picker" aria-label="Choose a species"></aside>
+
+    <main class="stage">
+      <div class="species">
+        <div class="formula" id="formula"></div>
+        <div class="species-name" id="speciesName"></div>
+      </div>
+      <div class="note" id="note" hidden></div>
+
+      <section class="panel quiz" id="quizPanel" hidden>
+        <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline">
+          <div class="quiz-q" id="quizQ"></div>
+          <div class="score" id="score">Score 0 / 0</div>
+        </div>
+        <div class="answers" id="answers"></div>
+        <div class="verdict" id="verdict"></div>
+        <div class="controls"><button class="btn ghost" id="quizNext">Next question</button></div>
+      </section>
+
+      <div class="tiles" id="tiles"></div>
+      <div class="equation" id="equation" aria-label="Charge balance"></div>
+      <div class="explain" aria-live="polite"><span class="badge idle" id="badge">Start</span><div class="explain-text" id="explain"></div></div>
+      <div class="controls">
+        <button class="btn ghost" id="prev">◀ Back</button>
+        <button class="btn" id="next">Next step ▶</button>
+        <button class="btn ghost" id="all">Show all</button>
+        <button class="btn ghost" id="reset">Hide all</button>
+        <span class="stepcount" id="stepcount"></span>
+      </div>
+      <div class="nl">
+        <div class="label">Oxidation state scale</div>
+        <div class="nl-track" id="nl"></div>
+        <div class="nl-cap"><span class="r">◀ more reduced (gained electrons)</span><span class="o">more oxidised (lost electrons) ▶</span></div>
+      </div>
+    </main>
+
+    <aside class="panel rules" aria-label="Rules">
+      <div class="label">Rules, in priority order</div>
+      <ol id="rules"></ol>
+      <p>Apply the fixed rules first. Whatever is left over is found by making the oxidation states add up to the overall charge.</p>
+    </aside>
+  </div>
+</div>
+
+<script>
+(() => {
+"use strict";
+/* ---------- element data: symbol, name, electronegativity, type (n nonmetal, 1 group 1, 2 group 2, a aluminium, m metal, x noble gas) ---------- */
+const RAW = "H,hydrogen,2.20,n;He,helium,0,x;Li,lithium,0.98,1;Be,beryllium,1.57,2;B,boron,2.04,n;C,carbon,2.55,n;N,nitrogen,3.04,n;O,oxygen,3.44,n;F,fluorine,3.98,n;Ne,neon,0,x;Na,sodium,0.93,1;Mg,magnesium,1.31,2;Al,aluminium,1.61,a;Si,silicon,1.90,n;P,phosphorus,2.19,n;S,sulfur,2.58,n;Cl,chlorine,3.16,n;Ar,argon,0,x;K,potassium,0.82,1;Ca,calcium,1.00,2;Sc,scandium,1.36,m;Ti,titanium,1.54,m;V,vanadium,1.63,m;Cr,chromium,1.66,m;Mn,manganese,1.55,m;Fe,iron,1.83,m;Co,cobalt,1.88,m;Ni,nickel,1.91,m;Cu,copper,1.90,m;Zn,zinc,1.65,m;Ga,gallium,1.81,m;Ge,germanium,2.01,n;As,arsenic,2.18,n;Se,selenium,2.55,n;Br,bromine,2.96,n;Kr,krypton,3.00,x;Rb,rubidium,0.82,1;Sr,strontium,0.95,2;Zr,zirconium,1.33,m;Mo,molybdenum,2.16,m;Pd,palladium,2.20,m;Ag,silver,1.93,m;Cd,cadmium,1.69,m;Sn,tin,1.96,m;Sb,antimony,2.05,n;Te,tellurium,2.10,n;I,iodine,2.66,n;Xe,xenon,2.60,x;Cs,caesium,0.79,1;Ba,barium,0.89,2;W,tungsten,2.36,m;Pt,platinum,2.28,m;Au,gold,2.54,m;Hg,mercury,2.00,m;Pb,lead,1.87,m;Bi,bismuth,2.02,m;U,uranium,1.38,m";
+const EL = {};
+RAW.split(";").forEach(r => { const [s,n,e,t] = r.split(","); EL[s] = {name:n, en:+e, type:t}; });
+const isMetal = s => ["1","2","a","m"].includes(EL[s].type);
+const USUAL_NEG = {B:-3,C:-4,N:-3,O:-2,F:-1,Si:-4,P:-3,S:-2,Cl:-1,Se:-2,Br:-1,I:-1,As:-3,Te:-2,H:-1};
+const HALOGENS = ["Cl","Br","I"];
+
+/* known ions/ligands for the "spot the ion" rule */
+const IONS = [
+  ["SO4",-2,"sulfate"],["SO3",-2,"sulfite"],["NO3",-1,"nitrate"],["NO2",-1,"nitrite"],["CO3",-2,"carbonate"],
+  ["PO4",-3,"phosphate"],["OH",-1,"hydroxide"],["CN",-1,"cyanide"],["ClO3",-1,"chlorate(V)"],["ClO4",-1,"chlorate(VII)"],
+  ["ClO",-1,"chlorate(I)"],["HCO3",-1,"hydrogencarbonate"],["HSO4",-1,"hydrogensulfate"],["S2O3",-2,"thiosulfate"],
+  ["SCN",-1,"thiocyanate"],["C2O4",-2,"ethanedioate"],["NH4",1,"ammonium"],["NH3",0,"ammonia ligand"],["H2O",0,"water ligand"]
+].map(([f,c,n]) => ({f, c, name:n, comp:countsOf(parse(f))}));
+
+/* ---------- fractions ---------- */
+const gcd = (a,b) => { a=Math.abs(a); b=Math.abs(b); while(b){[a,b]=[b,a%b];} return a||1; };
+const Fr = (n,d=1) => { if(d<0){n=-n;d=-d;} const g=gcd(n,d); return {n:n/g,d:d/g}; };
+const add = (a,b) => Fr(a.n*b.d+b.n*a.d, a.d*b.d);
+const sub = (a,b) => Fr(a.n*b.d-b.n*a.d, a.d*b.d);
+const mul = (a,k) => Fr(a.n*k, a.d);
+const div = (a,k) => Fr(a.n, a.d*k);
+const val = f => f.n/f.d;
+const MINUS = "−";
+function fmt(f, signed=true){
+  if (f.n===0) return "0";
+  const s = f.n>0 ? (signed?"+":"") : MINUS;
+  const a = Math.abs(f.n);
+  if (f.d===1) return s+a;
+  if (f.d===2) return s+(a/2);
+  return s+a+"/"+f.d;
+}
+function fmtHTML(f){
+  if (f.d===1 || f.d===2 || f.n===0) return fmt(f);
+  const s = f.n>0 ? "+" : MINUS;
+  return `${s}<span class="frac"><sup>${Math.abs(f.n)}</sup>&frasl;<sub>${f.d}</sub></span>`;
+}
+const signCls = f => f.n>0 ? "p" : f.n<0 ? "n" : "z";
+const ROMAN = ["","I","II","III","IV","V","VI","VII","VIII"];
+
+/* ---------- parsing ---------- */
+function parse(str){
+  // returns ordered list of [symbol,count] with brackets expanded
+  const s = str.replace(/\s+/g,"");
+  let i = 0;
+  function group(){
+    const out = [];
+    while (i < s.length){
+      const ch = s[i];
+      if (ch==="("||ch==="["){ i++; const inner = group(); if (s[i]!==")" && s[i]!=="]") throw new Error("A bracket isn't closed."); i++; const n = num(); inner.forEach(([e,c])=>out.push([e,c*n])); }
+      else if (ch===")"||ch==="]") return out;
+      else if (/[A-Z]/.test(ch)){
+        let sym = ch; i++;
+        if (i<s.length && /[a-z]/.test(s[i])) { sym += s[i]; i++; }
+        if (!EL[sym]) throw new Error(`"${sym}" isn't an element this tool knows. Check capital letters, e.g. Co not CO.`);
+        out.push([sym, num()]);
+      }
+      else throw new Error(`Unexpected "${ch}" in the formula.`);
+    }
+    return out;
+  }
+  function num(){ let d=""; while(i<s.length && /\d/.test(s[i])) d+=s[i++]; return d?+d:1; }
+  const res = group();
+  if (i < s.length) throw new Error("There's an extra closing bracket.");
+  if (!res.length) throw new Error("Type a formula first.");
+  return res;
+}
+function countsOf(list){ const m = new Map(); list.forEach(([e,c]) => m.set(e,(m.get(e)||0)+c)); return m; }
+
+function splitCharge(text){
+  let t = text.trim().replace(/−/g,"-");
+  // explicit separator forms: "Cr2O7 2-", "SO4^2-"
+  let m1 = t.match(/^(.*?)(?:\^|\s+)(\d*)([+-])$/);
+  if (m1) return {f:m1[1].trim(), c:(m1[2]?+m1[2]:1)*(m1[3]==="-"?-1:1)};
+  // "Fe3+" style: lone element followed by digit and sign
+  let m2 = t.match(/^([A-Z][a-z]?)(\d)([+-])$/);
+  if (m2) return {f:m2[1], c:+m2[2]*(m2[3]==="-"?-1:1)};
+  // "MnO4-" or "NH4+": single sign
+  let m3 = t.match(/^(.*?)([+-])$/);
+  if (m3) return {f:m3[1], c:m3[2]==="-"?-1:1};
+  return {f:t, c:null};
+}
+
+/* ---------- the solver: builds an ordered list of steps ---------- */
+function solve(formula, charge){
+  const counts = countsOf(parse(formula));
+  const els = [...counts.keys()];
+  const known = new Map();
+  const steps = [];
+  const C = Fr(charge);
+  const push = (el, v, rule, html, extra={}) => { known.set(el, v); steps.push({el, v, rule, html, ...extra}); };
+  const unknowns = () => els.filter(e => !known.has(e));
+  const has = e => counts.has(e);
+  const nm = e => `<span class="m">${e}</span>`;
+
+  if (els.length===1){
+    const e = els[0], n = counts.get(e);
+    if (charge===0) push(e, Fr(0), "R1", `${nm(e)} is not combined with any other element, so its oxidation state is <span class="m">0</span>.`);
+    else if (n===1) push(e, C, "R2", `A simple ion: the oxidation state of ${nm(e)} equals the charge on the ion, <span class="m">${fmt(C)}</span>.`);
+    else push(e, div(C,n), "R8", `Only one element, so the ${n} atoms of ${nm(e)} share the charge: ${n}x = ${fmt(C)} → x = <span class="m">${fmt(div(C,n))}</span>.`, {solved:true});
+    return finish();
+  }
+
+  if (has("F")) push("F", Fr(-1), "R3", `${nm("F")} is the most electronegative element, so it is always <span class="m">−1</span> in compounds.`);
+
+  els.forEach(e => {
+    if (known.has(e)) return;
+    const t = EL[e].type;
+    if (t==="1") push(e, Fr(1), "R4", `${nm(e)} is in Group 1, so it is <span class="m">+1</span> in compounds.`);
+    else if (t==="2") push(e, Fr(2), "R4", `${nm(e)} is in Group 2, so it is <span class="m">+2</span> in compounds.`);
+    else if (t==="a") push(e, Fr(3), "R4", `${nm(e)} (aluminium) is always <span class="m">+3</span> in compounds.`);
+  });
+
+  let hydride = false;
+  if (has("H") && !known.has("H")){
+    const others = els.filter(e => e!=="H");
+    if (others.every(isMetal)) hydride = true; // leave H to be solved: metal hydride
+    else push("H", Fr(1), "R5", `${nm("H")} is <span class="m">+1</span> when bonded to non-metals.`);
+  }
+
+  HALOGENS.forEach(X => {
+    if (!has(X) || known.has(X) || has("O") || has("F")) return;
+    const moreEN = HALOGENS.some(Y => Y!==X && has(Y) && EL[Y].en > EL[X].en);
+    if (!moreEN) push(X, Fr(-1), "R7", `${nm(X)} is <span class="m">−1</span>: it isn't combined with O, F or a more electronegative halogen.`);
+  });
+
+  if (has("O") && !known.has("O")){
+    const otherUnknown = unknowns().filter(e => e!=="O");
+    if (!has("F") && otherUnknown.length) push("O", Fr(-2), "R6", `${nm("O")} is <span class="m">−2</span> in most compounds.`);
+  }
+
+  // more than one unknown left: spot ions, then fall back on electronegativity
+  let ions = null, guard = 0;
+  while (unknowns().length > 1 && guard++ < 10){
+    if (!ions) ions = findIons(counts);
+    if (ions){
+      const um = unknowns().filter(isMetal);
+      if (um.length===1){
+        const M = um[0];
+        let rest = C;
+        els.forEach(e => { if (isMetal(e) && known.has(e)) rest = sub(rest, mul(known.get(e), counts.get(e))); });
+        const ionTotal = ions.reduce((s,io) => s + io.n*io.ion.c, 0);
+        rest = sub(rest, Fr(ionTotal));
+        const v = div(rest, counts.get(M));
+        const list = ions.map(io => `${io.n>1?io.n+" × ":""}${ionHTML(io.ion)}`).join(" and ");
+        push(M, v, "R9", `Two unknowns. Spot the ${ions.map(io=>io.ion.name).join(" and ")} (${list}), total charge <span class="m">${fmt(Fr(ionTotal))}</span>. So ${nm(M)}: ${counts.get(M)>1?counts.get(M)+"x":"x"} ${ionTotal>=0?"+":MINUS} ${Math.abs(ionTotal)} = ${fmt(C)} → x = <span class="m">${fmt(v)}</span>.`, {solved:true});
+        continue;
+      }
+      // solve inside one ion
+      let done = false;
+      for (const io of ions){
+        const inside = [...io.ion.comp.keys()].filter(e => !known.has(e));
+        const onlyHere = inside.length===1 && ions.filter(o => o.ion.comp.has(inside[0])).length===1;
+        if (onlyHere){
+          const e = inside[0];
+          let r = Fr(io.ion.c);
+          io.ion.comp.forEach((c,x) => { if (x!==e) r = sub(r, mul(known.get(x), c)); });
+          const v = div(r, io.ion.comp.get(e));
+          push(e, v, "R9", `Inside the ${io.ion.name} ${ionHTML(io.ion)}, the oxidation states add up to ${fmt(Fr(io.ion.c))}, so ${nm(e)} = <span class="m">${fmt(v)}</span>.`, {solved:true});
+          done = true; break;
+        }
+      }
+      if (done) continue;
+    }
+    const cand = unknowns().filter(e => USUAL_NEG[e]!==undefined && !isMetal(e)).sort((a,b) => EL[b].en - EL[a].en);
+    if (!cand.length) return {counts, els, steps, error:"More than one element is left over and the rules can't separate them. Try splitting the compound into its ions."};
+    const e = cand[0];
+    push(e, Fr(USUAL_NEG[e]), "R10", `${unknowns().join(" and ")} are both unknown. ${nm(e)} is the more electronegative, so it takes its usual negative state, <span class="m">${fmt(Fr(USUAL_NEG[e]))}</span>.`);
+  }
+
+  const u = unknowns();
+  if (u.length===1){
+    const e = u[0], n = counts.get(e);
+    let rest = C;
+    els.forEach(x => { if (x!==e) rest = sub(rest, mul(known.get(x), counts.get(x))); });
+    const v = div(rest, n);
+    const knownSum = sub(C, rest);
+    let lhs = els.map(x => x===e ? `${n>1?n:""}<i>x</i>` : `${counts.get(x)>1?counts.get(x):""}(${fmt(known.get(x))})`).join(" + ");
+    let html = `${nm(e)} is found from the overall charge: <span class="m">${lhs} = ${fmt(C)}</span>`;
+    if (n>1) html += ` → <span class="m">${n}<i>x</i> = ${fmt(rest)}</span>`;
+    html += ` → <span class="m"><i>x</i> = ${fmt(v)}</span>.`;
+    let rule = "R8";
+    if (e==="O" && !(v.n===-2 && v.d===1)){
+      if (has("F")) html += ` Oxygen is positive here because fluorine is more electronegative.`;
+      else if (v.n===-1 && v.d===1) html += ` This is a <b>peroxide</b> (O–O bond), an exception to the −2 rule.`;
+      else if (v.n===-1 && v.d===2) html += ` This is a <b>superoxide</b> (O₂⁻ ion), an exception to the −2 rule.`;
+    }
+    if (e==="O" && v.n===-2 && v.d===1){ rule = "R6"; html = `${nm("O")} is <span class="m">−2</span>. Check it against the charge: <span class="m">${lhs.replace("<i>x</i>","(−2)")} = ${fmt(C)}</span> ✓`; }
+    if (e==="H" && hydride && v.n===-1) html += ` This is a <b>metal hydride</b>: H is −1 when bonded to a metal.`;
+    if (v.d!==1) html += ` A fractional value is an <b>average</b>: the ${n} atoms are in different environments.`;
+    push(e, v, rule, html, {solved:true});
+  } else if (u.length>1){
+    return {counts, els, steps, error:"Can't separate the remaining unknowns."};
+  }
+  return finish();
+
+  function finish(){
+    // sanity
+    const bad = [...known].find(([e,v]) => val(v) > 8 || val(v) < -4);
+    const solvedSteps = steps.filter(s => s.solved);
+    const target = (solvedSteps.find(s => isMetal(s.el)) || solvedSteps[solvedSteps.length-1] || steps[steps.length-1]).el;
+    return {counts, els, steps, target, warn: bad ? `${bad[0]} comes out at ${fmt(bad[1])}, which isn't chemically sensible. Check the formula and charge.` : null};
+  }
+}
+
+function ionHTML(ion){ return formulaHTML(ion.f, ion.c); }
+function findIons(counts){
+  const comp = new Map([...counts].filter(([e]) => !isMetal(e)));
+  if (!comp.size) return null;
+  const multipleOf = (c, ion) => {
+    let n = null;
+    if (c.size !== ion.comp.size) return 0;
+    for (const [e,k] of ion.comp){ const have = c.get(e); if (!have || have % k) return 0; const q = have/k; if (n===null) n=q; else if (n!==q) return 0; }
+    return n;
+  };
+  for (const ion of IONS){ const n = multipleOf(comp, ion); if (n) return [{ion, n}]; }
+  for (const a of IONS) for (let na=1; na<=6; na++){
+    const rest = new Map(comp); let ok = true;
+    a.comp.forEach((k,e) => { const r = (rest.get(e)||0) - k*na; if (r<0) ok=false; if (r===0) rest.delete(e); else rest.set(e,r); });
+    if (!ok || !rest.size) continue;
+    for (const b of IONS){ if (b===a) continue; const nb = multipleOf(rest, b); if (nb) return [{ion:a,n:na},{ion:b,n:nb}]; }
+  }
+  return null;
+}
+
+/* ---------- formula display ---------- */
+function chargeSup(c){ if (!c) return ""; const a = Math.abs(c); return `<sup>${a===1?"":a}${c>0?"+":MINUS}</sup>`; }
+function formulaHTML(f, c){ return f.replace(/(\d+)/g, "<sub>$1</sub>") + chargeSup(c); }
+
+/* ---------- curated species ---------- */
+const SPECIES = [
+  {g:"Starters", items:[
+    {f:"O2", c:0, name:"oxygen gas"},{f:"Fe", c:3, name:"iron(III) ion"},{f:"H2O", c:0, name:"water"},{f:"NaCl", c:0, name:"sodium chloride"},
+    {f:"CH4", c:0, name:"methane"},{f:"NH3", c:0, name:"ammonia"},{f:"CO2", c:0, name:"carbon dioxide"},{f:"MgO", c:0, name:"magnesium oxide"}]},
+  {g:"Oxyanions and acids", items:[
+    {f:"SO4", c:-2, name:"sulfate(VI) ion"},{f:"SO3", c:-2, name:"sulfate(IV) ion"},{f:"H2SO4", c:0, name:"sulfuric acid"},
+    {f:"NO3", c:-1, name:"nitrate(V) ion"},{f:"NO2", c:-1, name:"nitrate(III) ion"},{f:"ClO", c:-1, name:"chlorate(I) ion", note:"The active ion in bleach. Cl is positive because O is more electronegative."},
+    {f:"ClO3", c:-1, name:"chlorate(V) ion"},{f:"PO4", c:-3, name:"phosphate(V) ion"},{f:"CO3", c:-2, name:"carbonate ion"}]},
+  {g:"Transition metals", items:[
+    {f:"MnO4", c:-1, name:"manganate(VII) ion"},{f:"KMnO4", c:0, name:"potassium manganate(VII)"},{f:"Cr2O7", c:-2, name:"dichromate(VI) ion"},
+    {f:"CrO4", c:-2, name:"chromate(VI) ion"},{f:"MnO2", c:0, name:"manganese(IV) oxide"},{f:"Cu2O", c:0, name:"copper(I) oxide"},
+    {f:"FeSO4", c:0, name:"iron(II) sulfate", note:"Two unknowns (Fe and S). Spotting the sulfate ion separates them."},
+    {f:"Fe2(SO4)3", c:0, name:"iron(III) sulfate"},{f:"FeC2O4", c:0, name:"iron(II) ethanedioate"},
+    {f:"(NH4)2Fe(SO4)2", c:0, name:"ammonium iron(II) sulfate", note:"Mohr's salt, the Fe²⁺ standard used in manganate(VII) titrations."},
+    {f:"[CuCl4]", c:-2, name:"tetrachlorocuprate(II) ion"},{f:"[Fe(CN)6]", c:-3, name:"hexacyanoferrate(III) ion"},
+    {f:"[Co(NH3)6]", c:3, name:"hexaamminecobalt(III) ion", note:"NH₃ and H₂O ligands are neutral, so they add nothing to the metal's oxidation state."}]},
+  {g:"Vanadium", items:[
+    {f:"VO2", c:1, name:"dioxovanadium(V) ion, yellow"},{f:"VO", c:2, name:"oxovanadium(IV) ion, blue"},{f:"V", c:3, name:"vanadium(III) ion, green"},{f:"V", c:2, name:"vanadium(II) ion, violet"}]},
+  {g:"Exceptions", items:[
+    {f:"H2O2", c:0, name:"hydrogen peroxide", note:"Peroxide: the O–O bond means each O is −1, not −2."},
+    {f:"Na2O2", c:0, name:"sodium peroxide"},{f:"KO2", c:0, name:"potassium superoxide", quiz:false},
+    {f:"OF2", c:0, name:"oxygen difluoride", note:"F outranks O, so O is pushed to a positive oxidation state."},
+    {f:"NaH", c:0, name:"sodium hydride", note:"Metal hydride: H is −1 when bonded to a metal."},
+    {f:"LiAlH4", c:0, name:"lithium tetrahydridoaluminate", note:"The reducing agent for carbonyls. It works as a source of hydride ions, H⁻."},
+    {f:"ICl", c:0, name:"iodine monochloride", note:"Both halogens, but Cl is more electronegative, so it takes −1."},
+    {f:"XeF4", c:0, name:"xenon tetrafluoride"}]},
+  {g:"Averages", items:[
+    {f:"Fe3O4", c:0, name:"iron(II,III) oxide", quiz:false, note:"Contains one Fe²⁺ and two Fe³⁺. +8/3 is the average across all three Fe atoms."},
+    {f:"S2O3", c:-2, name:"thiosulfate ion", note:"The two S atoms are in different environments; +2 is their average."},
+    {f:"S4O6", c:-2, name:"tetrathionate ion", quiz:false, note:"Made in iodine–thiosulfate titrations. Average +2.5: the two central S atoms are 0, the two outer ones +5."},
+    {f:"NH4NO3", c:0, name:"ammonium nitrate", note:"The average of +1 hides two different N atoms: −3 in NH₄⁺ and +5 in NO₃⁻."},
+    {f:"CH3COOH", c:0, name:"ethanoic acid", note:"Average 0: the CH₃ carbon is −3 and the COOH carbon is +3."}]}
+];
+
+/* ---------- rules ladder ---------- */
+const RULES = [
+  ["R1","Uncombined element = 0","Fe, O₂, S₈"],
+  ["R2","Simple ion = its charge","Fe³⁺ is +3"],
+  ["R3","F is always −1","the most electronegative element"],
+  ["R4","Group 1 +1, Group 2 +2, Al +3","fixed in compounds"],
+  ["R5","H is +1","−1 in metal hydrides (NaH)"],
+  ["R6","O is −2","−1 in peroxides, positive with F"],
+  ["R7","Cl, Br, I are −1","unless with O, F or a more electronegative halogen"],
+  ["R8","Sum = overall charge","0 for a compound, the charge for an ion"],
+  ["R9","Spot a known ion","SO₄²⁻, NO₃⁻, NH₄⁺… splits two unknowns"],
+  ["R10","Most electronegative goes negative","when two non-metals are still unknown"]
+];
+const rulesEl = document.getElementById("rules");
+rulesEl.innerHTML = RULES.map(([id,t,s]) => `<li data-r="${id}"><span class="rn">${id.slice(1)}</span><b>${t}</b><small>${s}</small></li>`).join("");
+
+/* ---------- state ---------- */
+const $ = id => document.getElementById(id);
+const state = {mode:"explore", f:"Cr2O7", c:-2, info:null, res:null, step:0, quiz:{asked:0,right:0,answered:false,item:null}, inputCharge:0};
+
+/* ---------- picker ---------- */
+const picker = $("picker");
+picker.innerHTML = SPECIES.map((g,gi) => `<div class="group"><div class="label">${g.g}</div><div class="chips">${
+  g.items.map((it,ii) => `<button class="chip" data-g="${gi}" data-i="${ii}" title="${it.name}">${formulaHTML(it.f,it.c)}</button>`).join("")}</div></div>`).join("") +
+  `<div class="group entry"><div class="label">Your own species</div>
+    <div class="entry-row"><input id="fInput" placeholder="e.g. K2Cr2O7" autocomplete="off" spellcheck="false" aria-label="Formula"><button class="btn" id="go">Go</button></div>
+    <div class="charges" id="charges" role="group" aria-label="Overall charge">${[-3,-2,-1,0,1,2,3].map(c=>`<button data-c="${c}" aria-pressed="${c===0}">${c>0?"+"+c:c<0?MINUS+(-c):"0"}</button>`).join("")}</div>
+    <p class="hint">Pick the overall charge, or type it after a space or ^, e.g. <b>SO4 2-</b>. Brackets work: Ca(OH)2, [Fe(H2O)6] 3+.</p>
+    <p class="err" id="err" hidden></p></div>`;
+
+picker.addEventListener("click", e => {
+  const chip = e.target.closest(".chip");
+  if (chip){ const it = SPECIES[+chip.dataset.g].items[+chip.dataset.i]; load(it.f, it.c, it); if (state.mode==="quiz") setMode("explore"); return; }
+  const cb = e.target.closest("#charges button");
+  if (cb){ state.inputCharge = +cb.dataset.c; syncCharges(); }
+});
+function syncCharges(){ document.querySelectorAll("#charges button").forEach(b => b.setAttribute("aria-pressed", +b.dataset.c===state.inputCharge)); }
+function goCustom(){
+  const err = $("err"); err.hidden = true;
+  const raw = $("fInput").value; if (!raw.trim()) return;
+  const sc = splitCharge(raw);
+  if (sc.c!==null){ state.inputCharge = Math.max(-3,Math.min(3,sc.c)); syncCharges(); }
+  const c = sc.c!==null ? sc.c : state.inputCharge;
+  try { solve(sc.f, c); } catch(ex){ err.textContent = ex.message; err.hidden = false; return; }
+  if (state.mode==="quiz") setMode("explore");
+  load(sc.f, c, null);
+}
+$("go").addEventListener("click", goCustom);
+$("fInput").addEventListener("keydown", e => { if (e.key==="Enter") goCustom(); });
+
+/* ---------- load + render ---------- */
+function load(f, c, info){
+  state.f = f; state.c = c; state.info = info; state.step = 0;
+  try { state.res = solve(f, c); } catch(ex){ state.res = {error: ex.message, steps:[], els:[], counts:new Map()}; }
+  document.querySelectorAll(".chip").forEach(ch => { const it = SPECIES[+ch.dataset.g].items[+ch.dataset.i]; ch.setAttribute("aria-current", info && it===info); });
+  render();
+}
+
+function render(){
+  const {res, step, info} = state;
+  $("formula").innerHTML = formulaHTML(state.f, state.c);
+  $("speciesName").textContent = info ? info.name : "";
+  const quizHide = state.mode==="quiz" && !state.quiz.answered;
+  const note = $("note");
+  const showNote = info && info.note && step >= res.steps.length && !quizHide;
+  note.hidden = !showNote; if (showNote) note.textContent = info.note;
+
+  const shown = new Map();
+  res.steps.slice(0, step).forEach(s => shown.set(s.el, s));
+  const cur = step>0 ? res.steps[step-1] : null;
+  const next = res.steps[step];
+  const target = state.mode==="quiz" ? quizTarget() : null;
+
+  $("tiles").innerHTML = res.els.map(e => {
+    const s = shown.get(e), n = res.counts.get(e);
+    const cls = ["tile"]; if (cur && cur.el===e) cls.push("active"); if (target===e && !s) cls.push("target");
+    const osCls = s ? signCls(s.v) : "unk";
+    const dec = s && s.v.d>2 ? `≈ ${(val(s.v)>0?"+":MINUS)}${Math.abs(val(s.v)).toFixed(2)}` : "";
+    const roman = s && s.solved && s.v.d===1 && s.v.n>0 && s.v.n<=8 ? `${EL[e].name}(${ROMAN[s.v.n]})` : "";
+    return `<div class="${cls.join(" ")}"><div class="tile-top"><span class="sym">${e}</span><span class="count">${n>1?"× "+n:""}</span></div>
+      <div class="ename">${EL[e].name}</div>
+      <div class="os ${osCls}">${s ? fmtHTML(s.v) : "?"}</div>
+      <div class="os-dec">${dec || roman}</div>
+      <div class="rtag">${s ? "Rule "+s.rule.slice(1) : target===e ? "find this" : ""}</div></div>`;
+  }).join("");
+
+  // equation
+  if (res.error && !res.steps.length){ $("equation").innerHTML = ""; }
+  else {
+    const finding = cur && cur.solved ? cur.el : (next && next.solved && step < res.steps.length ? null : null);
+    const terms = res.els.map(e => {
+      const n = res.counts.get(e), s = shown.get(e);
+      const coef = n>1 ? n : "";
+      if (s && !(cur && cur.el===e && cur.solved)) return `<span class="t">${coef}(${fmt(s.v)})</span>`;
+      if (cur && cur.el===e && cur.solved) return `<span class="t x">${coef}<i>x</i></span>`;
+      return `<span class="t q">${coef}(?)</span>`;
+    });
+    $("equation").innerHTML = terms.join(" + ") + `<span class="eq">=</span><span class="t">${fmt(Fr(state.c))}</span>` +
+      (cur && cur.solved ? `<span class="eq">→</span><span class="t x"><i>x</i> = ${fmt(cur.v)}</span>` : "");
+  }
+
+  // explanation
+  const badge = $("badge"), ex = $("explain");
+  if (res.error && step >= res.steps.length){ badge.className="badge"; badge.textContent="Stuck"; ex.innerHTML = res.error; }
+  else if (!cur){
+    badge.className = "badge idle"; badge.textContent = "Start";
+    ex.innerHTML = quizHide ? "Choose an answer above, then step through the working." : `Find the oxidation state of each element in <span class="m">${formulaHTML(state.f,state.c)}</span>. Press <b>Next step</b> to apply the rules one at a time.`;
+  } else {
+    badge.className = "badge"; badge.textContent = "Rule " + cur.rule.slice(1);
+    let html = cur.html;
+    if (step===res.steps.length && !res.error){
+      const tot = res.els.reduce((a,e) => add(a, mul(shown.get(e).v, res.counts.get(e))), Fr(0));
+      html += `<span class="final">All ${res.els.length} elements assigned. Check: total = ${fmt(tot)} = overall charge ✓</span>`;
+      if (res.warn) html += `<span class="final" style="color:var(--neg)">${res.warn}</span>`;
+    }
+    ex.innerHTML = html;
+  }
+
+  // rules ladder
+  const used = new Set(res.steps.slice(0, step).map(s => s.rule));
+  rulesEl.querySelectorAll("li").forEach(li => { li.classList.toggle("used", used.has(li.dataset.r)); li.classList.toggle("now", !!cur && cur.rule===li.dataset.r); });
+
+  // controls
+  const lock = quizHide;
+  $("prev").disabled = lock || step===0;
+  $("next").disabled = lock || step>=res.steps.length;
+  $("all").disabled = lock || step>=res.steps.length;
+  $("reset").disabled = lock || step===0;
+  $("stepcount").textContent = res.steps.length ? `Step ${step} of ${res.steps.length}` : "";
+
+  renderLine(shown);
+}
+
+/* ---------- number line ---------- */
+const NL_MIN = -4, NL_MAX = 8;
+function renderLine(shown){
+  const pct = v => ((v-NL_MIN)/(NL_MAX-NL_MIN))*100;
+  let h = `<div class="nl-zone" style="left:0;width:${pct(0)}%;background:var(--neg)"></div><div class="nl-zone" style="left:${pct(0)}%;right:0;background:var(--pos)"></div><div class="nl-axis"></div>`;
+  for (let v=NL_MIN; v<=NL_MAX; v++) h += `<div class="nl-tick" style="left:${pct(v)}%"></div><div class="nl-num" style="left:${pct(v)}%">${v>0?"+"+v:v<0?MINUS+(-v):0}</div>`;
+  const stack = {};
+  [...shown.values()].forEach(s => {
+    const v = Math.max(NL_MIN, Math.min(NL_MAX, val(s.v)));
+    const key = v.toFixed(3); const k = stack[key] = (stack[key]||0)+1;
+    const col = s.v.n>0 ? "var(--pos)" : s.v.n<0 ? "var(--neg)" : "var(--zero)";
+    h += `<div class="nl-mark" style="left:${pct(v)}%;top:${30-(k-1)*28}px;background:${col};border-color:${col};color:var(--panel)">${s.el}</div>`;
+  });
+  $("nl").innerHTML = h;
+}
+
+/* ---------- step controls ---------- */
+const go = d => { state.step = Math.max(0, Math.min(state.res.steps.length, state.step + d)); render(); };
+$("prev").onclick = () => go(-1);
+$("next").onclick = () => go(1);
+$("all").onclick = () => { state.step = state.res.steps.length; render(); };
+$("reset").onclick = () => { state.step = 0; render(); };
+document.addEventListener("keydown", e => {
+  if (e.target.tagName==="INPUT") return;
+  if (state.mode==="quiz" && !state.quiz.answered) return;
+  if (e.key==="ArrowRight"){ e.preventDefault(); go(1); }
+  if (e.key==="ArrowLeft"){ e.preventDefault(); go(-1); }
+});
+
+/* ---------- quiz ---------- */
+const QUIZ_POOL = SPECIES.flatMap(g => g.items).filter(it => it.quiz!==false && !(it.f==="O2"));
+function quizTarget(){ return state.res && state.res.target; }
+function newQuestion(){
+  let it;
+  do { it = QUIZ_POOL[Math.floor(Math.random()*QUIZ_POOL.length)]; } while (QUIZ_POOL.length>1 && it===state.quiz.item);
+  state.quiz.item = it; state.quiz.answered = false;
+  load(it.f, it.c, it);
+  const t = quizTarget();
+  $("quizQ").innerHTML = `What is the oxidation state of <b>${EL[t].name}</b> in ${formulaHTML(it.f,it.c)}?`;
+  $("verdict").textContent = ""; $("verdict").className = "verdict";
+  $("answers").innerHTML = [-4,-3,-2,-1,0,1,2,3,4,5,6,7].map(v => `<button data-v="${v}">${v>0?"+"+v:v<0?MINUS+(-v):0}</button>`).join("");
+}
+$("answers").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b || state.quiz.answered) return;
+  const t = quizTarget(); const s = state.res.steps.find(x => x.el===t); const correct = s.v.d===1 ? s.v.n : null;
+  const v = +b.dataset.v; state.quiz.answered = true; state.quiz.asked++;
+  const ok = v===correct; if (ok) state.quiz.right++;
+  $("answers").querySelectorAll("button").forEach(x => { x.disabled = true; if (+x.dataset.v===correct) x.classList.add("right"); });
+  if (!ok) b.classList.add("wrong");
+  $("verdict").className = "verdict " + (ok?"good":"bad");
+  $("verdict").textContent = ok ? `Correct: ${EL[t].name} is ${fmt(s.v)}. Step through the working to check the method.` : `Not quite. ${EL[t].name} is ${fmt(s.v)}. Step through the working to see why.`;
+  $("score").textContent = `Score ${state.quiz.right} / ${state.quiz.asked}`;
+  render();
+});
+$("quizNext").onclick = newQuestion;
+
+function setMode(m){
+  state.mode = m;
+  $("modeExplore").setAttribute("aria-pressed", m==="explore");
+  $("modeQuiz").setAttribute("aria-pressed", m==="quiz");
+  $("quizPanel").hidden = m!=="quiz";
+  if (m==="quiz") newQuestion(); else render();
+}
+$("modeExplore").onclick = () => setMode("explore");
+$("modeQuiz").onclick = () => setMode("quiz");
+
+/* start on dichromate */
+load("Cr2O7", -2, SPECIES[2].items[2]);
+window.__solve = solve;
+})();
+</script>
+
+</body></html>
