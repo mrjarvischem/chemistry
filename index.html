@@ -107,7 +107,7 @@
   .group-label{ font-size:.78rem; font-weight:700; text-transform:uppercase; letter-spacing:.12em;
                 color:var(--accent); margin:22px 0 10px; }
   .group-label:first-child{ margin-top:0; }
-  .topics{ display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:10px; }
+  .topics{ display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:10px; align-items:start; }
   details.topic, div.topic{
     background:var(--card); border:1px solid var(--line); border-radius:12px;
   }
@@ -197,10 +197,13 @@
    ===================================================================== */
 const PDF_FOLDER = "25minpdf-1/";
 const pdf = (file, title) => ({ title: title || file, url: PDF_FOLDER + encodeURIComponent(file) + ".pdf" });
-const sheets = (base, n) => Array.from({ length: n }, (_, i) => pdf(`${base} - Sheet ${i + 1}`, `Sheet ${i + 1}`));
+const sheets = (base, n) => {
+  const label = base.replace(/^AQA\s+[\d.]+(\s+and\s+[\d.]+)?\s+/, "");   // "AQA 3.1.8 Lattice enthalpies" → "Lattice enthalpies"
+  return Array.from({ length: n }, (_, i) => pdf(`${base} - Sheet ${i + 1}`, `${label} – Sheet ${i + 1}`));
+};
 
 /* The screenshot cut these two names off – check they match the files exactly */
-const EQUILIBRIUM = "AQA 3.1.4 and 3.1.10 Equilibrium constants";
+const EQUILIBRIUM = "AQA 3.1.4 and 3.1.10 Equilibrium constants Kc and Kp";
 const PERIOD3     = "AQA 3.2.4 Period 3 elements and oxides";
 
 const SITE = {
