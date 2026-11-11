@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Buffers and pH Curves – MCQ Revision Quiz</title>
+<style>
+:root{
+  --bg:#f5eedf; --panel:#fffaf1; --ink:#33240f; --muted:#7d6a52; --line:#e3d4b9;
+  --brown:#7a4a21; --brown-dk:#5c3615; --tan:#efe2c8;
+  --ok:#2e7a4b; --ok-bg:#e4f2e8; --bad:#a2392a; --bad-bg:#f8e3de;
+  --past:#7a4a21; --adapted:#9a6a1c; --practice:#5f6b46;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.55 "Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif}
+a{color:var(--brown)}
+.wrap{max-width:820px;margin:0 auto;padding:16px 16px 48px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:14px;color:var(--muted);margin-bottom:14px}
+.top a{text-decoration:none}
+.top a:hover{text-decoration:underline}
+header h1{font-family:Georgia,"Times New Roman",serif;font-weight:700;font-size:clamp(28px,5vw,40px);line-height:1.15;margin:0 0 6px;color:var(--brown-dk)}
+header p{margin:0;color:var(--muted)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px;margin-top:18px;box-shadow:0 1px 0 rgba(90,60,20,.06)}
+.btn{appearance:none;border:0;border-radius:10px;padding:12px 20px;font:600 16px/1 inherit;font-family:inherit;cursor:pointer;background:var(--brown);color:#fff}
+.btn:hover{background:var(--brown-dk)}
+.btn:focus-visible,.opt:focus-visible{outline:3px solid #d9a441;outline-offset:2px}
+.btn.ghost{background:transparent;color:var(--brown);border:2px solid var(--brown)}
+.btn.ghost:hover{background:var(--tan)}
+.btn:disabled{opacity:.4;cursor:default}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0 20px}
+.stat{background:var(--tan);border-radius:10px;padding:12px;text-align:center}
+.stat b{display:block;font-size:26px;font-family:Georgia,serif;color:var(--brown-dk)}
+.stat span{font-size:13px;color:var(--muted)}
+label.chk{display:flex;gap:8px;align-items:center;cursor:pointer;margin:0 0 18px}
+label.chk input{width:18px;height:18px;accent-color:var(--brown)}
+.prog{display:flex;justify-content:space-between;font-size:14px;color:var(--muted);margin-bottom:8px}
+.bar{height:8px;background:var(--line);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--brown);width:0;transition:width .25s}
+.chip{display:inline-block;font-size:12.5px;font-weight:600;letter-spacing:.02em;padding:4px 10px;border-radius:99px;color:#fff;margin:16px 0 10px}
+.chip.past{background:var(--past)} .chip.adapted{background:var(--adapted)} .chip.practice{background:var(--practice)}
+.stem{font-size:18px;margin:0 0 14px}
+table.data{border-collapse:collapse;margin:0 0 16px;font-size:15px;max-width:100%}
+.tbl{overflow-x:auto}
+table.data th,table.data td{border:1px solid var(--line);padding:6px 12px;text-align:left}
+table.data th{background:var(--tan)}
+table.data td:not(:first-child),table.data th:not(:first-child){text-align:center}
+.opts{display:grid;gap:10px}
+.opt{display:flex;gap:12px;align-items:flex-start;text-align:left;width:100%;background:#fff;border:2px solid var(--line);border-radius:12px;padding:12px 14px;font:inherit;color:inherit;cursor:pointer;transition:border-color .15s,background .15s}
+.opt:hover:not(:disabled){border-color:var(--brown)}
+.opt .L{flex:0 0 30px;height:30px;border-radius:50%;background:var(--tan);color:var(--brown-dk);font-weight:700;display:grid;place-items:center;font-size:15px}
+.opt .T{padding-top:2px}
+.opt:disabled{cursor:default}
+.opt.right{border-color:var(--ok);background:var(--ok-bg)} .opt.right .L{background:var(--ok);color:#fff}
+.opt.wrong{border-color:var(--bad);background:var(--bad-bg)} .opt.wrong .L{background:var(--bad);color:#fff}
+.opt.dim{opacity:.55}
+.fb{margin-top:16px;border-radius:12px;padding:14px 16px;border-left:5px solid}
+.fb.ok{background:var(--ok-bg);border-color:var(--ok)} .fb.bad{background:var(--bad-bg);border-color:var(--bad)}
+.fb h3{margin:0 0 6px;font-size:16px}
+.fb p{margin:0}
+.next{margin-top:16px;display:flex;justify-content:flex-end}
+.big{font-family:Georgia,serif;font-size:56px;color:var(--brown-dk);margin:4px 0 0;line-height:1}
+.msg{color:var(--muted);margin:6px 0 18px}
+.rev{margin-top:22px}
+.rev h2{font-family:Georgia,serif;font-size:22px;color:var(--brown-dk);margin:0 0 10px}
+.ri{border-top:1px solid var(--line);padding:14px 0}
+.ri .src{font-size:13px;color:var(--muted)}
+.ri .ans{margin:6px 0;font-weight:600;color:var(--ok)}
+.ri .yours{color:var(--bad);font-size:15px}
+.key{font-size:13px;color:var(--muted);margin-top:14px}
+.legend{display:flex;flex-wrap:wrap;gap:8px 14px;font-size:13.5px;color:var(--muted)}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px;background:var(--c)}
+sub,sup{font-size:.72em;line-height:0}
+footer{margin-top:28px;font-size:13px;color:var(--muted);text-align:center}
+@media (max-width:520px){
+  body{font-size:16px}
+  .card{padding:16px}
+  .stem{font-size:17px}
+  .stats{gap:6px} .stat b{font-size:22px}
+  .opt{padding:10px 12px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><a href="/">← Mr Jarvis' Chemistry Page</a><span>AQA A-level Chemistry</span></div>
+  <header>
+    <h1>Buffers and pH Curves</h1>
+    <p>pH curves, indicators, titration technique and buffer calculations</p>
+  </header>
+  <main id="app"></main>
+  <footer>Past-paper questions © AQA, reproduced for revision. Adapted and practice questions written in AQA style.</footer>
+</div>
+<script>
+const QS = [{"k": "adapted", "s": "Adapted from AQA June 2017 · Paper 3", "q": "A strong alkali is added gradually to a weak acid and the pH is recorded. At which point on the pH curve can the solution act as a buffer?", "o": ["After a large excess of alkali has been added", "Before any alkali has been added", "When half the volume needed to reach the equivalence point has been added", "At the equivalence point"], "a": 2, "e": "At half-neutralisation the solution contains equal amounts of the weak acid HA and its salt A<sup>−<\/sup> – a buffer. This is the flat region of the curve, where pH = pK<sub>a<\/sub>.", "t": null}, {"k": "past", "s": "AQA November 2020 · Paper 3", "q": "A 0.10 mol dm<sup>−3<\/sup> solution of an acid is added slowly to 25 cm<sup>3<\/sup> of a 0.10 mol dm<sup>−3<\/sup> solution of a base. Which acid–base pair has the highest pH at the equivalence point?", "o": ["CH<sub>3<\/sub>COOH and NaOH", "CH<sub>3<\/sub>COOH and NH<sub>3<\/sub>", "HCl and NaOH", "HCl and NH<sub>3<\/sub>"], "a": 0, "e": "Weak acid + strong base gives a salt whose anion (CH<sub>3<\/sub>COO<sup>−<\/sup>) is basic, so the equivalence point is above pH 7 (about 8–9). Strong/strong is about 7; strong acid + weak base is below 7.", "t": null}, {"k": "past", "s": "AQA June 2018 · Paper 3", "q": "Which indicator should be used in a titration to find the concentration of a solution of methylamine using 0.010 mol dm<sup>−3<\/sup> hydrochloric acid?", "o": ["Thymol blue (pH range 1.2–2.8)", "Bromophenol blue (pH range 3.0–4.6)", "Phenol red (pH range 6.8–8.4)", "Phenolphthalein (pH range 8.3–10.0)"], "a": 1, "e": "Methylamine is a weak base and HCl a strong acid, so the equivalence point is acidic and the vertical section is roughly pH 3–7. The indicator range must lie within the vertical section: bromophenol blue.", "t": null}, {"k": "past", "s": "AQA June 2022 · Paper 3", "q": "Equal volumes of two solutions, each with the same concentration, are mixed at 298 K. Which two solutions form a solution with a pH &gt; 7?", "o": ["HCOOH and HCOOK", "KOH and CH<sub>3<\/sub>COOH", "NH<sub>3<\/sub> and HCl", "NH<sub>4<\/sub>Cl and KCl"], "a": 1, "e": "KOH and CH<sub>3<\/sub>COOH neutralise exactly to give potassium ethanoate. The ethanoate ion is a weak base, so the solution is alkaline. A is an acidic buffer; C and D give NH<sub>4<\/sub><sup>+<\/sup>, which is acidic.", "t": null}, {"k": "past", "s": "AQA June 2023 · Paper 3", "q": "Equal volumes of pairs of solutions are mixed. Which pair forms a buffer solution?", "o": ["ammonia and ammonium chloride", "ammonia and methylamine", "ethanoic acid and methanoic acid", "hydrochloric acid and sodium hydroxide"], "a": 0, "e": "A buffer needs a weak acid and its conjugate base (or a weak base and its conjugate acid). NH<sub>3<\/sub> / NH<sub>4<\/sub><sup>+<\/sup> is a basic buffer.", "t": null}, {"k": "adapted", "s": "Adapted from AQA June 2018 · AS Paper 1", "q": "A few drops of methyl orange are added to dilute sulfuric acid in a conical flask, which is titrated with sodium hydroxide from a burette. Methyl orange is red in acid and yellow in alkali. Which colour change is seen at the end point?", "o": ["Yellow to orange", "Red to yellow", "Yellow to red", "Red to orange"], "a": 3, "e": "The flask starts acidic, so the indicator is red. The end point is when one drop of alkali makes it change permanently to the intermediate colour, <b>orange<\/b>. Going all the way to yellow means you have overshot.", "t": null}, {"k": "past", "s": "AQA November 2020 · Paper 3", "q": "A student rinsed the apparatus before starting an acid–base titration. The volume of acid added from the burette was larger than expected. Which is a possible reason?", "o": ["The conical flask was rinsed with water before the titration.", "The walls of the conical flask were rinsed with water during the titration.", "The pipette was rinsed only with water.", "The burette was rinsed only with water."], "a": 3, "e": "Water left in the burette dilutes the acid, so more acid is needed. Water in the conical flask does not change the moles of alkali; a water-rinsed pipette dilutes the alkali, so <i>less<\/i> acid would be needed.", "t": null}, {"k": "adapted", "s": "Adapted from AQA June 2022 · Paper 1", "q": "How can a buffer solution be made from solutions of potassium hydroxide and ethanoic acid?", "o": ["Add an excess of potassium hydroxide to ethanoic acid", "Mix equal amounts (in moles) of potassium hydroxide and ethanoic acid", "Add potassium hydroxide to an excess of ethanoic acid", "Add both to a large volume of water"], "a": 2, "e": "With ethanoic acid in excess, CH<sub>3<\/sub>COOH + KOH → CH<sub>3<\/sub>COOK + H<sub>2<\/sub>O leaves a mixture of the weak acid and its salt (CH<sub>3<\/sub>COO<sup>−<\/sup>) – a buffer. Equal moles gives just the salt; excess KOH gives a strong alkali.", "t": null}, {"k": "adapted", "s": "Adapted from AQA June 2025 · Paper 1", "q": "A buffer contains ethanoic acid and sodium ethanoate. How does it resist a change in pH when a small amount of NaOH is added?", "o": ["The ethanoic acid is fully dissociated, so its H<sup>+<\/sup> ions neutralise the OH<sup>−<\/sup>", "OH<sup>−<\/sup> ions react with CH<sub>3<\/sub>COO<sup>−<\/sup> ions, so [OH<sup>−<\/sup>] stays constant", "OH<sup>−<\/sup> ions react with CH<sub>3<\/sub>COOH to form CH<sub>3<\/sub>COO<sup>−<\/sup> and water; the ratio [CH<sub>3<\/sub>COOH]/[CH<sub>3<\/sub>COO<sup>−<\/sup>] stays almost constant", "Na<sup>+<\/sup> ions remove the added OH<sup>−<\/sup> as a precipitate"], "a": 2, "e": "The large reservoir of weak acid removes the added OH<sup>−<\/sup>: CH<sub>3<\/sub>COOH + OH<sup>−<\/sup> → CH<sub>3<\/sub>COO<sup>−<\/sup> + H<sub>2<\/sub>O. Because [HA] and [A<sup>−<\/sup>] are both large, their ratio – and so [H<sup>+<\/sup>] – hardly changes.", "t": null}, {"k": "adapted", "s": "Adapted from AQA June 2019 · Paper 1", "q": "NaOH is added from a burette to 25 cm<sup>3<\/sup> of propanoic acid and a pH curve is plotted. How can K<sub>a<\/sub> be found from the curve?", "o": ["Starting pH = pK<sub>a<\/sub>", "pH at half the equivalence volume = K<sub>a<\/sub>", "pH at the equivalence point = pK<sub>a<\/sub>", "pH at half the equivalence volume = pK<sub>a<\/sub>"], "a": 3, "e": "At half-neutralisation [HA] = [A<sup>−<\/sup>], so K<sub>a<\/sub> = [H<sup>+<\/sup>][A<sup>−<\/sup>]/[HA] = [H<sup>+<\/sup>]. Therefore pH = pK<sub>a<\/sub>, and K<sub>a<\/sub> = 10<sup>−pH<\/sup> at that point.", "t": null}, {"k": "adapted", "s": "Adapted from AQA June 2019 · Paper 1", "q": "Which indicator is most appropriate for the titration of propanoic acid with sodium hydroxide?", "o": ["methyl orange (3.1–4.4)", "bromothymol blue (6.0–7.6)", "cresolphthalein (8.2–9.8)", "indigo carmine (11.6–13.0)"], "a": 2, "e": "Weak acid + strong base: the equivalence point is about pH 8–9 and the vertical section runs from about 7 to 11. Cresolphthalein changes colour within this range.", "t": null}, {"k": "adapted", "s": "Adapted from AQA June 2023 · Paper 1", "q": "A student plans to titrate butanoic acid with ethylamine solution. Why can this titration not be done using an indicator?", "o": ["Ethylamine reacts with the indicator", "There is no sharp (vertical) change in pH at the equivalence point", "The equivalence point is at exactly pH 7", "Both solutions are colourless"], "a": 1, "e": "Weak acid + weak base gives a pH curve with no steep vertical section, so no indicator changes colour sharply over the addition of one drop. A pH meter is used instead.", "t": null}, {"k": "adapted", "s": "Adapted from AQA June 2019 · Paper 1", "q": "A buffer is made by adding 0.0136 mol of KX to 100 cm<sup>3<\/sup> of 0.500 mol dm<sup>−3<\/sup> HX (K<sub>a<\/sub> = 1.41 × 10<sup>−5<\/sup> mol dm<sup>−3<\/sup>). Then 3.00 × 10<sup>−4<\/sup> mol of KOH is added. What is the pH?", "o": ["5.40", "4.85", "4.30", "2.58"], "a": 2, "e": "KOH converts HX into X<sup>−<\/sup>: HX = 0.0500 − 0.0003 = 0.0497 mol; X<sup>−<\/sup> = 0.0136 + 0.0003 = 0.0139 mol.<br>[H<sup>+<\/sup>] = 1.41 × 10<sup>−5<\/sup> × 0.0497/0.0139 = 5.04 × 10<sup>−5<\/sup>; pH = <b>4.30<\/b>.", "t": null}, {"k": "adapted", "s": "Adapted from AQA June 2023 · Paper 1", "q": "20.0 cm<sup>3<\/sup> of 0.100 mol dm<sup>−3<\/sup> NaOH are added to 25.0 cm<sup>3<\/sup> of 0.100 mol dm<sup>−3<\/sup> butanoic acid (K<sub>a<\/sub> = 1.51 × 10<sup>−5<\/sup> mol dm<sup>−3<\/sup>). What is the pH of the solution formed?", "o": ["2.91", "4.22", "4.82", "5.42"], "a": 3, "e": "NaOH = 2.00 × 10<sup>−3<\/sup> mol, acid = 2.50 × 10<sup>−3<\/sup> mol. After reaction: HA = 0.50 × 10<sup>−3<\/sup>, A<sup>−<\/sup> = 2.00 × 10<sup>−3<\/sup> mol (a buffer).<br>[H<sup>+<\/sup>] = 1.51 × 10<sup>−5<\/sup> × 0.50/2.00 = 3.78 × 10<sup>−6<\/sup>; pH = <b>5.42<\/b>.", "t": null}, {"k": "adapted", "s": "Adapted from AQA June 2018 · Paper 1", "q": "A buffer contains 0.025 mol of sodium ethanoate in 500 cm<sup>3<\/sup> of 0.0700 mol dm<sup>−3<\/sup> ethanoic acid. 5.00 cm<sup>3<\/sup> of 2.00 mol dm<sup>−3<\/sup> HCl is added. What is the pH? (K<sub>a<\/sub> = 1.76 × 10<sup>−5<\/sup> mol dm<sup>−3<\/sup>)", "o": ["1.70", "4.28", "4.61", "5.23"], "a": 1, "e": "HCl = 0.0100 mol converts A<sup>−<\/sup> into HA: CH<sub>3<\/sub>COOH = 0.035 + 0.010 = 0.045 mol; CH<sub>3<\/sub>COO<sup>−<\/sup> = 0.025 − 0.010 = 0.015 mol.<br>[H<sup>+<\/sup>] = 1.76 × 10<sup>−5<\/sup> × 0.045/0.015 = 5.28 × 10<sup>−5<\/sup>; pH = <b>4.28<\/b>. (4.61 is the pH before adding HCl.)", "t": null}, {"k": "adapted", "s": "Adapted from AQA June 2017 · Paper 1", "q": "A buffer of ethanoic acid and sodium ethanoate has pH 3.87 and [CH<sub>3<\/sub>COO<sup>−<\/sup>] = 0.136 mol dm<sup>−3<\/sup>. What is the concentration of ethanoic acid? (K<sub>a<\/sub> = 1.74 × 10<sup>−5<\/sup> mol dm<sup>−3<\/sup>)", "o": ["1.05 mol dm<sup>−3<\/sup>", "0.136 mol dm<sup>−3<\/sup>", "0.0175 mol dm<sup>−3<\/sup>", "1.35 × 10<sup>−4<\/sup> mol dm<sup>−3<\/sup>"], "a": 0, "e": "[H<sup>+<\/sup>] = 10<sup>−3.87<\/sup> = 1.35 × 10<sup>−4<\/sup>. [HA] = [H<sup>+<\/sup>][A<sup>−<\/sup>]/K<sub>a<\/sub> = 1.35 × 10<sup>−4<\/sup> × 0.136 ÷ 1.74 × 10<sup>−5<\/sup> = <b>1.05 mol dm<sup>−3<\/sup><\/b>.", "t": null}, {"k": "adapted", "s": "Adapted from AQA June 2017 · Paper 1", "q": "A buffer has [CH<sub>3<\/sub>COOH] = 0.260 and [CH<sub>3<\/sub>COO<sup>−<\/sup>] = 0.121 mol dm<sup>−3<\/sup>. 7.00 × 10<sup>−3<\/sup> mol of NaOH is added to 500 cm<sup>3<\/sup> of it. What is the new pH? (K<sub>a<\/sub> = 1.74 × 10<sup>−5<\/sup> mol dm<sup>−3<\/sup>)", "o": ["4.35", "4.43", "4.47", "4.50"], "a": 3, "e": "In 500 cm<sup>3<\/sup>: HA = 0.130 mol, A<sup>−<\/sup> = 0.0605 mol. After NaOH: HA = 0.123, A<sup>−<\/sup> = 0.0675 mol.<br>[H<sup>+<\/sup>] = 1.74 × 10<sup>−5<\/sup> × 0.123/0.0675 = 3.17 × 10<sup>−5<\/sup>; pH = <b>4.50<\/b>. Work in moles, not concentrations.", "t": null}, {"k": "adapted", "s": "Adapted from AQA November 2020 · Paper 1", "q": "A buffer with pH 4.50 is made by dissolving x g of sodium propanoate (C<sub>2<\/sub>H<sub>5<\/sub>COONa, M<sub>r<\/sub> = 96.0) in propanoic acid. The final volume is 500 cm<sup>3<\/sup> and [propanoic acid] = 0.250 mol dm<sup>−3<\/sup>. What is x? (K<sub>a<\/sub> = 1.35 × 10<sup>−5<\/sup> mol dm<sup>−3<\/sup>)", "o": ["1.28", "2.56", "5.12", "10.2"], "a": 2, "e": "[H<sup>+<\/sup>] = 10<sup>−4.50<\/sup> = 3.16 × 10<sup>−5<\/sup>. [A<sup>−<\/sup>] = K<sub>a<\/sub>[HA]/[H<sup>+<\/sup>] = 1.35 × 10<sup>−5<\/sup> × 0.250 ÷ 3.16 × 10<sup>−5<\/sup> = 0.107 mol dm<sup>−3<\/sup>.<br>Moles in 0.500 dm<sup>3<\/sup> = 0.0534; mass = 0.0534 × 96.0 = <b>5.12 g<\/b>.", "t": null}, {"k": "adapted", "s": "Adapted from AQA June 2025 · Paper 1", "q": "Buffer B: 0.656 g of sodium ethanoate (M<sub>r<\/sub> = 82.0) in 50 cm<sup>3<\/sup> of 0.120 mol dm<sup>−3<\/sup> ethanoic acid; pH = 4.87 (K<sub>a<\/sub> = 1.78 × 10<sup>−5<\/sup> mol dm<sup>−3<\/sup>). 1.50 cm<sup>3<\/sup> of 0.200 mol dm<sup>−3<\/sup> HCl is added. By how much does the pH change?", "o": ["0.01", "0.03", "0.30", "3.00"], "a": 1, "e": "CH<sub>3<\/sub>COO<sup>−<\/sup> = 0.00800 mol, CH<sub>3<\/sub>COOH = 0.00600 mol. HCl = 3.00 × 10<sup>−4<\/sup> mol → A<sup>−<\/sup> = 0.00770, HA = 0.00630.<br>[H<sup>+<\/sup>] = 1.78 × 10<sup>−5<\/sup> × 0.00630/0.00770 = 1.46 × 10<sup>−5<\/sup>; pH = 4.84. Change = <b>0.03<\/b> – a buffer barely changes.", "t": null}, {"k": "practice", "s": "Practice question", "q": "Which mixture forms a buffer solution?", "o": ["25 cm<sup>3<\/sup> of 0.10 mol dm<sup>−3<\/sup> HCl + 50 cm<sup>3<\/sup> of 0.10 mol dm<sup>−3<\/sup> NaCl", "50 cm<sup>3<\/sup> of 0.10 mol dm<sup>−3<\/sup> NaOH + 25 cm<sup>3<\/sup> of 0.10 mol dm<sup>−3<\/sup> CH<sub>3<\/sub>COOH", "25 cm<sup>3<\/sup> of 0.10 mol dm<sup>−3<\/sup> NaOH + 50 cm<sup>3<\/sup> of 0.10 mol dm<sup>−3<\/sup> CH<sub>3<\/sub>COOH", "25 cm<sup>3<\/sup> of 0.10 mol dm<sup>−3<\/sup> NaOH + 25 cm<sup>3<\/sup> of 0.10 mol dm<sup>−3<\/sup> CH<sub>3<\/sub>COOH"], "a": 2, "e": "25 cm<sup>3<\/sup> NaOH with 50 cm<sup>3<\/sup> acid half-neutralises the acid, leaving equal moles of CH<sub>3<\/sub>COOH and CH<sub>3<\/sub>COO<sup>−<\/sup>. Equal amounts give only the salt; excess NaOH leaves a strong alkali; HCl with NaCl is a strong acid and its salt, which cannot buffer.", "t": null}, {"k": "practice", "s": "Practice question", "q": "Why is the pH at the equivalence point above 7 when ethanoic acid is titrated with sodium hydroxide?", "o": ["Ethanoate ions accept H<sup>+<\/sup> from water, forming OH<sup>−<\/sup> ions", "Ethanoic acid is only partly dissociated at the equivalence point", "Na<sup>+<\/sup> ions react with water to form NaOH", "Excess NaOH remains at the equivalence point"], "a": 0, "e": "At equivalence the solution is sodium ethanoate. CH<sub>3<\/sub>COO<sup>−<\/sup> is the conjugate base of a weak acid: CH<sub>3<\/sub>COO<sup>−<\/sup> + H<sub>2<\/sub>O ⇌ CH<sub>3<\/sub>COOH + OH<sup>−<\/sup>, so the solution is slightly alkaline.", "t": null}, {"k": "practice", "s": "Practice question", "q": "A buffer contains ammonia and ammonium chloride. How does it resist a fall in pH when a small amount of acid is added?", "o": ["Added H<sup>+<\/sup> reacts with NH<sub>3<\/sub> to form NH<sub>4<\/sub><sup>+<\/sup>", "Added H<sup>+<\/sup> reacts with NH<sub>4<\/sub><sup>+<\/sup> to form NH<sub>3<\/sub>", "Added H<sup>+<\/sup> reacts with Cl<sup>−<\/sup> to form HCl", "Added H<sup>+<\/sup> reacts with water to form H<sub>3<\/sub>O<sup>+<\/sup>"], "a": 0, "e": "NH<sub>3<\/sub> + H<sup>+<\/sup> → NH<sub>4<\/sub><sup>+<\/sup>. The large amounts of NH<sub>3<\/sub> and NH<sub>4<\/sub><sup>+<\/sup> mean the ratio between them barely changes, so the pH stays almost constant.", "t": null}, {"k": "practice", "s": "Practice question", "q": "Which indicator would <b>not<\/b> be suitable for titrating ethanoic acid with sodium hydroxide?", "o": ["Phenolphthalein (8.3–10.0)", "Thymol blue (8.0–9.6)", "Cresolphthalein (8.2–9.8)", "Methyl orange (3.1–4.4)"], "a": 3, "e": "The vertical section for weak acid / strong base is roughly pH 7–11. Methyl orange would change colour in the buffer region well before the equivalence point.", "t": null}, {"k": "practice", "s": "Practice question", "q": "A buffer contains equal concentrations of a weak acid HA and its sodium salt NaA. K<sub>a<\/sub> for HA = 1.8 × 10<sup>−5<\/sup> mol dm<sup>−3<\/sup>. What is the pH?", "o": ["2.37", "4.74", "7.00", "9.26"], "a": 1, "e": "When [HA] = [A<sup>−<\/sup>], [H<sup>+<\/sup>] = K<sub>a<\/sub>, so pH = pK<sub>a<\/sub> = −log(1.8 × 10<sup>−5<\/sup>) = <b>4.74<\/b>.", "t": null}, {"k": "practice", "s": "Practice question", "q": "A buffer solution is diluted with an equal volume of water. What happens to its pH?", "o": ["It stays almost the same, because the ratio [HA]/[A<sup>−<\/sup>] is unchanged", "It increases by 0.30", "It decreases by 0.30", "It becomes 7.00"], "a": 0, "e": "[H<sup>+<\/sup>] = K<sub>a<\/sub> × [HA]/[A<sup>−<\/sup>]. Dilution halves both concentrations, so the ratio – and therefore the pH – stays (almost) the same.", "t": null}];
+const LET = ['A','B','C','D'];
+const KIND = {past:'Past paper', adapted:'Adapted', practice:'Practice'};
+const app = document.getElementById('app');
+let order = [], pos = 0, score = 0, answered = false, log = [], shuffle = false;
+
+function counts(){ const c={past:0,adapted:0,practice:0}; QS.forEach(q=>c[q.k]++); return c; }
+function shuffled(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+function table(t){
+  if(!t) return '';
+  let h='<div class="tbl"><table class="data"><thead><tr>'+t[0].map(c=>'<th>'+c+'</th>').join('')+'</tr></thead><tbody>';
+  t.slice(1).forEach(r=>{h+='<tr>'+r.map(c=>'<td>'+c+'</td>').join('')+'</tr>';});
+  return h+'</tbody></table></div>';
+}
+
+function start(){
+  const c = counts();
+  app.innerHTML = `<section class="card">
+    <p style="margin:0">${QS.length} multiple-choice questions. Choose an answer to see whether you are right and why. Your score is shown at the end, with a review of anything you got wrong.</p>
+    <div class="stats">
+      <div class="stat"><b>${c.past}</b><span>AQA past paper</span></div>
+      <div class="stat"><b>${c.adapted}</b><span>Adapted from AQA</span></div>
+      <div class="stat"><b>${c.practice}</b><span>Practice</span></div>
+    </div>
+    <label class="chk"><input type="checkbox" id="shuf" ${shuffle?'checked':''}> Shuffle the question order</label>
+    <div class="row"><button class="btn" id="go">Start quiz</button></div>
+    <p class="key">Keyboard: press A–D (or 1–4) to answer and Enter for the next question.</p>
+  </section>`;
+  document.getElementById('go').onclick = () => {
+    shuffle = document.getElementById('shuf').checked;
+    begin([...QS.keys()]);
+  };
+  document.getElementById('go').focus();
+}
+
+function begin(idx){
+  order = shuffle ? shuffled(idx) : idx; pos = 0; score = 0; log = [];
+  show();
+}
+
+function show(){
+  answered = false;
+  const q = QS[order[pos]];
+  app.innerHTML = `<section class="card">
+    <div class="prog"><span>Question ${pos+1} of ${order.length}</span><span>Score: ${score}</span></div>
+    <div class="bar"><i style="width:${pos/order.length*100}%"></i></div>
+    <span class="chip ${q.k}">${q.s}</span>
+    <p class="stem">${q.q}</p>
+    ${table(q.t)}
+    <div class="opts">${q.o.map((o,i)=>`<button class="opt" data-i="${i}"><span class="L">${LET[i]}</span><span class="T">${o}</span></button>`).join('')}</div>
+    <div id="fb"></div>
+  </section>`;
+  app.querySelectorAll('.opt').forEach(b => b.onclick = () => choose(+b.dataset.i));
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function choose(i){
+  if(answered) return;
+  answered = true;
+  const q = QS[order[pos]], ok = i === q.a;
+  if(ok) score++;
+  log.push({qi:order[pos], pick:i, ok});
+  app.querySelectorAll('.opt').forEach((b,j)=>{
+    b.disabled = true;
+    if(j===q.a) b.classList.add('right');
+    else if(j===i) b.classList.add('wrong');
+    else b.classList.add('dim');
+  });
+  const last = pos === order.length-1;
+  document.getElementById('fb').innerHTML = `<div class="fb ${ok?'ok':'bad'}" role="status">
+      <h3>${ok?'Correct!':'Not quite – the answer is '+LET[q.a]}</h3><p>${q.e}</p></div>
+    <div class="next"><button class="btn" id="nx">${last?'See my score':'Next question →'}</button></div>`;
+  app.querySelector('.prog span:last-child').textContent = 'Score: '+score;
+  const nx = document.getElementById('nx');
+  nx.onclick = next; nx.focus({preventScroll:true});
+  document.getElementById('fb').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function next(){ if(pos < order.length-1){ pos++; show(); } else results(); }
+
+function results(){
+  const n = order.length, pct = Math.round(score/n*100);
+  const msg = pct===100?'Perfect score – excellent!':pct>=80?'Great work. Check the review below for anything you missed.':pct>=60?'Good effort. Go through the review below, then retry the ones you got wrong.':'Keep going – read the explanations below carefully, then retry the questions you got wrong.';
+  const wrong = log.filter(l=>!l.ok);
+  let rev = '';
+  if(wrong.length){
+    rev = '<div class="rev"><h2>Review</h2>' + wrong.map(l=>{
+      const q = QS[l.qi];
+      return `<div class="ri"><div class="src">${q.s}</div><p style="margin:4px 0">${q.q}</p>${table(q.t)}
+        <div class="yours">Your answer: ${LET[l.pick]} – ${q.o[l.pick]}</div>
+        <div class="ans">Correct answer: ${LET[q.a]} – ${q.o[q.a]}</div><p style="margin:0">${q.e}</p></div>`;
+    }).join('') + '</div>';
+  }
+  app.innerHTML = `<section class="card" style="text-align:center">
+      <div class="big">${score} / ${n}</div>
+      <p class="msg">${pct}% · ${msg}</p>
+      <div class="row" style="justify-content:center">
+        ${wrong.length?'<button class="btn" id="rw">Retry the '+wrong.length+' I got wrong</button>':''}
+        <button class="btn ghost" id="ra">Start again</button>
+      </div>
+    </section>
+    ${wrong.length?'<section class="card">'+rev+'</section>':''}`;
+  if(wrong.length) document.getElementById('rw').onclick = () => begin(wrong.map(l=>l.qi));
+  document.getElementById('ra').onclick = start;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+document.addEventListener('keydown', e => {
+  if(e.ctrlKey||e.metaKey||e.altKey) return;
+  const k = e.key.toUpperCase();
+  const btns = app.querySelectorAll('.opt');
+  if(btns.length && !answered){
+    let i = LET.indexOf(k); if(i<0 && '1234'.includes(k)) i = +k-1;
+    if(i>=0 && i<btns.length){ e.preventDefault(); choose(i); }
+  }
+});
+
+start();
+</script>
+</body>
+</html>
