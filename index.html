@@ -64,7 +64,7 @@
   .level-intro h2{ font-family:Fraunces, Georgia, serif; font-size:1.9rem; margin:0; }
   .level-intro p{ margin:0; color:var(--ink-soft); }
 
-  .cat-nav{ display:grid; grid-template-columns:repeat(4, 1fr); gap:14px; margin-bottom:48px; }
+  .cat-nav{ display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:14px; margin-bottom:48px; }
   .cat-tile{
     appearance:none; text-align:left; font:inherit; color:inherit; cursor:pointer;
     background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
@@ -132,7 +132,10 @@
                text-decoration:none; color:var(--ink-soft); }
   .topic li a:hover{ background:var(--accent-soft); color:var(--ink); }
   .topic li a::after{ content:"→"; color:var(--accent); }
+  .topic li a[data-pdf]::after{ content:"PDF ↗"; font-size:.72rem; font-weight:700; align-self:center;
+                                 background:var(--accent-soft); padding:2px 8px; border-radius:20px; }
 
+  .tracker-card{ margin-bottom:18px; }
   .empty{ border:1px dashed var(--line); border-radius:var(--radius); padding:28px; text-align:center; color:var(--muted); }
 
   footer{ border-top:1px solid var(--line); padding:26px 20px; color:var(--muted); font-size:.88rem; }
@@ -179,12 +182,27 @@
    • Anything with url: ""  shows as "Coming soon".
    • To make something live, put its file name in url, e.g.
        url: "gcse/practicals/making-salts.html"
-   • Quizzes and walkthroughs are listed under a topic. The topic name
-     must match one in the "topics" list exactly, e.g.
+   • Quizzes, revision activities and walkthroughs are listed under a
+     topic. The topic name must match one in the "topics" list exactly, e.g.
        "3. Quantitative chemistry": [
          { title: "Moles and mass", url: "gcse/quizzes/moles.html" },
        ],
+   • 25-minute revision activities are PDFs in the 25minpdf-1 folder.
+     sheets("AQA 3.1.1 Atomic structure", 6) adds Sheet 1 to Sheet 6 for
+     files named "AQA 3.1.1 Atomic structure - Sheet 1.pdf" and so on.
+     To add one more sheet, just increase the number. For a single PDF
+     with a different name use pdf("Exact file name without .pdf").
+   • trackerPdf is the downloadable revision tracker. Put its file
+     name in, e.g. trackerPdf: "25minpdf-1/A-level revision tracker.pdf"
    ===================================================================== */
+const PDF_FOLDER = "25minpdf-1/";
+const pdf = (file, title) => ({ title: title || file, url: PDF_FOLDER + encodeURIComponent(file) + ".pdf" });
+const sheets = (base, n) => Array.from({ length: n }, (_, i) => pdf(`${base} - Sheet ${i + 1}`, `Sheet ${i + 1}`));
+
+/* The screenshot cut these two names off – check they match the files exactly */
+const EQUILIBRIUM = "AQA 3.1.4 and 3.1.10 Equilibrium constants";
+const PERIOD3     = "AQA 3.2.4 Period 3 elements and oxides";
+
 const SITE = {
   gcse: {
     name: "GCSE",
@@ -216,6 +234,10 @@ const SITE = {
     ],
     quizzes: {
       // "3. Quantitative chemistry": [ { title: "Moles and mass", url: "gcse/quizzes/moles.html" } ],
+    },
+    trackerPdf: "",
+    activities: {
+      // "3. Quantitative chemistry": sheets("AQA 3 Quantitative chemistry", 4),
     },
     walkthroughs: {
       "4. Chemical changes": [
@@ -329,6 +351,21 @@ const SITE = {
         { title: "Reaction map quiz", url: "organic-1/reactionmap-quiz.html" },
       ],
     },
+    trackerPdf: "",
+    activities: {
+      "3.1.1 Atomic structure": sheets("AQA 3.1.1 Atomic structure", 6),
+      "3.1.2 Amount of substance": sheets("AQA 3.1.2 Amount of substance", 11),
+      "3.1.4 Energetics": sheets("AQA 3.1.4 Energetics", 1),
+      "3.1.6 Chemical equilibria and Kc": sheets(EQUILIBRIUM, 9),
+      "3.1.7 Oxidation, reduction and redox equations": sheets("AQA 3.1.7 Redox", 3),
+      "3.1.8 Thermodynamics": sheets("AQA 3.1.8 Lattice enthalpies", 3),
+      "3.1.9 Rate equations": sheets("AQA 3.1.9 Rate equations", 6),
+      "3.1.10 Equilibrium constant Kp": sheets(EQUILIBRIUM, 9),
+      "3.1.12 Acids and bases": sheets("AQA 3.1.12 Acids and bases", 8),
+      "3.2.2 Group 2, the alkaline earth metals": sheets("AQA 3.2.2 and 3.2.3 Tests for ions", 6),
+      "3.2.3 Group 7, the halogens": sheets("AQA 3.2.2 and 3.2.3 Tests for ions", 6),
+      "3.2.4 Properties of Period 3 elements and their oxides": sheets(PERIOD3, 6),
+    },
     walkthroughs: {
       "3.1.1 Atomic structure": [
         { title: "Electron configuration", url: "a-level-1/as-electron.html" },
@@ -398,6 +435,7 @@ const ICONS = {
   practicals: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v6L4.6 18.4A2 2 0 0 0 6.3 21.5h11.4a2 2 0 0 0 1.7-3.1L14 9V3"/><path d="M7.5 15h9"/></svg>',
   labs: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4M10 7v3l-2 3h8l-2-3V7"/></svg>',
   quizzes: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.4 2.3c-.6.3-.9.9-.9 1.5V14M12 17h.01"/></svg>',
+  activities: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M10 2h4M12 2v3"/></svg>',
   walkthroughs: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2V5z"/><path d="M19 19v2H6M8 7h7M8 11h5"/></svg>',
 };
 
@@ -405,7 +443,8 @@ const CATS = [
   { key: "practicals",   title: "Required practical walkthroughs", blurb: "Step-by-step guides to each AQA required practical: method, results and the exam questions that come with them.", type: "cards" },
   { key: "labs",         title: "Virtual lab experiments",        blurb: "Interactive experiments you can run on screen, in class or at home.", type: "cards" },
   { key: "quizzes",      title: "Multiple choice revision quizzes", blurb: "Quick-fire quizzes by topic. Open a topic to see the quizzes inside it.", type: "topics" },
-  { key: "walkthroughs", title: "Topic walkthroughs",             blurb: "Guided explanations that build each topic up from the basics.", type: "topics" },
+  { key: "activities",   title: "25-minute revision activities", blurb: "Printable revision activities for each topic. Download the PDF, set a 25-minute timer and work through it, then record it on your revision tracker.", type: "topics" },
+  { key: "walkthroughs", title: "Topic walkthroughs",            blurb: "Guided explanations that build each topic up from the basics.", type: "topics" },
 ];
 
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
@@ -415,7 +454,7 @@ const topicGroup = t => typeof t === "string" ? "" : (t.group || "");
 function liveCount(L, key) {
   const v = L[key];
   if (Array.isArray(v)) return v.filter(i => i.url).length;
-  return Object.values(v || {}).reduce((n, arr) => n + arr.filter(i => i.url).length, 0);
+  return new Set(Object.values(v || {}).flat().filter(i => i.url).map(i => i.url)).size;   // a file listed under two topics counts once
 }
 
 function renderCards(items, catTitle) {
@@ -448,11 +487,23 @@ function renderTopics(topics, links) {
     const items = (links[topicName(t)] || []).filter(i => i.url);
     html += items.length
       ? `<details class="topic"><summary><span class="name">${esc(topicName(t))}</span><span class="count">${items.length}</span></summary>
-           <ul>${items.map(i => `<li><a href="${esc(i.url)}">${esc(i.title)}</a></li>`).join("")}</ul></details>`
+           <ul>${items.map(i => /\.pdf(#|$)/i.test(i.url)
+             ? `<li><a href="${esc(i.url)}" target="_blank" rel="noopener" data-pdf>${esc(i.title)}</a></li>`
+             : `<li><a href="${esc(i.url)}">${esc(i.title)}</a></li>`).join("")}</ul></details>`
       : `<div class="topic"><div class="row"><span>${esc(topicName(t))}</span><span class="soon-pill">Coming soon</span></div></div>`;
   }
   if (open) html += "</div>";
   return html;
+}
+
+function renderTrackerCard(L) {
+  const inner = `<span class="code">Download</span>
+      <span class="title">${esc(L.name)} revision tracker (PDF)</span>
+      <span class="desc">Print it out and record each topic you revise, the date, and how confident you feel: red, amber or green.</span>
+      ${L.trackerPdf ? "" : `<span class="soon-pill">Coming soon</span>`}`;
+  return `<div class="grid tracker-card">${L.trackerPdf
+    ? `<a class="card" href="${esc(L.trackerPdf)}" target="_blank" rel="noopener" download>${inner}</a>`
+    : `<div class="card soon">${inner}</div>`}</div>`;
 }
 
 function render(level) {
@@ -474,6 +525,7 @@ function render(level) {
     <section class="cat" id="${level}-${c.key}">
       <div class="cat-head"><span class="icon">${ICONS[c.key]}</span><h3>${esc(c.title)}</h3></div>
       <p class="cat-blurb">${esc(c.blurb)}</p>
+      ${c.key === "activities" ? renderTrackerCard(L) : ""}
       ${c.type === "cards" ? renderCards(L[c.key] || [], c.title) : renderTopics(L.topics, L[c.key] || {})}
     </section>`).join("");
 
