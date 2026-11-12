@@ -1,0 +1,776 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Development of the Periodic Table</title>
+<style>
+:root{
+  --paper:#f4ede0; --panel:#fbf7ef; --ink:#3a2a1c; --muted:#7a6450; --rule:#dbc9ae;
+  --accent:#8a5a2b; --accent-soft:#ead9bf; --good:#3f7a3a; --good-soft:#e2eed8; --bad:#a8432a; --bad-soft:#f6e0d6;
+  --display:"Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  --body:"Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,"SF Mono",Menlo,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.5}
+.wrap{max-width:1180px;margin:0 auto;padding:14px max(16px,env(safe-area-inset-right,0px)) 32px max(16px,env(safe-area-inset-left,0px))}
+header.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 24px;padding-bottom:12px;border-bottom:2px solid var(--rule)}
+.brand{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.brand h1{font-family:var(--display);font-size:1.75rem;margin:0;font-weight:700}
+.brand span{color:var(--muted);font-size:.95rem}
+.ghost{font:600 .9rem var(--body);background:transparent;border:1.5px solid var(--rule);color:var(--muted);border-radius:8px;padding:7px 12px;cursor:pointer}
+.ghost:hover{border-color:var(--accent);color:var(--ink)}
+nav.steps{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 2px}
+.step-link{display:flex;align-items:center;gap:8px;font:600 .9rem var(--body);background:var(--panel);border:1.5px solid var(--rule);color:var(--ink);border-radius:999px;padding:5px 12px 5px 5px;cursor:pointer}
+.step-link:hover{border-color:var(--accent)}
+.step-link .n{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--accent-soft);font:700 .8rem var(--mono)}
+.step-link[aria-current]{background:var(--accent);border-color:var(--accent);color:#fffaf2}
+.step-link[aria-current] .n{background:#fffaf2;color:var(--accent)}
+.step-link .t{font:700 .78rem var(--mono);color:var(--good)}
+.step-link[aria-current] .t{color:#e9f4dd}
+main{padding-top:16px}
+.eyebrow{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);font-weight:700}
+h2{font-family:var(--display);font-size:2.1rem;margin:2px 0 14px;line-height:1.1;text-wrap:balance}
+h3{font-family:var(--display);font-size:1.35rem;margin:22px 0 10px}
+.grid2{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:22px;align-items:start}
+.grid2.even{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+@media (max-width:860px){.grid2,.grid2.even{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1.5px solid var(--rule);border-radius:14px;padding:14px 16px;min-width:0}
+.prose p{margin:0 0 10px}
+.prose ul{margin:0 0 10px;padding-left:22px}
+.prose li{margin-bottom:4px}
+.tip{background:var(--accent-soft);border-left:5px solid var(--accent);border-radius:8px;padding:10px 14px;margin:12px 0;font-size:.97rem}
+.tip .lab{display:block;font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--accent);margin-bottom:2px}
+.warn{background:var(--bad-soft);border-left:5px solid var(--bad)}
+.warn .lab{color:var(--bad)}
+.btn{font:600 .95rem var(--body);background:var(--panel);border:1.5px solid var(--rule);color:var(--ink);padding:8px 14px;border-radius:8px;cursor:pointer}
+.btn:hover:not(:disabled){border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fffaf2}
+.btn.on{background:var(--ink);border-color:var(--ink);color:#fffaf2}
+.btn:disabled{opacity:.45;cursor:default}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid #c98a3a;outline-offset:2px}
+select{font:600 .95rem var(--body);background:var(--panel);border:1.5px solid var(--rule);color:var(--ink);padding:7px 10px;border-radius:8px}
+.check{margin-top:28px;border-top:2px solid var(--rule)}
+.q{background:var(--panel);border:1.5px solid var(--rule);border-radius:12px;padding:12px 14px;margin:10px 0}
+.qt{margin:0 0 9px;font-weight:600}
+.qt .qn{font-family:var(--mono);color:var(--accent);margin-right:8px}
+.opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+@media (max-width:680px){.opts{grid-template-columns:1fr}}
+.opt{display:flex;gap:10px;align-items:flex-start;text-align:left;font:500 1rem/1.4 var(--body);background:#fffdf8;border:1.5px solid var(--rule);color:var(--ink);border-radius:10px;padding:9px 12px;cursor:pointer}
+.opt .L{font:700 .85rem var(--mono);color:var(--muted);padding-top:2px}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt:disabled{cursor:default}
+.opt.right{background:var(--good-soft);border-color:var(--good)}
+.opt.wrong{background:var(--bad-soft);border-color:var(--bad)}
+.opt.dim{opacity:.6}
+.fb{margin-top:9px;font-size:.97rem}
+.fb .ok{color:var(--good);font-weight:700}
+.fb .no{color:var(--bad);font-weight:700}
+.pager{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:26px}
+.pager .mid{color:var(--muted);font-size:.9rem}
+.tablewrap{overflow-x:auto}
+table.cmp{border-collapse:collapse;width:100%;font-size:.95rem;background:#fffdf8}
+table.cmp th,table.cmp td{border:1px solid var(--rule);padding:7px 10px;text-align:left;vertical-align:top}
+table.cmp thead th{background:var(--accent);color:#fffaf2;font-weight:600}
+table.cmp tbody th{background:var(--panel)}
+table.redo td:nth-child(2){min-width:220px}
+.results-head{display:flex;gap:22px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
+.big{font:700 64px/1 var(--display)}
+.bars{display:grid;gap:8px;margin-bottom:22px}
+.bar{display:grid;grid-template-columns:minmax(0,260px) 1fr 52px;gap:12px;align-items:center}
+.bar .track{height:14px;background:var(--accent-soft);border-radius:99px;overflow:hidden}
+.bar .fill{height:100%;background:var(--accent)}
+.bar .n{font:600 .9rem var(--mono);text-align:right}
+@media (max-width:560px){.bar{grid-template-columns:1fr 52px}.bar .track{grid-column:1/-1;order:3}}
+/* order widget */
+.order .pool,.order .chain{display:grid;gap:6px}
+.order .chain{counter-reset:c;margin-top:10px}
+.order .card-o{font:500 .97rem/1.35 var(--body);text-align:left;background:#fffdf8;border:1.5px solid var(--rule);color:var(--ink);border-radius:9px;padding:8px 12px;cursor:pointer}
+.order .card-o:hover{border-color:var(--accent)}
+.order .chain .card-o{counter-increment:c;cursor:default}
+.order .chain .card-o::before{content:counter(c) ". ";font:700 .9rem var(--mono);color:var(--accent)}
+.order .card-o.ok{background:var(--good-soft);border-color:var(--good)}
+.order .card-o.bad{background:var(--bad-soft);border-color:var(--bad)}
+.order .msg{margin-top:8px;font-weight:600}
+.small{font-size:.86rem;color:var(--muted)}
+.mono{font-family:var(--mono)}
+/* practice + balancing (shared) */
+.prac-q{font-size:1.08rem;margin-bottom:10px}
+.prac-f{display:flex;flex-wrap:wrap;gap:10px 18px}
+.prac-f label{display:flex;align-items:center;gap:8px;font-weight:600}
+.prac-f input{font:600 1.1rem var(--mono);width:90px;padding:6px 8px;border:1.5px solid var(--rule);border-radius:8px;background:#fffdf8;color:var(--ink)}
+.prac-f input.ok{border-color:var(--good);background:var(--good-soft)}
+.prac-f input.bad{border-color:var(--bad);background:var(--bad-soft)}
+.prac-f b.ok{color:var(--good)} .prac-f b.bad{color:var(--bad)}
+.prac-f em{font-style:normal;color:var(--muted);font-weight:500}
+.prac-w{margin-top:10px;background:#fffdf8;border:1.5px dashed var(--rule);border-radius:10px;padding:10px 12px;font-size:.97rem}
+.bal{display:flex;flex-wrap:wrap;align-items:center;gap:10px;font:600 1.2rem var(--mono);margin:12px 0}
+.coef{display:inline-flex;align-items:center;border:1.5px solid var(--rule);border-radius:9px;background:#fffdf8;overflow:hidden}
+.coef button{font:700 1rem var(--mono);border:0;background:var(--accent-soft);color:var(--ink);width:30px;height:36px;cursor:pointer}
+.coef span{min-width:30px;text-align:center}
+.coef span.one{color:#b9a58c}
+table.count td,table.count th{text-align:center}
+table.count .ok{color:var(--good);font-weight:700}
+table.count .bad{color:var(--bad);font-weight:700}
+.atombox svg{width:100%;height:auto;display:block}
+.nuclide{display:inline-grid;grid-template-columns:auto auto;grid-template-rows:auto auto;align-items:center;font-family:var(--display);line-height:1}
+.nuclide .m{grid-column:1;grid-row:1;text-align:right;font-size:.55em;padding-right:2px}
+.nuclide .z{grid-column:1;grid-row:2;text-align:right;font-size:.55em;padding-right:2px}
+.nuclide .s{grid-column:2;grid-row:1/3;font-weight:700}
+.opt .nuclide{font-size:1.5em;vertical-align:middle}
+
+/* Building the Periodic Table board, scoped to .ptapp */
+.ptapp{
+  --paper2:#e6d8bb; --tile:#fffaf0; --soft:#76604a; --line:#c9b48d; --pa:#8a4719; --gold:#b27709; --pbad:#a6362a;
+  --f1:#c4552f; --f2:#bf8320; --f3:#7f8b25; --f4:#36785a; --f5:#2c6b8d; --f6:#5b57a6; --f7:#93508b;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  background:var(--panel);border:1.5px solid var(--rule);border-radius:14px;overflow:hidden;font-size:15px
+}
+.ptapp .ptmain{display:grid;grid-template-columns:minmax(0,1fr) 340px;min-height:0}
+.ptapp #ptwrap{position:relative;min-width:0;height:clamp(400px,64vh,640px);display:grid;place-items:center;padding:18px;overflow:hidden;background:#f2e9d6}
+.ptapp #ptboard{position:relative}
+.ptapp .ptside{background:var(--panel);border-left:1px solid var(--line);overflow-y:auto;max-height:clamp(400px,64vh,640px);padding:16px 18px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.ptapp .ptside p,.ptapp .ptside li{line-height:1.5;margin:0}
+.ptapp .ptside ul{margin:0;padding-left:1.1em;display:grid;gap:6px}
+.ptapp .ctrls{display:flex;flex-wrap:wrap;gap:8px}
+.ptapp .note{font-size:.88rem;color:var(--soft)}
+.ptapp .btn[aria-pressed="true"]{background:var(--ink);color:#fffaf2;border-color:var(--ink)}
+.ptapp .legend{display:grid;gap:5px;font-size:.85rem}
+.ptapp .legend span{display:flex;align-items:center;gap:8px}
+.ptapp .legend i{width:14px;height:14px;border-radius:3px;border:2px solid var(--fc);background:color-mix(in srgb,var(--fc) 30%,var(--tile))}
+.ptapp .tile{position:absolute;left:0;top:0;box-sizing:border-box;border:1.5px solid var(--line);background:var(--tile);
+  border-radius:calc(var(--u,40px)*.09);display:grid;place-items:center;color:var(--ink);cursor:pointer;
+  transition:transform .9s cubic-bezier(.6,.05,.25,1),width .9s cubic-bezier(.6,.05,.25,1),height .9s cubic-bezier(.6,.05,.25,1),opacity .5s,background-color .4s,border-color .4s;will-change:transform;padding:0;font:inherit}
+.ptapp .tile .s{font:600 calc(var(--u,40px)*.42)/1 var(--serif)}
+.ptapp .tile .n{position:absolute;top:calc(var(--u,40px)*.06);left:calc(var(--u,40px)*.09);font:600 calc(var(--u,40px)*.2)/1 var(--sans);color:var(--soft);font-variant-numeric:tabular-nums}
+.ptapp .tile .w{position:absolute;bottom:calc(var(--u,40px)*.07);left:0;right:0;text-align:center;font:500 calc(var(--u,40px)*.19)/1 var(--sans);color:var(--soft);font-variant-numeric:tabular-nums}
+.ptapp .tile.off{opacity:0;pointer-events:none}
+.ptapp .fa1{--fc:var(--f1)}.ptapp .fa2{--fc:var(--f2)}.ptapp .fa3{--fc:var(--f3)}.ptapp .fa4{--fc:var(--f4)}.ptapp .fa5{--fc:var(--f5)}.ptapp .fa6{--fc:var(--f6)}.ptapp .fa7{--fc:var(--f7)}
+.ptapp .tile.hl{background:color-mix(in srgb,var(--fc) 26%,var(--tile));border-color:var(--fc);border-width:2px}
+.ptapp .tile.bad{background:color-mix(in srgb,var(--pbad) 22%,var(--tile));border-color:var(--pbad);border-width:2.5px}
+.ptapp .tile.bad::after{content:"✕";position:absolute;top:calc(var(--u)*.03);right:calc(var(--u)*.08);font:700 calc(var(--u)*.2)/1 var(--sans);color:var(--pbad)}
+.ptapp .tile.gold{border-color:var(--gold);border-width:3px;background:color-mix(in srgb,var(--gold) 22%,var(--tile))}
+.ptapp .tile.new{animation:ptflash 1.4s ease-out}
+.ptapp .tile.sel{outline:3px solid var(--pa);outline-offset:1px}
+@keyframes ptflash{0%{box-shadow:0 0 0 0 var(--gold)}40%{box-shadow:0 0 0 calc(var(--u)*.2) color-mix(in srgb,var(--gold) 0%,transparent)}100%{box-shadow:none}}
+.ptapp .dg{position:absolute;inset:0;opacity:0;transition:opacity .5s;pointer-events:none}
+.ptapp .dg.on{opacity:1}
+.ptapp .dg > *{position:absolute;left:0;top:0;box-sizing:border-box}
+.ptapp .plab{display:grid;place-items:center;text-align:center;color:var(--soft);font:600 calc(var(--u)*.3)/1.05 var(--serif);font-style:italic}
+.ptapp .hdr{display:grid;place-content:center;text-align:center;border-bottom:2px solid var(--ink);color:var(--ink);font:600 calc(var(--u)*.3)/1.15 var(--serif)}
+.ptapp .hdr em{display:block;font:500 calc(var(--u)*.22)/1.2 var(--serif);color:var(--soft)}
+.ptapp .mgap{display:grid;place-items:center;border:2px dashed var(--gold);border-radius:calc(var(--u)*.09);color:var(--gold);font:700 calc(var(--u)*.24)/1 var(--serif);background:color-mix(in srgb,var(--gold) 10%,transparent)}
+.ptapp .slot{border:1.5px dashed var(--line);border-radius:calc(var(--u)*.09);display:grid;place-items:center;color:var(--soft);font:500 calc(var(--u)*.2)/1 var(--sans)}
+.ptapp .slot.ph{border-style:solid;font-size:calc(var(--u)*.18);background:var(--paper2)}
+.ptapp .dg.predict .slot.p{pointer-events:auto;cursor:pointer;border:2.5px solid var(--gold);background:color-mix(in srgb,var(--gold) 16%,transparent);color:var(--gold);font-weight:700;text-align:center;line-height:1.05;animation:ptpulse 1.8s ease-in-out infinite}
+.ptapp .slot.p .q{display:none}
+.ptapp .dg.predict .slot.p .q{display:block;font:700 calc(var(--u)*.38)/1 var(--serif)}
+.ptapp .dg.predict .slot.p .q small{display:block;font:600 calc(var(--u)*.14)/1.1 var(--sans);margin-top:2px}
+@keyframes ptpulse{50%{box-shadow:0 0 0 calc(var(--u)*.12) color-mix(in srgb,var(--gold) 25%,transparent)}}
+.ptapp .pcard{border:1px solid var(--line);border-radius:10px;background:var(--tile);padding:12px;display:grid;gap:8px}
+.ptapp .pcard h4{margin:0;font:600 1.15rem/1.2 var(--serif)}
+.ptapp .pcard table{width:100%;border-collapse:collapse;font-size:.86rem}
+.ptapp .pcard th,.ptapp .pcard td{text-align:left;padding:5px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+.ptapp .pcard th{font:600 .7rem var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--soft)}
+.ptapp .pcard td.act{color:var(--pa);font-weight:600}
+.ptapp .pcard td.hid{color:var(--line)}
+.ptapp .kick{font:600 .72rem var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--pa)}
+.ptapp .yr{font:600 3rem/1 var(--serif);font-variant-numeric:tabular-nums;color:var(--pa)}
+.ptapp .count{font-size:.95rem;color:var(--soft)}
+.ptapp input[type=range]{width:100%;accent-color:var(--pa)}
+.ptapp .feed{list-style:none;padding:0!important;gap:8px!important}
+.ptapp .feed li{display:grid;grid-template-columns:3.2em 1fr;gap:8px;font-size:.9rem;align-items:baseline}
+.ptapp .feed li b{font:600 1.1rem var(--serif)}
+.ptapp .feed li .y{color:var(--soft);font-variant-numeric:tabular-nums;font-size:.8rem}
+.ptapp .feed li:not(:first-child){opacity:.7}
+.ptapp #detail:empty,.ptapp #card:empty{display:none}
+@media (max-width:900px){.ptapp .ptmain{grid-template-columns:1fr}.ptapp #ptwrap{height:56vh;min-height:320px;padding:8px}.ptapp .ptside{border-left:0;border-top:1px solid var(--line);max-height:none}}
+@media (prefers-reduced-motion:reduce){.ptapp .tile{transition-duration:.01s!important}.ptapp .tile.new,.ptapp .dg.predict .slot.p{animation:none}}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top"><div class="brand"><h1></h1><span></span></div><button class="ghost" id="resetAll" type="button">Start again</button></header>
+  <nav class="steps" id="nav" aria-label="Steps"></nav>
+  <main id="panel"></main>
+</div>
+<script>
+/* ================= ELECTRON SHELL DIAGRAMS ================= */
+function eAngles(n){
+ if(n>8) return [...Array(n)].map((_,i)=>-90+i*360/n);
+ const base=[-90,90,0,180], pairs=Math.max(0,n-4), out=[];
+ for(let j=0;j<Math.min(n,4);j++){ if(j<pairs) out.push(base[j]-13,base[j]+13); else out.push(base[j]); }
+ return out;
+}
+const cross=(x,y,s,col,w)=>`<path d="M${x-s} ${y-s}L${x+s} ${y+s}M${x-s} ${y+s}L${x+s} ${y-s}" stroke="${col}" stroke-width="${w}" stroke-linecap="round"/>`;
+const pt=(cx,cy,r,deg)=>[cx+r*Math.cos(deg*Math.PI/180), cy+r*Math.sin(deg*Math.PI/180)];
+/* draws an atom; returns svg string. opts: r0, dr, nucR, xs (cross size), innerSmall, outerCol, gap (leave the lone outer electron at 180 shifted) */
+function atomSVG(cx,cy,e,o){
+ const sh=e.shells, n=sh.length; let s='';
+ for(let k=0;k<n;k++){
+  const R=o.r0+k*o.dr, outer=k===n-1;
+  s+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="#9c8770" stroke-width="${outer?2:1.4}"/>`;
+  let ang=eAngles(sh[k]);
+  if(outer && o.outerShift) ang=ang.map(a=>a===180?193:a);
+  ang.forEach(a=>{const [x,y]=pt(cx,cy,R,a);
+   if(!outer && o.innerSmall) s+=`<circle cx="${x}" cy="${y}" r="${o.innerSmall}" fill="#7a6450"/>`;
+   else s+=cross(x,y,o.xs,outer?o.outerCol:'#3a2a1c',outer?2.6:2);
+  });
+ }
+ s+=`<circle cx="${cx}" cy="${cy}" r="${o.nucR}" fill="#f1d9c7" stroke="#b5401f" stroke-width="2"/><text x="${cx}" y="${cy+o.nucR*0.36}" text-anchor="middle" font-family="Palatino Linotype,Palatino,Georgia,serif" font-weight="700" font-size="${o.nucR*1.05}" fill="#3a2a1c">${e.id}</text>`;
+ return s;
+}
+
+
+/* ================= GENERIC HELPERS ================= */
+const fsub = f => f.replace(/([A-Za-z\)])(\d+)/g, '$1<sub>$2</sub>');
+function shellsFor(e){ const s=[]; let left=e; [2,8,8,2].forEach(c=>{ if(left>0){ s.push(Math.min(c,left)); left-=Math.min(c,left);} }); return s; }
+
+/* balancing widget: RX = [{lab, L:[[formula,{El:n}]...], R:[...]}] */
+function balanceWidget(root, RX){
+  root.innerHTML = `<div class="row"><label class="small">Reaction <select class="bw-sel">${RX.map((x,i)=>`<option value="${i}">${x.lab}</option>`).join('')}</select></label></div>
+   <div class="bal bw-eq"></div><table class="cmp count bw-count"></table><div class="bw-msg" style="margin-top:10px;font-weight:600"></div>`;
+  const sel=root.querySelector('.bw-sel'), eqEl=root.querySelector('.bw-eq'), cnt=root.querySelector('.bw-count'), msg=root.querySelector('.bw-msg');
+  let r=RX[0], c=[];
+  const reset=()=>{ c=[...r.L,...r.R].map(()=>1); };
+  function draw(){
+    const all=[...r.L,...r.R], nL=r.L.length;
+    eqEl.innerHTML=all.map(([f],k)=>`${k===nL?'<span>→</span>':k?'<span>+</span>':''}<span class="coef"><button type="button" data-k="${k}" data-d="-1" aria-label="decrease">−</button><span class="${c[k]===1?'one':''}">${c[k]}</span><button type="button" data-k="${k}" data-d="1" aria-label="increase">+</button></span><span>${fsub(f)}</span>`).join(' ');
+    const els=[...new Set(all.flatMap(([,a])=>Object.keys(a)))];
+    const side=(list,off)=>els.map(e=>list.reduce((s,[,a],k)=>s+(a[e]||0)*c[k+off],0));
+    const L=side(r.L,0), R=side(r.R,nL);
+    cnt.innerHTML=`<thead><tr><th>Atom</th><th>Left side</th><th>Right side</th><th></th></tr></thead><tbody>${els.map((e,i)=>`<tr><th>${e}</th><td>${L[i]}</td><td>${R[i]}</td><td class="${L[i]===R[i]?'ok':'bad'}">${L[i]===R[i]?'✓':'✗'}</td></tr>`).join('')}</tbody>`;
+    const ok=els.every((_,i)=>L[i]===R[i]);
+    const g=(a,b)=>b?g(b,a%b):a, gg=c.reduce(g);
+    const eqtxt=()=>all.map(([f],k)=>(k===nL?' → ':k?' + ':'')+(c[k]>1?c[k]:'')+fsub(f)).join('');
+    msg.innerHTML= ok ? (gg===1?`<span style="color:var(--good)">Balanced! ${eqtxt()}</span>`:`<span style="color:var(--accent)">Balanced, but use the smallest whole numbers – divide every number by ${gg}.</span>`) : `<span class="small">Change the numbers in front of the formulae until every atom is ✓. Never change the formulae themselves.</span>`;
+  }
+  eqEl.addEventListener('click',ev=>{const b=ev.target.closest('button'); if(!b) return; const k=+b.dataset.k; c[k]=Math.max(1,Math.min(8,c[k]+ +b.dataset.d)); draw();});
+  sel.onchange=()=>{ r=RX[+sel.value]; reset(); draw(); };
+  reset(); draw();
+}
+
+/* practice generator: gen() -> {prompt, fields:[{label, ans, tol, unit}], working} */
+function practiceWidget(el, gen){
+  let cur=null, right=0, tried=0, checked=false;
+  function next(){ cur=gen(); checked=false; draw(); }
+  function draw(res){
+    el.innerHTML = `<div class="prac"><div class="prac-q">${cur.prompt}</div>
+      <div class="prac-f">${cur.fields.map((f,i)=>`<label><span>${f.label}</span><input type="text" inputmode="decimal" autocomplete="off" data-i="${i}" value="${res?res[i].v:''}" class="${res?(res[i].ok?'ok':'bad'):''}">${f.unit?`<em>${f.unit}</em>`:''}${res?`<b class="${res[i].ok?'ok':'bad'}">${res[i].ok?'✓':'✗'}</b>`:''}</label>`).join('')}</div>
+      <div class="row" style="margin-top:10px"><button type="button" class="btn primary" data-a="check">Check</button><button type="button" class="btn" data-a="work">Show working</button><button type="button" class="btn" data-a="new">New question</button><span class="small" style="margin-left:auto">Score: ${right} / ${tried}</span></div>
+      <div class="prac-w" hidden>${cur.working}</div></div>`;
+  }
+  el.addEventListener('click', ev=>{ const b=ev.target.closest('[data-a]'); if(!b) return;
+    if(b.dataset.a==='new') next();
+    if(b.dataset.a==='work'){ const w=el.querySelector('.prac-w'); w.hidden=!w.hidden; }
+    if(b.dataset.a==='check'){
+      const ins=[...el.querySelectorAll('input')];
+      const res=cur.fields.map((f,i)=>{ const v=ins[i].value.trim(); const n=parseFloat(v.replace(',','.')); return {v, ok: v!=='' && Math.abs(n-f.ans)<=(f.tol||0)+1e-9}; });
+      if(!checked){ tried++; if(res.every(r=>r.ok)) right++; checked=true; }
+      draw(res); if(!res.every(r=>r.ok)) {} 
+    }
+  });
+  el.addEventListener('keydown', ev=>{ if(ev.key==='Enter' && ev.target.tagName==='INPUT'){ ev.preventDefault(); el.querySelector('[data-a=check]').click(); } });
+  next();
+}
+
+/* nucleus of protons and neutrons, sunflower packing */
+function nucleusSVG(cx,cy,p,n,r){
+  const N=p+n; if(!N) return '';
+  const types=[]; let s=p*31+n*17+3; for(let i=0;i<p;i++) types.push('p'); for(let i=0;i<n;i++) types.push('n');
+  for(let i=types.length-1;i>0;i--){ s=(s*9301+49297)%233280; const j=Math.floor(s/233280*(i+1)); [types[i],types[j]]=[types[j],types[i]]; }
+  const spread=N===1?0:r*1.05*Math.sqrt(N);
+  return types.map((t,i)=>{ const rr=N===1?0:spread*Math.sqrt((i+0.5)/N)*0.92, a=i*2.39996; return {t,x:cx+rr*Math.cos(a),y:cy+rr*Math.sin(a),rr}; })
+   .sort((a,b)=>b.rr-a.rr).map(q=>`<circle cx="${q.x.toFixed(1)}" cy="${q.y.toFixed(1)}" r="${r}" fill="${q.t==='p'?'#c2452d':'#a39d90'}" stroke="#5a4634" stroke-width=".8"/>${q.t==='p'&&r>=6?`<text x="${q.x.toFixed(1)}" y="${(q.y+r*0.42).toFixed(1)}" text-anchor="middle" font-size="${(r*1.25).toFixed(1)}" font-weight="700" fill="#fff">+</text>`:''}`).join('');
+}
+/* full atom picture: nucleus + shells with electrons as blue dots */
+function fullAtomSVG(cx,cy,p,n,e,o={}){
+  const sh=shellsFor(e), r0=o.r0||48, dr=o.dr||30, nr=o.nr||6; let s='';
+  sh.forEach((cnt,k)=>{ const R=r0+k*dr; s+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="#9c8770" stroke-width="1.5" stroke-dasharray="${o.dash||''}"/>`;
+    eAngles(cnt).forEach(a=>{ const [x,y]=pt(cx,cy,R,a); s+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${o.er||6}" fill="#2d6f93" stroke="#173f55" stroke-width="1"/><text x="${x.toFixed(1)}" y="${(y+3).toFixed(1)}" text-anchor="middle" font-size="9" font-weight="700" fill="#fff">−</text>`; }); });
+  return s+nucleusSVG(cx,cy,p,n,nr);
+}
+const E20=[[1,'H','hydrogen',1],[2,'He','helium',4],[3,'Li','lithium',7],[4,'Be','beryllium',9],[5,'B','boron',11],[6,'C','carbon',12],[7,'N','nitrogen',14],[8,'O','oxygen',16],[9,'F','fluorine',19],[10,'Ne','neon',20],[11,'Na','sodium',23],[12,'Mg','magnesium',24],[13,'Al','aluminium',27],[14,'Si','silicon',28],[15,'P','phosphorus',31],[16,'S','sulfur',32],[17,'Cl','chlorine',35],[18,'Ar','argon',40],[19,'K','potassium',39],[20,'Ca','calcium',40]];
+const nuclide=(A,Z,S)=>`<span class="nuclide"><span class="m">${A}</span><span class="z">${Z}</span><span class="s">${S}</span></span>`;
+const rint=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+
+/* ================= BUILDING THE PERIODIC TABLE (adapted to mount per step) ================= */
+const RAW="1 H Hydrogen 1766|2 He Helium 1895|3 Li Lithium 1817|4 Be Beryllium 1798|5 B Boron 1808|6 C Carbon 0|7 N Nitrogen 1772|8 O Oxygen 1774|9 F Fluorine 1810|10 Ne Neon 1898|11 Na Sodium 1807|12 Mg Magnesium 1755|13 Al Aluminium 1825|14 Si Silicon 1824|15 P Phosphorus 1669|16 S Sulfur 0|17 Cl Chlorine 1774|18 Ar Argon 1894|19 K Potassium 1807|20 Ca Calcium 1808|21 Sc Scandium 1879|22 Ti Titanium 1791|23 V Vanadium 1830|24 Cr Chromium 1797|25 Mn Manganese 1774|26 Fe Iron 0|27 Co Cobalt 1735|28 Ni Nickel 1751|29 Cu Copper 0|30 Zn Zinc 1746|31 Ga Gallium 1875|32 Ge Germanium 1886|33 As Arsenic 1250|34 Se Selenium 1817|35 Br Bromine 1826|36 Kr Krypton 1898|37 Rb Rubidium 1861|38 Sr Strontium 1790|39 Y Yttrium 1794|40 Zr Zirconium 1789|41 Nb Niobium 1801|42 Mo Molybdenum 1778|43 Tc Technetium 1937|44 Ru Ruthenium 1844|45 Rh Rhodium 1804|46 Pd Palladium 1803|47 Ag Silver 0|48 Cd Cadmium 1817|49 In Indium 1863|50 Sn Tin 0|51 Sb Antimony 0|52 Te Tellurium 1782|53 I Iodine 1811|54 Xe Xenon 1898|55 Cs Caesium 1860|56 Ba Barium 1808|57 La Lanthanum 1839|58 Ce Cerium 1803|59 Pr Praseodymium 1885|60 Nd Neodymium 1885|61 Pm Promethium 1945|62 Sm Samarium 1879|63 Eu Europium 1901|64 Gd Gadolinium 1880|65 Tb Terbium 1843|66 Dy Dysprosium 1886|67 Ho Holmium 1878|68 Er Erbium 1843|69 Tm Thulium 1879|70 Yb Ytterbium 1878|71 Lu Lutetium 1907|72 Hf Hafnium 1923|73 Ta Tantalum 1802|74 W Tungsten 1783|75 Re Rhenium 1925|76 Os Osmium 1803|77 Ir Iridium 1803|78 Pt Platinum 1735|79 Au Gold 0|80 Hg Mercury 0|81 Tl Thallium 1861|82 Pb Lead 0|83 Bi Bismuth 1753|84 Po Polonium 1898|85 At Astatine 1940|86 Rn Radon 1899|87 Fr Francium 1939|88 Ra Radium 1898|89 Ac Actinium 1899|90 Th Thorium 1829|91 Pa Protactinium 1913|92 U Uranium 1789|93 Np Neptunium 1940|94 Pu Plutonium 1940|95 Am Americium 1944|96 Cm Curium 1944|97 Bk Berkelium 1949|98 Cf Californium 1950|99 Es Einsteinium 1952|100 Fm Fermium 1952|101 Md Mendelevium 1955|102 No Nobelium 1958|103 Lr Lawrencium 1961|104 Rf Rutherfordium 1964|105 Db Dubnium 1968|106 Sg Seaborgium 1974|107 Bh Bohrium 1981|108 Hs Hassium 1984|109 Mt Meitnerium 1982|110 Ds Darmstadtium 1994|111 Rg Roentgenium 1994|112 Cn Copernicium 1996|113 Nh Nihonium 2004|114 Fl Flerovium 1998|115 Mc Moscovium 2003|116 Lv Livermorium 2000|117 Ts Tennessine 2010|118 Og Oganesson 2002";
+const PEL=RAW.split("|").map(s=>{const a=s.split(" ");return{z:+a[0],sym:a[1],name:a[2],year:+a[3]}});
+const BY={};PEL.forEach(e=>BY[e.sym]=e);
+BY.Di={z:0,sym:"Di",name:"Didymium",year:1841,fake:true};
+const NOTES={
+  He:"Seen in the Sun's spectrum in 1868; found on Earth by William Ramsay in 1895.",
+  Ar:"Found by Rayleigh and Ramsay. It fitted nowhere in Mendeleev's table, so a whole new group (group 0) was added.",
+  Ne:"Ramsay and Travers, from liquefied air.",Kr:"Ramsay and Travers, from liquefied air.",Xe:"Ramsay and Travers, from liquefied air.",
+  Ga:"Mendeleev's eka-aluminium: the first of his predictions to be confirmed.",
+  Sc:"Mendeleev's eka-boron.",Ge:"Mendeleev's eka-silicon.",
+  Pr:"Didymium turned out to be two elements: praseodymium and neodymium.",Nd:"Didymium turned out to be two elements: praseodymium and neodymium.",
+  Po:"Discovered by Marie and Pierre Curie.",Ra:"Discovered by Marie and Pierre Curie.",
+  Tc:"Mendeleev's eka-manganese, and the first element made artificially.",
+  Fr:"The last element to be discovered in nature.",
+  Md:"Named after Dmitri Mendeleev.",
+  Og:"Completes period 7; the heaviest element made so far.",
+  Ts:"The most recently discovered element.",
+  F:"Recognised as an element in 1810, but not isolated until Moissan in 1886.",
+  Di:"Thought to be an element until 1885, when it was split into praseodymium and neodymium."
+};
+const NEW=[
+ [1,0,"H",1],[1,1,"Li",2],[1,2,"Be",3],[1,3,"B",4],[1,4,"C",5],[1,5,"N",6],[1,6,"O",7],
+ [2,0,"F",8],[2,1,"Na",9],[2,2,"Mg",10],[2,3,"Al",11],[2,4,"Si",12],[2,5,"P",13],[2,6,"S",14],
+ [3,0,"Cl",15],[3,1,"K",16],[3,2,"Ca",17],[3,3,"Cr",19],[3,4,"Ti",18],[3,5,"Mn",20],[3,6,"Fe",21],
+ [4,0,"Co",22,0],[4,0,"Ni",22,1],[4,1,"Cu",23],[4,2,"Zn",24],[4,3,"Y",25],[4,4,"In",26],[4,5,"As",27],[4,6,"Se",28],
+ [5,0,"Br",29],[5,1,"Rb",30],[5,2,"Sr",31],[5,3,"Ce",33,0],[5,3,"La",33,1],[5,4,"Zr",32],[5,5,"Di",34,0],[5,5,"Mo",34,1],[5,6,"Rh",35,0],[5,6,"Ru",35,1],
+ [6,0,"Pd",36],[6,1,"Ag",37],[6,2,"Cd",38],[6,3,"U",40],[6,4,"Sn",39],[6,5,"Sb",41],[6,6,"Te",43],
+ [7,0,"I",42],[7,1,"Cs",44],[7,2,"Ba",45,0],[7,2,"V",45,1],[7,3,"Ta",46],[7,4,"W",47],[7,5,"Nb",48],[7,6,"Au",49],
+ [8,0,"Pt",50,0],[8,0,"Ir",50,1],[8,1,"Tl",53],[8,2,"Pb",54],[8,3,"Th",56],[8,4,"Hg",52],[8,5,"Bi",55],[8,6,"Os",51]];
+const NUM={};NEW.forEach(a=>NUM[a[2]]=a[3]);
+const STRIP=NEW.slice().sort((a,b)=>a[3]-b[3]||(a[4]||0)-(b[4]||0));
+const MEN=[["H",1,1,"1"],
+ ["Li",2,1,"7"],["Be",2,2,"9.4"],["B",2,3,"11"],["C",2,4,"12"],["N",2,5,"14"],["O",2,6,"16"],["F",2,7,"19"],
+ ["Na",3,1,"23"],["Mg",3,2,"24"],["Al",3,3,"27.3"],["Si",3,4,"28"],["P",3,5,"31"],["S",3,6,"32"],["Cl",3,7,"35.5"],
+ ["K",4,1,"39"],["Ca",4,2,"40"],["Ti",4,4,"48"],["V",4,5,"51"],["Cr",4,6,"52"],["Mn",4,7,"55"],["Fe",4,8,"56"],["Co",4,9,"59"],["Ni",4,10,"59"],
+ ["Cu",5,1,"63"],["Zn",5,2,"65"],["As",5,5,"75"],["Se",5,6,"78"],["Br",5,7,"80"],
+ ["Rb",6,1,"85"],["Sr",6,2,"87"],["Y",6,3,"88"],["Zr",6,4,"90"],["Nb",6,5,"94"],["Mo",6,6,"96"],["Ru",6,8,"104"],["Rh",6,9,"104"],["Pd",6,10,"106"],
+ ["Ag",7,1,"108"],["Cd",7,2,"112"],["In",7,3,"113"],["Sn",7,4,"118"],["Sb",7,5,"122"],["Te",7,6,"128"],["I",7,7,"127"],
+ ["Cs",8,1,"133"],["Ba",8,2,"137"],["Di",8,3,"138"],["Ce",8,4,"140"],
+ ["Er",10,3,"178"],["La",10,4,"180"],["Ta",10,5,"182"],["W",10,6,"184"],["Os",10,8,"195"],["Ir",10,9,"197"],["Pt",10,10,"198"],
+ ["Au",11,1,"199"],["Hg",11,2,"200"],["Tl",11,3,"204"],["Pb",11,4,"207"],["Bi",11,5,"208"],
+ ["Th",12,4,"231"],["U",12,6,"240"]];
+const MW={};MEN.forEach(a=>MW[a[0]]=a[3]);
+const FAM=[["fa1",["Li","Na","K","Rb","Cs"]],["fa2",["Be","Mg","Ca","Sr","Ba"]],["fa3",["B","Al"]],["fa4",["C","Si","Sn"]],
+ ["fa5",["N","P","As","Sb","Bi"]],["fa6",["O","S","Se","Te"]],["fa7",["F","Cl","Br","I"]]];
+const FAMOF={};FAM.forEach(([c,l])=>l.forEach(s=>FAMOF[s]=c));
+const FAIL=new Set(["Fe","Co","Ni","Cu","Ag","Mn","Mo","Di","Pd","Pt","Ir","Au","Os","Rh","Ru","Nb"]);
+const PRED={
+ Sc:{eka:"Eka-boron",gap:"— = 44",found:"Scandium, 1879: Lars Fredrik Nilson (Sweden)",
+   rows:[["Atomic weight","44","45.0"],["Formula of oxide","Eb₂O₃","Sc₂O₃"],["Density of oxide (g/cm³)","3.5","3.86"],["Formula of sulfate","Eb₂(SO₄)₃","Sc₂(SO₄)₃"]],
+   story:"Per Teodor Cleve spotted that Nilson's new element was a match for eka-boron."},
+ Ga:{eka:"Eka-aluminium",gap:"— = 68",found:"Gallium, 1875: Paul-Émile Lecoq de Boisbaudran (France)",
+   rows:[["Atomic weight","about 68","69.7"],["Density (g/cm³)","5.9","5.9"],["Melting point","low","30 °C: melts in your hand"],["Formula of oxide","Ea₂O₃","Ga₂O₃"],["How it would be found","by spectroscopy","by spectroscopy"]],
+   story:"Lecoq first measured the density as 4.7. Mendeleev wrote to say the sample must be impure. Lecoq purified it, measured again, and got 5.9."},
+ Ge:{eka:"Eka-silicon",gap:"— = 72",found:"Germanium, 1886: Clemens Winkler (Germany)",
+   rows:[["Atomic weight","72","72.6"],["Density (g/cm³)","5.5","5.35"],["Colour","dark grey","grey-white"],["Formula of oxide","EsO₂","GeO₂"],["Density of oxide (g/cm³)","4.7","4.7"],["Chloride","EsCl₄, boils below 100 °C","GeCl₄, boils at 86 °C"]],
+   story:"The closest match of all. Germanium convinced most chemists that Mendeleev's table was right."},
+ Tc:{eka:"Eka-manganese",gap:"— = 100",found:"Technetium, 1937: Carlo Perrier and Emilio Segrè (Italy)",
+   rows:[["Atomic weight","about 100","[98]"],["Formula of oxide","Em₂O₇","Tc₂O₇"]],
+   story:"Searches in minerals failed for 66 years. All forms of technetium are radioactive, so almost none exists naturally. It was made from molybdenum bombarded in a cyclotron, the first element made artificially. Its name comes from the Greek for “artificial”."}
+};
+const KNOWN=PEL.filter(e=>e.year<=1871);
+const DISC=PEL.filter(e=>e.year>1871).sort((a,b)=>a.year-b.year||a.z-b.z);
+function mpos(z){
+  let p,g;
+  if(z===1){p=1;g=1}else if(z===2){p=1;g=18}
+  else if(z<=10){p=2;g=z<=4?z-2:z+8}
+  else if(z<=18){p=3;g=z<=12?z-10:z}
+  else if(z<=36){p=4;g=z-18}
+  else if(z<=54){p=5;g=z-36}
+  else if(z>=57&&z<=71)return{c:z-57+2,r:7.8};
+  else if(z>=89&&z<=103)return{c:z-89+2,r:8.8};
+  else if(z<=86){p=6;g=z<=56?z-54:z-68}
+  else{p=7;g=z<=88?z-86:z-100}
+  return{c:g-1,r:.5+(p-1)};
+}
+const famLegend=`<div class="legend">${[["fa1","Li Na K Rb Cs"],["fa2","Be Mg Ca Sr Ba"],["fa3","B Al"],["fa4","C Si Sn"],["fa5","N P As Sb Bi"],["fa6","O S Se Te"],["fa7","F Cl Br I"]].map(([c,t])=>`<span class="${c}"><i></i>${t}</span>`).join("")}</div>`;
+const ptHTML = () => `<div class="ptapp"><div class="ptmain"><div id="ptwrap"><div id="ptboard"></div></div><aside class="ptside" id="ptside"></aside></div></div>`;
+
+function mountPT(root, K){
+  const board=root.querySelector("#ptboard"), wrap=root.querySelector("#ptwrap"), side=root.querySelector("#ptside");
+  const st={fam:false,fail:false,revealed:new Set(),d:0,timer:null,sel:null,last:null};
+  const groups={};
+  function dg(name){const d=document.createElement("div");d.className="dg";board.appendChild(d);groups[name]={el:d,items:[]};return groups[name]}
+  function deco(g,c,r,w,h,cls,html,attrs){const e=document.createElement("div");e.className=cls;e.innerHTML=html;
+    if(attrs)for(const k in attrs)e.setAttribute(k,attrs[k]);g.el.appendChild(e);g.items.push({e,c,r,w,h});return e}
+  const gN=dg("nl");["do","re","mi","fa","sol","la","ti"].forEach((t,r)=>deco(gN,0,r,1,1,"plab",t));
+  const gM=dg("md");
+  ["I","II","III","IV","V","VI","VII"].forEach((g,i)=>deco(gM,i+1,0,1,1,"hdr",`${g}<em>${["R₂O","RO","R₂O₃","RO₂","R₂O₅","RO₃","R₂O₇"][i]}</em>`));
+  deco(gM,8,0,3,1,"hdr","VIII<em>RO₄</em>");
+  for(let r=1;r<=12;r++)deco(gM,0,r,1,1,"plab",r);
+  [[3,4,"44"],[3,5,"68"],[4,5,"72"],[7,6,"100"]].forEach(([c,r,w])=>deco(gM,c,r,1,1,"mgap","—&#8202;=&#8202;"+w));
+  const gO=dg("mo");
+  [[0,"1"],[1,"2"],[12,"3"],[13,"4"],[14,"5"],[15,"6"],[16,"7"],[17,"0"]].forEach(([c,t])=>deco(gO,c,0,1,.5,"plab",t));
+  deco(gO,2,5.5,1,1,"slot ph","57–71");deco(gO,2,6.5,1,1,"slot ph","89–103");
+  PEL.forEach(e=>{const p=mpos(e.z);const pr=PRED[e.sym];
+    const s=deco(gO,p.c,p.r,1,1,"slot"+(pr?" p":""),pr?`<span class="q">?<small>${pr.eka.replace("Eka-","eka-")}</small></span>`:"",pr?{"data-sym":e.sym,tabindex:"0",role:"button","aria-label":pr.eka}:null);
+    if(pr){s.onclick=()=>{if(K==="predict")showPred(e.sym)};s.onkeydown=ev=>{if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();s.onclick()}}}
+  });
+  const tiles=new Map();
+  Object.keys(BY).forEach(sym=>{const t=document.createElement("button");t.className="tile off";t.type="button";
+    t.innerHTML=`<span class="n"></span><span class="s">${sym}</span><span class="w"></span>`;
+    t.setAttribute("aria-label",BY[sym].name);t.onclick=()=>tileClick(sym);board.appendChild(t);tiles.set(sym,t)});
+
+  function layout(){
+    const items=new Map();let o=0;
+    const add=(s,c,r,w=1,h=1)=>items.set(s,{c,r,w,h,o:o++});
+    if(K==="strip"){STRIP.forEach((a,i)=>add(a[2],i%16,Math.floor(i/16)));return{cols:16,rows:4,items,mode:"nl",grp:null}}
+    if(K==="newlands"){NEW.forEach(([c,r,s,n,p])=>p===undefined?add(s,c,r):add(s,c+p*.5,r,.5));return{cols:9,rows:7,items,mode:"nl",grp:"nl"}}
+    if(K==="mw"||K==="ms"){MEN.forEach(([s,R,c])=>{let cc=c;if(K==="mw"){if(s==="I")cc=6;if(s==="Te")cc=7}add(s,cc,R)});return{cols:11,rows:13,items,mode:"m",grp:"md"}}
+    let vis=KNOWN.slice();
+    if(K==="predict")vis=vis.concat(PEL.filter(e=>st.revealed.has(e.sym)));
+    if(K==="disc")vis=vis.concat(DISC.slice(0,st.d));
+    vis.forEach(e=>{const p=mpos(e.z);add(e.sym,p.c,p.r)});
+    return{cols:18,rows:9.8,items,mode:"z",grp:"mo"};
+  }
+  const era=y=>y<1800?"fa2":y<=1871?"fa4":y<1937?"fa5":"fa7";
+  function cls(sym){
+    let c=[];
+    if(K==="strip"||K==="newlands"){ if(st.fam&&FAMOF[sym])c.push("hl",FAMOF[sym]); if(K==="newlands"&&st.fail&&FAIL.has(sym))c.push("bad"); }
+    else if(K==="mw"){if(sym==="I"||sym==="Te")c.push("bad")}
+    else if(K==="ms"){if(["O","S","Se","Te"].includes(sym))c.push("hl","fa6");if(["F","Cl","Br","I"].includes(sym))c.push("hl","fa7")}
+    else if(K==="predict"){if(PRED[sym]&&st.revealed.has(sym))c.push("gold")}
+    else if(K==="disc"){c.push("hl",era(BY[sym].year));if(sym===st.last)c.push("new")}
+    if(sym===st.sel)c.push("sel");
+    return c.join(" ");
+  }
+  function render(stagger){
+    const L=layout(), narrow=innerWidth<=900;
+    const W=wrap.clientWidth-(narrow?16:36),H=wrap.clientHeight-(narrow?16:36);
+    const cell=Math.max(16,Math.min(W/L.cols,H/L.rows));
+    board.style.width=L.cols*cell+"px";board.style.height=L.rows*cell+"px";
+    const gap=Math.max(2,cell*.07);
+    for(const name in groups){const g=groups[name],on=name===L.grp;g.el.classList.toggle("on",on);
+      g.el.classList.toggle("predict",on&&K==="predict");
+      if(on)g.items.forEach(({e,c,r,w,h})=>{const ww=w*cell-gap,hh=h*cell-gap;
+        e.style.transform=`translate(${c*cell+gap/2}px,${r*cell+gap/2}px)`;e.style.width=ww+"px";e.style.height=hh+"px";
+        e.style.setProperty("--u",Math.min(cell-gap,Math.max(hh,(cell-gap)*.8))+"px");})}
+    tiles.forEach((t,sym)=>{
+      const it=L.items.get(sym);
+      if(!it){t.classList.add("off");t.style.transitionDelay="0ms";t.tabIndex=-1;return}
+      t.tabIndex=0;
+      t.children[0].textContent=L.mode==="nl"?NUM[sym]:L.mode==="z"?BY[sym].z:"";
+      t.children[2].textContent=L.mode==="m"?MW[sym]:"";
+      const x=it.c*cell+gap/2,y=it.r*cell+gap/2,w=it.w*cell-gap,h=it.h*cell-gap;
+      const pos=()=>{t.style.transform=`translate(${x}px,${y}px)`;t.style.width=w+"px";t.style.height=h+"px";t.style.setProperty("--u",Math.min(w*(it.w<1?1.6:1),h)+"px")};
+      const delay=stagger?Math.min(it.o*9,650):0,c=cls(sym);
+      if(t.classList.contains("off")){t.style.transition="none";t.className="tile off "+c;pos();void t.offsetWidth;
+        t.style.transition="";t.style.transitionDelay=delay+"ms";t.className="tile "+c}
+      else{t.style.transitionDelay=delay+"ms";t.className="tile "+c;pos()}
+    });
+  }
+  function body(){
+    if(K==="strip")return`<p>By the 1860s chemists had measured the atomic weights of about 60 elements. Lined up from lightest to heaviest, they look like a jumble of metals, gases and non-metals.</p>
+    <p>The number on each tile is the position John Newlands gave it in 1865. Elements with very similar weights share a number.</p>
+    <div class="ctrls"><button class="btn" id="bFam" aria-pressed="${st.fam}">Highlight families</button></div>
+    ${st.fam?famLegend+`<p class="note">Similar elements keep turning up at roughly regular intervals.</p>`:`<p class="note">Can you spot elements that behave alike?</p>`}`;
+    if(K==="newlands")return`<p>Newlands wrote the list in columns of seven. Every eighth element seemed to be like the first, like the eighth note of a musical scale. He called this the <strong>Law of Octaves</strong>.</p>
+    <ul><li>It works for the lighter elements: Li, Na and K line up, and so do F and Cl.</li>
+    <li>After calcium it breaks down. Iron sits with oxygen and sulfur, copper with the alkali metals, and cobalt and nickel with the halogens.</li>
+    <li>He squeezed two elements into some boxes and left no gaps for undiscovered elements.</li></ul>
+    <div class="ctrls"><button class="btn" id="bFam" aria-pressed="${st.fam}">Highlight families</button><button class="btn" id="bFail" aria-pressed="${st.fail}">Show where it fails</button></div>
+    ${st.fam?famLegend:""}
+    <p class="note">The Chemical Society refused to publish his paper in 1866.</p>`;
+    if(K==="mw")return`<p>Mendeleev also ordered the elements by atomic weight, but he let chemical properties decide where each one went. Groups run down the columns; each heading gives the formula of the group's oxide, with R for the element.</p>
+    <ul><li>He left <strong>gaps</strong> (— = 44, — = 68, — = 72, — = 100) where no known element fitted, and said new elements would be found to fill them.</li>
+    <li>Strict weight order puts iodine (127) in group VI under selenium, and tellurium (128) in group VII under bromine.</li>
+    <li>But iodine reacts like chlorine and bromine, and tellurium like sulfur and selenium.</li></ul>
+    <p class="note">This is his 1871 table. Click any tile to see its details.</p>`;
+    if(K==="ms")return`<p>Mendeleev swapped them so each element sits with its own family: tellurium with O, S and Se, iodine with F, Cl and Br.</p>
+    <ul><li>He was so sure that he suggested tellurium's atomic weight had been measured wrongly.</li>
+    <li>The measurement was right: tellurium is 127.6 and iodine 126.9.</li>
+    <li>The explanation came with <strong>isotopes</strong> and <strong>atomic number</strong>: tellurium has fewer protons (52) than iodine (53), but more of its atoms are heavy isotopes, so its average atomic mass is higher.</li></ul>
+    <p class="note">Argon and potassium are another pair out of weight order in the modern table.</p>`;
+    if(K==="modern")return`<p>Here are the ${KNOWN.length} elements known in 1871, placed in the modern table. Every empty box was still undiscovered.</p>
+    <ul><li>There is no group 0 at all. No noble gas had been found on Earth, and Mendeleev left no space for them.</li>
+    <li>Didymium has gone. In 1885 it was shown to be two elements, praseodymium and neodymium.</li>
+    <li>The order is now by atomic number, so tellurium and iodine sit in the right order without any swapping.</li></ul>`;
+    if(K==="predict")return`<p>Mendeleev used the elements around each gap to predict what the missing element would be like. He named them with the prefix <em>eka-</em>, meaning "one": eka-silicon is the element one place below silicon.</p>
+    <p class="note">Click a glowing gap to see his prediction, then reveal the real element.</p>
+    <div class="ctrls"><button class="btn" id="bAll">Reveal all four</button><button class="btn" id="bHide">Hide again</button></div>`;
+    if(K==="disc")return`<div><div class="yr" id="yr"></div><div class="count" id="cnt"></div></div>
+    <input type="range" id="rng" min="0" max="${DISC.length}" step="1" value="${st.d}" aria-label="Elements added">
+    <div class="ctrls"><button class="btn" id="bBack" aria-label="Remove last">◀</button><button class="btn primary" id="bPlay">${st.timer?"Pause":"Play"}</button><button class="btn" id="bStep" aria-label="Add next">▶</button><button class="btn" id="bReset">Reset to 1871</button></div>
+    <ul class="feed" id="feed"></ul>
+    <div class="legend"><span class="fa2"><i></i>Known before 1800</span><span class="fa4"><i></i>1800–1871</span><span class="fa5"><i></i>1872–1936</span><span class="fa7"><i></i>1937 onwards (mostly made artificially)</span></div>`;
+  }
+  const $=id=>root.querySelector("#"+id);
+  function renderSide(){
+    side.innerHTML=`${body()}<div id="card"></div><div id="detail"></div>`;
+    if($("bFam"))$("bFam").onclick=()=>{st.fam=!st.fam;renderSide();render(false)};
+    if($("bFail"))$("bFail").onclick=()=>{st.fail=!st.fail;renderSide();render(false)};
+    if($("bAll"))$("bAll").onclick=()=>{Object.keys(PRED).forEach(s=>st.revealed.add(s));render(false);if(st.sel&&PRED[st.sel])showPred(st.sel)};
+    if($("bHide"))$("bHide").onclick=()=>{st.revealed.clear();st.sel=null;$("card").innerHTML="";render(false)};
+    if(K==="disc"){
+      $("rng").oninput=e=>{stop();setD(+e.target.value)};
+      $("bPlay").onclick=()=>st.timer?stop():play();
+      $("bStep").onclick=()=>{stop();setD(st.d+1)};
+      $("bBack").onclick=()=>{stop();setD(st.d-1)};
+      $("bReset").onclick=()=>{stop();setD(0)};
+      discInfo();
+    }
+  }
+  function showPred(sym){
+    const p=PRED[sym],shown=st.revealed.has(sym);st.sel=sym;
+    $("card").innerHTML=`<div class="pcard"><div class="kick">Gap ${p.gap}</div><h4>${p.eka}</h4>
+    <table><thead><tr><th>Property</th><th>Predicted 1871</th><th>Actual</th></tr></thead><tbody>
+    ${p.rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td class="${shown?"act":"hid"}">${shown?r[2]:"?"}</td></tr>`).join("")}</tbody></table>
+    ${shown?`<p><strong>${p.found}</strong></p><p class="note">${p.story}</p>`:`<button class="btn primary" id="bRev">Reveal the real element</button>`}</div>`;
+    const b=$("bRev");if(b)b.onclick=()=>{st.revealed.add(sym);render(false);showPred(sym)};
+    render(false);
+  }
+  function tileClick(sym){
+    if(K==="predict"&&PRED[sym]){showPred(sym);return}
+    st.sel=st.sel===sym?null:sym;
+    const d=$("detail");
+    if(!st.sel){d.innerHTML="";render(false);return}
+    const e=BY[sym];
+    d.innerHTML=`<div class="pcard"><h4>${e.name} <span class="note">${sym}${e.z?` · Z = ${e.z}`:""}</span></h4>
+    <p>${e.fake?"Not a real element.":e.year===0?"Known since ancient times.":e.year<1700?`Known since about ${e.year}.`:`Discovered ${e.year}.`}${MW[sym]&&(K==="mw"||K==="ms")?` Atomic weight in Mendeleev's table: ${sym==="Te"?"he wrote 125; measured 128":MW[sym]}.`:""}</p>
+    ${NOTES[sym]?`<p class="note">${NOTES[sym]}</p>`:""}</div>`;
+    render(false);
+  }
+  function setD(v){st.d=Math.max(0,Math.min(DISC.length,v));st.last=st.d?DISC[st.d-1].sym:null;render(false);discInfo()}
+  function discInfo(){
+    const yr=$("yr");if(!yr)return;
+    yr.textContent=st.d?DISC[st.d-1].year:1871;
+    $("cnt").textContent=`${KNOWN.length+st.d} elements known`;
+    $("rng").value=st.d;
+    const f=[];for(let i=st.d-1;i>=Math.max(0,st.d-5);i--){const e=DISC[i];f.push(`<li><b>${e.sym}</b><span>${e.name} <span class="y">${e.year}</span>${i===st.d-1&&NOTES[e.sym]?`<br><span class="note">${NOTES[e.sym]}</span>`:""}</span></li>`)}
+    $("feed").innerHTML=f.join("")||`<li><span></span><span class="note">Press Play to add elements in the order they were discovered.</span></li>`;
+  }
+  function play(){if(st.d>=DISC.length)setD(0);st.timer=setInterval(()=>{if(st.d>=DISC.length){stop();return}setD(st.d+1)},900);const b=$("bPlay");if(b)b.textContent="Pause"}
+  function stop(){clearInterval(st.timer);st.timer=null;const b=$("bPlay");if(b)b.textContent="Play"}
+  const key=e=>{ if(e.key===" "&&K==="disc"&&e.target.tagName!=="BUTTON"&&e.target.tagName!=="INPUT"){e.preventDefault();st.timer?stop():play()} };
+  addEventListener("keydown",key);
+  let rt;const ro=new ResizeObserver(()=>{cancelAnimationFrame(rt);rt=requestAnimationFrame(()=>render(false))});ro.observe(wrap);
+  renderSide();render(true);
+  return ()=>{ stop(); ro.disconnect(); removeEventListener("keydown",key); };
+}
+
+/* ================= STEPS ================= */
+const APP={key:'pt-walkthrough-v1', title:'Development of the Periodic Table', subtitle:'AQA GCSE Combined Science: Trilogy · Chemistry 4.1.2.1–4.1.2.2', steps:[
+{id:'strip', nav:'By weight', eyebrow:'1860s', title:'Ordered by atomic weight',
+ html:()=>`<div class="prose" style="max-width:82ch"><p>Before protons, neutrons and electrons were discovered, scientists put the elements in order of their <b>atomic weight</b>. Early periodic tables were <b>incomplete</b> because many elements had not been discovered yet.</p></div>${ptHTML()}`,
+ mount:r=>mountPT(r,'strip'),
+ qs:[
+  {q:'Before the discovery of protons, neutrons and electrons, how did scientists order the elements?', o:[
+   ['By atomic weight',true,'They measured how heavy the atoms were compared with each other.'],
+   ['By atomic number',false,'Atomic number is the number of protons – protons had not been discovered yet.'],
+   ['By number of outer electrons',false,'Electrons had not been discovered yet.'],
+   ['In alphabetical order',false,'Scientists looked for patterns in properties, not names.']]},
+  {q:'Why were early periodic tables incomplete?', o:[
+   ['Many elements had not been discovered yet',true,'Only about 60 elements were known in the 1860s; there are 118 today.'],
+   ['Scientists did not want to include metals',false,'Metals were included – most known elements were metals.'],
+   ['The tables were too small to fit all the elements',false,'The problem was missing elements, not space.'],
+   ['Atomic weights could not be measured',false,'Atomic weights were measured – that is how the elements were ordered.']]}
+ ]},
+{id:'newlands', nav:'Newlands', eyebrow:'1865 · John Newlands', title:'The Law of Octaves',
+ html:()=>`<div class="prose" style="max-width:82ch"><p>Some early tables followed the order of atomic weight <b>strictly</b>. This put some elements into <b>inappropriate groups</b> with elements that had very different properties. Press <b>Show where it fails</b>.</p></div>${ptHTML()}`,
+ mount:r=>mountPT(r,'newlands'),
+ qs:[
+  {q:'Why were some elements placed in inappropriate groups in early periodic tables?', o:[
+   ['The order of atomic weight was followed strictly',true,'So elements ended up with others that had different properties.'],
+   ['The elements had not been discovered yet',false,'That explains why tables were incomplete, not why elements were in the wrong groups.'],
+   ['Scientists ordered them by atomic number',false,'Atomic number was not known then.'],
+   ['Gaps were left for undiscovered elements',false,'Newlands did not leave gaps – that was Mendeleev\'s idea.']]},
+  {q:'What was wrong with Newlands\' table?', o:[
+   ['Some elements with very different properties were in the same group, e.g. iron with oxygen and sulfur',true,'The pattern worked for light elements but broke down after calcium.'],
+   ['It did not include any metals',false,'It included many metals, such as sodium and iron.'],
+   ['It was ordered by atomic number',false,'It was ordered by atomic weight.'],
+   ['It had too many gaps',false,'It had no gaps at all – that was part of the problem.']]}
+ ]},
+{id:'mw', nav:'Mendeleev', eyebrow:'1871 · Dmitri Mendeleev', title:"Mendeleev's table",
+ html:()=>`<div class="prose" style="max-width:82ch"><p>Mendeleev overcame the problems by <b>leaving gaps</b> for elements he thought had not been discovered, and by <b>changing the order</b> of some elements based on their properties. The red tiles are in the wrong place if you follow atomic weight strictly.</p></div>${ptHTML()}`,
+ mount:r=>mountPT(r,'mw'),
+ qs:[
+  {q:'Why did Mendeleev leave gaps in his periodic table?', o:[
+   ['For elements that he thought had not been discovered yet',true,'He was so confident that he predicted their properties.'],
+   ['Because he ran out of space',false,'The gaps were deliberate.'],
+   ['For the noble gases',false,'The noble gases had not been discovered and Mendeleev did not leave a group for them.'],
+   ['Because some elements were too reactive to place',false,'The gaps were for missing elements.']]},
+  {q:'Iodine has a lower atomic weight than tellurium. Why would a strict atomic weight order be a problem?', o:[
+   ['Iodine would go in the group with oxygen and sulfur, but it reacts like chlorine and bromine',true,'Its properties do not fit that group.'],
+   ['Iodine would be put in group 1',false,'It would be placed in group VI, under selenium.'],
+   ['Iodine would not fit in the table at all',false,'It would fit – just in the wrong group.'],
+   ['Tellurium would become a noble gas',false,'Tellurium would end up in group VII with the halogens.']]}
+ ]},
+{id:'swap', nav:'Te ↔ I', eyebrow:'1871 · changing the order', title:'Swapping tellurium and iodine',
+ html:()=>`<div class="prose" style="max-width:82ch"><p>Mendeleev put iodine <b>after</b> tellurium so each element sits with elements of similar properties. Later, the discovery of <b>isotopes</b> explained why the order based on atomic weight was not always correct.</p></div>${ptHTML()}`,
+ mount:r=>mountPT(r,'ms'),
+ qs:[
+  {q:'Why did Mendeleev put iodine after tellurium, even though iodine has a lower atomic weight?', o:[
+   ['So that iodine was in the same group as elements with similar properties (chlorine and bromine)',true,'He let properties decide the group.'],
+   ['Because iodine is a solid',false,'State was not the reason – chemical properties were.'],
+   ['Because iodine was discovered later',false,'The order was not based on when elements were discovered.'],
+   ['Because he made a mistake',false,'It was deliberate – and it turned out to be right.']]},
+  {q:'What later explained why ordering by atomic weight is not always correct?', o:[
+   ['The discovery of isotopes',true,'Elements are ordered by atomic number; isotopes mean the atomic weight does not always follow the same order.'],
+   ['The discovery of new gases',false,'The noble gases did not explain the order problem.'],
+   ['Better balances for weighing',false,'Tellurium\'s atomic weight was measured correctly.'],
+   ['Newlands\' Law of Octaves',false,'Newlands\' table came before Mendeleev\'s.']]}
+ ]},
+{id:'modern', nav:'Modern gaps', eyebrow:'1871 knowledge, modern layout', title:'The gaps in a modern table',
+ html:()=>`<div class="prose" style="max-width:82ch"><p>These are the elements known in 1871, placed in the modern table, which is ordered by <b>atomic number</b>. Notice what is completely missing.</p></div>${ptHTML()}`,
+ mount:r=>mountPT(r,'modern'),
+ qs:[
+  {q:'Which group was missing from Mendeleev\'s table?', o:[
+   ['Group 0 – the noble gases',true,'None had been found on Earth by 1871.'],
+   ['Group 1 – the alkali metals',false,'Lithium, sodium and potassium were all known.'],
+   ['Group 7 – the halogens',false,'Fluorine, chlorine, bromine and iodine were all known.'],
+   ['The transition metals',false,'Many transition metals, like iron and copper, were known.']]},
+  {q:'How are elements arranged in the modern periodic table?', o:[
+   ['In order of atomic number',true,'Atomic number is the number of protons.'],
+   ['In order of atomic weight',false,'That was used in early tables, before atomic structure was known.'],
+   ['In order of discovery',false,'The order is based on atomic number.'],
+   ['In order of reactivity',false,'Reactivity changes within groups but is not how the table is ordered.']]}
+ ]},
+{id:'predict', nav:'Predictions', eyebrow:'1871 predictions', title:"Mendeleev's predictions",
+ html:()=>`<div class="prose" style="max-width:82ch"><p>Mendeleev predicted the properties of the missing elements. When they were discovered, their properties <b>closely matched his predictions</b>. Click each glowing gap.</p></div>${ptHTML()}`,
+ mount:r=>mountPT(r,'predict'),
+ qs:[
+  {q:'Why did the discovery of germanium help Mendeleev\'s table to be accepted?', o:[
+   ['Its properties closely matched what Mendeleev had predicted for the gap',true,'This showed his table could make correct predictions.'],
+   ['It was the last element to be discovered',false,'Many more elements were discovered after germanium.'],
+   ['It was discovered by Mendeleev',false,'It was discovered by Clemens Winkler.'],
+   ['It filled a gap in group 0',false,'Germanium is in group 4, below silicon.']]},
+  {q:'Mendeleev predicted eka-silicon would have an atomic weight of 72. Germanium\'s is 72.6. What does this show?', o:[
+   ['His prediction was very accurate',true,'72 and 72.6 are very close.'],
+   ['His prediction was wrong',false,'The values are very close – this supports his prediction.'],
+   ['Germanium is not eka-silicon',false,'All its properties matched, so it is eka-silicon.'],
+   ['Atomic weights cannot be measured',false,'They were measured – that is how the comparison was made.']]}
+ ]},
+{id:'disc', nav:'Filling the table', eyebrow:'1871 → today', title:'Filling the table',
+ html:()=>`<div class="prose" style="max-width:82ch"><p>Press <b>Play</b> to add elements in the order they were discovered. Watch the gaps fill, and watch a whole new group appear at the right-hand side in the 1890s.</p></div>${ptHTML()}`,
+ mount:r=>mountPT(r,'disc'),
+ qs:[
+  {q:'What happened when the noble gases were discovered in the 1890s?', o:[
+   ['A new group (group 0) was added to the table',true,'They fitted nowhere else, but the pattern of the table was kept.'],
+   ['Mendeleev\'s table was thrown away',false,'The table was kept – a new group was added.'],
+   ['They filled Mendeleev\'s gaps',false,'His gaps were for other elements, such as gallium and germanium.'],
+   ['They were put in group 1',false,'They are unreactive, so they do not fit with the alkali metals.']]},
+  {q:'Which statement about the modern periodic table is correct?', o:[
+   ['Elements are in order of atomic number, and elements in the same group have similar properties',true,'Elements in a group have the same number of outer electrons.'],
+   ['Elements are in order of atomic weight with no exceptions',false,'Ordering by atomic number avoids the tellurium–iodine problem.'],
+   ['There are still gaps for undiscovered elements up to element 118',false,'All 118 have now been discovered or made.'],
+   ['The noble gases are in group 1',false,'They are in group 0.']]}
+ ]}
+]};
+
+/* ===== walkthrough shell: steps, questions, results ===== */
+(function () {
+  const STEPS = APP.steps, LET = "ABCD";
+  function seeded(n, seed) { const a = [...Array(n).keys()]; let s = seed; for (let i = n - 1; i > 0; i--) { s = (s * 9301 + 49297) % 233280; const j = Math.floor(s / 233280 * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+  STEPS.forEach((st, si) => (st.qs || []).forEach((q, qi) => { q.order = seeded(q.o.length, si * 31 + qi * 7 + 5); q.key = st.id + "-" + qi; }));
+  let answers = {}, cur = 0, cleanup = null;
+  try { answers = JSON.parse(localStorage.getItem(APP.key) || "{}") || {}; } catch (e) { answers = {}; }
+  const save = () => { try { localStorage.setItem(APP.key, JSON.stringify(answers)); } catch (e) {} };
+  const allQs = () => STEPS.flatMap((s) => s.qs || []);
+  const tally = (st) => { const qs = st.qs || []; return { done: qs.filter((q) => q.key in answers).length, right: qs.filter((q) => q.key in answers && q.o[answers[q.key]][1]).length, n: qs.length }; };
+  const RESULTS = STEPS.length;
+  const nav = document.getElementById("nav"), panel = document.getElementById("panel");
+  document.querySelector(".brand h1").textContent = APP.title;
+  document.querySelector(".brand span").textContent = APP.subtitle;
+
+  function renderNav() {
+    nav.innerHTML = "";
+    [...STEPS, { nav: "Results" }].forEach((st, i) => {
+      const b = document.createElement("button"); b.type = "button"; b.className = "step-link";
+      if (i === cur) b.setAttribute("aria-current", "step");
+      let t = "";
+      if (st.qs) { const k = tally(st); if (k.done === k.n) t = `<span class="t">${k.right}/${k.n}</span>`; }
+      b.innerHTML = `<span class="n">${i < RESULTS ? i + 1 : "✓"}</span>${st.nav}${t}`;
+      b.onclick = () => go(i);
+      nav.appendChild(b);
+    });
+  }
+  function qHTML(q, label) {
+    const a = answers[q.key], done = a !== undefined;
+    const ci = q.o.findIndex((o) => o[1]);
+    const opts = q.order.map((oi, k) => {
+      let cls = "opt";
+      if (done) { if (oi === ci) cls += " right"; else if (oi === a) cls += " wrong"; else cls += " dim"; }
+      return `<button type="button" class="${cls}" data-q="${q.key}" data-o="${oi}" ${done ? "disabled" : ""}><span class="L">${LET[k]}</span><span>${q.o[oi][0]}</span></button>`;
+    }).join("");
+    let fb = "";
+    if (done) {
+      const okk = a === ci;
+      fb = `<div class="fb">${okk ? `<span class="ok">Correct.</span> ${q.o[a][2] || ""}` : `<span class="no">Not quite.</span> ${q.o[a][2] || ""} <br><b>Correct answer:</b> ${q.o[ci][0]}. ${q.o[ci][2] || ""}`}</div>`;
+    }
+    return `<div class="q" id="q-${q.key}"><p class="qt"><span class="qn">${label}</span>${q.q}</p><div class="opts">${opts}</div>${fb}</div>`;
+  }
+  function pager() {
+    const st = STEPS[cur];
+    const mid = st && st.qs ? (() => { const k = tally(st); return `${k.done} of ${k.n} answered`; })() : "";
+    return `<div class="pager"><button class="btn" id="prev" ${cur === 0 ? "disabled" : ""}>← Back</button><span class="mid">${mid}</span>${cur < RESULTS ? `<button class="btn primary" id="next">${cur === RESULTS - 1 ? "See results →" : "Next step →"}</button>` : `<span></span>`}</div>`;
+  }
+  function bindPager() {
+    const p = document.getElementById("prev"), n = document.getElementById("next");
+    if (p) p.onclick = () => go(cur - 1);
+    if (n) n.onclick = () => go(cur + 1);
+  }
+  function renderStep() {
+    const st = STEPS[cur];
+    let h = `<div class="eyebrow">Step ${cur + 1} of ${STEPS.length} · ${st.eyebrow}</div><h2>${st.title}</h2>${st.html()}`;
+    if (st.qs && st.qs.length) h += `<section class="check"><h3>Check your understanding</h3>${st.qs.map((q, qi) => qHTML(q, (cur + 1) + "." + (qi + 1))).join("")}</section>`;
+    h += pager();
+    panel.innerHTML = h; bindPager();
+    if (st.mount) cleanup = st.mount(panel) || null;
+  }
+  function renderResults() {
+    const all = allQs(), done = all.filter((q) => q.key in answers), right = done.filter((q) => q.o[answers[q.key]][1]);
+    const wrong = done.filter((q) => !q.o[answers[q.key]][1]), skipped = all.length - done.length;
+    let h = `<div class="eyebrow">Results</div><h2>Your results</h2>
+      <div class="results-head"><div class="big">${right.length}<span style="font-size:28px;color:var(--muted)"> / ${all.length}</span></div>
+      <p style="margin:0;max-width:56ch">${skipped ? `${skipped} question${skipped > 1 ? "s" : ""} not answered yet. ` : ""}${wrong.length ? "Copy the questions below into a three-column table in your book: the question, a blank space to answer next time, and the correct answer." : done.length ? "Every answer right first time. Well done." : "Work through the steps, then come back here."}</p></div>
+      <div class="bars">${STEPS.filter((s) => s.qs).map((st) => { const k = tally(st); return `<div class="bar"><span>${st.nav}</span><div class="track"><div class="fill" style="width:${k.n ? k.right / k.n * 100 : 0}%"></div></div><span class="n">${k.right}/${k.n}</span></div>`; }).join("")}</div>`;
+    if (wrong.length) h += `<h3>Questions to revisit</h3><div class="tablewrap"><table class="cmp redo"><thead><tr><th>Question</th><th>Answer next time</th><th>Correct answer</th></tr></thead><tbody>${wrong.map((q) => `<tr><td>${q.q}</td><td></td><td>${q.o.find((o) => o[1])[0]}</td></tr>`).join("")}</tbody></table></div>`;
+    h += pager();
+    panel.innerHTML = h; bindPager();
+  }
+  function render() { if (cleanup) { try { cleanup(); } catch (e) {} cleanup = null; } renderNav(); cur < RESULTS ? renderStep() : renderResults(); }
+  function go(i) { cur = Math.max(0, Math.min(RESULTS, i)); render(); window.scrollTo({ top: 0, behavior: "auto" }); }
+
+  panel.addEventListener("click", (e) => {
+    const b = e.target.closest(".opt"); if (!b || b.disabled) return;
+    const key = b.dataset.q; answers[key] = +b.dataset.o; save();
+    const st = STEPS[cur], qi = st.qs.findIndex((q) => q.key === key);
+    document.getElementById("q-" + key).outerHTML = qHTML(st.qs[qi], (cur + 1) + "." + (qi + 1));
+    renderNav();
+    const mid = panel.querySelector(".pager .mid"); if (mid) { const k = tally(st); mid.textContent = `${k.done} of ${k.n} answered`; }
+  });
+  document.addEventListener("keydown", (e) => {
+    const tag = (e.target.tagName || "").toLowerCase();
+    if (tag === "input" || tag === "select" || tag === "textarea") return;
+    if (e.key === "ArrowRight") go(cur + 1);
+    else if (e.key === "ArrowLeft") go(cur - 1);
+  });
+  const reset = document.getElementById("resetAll");
+  reset.onclick = function () {
+    if (this.dataset.armed) { answers = {}; save(); delete this.dataset.armed; this.textContent = "Start again"; go(0); }
+    else { this.dataset.armed = "1"; this.textContent = "Clear all answers?"; setTimeout(() => { if (this.dataset.armed) { delete this.dataset.armed; this.textContent = "Start again"; } }, 4000); }
+  };
+  render();
+})();
+
+/* ===== helper: click-in-order widget ===== */
+function orderWidget(el, items, okMsg) {
+  const order = items.map((_, i) => i);
+  let s = items.length * 7 + 3;
+  for (let i = order.length - 1; i > 0; i--) { s = (s * 9301 + 49297) % 233280; const j = Math.floor(s / 233280 * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
+  if (order.every((v, i) => v === i)) order.reverse();
+  let picked = [];
+  function draw(checked) {
+    const pool = order.filter((i) => !picked.includes(i));
+    el.innerHTML = `<div class="order"><div class="pool">${pool.map((i) => `<button type="button" class="card-o" data-i="${i}">${items[i]}</button>`).join("") || `<span class="small">All cards placed – check your order.</span>`}</div>
+      <div class="chain">${picked.map((i, k) => `<div class="card-o ${checked ? (i === k ? "ok" : "bad") : ""}">${items[i]}</div>`).join("")}</div>
+      <div class="row" style="margin-top:10px"><button type="button" class="btn primary" data-act="check" ${picked.length < items.length ? "disabled" : ""}>Check order</button><button type="button" class="btn" data-act="undo" ${picked.length ? "" : "disabled"}>Undo</button><button type="button" class="btn" data-act="reset">Reset</button></div>
+      ${checked ? `<div class="msg" style="color:${picked.every((v, k) => v === k) ? "var(--good)" : "var(--bad)"}">${picked.every((v, k) => v === k) ? okMsg || "Correct order." : "Not quite – the red cards are in the wrong place. Reset and try again."}</div>` : ""}</div>`;
+  }
+  el.addEventListener("click", (e) => {
+    const c = e.target.closest(".pool .card-o"); if (c) { picked.push(+c.dataset.i); draw(false); return; }
+    const a = e.target.closest("[data-act]"); if (!a) return;
+    if (a.dataset.act === "check") draw(true);
+    if (a.dataset.act === "undo") { picked.pop(); draw(false); }
+    if (a.dataset.act === "reset") { picked = []; draw(false); }
+  });
+  draw(false);
+}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,531 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Isotopes</title>
+<style>
+:root{
+  --paper:#f4ede0; --panel:#fbf7ef; --ink:#3a2a1c; --muted:#7a6450; --rule:#dbc9ae;
+  --accent:#8a5a2b; --accent-soft:#ead9bf; --good:#3f7a3a; --good-soft:#e2eed8; --bad:#a8432a; --bad-soft:#f6e0d6;
+  --display:"Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  --body:"Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,"SF Mono",Menlo,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.5}
+.wrap{max-width:1180px;margin:0 auto;padding:14px max(16px,env(safe-area-inset-right,0px)) 32px max(16px,env(safe-area-inset-left,0px))}
+header.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 24px;padding-bottom:12px;border-bottom:2px solid var(--rule)}
+.brand{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.brand h1{font-family:var(--display);font-size:1.75rem;margin:0;font-weight:700}
+.brand span{color:var(--muted);font-size:.95rem}
+.ghost{font:600 .9rem var(--body);background:transparent;border:1.5px solid var(--rule);color:var(--muted);border-radius:8px;padding:7px 12px;cursor:pointer}
+.ghost:hover{border-color:var(--accent);color:var(--ink)}
+nav.steps{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 2px}
+.step-link{display:flex;align-items:center;gap:8px;font:600 .9rem var(--body);background:var(--panel);border:1.5px solid var(--rule);color:var(--ink);border-radius:999px;padding:5px 12px 5px 5px;cursor:pointer}
+.step-link:hover{border-color:var(--accent)}
+.step-link .n{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--accent-soft);font:700 .8rem var(--mono)}
+.step-link[aria-current]{background:var(--accent);border-color:var(--accent);color:#fffaf2}
+.step-link[aria-current] .n{background:#fffaf2;color:var(--accent)}
+.step-link .t{font:700 .78rem var(--mono);color:var(--good)}
+.step-link[aria-current] .t{color:#e9f4dd}
+main{padding-top:16px}
+.eyebrow{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);font-weight:700}
+h2{font-family:var(--display);font-size:2.1rem;margin:2px 0 14px;line-height:1.1;text-wrap:balance}
+h3{font-family:var(--display);font-size:1.35rem;margin:22px 0 10px}
+.grid2{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:22px;align-items:start}
+.grid2.even{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+@media (max-width:860px){.grid2,.grid2.even{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1.5px solid var(--rule);border-radius:14px;padding:14px 16px;min-width:0}
+.prose p{margin:0 0 10px}
+.prose ul{margin:0 0 10px;padding-left:22px}
+.prose li{margin-bottom:4px}
+.tip{background:var(--accent-soft);border-left:5px solid var(--accent);border-radius:8px;padding:10px 14px;margin:12px 0;font-size:.97rem}
+.tip .lab{display:block;font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--accent);margin-bottom:2px}
+.warn{background:var(--bad-soft);border-left:5px solid var(--bad)}
+.warn .lab{color:var(--bad)}
+.btn{font:600 .95rem var(--body);background:var(--panel);border:1.5px solid var(--rule);color:var(--ink);padding:8px 14px;border-radius:8px;cursor:pointer}
+.btn:hover:not(:disabled){border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fffaf2}
+.btn.on{background:var(--ink);border-color:var(--ink);color:#fffaf2}
+.btn:disabled{opacity:.45;cursor:default}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid #c98a3a;outline-offset:2px}
+select{font:600 .95rem var(--body);background:var(--panel);border:1.5px solid var(--rule);color:var(--ink);padding:7px 10px;border-radius:8px}
+.check{margin-top:28px;border-top:2px solid var(--rule)}
+.q{background:var(--panel);border:1.5px solid var(--rule);border-radius:12px;padding:12px 14px;margin:10px 0}
+.qt{margin:0 0 9px;font-weight:600}
+.qt .qn{font-family:var(--mono);color:var(--accent);margin-right:8px}
+.opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+@media (max-width:680px){.opts{grid-template-columns:1fr}}
+.opt{display:flex;gap:10px;align-items:flex-start;text-align:left;font:500 1rem/1.4 var(--body);background:#fffdf8;border:1.5px solid var(--rule);color:var(--ink);border-radius:10px;padding:9px 12px;cursor:pointer}
+.opt .L{font:700 .85rem var(--mono);color:var(--muted);padding-top:2px}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt:disabled{cursor:default}
+.opt.right{background:var(--good-soft);border-color:var(--good)}
+.opt.wrong{background:var(--bad-soft);border-color:var(--bad)}
+.opt.dim{opacity:.6}
+.fb{margin-top:9px;font-size:.97rem}
+.fb .ok{color:var(--good);font-weight:700}
+.fb .no{color:var(--bad);font-weight:700}
+.pager{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:26px}
+.pager .mid{color:var(--muted);font-size:.9rem}
+.tablewrap{overflow-x:auto}
+table.cmp{border-collapse:collapse;width:100%;font-size:.95rem;background:#fffdf8}
+table.cmp th,table.cmp td{border:1px solid var(--rule);padding:7px 10px;text-align:left;vertical-align:top}
+table.cmp thead th{background:var(--accent);color:#fffaf2;font-weight:600}
+table.cmp tbody th{background:var(--panel)}
+table.redo td:nth-child(2){min-width:220px}
+.results-head{display:flex;gap:22px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
+.big{font:700 64px/1 var(--display)}
+.bars{display:grid;gap:8px;margin-bottom:22px}
+.bar{display:grid;grid-template-columns:minmax(0,260px) 1fr 52px;gap:12px;align-items:center}
+.bar .track{height:14px;background:var(--accent-soft);border-radius:99px;overflow:hidden}
+.bar .fill{height:100%;background:var(--accent)}
+.bar .n{font:600 .9rem var(--mono);text-align:right}
+@media (max-width:560px){.bar{grid-template-columns:1fr 52px}.bar .track{grid-column:1/-1;order:3}}
+/* order widget */
+.order .pool,.order .chain{display:grid;gap:6px}
+.order .chain{counter-reset:c;margin-top:10px}
+.order .card-o{font:500 .97rem/1.35 var(--body);text-align:left;background:#fffdf8;border:1.5px solid var(--rule);color:var(--ink);border-radius:9px;padding:8px 12px;cursor:pointer}
+.order .card-o:hover{border-color:var(--accent)}
+.order .chain .card-o{counter-increment:c;cursor:default}
+.order .chain .card-o::before{content:counter(c) ". ";font:700 .9rem var(--mono);color:var(--accent)}
+.order .card-o.ok{background:var(--good-soft);border-color:var(--good)}
+.order .card-o.bad{background:var(--bad-soft);border-color:var(--bad)}
+.order .msg{margin-top:8px;font-weight:600}
+.small{font-size:.86rem;color:var(--muted)}
+.mono{font-family:var(--mono)}
+/* practice + balancing (shared) */
+.prac-q{font-size:1.08rem;margin-bottom:10px}
+.prac-f{display:flex;flex-wrap:wrap;gap:10px 18px}
+.prac-f label{display:flex;align-items:center;gap:8px;font-weight:600}
+.prac-f input{font:600 1.1rem var(--mono);width:90px;padding:6px 8px;border:1.5px solid var(--rule);border-radius:8px;background:#fffdf8;color:var(--ink)}
+.prac-f input.ok{border-color:var(--good);background:var(--good-soft)}
+.prac-f input.bad{border-color:var(--bad);background:var(--bad-soft)}
+.prac-f b.ok{color:var(--good)} .prac-f b.bad{color:var(--bad)}
+.prac-f em{font-style:normal;color:var(--muted);font-weight:500}
+.prac-w{margin-top:10px;background:#fffdf8;border:1.5px dashed var(--rule);border-radius:10px;padding:10px 12px;font-size:.97rem}
+.bal{display:flex;flex-wrap:wrap;align-items:center;gap:10px;font:600 1.2rem var(--mono);margin:12px 0}
+.coef{display:inline-flex;align-items:center;border:1.5px solid var(--rule);border-radius:9px;background:#fffdf8;overflow:hidden}
+.coef button{font:700 1rem var(--mono);border:0;background:var(--accent-soft);color:var(--ink);width:30px;height:36px;cursor:pointer}
+.coef span{min-width:30px;text-align:center}
+.coef span.one{color:#b9a58c}
+table.count td,table.count th{text-align:center}
+table.count .ok{color:var(--good);font-weight:700}
+table.count .bad{color:var(--bad);font-weight:700}
+.atombox svg{width:100%;height:auto;display:block}
+.nuclide{display:inline-grid;grid-template-columns:auto auto;grid-template-rows:auto auto;align-items:center;font-family:var(--display);line-height:1}
+.nuclide .m{grid-column:1;grid-row:1;text-align:right;font-size:.55em;padding-right:2px}
+.nuclide .z{grid-column:1;grid-row:2;text-align:right;font-size:.55em;padding-right:2px}
+.nuclide .s{grid-column:2;grid-row:1/3;font-weight:700}
+.opt .nuclide{font-size:1.5em;vertical-align:middle}
+
+.ctl3{display:grid;gap:8px;margin-top:8px}
+.ctl{display:grid;grid-template-columns:16px 1fr 40px 44px 40px;align-items:center;gap:8px}
+.ctl .sw{width:16px;height:16px;border-radius:50%}
+.ctl .btn{padding:6px 0;font-weight:700}
+.ctl .cv{font:700 1.3rem var(--mono);text-align:center}
+.big-el{font-size:3.4rem;margin:2px 0 8px}
+.big-el sup{font-size:.4em}
+dl.facts-s{display:grid;grid-template-columns:auto 1fr;gap:5px 14px;margin:0}
+dl.facts-s dt{color:var(--muted);font-size:.9rem}
+dl.facts-s dd{margin:0;font-weight:600}
+.config{font:700 2rem var(--display);color:#2d6f93;margin:4px 0 8px}
+.ptmini{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:4px;margin:12px 0}
+.ptmini .mini{font:700 1rem var(--display);background:#fffdf8;border:1.5px solid var(--rule);border-radius:6px;padding:3px 0 5px;cursor:pointer;display:flex;flex-direction:column;align-items:center;color:var(--ink)}
+.ptmini .mini small{font:600 .65rem var(--mono);color:var(--muted)}
+.ptmini .mini.on{background:var(--accent);border-color:var(--accent);color:#fffaf2}
+.ptmini .mini.on small{color:#f3e4cf}
+.who{display:flex;gap:10px;align-items:baseline}
+.isorow{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.isorow svg{width:100%;height:auto;display:block}
+.btn.on{background:var(--accent);border-color:var(--accent);color:#fffaf2}
+.isopair{display:flex;justify-content:center;gap:40px;font-size:3rem}
+.isopair p{font:600 .95rem var(--body);margin:4px 0 0}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top"><div class="brand"><h1></h1><span></span></div><button class="ghost" id="resetAll" type="button">Start again</button></header>
+  <nav class="steps" id="nav" aria-label="Steps"></nav>
+  <main id="panel"></main>
+</div>
+<script>
+/* ================= ELECTRON SHELL DIAGRAMS ================= */
+function eAngles(n){
+ if(n>8) return [...Array(n)].map((_,i)=>-90+i*360/n);
+ const base=[-90,90,0,180], pairs=Math.max(0,n-4), out=[];
+ for(let j=0;j<Math.min(n,4);j++){ if(j<pairs) out.push(base[j]-13,base[j]+13); else out.push(base[j]); }
+ return out;
+}
+const cross=(x,y,s,col,w)=>`<path d="M${x-s} ${y-s}L${x+s} ${y+s}M${x-s} ${y+s}L${x+s} ${y-s}" stroke="${col}" stroke-width="${w}" stroke-linecap="round"/>`;
+const pt=(cx,cy,r,deg)=>[cx+r*Math.cos(deg*Math.PI/180), cy+r*Math.sin(deg*Math.PI/180)];
+/* draws an atom; returns svg string. opts: r0, dr, nucR, xs (cross size), innerSmall, outerCol, gap (leave the lone outer electron at 180 shifted) */
+function atomSVG(cx,cy,e,o){
+ const sh=e.shells, n=sh.length; let s='';
+ for(let k=0;k<n;k++){
+  const R=o.r0+k*o.dr, outer=k===n-1;
+  s+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="#9c8770" stroke-width="${outer?2:1.4}"/>`;
+  let ang=eAngles(sh[k]);
+  if(outer && o.outerShift) ang=ang.map(a=>a===180?193:a);
+  ang.forEach(a=>{const [x,y]=pt(cx,cy,R,a);
+   if(!outer && o.innerSmall) s+=`<circle cx="${x}" cy="${y}" r="${o.innerSmall}" fill="#7a6450"/>`;
+   else s+=cross(x,y,o.xs,outer?o.outerCol:'#3a2a1c',outer?2.6:2);
+  });
+ }
+ s+=`<circle cx="${cx}" cy="${cy}" r="${o.nucR}" fill="#f1d9c7" stroke="#b5401f" stroke-width="2"/><text x="${cx}" y="${cy+o.nucR*0.36}" text-anchor="middle" font-family="Palatino Linotype,Palatino,Georgia,serif" font-weight="700" font-size="${o.nucR*1.05}" fill="#3a2a1c">${e.id}</text>`;
+ return s;
+}
+
+
+/* ================= GENERIC HELPERS ================= */
+const fsub = f => f.replace(/([A-Za-z\)])(\d+)/g, '$1<sub>$2</sub>');
+function shellsFor(e){ const s=[]; let left=e; [2,8,8,2].forEach(c=>{ if(left>0){ s.push(Math.min(c,left)); left-=Math.min(c,left);} }); return s; }
+
+/* balancing widget: RX = [{lab, L:[[formula,{El:n}]...], R:[...]}] */
+function balanceWidget(root, RX){
+  root.innerHTML = `<div class="row"><label class="small">Reaction <select class="bw-sel">${RX.map((x,i)=>`<option value="${i}">${x.lab}</option>`).join('')}</select></label></div>
+   <div class="bal bw-eq"></div><table class="cmp count bw-count"></table><div class="bw-msg" style="margin-top:10px;font-weight:600"></div>`;
+  const sel=root.querySelector('.bw-sel'), eqEl=root.querySelector('.bw-eq'), cnt=root.querySelector('.bw-count'), msg=root.querySelector('.bw-msg');
+  let r=RX[0], c=[];
+  const reset=()=>{ c=[...r.L,...r.R].map(()=>1); };
+  function draw(){
+    const all=[...r.L,...r.R], nL=r.L.length;
+    eqEl.innerHTML=all.map(([f],k)=>`${k===nL?'<span>→</span>':k?'<span>+</span>':''}<span class="coef"><button type="button" data-k="${k}" data-d="-1" aria-label="decrease">−</button><span class="${c[k]===1?'one':''}">${c[k]}</span><button type="button" data-k="${k}" data-d="1" aria-label="increase">+</button></span><span>${fsub(f)}</span>`).join(' ');
+    const els=[...new Set(all.flatMap(([,a])=>Object.keys(a)))];
+    const side=(list,off)=>els.map(e=>list.reduce((s,[,a],k)=>s+(a[e]||0)*c[k+off],0));
+    const L=side(r.L,0), R=side(r.R,nL);
+    cnt.innerHTML=`<thead><tr><th>Atom</th><th>Left side</th><th>Right side</th><th></th></tr></thead><tbody>${els.map((e,i)=>`<tr><th>${e}</th><td>${L[i]}</td><td>${R[i]}</td><td class="${L[i]===R[i]?'ok':'bad'}">${L[i]===R[i]?'✓':'✗'}</td></tr>`).join('')}</tbody>`;
+    const ok=els.every((_,i)=>L[i]===R[i]);
+    const g=(a,b)=>b?g(b,a%b):a, gg=c.reduce(g);
+    const eqtxt=()=>all.map(([f],k)=>(k===nL?' → ':k?' + ':'')+(c[k]>1?c[k]:'')+fsub(f)).join('');
+    msg.innerHTML= ok ? (gg===1?`<span style="color:var(--good)">Balanced! ${eqtxt()}</span>`:`<span style="color:var(--accent)">Balanced, but use the smallest whole numbers – divide every number by ${gg}.</span>`) : `<span class="small">Change the numbers in front of the formulae until every atom is ✓. Never change the formulae themselves.</span>`;
+  }
+  eqEl.addEventListener('click',ev=>{const b=ev.target.closest('button'); if(!b) return; const k=+b.dataset.k; c[k]=Math.max(1,Math.min(8,c[k]+ +b.dataset.d)); draw();});
+  sel.onchange=()=>{ r=RX[+sel.value]; reset(); draw(); };
+  reset(); draw();
+}
+
+/* practice generator: gen() -> {prompt, fields:[{label, ans, tol, unit}], working} */
+function practiceWidget(el, gen){
+  let cur=null, right=0, tried=0, checked=false;
+  function next(){ cur=gen(); checked=false; draw(); }
+  function draw(res){
+    el.innerHTML = `<div class="prac"><div class="prac-q">${cur.prompt}</div>
+      <div class="prac-f">${cur.fields.map((f,i)=>`<label><span>${f.label}</span><input type="text" inputmode="decimal" autocomplete="off" data-i="${i}" value="${res?res[i].v:''}" class="${res?(res[i].ok?'ok':'bad'):''}">${f.unit?`<em>${f.unit}</em>`:''}${res?`<b class="${res[i].ok?'ok':'bad'}">${res[i].ok?'✓':'✗'}</b>`:''}</label>`).join('')}</div>
+      <div class="row" style="margin-top:10px"><button type="button" class="btn primary" data-a="check">Check</button><button type="button" class="btn" data-a="work">Show working</button><button type="button" class="btn" data-a="new">New question</button><span class="small" style="margin-left:auto">Score: ${right} / ${tried}</span></div>
+      <div class="prac-w" hidden>${cur.working}</div></div>`;
+  }
+  el.addEventListener('click', ev=>{ const b=ev.target.closest('[data-a]'); if(!b) return;
+    if(b.dataset.a==='new') next();
+    if(b.dataset.a==='work'){ const w=el.querySelector('.prac-w'); w.hidden=!w.hidden; }
+    if(b.dataset.a==='check'){
+      const ins=[...el.querySelectorAll('input')];
+      const res=cur.fields.map((f,i)=>{ const v=ins[i].value.trim(); const n=parseFloat(v.replace(',','.')); return {v, ok: v!=='' && Math.abs(n-f.ans)<=(f.tol||0)+1e-9}; });
+      if(!checked){ tried++; if(res.every(r=>r.ok)) right++; checked=true; }
+      draw(res); if(!res.every(r=>r.ok)) {} 
+    }
+  });
+  el.addEventListener('keydown', ev=>{ if(ev.key==='Enter' && ev.target.tagName==='INPUT'){ ev.preventDefault(); el.querySelector('[data-a=check]').click(); } });
+  next();
+}
+
+/* nucleus of protons and neutrons, sunflower packing */
+function nucleusSVG(cx,cy,p,n,r){
+  const N=p+n; if(!N) return '';
+  const types=[]; let s=p*31+n*17+3; for(let i=0;i<p;i++) types.push('p'); for(let i=0;i<n;i++) types.push('n');
+  for(let i=types.length-1;i>0;i--){ s=(s*9301+49297)%233280; const j=Math.floor(s/233280*(i+1)); [types[i],types[j]]=[types[j],types[i]]; }
+  const spread=N===1?0:r*1.05*Math.sqrt(N);
+  return types.map((t,i)=>{ const rr=N===1?0:spread*Math.sqrt((i+0.5)/N)*0.92, a=i*2.39996; return {t,x:cx+rr*Math.cos(a),y:cy+rr*Math.sin(a),rr}; })
+   .sort((a,b)=>b.rr-a.rr).map(q=>`<circle cx="${q.x.toFixed(1)}" cy="${q.y.toFixed(1)}" r="${r}" fill="${q.t==='p'?'#c2452d':'#a39d90'}" stroke="#5a4634" stroke-width=".8"/>${q.t==='p'&&r>=6?`<text x="${q.x.toFixed(1)}" y="${(q.y+r*0.42).toFixed(1)}" text-anchor="middle" font-size="${(r*1.25).toFixed(1)}" font-weight="700" fill="#fff">+</text>`:''}`).join('');
+}
+/* full atom picture: nucleus + shells with electrons as blue dots */
+function fullAtomSVG(cx,cy,p,n,e,o={}){
+  const sh=shellsFor(e), r0=o.r0||48, dr=o.dr||30, nr=o.nr||6; let s='';
+  sh.forEach((cnt,k)=>{ const R=r0+k*dr; s+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="#9c8770" stroke-width="1.5" stroke-dasharray="${o.dash||''}"/>`;
+    eAngles(cnt).forEach(a=>{ const [x,y]=pt(cx,cy,R,a); s+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${o.er||6}" fill="#2d6f93" stroke="#173f55" stroke-width="1"/><text x="${x.toFixed(1)}" y="${(y+3).toFixed(1)}" text-anchor="middle" font-size="9" font-weight="700" fill="#fff">−</text>`; }); });
+  return s+nucleusSVG(cx,cy,p,n,nr);
+}
+const E20=[[1,'H','hydrogen',1],[2,'He','helium',4],[3,'Li','lithium',7],[4,'Be','beryllium',9],[5,'B','boron',11],[6,'C','carbon',12],[7,'N','nitrogen',14],[8,'O','oxygen',16],[9,'F','fluorine',19],[10,'Ne','neon',20],[11,'Na','sodium',23],[12,'Mg','magnesium',24],[13,'Al','aluminium',27],[14,'Si','silicon',28],[15,'P','phosphorus',31],[16,'S','sulfur',32],[17,'Cl','chlorine',35],[18,'Ar','argon',40],[19,'K','potassium',39],[20,'Ca','calcium',40]];
+const nuclide=(A,Z,S)=>`<span class="nuclide"><span class="m">${A}</span><span class="z">${Z}</span><span class="s">${S}</span></span>`;
+const rint=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+
+/* ================= ISOTOPES ================= */
+const ISO_SETS={
+  H:{name:'hydrogen',Z:1,S:'H',iso:[1,2,3],note:'Hydrogen-2 is called deuterium and hydrogen-3 tritium.'},
+  C:{name:'carbon',Z:6,S:'C',iso:[12,13,14],note:'Carbon-14 is used in carbon dating.'},
+  Li:{name:'lithium',Z:3,S:'Li',iso:[6,7],note:'Most lithium atoms are lithium-7.'},
+  Cl:{name:'chlorine',Z:17,S:'Cl',iso:[35,37],note:'About 3 in every 4 chlorine atoms are chlorine-35.'}
+};
+function mountIsoView(root){
+  const box=root.querySelector('#isoview'), tb=root.querySelector('#isotab'); let key='C';
+  function draw(){
+    const s=ISO_SETS[key], k=s.iso.length, w=k===3?230:300;
+    const big=s.Z>10, r0=big?54:46, dr=big?30:34, nr=big?5.2:7.5;
+    box.innerHTML=`<div class="isorow">${s.iso.map(A=>`<div class="card" style="text-align:center"><svg viewBox="0 0 ${w} 260" role="img" aria-label="${s.name}-${A}">${fullAtomSVG(w/2,125,s.Z,A-s.Z,s.Z,{r0,dr,nr,er:5.5})}</svg><div style="font-size:2rem">${nuclide(A,s.Z,s.S)}</div><b>${s.name}-${A}</b></div>`).join('')}</div><p class="small" style="margin-top:6px">${s.note}</p>`;
+    tb.innerHTML=`<thead><tr><th>Isotope</th><th>Protons</th><th>Neutrons</th><th>Electrons</th></tr></thead><tbody>${s.iso.map(A=>`<tr><td>${s.name}-${A}</td><td>${s.Z}</td><td><b>${A-s.Z}</b></td><td>${s.Z}</td></tr>`).join('')}</tbody>`;
+    root.querySelectorAll('[data-iso]').forEach(b=>b.classList.toggle('on',b.dataset.iso===key));
+  }
+  root.querySelectorAll('[data-iso]').forEach(b=>b.onclick=()=>{key=b.dataset.iso; draw();});
+  draw();
+}
+const ISOLIST=[[1,'H','hydrogen',2],[1,'H','hydrogen',3],[3,'Li','lithium',6],[6,'C','carbon',13],[6,'C','carbon',14],[8,'O','oxygen',17],[8,'O','oxygen',18],[10,'Ne','neon',22],[12,'Mg','magnesium',25],[12,'Mg','magnesium',26],[16,'S','sulfur',34],[17,'Cl','chlorine',35],[17,'Cl','chlorine',37],[19,'K','potassium',41],[29,'Cu','copper',63],[29,'Cu','copper',65],[35,'Br','bromine',79],[35,'Br','bromine',81],[92,'U','uranium',235],[92,'U','uranium',238]];
+function isoGen(){
+  const [Z,S,name,A]=ISOLIST[rint(0,ISOLIST.length-1)], n=A-Z, style=Math.random()<0.5;
+  return {prompt: style?`An atom of <b>${name}-${A}</b>. The atomic number of ${name} is ${Z}.`:`An atom of ${name}: <span style="font-size:2rem;vertical-align:middle;margin-left:10px">${nuclide(A,Z,S)}</span>`,
+    fields:[{label:'protons',ans:Z},{label:'neutrons',ans:n},{label:'electrons',ans:Z}],
+    working:`${style?`"${name}-${A}" means the mass number is ${A}.<br>`:''}Protons = atomic number = <b>${Z}</b><br>Electrons = protons = <b>${Z}</b><br>Neutrons = ${A} − ${Z} = <b>${n}</b>`};
+}
+/* Ar explorer */
+const AR_SETS={
+  Cl:{name:'chlorine',m:[35,37],real:75},
+  Br:{name:'bromine',m:[79,81],real:51},
+  Cu:{name:'copper',m:[63,65],real:69},
+  B:{name:'boron',m:[10,11],real:20},
+  Li:{name:'lithium',m:[6,7],real:7.5}
+};
+function mountAr(root){
+  const sel=root.querySelector('#arel'), sl=root.querySelector('#arpc'), out=root.querySelector('#arout'), vis=root.querySelector('#arvis');
+  let key='Cl';
+  sel.innerHTML=Object.entries(AR_SETS).map(([k,v])=>`<option value="${k}">${v.name}</option>`).join('');
+  function draw(){
+    const s=AR_SETS[key], a=+sl.value, b=+(100-a).toFixed(1), [m1,m2]=s.m;
+    const Ar=(m1*a+m2*b)/100;
+    root.querySelector('#arpcl').textContent=`${s.name}-${m1}: ${a}%  ·  ${s.name}-${m2}: ${b}%`;
+    // bars + number line
+    const x=v=>60+(v-m1)/(m2-m1)*440;
+    let h=`<svg viewBox="0 0 560 230" role="img" aria-label="Abundance bars and relative atomic mass">`;
+    h+=`<line x1="40" y1="170" x2="520" y2="170" stroke="#3a2a1c" stroke-width="2"/>`;
+    [[m1,a],[m2,b]].forEach(([m,p])=>{ const hh=p*1.3; h+=`<rect x="${x(m)-22}" y="${170-hh}" width="44" height="${hh}" fill="#8a5a2b" opacity=".85" rx="3"/><text x="${x(m)}" y="${165-hh}" text-anchor="middle" font-size="14" font-weight="700" fill="#3a2a1c">${p}%</text><text x="${x(m)}" y="190" text-anchor="middle" font-size="15" font-weight="700" fill="#3a2a1c">${m}</text>`; });
+    h+=`<line x1="${x(Ar)}" y1="30" x2="${x(Ar)}" y2="176" stroke="#2d6f93" stroke-width="3" stroke-dasharray="6 4"/><polygon points="${x(Ar)-8},200 ${x(Ar)+8},200 ${x(Ar)},186" fill="#2d6f93"/><text x="${x(Ar)}" y="220" text-anchor="middle" font-size="16" font-weight="700" fill="#2d6f93">A<tspan baseline-shift="sub" font-size="11">r</tspan> = ${Ar.toFixed(2).replace(/0$/,'')}</text>`;
+    h+=`<text x="300" y="20" text-anchor="middle" font-size="13" fill="#7a6450">The average is pulled towards the more common isotope</text>`;
+    vis.innerHTML=h+'</svg>';
+    out.innerHTML=`A<sub>r</sub> = (${m1} × ${a}) + (${m2} × ${b}) ÷ 100<br>= (${+(m1*a).toFixed(2)} + ${+(m2*b).toFixed(2)}) ÷ 100<br>= <b>${(+Ar.toFixed(3)).toString()}</b> → <b>${Ar.toFixed(1)}</b> (1 d.p.)`;
+  }
+  sel.onchange=()=>{key=sel.value; sl.value=AR_SETS[key].real; draw();};
+  sl.oninput=draw;
+  root.querySelector('#arreal').onclick=()=>{sl.value=AR_SETS[key].real; draw();};
+  sl.value=AR_SETS[key].real; draw();
+}
+/* Ar practice */
+const ARP=[{n:'chlorine',m:[35,37]},{n:'bromine',m:[79,81]},{n:'copper',m:[63,65]},{n:'boron',m:[10,11]},{n:'gallium',m:[69,71]},{n:'silver',m:[107,109]},{n:'rubidium',m:[85,87]},{n:'antimony',m:[121,123]}];
+const ARP3=[{n:'magnesium',m:[24,25,26],p:[79,10,11]},{n:'silicon',m:[28,29,30],p:[92,5,3]},{n:'neon',m:[20,21,22],p:[90.5,0.3,9.2]}];
+function arGen(){
+  let names, ms, ps;
+  if(Math.random()<0.25){ const e=ARP3[rint(0,ARP3.length-1)]; names=e.n; ms=e.m; ps=e.p; }
+  else { const e=ARP[rint(0,ARP.length-1)]; const a=rint(10,90); names=e.n; ms=e.m; ps=[a,100-a]; }
+  const tot=ms.reduce((s,m,i)=>s+m*ps[i],0), Ar=tot/100, ans=Math.round(Ar*10)/10;
+  return {prompt:`A sample of ${names} contains: ${ms.map((m,i)=>`<b>${ps[i]}%</b> ${names}-${m}`).join(', ')}.<br>Calculate the relative atomic mass of ${names}. Give your answer to 1 decimal place.`,
+    fields:[{label:'A<sub>r</sub> =',ans,tol:0.051}],
+    working:`A<sub>r</sub> = ${ms.map((m,i)=>`(${m} × ${ps[i]})`).join(' + ')} ÷ 100<br>= (${ms.map((m,i)=>+(m*ps[i]).toFixed(2)).join(' + ')}) ÷ 100<br>= ${+tot.toFixed(2)} ÷ 100 = ${+Ar.toFixed(4)}<br>= <b>${ans.toFixed(1)}</b> (1 d.p.)`};
+}
+
+/* ================= STEPS ================= */
+const APP={key:'isotopes-walkthrough-v1', title:'Isotopes', subtitle:'AQA GCSE Combined Science: Trilogy · Chemistry 4.1.1.5', steps:[
+{id:'what', nav:'What is an isotope?', eyebrow:'Definition', title:'What is an isotope?',
+ html:()=>`<div class="tip" style="font-size:1.08rem"><span class="lab">Definition</span><b>Isotopes</b> are atoms of the <b>same element</b> with the <b>same number of protons</b> but a <b>different number of neutrons</b>.</div>
+  <div class="row" style="margin:6px 0 10px">${Object.entries(ISO_SETS).map(([k,v])=>`<button class="btn" data-iso="${k}">${cap(v.name)}</button>`).join('')}</div>
+  <div id="isoview"></div>
+  <div class="grid2" style="margin-top:14px"><div class="prose"><ul><li>Isotopes have the same <b>atomic number</b> but a different <b>mass number</b>.</li><li>We name them using the mass number, e.g. carbon-12 and carbon-14.</li><li>Isotopes have the same number of <b>electrons</b>, so they have the <b>same chemical properties</b> – they react in the same way.</li></ul></div>
+  <table class="cmp" id="isotab"></table></div>`,
+ mount:mountIsoView,
+ qs:[
+  {q:'What are isotopes?', o:[
+   ['Atoms of the same element with the same number of protons but different numbers of neutrons',true,'This is the exam definition – learn it word for word.'],
+   ['Atoms of different elements with the same mass number',false,'Isotopes are always the same element.'],
+   ['Atoms of the same element with different numbers of protons',false,'Different numbers of protons would mean different elements.'],
+   ['Atoms with different numbers of electrons',false,'That describes ions.']]},
+  {q:'What is different between an atom of carbon-12 and an atom of carbon-14?', o:[
+   ['The number of neutrons',true,'Carbon-12 has 6 neutrons; carbon-14 has 8.'],
+   ['The number of protons',false,'Both have 6 protons – they are both carbon.'],
+   ['The number of electrons',false,'Both have 6 electrons.'],
+   ['The atomic number',false,'Both have atomic number 6.']]},
+  {q:'Why do isotopes of an element react in the same way?', o:[
+   ['They have the same number of electrons (same electronic structure)',true,'Chemical reactions involve electrons.'],
+   ['They have the same mass number',false,'Isotopes have different mass numbers.'],
+   ['They have the same number of neutrons',false,'Isotopes have different numbers of neutrons.'],
+   ['They have no charge',false,'All atoms are neutral; this does not explain the similar reactions.']]}
+ ]},
+{id:'pne', nav:'Protons, neutrons & electrons', eyebrow:'Calculations', title:'Protons, neutrons and electrons in isotopes',
+ html:()=>`<div class="grid2"><div class="prose"><p>The method is the same for every isotope:</p>
+  <table class="cmp"><tbody><tr><th>protons</th><td>= atomic number</td></tr><tr><th>electrons</th><td>= protons (in an atom)</td></tr><tr><th>neutrons</th><td>= mass number − atomic number</td></tr></tbody></table>
+  <p style="margin-top:10px">"Chlorine-37" means the <b>mass number is 37</b>. Chlorine's atomic number is 17, so chlorine-37 has 17 protons, 17 electrons and 37 − 17 = <b>20 neutrons</b>.</p></div>
+  <div class="card" style="text-align:center"><div class="isopair"><div>${nuclide(35,17,'Cl')}<p>17 p · <b>18 n</b> · 17 e</p></div><div>${nuclide(37,17,'Cl')}<p>17 p · <b>20 n</b> · 17 e</p></div></div><p class="small">Only the number of neutrons changes.</p></div></div>
+  <h3>Practice</h3><div class="card" id="prac"></div>`,
+ mount:r=>practiceWidget(r.querySelector('#prac'),isoGen),
+ qs:[
+  {q:'How many neutrons are in an atom of chlorine-37? (atomic number 17)', o:[['20',true,'37 − 17 = 20.'],['17',false,'That is the number of protons.'],['37',false,'That is the mass number.'],['54',false,'Subtract the atomic number; do not add it.']]},
+  {q:'Which pair of atoms are isotopes of each other?', o:[
+   [`${nuclide(12,6,'C')} and ${nuclide(14,6,'C')}`,true,'Same atomic number (6), different mass numbers.'],
+   [`${nuclide(14,6,'C')} and ${nuclide(14,7,'N')}`,false,'Same mass number, but different atomic numbers – different elements.'],
+   [`${nuclide(40,18,'Ar')} and ${nuclide(40,20,'Ca')}`,false,'Different atomic numbers – different elements.'],
+   [`${nuclide(23,11,'Na')} and ${nuclide(24,12,'Mg')}`,false,'Different elements.']]},
+  {q:'Uranium-235 and uranium-238 both have atomic number 92. How are their atoms different?', o:[['Uranium-238 has 3 more neutrons',true,'238 − 235 = 3.'],['Uranium-238 has 3 more protons',false,'Both have 92 protons.'],['Uranium-238 has 3 more electrons',false,'Both have 92 electrons.'],['There is no difference',false,'Their mass numbers are different.']]}
+ ]},
+{id:'ar', nav:'Relative atomic mass', eyebrow:'Averages', title:'Relative atomic mass',
+ html:()=>`<div class="tip" style="font-size:1.05rem"><span class="lab">Definition</span>The <b>relative atomic mass (A<sub>r</sub>)</b> of an element is an <b>average</b> value that takes account of the <b>abundance</b> of the isotopes of the element.</div>
+  <div class="grid2"><div class="card"><div class="row"><label class="small">Element <select id="arel"></select></label><button class="btn" id="arreal">Real abundances</button></div>
+   <div class="row" style="margin-top:8px"><input type="range" id="arpc" min="0" max="100" step="0.5" style="flex:1;accent-color:var(--accent)" aria-label="Percentage of the lighter isotope"></div><div class="small mono" id="arpcl"></div>
+   <div id="arvis" class="atombox"></div></div>
+  <div class="prose"><p>Move the slider to change the abundances. The relative atomic mass is always <b>between</b> the isotope masses, and <b>closer to the more common isotope</b>.</p>
+   <div class="card"><b>Calculation</b><div id="arout" class="mono" style="margin-top:6px;line-height:1.7"></div></div>
+   <p class="small" style="margin-top:8px">A<sub>r</sub> = (mass of isotope 1 × % abundance) + (mass of isotope 2 × % abundance) ÷ 100</p></div></div>`,
+ mount:mountAr,
+ qs:[
+  {q:'What is the relative atomic mass of an element?', o:[
+   ['The average mass of its atoms, taking account of the abundance of each isotope',true,'This is why it is often not a whole number.'],
+   ['The mass number of its most common isotope',false,'It is an average of all the isotopes.'],
+   ['The number of protons plus electrons',false,'Electrons have very little mass.'],
+   ['The total mass of all its isotopes added together',false,'It is a weighted average, not a total.']]},
+  {q:'Chlorine has isotopes chlorine-35 and chlorine-37. Its A<sub>r</sub> is 35.5. Which isotope is more abundant?', o:[
+   ['Chlorine-35',true,'35.5 is much closer to 35 than to 37.'],
+   ['Chlorine-37',false,'If chlorine-37 were more common, A<sub>r</sub> would be closer to 37.'],
+   ['They are equally abundant',false,'Equal amounts would give an A<sub>r</sub> of 36.']]},
+  {q:'Why is the relative atomic mass of copper (63.5) not a whole number?', o:[
+   ['It is an average of the masses of its isotopes',true,'Copper is a mixture of copper-63 and copper-65.'],
+   ['Copper atoms contain half a neutron',false,'Particles cannot be split like that.'],
+   ['Electrons add 0.5 to the mass',false,'Electrons have very little mass.'],
+   ['It has been rounded wrongly',false,'The value is correct – it is a weighted average.']]}
+ ]},
+{id:'calc', nav:'Calculating A<sub>r</sub>', eyebrow:'Calculations', title:'Calculating relative atomic mass',
+ html:()=>`<div class="grid2"><div class="card"><b>Worked example</b><p style="margin:6px 0">Copper is 69% copper-63 and 31% copper-65. Calculate the relative atomic mass of copper to 1 decimal place.</p>
+  <ol style="margin:0;padding-left:20px"><li>Multiply each mass by its percentage: 63 × 69 = 4347 and 65 × 31 = 2015</li><li>Add them: 4347 + 2015 = 6362</li><li>Divide by 100: 6362 ÷ 100 = 63.62</li><li>Round to 1 d.p.: <b>A<sub>r</sub> = 63.6</b></li></ol></div>
+  <div class="prose"><div class="tip"><span class="lab">Check your answer</span>Your answer must be <b>between</b> the smallest and largest isotope masses, and <b>closest to the most abundant</b> isotope. If it isn't, you have made a mistake.</div>
+  <div class="tip"><span class="lab">Three isotopes?</span>Do exactly the same: multiply each mass by its percentage, add all three, then divide by 100.</div></div></div>
+  <h3>Practice</h3><div class="card" id="prac"></div>`,
+ mount:r=>practiceWidget(r.querySelector('#prac'),arGen),
+ qs:[
+  {q:'Bromine is 51% bromine-79 and 49% bromine-81. What is the relative atomic mass of bromine to 1 decimal place?', o:[['80.0',true,'(79 × 51 + 81 × 49) ÷ 100 = 7998 ÷ 100 = 79.98 → 80.0'],['79.0',false,'Use both isotopes in the calculation.'],['81.0',false,'The answer must be closer to the more common isotope, bromine-79.'],['160.0',false,'Divide by 100, not 50 – the percentages add up to 100.']]},
+  {q:'Gallium is 60% gallium-69 and 40% gallium-71. What is its relative atomic mass?', o:[['69.8',true,'(69 × 60 + 71 × 40) ÷ 100 = 6980 ÷ 100 = 69.8'],['70.0',false,'That would be the answer for 50% of each.'],['70.2',false,'The answer is closer to 69 because gallium-69 is more common.'],['140.0',false,'Divide by 100 at the end.']]},
+  {q:'Magnesium is 79% magnesium-24, 10% magnesium-25 and 11% magnesium-26. What is its A<sub>r</sub> to 1 d.p.?', o:[['24.3',true,'(1896 + 250 + 286) ÷ 100 = 24.32 → 24.3'],['25.0',false,'That is a simple average – you must use the percentages.'],['24.0',false,'The heavier isotopes raise the average above 24.'],['75.0',false,'Add the three products, then divide by 100 – do not add the masses.']]}
+ ]}
+]};
+function cap(s){return s[0].toUpperCase()+s.slice(1);}
+
+/* ===== walkthrough shell: steps, questions, results ===== */
+(function () {
+  const STEPS = APP.steps, LET = "ABCD";
+  function seeded(n, seed) { const a = [...Array(n).keys()]; let s = seed; for (let i = n - 1; i > 0; i--) { s = (s * 9301 + 49297) % 233280; const j = Math.floor(s / 233280 * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+  STEPS.forEach((st, si) => (st.qs || []).forEach((q, qi) => { q.order = seeded(q.o.length, si * 31 + qi * 7 + 5); q.key = st.id + "-" + qi; }));
+  let answers = {}, cur = 0, cleanup = null;
+  try { answers = JSON.parse(localStorage.getItem(APP.key) || "{}") || {}; } catch (e) { answers = {}; }
+  const save = () => { try { localStorage.setItem(APP.key, JSON.stringify(answers)); } catch (e) {} };
+  const allQs = () => STEPS.flatMap((s) => s.qs || []);
+  const tally = (st) => { const qs = st.qs || []; return { done: qs.filter((q) => q.key in answers).length, right: qs.filter((q) => q.key in answers && q.o[answers[q.key]][1]).length, n: qs.length }; };
+  const RESULTS = STEPS.length;
+  const nav = document.getElementById("nav"), panel = document.getElementById("panel");
+  document.querySelector(".brand h1").textContent = APP.title;
+  document.querySelector(".brand span").textContent = APP.subtitle;
+
+  function renderNav() {
+    nav.innerHTML = "";
+    [...STEPS, { nav: "Results" }].forEach((st, i) => {
+      const b = document.createElement("button"); b.type = "button"; b.className = "step-link";
+      if (i === cur) b.setAttribute("aria-current", "step");
+      let t = "";
+      if (st.qs) { const k = tally(st); if (k.done === k.n) t = `<span class="t">${k.right}/${k.n}</span>`; }
+      b.innerHTML = `<span class="n">${i < RESULTS ? i + 1 : "✓"}</span>${st.nav}${t}`;
+      b.onclick = () => go(i);
+      nav.appendChild(b);
+    });
+  }
+  function qHTML(q, label) {
+    const a = answers[q.key], done = a !== undefined;
+    const ci = q.o.findIndex((o) => o[1]);
+    const opts = q.order.map((oi, k) => {
+      let cls = "opt";
+      if (done) { if (oi === ci) cls += " right"; else if (oi === a) cls += " wrong"; else cls += " dim"; }
+      return `<button type="button" class="${cls}" data-q="${q.key}" data-o="${oi}" ${done ? "disabled" : ""}><span class="L">${LET[k]}</span><span>${q.o[oi][0]}</span></button>`;
+    }).join("");
+    let fb = "";
+    if (done) {
+      const okk = a === ci;
+      fb = `<div class="fb">${okk ? `<span class="ok">Correct.</span> ${q.o[a][2] || ""}` : `<span class="no">Not quite.</span> ${q.o[a][2] || ""} <br><b>Correct answer:</b> ${q.o[ci][0]}. ${q.o[ci][2] || ""}`}</div>`;
+    }
+    return `<div class="q" id="q-${q.key}"><p class="qt"><span class="qn">${label}</span>${q.q}</p><div class="opts">${opts}</div>${fb}</div>`;
+  }
+  function pager() {
+    const st = STEPS[cur];
+    const mid = st && st.qs ? (() => { const k = tally(st); return `${k.done} of ${k.n} answered`; })() : "";
+    return `<div class="pager"><button class="btn" id="prev" ${cur === 0 ? "disabled" : ""}>← Back</button><span class="mid">${mid}</span>${cur < RESULTS ? `<button class="btn primary" id="next">${cur === RESULTS - 1 ? "See results →" : "Next step →"}</button>` : `<span></span>`}</div>`;
+  }
+  function bindPager() {
+    const p = document.getElementById("prev"), n = document.getElementById("next");
+    if (p) p.onclick = () => go(cur - 1);
+    if (n) n.onclick = () => go(cur + 1);
+  }
+  function renderStep() {
+    const st = STEPS[cur];
+    let h = `<div class="eyebrow">Step ${cur + 1} of ${STEPS.length} · ${st.eyebrow}</div><h2>${st.title}</h2>${st.html()}`;
+    if (st.qs && st.qs.length) h += `<section class="check"><h3>Check your understanding</h3>${st.qs.map((q, qi) => qHTML(q, (cur + 1) + "." + (qi + 1))).join("")}</section>`;
+    h += pager();
+    panel.innerHTML = h; bindPager();
+    if (st.mount) cleanup = st.mount(panel) || null;
+  }
+  function renderResults() {
+    const all = allQs(), done = all.filter((q) => q.key in answers), right = done.filter((q) => q.o[answers[q.key]][1]);
+    const wrong = done.filter((q) => !q.o[answers[q.key]][1]), skipped = all.length - done.length;
+    let h = `<div class="eyebrow">Results</div><h2>Your results</h2>
+      <div class="results-head"><div class="big">${right.length}<span style="font-size:28px;color:var(--muted)"> / ${all.length}</span></div>
+      <p style="margin:0;max-width:56ch">${skipped ? `${skipped} question${skipped > 1 ? "s" : ""} not answered yet. ` : ""}${wrong.length ? "Copy the questions below into a three-column table in your book: the question, a blank space to answer next time, and the correct answer." : done.length ? "Every answer right first time. Well done." : "Work through the steps, then come back here."}</p></div>
+      <div class="bars">${STEPS.filter((s) => s.qs).map((st) => { const k = tally(st); return `<div class="bar"><span>${st.nav}</span><div class="track"><div class="fill" style="width:${k.n ? k.right / k.n * 100 : 0}%"></div></div><span class="n">${k.right}/${k.n}</span></div>`; }).join("")}</div>`;
+    if (wrong.length) h += `<h3>Questions to revisit</h3><div class="tablewrap"><table class="cmp redo"><thead><tr><th>Question</th><th>Answer next time</th><th>Correct answer</th></tr></thead><tbody>${wrong.map((q) => `<tr><td>${q.q}</td><td></td><td>${q.o.find((o) => o[1])[0]}</td></tr>`).join("")}</tbody></table></div>`;
+    h += pager();
+    panel.innerHTML = h; bindPager();
+  }
+  function render() { if (cleanup) { try { cleanup(); } catch (e) {} cleanup = null; } renderNav(); cur < RESULTS ? renderStep() : renderResults(); }
+  function go(i) { cur = Math.max(0, Math.min(RESULTS, i)); render(); window.scrollTo({ top: 0, behavior: "auto" }); }
+
+  panel.addEventListener("click", (e) => {
+    const b = e.target.closest(".opt"); if (!b || b.disabled) return;
+    const key = b.dataset.q; answers[key] = +b.dataset.o; save();
+    const st = STEPS[cur], qi = st.qs.findIndex((q) => q.key === key);
+    document.getElementById("q-" + key).outerHTML = qHTML(st.qs[qi], (cur + 1) + "." + (qi + 1));
+    renderNav();
+    const mid = panel.querySelector(".pager .mid"); if (mid) { const k = tally(st); mid.textContent = `${k.done} of ${k.n} answered`; }
+  });
+  document.addEventListener("keydown", (e) => {
+    const tag = (e.target.tagName || "").toLowerCase();
+    if (tag === "input" || tag === "select" || tag === "textarea") return;
+    if (e.key === "ArrowRight") go(cur + 1);
+    else if (e.key === "ArrowLeft") go(cur - 1);
+  });
+  const reset = document.getElementById("resetAll");
+  reset.onclick = function () {
+    if (this.dataset.armed) { answers = {}; save(); delete this.dataset.armed; this.textContent = "Start again"; go(0); }
+    else { this.dataset.armed = "1"; this.textContent = "Clear all answers?"; setTimeout(() => { if (this.dataset.armed) { delete this.dataset.armed; this.textContent = "Start again"; } }, 4000); }
+  };
+  render();
+})();
+
+/* ===== helper: click-in-order widget ===== */
+function orderWidget(el, items, okMsg) {
+  const order = items.map((_, i) => i);
+  let s = items.length * 7 + 3;
+  for (let i = order.length - 1; i > 0; i--) { s = (s * 9301 + 49297) % 233280; const j = Math.floor(s / 233280 * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
+  if (order.every((v, i) => v === i)) order.reverse();
+  let picked = [];
+  function draw(checked) {
+    const pool = order.filter((i) => !picked.includes(i));
+    el.innerHTML = `<div class="order"><div class="pool">${pool.map((i) => `<button type="button" class="card-o" data-i="${i}">${items[i]}</button>`).join("") || `<span class="small">All cards placed – check your order.</span>`}</div>
+      <div class="chain">${picked.map((i, k) => `<div class="card-o ${checked ? (i === k ? "ok" : "bad") : ""}">${items[i]}</div>`).join("")}</div>
+      <div class="row" style="margin-top:10px"><button type="button" class="btn primary" data-act="check" ${picked.length < items.length ? "disabled" : ""}>Check order</button><button type="button" class="btn" data-act="undo" ${picked.length ? "" : "disabled"}>Undo</button><button type="button" class="btn" data-act="reset">Reset</button></div>
+      ${checked ? `<div class="msg" style="color:${picked.every((v, k) => v === k) ? "var(--good)" : "var(--bad)"}">${picked.every((v, k) => v === k) ? okMsg || "Correct order." : "Not quite – the red cards are in the wrong place. Reset and try again."}</div>` : ""}</div>`;
+  }
+  el.addEventListener("click", (e) => {
+    const c = e.target.closest(".pool .card-o"); if (c) { picked.push(+c.dataset.i); draw(false); return; }
+    const a = e.target.closest("[data-act]"); if (!a) return;
+    if (a.dataset.act === "check") draw(true);
+    if (a.dataset.act === "undo") { picked.pop(); draw(false); }
+    if (a.dataset.act === "reset") { picked = []; draw(false); }
+  });
+  draw(false);
+}
+
+</script>
+</body>
+</html>

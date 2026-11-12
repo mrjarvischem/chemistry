@@ -1,0 +1,677 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Atomic Structure</title>
+<style>
+:root{
+  --paper:#f4ede0; --panel:#fbf7ef; --ink:#3a2a1c; --muted:#7a6450; --rule:#dbc9ae;
+  --accent:#8a5a2b; --accent-soft:#ead9bf; --good:#3f7a3a; --good-soft:#e2eed8; --bad:#a8432a; --bad-soft:#f6e0d6;
+  --display:"Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  --body:"Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,"SF Mono",Menlo,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.5}
+.wrap{max-width:1180px;margin:0 auto;padding:14px max(16px,env(safe-area-inset-right,0px)) 32px max(16px,env(safe-area-inset-left,0px))}
+header.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 24px;padding-bottom:12px;border-bottom:2px solid var(--rule)}
+.brand{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.brand h1{font-family:var(--display);font-size:1.75rem;margin:0;font-weight:700}
+.brand span{color:var(--muted);font-size:.95rem}
+.ghost{font:600 .9rem var(--body);background:transparent;border:1.5px solid var(--rule);color:var(--muted);border-radius:8px;padding:7px 12px;cursor:pointer}
+.ghost:hover{border-color:var(--accent);color:var(--ink)}
+nav.steps{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 2px}
+.step-link{display:flex;align-items:center;gap:8px;font:600 .9rem var(--body);background:var(--panel);border:1.5px solid var(--rule);color:var(--ink);border-radius:999px;padding:5px 12px 5px 5px;cursor:pointer}
+.step-link:hover{border-color:var(--accent)}
+.step-link .n{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--accent-soft);font:700 .8rem var(--mono)}
+.step-link[aria-current]{background:var(--accent);border-color:var(--accent);color:#fffaf2}
+.step-link[aria-current] .n{background:#fffaf2;color:var(--accent)}
+.step-link .t{font:700 .78rem var(--mono);color:var(--good)}
+.step-link[aria-current] .t{color:#e9f4dd}
+main{padding-top:16px}
+.eyebrow{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);font-weight:700}
+h2{font-family:var(--display);font-size:2.1rem;margin:2px 0 14px;line-height:1.1;text-wrap:balance}
+h3{font-family:var(--display);font-size:1.35rem;margin:22px 0 10px}
+.grid2{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:22px;align-items:start}
+.grid2.even{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+@media (max-width:860px){.grid2,.grid2.even{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1.5px solid var(--rule);border-radius:14px;padding:14px 16px;min-width:0}
+.prose p{margin:0 0 10px}
+.prose ul{margin:0 0 10px;padding-left:22px}
+.prose li{margin-bottom:4px}
+.tip{background:var(--accent-soft);border-left:5px solid var(--accent);border-radius:8px;padding:10px 14px;margin:12px 0;font-size:.97rem}
+.tip .lab{display:block;font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--accent);margin-bottom:2px}
+.warn{background:var(--bad-soft);border-left:5px solid var(--bad)}
+.warn .lab{color:var(--bad)}
+.btn{font:600 .95rem var(--body);background:var(--panel);border:1.5px solid var(--rule);color:var(--ink);padding:8px 14px;border-radius:8px;cursor:pointer}
+.btn:hover:not(:disabled){border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fffaf2}
+.btn.on{background:var(--ink);border-color:var(--ink);color:#fffaf2}
+.btn:disabled{opacity:.45;cursor:default}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid #c98a3a;outline-offset:2px}
+select{font:600 .95rem var(--body);background:var(--panel);border:1.5px solid var(--rule);color:var(--ink);padding:7px 10px;border-radius:8px}
+.check{margin-top:28px;border-top:2px solid var(--rule)}
+.q{background:var(--panel);border:1.5px solid var(--rule);border-radius:12px;padding:12px 14px;margin:10px 0}
+.qt{margin:0 0 9px;font-weight:600}
+.qt .qn{font-family:var(--mono);color:var(--accent);margin-right:8px}
+.opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+@media (max-width:680px){.opts{grid-template-columns:1fr}}
+.opt{display:flex;gap:10px;align-items:flex-start;text-align:left;font:500 1rem/1.4 var(--body);background:#fffdf8;border:1.5px solid var(--rule);color:var(--ink);border-radius:10px;padding:9px 12px;cursor:pointer}
+.opt .L{font:700 .85rem var(--mono);color:var(--muted);padding-top:2px}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt:disabled{cursor:default}
+.opt.right{background:var(--good-soft);border-color:var(--good)}
+.opt.wrong{background:var(--bad-soft);border-color:var(--bad)}
+.opt.dim{opacity:.6}
+.fb{margin-top:9px;font-size:.97rem}
+.fb .ok{color:var(--good);font-weight:700}
+.fb .no{color:var(--bad);font-weight:700}
+.pager{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:26px}
+.pager .mid{color:var(--muted);font-size:.9rem}
+.tablewrap{overflow-x:auto}
+table.cmp{border-collapse:collapse;width:100%;font-size:.95rem;background:#fffdf8}
+table.cmp th,table.cmp td{border:1px solid var(--rule);padding:7px 10px;text-align:left;vertical-align:top}
+table.cmp thead th{background:var(--accent);color:#fffaf2;font-weight:600}
+table.cmp tbody th{background:var(--panel)}
+table.redo td:nth-child(2){min-width:220px}
+.results-head{display:flex;gap:22px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
+.big{font:700 64px/1 var(--display)}
+.bars{display:grid;gap:8px;margin-bottom:22px}
+.bar{display:grid;grid-template-columns:minmax(0,260px) 1fr 52px;gap:12px;align-items:center}
+.bar .track{height:14px;background:var(--accent-soft);border-radius:99px;overflow:hidden}
+.bar .fill{height:100%;background:var(--accent)}
+.bar .n{font:600 .9rem var(--mono);text-align:right}
+@media (max-width:560px){.bar{grid-template-columns:1fr 52px}.bar .track{grid-column:1/-1;order:3}}
+/* order widget */
+.order .pool,.order .chain{display:grid;gap:6px}
+.order .chain{counter-reset:c;margin-top:10px}
+.order .card-o{font:500 .97rem/1.35 var(--body);text-align:left;background:#fffdf8;border:1.5px solid var(--rule);color:var(--ink);border-radius:9px;padding:8px 12px;cursor:pointer}
+.order .card-o:hover{border-color:var(--accent)}
+.order .chain .card-o{counter-increment:c;cursor:default}
+.order .chain .card-o::before{content:counter(c) ". ";font:700 .9rem var(--mono);color:var(--accent)}
+.order .card-o.ok{background:var(--good-soft);border-color:var(--good)}
+.order .card-o.bad{background:var(--bad-soft);border-color:var(--bad)}
+.order .msg{margin-top:8px;font-weight:600}
+.small{font-size:.86rem;color:var(--muted)}
+.mono{font-family:var(--mono)}
+/* practice + balancing (shared) */
+.prac-q{font-size:1.08rem;margin-bottom:10px}
+.prac-f{display:flex;flex-wrap:wrap;gap:10px 18px}
+.prac-f label{display:flex;align-items:center;gap:8px;font-weight:600}
+.prac-f input{font:600 1.1rem var(--mono);width:90px;padding:6px 8px;border:1.5px solid var(--rule);border-radius:8px;background:#fffdf8;color:var(--ink)}
+.prac-f input.ok{border-color:var(--good);background:var(--good-soft)}
+.prac-f input.bad{border-color:var(--bad);background:var(--bad-soft)}
+.prac-f b.ok{color:var(--good)} .prac-f b.bad{color:var(--bad)}
+.prac-f em{font-style:normal;color:var(--muted);font-weight:500}
+.prac-w{margin-top:10px;background:#fffdf8;border:1.5px dashed var(--rule);border-radius:10px;padding:10px 12px;font-size:.97rem}
+.bal{display:flex;flex-wrap:wrap;align-items:center;gap:10px;font:600 1.2rem var(--mono);margin:12px 0}
+.coef{display:inline-flex;align-items:center;border:1.5px solid var(--rule);border-radius:9px;background:#fffdf8;overflow:hidden}
+.coef button{font:700 1rem var(--mono);border:0;background:var(--accent-soft);color:var(--ink);width:30px;height:36px;cursor:pointer}
+.coef span{min-width:30px;text-align:center}
+.coef span.one{color:#b9a58c}
+table.count td,table.count th{text-align:center}
+table.count .ok{color:var(--good);font-weight:700}
+table.count .bad{color:var(--bad);font-weight:700}
+.atombox svg{width:100%;height:auto;display:block}
+.nuclide{display:inline-grid;grid-template-columns:auto auto;grid-template-rows:auto auto;align-items:center;font-family:var(--display);line-height:1}
+.nuclide .m{grid-column:1;grid-row:1;text-align:right;font-size:.55em;padding-right:2px}
+.nuclide .z{grid-column:1;grid-row:2;text-align:right;font-size:.55em;padding-right:2px}
+.nuclide .s{grid-column:2;grid-row:1/3;font-weight:700}
+.opt .nuclide{font-size:1.5em;vertical-align:middle}
+
+.ctl3{display:grid;gap:8px;margin-top:8px}
+.ctl{display:grid;grid-template-columns:16px 1fr 40px 44px 40px;align-items:center;gap:8px}
+.ctl .sw{width:16px;height:16px;border-radius:50%}
+.ctl .btn{padding:6px 0;font-weight:700}
+.ctl .cv{font:700 1.3rem var(--mono);text-align:center}
+.big-el{font-size:3.4rem;margin:2px 0 8px}
+.big-el sup{font-size:.4em}
+dl.facts-s{display:grid;grid-template-columns:auto 1fr;gap:5px 14px;margin:0}
+dl.facts-s dt{color:var(--muted);font-size:.9rem}
+dl.facts-s dd{margin:0;font-weight:600}
+.config{font:700 2rem var(--display);color:#2d6f93;margin:4px 0 8px}
+.ptmini{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:4px;margin:12px 0}
+.ptmini .mini{font:700 1rem var(--display);background:#fffdf8;border:1.5px solid var(--rule);border-radius:6px;padding:3px 0 5px;cursor:pointer;display:flex;flex-direction:column;align-items:center;color:var(--ink)}
+.ptmini .mini small{font:600 .65rem var(--mono);color:var(--muted)}
+.ptmini .mini.on{background:var(--accent);border-color:var(--accent);color:#fffaf2}
+.ptmini .mini.on small{color:#f3e4cf}
+.who{display:flex;gap:10px;align-items:baseline}
+#bview svg{max-width:340px;margin:0 auto}
+#scale svg{max-width:520px;margin:0 auto}
+.ionbtns{display:grid;gap:8px;margin-top:8px}
+.ionbtns>div{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.ionbtns .small{min-width:70px}
+.fbox{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch}
+.fstep{display:flex;flex-direction:column;align-items:center;background:#fffdf8;border:1.5px solid var(--rule);border-radius:10px;padding:6px 12px;min-width:84px}
+.fstep.dim{opacity:.45}
+.flab{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.fval{font:700 1.4rem var(--display)}
+.fval i{font:500 .8rem var(--body);color:var(--muted)}
+.fres{display:flex;align-items:center;font:700 2.6rem var(--display);padding:0 14px;border-left:3px solid var(--accent);margin-left:6px}
+.fres sup{font-size:.5em}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top"><div class="brand"><h1></h1><span></span></div><button class="ghost" id="resetAll" type="button">Start again</button></header>
+  <nav class="steps" id="nav" aria-label="Steps"></nav>
+  <main id="panel"></main>
+</div>
+<script>
+/* ================= ELECTRON SHELL DIAGRAMS ================= */
+function eAngles(n){
+ if(n>8) return [...Array(n)].map((_,i)=>-90+i*360/n);
+ const base=[-90,90,0,180], pairs=Math.max(0,n-4), out=[];
+ for(let j=0;j<Math.min(n,4);j++){ if(j<pairs) out.push(base[j]-13,base[j]+13); else out.push(base[j]); }
+ return out;
+}
+const cross=(x,y,s,col,w)=>`<path d="M${x-s} ${y-s}L${x+s} ${y+s}M${x-s} ${y+s}L${x+s} ${y-s}" stroke="${col}" stroke-width="${w}" stroke-linecap="round"/>`;
+const pt=(cx,cy,r,deg)=>[cx+r*Math.cos(deg*Math.PI/180), cy+r*Math.sin(deg*Math.PI/180)];
+/* draws an atom; returns svg string. opts: r0, dr, nucR, xs (cross size), innerSmall, outerCol, gap (leave the lone outer electron at 180 shifted) */
+function atomSVG(cx,cy,e,o){
+ const sh=e.shells, n=sh.length; let s='';
+ for(let k=0;k<n;k++){
+  const R=o.r0+k*o.dr, outer=k===n-1;
+  s+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="#9c8770" stroke-width="${outer?2:1.4}"/>`;
+  let ang=eAngles(sh[k]);
+  if(outer && o.outerShift) ang=ang.map(a=>a===180?193:a);
+  ang.forEach(a=>{const [x,y]=pt(cx,cy,R,a);
+   if(!outer && o.innerSmall) s+=`<circle cx="${x}" cy="${y}" r="${o.innerSmall}" fill="#7a6450"/>`;
+   else s+=cross(x,y,o.xs,outer?o.outerCol:'#3a2a1c',outer?2.6:2);
+  });
+ }
+ s+=`<circle cx="${cx}" cy="${cy}" r="${o.nucR}" fill="#f1d9c7" stroke="#b5401f" stroke-width="2"/><text x="${cx}" y="${cy+o.nucR*0.36}" text-anchor="middle" font-family="Palatino Linotype,Palatino,Georgia,serif" font-weight="700" font-size="${o.nucR*1.05}" fill="#3a2a1c">${e.id}</text>`;
+ return s;
+}
+
+
+/* ================= GENERIC HELPERS ================= */
+const fsub = f => f.replace(/([A-Za-z\)])(\d+)/g, '$1<sub>$2</sub>');
+function shellsFor(e){ const s=[]; let left=e; [2,8,8,2].forEach(c=>{ if(left>0){ s.push(Math.min(c,left)); left-=Math.min(c,left);} }); return s; }
+
+/* balancing widget: RX = [{lab, L:[[formula,{El:n}]...], R:[...]}] */
+function balanceWidget(root, RX){
+  root.innerHTML = `<div class="row"><label class="small">Reaction <select class="bw-sel">${RX.map((x,i)=>`<option value="${i}">${x.lab}</option>`).join('')}</select></label></div>
+   <div class="bal bw-eq"></div><table class="cmp count bw-count"></table><div class="bw-msg" style="margin-top:10px;font-weight:600"></div>`;
+  const sel=root.querySelector('.bw-sel'), eqEl=root.querySelector('.bw-eq'), cnt=root.querySelector('.bw-count'), msg=root.querySelector('.bw-msg');
+  let r=RX[0], c=[];
+  const reset=()=>{ c=[...r.L,...r.R].map(()=>1); };
+  function draw(){
+    const all=[...r.L,...r.R], nL=r.L.length;
+    eqEl.innerHTML=all.map(([f],k)=>`${k===nL?'<span>→</span>':k?'<span>+</span>':''}<span class="coef"><button type="button" data-k="${k}" data-d="-1" aria-label="decrease">−</button><span class="${c[k]===1?'one':''}">${c[k]}</span><button type="button" data-k="${k}" data-d="1" aria-label="increase">+</button></span><span>${fsub(f)}</span>`).join(' ');
+    const els=[...new Set(all.flatMap(([,a])=>Object.keys(a)))];
+    const side=(list,off)=>els.map(e=>list.reduce((s,[,a],k)=>s+(a[e]||0)*c[k+off],0));
+    const L=side(r.L,0), R=side(r.R,nL);
+    cnt.innerHTML=`<thead><tr><th>Atom</th><th>Left side</th><th>Right side</th><th></th></tr></thead><tbody>${els.map((e,i)=>`<tr><th>${e}</th><td>${L[i]}</td><td>${R[i]}</td><td class="${L[i]===R[i]?'ok':'bad'}">${L[i]===R[i]?'✓':'✗'}</td></tr>`).join('')}</tbody>`;
+    const ok=els.every((_,i)=>L[i]===R[i]);
+    const g=(a,b)=>b?g(b,a%b):a, gg=c.reduce(g);
+    const eqtxt=()=>all.map(([f],k)=>(k===nL?' → ':k?' + ':'')+(c[k]>1?c[k]:'')+fsub(f)).join('');
+    msg.innerHTML= ok ? (gg===1?`<span style="color:var(--good)">Balanced! ${eqtxt()}</span>`:`<span style="color:var(--accent)">Balanced, but use the smallest whole numbers – divide every number by ${gg}.</span>`) : `<span class="small">Change the numbers in front of the formulae until every atom is ✓. Never change the formulae themselves.</span>`;
+  }
+  eqEl.addEventListener('click',ev=>{const b=ev.target.closest('button'); if(!b) return; const k=+b.dataset.k; c[k]=Math.max(1,Math.min(8,c[k]+ +b.dataset.d)); draw();});
+  sel.onchange=()=>{ r=RX[+sel.value]; reset(); draw(); };
+  reset(); draw();
+}
+
+/* practice generator: gen() -> {prompt, fields:[{label, ans, tol, unit}], working} */
+function practiceWidget(el, gen){
+  let cur=null, right=0, tried=0, checked=false;
+  function next(){ cur=gen(); checked=false; draw(); }
+  function draw(res){
+    el.innerHTML = `<div class="prac"><div class="prac-q">${cur.prompt}</div>
+      <div class="prac-f">${cur.fields.map((f,i)=>`<label><span>${f.label}</span><input type="text" inputmode="decimal" autocomplete="off" data-i="${i}" value="${res?res[i].v:''}" class="${res?(res[i].ok?'ok':'bad'):''}">${f.unit?`<em>${f.unit}</em>`:''}${res?`<b class="${res[i].ok?'ok':'bad'}">${res[i].ok?'✓':'✗'}</b>`:''}</label>`).join('')}</div>
+      <div class="row" style="margin-top:10px"><button type="button" class="btn primary" data-a="check">Check</button><button type="button" class="btn" data-a="work">Show working</button><button type="button" class="btn" data-a="new">New question</button><span class="small" style="margin-left:auto">Score: ${right} / ${tried}</span></div>
+      <div class="prac-w" hidden>${cur.working}</div></div>`;
+  }
+  el.addEventListener('click', ev=>{ const b=ev.target.closest('[data-a]'); if(!b) return;
+    if(b.dataset.a==='new') next();
+    if(b.dataset.a==='work'){ const w=el.querySelector('.prac-w'); w.hidden=!w.hidden; }
+    if(b.dataset.a==='check'){
+      const ins=[...el.querySelectorAll('input')];
+      const res=cur.fields.map((f,i)=>{ const v=ins[i].value.trim(); const n=parseFloat(v.replace(',','.')); return {v, ok: v!=='' && Math.abs(n-f.ans)<=(f.tol||0)+1e-9}; });
+      if(!checked){ tried++; if(res.every(r=>r.ok)) right++; checked=true; }
+      draw(res); if(!res.every(r=>r.ok)) {} 
+    }
+  });
+  el.addEventListener('keydown', ev=>{ if(ev.key==='Enter' && ev.target.tagName==='INPUT'){ ev.preventDefault(); el.querySelector('[data-a=check]').click(); } });
+  next();
+}
+
+/* nucleus of protons and neutrons, sunflower packing */
+function nucleusSVG(cx,cy,p,n,r){
+  const N=p+n; if(!N) return '';
+  const types=[]; let s=p*31+n*17+3; for(let i=0;i<p;i++) types.push('p'); for(let i=0;i<n;i++) types.push('n');
+  for(let i=types.length-1;i>0;i--){ s=(s*9301+49297)%233280; const j=Math.floor(s/233280*(i+1)); [types[i],types[j]]=[types[j],types[i]]; }
+  const spread=N===1?0:r*1.05*Math.sqrt(N);
+  return types.map((t,i)=>{ const rr=N===1?0:spread*Math.sqrt((i+0.5)/N)*0.92, a=i*2.39996; return {t,x:cx+rr*Math.cos(a),y:cy+rr*Math.sin(a),rr}; })
+   .sort((a,b)=>b.rr-a.rr).map(q=>`<circle cx="${q.x.toFixed(1)}" cy="${q.y.toFixed(1)}" r="${r}" fill="${q.t==='p'?'#c2452d':'#a39d90'}" stroke="#5a4634" stroke-width=".8"/>${q.t==='p'&&r>=6?`<text x="${q.x.toFixed(1)}" y="${(q.y+r*0.42).toFixed(1)}" text-anchor="middle" font-size="${(r*1.25).toFixed(1)}" font-weight="700" fill="#fff">+</text>`:''}`).join('');
+}
+/* full atom picture: nucleus + shells with electrons as blue dots */
+function fullAtomSVG(cx,cy,p,n,e,o={}){
+  const sh=shellsFor(e), r0=o.r0||48, dr=o.dr||30, nr=o.nr||6; let s='';
+  sh.forEach((cnt,k)=>{ const R=r0+k*dr; s+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="#9c8770" stroke-width="1.5" stroke-dasharray="${o.dash||''}"/>`;
+    eAngles(cnt).forEach(a=>{ const [x,y]=pt(cx,cy,R,a); s+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${o.er||6}" fill="#2d6f93" stroke="#173f55" stroke-width="1"/><text x="${x.toFixed(1)}" y="${(y+3).toFixed(1)}" text-anchor="middle" font-size="9" font-weight="700" fill="#fff">−</text>`; }); });
+  return s+nucleusSVG(cx,cy,p,n,nr);
+}
+const E20=[[1,'H','hydrogen',1],[2,'He','helium',4],[3,'Li','lithium',7],[4,'Be','beryllium',9],[5,'B','boron',11],[6,'C','carbon',12],[7,'N','nitrogen',14],[8,'O','oxygen',16],[9,'F','fluorine',19],[10,'Ne','neon',20],[11,'Na','sodium',23],[12,'Mg','magnesium',24],[13,'Al','aluminium',27],[14,'Si','silicon',28],[15,'P','phosphorus',31],[16,'S','sulfur',32],[17,'Cl','chlorine',35],[18,'Ar','argon',40],[19,'K','potassium',39],[20,'Ca','calcium',40]];
+const nuclide=(A,Z,S)=>`<span class="nuclide"><span class="m">${A}</span><span class="z">${Z}</span><span class="s">${S}</span></span>`;
+const rint=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+
+/* ================= ATOMIC STRUCTURE ================= */
+const ELX=[...E20,[26,'Fe','iron',56],[29,'Cu','copper',63],[30,'Zn','zinc',65],[35,'Br','bromine',80],[47,'Ag','silver',108],[53,'I','iodine',127],[79,'Au','gold',197]];
+const cap1=s=>s[0].toUpperCase()+s.slice(1);
+function groupPeriod(z){ const sh=shellsFor(z), outer=sh[sh.length-1]; const g=(z===2||outer===8)?0:outer; return {sh, g, p:sh.length}; }
+
+/* step 1: labelled carbon atom */
+function labelledAtom(){
+  let s=`<svg viewBox="0 0 620 330" role="img" aria-label="Labelled diagram of a carbon atom">`;
+  s+=fullAtomSVG(200,165,6,6,6,{r0:62,dr:52,nr:8,er:8});
+  const lab=(x1,y1,x2,y2,t)=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#7a6450" stroke-width="1.4"/><text x="${x2+6}" y="${y2+5}" font-size="15" fill="#3a2a1c" font-weight="600">${t}</text>`;
+  s+=lab(215,150,380,60,'nucleus (protons + neutrons)');
+  s+=lab(314,165,380,150,'electron');
+  s+=lab(281,246,380,250,'shell (energy level)');
+  s+=`<g font-size="13" fill="#3a2a1c"><circle cx="390" cy="292" r="8" fill="#c2452d"/><text x="404" y="297">proton</text><circle cx="460" cy="292" r="8" fill="#a39d90"/><text x="474" y="297">neutron</text><circle cx="390" cy="316" r="7" fill="#2d6f93"/><text x="404" y="321">electron</text></g>`;
+  return s+'</svg>';
+}
+
+/* step 2: build an atom */
+function mountBuilder(root){
+  const st={p:6,n:6,e:6};
+  const svgEl=root.querySelector('#bview'), info=root.querySelector('#binfo'), chal=root.querySelector('#chal'), cmsg=root.querySelector('#cmsg');
+  const CH=[
+    {t:'Make a carbon-12 atom', ok:s=>s.p===6&&s.n===6&&s.e===6},
+    {t:'Make an atom of lithium with mass number 7', ok:s=>s.p===3&&s.n===4&&s.e===3},
+    {t:'Make a sodium ion, Na<sup>+</sup> (mass number 23)', ok:s=>s.p===11&&s.n===12&&s.e===10},
+    {t:'Make a fluoride ion, F<sup>−</sup> (mass number 19)', ok:s=>s.p===9&&s.n===10&&s.e===10},
+    {t:'Make an atom of neon-20', ok:s=>s.p===10&&s.n===10&&s.e===10}];
+  let ci=0;
+  function draw(){
+    const el=E20[st.p-1], A=st.p+st.n, q=st.p-st.e;
+    const R=48+Math.max(0,shellsFor(st.e).length-1)*30;
+    svgEl.innerHTML=`<svg viewBox="0 0 360 340" role="img" aria-label="Atom with ${st.p} protons, ${st.n} neutrons and ${st.e} electrons">${fullAtomSVG(180,170,st.p,st.n,st.e,{r0:48,dr:32,nr:Math.max(4.5,9-0.12*(st.p+st.n))})}</svg>`;
+    ['p','n','e'].forEach(k=>root.querySelector('#v'+k).textContent=st[k]);
+    const chg=q===0?'':(Math.abs(q)===1?'':Math.abs(q))+(q>0?'+':'−');
+    const common = A===el[3];
+    info.innerHTML=`<div class="big-el">${nuclide(A,st.p,el[1]+(chg?`<sup>${chg}</sup>`:''))}</div>
+      <dl class="facts-s"><dt>Element</dt><dd>${cap1(el[2])} <span class="small">(${st.p} proton${st.p>1?'s':''})</span></dd>
+      <dt>Atomic number</dt><dd>${st.p}</dd><dt>Mass number</dt><dd>${st.p} + ${st.n} = ${A}</dd>
+      <dt>Overall charge</dt><dd>${q===0?'0 – a neutral <b>atom</b>':`${chg} – an <b>ion</b> (${q>0?'fewer':'more'} electrons than protons)`}</dd></dl>
+      ${!common?`<p class="small">This is not the most common form of ${el[2]} (mass number ${el[3]}) – it is a different <b>isotope</b>.</p>`:''}
+      ${st.e>20?'':''}`;
+    const okNow=CH[ci].ok(st);
+    chal.innerHTML=`<b>Challenge ${ci+1} of ${CH.length}:</b> ${CH[ci].t}`;
+    cmsg.innerHTML= okNow ? `<span style="color:var(--good);font-weight:700">✓ Done!</span> ${ci<CH.length-1?'<button class="btn" id="nextch">Next challenge</button>':'All challenges complete.'}` : '';
+    const nb=root.querySelector('#nextch'); if(nb) nb.onclick=()=>{ci++; draw();};
+  }
+  root.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{ const k=b.dataset.k, d=+b.dataset.d; const lim={p:[1,20],n:[0,22],e:[0,20]}[k]; st[k]=Math.max(lim[0],Math.min(lim[1],st[k]+d)); draw(); });
+  draw();
+}
+
+/* step 3: size zoom */
+function mountZoom(root){
+  const sv=root.querySelector('#zview'), sl=root.querySelector('#zoom'), lab=root.querySelector('#zlab');
+  function draw(){
+    const s=+sl.value, z=Math.pow(10,s), R0=120, Ra=R0*z, Rn=Math.max(0.6,R0*z/10000);
+    let h=`<svg viewBox="0 0 600 300" role="img" aria-label="Zooming into an atom"><defs><clipPath id="zc"><rect x="0" y="0" width="600" height="300"/></clipPath></defs><g clip-path="url(#zc)">`;
+    h+=`<circle cx="300" cy="150" r="${Math.min(Ra,5000)}" fill="#eaf1f6" stroke="#9c8770" stroke-width="2" stroke-dasharray="6 6"/>`;
+    if(z<30) [0,1,2,3,4,5].forEach(i=>{const a=i*1.05+0.4, rr=Ra*(0.55+0.35*(i%2)); h+=`<circle cx="${300+Math.cos(a)*rr}" cy="${150+Math.sin(a)*rr}" r="5" fill="#2d6f93"/>`;});
+    h+=`<circle cx="300" cy="150" r="${Rn}" fill="#c2452d"/>`;
+    h+='</g>';
+    if(Ra<1000) h+=`<text x="300" y="${Math.max(16,150-Ra-8)}" text-anchor="middle" font-size="13" fill="#7a6450">edge of the atom</text>`;
+    if(Rn>12) h+=`<text x="300" y="${Math.min(292,150+Rn+18)}" text-anchor="middle" font-size="14" font-weight="700" fill="#3a2a1c">nucleus</text>`;
+    sv.innerHTML=h+'</svg>';
+    lab.innerHTML=`Zoom ×${z>=100?Math.round(z).toLocaleString('en-GB'):z.toFixed(1)} ${s>=4?'– now the nucleus fills the view, and the atom is 10 000 times wider than this!':s<0.5?'– the nucleus is too small to see':''}`;
+  }
+  sl.oninput=draw; draw();
+}
+
+/* step 4: practice p n e */
+function pneGen(){
+  const el=ELX[rint(0,ELX.length-1)], [Z,S,name,A]=el, n=A-Z;
+  return {prompt:`An atom of ${name}: <span style="font-size:2rem;vertical-align:middle;margin-left:10px">${nuclide(A,Z,S)}</span>`,
+    fields:[{label:'protons',ans:Z},{label:'neutrons',ans:n},{label:'electrons',ans:Z}],
+    working:`Protons = atomic number = <b>${Z}</b><br>Electrons = protons (the atom is neutral) = <b>${Z}</b><br>Neutrons = mass number − atomic number = ${A} − ${Z} = <b>${n}</b>`};
+}
+
+/* step 5: electronic structure */
+function mountShells(root){
+  const box=root.querySelector('#sview'), info=root.querySelector('#sinfo'), grid=root.querySelector('#ptmini');
+  let z=11;
+  const POS=[[1,1],[1,8],[2,1],[2,2],[2,3],[2,4],[2,5],[2,6],[2,7],[2,8],[3,1],[3,2],[3,3],[3,4],[3,5],[3,6],[3,7],[3,8],[4,1],[4,2]];
+  grid.innerHTML=E20.map((e,i)=>`<button type="button" class="mini" data-z="${e[0]}" style="grid-row:${POS[i][0]};grid-column:${POS[i][1]}"><small>${e[0]}</small>${e[1]}</button>`).join('');
+  function draw(){
+    const e=E20[z-1], {sh,g,p}=groupPeriod(z), n=sh.length;
+    box.innerHTML=`<svg viewBox="0 0 320 320" role="img" aria-label="Electronic structure of ${e[2]}">${atomSVG(160,160,{id:e[1],shells:sh},{r0:40,dr:34,nucR:22,xs:6,outerCol:'#b5401f'})}</svg>`;
+    info.innerHTML=`<div class="who"><b style="font-family:var(--display);font-size:1.5rem">${cap1(e[2])}</b> <span class="mono">${z} electrons</span></div>
+     <div class="config">${sh.join(',')}</div>
+     <dl class="facts-s"><dt>Shells (= period)</dt><dd>${p} → period ${p}</dd><dt>Outer electrons (= group)</dt><dd>${sh[n-1]} → group ${g}${g===0?' (full outer shell)':''}</dd></dl>`;
+    grid.querySelectorAll('.mini').forEach(b=>b.classList.toggle('on',+b.dataset.z===z));
+    root.querySelector('#zval').textContent=z;
+  }
+  grid.addEventListener('click',ev=>{const b=ev.target.closest('.mini'); if(b){z=+b.dataset.z; draw();}});
+  root.querySelector('#zm').onclick=()=>{z=Math.max(1,z-1);draw();};
+  root.querySelector('#zp').onclick=()=>{z=Math.min(20,z+1);draw();};
+  draw();
+}
+
+/* ================= ATOMS AND IONS: charge balance ================= */
+const ION_EL=[
+ {id:'Li',name:'lithium',p:3,q:1},{id:'Na',name:'sodium',p:11,q:1},{id:'K',name:'potassium',p:19,q:1},
+ {id:'Mg',name:'magnesium',p:12,q:2},{id:'Ca',name:'calcium',p:20,q:2},{id:'Al',name:'aluminium',p:13,q:3},
+ {id:'O',name:'oxygen',p:8,q:-2,ion:'oxide'},{id:'S',name:'sulfur',p:16,q:-2,ion:'sulfide'},
+ {id:'F',name:'fluorine',p:9,q:-1,ion:'fluoride'},{id:'Cl',name:'chlorine',p:17,q:-1,ion:'chloride'},
+ {id:'Br',name:'bromine',p:35,q:-1,ion:'bromide'},{id:'I',name:'iodine',p:53,q:-1,ion:'iodide'}];
+const chargeStr=q=>q===0?'':(Math.abs(q)===1?'':Math.abs(q))+(q>0?'+':'−');
+const ionName=(el,q)=>q===0?`${el.name} atom`:q>0?`${el.name} ion`:`${el.ion||el.name} ion`;
+
+function mountIons(root){
+ const box=root.querySelector('#scale'), read=root.querySelector('#ionread'), form=root.querySelector('#ionform'), msg=root.querySelector('#ionmsg'), sel=root.querySelector('#ionel');
+ let el=ION_EL[10], e=el.p, ang=0, raf=0, fly=null, shake=0, last=performance.now();
+ sel.innerHTML=ION_EL.map((x,i)=>`<option value="${i}" ${x===el?'selected':''}>${cap1(x.name)} (${x.p} protons)</option>`).join('');
+ const PX=280, PY=78, L=190;
+ function tokens(n,sign,cx,top,w,h){
+  const r=n>48?5:n>30?6:7.5, per=Math.floor(w/(2*r+2)), out=[];
+  for(let i=0;i<n;i++){ const row=Math.floor(i/per), col=i%per; const x=cx-w/2+r+1+col*(2*r+2)+(row%2?r*.5:0), y=top+h-r-2-row*(2*r+1.6); out.push(`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r}" fill="${sign>0?'#c2452d':'#2d6f93'}" stroke="#0004" stroke-width=".8"/>`); }
+  return out.join('');
+ }
+ function bucket(cx,cy,n,sign,label,locked){
+  const w=150,h=118, top=cy, sx=shake&&sign>0?Math.sin(shake*40)*6*shake:0;
+  return `<g transform="translate(${sx},0)"><path d="M${cx-w/2} ${top} L${cx+w/2} ${top} L${cx+w/2-16} ${top+h} L${cx-w/2+16} ${top+h} Z" fill="${sign>0?'#fbe3d8':'#dcebf3'}" stroke="#5a4634" stroke-width="2.5"/>
+   ${tokens(n,sign,cx,top+4,w-34,h-8)}
+   <text x="${cx}" y="${top+h+22}" text-anchor="middle" font-size="15" font-weight="700" fill="${sign>0?'#a8432a':'#2d6f93'}">${label}</text>
+   <text x="${cx}" y="${top+h+42}" text-anchor="middle" font-size="22" font-weight="700" fill="#3a2a1c" font-family="ui-monospace,monospace">${sign>0?'+':'−'}${n}</text>
+   ${locked?`<g transform="translate(${cx+w/2-6},${top-8})"><rect x="-11" y="0" width="22" height="17" rx="3" fill="#7a6450"/><path d="M-7 0 v-6 a7 7 0 0 1 14 0 v6" fill="none" stroke="#7a6450" stroke-width="3"/></g>`:''}</g>`;
+ }
+ function draw(){
+  const q=el.p-e, target=Math.max(-20,Math.min(20,-q*6));
+  const a=ang*Math.PI/180, lx=PX-L*Math.cos(a), ly=PY-L*Math.sin(a), rx=PX+L*Math.cos(a), ry=PY+L*Math.sin(a);
+  let s=`<svg viewBox="0 0 560 380" role="img" aria-label="Charge balance: ${el.p} positive protons and ${e} negative electrons">`;
+  s+=`<rect x="262" y="${PY}" width="36" height="${360-PY}" rx="6" fill="#b49a78"/><rect x="190" y="352" width="180" height="16" rx="6" fill="#8d7964"/>`;
+  s+=`<line x1="${lx}" y1="${ly}" x2="${rx}" y2="${ry}" stroke="#5a4634" stroke-width="10" stroke-linecap="round"/><circle cx="${PX}" cy="${PY}" r="11" fill="#3a2a1c"/>`;
+  s+=`<line x1="${lx}" y1="${ly}" x2="${lx}" y2="${ly+44}" stroke="#7a6450" stroke-width="2"/><line x1="${rx}" y1="${ry}" x2="${rx}" y2="${ry+44}" stroke="#7a6450" stroke-width="2"/>`;
+  s+=bucket(lx,ly+44,el.p,1,'protons (nucleus)',true)+bucket(rx,ry+44,e,-1,'electrons',false);
+  if(fly){ const t=fly.t, sx=rx+40, sy=ry+90, ex=550, ey=ry-40; const x=fly.dir<0?sx+(ex-sx)*t:ex+(sx-ex)*t, y=fly.dir<0?sy+(ey-sy)*t:ey+(sy-ey)*t;
+   s+=`<circle cx="${x}" cy="${y}" r="9" fill="#2d6f93" stroke="#173f55" opacity="${fly.dir<0?1-t*.6:.4+t*.6}"/><text x="${x}" y="${y+4}" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">−</text>`; }
+  const st=q===0?['BALANCED','#3f7a3a']:q>0?['MORE POSITIVE','#a8432a']:['MORE NEGATIVE','#2d6f93'];
+  s+=`<rect x="200" y="6" width="160" height="30" rx="15" fill="${st[1]}"/><text x="280" y="27" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">${st[0]}</text>`;
+  box.innerHTML=s+'</svg>';
+  return target;
+ }
+ function text(){
+  const q=el.p-e, cs=chargeStr(q);
+  read.innerHTML=`<table class="cmp" style="font-size:1rem"><tbody><tr><th>Protons</th><td>${el.p}</td><td class="mono">+${el.p}</td></tr><tr><th>Electrons</th><td>${e}</td><td class="mono">−${e}</td></tr><tr><th>Overall charge</th><td colspan="2" class="mono"><b>${q===0?'0':(q>0?'+':'−')+Math.abs(q)}</b></td></tr></tbody></table>
+   <p style="margin:10px 0 0;font-size:1.05rem">${q===0?`Equal numbers of protons and electrons, so this is a neutral <b>${el.name} atom</b>.`:`${Math.abs(q)} ${q>0?'fewer':'more'} electron${Math.abs(q)>1?'s':''} than protons, so this is a <b>${ionName(el,q)}</b> with a <b>${Math.abs(q)}${q>0?'+':'−'}</b> charge.`}</p>`;
+  form.innerHTML= q===0 ? `<div class="fbox"><div class="fstep"><span class="flab">Symbol</span><span class="fval">${el.id}</span></div><div class="fstep dim"><span class="flab">Number</span><span class="fval">–</span></div><div class="fstep dim"><span class="flab">Sign</span><span class="fval">–</span></div><div class="fres">${el.id}</div></div><p class="small" style="margin:6px 0 0">An atom has no charge, so there is nothing to write.</p>`
+   : `<div class="fbox"><div class="fstep"><span class="flab">Symbol</span><span class="fval">${el.id}</span></div><div class="fstep"><span class="flab">Number</span><span class="fval">${Math.abs(q)===1?'<i>(leave out 1)</i>':Math.abs(q)}</span></div><div class="fstep"><span class="flab">Sign</span><span class="fval">${q>0?'+':'−'}</span></div><div class="fres">${el.id}<sup>${cs}</sup></div></div><p class="small" style="margin:6px 0 0">Write the charge as a superscript: <b>number first, then the sign</b>. If the charge is 1, just write the sign.</p>`;
+  const usual=el.q, good=q===usual;
+  msg.innerHTML = good ? `<span style="color:var(--good);font-weight:700">✓ This is the ion ${el.name} forms in reactions: ${el.id}<sup>${chargeStr(usual)}</sup>.</span> ${usual>0?`It has lost ${usual} electron${usual>1?'s':''} from its outer shell.`:`It has gained ${-usual} electron${usual<-1?'s':''} to fill its outer shell.`}`
+   : `<span class="small">Challenge: make the ion that ${el.name} forms in reactions. Hint: ${usual>0?'metals lose electrons':'non-metals gain electrons'}.</span>`;
+ }
+ function loop(now){ const dt=Math.min(.05,(now-last)/1000); last=now;
+  if(fly){ fly.t+=dt/0.6; if(fly.t>=1){ fly=null; } }
+  if(shake>0) shake=Math.max(0,shake-dt*1.6);
+  const tgt=draw(); ang+=(tgt-ang)*Math.min(1,dt*4);
+  raf=requestAnimationFrame(loop); }
+ root.querySelector('#erem').onclick=()=>{ if(e<=Math.max(0,el.p-3)){ msg.innerHTML='<span class="small">That is far more than this atom would ever lose in a reaction – try adding electrons back.</span>'; return; } e--; fly={dir:-1,t:0}; text(); };
+ root.querySelector('#eadd').onclick=()=>{ if(e>=el.p+3){ msg.innerHTML='<span class="small">That is far more than this atom would ever gain – try removing some.</span>'; return; } e++; fly={dir:1,t:0}; text(); };
+ root.querySelector('#padd').onclick=root.querySelector('#prem').onclick=()=>{ shake=1; msg.innerHTML=`<span style="color:var(--bad);font-weight:700">🔒 Locked.</span> Protons are in the nucleus and do not change in chemical reactions. Changing the number of protons would make a <b>different element</b>.`; };
+ root.querySelector('#eres').onclick=()=>{ e=el.p; text(); };
+ sel.onchange=()=>{ el=ION_EL[+sel.value]; e=el.p; text(); };
+ text(); raf=requestAnimationFrame(loop);
+ return ()=>cancelAnimationFrame(raf);
+}
+const ION_PRAC=[...ION_EL,{id:'Fe',name:'iron',p:26,q:2},{id:'Fe',name:'iron',p:26,q:3},{id:'Cu',name:'copper',p:29,q:2},{id:'Zn',name:'zinc',p:30,q:2},{id:'Ag',name:'silver',p:47,q:1},{id:'N',name:'nitrogen',p:7,q:-3,ion:'nitride'}];
+function ionGen(){
+ const el=ION_PRAC[rint(0,ION_PRAC.length-1)], e=el.p-el.q;
+ if(Math.random()<0.7) return {prompt:`How many protons and electrons are in the ion <b style="font-size:1.5rem">${el.id}<sup>${chargeStr(el.q)}</sup></b>? The atomic number of ${el.name} is ${el.p}.`,
+   fields:[{label:'protons',ans:el.p},{label:'electrons',ans:e}],
+   working:`Protons = atomic number = <b>${el.p}</b> (protons never change).<br>The charge is ${chargeStr(el.q)}, so the atom has ${el.q>0?'lost':'gained'} ${Math.abs(el.q)} electron${Math.abs(el.q)>1?'s':''}.<br>Electrons = ${el.p} ${el.q>0?'−':'+'} ${Math.abs(el.q)} = <b>${e}</b>`};
+ return {prompt:`A particle of ${el.name} has <b>${el.p} protons</b> and <b>${e} electrons</b>. What is its overall charge? <span class="small">(type e.g. +2 or -1)</span>`,
+   fields:[{label:'charge',ans:el.q}],
+   working:`Charge = protons − electrons = ${el.p} − ${e} = <b>${el.q>0?'+':''}${el.q}</b><br>So the ion is written <b>${el.id}<sup>${chargeStr(el.q)}</sup></b>.`};
+}
+const IONSTEP={id:'ions', nav:'Atoms & ions', eyebrow:'Charge', title:'Atoms and ions',
+ html:()=>`<div class="prose" style="max-width:86ch"><p>An <b>atom</b> has the same number of protons (+) and electrons (−), so the charges balance and it is <b>neutral</b>. In a chemical reaction the <b>protons in the nucleus never change</b> – only <b>electrons</b> can be lost or gained. An atom that has lost or gained electrons is called an <b>ion</b>.</p></div>
+ <div class="row" style="margin-bottom:10px"><label class="small">Element <select id="ionel"></select></label></div>
+ <div class="grid2"><div class="card atombox"><div id="scale"></div>
+  <div class="ionbtns"><div><span class="small">Protons</span><button class="btn" id="prem">− proton</button><button class="btn" id="padd">+ proton</button></div>
+  <div><span class="small">Electrons</span><button class="btn primary" id="erem">Remove an electron</button><button class="btn primary" id="eadd">Add an electron</button><button class="btn" id="eres">Back to atom</button></div></div></div>
+ <div><div class="card" id="ionread"></div><div class="card" style="margin-top:12px"><b>Writing the ion</b><div id="ionform" style="margin-top:8px"></div></div><div id="ionmsg" style="margin-top:10px"></div></div></div>
+ <div class="grid2 even" style="margin-top:16px"><div class="tip"><span class="lab">Lose electrons → positive ion</span>Fewer negatives than positives. Metals do this, e.g. Na → Na<sup>+</sup> (11 p, 10 e), Mg → Mg<sup>2+</sup> (12 p, 10 e).</div><div class="tip"><span class="lab">Gain electrons → negative ion</span>More negatives than positives. Non-metals do this, e.g. Br → Br<sup>−</sup> (35 p, 36 e), O → O<sup>2−</sup> (8 p, 10 e).</div></div>
+ <h3>Practice</h3><div class="card" id="ionprac"></div>`,
+ mount:r=>{ const c=mountIons(r); practiceWidget(r.querySelector('#ionprac'),ionGen); return c; },
+ qs:[
+  {q:'Bromine has atomic number 35. How many protons and electrons are in a bromide ion, Br<sup>−</sup>?', o:[
+   ['35 protons and 36 electrons',true,'It has gained one electron; the protons do not change.'],
+   ['35 protons and 34 electrons',false,'A negative ion has gained electrons, not lost them.'],
+   ['36 protons and 36 electrons',false,'The number of protons never changes when an ion forms.'],
+   ['35 protons and 35 electrons',false,'That is a bromine atom, which has no charge.']]},
+  {q:'A magnesium atom loses two electrons. What is formed?', o:[
+   ['Mg<sup>2+</sup>',true,'Two fewer electrons than protons gives a 2+ charge.'],
+   ['Mg<sup>2−</sup>',false,'Losing negative electrons leaves a positive charge.'],
+   ['Ne',false,'It is still magnesium – it has 12 protons, not 10.'],
+   ['Mg<sup>+</sup>',false,'Two electrons lost gives a 2+ charge.']]},
+  {q:'Why can an atom not form an ion by losing protons?', o:[
+   ['Protons are in the nucleus and do not change in reactions – changing them would make a different element',true,'Only electrons are lost or gained.'],
+   ['Protons have no charge',false,'Protons have a +1 charge.'],
+   ['Protons are too heavy to move',false,'The reason is that the nucleus is not involved in chemical reactions.'],
+   ['Losing protons would make the atom negative',false,'True, but protons are never lost in chemical reactions.']]},
+  {q:'A particle has 8 protons and 10 electrons. What is it?', o:[
+   ['An oxide ion, O<sup>2−</sup>',true,'8 protons = oxygen; 2 extra electrons = 2− charge.'],
+   ['An oxygen ion, O<sup>2+</sup>',false,'More electrons than protons gives a negative charge.'],
+   ['A neon atom',false,'Neon has 10 protons; this has 8.'],
+   ['A fluoride ion, F<sup>−</sup>',false,'Fluorine has 9 protons.']]}
+ ]};
+
+/* ================= STEPS ================= */
+const APP={key:'atomic-structure-walkthrough-v1', title:'Atomic Structure', subtitle:'AQA GCSE Combined Science: Trilogy · Chemistry 4.1.1.4–4.1.1.7', steps:[
+{id:'inside', nav:'Inside the atom', eyebrow:'Structure', title:'Inside the atom',
+ html:()=>`<div class="grid2"><div class="card atombox">${labelledAtom()}</div>
+  <div class="prose"><p>An atom has a tiny central <b>nucleus</b> made of <b>protons</b> and <b>neutrons</b>. <b>Electrons</b> move around the nucleus in <b>shells</b> (energy levels).</p>
+  <table class="cmp"><thead><tr><th>Particle</th><th>Relative charge</th><th>Relative mass</th><th>Where</th></tr></thead><tbody>
+   <tr><td>proton</td><td>+1</td><td>1</td><td>nucleus</td></tr><tr><td>neutron</td><td>0</td><td>1</td><td>nucleus</td></tr><tr><td>electron</td><td>−1</td><td>very small</td><td>shells</td></tr></tbody></table>
+  <p style="margin-top:10px">An atom has the <b>same number of electrons as protons</b>, so it has <b>no overall charge</b>. Almost all of the mass is in the nucleus.</p></div></div>`,
+ qs:[
+  {q:'What is the relative charge of a proton?', o:[['+1',true,'Protons are positive.'],['−1',false,'That is the electron.'],['0',false,'That is the neutron.'],['+2',false,'Each proton has a charge of +1.']]},
+  {q:'Where is almost all of the mass of an atom?', o:[
+   ['In the nucleus',true,'Protons and neutrons each have a relative mass of 1; electrons have very little mass.'],
+   ['In the electron shells',false,'Electrons have a very small mass.'],
+   ['Spread evenly through the atom',false,'That was the plum pudding idea – the mass is concentrated in the nucleus.'],
+   ['In the empty space',false,'Empty space has no mass.']]},
+  {q:'Why do atoms have no overall charge?', o:[
+   ['They have equal numbers of protons and electrons',true,'+1 and −1 charges cancel out.'],
+   ['They have equal numbers of protons and neutrons',false,'Neutrons have no charge, so they do not cancel the protons.'],
+   ['Neutrons cancel out the electrons',false,'Neutrons are neutral – they cannot cancel a charge.'],
+   ['The nucleus has no charge',false,'The nucleus is positive because it contains protons.']]}
+ ]},
+{id:'build', nav:'Build an atom', eyebrow:'Interactive', title:'Build an atom',
+ html:()=>`<div class="grid2"><div class="card atombox"><div id="bview"></div>
+  <div class="ctl3">${[['p','Protons','#c2452d'],['n','Neutrons','#a39d90'],['e','Electrons','#2d6f93']].map(([k,l,c])=>`<div class="ctl"><span class="sw" style="background:${c}"></span><b>${l}</b><button class="btn" data-k="${k}" data-d="-1" aria-label="remove ${l}">−</button><span class="cv" id="v${k}"></span><button class="btn" data-k="${k}" data-d="1" aria-label="add ${l}">+</button></div>`).join('')}</div></div>
+  <div><div class="card" id="binfo"></div><div class="card" style="margin-top:12px"><div id="chal"></div><div id="cmsg" style="margin-top:8px"></div></div>
+  <div class="tip"><span class="lab">Key idea</span>The number of <b>protons</b> decides which element it is. Changing <b>neutrons</b> changes the mass number (a different isotope). Changing <b>electrons</b> makes an ion.</div></div></div>`,
+ mount:mountBuilder,
+ qs:[
+  {q:'What decides which element an atom is?', o:[
+   ['The number of protons',true,'This is the atomic number.'],
+   ['The number of neutrons',false,'Atoms of the same element can have different numbers of neutrons (isotopes).'],
+   ['The number of electrons',false,'Atoms can gain or lose electrons to form ions and stay the same element.'],
+   ['The mass number',false,'Different elements can have the same mass number, e.g. argon-40 and calcium-40.']]},
+  {q:'One neutron is added to a carbon-12 atom. What is made?', o:[
+   ['Carbon-13 – the same element with a higher mass number',true,'Protons are unchanged, so it is still carbon.'],
+   ['Nitrogen-13',false,'It would only become nitrogen if a proton were added.'],
+   ['A carbon ion with a 1+ charge',false,'Neutrons have no charge.'],
+   ['Boron-13',false,'The number of protons has not changed.']]},
+  {q:'A particle has 11 protons, 12 neutrons and 10 electrons. What is it?', o:[
+   ['A sodium ion, Na<sup>+</sup>',true,'One fewer electron than protons gives a 1+ charge.'],
+   ['A sodium atom',false,'An atom would have 11 electrons.'],
+   ['A magnesium atom',false,'Magnesium has 12 protons.'],
+   ['A neon atom',false,'Neon has 10 protons; this particle has 11.']]}
+ ]},
+{id:'size', nav:'Size of atoms', eyebrow:'Scale', title:'How small is an atom?',
+ html:()=>`<div class="grid2"><div class="card"><div id="zview" class="atombox"></div><div class="row" style="margin-top:6px"><label for="zoom" class="small">Zoom in</label><input type="range" id="zoom" min="0" max="4" step="0.01" value="0" style="flex:1;accent-color:var(--accent)"></div><div class="small" id="zlab"></div></div>
+  <div class="prose"><ul><li>Atoms are very small. The radius of an atom is about <b>0.1 nm</b> (<b>1 × 10<sup>−10</sup> m</b>).</li>
+  <li>The radius of the nucleus is <b>less than 1/10 000</b> of the radius of the atom.</li>
+  <li>So most of the atom is <b>empty space</b> – but almost all the <b>mass</b> is in the nucleus.</li></ul>
+  <div class="tip"><span class="lab">To picture it</span>If an atom were the size of a football stadium, the nucleus would be about the size of a pea on the centre spot.</div>
+  <div class="tip"><span class="lab">Maths skill</span>1 nm = 1 × 10<sup>−9</sup> m, so 0.1 nm = 1 × 10<sup>−10</sup> m.<br>Nucleus radius ≈ 0.1 nm ÷ 10 000 = 0.000 01 nm = 1 × 10<sup>−5</sup> nm.</div></div></div>`,
+ mount:mountZoom,
+ qs:[
+  {q:'What is the approximate radius of an atom?', o:[['0.1 nm',true,'That is 1 × 10<sup>−10</sup> m.'],['0.1 mm',false,'That is about the thickness of a hair – far bigger than an atom.'],['1 m',false,'Atoms are far too small to see.'],['100 nm',false,'That is about 1000 atoms across.']]},
+  {q:'What is 0.1 nm in metres?', o:[['1 × 10<sup>−10</sup> m',true,'0.1 × 10<sup>−9</sup> = 1 × 10<sup>−10</sup>.'],['1 × 10<sup>−9</sup> m',false,'That is 1 nm.'],['1 × 10<sup>−8</sup> m',false,'That is 10 nm.'],['1 × 10<sup>−1</sup> m',false,'That is 0.1 m – 10 cm!']]},
+  {q:'How does the radius of the nucleus compare with the radius of the atom?', o:[['It is less than 1/10 000 of the radius of the atom',true,'The atom is mostly empty space.'],['It is about half the radius',false,'The nucleus is far smaller than that.'],['It is about 1/10 of the radius',false,'Still far too big – it is less than 1/10 000.'],['It is the same',false,'The nucleus is a tiny part of the atom.']]}
+ ]},
+{id:'numbers', nav:'Protons, neutrons & electrons', eyebrow:'Atomic number and mass number', title:'Working out protons, neutrons and electrons',
+ html:()=>`<div class="grid2"><div class="card" style="text-align:center"><div style="font-size:5.5rem;margin:6px 0">${nuclide(23,11,'Na')}</div>
+  <div class="grid2 even" style="text-align:left;gap:10px"><div><b>Mass number</b> (top)<br>protons + neutrons</div><div><b>Atomic number</b> (bottom)<br>number of protons</div></div></div>
+  <div class="prose"><table class="cmp"><thead><tr><th>Particle</th><th>How to work it out</th><th>Sodium</th></tr></thead><tbody>
+   <tr><td>protons</td><td>= atomic number</td><td>11</td></tr><tr><td>electrons</td><td>= protons (in an atom)</td><td>11</td></tr><tr><td>neutrons</td><td>= mass number − atomic number</td><td>23 − 11 = 12</td></tr></tbody></table>
+  <div class="tip"><span class="lab">Exam tip</span>Always show the subtraction for neutrons. The periodic table gives the mass number as the larger number.</div></div></div>
+  <h3>Practice</h3><div class="card" id="prac"></div>`,
+ mount:r=>practiceWidget(r.querySelector('#prac'),pneGen),
+ qs:[
+  {q:'An atom of fluorine has atomic number 9 and mass number 19. How many neutrons does it have?', o:[['10',true,'19 − 9 = 10.'],['9',false,'That is the number of protons (and electrons).'],['19',false,'That is the mass number – protons + neutrons.'],['28',false,'Subtract the atomic number; do not add it.']]},
+  {q:'What does the mass number tell you?', o:[['The number of protons + neutrons',true,'These are the particles in the nucleus.'],['The number of protons',false,'That is the atomic number.'],['The number of electrons',false,'In an atom that equals the atomic number.'],['The number of protons + electrons',false,'Electrons have very little mass, so they are not counted.']]},
+  {q:'An atom of potassium has 19 protons and 20 neutrons. What is its mass number?', o:[['39',true,'19 + 20 = 39.'],['19',false,'That is the atomic number.'],['20',false,'That is the number of neutrons.'],['1',false,'Add protons and neutrons; do not subtract.']]}
+ ]},
+IONSTEP,
+{id:'shells', nav:'Electronic structure', eyebrow:'Electron shells', title:'Electronic structure',
+ html:()=>`<div class="grid2"><div class="card atombox"><div id="sview"></div>
+  <div class="row" style="justify-content:center"><button class="btn" id="zm" aria-label="previous element">−</button><span class="mono">Z = <b id="zval"></b></span><button class="btn" id="zp" aria-label="next element">+</button></div></div>
+  <div><div class="card" id="sinfo"></div><div class="ptmini" id="ptmini" aria-label="First 20 elements"></div>
+  <div class="tip"><span class="lab">Rules for the first 20 elements</span>Electrons fill the shell closest to the nucleus first. 1st shell: up to <b>2</b>. 2nd shell: up to <b>8</b>. 3rd shell: up to <b>8</b>. Then the 4th shell.</div></div></div>`,
+ mount:mountShells,
+ qs:[
+  {q:'How many electrons can the first shell hold?', o:[['2',true,'Then the second shell starts filling.'],['8',false,'That is the second (and third) shell.'],['1',false,'It can hold two.'],['18',false,'Not for the first 20 elements.']]},
+  {q:'What is the electronic structure of magnesium (12 electrons)?', o:[['2,8,2',true,'2 + 8 + 2 = 12.'],['2,10',false,'The second shell holds a maximum of 8.'],['8,2,2',false,'The first shell only holds 2 and fills first.'],['2,2,8',false,'The second shell fills to 8 before the third starts.']]},
+  {q:'An element has the electronic structure 2,8,5. Which group and period is it in?', o:[['Group 5, period 3',true,'5 outer electrons; 3 shells.'],['Group 3, period 5',false,'Group = outer electrons; period = number of shells.'],['Group 15, period 2',false,'Count the shells: there are three.'],['Group 8, period 3',false,'The group comes from the outer shell only.']]}
+ ]}
+]};
+
+/* ===== walkthrough shell: steps, questions, results ===== */
+(function () {
+  const STEPS = APP.steps, LET = "ABCD";
+  function seeded(n, seed) { const a = [...Array(n).keys()]; let s = seed; for (let i = n - 1; i > 0; i--) { s = (s * 9301 + 49297) % 233280; const j = Math.floor(s / 233280 * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+  STEPS.forEach((st, si) => (st.qs || []).forEach((q, qi) => { q.order = seeded(q.o.length, si * 31 + qi * 7 + 5); q.key = st.id + "-" + qi; }));
+  let answers = {}, cur = 0, cleanup = null;
+  try { answers = JSON.parse(localStorage.getItem(APP.key) || "{}") || {}; } catch (e) { answers = {}; }
+  const save = () => { try { localStorage.setItem(APP.key, JSON.stringify(answers)); } catch (e) {} };
+  const allQs = () => STEPS.flatMap((s) => s.qs || []);
+  const tally = (st) => { const qs = st.qs || []; return { done: qs.filter((q) => q.key in answers).length, right: qs.filter((q) => q.key in answers && q.o[answers[q.key]][1]).length, n: qs.length }; };
+  const RESULTS = STEPS.length;
+  const nav = document.getElementById("nav"), panel = document.getElementById("panel");
+  document.querySelector(".brand h1").textContent = APP.title;
+  document.querySelector(".brand span").textContent = APP.subtitle;
+
+  function renderNav() {
+    nav.innerHTML = "";
+    [...STEPS, { nav: "Results" }].forEach((st, i) => {
+      const b = document.createElement("button"); b.type = "button"; b.className = "step-link";
+      if (i === cur) b.setAttribute("aria-current", "step");
+      let t = "";
+      if (st.qs) { const k = tally(st); if (k.done === k.n) t = `<span class="t">${k.right}/${k.n}</span>`; }
+      b.innerHTML = `<span class="n">${i < RESULTS ? i + 1 : "✓"}</span>${st.nav}${t}`;
+      b.onclick = () => go(i);
+      nav.appendChild(b);
+    });
+  }
+  function qHTML(q, label) {
+    const a = answers[q.key], done = a !== undefined;
+    const ci = q.o.findIndex((o) => o[1]);
+    const opts = q.order.map((oi, k) => {
+      let cls = "opt";
+      if (done) { if (oi === ci) cls += " right"; else if (oi === a) cls += " wrong"; else cls += " dim"; }
+      return `<button type="button" class="${cls}" data-q="${q.key}" data-o="${oi}" ${done ? "disabled" : ""}><span class="L">${LET[k]}</span><span>${q.o[oi][0]}</span></button>`;
+    }).join("");
+    let fb = "";
+    if (done) {
+      const okk = a === ci;
+      fb = `<div class="fb">${okk ? `<span class="ok">Correct.</span> ${q.o[a][2] || ""}` : `<span class="no">Not quite.</span> ${q.o[a][2] || ""} <br><b>Correct answer:</b> ${q.o[ci][0]}. ${q.o[ci][2] || ""}`}</div>`;
+    }
+    return `<div class="q" id="q-${q.key}"><p class="qt"><span class="qn">${label}</span>${q.q}</p><div class="opts">${opts}</div>${fb}</div>`;
+  }
+  function pager() {
+    const st = STEPS[cur];
+    const mid = st && st.qs ? (() => { const k = tally(st); return `${k.done} of ${k.n} answered`; })() : "";
+    return `<div class="pager"><button class="btn" id="prev" ${cur === 0 ? "disabled" : ""}>← Back</button><span class="mid">${mid}</span>${cur < RESULTS ? `<button class="btn primary" id="next">${cur === RESULTS - 1 ? "See results →" : "Next step →"}</button>` : `<span></span>`}</div>`;
+  }
+  function bindPager() {
+    const p = document.getElementById("prev"), n = document.getElementById("next");
+    if (p) p.onclick = () => go(cur - 1);
+    if (n) n.onclick = () => go(cur + 1);
+  }
+  function renderStep() {
+    const st = STEPS[cur];
+    let h = `<div class="eyebrow">Step ${cur + 1} of ${STEPS.length} · ${st.eyebrow}</div><h2>${st.title}</h2>${st.html()}`;
+    if (st.qs && st.qs.length) h += `<section class="check"><h3>Check your understanding</h3>${st.qs.map((q, qi) => qHTML(q, (cur + 1) + "." + (qi + 1))).join("")}</section>`;
+    h += pager();
+    panel.innerHTML = h; bindPager();
+    if (st.mount) cleanup = st.mount(panel) || null;
+  }
+  function renderResults() {
+    const all = allQs(), done = all.filter((q) => q.key in answers), right = done.filter((q) => q.o[answers[q.key]][1]);
+    const wrong = done.filter((q) => !q.o[answers[q.key]][1]), skipped = all.length - done.length;
+    let h = `<div class="eyebrow">Results</div><h2>Your results</h2>
+      <div class="results-head"><div class="big">${right.length}<span style="font-size:28px;color:var(--muted)"> / ${all.length}</span></div>
+      <p style="margin:0;max-width:56ch">${skipped ? `${skipped} question${skipped > 1 ? "s" : ""} not answered yet. ` : ""}${wrong.length ? "Copy the questions below into a three-column table in your book: the question, a blank space to answer next time, and the correct answer." : done.length ? "Every answer right first time. Well done." : "Work through the steps, then come back here."}</p></div>
+      <div class="bars">${STEPS.filter((s) => s.qs).map((st) => { const k = tally(st); return `<div class="bar"><span>${st.nav}</span><div class="track"><div class="fill" style="width:${k.n ? k.right / k.n * 100 : 0}%"></div></div><span class="n">${k.right}/${k.n}</span></div>`; }).join("")}</div>`;
+    if (wrong.length) h += `<h3>Questions to revisit</h3><div class="tablewrap"><table class="cmp redo"><thead><tr><th>Question</th><th>Answer next time</th><th>Correct answer</th></tr></thead><tbody>${wrong.map((q) => `<tr><td>${q.q}</td><td></td><td>${q.o.find((o) => o[1])[0]}</td></tr>`).join("")}</tbody></table></div>`;
+    h += pager();
+    panel.innerHTML = h; bindPager();
+  }
+  function render() { if (cleanup) { try { cleanup(); } catch (e) {} cleanup = null; } renderNav(); cur < RESULTS ? renderStep() : renderResults(); }
+  function go(i) { cur = Math.max(0, Math.min(RESULTS, i)); render(); window.scrollTo({ top: 0, behavior: "auto" }); }
+
+  panel.addEventListener("click", (e) => {
+    const b = e.target.closest(".opt"); if (!b || b.disabled) return;
+    const key = b.dataset.q; answers[key] = +b.dataset.o; save();
+    const st = STEPS[cur], qi = st.qs.findIndex((q) => q.key === key);
+    document.getElementById("q-" + key).outerHTML = qHTML(st.qs[qi], (cur + 1) + "." + (qi + 1));
+    renderNav();
+    const mid = panel.querySelector(".pager .mid"); if (mid) { const k = tally(st); mid.textContent = `${k.done} of ${k.n} answered`; }
+  });
+  document.addEventListener("keydown", (e) => {
+    const tag = (e.target.tagName || "").toLowerCase();
+    if (tag === "input" || tag === "select" || tag === "textarea") return;
+    if (e.key === "ArrowRight") go(cur + 1);
+    else if (e.key === "ArrowLeft") go(cur - 1);
+  });
+  const reset = document.getElementById("resetAll");
+  reset.onclick = function () {
+    if (this.dataset.armed) { answers = {}; save(); delete this.dataset.armed; this.textContent = "Start again"; go(0); }
+    else { this.dataset.armed = "1"; this.textContent = "Clear all answers?"; setTimeout(() => { if (this.dataset.armed) { delete this.dataset.armed; this.textContent = "Start again"; } }, 4000); }
+  };
+  render();
+})();
+
+/* ===== helper: click-in-order widget ===== */
+function orderWidget(el, items, okMsg) {
+  const order = items.map((_, i) => i);
+  let s = items.length * 7 + 3;
+  for (let i = order.length - 1; i > 0; i--) { s = (s * 9301 + 49297) % 233280; const j = Math.floor(s / 233280 * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
+  if (order.every((v, i) => v === i)) order.reverse();
+  let picked = [];
+  function draw(checked) {
+    const pool = order.filter((i) => !picked.includes(i));
+    el.innerHTML = `<div class="order"><div class="pool">${pool.map((i) => `<button type="button" class="card-o" data-i="${i}">${items[i]}</button>`).join("") || `<span class="small">All cards placed – check your order.</span>`}</div>
+      <div class="chain">${picked.map((i, k) => `<div class="card-o ${checked ? (i === k ? "ok" : "bad") : ""}">${items[i]}</div>`).join("")}</div>
+      <div class="row" style="margin-top:10px"><button type="button" class="btn primary" data-act="check" ${picked.length < items.length ? "disabled" : ""}>Check order</button><button type="button" class="btn" data-act="undo" ${picked.length ? "" : "disabled"}>Undo</button><button type="button" class="btn" data-act="reset">Reset</button></div>
+      ${checked ? `<div class="msg" style="color:${picked.every((v, k) => v === k) ? "var(--good)" : "var(--bad)"}">${picked.every((v, k) => v === k) ? okMsg || "Correct order." : "Not quite – the red cards are in the wrong place. Reset and try again."}</div>` : ""}</div>`;
+  }
+  el.addEventListener("click", (e) => {
+    const c = e.target.closest(".pool .card-o"); if (c) { picked.push(+c.dataset.i); draw(false); return; }
+    const a = e.target.closest("[data-act]"); if (!a) return;
+    if (a.dataset.act === "check") draw(true);
+    if (a.dataset.act === "undo") { picked.pop(); draw(false); }
+    if (a.dataset.act === "reset") { picked = []; draw(false); }
+  });
+  draw(false);
+}
+
+</script>
+</body>
+</html>

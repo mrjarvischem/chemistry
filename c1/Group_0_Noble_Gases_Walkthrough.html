@@ -1,0 +1,665 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Group 0: The Noble Gases</title>
+<style>
+:root{
+  --paper:#f4ede0; --panel:#fbf7ef; --ink:#3a2a1c; --muted:#7a6450; --rule:#dbc9ae;
+  --accent:#8a5a2b; --accent-soft:#ead9bf; --good:#3f7a3a; --good-soft:#e2eed8; --bad:#a8432a; --bad-soft:#f6e0d6;
+  --display:"Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  --body:"Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,"SF Mono",Menlo,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.5}
+.wrap{max-width:1180px;margin:0 auto;padding:14px max(16px,env(safe-area-inset-right,0px)) 32px max(16px,env(safe-area-inset-left,0px))}
+header.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 24px;padding-bottom:12px;border-bottom:2px solid var(--rule)}
+.brand{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.brand h1{font-family:var(--display);font-size:1.75rem;margin:0;font-weight:700}
+.brand span{color:var(--muted);font-size:.95rem}
+.ghost{font:600 .9rem var(--body);background:transparent;border:1.5px solid var(--rule);color:var(--muted);border-radius:8px;padding:7px 12px;cursor:pointer}
+.ghost:hover{border-color:var(--accent);color:var(--ink)}
+nav.steps{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 2px}
+.step-link{display:flex;align-items:center;gap:8px;font:600 .9rem var(--body);background:var(--panel);border:1.5px solid var(--rule);color:var(--ink);border-radius:999px;padding:5px 12px 5px 5px;cursor:pointer}
+.step-link:hover{border-color:var(--accent)}
+.step-link .n{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--accent-soft);font:700 .8rem var(--mono)}
+.step-link[aria-current]{background:var(--accent);border-color:var(--accent);color:#fffaf2}
+.step-link[aria-current] .n{background:#fffaf2;color:var(--accent)}
+.step-link .t{font:700 .78rem var(--mono);color:var(--good)}
+.step-link[aria-current] .t{color:#e9f4dd}
+main{padding-top:16px}
+.eyebrow{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);font-weight:700}
+h2{font-family:var(--display);font-size:2.1rem;margin:2px 0 14px;line-height:1.1;text-wrap:balance}
+h3{font-family:var(--display);font-size:1.35rem;margin:22px 0 10px}
+.grid2{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:22px;align-items:start}
+.grid2.even{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+@media (max-width:860px){.grid2,.grid2.even{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1.5px solid var(--rule);border-radius:14px;padding:14px 16px;min-width:0}
+.prose p{margin:0 0 10px}
+.prose ul{margin:0 0 10px;padding-left:22px}
+.prose li{margin-bottom:4px}
+.tip{background:var(--accent-soft);border-left:5px solid var(--accent);border-radius:8px;padding:10px 14px;margin:12px 0;font-size:.97rem}
+.tip .lab{display:block;font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--accent);margin-bottom:2px}
+.warn{background:var(--bad-soft);border-left:5px solid var(--bad)}
+.warn .lab{color:var(--bad)}
+.btn{font:600 .95rem var(--body);background:var(--panel);border:1.5px solid var(--rule);color:var(--ink);padding:8px 14px;border-radius:8px;cursor:pointer}
+.btn:hover:not(:disabled){border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fffaf2}
+.btn.on{background:var(--ink);border-color:var(--ink);color:#fffaf2}
+.btn:disabled{opacity:.45;cursor:default}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid #c98a3a;outline-offset:2px}
+select{font:600 .95rem var(--body);background:var(--panel);border:1.5px solid var(--rule);color:var(--ink);padding:7px 10px;border-radius:8px}
+.check{margin-top:28px;border-top:2px solid var(--rule)}
+.q{background:var(--panel);border:1.5px solid var(--rule);border-radius:12px;padding:12px 14px;margin:10px 0}
+.qt{margin:0 0 9px;font-weight:600}
+.qt .qn{font-family:var(--mono);color:var(--accent);margin-right:8px}
+.opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+@media (max-width:680px){.opts{grid-template-columns:1fr}}
+.opt{display:flex;gap:10px;align-items:flex-start;text-align:left;font:500 1rem/1.4 var(--body);background:#fffdf8;border:1.5px solid var(--rule);color:var(--ink);border-radius:10px;padding:9px 12px;cursor:pointer}
+.opt .L{font:700 .85rem var(--mono);color:var(--muted);padding-top:2px}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt:disabled{cursor:default}
+.opt.right{background:var(--good-soft);border-color:var(--good)}
+.opt.wrong{background:var(--bad-soft);border-color:var(--bad)}
+.opt.dim{opacity:.6}
+.fb{margin-top:9px;font-size:.97rem}
+.fb .ok{color:var(--good);font-weight:700}
+.fb .no{color:var(--bad);font-weight:700}
+.pager{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:26px}
+.pager .mid{color:var(--muted);font-size:.9rem}
+.tablewrap{overflow-x:auto}
+table.cmp{border-collapse:collapse;width:100%;font-size:.95rem;background:#fffdf8}
+table.cmp th,table.cmp td{border:1px solid var(--rule);padding:7px 10px;text-align:left;vertical-align:top}
+table.cmp thead th{background:var(--accent);color:#fffaf2;font-weight:600}
+table.cmp tbody th{background:var(--panel)}
+table.redo td:nth-child(2){min-width:220px}
+.results-head{display:flex;gap:22px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
+.big{font:700 64px/1 var(--display)}
+.bars{display:grid;gap:8px;margin-bottom:22px}
+.bar{display:grid;grid-template-columns:minmax(0,260px) 1fr 52px;gap:12px;align-items:center}
+.bar .track{height:14px;background:var(--accent-soft);border-radius:99px;overflow:hidden}
+.bar .fill{height:100%;background:var(--accent)}
+.bar .n{font:600 .9rem var(--mono);text-align:right}
+@media (max-width:560px){.bar{grid-template-columns:1fr 52px}.bar .track{grid-column:1/-1;order:3}}
+/* order widget */
+.order .pool,.order .chain{display:grid;gap:6px}
+.order .chain{counter-reset:c;margin-top:10px}
+.order .card-o{font:500 .97rem/1.35 var(--body);text-align:left;background:#fffdf8;border:1.5px solid var(--rule);color:var(--ink);border-radius:9px;padding:8px 12px;cursor:pointer}
+.order .card-o:hover{border-color:var(--accent)}
+.order .chain .card-o{counter-increment:c;cursor:default}
+.order .chain .card-o::before{content:counter(c) ". ";font:700 .9rem var(--mono);color:var(--accent)}
+.order .card-o.ok{background:var(--good-soft);border-color:var(--good)}
+.order .card-o.bad{background:var(--bad-soft);border-color:var(--bad)}
+.order .msg{margin-top:8px;font-weight:600}
+.small{font-size:.86rem;color:var(--muted)}
+.mono{font-family:var(--mono)}
+/* practice + balancing (shared) */
+.prac-q{font-size:1.08rem;margin-bottom:10px}
+.prac-f{display:flex;flex-wrap:wrap;gap:10px 18px}
+.prac-f label{display:flex;align-items:center;gap:8px;font-weight:600}
+.prac-f input{font:600 1.1rem var(--mono);width:90px;padding:6px 8px;border:1.5px solid var(--rule);border-radius:8px;background:#fffdf8;color:var(--ink)}
+.prac-f input.ok{border-color:var(--good);background:var(--good-soft)}
+.prac-f input.bad{border-color:var(--bad);background:var(--bad-soft)}
+.prac-f b.ok{color:var(--good)} .prac-f b.bad{color:var(--bad)}
+.prac-f em{font-style:normal;color:var(--muted);font-weight:500}
+.prac-w{margin-top:10px;background:#fffdf8;border:1.5px dashed var(--rule);border-radius:10px;padding:10px 12px;font-size:.97rem}
+.bal{display:flex;flex-wrap:wrap;align-items:center;gap:10px;font:600 1.2rem var(--mono);margin:12px 0}
+.coef{display:inline-flex;align-items:center;border:1.5px solid var(--rule);border-radius:9px;background:#fffdf8;overflow:hidden}
+.coef button{font:700 1rem var(--mono);border:0;background:var(--accent-soft);color:var(--ink);width:30px;height:36px;cursor:pointer}
+.coef span{min-width:30px;text-align:center}
+.coef span.one{color:#b9a58c}
+table.count td,table.count th{text-align:center}
+table.count .ok{color:var(--good);font-weight:700}
+table.count .bad{color:var(--bad);font-weight:700}
+.atombox svg{width:100%;height:auto;display:block}
+.nuclide{display:inline-grid;grid-template-columns:auto auto;grid-template-rows:auto auto;align-items:center;font-family:var(--display);line-height:1}
+.nuclide .m{grid-column:1;grid-row:1;text-align:right;font-size:.55em;padding-right:2px}
+.nuclide .z{grid-column:1;grid-row:2;text-align:right;font-size:.55em;padding-right:2px}
+.nuclide .s{grid-column:2;grid-row:1/3;font-weight:700}
+.opt .nuclide{font-size:1.5em;vertical-align:middle}
+
+.gasbtns{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.gasbtns button{font:700 1rem var(--display);min-width:56px}
+.gasbtns button.on{background:var(--ink);border-color:var(--ink);color:#fffaf2}
+.bench svg{width:100%;height:auto;display:block;border-radius:14px}
+.bench .switch{cursor:pointer}
+.bench .switch:focus-visible{outline:3px solid #c98a3a}
+@keyframes flick{0%{opacity:0}8%{opacity:.9}12%{opacity:.1}20%{opacity:1}26%{opacity:.35}34%{opacity:1}100%{opacity:1}}
+.bench .glow.on{animation:flick .7s linear}
+.atomrow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.atomrow .card{text-align:center}
+.atomrow svg{width:100%;max-width:240px;height:auto;display:block;margin:0 auto}
+@media (max-width:700px){.atomrow{grid-template-columns:1fr}}
+.uses{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.uses .card b{font-family:var(--display);font-size:1.15rem}
+.uses .card .why{font-size:.92rem;color:#5a4634;margin-top:4px}
+.uses .card .g{display:inline-block;font:700 .8rem var(--mono);background:var(--accent-soft);border-radius:6px;padding:1px 7px;margin-bottom:4px}
+.bulb svg{width:100%;max-width:300px;height:auto;display:block;margin:0 auto}
+.readout{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap}
+.readout .tc{font:700 2.6rem/1 var(--mono);font-variant-numeric:tabular-nums;min-width:6ch}
+.readout .tk{font:500 1.2rem var(--mono);color:var(--muted)}
+.tubes{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-top:14px}
+.tube{background:#fffdf8;border:1.5px solid var(--rule);border-radius:12px;padding:8px 6px 10px;display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0}
+.tube .nm{font-family:var(--display);font-size:1.1rem;font-weight:700}
+.tube canvas{width:100%;max-width:170px;aspect-ratio:160/240;display:block}
+.chip{font:700 .8rem var(--body);letter-spacing:.06em;text-transform:uppercase;padding:3px 10px;border-radius:99px;border:1.5px solid}
+.chip.solid{background:#7b5a3c;border-color:#7b5a3c;color:#fffaf2}
+.chip.liquid{background:#c08a3e;border-color:#c08a3e;color:#2c1d0f}
+.chip.gas{background:#e8d6b2;border-color:#c9b48c;color:var(--ink)}
+.tube .bp{font:600 .8rem var(--mono);color:var(--muted)}
+@media (max-width:860px){.tubes{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.chartbox svg{width:100%;height:auto;display:block}
+.room svg{width:100%;height:auto;display:block}
+.slider-row{display:flex;align-items:center;gap:10px;margin-top:10px}
+.slider-row input{flex:1;accent-color:var(--accent)}
+.slider-row span{font:500 .85rem var(--mono);color:var(--muted)}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top"><div class="brand"><h1></h1><span></span></div><button class="ghost" id="resetAll" type="button">Start again</button></header>
+  <nav class="steps" id="nav" aria-label="Steps"></nav>
+  <main id="panel"></main>
+</div>
+<script>
+/* ================= ELECTRON SHELL DIAGRAMS ================= */
+function eAngles(n){
+ if(n>8) return [...Array(n)].map((_,i)=>-90+i*360/n);
+ const base=[-90,90,0,180], pairs=Math.max(0,n-4), out=[];
+ for(let j=0;j<Math.min(n,4);j++){ if(j<pairs) out.push(base[j]-13,base[j]+13); else out.push(base[j]); }
+ return out;
+}
+const cross=(x,y,s,col,w)=>`<path d="M${x-s} ${y-s}L${x+s} ${y+s}M${x-s} ${y+s}L${x+s} ${y-s}" stroke="${col}" stroke-width="${w}" stroke-linecap="round"/>`;
+const pt=(cx,cy,r,deg)=>[cx+r*Math.cos(deg*Math.PI/180), cy+r*Math.sin(deg*Math.PI/180)];
+/* draws an atom; returns svg string. opts: r0, dr, nucR, xs (cross size), innerSmall, outerCol, gap (leave the lone outer electron at 180 shifted) */
+function atomSVG(cx,cy,e,o){
+ const sh=e.shells, n=sh.length; let s='';
+ for(let k=0;k<n;k++){
+  const R=o.r0+k*o.dr, outer=k===n-1;
+  s+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="#9c8770" stroke-width="${outer?2:1.4}"/>`;
+  let ang=eAngles(sh[k]);
+  if(outer && o.outerShift) ang=ang.map(a=>a===180?193:a);
+  ang.forEach(a=>{const [x,y]=pt(cx,cy,R,a);
+   if(!outer && o.innerSmall) s+=`<circle cx="${x}" cy="${y}" r="${o.innerSmall}" fill="#7a6450"/>`;
+   else s+=cross(x,y,o.xs,outer?o.outerCol:'#3a2a1c',outer?2.6:2);
+  });
+ }
+ s+=`<circle cx="${cx}" cy="${cy}" r="${o.nucR}" fill="#f1d9c7" stroke="#b5401f" stroke-width="2"/><text x="${cx}" y="${cy+o.nucR*0.36}" text-anchor="middle" font-family="Palatino Linotype,Palatino,Georgia,serif" font-weight="700" font-size="${o.nucR*1.05}" fill="#3a2a1c">${e.id}</text>`;
+ return s;
+}
+
+
+/* ================= GENERIC HELPERS ================= */
+const fsub = f => f.replace(/([A-Za-z\)])(\d+)/g, '$1<sub>$2</sub>');
+function shellsFor(e){ const s=[]; let left=e; [2,8,8,2].forEach(c=>{ if(left>0){ s.push(Math.min(c,left)); left-=Math.min(c,left);} }); return s; }
+
+/* balancing widget: RX = [{lab, L:[[formula,{El:n}]...], R:[...]}] */
+function balanceWidget(root, RX){
+  root.innerHTML = `<div class="row"><label class="small">Reaction <select class="bw-sel">${RX.map((x,i)=>`<option value="${i}">${x.lab}</option>`).join('')}</select></label></div>
+   <div class="bal bw-eq"></div><table class="cmp count bw-count"></table><div class="bw-msg" style="margin-top:10px;font-weight:600"></div>`;
+  const sel=root.querySelector('.bw-sel'), eqEl=root.querySelector('.bw-eq'), cnt=root.querySelector('.bw-count'), msg=root.querySelector('.bw-msg');
+  let r=RX[0], c=[];
+  const reset=()=>{ c=[...r.L,...r.R].map(()=>1); };
+  function draw(){
+    const all=[...r.L,...r.R], nL=r.L.length;
+    eqEl.innerHTML=all.map(([f],k)=>`${k===nL?'<span>→</span>':k?'<span>+</span>':''}<span class="coef"><button type="button" data-k="${k}" data-d="-1" aria-label="decrease">−</button><span class="${c[k]===1?'one':''}">${c[k]}</span><button type="button" data-k="${k}" data-d="1" aria-label="increase">+</button></span><span>${fsub(f)}</span>`).join(' ');
+    const els=[...new Set(all.flatMap(([,a])=>Object.keys(a)))];
+    const side=(list,off)=>els.map(e=>list.reduce((s,[,a],k)=>s+(a[e]||0)*c[k+off],0));
+    const L=side(r.L,0), R=side(r.R,nL);
+    cnt.innerHTML=`<thead><tr><th>Atom</th><th>Left side</th><th>Right side</th><th></th></tr></thead><tbody>${els.map((e,i)=>`<tr><th>${e}</th><td>${L[i]}</td><td>${R[i]}</td><td class="${L[i]===R[i]?'ok':'bad'}">${L[i]===R[i]?'✓':'✗'}</td></tr>`).join('')}</tbody>`;
+    const ok=els.every((_,i)=>L[i]===R[i]);
+    const g=(a,b)=>b?g(b,a%b):a, gg=c.reduce(g);
+    const eqtxt=()=>all.map(([f],k)=>(k===nL?' → ':k?' + ':'')+(c[k]>1?c[k]:'')+fsub(f)).join('');
+    msg.innerHTML= ok ? (gg===1?`<span style="color:var(--good)">Balanced! ${eqtxt()}</span>`:`<span style="color:var(--accent)">Balanced, but use the smallest whole numbers – divide every number by ${gg}.</span>`) : `<span class="small">Change the numbers in front of the formulae until every atom is ✓. Never change the formulae themselves.</span>`;
+  }
+  eqEl.addEventListener('click',ev=>{const b=ev.target.closest('button'); if(!b) return; const k=+b.dataset.k; c[k]=Math.max(1,Math.min(8,c[k]+ +b.dataset.d)); draw();});
+  sel.onchange=()=>{ r=RX[+sel.value]; reset(); draw(); };
+  reset(); draw();
+}
+
+/* practice generator: gen() -> {prompt, fields:[{label, ans, tol, unit}], working} */
+function practiceWidget(el, gen){
+  let cur=null, right=0, tried=0, checked=false;
+  function next(){ cur=gen(); checked=false; draw(); }
+  function draw(res){
+    el.innerHTML = `<div class="prac"><div class="prac-q">${cur.prompt}</div>
+      <div class="prac-f">${cur.fields.map((f,i)=>`<label><span>${f.label}</span><input type="text" inputmode="decimal" autocomplete="off" data-i="${i}" value="${res?res[i].v:''}" class="${res?(res[i].ok?'ok':'bad'):''}">${f.unit?`<em>${f.unit}</em>`:''}${res?`<b class="${res[i].ok?'ok':'bad'}">${res[i].ok?'✓':'✗'}</b>`:''}</label>`).join('')}</div>
+      <div class="row" style="margin-top:10px"><button type="button" class="btn primary" data-a="check">Check</button><button type="button" class="btn" data-a="work">Show working</button><button type="button" class="btn" data-a="new">New question</button><span class="small" style="margin-left:auto">Score: ${right} / ${tried}</span></div>
+      <div class="prac-w" hidden>${cur.working}</div></div>`;
+  }
+  el.addEventListener('click', ev=>{ const b=ev.target.closest('[data-a]'); if(!b) return;
+    if(b.dataset.a==='new') next();
+    if(b.dataset.a==='work'){ const w=el.querySelector('.prac-w'); w.hidden=!w.hidden; }
+    if(b.dataset.a==='check'){
+      const ins=[...el.querySelectorAll('input')];
+      const res=cur.fields.map((f,i)=>{ const v=ins[i].value.trim(); const n=parseFloat(v.replace(',','.')); return {v, ok: v!=='' && Math.abs(n-f.ans)<=(f.tol||0)+1e-9}; });
+      if(!checked){ tried++; if(res.every(r=>r.ok)) right++; checked=true; }
+      draw(res); if(!res.every(r=>r.ok)) {} 
+    }
+  });
+  el.addEventListener('keydown', ev=>{ if(ev.key==='Enter' && ev.target.tagName==='INPUT'){ ev.preventDefault(); el.querySelector('[data-a=check]').click(); } });
+  next();
+}
+
+/* nucleus of protons and neutrons, sunflower packing */
+function nucleusSVG(cx,cy,p,n,r){
+  const N=p+n; if(!N) return '';
+  const types=[]; let s=p*31+n*17+3; for(let i=0;i<p;i++) types.push('p'); for(let i=0;i<n;i++) types.push('n');
+  for(let i=types.length-1;i>0;i--){ s=(s*9301+49297)%233280; const j=Math.floor(s/233280*(i+1)); [types[i],types[j]]=[types[j],types[i]]; }
+  const spread=N===1?0:r*1.05*Math.sqrt(N);
+  return types.map((t,i)=>{ const rr=N===1?0:spread*Math.sqrt((i+0.5)/N)*0.92, a=i*2.39996; return {t,x:cx+rr*Math.cos(a),y:cy+rr*Math.sin(a),rr}; })
+   .sort((a,b)=>b.rr-a.rr).map(q=>`<circle cx="${q.x.toFixed(1)}" cy="${q.y.toFixed(1)}" r="${r}" fill="${q.t==='p'?'#c2452d':'#a39d90'}" stroke="#5a4634" stroke-width=".8"/>${q.t==='p'&&r>=6?`<text x="${q.x.toFixed(1)}" y="${(q.y+r*0.42).toFixed(1)}" text-anchor="middle" font-size="${(r*1.25).toFixed(1)}" font-weight="700" fill="#fff">+</text>`:''}`).join('');
+}
+/* full atom picture: nucleus + shells with electrons as blue dots */
+function fullAtomSVG(cx,cy,p,n,e,o={}){
+  const sh=shellsFor(e), r0=o.r0||48, dr=o.dr||30, nr=o.nr||6; let s='';
+  sh.forEach((cnt,k)=>{ const R=r0+k*dr; s+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="#9c8770" stroke-width="1.5" stroke-dasharray="${o.dash||''}"/>`;
+    eAngles(cnt).forEach(a=>{ const [x,y]=pt(cx,cy,R,a); s+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${o.er||6}" fill="#2d6f93" stroke="#173f55" stroke-width="1"/><text x="${x.toFixed(1)}" y="${(y+3).toFixed(1)}" text-anchor="middle" font-size="9" font-weight="700" fill="#fff">−</text>`; }); });
+  return s+nucleusSVG(cx,cy,p,n,nr);
+}
+const E20=[[1,'H','hydrogen',1],[2,'He','helium',4],[3,'Li','lithium',7],[4,'Be','beryllium',9],[5,'B','boron',11],[6,'C','carbon',12],[7,'N','nitrogen',14],[8,'O','oxygen',16],[9,'F','fluorine',19],[10,'Ne','neon',20],[11,'Na','sodium',23],[12,'Mg','magnesium',24],[13,'Al','aluminium',27],[14,'Si','silicon',28],[15,'P','phosphorus',31],[16,'S','sulfur',32],[17,'Cl','chlorine',35],[18,'Ar','argon',40],[19,'K','potassium',39],[20,'Ca','calcium',40]];
+const nuclide=(A,Z,S)=>`<span class="nuclide"><span class="m">${A}</span><span class="z">${Z}</span><span class="s">${S}</span></span>`;
+const rint=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+
+/* ================= NOBLE GASES ================= */
+const NG=[
+ {id:'He',name:'Helium',Z:2,Ar:4,shells:[2],mp:null,bp:-269,dens:0.18,r:4.2,col:'#ffb08a',core:'#ffe1d1',colName:'pink-orange (peach)',use:'Party balloons and airships'},
+ {id:'Ne',name:'Neon',Z:10,Ar:20,shells:[2,8],mp:-249,bp:-246,dens:0.90,r:5.2,col:'#ff4a1c',core:'#ffc2a8',colName:'bright red-orange',use:'Advertising signs'},
+ {id:'Ar',name:'Argon',Z:18,Ar:40,shells:[2,8,8],mp:-189,bp:-186,dens:1.78,r:6.4,col:'#a974ff',core:'#e8d8ff',colName:'lilac / violet',use:'Filament light bulbs and welding'},
+ {id:'Kr',name:'Krypton',Z:36,Ar:84,shells:[2,8,18,8],mp:-157,bp:-153,dens:3.75,r:7.2,col:'#e2d6ff',core:'#ffffff',colName:'pale lilac-white',use:'Lasers and photography flash'},
+ {id:'Xe',name:'Xenon',Z:54,Ar:131,shells:[2,8,18,18,8],mp:-112,bp:-108,dens:5.89,r:8,col:'#86a2ff',core:'#e3eaff',colName:'blue-violet',use:'Car headlights and flash lamps'}
+];
+const AIR=1.29;
+const fmtT=n=>(n<0?'−':'')+Math.abs(Math.round(n));
+
+/* step 1: discharge tube workbench */
+let NG_SEL=1;
+function mountBench(root){
+ const box=root.querySelector('#bench'), info=root.querySelector('#gasinfo');
+ let on=false;
+ function draw(flick){
+  const g=NG[NG_SEL];
+  let s=`<svg viewBox="0 0 1000 560" role="img" aria-label="${g.name} discharge tube ${on?'switched on':'switched off'}">
+  <defs>
+   <filter id="glw" x="-20%" y="-40%" width="140%" height="180%"><feGaussianBlur stdDeviation="9" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+   <radialGradient id="wall" cx=".5" cy=".42" r=".6"><stop offset="0" stop-color="${on?g.col:'#3a3530'}" stop-opacity="${on?.38:1}"/><stop offset="1" stop-color="#1c1814" stop-opacity="${on?0:1}"/></radialGradient>
+   <linearGradient id="wood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8a5a33"/><stop offset="1" stop-color="#5e3b20"/></linearGradient>
+  </defs>
+  <rect width="1000" height="560" fill="#1f1b17"/><rect width="1000" height="440" fill="url(#wall)"/>
+  <rect x="0" y="430" width="1000" height="130" fill="url(#wood)"/><rect x="0" y="430" width="1000" height="10" fill="#a5734a"/>`;
+  // stands
+  s+=`<g fill="#6b6b6b"><rect x="230" y="330" width="10" height="100"/><rect x="690" y="330" width="10" height="100"/><rect x="205" y="424" width="60" height="10" rx="3"/><rect x="665" y="424" width="60" height="10" rx="3"/></g>`;
+  // tube shaped like the symbol
+  const T=`<text x="465" y="300" text-anchor="middle" font-family="'Arial Rounded MT Bold','Segoe UI','Helvetica Neue',Arial,sans-serif" font-weight="700" font-size="250" letter-spacing="14">${g.id}</text>`;
+  s+=`<g fill="none" stroke-linejoin="round" stroke-linecap="round">`;
+  s+=`<g stroke="#cfc7bd" stroke-width="22" opacity=".28">${T}</g>`;
+  if(on) s+=`<g class="glow ${flick?'on':''}" filter="url(#glw)"><g stroke="${g.col}" stroke-width="15">${T}</g><g stroke="${g.core}" stroke-width="5">${T}</g></g>`;
+  else s+=`<g stroke="#8f877c" stroke-width="7" opacity=".55">${T}</g>`;
+  s+=`<g stroke="#ffffff" stroke-width="2" opacity=".35">${T}</g></g>`;
+  // electrodes + wires
+  s+=`<rect x="150" y="250" width="34" height="22" rx="5" fill="#a8a29a" stroke="#555"/><rect x="770" y="250" width="34" height="22" rx="5" fill="#a8a29a" stroke="#555"/>`;
+  s+=`<path d="M150 261 C 90 261, 80 380, 120 470" stroke="#c0392b" stroke-width="5" fill="none"/><path d="M804 261 C 880 261, 900 380, 860 470" stroke="#222" stroke-width="5" fill="none"/>`;
+  s+=`<path d="M120 470 L 360 470" stroke="#c0392b" stroke-width="5" fill="none"/><path d="M860 470 L 600 470" stroke="#222" stroke-width="5" fill="none"/>`;
+  // power supply
+  s+=`<rect x="360" y="448" width="240" height="96" rx="10" fill="#d9d2c4" stroke="#6e655a" stroke-width="2"/><text x="380" y="474" font-size="15" font-weight="700" fill="#3a2a1c" font-family="system-ui">HIGH VOLTAGE SUPPLY</text>`;
+  s+=`<text x="380" y="494" font-size="12" fill="#a8432a" font-family="system-ui" font-weight="700">⚠ 5 kV</text><circle cx="575" cy="470" r="7" fill="${on?'#4fd16a':'#3f4a3f'}" stroke="#333"/>`;
+  s+=`<g class="switch" id="sw" role="button" tabindex="0" aria-label="Power switch"><rect x="470" y="496" width="86" height="38" rx="19" fill="${on?'#3f7a3a':'#8a8178'}" stroke="#4a3f35" stroke-width="2"/><circle cx="${on?537:489}" cy="515" r="15" fill="#fffaf2" stroke="#4a3f35" stroke-width="2"/><text x="${on?492:514}" y="520" font-size="13" font-weight="700" fill="#fffaf2" font-family="system-ui">${on?'ON':'OFF'}</text></g>`;
+  s+=`<text x="380" y="530" font-size="12" fill="#5a4634" font-family="system-ui">click the switch</text>`;
+  s+=`<text x="975" y="30" text-anchor="end" font-size="14" fill="#cbbfae" font-family="system-ui">Sealed glass tube containing ${g.name.toLowerCase()} gas at low pressure</text>`;
+  box.innerHTML=s+'</svg>';
+  const sw=box.querySelector('#sw'); const tog=()=>{on=!on; draw(true);};
+  sw.onclick=tog; sw.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();tog();}};
+  info.innerHTML=`<div class="who"><b style="font-family:var(--display);font-size:1.5rem">${g.name}</b> <span class="mono">${g.id} · atomic number ${g.Z}</span></div>
+   <p style="margin:6px 0"><span class="swatch-l" style="display:inline-block;width:16px;height:16px;border-radius:50%;background:${g.col};vertical-align:-3px;margin-right:6px;border:1px solid #0003"></span>Glows <b>${g.colName}</b> when electricity passes through it.</p>
+   <p class="small" style="margin:0">Use: ${g.use}.</p>`;
+  root.querySelectorAll('.gasbtns button').forEach(b=>b.classList.toggle('on',+b.dataset.g===NG_SEL));
+ }
+ root.querySelectorAll('.gasbtns button').forEach(b=>b.onclick=()=>{NG_SEL=+b.dataset.g; draw(on);});
+ draw(false);
+}
+
+/* step 2: electron arrangements */
+function ngAtom(g,big){ const n=g.shells.length, o={r0:28,dr:26,nucR:17,xs:5.5,outerCol:'#3f7a3a'};
+ const R=o.r0+(n-1)*o.dr;
+ return `<svg viewBox="0 0 240 240" role="img" aria-label="${g.name} ${g.shells.join(',')}"><circle cx="120" cy="120" r="${R+14}" fill="#e2eed8" opacity=".7"/>${atomSVG(120,120,g,o)}</svg>`; }
+
+/* step 3: compare atoms */
+function compareRow(){
+ const items=[{id:'Na',name:'Sodium',shells:[2,8,1],t:'1 outer electron',d:'Loses 1 electron → Na<sup>+</sup> (2,8)',c:'#b5401f'},
+  {id:'Cl',name:'Chlorine',shells:[2,8,7],t:'7 outer electrons',d:'Gains 1 electron → Cl<sup>−</sup> (2,8,8)',c:'#b5401f'},
+  {id:'Ar',name:'Argon',shells:[2,8,8],t:'8 outer electrons – full',d:'Already stable – no need to lose, gain or share electrons',c:'#3f7a3a'}];
+ return `<div class="atomrow">${items.map(e=>`<div class="card"><svg viewBox="0 0 240 240">${atomSVG(120,120,e,{r0:30,dr:27,nucR:18,xs:5.5,outerCol:e.c})}</svg><b>${e.name} ${e.shells.join(',')}</b><div class="small">${e.t}</div><p style="margin:6px 0 0;font-weight:600;color:${e.c}">${e.d}</p></div>`).join('')}</div>`;
+}
+function monoDi(){
+ let s=`<svg viewBox="0 0 520 170" role="img" aria-label="Argon atoms are separate; chlorine atoms are joined in pairs"><rect x="6" y="6" width="240" height="150" rx="12" fill="#fffdf8" stroke="#dbc9ae"/><rect x="274" y="6" width="240" height="150" rx="12" fill="#fffdf8" stroke="#dbc9ae"/>`;
+ [[50,50],[130,40],[200,70],[80,110],[160,120],[215,130]].forEach(([x,y])=>s+=`<circle cx="${x}" cy="${y}" r="15" fill="#a974ff" stroke="#5a3a90"/><text x="${x}" y="${y+4}" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">Ar</text>`);
+ [[320,50,.3],[420,45,-.4],[350,115,.8],[455,115,0]].forEach(([x,y,a])=>{const dx=Math.cos(a)*12,dy=Math.sin(a)*12; s+=`<circle cx="${x-dx}" cy="${y-dy}" r="15" fill="#acc94e" stroke="#5f7520"/><circle cx="${x+dx}" cy="${y+dy}" r="15" fill="#acc94e" stroke="#5f7520"/><text x="${x-dx}" y="${y-dy+4}" text-anchor="middle" font-size="11" font-weight="700" fill="#2c3a10">Cl</text><text x="${x+dx}" y="${y+dy+4}" text-anchor="middle" font-size="11" font-weight="700" fill="#2c3a10">Cl</text>`;});
+ s+=`<text x="126" y="150" text-anchor="middle" font-size="13" fill="#3a2a1c" font-weight="700">argon: single atoms</text><text x="394" y="150" text-anchor="middle" font-size="13" fill="#3a2a1c" font-weight="700">chlorine: Cl₂ molecules</text>`;
+ return s+'</svg>';
+}
+
+/* step 4: filament bulb */
+function mountBulb(root){
+ const box=root.querySelector('#bulb'), msg=root.querySelector('#bulbmsg');
+ let fill='air', on=false, t=0, raf=0, last=0;
+ function draw(){
+  const burnt = fill==='air' && on && t>1.6, glowing = on && !burnt;
+  const k = fill==='air' && on ? Math.min(1,t/1.6) : 0;
+  let s=`<svg viewBox="0 0 300 380" role="img" aria-label="Filament light bulb filled with ${fill}"><defs><radialGradient id="bg" cx=".5" cy=".45" r=".55"><stop offset="0" stop-color="#fff6c8" stop-opacity="${glowing?.95:0}"/><stop offset="1" stop-color="#ffd76a" stop-opacity="0"/></radialGradient></defs>`;
+  s+=`<path d="M150 20 C 60 20, 40 110, 70 170 C 90 210, 105 230, 105 260 L 195 260 C 195 230, 210 210, 230 170 C 260 110, 240 20, 150 20 Z" fill="${fill==='argon'?'#f1eaff':'#f4fbff'}" stroke="#9c8770" stroke-width="3"/>`;
+  s+=`<circle cx="150" cy="120" r="130" fill="url(#bg)"/>`;
+  if(burnt){ const sm=Math.min(1,(t-1.6)/1.2); s+=`<g opacity="${.5*(1-sm*0.4)}" fill="#8d8378">${[0,1,2,3].map(i=>`<circle cx="${140+i*8}" cy="${120-sm*40-i*10}" r="${8+sm*10+i*2}"/>`).join('')}</g>`; }
+  s+=`<path d="M128 255 L128 150 M172 255 L172 150" stroke="#8a8a8a" stroke-width="3"/>`;
+  const fcol = glowing ? (fill==='air'?`rgb(255,${Math.round(240-80*k)},${Math.round(160-120*k)})`:'#fff3b0') : (burnt?'#3a2a1c':'#6b6156');
+  s+= burnt ? `<path d="M128 150 L134 140 L140 150 L146 140" stroke="${fcol}" stroke-width="3" fill="none"/><path d="M156 140 L160 150 L166 140 L172 150" stroke="${fcol}" stroke-width="3" fill="none"/>`
+            : `<path d="M128 150 L134 140 L140 150 L146 140 L152 150 L158 140 L164 150 L172 140" stroke="${fcol}" stroke-width="${glowing?4:3}" fill="none" ${glowing?'style="filter:drop-shadow(0 0 6px #ffe680)"':''}/>`;
+  s+=`<rect x="100" y="258" width="100" height="60" rx="6" fill="#b8b2a6" stroke="#6e655a"/>${[0,1,2,3].map(i=>`<line x1="100" y1="${268+i*13}" x2="200" y2="${272+i*13}" stroke="#8a8378" stroke-width="2"/>`).join('')}<path d="M125 318 L175 318 L160 340 L140 340 Z" fill="#6e655a"/>`;
+  s+=`<text x="150" y="370" text-anchor="middle" font-size="15" font-weight="700" fill="#3a2a1c" font-family="system-ui">bulb filled with ${fill}</text></svg>`;
+  box.innerHTML=s;
+  msg.innerHTML = !on ? 'Choose what to fill the bulb with, then switch it on.' :
+   fill==='argon' ? '<span style="color:var(--good);font-weight:700">The filament glows white-hot and keeps working.</span> Argon is unreactive, so the hot tungsten has nothing to react with.' :
+   burnt ? '<span style="color:var(--bad);font-weight:700">The filament has burnt out!</span> The white-hot tungsten reacted with oxygen in the air and broke.' : 'The filament is getting very hot…';
+  root.querySelectorAll('[data-fill]').forEach(b=>b.classList.toggle('on',b.dataset.fill===fill));
+  root.querySelector('#bon').textContent = on?'Switch off':'Switch on';
+ }
+ function loop(now){ t+= (now-last)/1000; last=now; draw(); if(on && t<3.2) raf=requestAnimationFrame(loop); }
+ root.querySelectorAll('[data-fill]').forEach(b=>b.onclick=()=>{ cancelAnimationFrame(raf); fill=b.dataset.fill; on=false; t=0; draw(); });
+ root.querySelector('#bon').onclick=()=>{ cancelAnimationFrame(raf); if(on){ on=false; t=0; draw(); return; } on=true; t=0; last=performance.now(); raf=requestAnimationFrame(loop); };
+ draw();
+ return ()=>cancelAnimationFrame(raf);
+}
+
+/* step 5: boiling point simulator */
+function stateNG(g,T){ if(g.mp===null) return T<g.bp?'liquid':'gas'; return T<g.mp?'solid':(T<g.bp?'liquid':'gas'); }
+function mountBP(root){
+ const W=160,H=240,BOX={l:16,r:144,t:30,b:226};
+ let T=-273, playing=false, raf=0, showF=true;
+ const tubesEl=root.querySelector('#tubes'), slider=root.querySelector('#temp'), tc=root.querySelector('#tc'), tk=root.querySelector('#tk'), play=root.querySelector('#play'), rate=root.querySelector('#rate');
+ const STR={He:.15,Ne:.3,Ar:.55,Kr:.75,Xe:1};
+ class Tube{
+  constructor(g){ this.g=g; const c=document.createElement('div'); c.className='tube';
+   c.innerHTML=`<div class="nm">${g.name}</div><canvas></canvas><span class="chip solid">solid</span><div class="bp">b.p. ${fmtT(g.bp)} °C</div>`;
+   tubesEl.appendChild(c); this.cv=c.querySelector('canvas'); this.ctx=this.cv.getContext('2d'); this.chip=c.querySelector('.chip');
+   const r=g.r, n=24, cols=6; this.sites=[]; this.P=[];
+   for(let i=0;i<n;i++){ const row=Math.floor(i/cols), col=i%cols; const x=(BOX.l+BOX.r)/2+(col-2.5)*2.25*r+(row%2?r*.55:0), y=BOX.b-r*1.4-row*1.95*r; this.sites.push({x,y}); this.P.push({x,y,vx:0,vy:0,ph:Math.random()*6.28,f:7+Math.random()*5}); }
+   this.state=null; }
+  resize(){ const w=this.cv.clientWidth||160, d=devicePixelRatio||1; this.cv.width=Math.round(w*d); this.cv.height=Math.round(w*H/W*d); this.s=w*d/W; }
+  step(dt,time){ const g=this.g, r=g.r, TK=T+273, st=stateNG(g,T), P=this.P;
+   if(st!==this.state){ this.state=st; this.chip.className='chip '+st; this.chip.textContent=st; }
+   if(st==='solid'){ const A=TK<=0?0:0.3+2.2*Math.sqrt(TK/(g.mp+273)); P.forEach((p,i)=>{const s=this.sites[i],k=Math.min(1,dt*5); p.x+=(s.x+A*Math.sin(time*p.f+p.ph)-p.x)*k; p.y+=(s.y+A*Math.cos(time*p.f*1.1+p.ph)-p.y)*k; p.vx=p.vy=0;}); return; }
+   const vg=65*Math.sqrt(Math.max(TK,2)/298)*Math.sqrt(40/g.Ar)*(g.id==='He'?1.6:1), target=st==='gas'?vg:Math.max(10,vg*0.5), dmin=2.15*r, ceil=BOX.b-10*r;
+   for(let i=0;i<P.length;i++){ const p=P[i];
+    if(st==='liquid'){ p.vy+=140*dt; if(p.y<ceil) p.vy+=(ceil-p.y)*40*dt; }
+    p.vx+=(Math.random()-.5)*target*7*dt; p.vy+=(Math.random()-.5)*target*7*dt;
+    for(let j=i+1;j<P.length;j++){ const q=P[j],dx=q.x-p.x,dy=q.y-p.y,d2=dx*dx+dy*dy; if(d2<dmin*dmin&&d2>.01){const d=Math.sqrt(d2),f=(dmin-d)*30*dt,nx=dx/d,ny=dy/d; p.vx-=nx*f;p.vy-=ny*f;q.vx+=nx*f;q.vy+=ny*f;} } }
+   let sum=0; P.forEach(p=>sum+=Math.hypot(p.vx,p.vy)); const avg=sum/P.length;
+   if(avg<1) P.forEach(p=>{const a=Math.random()*6.28;p.vx=Math.cos(a)*target;p.vy=Math.sin(a)*target;}); else {const lam=1+(target/avg-1)*Math.min(1,dt*3); P.forEach(p=>{p.vx*=lam;p.vy*=lam;});}
+   const pad=r*1.1; P.forEach(p=>{ p.x+=p.vx*dt; p.y+=p.vy*dt;
+    if(p.x<BOX.l+pad){p.x=BOX.l+pad;p.vx=Math.abs(p.vx);} if(p.x>BOX.r-pad){p.x=BOX.r-pad;p.vx=-Math.abs(p.vx);}
+    if(p.y<BOX.t+pad){p.y=BOX.t+pad;p.vy=Math.abs(p.vy);} if(p.y>BOX.b-pad){p.y=BOX.b-pad;p.vy=-Math.abs(p.vy);} }); }
+  draw(){ const c=this.ctx,g=this.g,r=g.r,st=this.state; c.setTransform(this.s,0,0,this.s,0,0); c.clearRect(0,0,W,H);
+   const L=BOX.l-5,R=BOX.r+5,Tp=BOX.t-6,B=BOX.b+6;
+   c.fillStyle='#fffdf8'; c.fillRect(L,Tp,R-L,B-Tp);
+   if(showF && st!=='gas'){ c.strokeStyle='#2d6f93'; c.lineCap='round';
+    for(let i=0;i<this.P.length;i++)for(let j=i+1;j<this.P.length;j++){ const p=this.P[i],q=this.P[j],d=Math.hypot(p.x-q.x,p.y-q.y); if(d<2.9*r){ c.globalAlpha=.25+.5*STR[g.id]; c.lineWidth=.6+3.2*STR[g.id]; c.beginPath(); c.moveTo(p.x,p.y); c.lineTo(q.x,q.y); c.stroke(); } }
+    c.globalAlpha=1; }
+   this.P.forEach(p=>{ c.beginPath(); c.arc(p.x,p.y,r,0,6.283); const gr=c.createRadialGradient(p.x-r*.35,p.y-r*.35,r*.1,p.x,p.y,r); gr.addColorStop(0,'#fff'); gr.addColorStop(.35,g.col); gr.addColorStop(1,g.col); c.fillStyle=gr; c.fill(); c.lineWidth=1; c.strokeStyle='#5a4634'; c.stroke(); });
+   c.strokeStyle='#8d7964'; c.lineWidth=3; c.strokeRect(L,Tp,R-L,B-Tp); }
+ }
+ const TUBES=NG.map(g=>new Tube(g)); const rs=()=>TUBES.forEach(t=>t.resize()); rs(); addEventListener('resize',rs);
+ // chart
+ const chart=root.querySelector('#bpchart'), X0=100,X1=980,TMIN=-273,TMAX=25, xs=t=>X0+(t-TMIN)/(TMAX-TMIN)*(X1-X0);
+ let h=''; [-273,-250,-200,-150,-100,-50,0].forEach(t=>{h+=`<line x1="${xs(t)}" y1="10" x2="${xs(t)}" y2="250" stroke="#dbc9ae"/><text x="${xs(t)}" y="270" text-anchor="middle" font-size="13" fill="#7a6450" font-family="ui-monospace,monospace">${fmtT(t)}</text>`;});
+ h+=`<text x="${X1}" y="286" text-anchor="end" font-size="12" fill="#7a6450">°C</text>`;
+ NG.forEach((g,i)=>{ const y=16+i*47, hh=32;
+  h+=`<text x="${X0-10}" y="${y+22}" text-anchor="end" font-size="17" font-weight="700" fill="#3a2a1c" font-family="Palatino Linotype,Georgia,serif">${g.name}</text>`;
+  const seg=(a,b,col,lab,tx)=>{ if(b<=a) return; h+=`<rect x="${xs(a)}" y="${y}" width="${xs(b)-xs(a)}" height="${hh}" fill="${col}"/>`; if(xs(b)-xs(a)>40) h+=`<text x="${(xs(a)+xs(b))/2}" y="${y+21}" text-anchor="middle" font-size="12" font-weight="700" fill="${tx}">${lab}</text>`; };
+  if(g.mp!==null) seg(TMIN,g.mp,'#7b5a3c','solid','#fffaf2');
+  seg(g.mp===null?TMIN:g.mp,g.bp,'#c08a3e','liquid','#2c1d0f'); seg(g.bp,TMAX,'#e8d6b2','gas','#3a2a1c');
+  h+=`<line x1="${xs(g.bp)}" y1="${y-3}" x2="${xs(g.bp)}" y2="${y+hh+3}" stroke="#3a2a1c" stroke-width="2"/><text x="${xs(g.bp)+5}" y="${y-4}" font-size="11" fill="#3a2a1c" font-family="ui-monospace,monospace">${fmtT(g.bp)}</text>`; });
+ h+=`<g id="needle"><line x1="0" y1="4" x2="0" y2="252" stroke="#b5401f" stroke-width="3"/><polygon points="-7,0 7,0 0,10" fill="#b5401f"/></g>`;
+ chart.innerHTML=h; const needle=chart.querySelector('#needle');
+ function setT(v){ T=Math.max(TMIN,Math.min(TMAX,v)); slider.value=Math.round(T); tc.textContent=fmtT(T)+' °C'; tk.textContent=Math.round(T+273)+' K'; needle.setAttribute('transform',`translate(${xs(T)},0)`); }
+ function toggle(){ if(!playing&&T>=TMAX) setT(TMIN); playing=!playing; play.textContent=playing?'❚❚ Pause':'▶ Heat'; }
+ play.onclick=toggle; slider.oninput=()=>setT(+slider.value);
+ root.querySelector('#abs0').onclick=()=>{setT(TMIN); if(playing) toggle();};
+ root.querySelector('#forces').onchange=e=>{showF=e.target.checked;};
+ setT(-273);
+ let last=performance.now();
+ function frame(now){ const dt=Math.min(.033,(now-last)/1000); last=now; if(playing){ setT(T+(+rate.value)*dt); if(T>=TMAX) toggle(); } TUBES.forEach(t=>{t.step(dt,now/1000); t.draw();}); raf=requestAnimationFrame(frame); }
+ raf=requestAnimationFrame(frame);
+ return ()=>{cancelAnimationFrame(raf); removeEventListener('resize',rs);};
+}
+
+/* step 6: density balloons */
+function mountDensity(root){
+ const box=root.querySelector('#room'), bars=root.querySelector('#dbars'); let raf=0, t0=0, released=false;
+ const xs=[150,330,510,690,870];
+ function draw(t){
+  let s=`<svg viewBox="0 0 1000 440" role="img" aria-label="Balloons filled with each noble gas"><rect width="1000" height="440" fill="#f6efe2"/><rect y="400" width="1000" height="40" fill="#c9b48d"/><rect width="1000" height="18" fill="#e6d8bb"/>`;
+  s+=`<text x="20" y="426" font-size="14" fill="#5a4634" font-family="system-ui">Room full of air · density of air ≈ ${AIR} g/dm³</text>`;
+  NG.forEach((g,i)=>{
+   const diff=AIR-g.dens, a=Math.max(-1,Math.min(1,diff/2.5));
+   let y=250; if(released){ const tt=Math.min(1,t/ (1.2+ (1-Math.abs(a))*2.2)); const target=diff>0?60:352; y=250+(target-250)*(tt<.5?2*tt*tt:1-Math.pow(-2*tt+2,2)/2); }
+   const rx=46, ry=56;
+   s+=`<path d="M${xs[i]} ${y+ry} q -6 30 4 60 q 8 30 -4 56" stroke="#7a6450" stroke-width="1.5" fill="none" opacity="${released?1:.6}"/>`;
+   s+=`<ellipse cx="${xs[i]}" cy="${y}" rx="${rx}" ry="${ry}" fill="${g.col}" stroke="#5a4634" stroke-width="2"/><ellipse cx="${xs[i]-16}" cy="${y-20}" rx="10" ry="16" fill="#fff" opacity=".45"/><path d="M${xs[i]-7} ${y+ry} l7 9 l7 -9 z" fill="${g.col}" stroke="#5a4634"/>`;
+   s+=`<text x="${xs[i]}" y="${y+6}" text-anchor="middle" font-size="22" font-weight="700" fill="#2b2016" font-family="Palatino Linotype,Georgia,serif">${g.id}</text>`;
+   if(!released) s+=`<rect x="${xs[i]-40}" y="388" width="80" height="14" rx="4" fill="#8d7964"/>`;
+   if(released && t>3.6) s+=`<text x="${xs[i]}" y="${diff>0?150:284}" text-anchor="middle" font-size="14" font-weight="700" fill="${diff>0?'#3f7a3a':'#a8432a'}" font-family="system-ui">${diff>0?'floats':'sinks'}</text>`;
+  });
+  box.innerHTML=s+'</svg>';
+ }
+ function loop(now){ const t=(now-t0)/1000; draw(t); if(t<4) raf=requestAnimationFrame(loop); }
+ root.querySelector('#release').onclick=()=>{ released=true; t0=performance.now(); cancelAnimationFrame(raf); raf=requestAnimationFrame(loop); };
+ root.querySelector('#resetb').onclick=()=>{ released=false; cancelAnimationFrame(raf); draw(0); };
+ const maxD=6.5, bx=d=>130+d/maxD*560;
+ let b=`<svg viewBox="0 0 760 270" role="img" aria-label="Density of each noble gas compared with air">`;
+ NG.forEach((g,i)=>{ const y=16+i*46; b+=`<text x="120" y="${y+22}" text-anchor="end" font-size="16" font-weight="700" fill="#3a2a1c" font-family="Palatino Linotype,Georgia,serif">${g.name}</text><rect x="130" y="${y}" width="${bx(g.dens)-130}" height="30" rx="5" fill="${g.col}" stroke="#5a4634"/><text x="${Math.abs(bx(g.dens)-bx(AIR))<40?bx(AIR)+8:bx(g.dens)+8}" y="${y+21}" font-size="14" font-weight="700" fill="#3a2a1c" font-family="ui-monospace,monospace">${g.dens.toFixed(2)}</text>`; });
+ b+=`<line x1="${bx(AIR)}" y1="6" x2="${bx(AIR)}" y2="248" stroke="#2d6f93" stroke-width="2.5" stroke-dasharray="6 4"/><text x="${bx(AIR)+6}" y="262" font-size="13" fill="#2d6f93" font-weight="700" font-family="system-ui">air (1.29)</text><text x="740" y="262" text-anchor="end" font-size="12" fill="#7a6450" font-family="system-ui">density in g/dm³ at 0 °C</text></svg>`;
+ bars.innerHTML=b;
+ draw(0);
+ return ()=>cancelAnimationFrame(raf);
+}
+
+/* ================= STEPS ================= */
+const APP={key:'noble-gases-walkthrough-v1', title:'Group 0: The Noble Gases', subtitle:'AQA GCSE Combined Science: Trilogy · Chemistry 4.1.2.4', steps:[
+{id:'bench', nav:'Glowing gases', eyebrow:'Workbench', title:'The noble gases',
+ html:()=>`<div class="prose" style="max-width:84ch"><p>The elements in <b>group 0</b> are called the <b>noble gases</b>: helium, neon, argon, krypton, xenon and radon. They are all colourless gases at room temperature, but when electricity is passed through them at low pressure they <b>glow with their own colour</b>.</p></div>
+ <div class="gasbtns">${NG.map((g,i)=>`<button class="btn" data-g="${i}">${g.id}</button>`).join('')}</div>
+ <div class="bench" id="bench" style="max-width:940px"></div><div class="card" id="gasinfo" style="margin-top:10px;max-width:940px"></div>`,
+ mount:mountBench,
+ qs:[
+  {q:'Which group are the noble gases in?', o:[['Group 0',true,'They are on the far right of the periodic table.'],['Group 1',false,'That is the alkali metals.'],['Group 7',false,'That is the halogens.'],['Group 8',false,'In the AQA periodic table they are group 0.']]},
+  {q:'Which noble gas glows bright red-orange and is used in advertising signs?', o:[['Neon',true,'"Neon signs" are named after it.'],['Helium',false,'Helium glows a peach colour.'],['Argon',false,'Argon glows lilac-violet.'],['Xenon',false,'Xenon glows blue-violet.']]},
+  {q:'What makes the gas in the tube glow?', o:[['Electricity passing through the gas',true,'The gas does not react – it just gives out light.'],['The gas burning in oxygen',false,'The tube is sealed and noble gases do not burn.'],['The gas reacting with the glass',false,'Noble gases are unreactive.'],['Heating the tube with a Bunsen burner',false,'It is the electric current that makes it glow.']]}
+ ]},
+{id:'shells', nav:'Electron arrangement', eyebrow:'Electronic structure', title:'Full outer shells',
+ html:()=>`<div class="atomrow">${NG.slice(0,3).map(g=>`<div class="card">${ngAtom(g)}<b style="font-family:var(--display);font-size:1.2rem">${g.name}</b><div class="config" style="font:700 1.6rem var(--display);color:#3f7a3a">${g.shells.join(',')}</div><div class="small">${g.shells[g.shells.length-1]} electrons in the outer shell – full</div></div>`).join('')}</div>
+ <div class="prose" style="max-width:84ch;margin-top:14px"><p>Every noble gas atom has a <b>full outer shell</b> of electrons. Helium has <b>2</b> outer electrons (its only shell is full). The others have <b>8</b> outer electrons.</p></div>
+ <div class="tip"><span class="lab">Exam tip</span>Helium is in group 0 even though it only has 2 outer electrons – what matters is that its outer shell is <b>full</b>.</div>`,
+ qs:[
+  {q:'What is the electronic structure of argon?', o:[['2,8,8',true,'18 electrons, with a full outer shell.'],['2,8,7',false,'That is chlorine.'],['2,8',false,'That is neon.'],['2,8,8,1',false,'That is potassium.']]},
+  {q:'How many electrons are in the outer shell of a helium atom?', o:[['2',true,'Its first (and only) shell is full with 2.'],['8',false,'Helium only has 2 electrons in total.'],['0',false,'Helium is in group 0, but it has 2 outer electrons.'],['1',false,'That is hydrogen.']]},
+  {q:'What do the electron arrangements of all noble gases have in common?', o:[['They all have a full outer shell',true,'This is a very stable arrangement.'],['They all have 8 electrons in total',false,'Only oxygen has 8 electrons in total – and it is not a noble gas.'],['They all have 2 shells',false,'Helium has 1 shell, argon has 3.'],['They all have 1 outer electron',false,'That is group 1.']]}
+ ]},
+{id:'unreactive', nav:'Why unreactive?', eyebrow:'Explaining', title:'Why are the noble gases unreactive?',
+ html:()=>`${compareRow()}
+ <div class="grid2" style="margin-top:14px"><div class="prose"><p>Other atoms react to get a full outer shell – by <b>losing</b>, <b>gaining</b> or <b>sharing</b> electrons.</p><p>Noble gas atoms <b>already have a full outer shell</b>. This is a <b>stable</b> arrangement, so they do not need to lose, gain or share electrons. This makes them <b>unreactive</b> and they do not easily form molecules.</p><p>So noble gases exist as <b>single atoms</b> (they are <b>monatomic</b>).</p></div>
+ <div class="card">${monoDi()}</div></div>`,
+ qs:[
+  {q:'Why are the noble gases unreactive?', o:[['They have a full outer shell, which is stable',true,'They do not need to lose, gain or share electrons.'],['They are gases',false,'Many gases, like chlorine and oxygen, are very reactive.'],['They have no electrons',false,'They have electrons – their outer shell is full.'],['They have 7 outer electrons',false,'That is group 7, which is very reactive.']]},
+  {q:'Noble gases exist as…', o:[['single atoms',true,'They are monatomic, e.g. Ar.'],['diatomic molecules, e.g. Ar<sub>2</sub>',false,'That is the halogens, e.g. Cl<sub>2</sub>.'],['giant structures',false,'They are gases made of separate atoms.'],['ions',false,'They do not gain or lose electrons.']]},
+  {q:'Why do noble gas atoms not join together to form molecules?', o:[['They do not need to share electrons because their outer shell is already full',true,'Sharing electrons (covalent bonding) happens to fill outer shells.'],['They are too small',false,'Size is not the reason.'],['They are positively charged',false,'Atoms have no overall charge.'],['They move too fast',false,'Speed is not the reason.']]}
+ ]},
+{id:'uses', nav:'Uses', eyebrow:'Uses', title:'Uses of the noble gases',
+ html:()=>`<div class="uses">
+  <div class="card"><span class="g">He</span><br><b>Balloons and airships</b><div class="why">Much less dense than air, and unreactive so it will not burn – much safer than hydrogen.</div></div>
+  <div class="card"><span class="g">Ne</span><br><b>Advertising signs</b><div class="why">Glows red-orange when electricity passes through it, and does not react inside the tube.</div></div>
+  <div class="card"><span class="g">Ar</span><br><b>Filament light bulbs</b><div class="why">Unreactive, so the white-hot filament does not react with it and burn out.</div></div>
+  <div class="card"><span class="g">Ar</span><br><b>Welding</b><div class="why">Forms an unreactive “shield” around hot metal to stop it reacting with oxygen in the air.</div></div>
+  <div class="card"><span class="g">Kr / Xe</span><br><b>Lasers, flash lamps, car headlights</b><div class="why">Give out very bright light when electricity passes through them.</div></div></div>
+ <h3>Try it: filament bulb</h3><div class="grid2"><div class="card bulb"><div id="bulb"></div><div class="row" style="justify-content:center;margin-top:8px"><button class="btn" data-fill="air">Fill with air</button><button class="btn" data-fill="argon">Fill with argon</button><button class="btn primary" id="bon">Switch on</button></div></div>
+ <div class="prose"><p id="bulbmsg"></p><div class="tip"><span class="lab">Exam tip</span>Most uses come from noble gases being <b>unreactive</b>. Link the use to the property: "argon is used in light bulbs <b>because</b> it is unreactive, so the hot filament does not burn".</div></div></div>`,
+ mount:mountBulb,
+ qs:[
+  {q:'Why is argon used in filament light bulbs?', o:[['It is unreactive, so the hot filament does not react and burn out',true,'In air, the filament would react with oxygen.'],['It glows lilac',false,'The light comes from the hot filament, not the argon.'],['It is less dense than air',false,'Argon is denser than air – and that is not the reason.'],['It conducts electricity',false,'The filament conducts the electricity.']]},
+  {q:'Why is helium used in party balloons instead of hydrogen?', o:[['Helium is less dense than air and does not burn',true,'Hydrogen is flammable and can explode.'],['Helium is denser than hydrogen',false,'True, but that is a disadvantage, not a reason to use it.'],['Helium glows in the dark',false,'It only glows when electricity passes through it.'],['Helium is cheaper',false,'The reason is safety – it is unreactive.']]},
+  {q:'Which property explains most uses of the noble gases?', o:[['They are unreactive',true,'This makes them safe and useful as protective gases.'],['They are very dense',false,'Most noble gases are not very dense – helium is the least dense after hydrogen.'],['They are coloured',false,'They are colourless gases – they only glow when electricity passes through.'],['They are metals',false,'They are non-metals.']]}
+ ]},
+{id:'bp', nav:'Boiling points', eyebrow:'Trend', title:'Trend in boiling points',
+ html:()=>`<div class="prose" style="max-width:86ch"><p>Going down group 0 the <b>relative atomic mass increases</b> and the <b>boiling points increase</b>. The atoms get bigger, so the <b>forces between the atoms</b> (interatomic forces) get <b>stronger</b>. More energy is needed to overcome them, so the boiling point is higher.</p></div>
+ <div class="card"><div class="row" style="justify-content:space-between"><div class="readout"><span class="tc" id="tc">−273 °C</span><span class="tk" id="tk">0 K</span></div>
+  <div class="row"><button class="btn primary" id="play">▶ Heat</button><select id="rate"><option value="10">10 °C/s</option><option value="25" selected>25 °C/s</option><option value="50">50 °C/s</option></select><button class="btn" id="abs0">−273 °C</button><label class="small"><input type="checkbox" id="forces" checked> Show forces between atoms</label></div></div>
+  <div class="slider-row"><span>−273 °C</span><input type="range" id="temp" min="-273" max="25" step="1" value="-273" aria-label="Temperature"><span>25 °C</span></div>
+  <div class="tubes" id="tubes"></div>
+  <div class="chartbox" style="margin-top:12px"><svg id="bpchart" viewBox="0 0 1000 290" aria-label="Boiling points of the noble gases"></svg></div>
+  <p class="small" style="margin:6px 0 0">Blue lines show the forces between atoms – thicker lines mean stronger forces. Helium never becomes a solid at normal pressure.</p></div>
+ <div class="tip warn"><span class="lab">Common mistake</span>Boiling a noble gas does <b>not</b> break bonds inside atoms – it overcomes the weak forces <b>between</b> separate atoms.</div>`,
+ mount:mountBP,
+ qs:[
+  {q:'What is the trend in boiling point going down group 0?', o:[['It increases',true,'Helium −269 °C … xenon −108 °C.'],['It decreases',false,'Look at the chart – each gas boils at a higher temperature than the one above.'],['It stays the same',false,'The boiling points are very different.'],['It increases then decreases',false,'It increases all the way down.']]},
+  {q:'Why does the boiling point increase down group 0?', o:[['The atoms get bigger, so the forces between atoms are stronger and need more energy to overcome',true,'Relative atomic mass increases down the group.'],['The atoms become more reactive',false,'Noble gases stay unreactive; reactivity does not explain boiling point.'],['Covalent bonds between the atoms get stronger',false,'Noble gases do not form covalent bonds – they are single atoms.'],['The outer shells get emptier',false,'All noble gases have full outer shells.']]},
+  {q:'Radon is below xenon (b.p. −108 °C). Predict the boiling point of radon.', o:[['−62 °C',true,'Higher than xenon\'s, continuing the trend.'],['−150 °C',false,'That is lower than xenon – the trend is increasing.'],['−300 °C',false,'Nothing can be colder than −273 °C.'],['−108 °C',false,'It would be higher than xenon\'s.']]}
+ ]},
+{id:'density', nav:'Density', eyebrow:'Trend', title:'Trend in density',
+ html:()=>`<div class="prose" style="max-width:86ch"><p>Going down group 0 the atoms get <b>heavier</b> (relative atomic mass increases), so the <b>density increases</b>. The same volume of gas contains the same number of atoms, but each atom has more mass.</p></div>
+ <div><div class="card room" style="max-width:900px"><div id="room"></div><div class="row" style="margin-top:8px"><button class="btn primary" id="release">Release the balloons</button><button class="btn" id="resetb">Reset</button></div></div>
+ <div class="card" style="margin-top:12px;max-width:900px"><b>Density compared with air</b><div class="chartbox" id="dbars" style="margin-top:6px"></div><p class="small" style="margin:6px 0 0">A balloon floats if the gas inside is less dense than air, and sinks if it is denser.</p></div></div>`,
+ mount:mountDensity,
+ qs:[
+  {q:'What is the trend in density going down group 0?', o:[['It increases',true,'The atoms get heavier down the group.'],['It decreases',false,'Helium is the least dense; xenon is the most dense.'],['It stays the same',false,'Look at the bar chart.'],['It decreases then increases',false,'It increases all the way down.']]},
+  {q:'Which balloon would sink in air?', o:[['A balloon filled with argon',true,'Argon (1.78 g/dm³) is denser than air (1.29 g/dm³).'],['A balloon filled with helium',false,'Helium is much less dense than air, so it floats.'],['A balloon filled with neon',false,'Neon (0.90 g/dm³) is less dense than air.'],['All of them float',false,'Argon, krypton and xenon are denser than air.']]},
+  {q:'Why is xenon denser than neon?', o:[['Xenon atoms have a much greater mass',true,'Xenon\'s relative atomic mass is 131; neon\'s is 20.'],['Xenon atoms are more reactive',false,'Both are unreactive – reactivity does not affect density.'],['Xenon has fewer electron shells',false,'Xenon has more shells.'],['Xenon is a liquid at room temperature',false,'Xenon is a gas at room temperature.']]}
+ ]}
+]};
+
+/* ===== walkthrough shell: steps, questions, results ===== */
+(function () {
+  const STEPS = APP.steps, LET = "ABCD";
+  function seeded(n, seed) { const a = [...Array(n).keys()]; let s = seed; for (let i = n - 1; i > 0; i--) { s = (s * 9301 + 49297) % 233280; const j = Math.floor(s / 233280 * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+  STEPS.forEach((st, si) => (st.qs || []).forEach((q, qi) => { q.order = seeded(q.o.length, si * 31 + qi * 7 + 5); q.key = st.id + "-" + qi; }));
+  let answers = {}, cur = 0, cleanup = null;
+  try { answers = JSON.parse(localStorage.getItem(APP.key) || "{}") || {}; } catch (e) { answers = {}; }
+  const save = () => { try { localStorage.setItem(APP.key, JSON.stringify(answers)); } catch (e) {} };
+  const allQs = () => STEPS.flatMap((s) => s.qs || []);
+  const tally = (st) => { const qs = st.qs || []; return { done: qs.filter((q) => q.key in answers).length, right: qs.filter((q) => q.key in answers && q.o[answers[q.key]][1]).length, n: qs.length }; };
+  const RESULTS = STEPS.length;
+  const nav = document.getElementById("nav"), panel = document.getElementById("panel");
+  document.querySelector(".brand h1").textContent = APP.title;
+  document.querySelector(".brand span").textContent = APP.subtitle;
+
+  function renderNav() {
+    nav.innerHTML = "";
+    [...STEPS, { nav: "Results" }].forEach((st, i) => {
+      const b = document.createElement("button"); b.type = "button"; b.className = "step-link";
+      if (i === cur) b.setAttribute("aria-current", "step");
+      let t = "";
+      if (st.qs) { const k = tally(st); if (k.done === k.n) t = `<span class="t">${k.right}/${k.n}</span>`; }
+      b.innerHTML = `<span class="n">${i < RESULTS ? i + 1 : "✓"}</span>${st.nav}${t}`;
+      b.onclick = () => go(i);
+      nav.appendChild(b);
+    });
+  }
+  function qHTML(q, label) {
+    const a = answers[q.key], done = a !== undefined;
+    const ci = q.o.findIndex((o) => o[1]);
+    const opts = q.order.map((oi, k) => {
+      let cls = "opt";
+      if (done) { if (oi === ci) cls += " right"; else if (oi === a) cls += " wrong"; else cls += " dim"; }
+      return `<button type="button" class="${cls}" data-q="${q.key}" data-o="${oi}" ${done ? "disabled" : ""}><span class="L">${LET[k]}</span><span>${q.o[oi][0]}</span></button>`;
+    }).join("");
+    let fb = "";
+    if (done) {
+      const okk = a === ci;
+      fb = `<div class="fb">${okk ? `<span class="ok">Correct.</span> ${q.o[a][2] || ""}` : `<span class="no">Not quite.</span> ${q.o[a][2] || ""} <br><b>Correct answer:</b> ${q.o[ci][0]}. ${q.o[ci][2] || ""}`}</div>`;
+    }
+    return `<div class="q" id="q-${q.key}"><p class="qt"><span class="qn">${label}</span>${q.q}</p><div class="opts">${opts}</div>${fb}</div>`;
+  }
+  function pager() {
+    const st = STEPS[cur];
+    const mid = st && st.qs ? (() => { const k = tally(st); return `${k.done} of ${k.n} answered`; })() : "";
+    return `<div class="pager"><button class="btn" id="prev" ${cur === 0 ? "disabled" : ""}>← Back</button><span class="mid">${mid}</span>${cur < RESULTS ? `<button class="btn primary" id="next">${cur === RESULTS - 1 ? "See results →" : "Next step →"}</button>` : `<span></span>`}</div>`;
+  }
+  function bindPager() {
+    const p = document.getElementById("prev"), n = document.getElementById("next");
+    if (p) p.onclick = () => go(cur - 1);
+    if (n) n.onclick = () => go(cur + 1);
+  }
+  function renderStep() {
+    const st = STEPS[cur];
+    let h = `<div class="eyebrow">Step ${cur + 1} of ${STEPS.length} · ${st.eyebrow}</div><h2>${st.title}</h2>${st.html()}`;
+    if (st.qs && st.qs.length) h += `<section class="check"><h3>Check your understanding</h3>${st.qs.map((q, qi) => qHTML(q, (cur + 1) + "." + (qi + 1))).join("")}</section>`;
+    h += pager();
+    panel.innerHTML = h; bindPager();
+    if (st.mount) cleanup = st.mount(panel) || null;
+  }
+  function renderResults() {
+    const all = allQs(), done = all.filter((q) => q.key in answers), right = done.filter((q) => q.o[answers[q.key]][1]);
+    const wrong = done.filter((q) => !q.o[answers[q.key]][1]), skipped = all.length - done.length;
+    let h = `<div class="eyebrow">Results</div><h2>Your results</h2>
+      <div class="results-head"><div class="big">${right.length}<span style="font-size:28px;color:var(--muted)"> / ${all.length}</span></div>
+      <p style="margin:0;max-width:56ch">${skipped ? `${skipped} question${skipped > 1 ? "s" : ""} not answered yet. ` : ""}${wrong.length ? "Copy the questions below into a three-column table in your book: the question, a blank space to answer next time, and the correct answer." : done.length ? "Every answer right first time. Well done." : "Work through the steps, then come back here."}</p></div>
+      <div class="bars">${STEPS.filter((s) => s.qs).map((st) => { const k = tally(st); return `<div class="bar"><span>${st.nav}</span><div class="track"><div class="fill" style="width:${k.n ? k.right / k.n * 100 : 0}%"></div></div><span class="n">${k.right}/${k.n}</span></div>`; }).join("")}</div>`;
+    if (wrong.length) h += `<h3>Questions to revisit</h3><div class="tablewrap"><table class="cmp redo"><thead><tr><th>Question</th><th>Answer next time</th><th>Correct answer</th></tr></thead><tbody>${wrong.map((q) => `<tr><td>${q.q}</td><td></td><td>${q.o.find((o) => o[1])[0]}</td></tr>`).join("")}</tbody></table></div>`;
+    h += pager();
+    panel.innerHTML = h; bindPager();
+  }
+  function render() { if (cleanup) { try { cleanup(); } catch (e) {} cleanup = null; } renderNav(); cur < RESULTS ? renderStep() : renderResults(); }
+  function go(i) { cur = Math.max(0, Math.min(RESULTS, i)); render(); window.scrollTo({ top: 0, behavior: "auto" }); }
+
+  panel.addEventListener("click", (e) => {
+    const b = e.target.closest(".opt"); if (!b || b.disabled) return;
+    const key = b.dataset.q; answers[key] = +b.dataset.o; save();
+    const st = STEPS[cur], qi = st.qs.findIndex((q) => q.key === key);
+    document.getElementById("q-" + key).outerHTML = qHTML(st.qs[qi], (cur + 1) + "." + (qi + 1));
+    renderNav();
+    const mid = panel.querySelector(".pager .mid"); if (mid) { const k = tally(st); mid.textContent = `${k.done} of ${k.n} answered`; }
+  });
+  document.addEventListener("keydown", (e) => {
+    const tag = (e.target.tagName || "").toLowerCase();
+    if (tag === "input" || tag === "select" || tag === "textarea") return;
+    if (e.key === "ArrowRight") go(cur + 1);
+    else if (e.key === "ArrowLeft") go(cur - 1);
+  });
+  const reset = document.getElementById("resetAll");
+  reset.onclick = function () {
+    if (this.dataset.armed) { answers = {}; save(); delete this.dataset.armed; this.textContent = "Start again"; go(0); }
+    else { this.dataset.armed = "1"; this.textContent = "Clear all answers?"; setTimeout(() => { if (this.dataset.armed) { delete this.dataset.armed; this.textContent = "Start again"; } }, 4000); }
+  };
+  render();
+})();
+
+/* ===== helper: click-in-order widget ===== */
+function orderWidget(el, items, okMsg) {
+  const order = items.map((_, i) => i);
+  let s = items.length * 7 + 3;
+  for (let i = order.length - 1; i > 0; i--) { s = (s * 9301 + 49297) % 233280; const j = Math.floor(s / 233280 * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
+  if (order.every((v, i) => v === i)) order.reverse();
+  let picked = [];
+  function draw(checked) {
+    const pool = order.filter((i) => !picked.includes(i));
+    el.innerHTML = `<div class="order"><div class="pool">${pool.map((i) => `<button type="button" class="card-o" data-i="${i}">${items[i]}</button>`).join("") || `<span class="small">All cards placed – check your order.</span>`}</div>
+      <div class="chain">${picked.map((i, k) => `<div class="card-o ${checked ? (i === k ? "ok" : "bad") : ""}">${items[i]}</div>`).join("")}</div>
+      <div class="row" style="margin-top:10px"><button type="button" class="btn primary" data-act="check" ${picked.length < items.length ? "disabled" : ""}>Check order</button><button type="button" class="btn" data-act="undo" ${picked.length ? "" : "disabled"}>Undo</button><button type="button" class="btn" data-act="reset">Reset</button></div>
+      ${checked ? `<div class="msg" style="color:${picked.every((v, k) => v === k) ? "var(--good)" : "var(--bad)"}">${picked.every((v, k) => v === k) ? okMsg || "Correct order." : "Not quite – the red cards are in the wrong place. Reset and try again."}</div>` : ""}</div>`;
+  }
+  el.addEventListener("click", (e) => {
+    const c = e.target.closest(".pool .card-o"); if (c) { picked.push(+c.dataset.i); draw(false); return; }
+    const a = e.target.closest("[data-act]"); if (!a) return;
+    if (a.dataset.act === "check") draw(true);
+    if (a.dataset.act === "undo") { picked.pop(); draw(false); }
+    if (a.dataset.act === "reset") { picked = []; draw(false); }
+  });
+  draw(false);
+}
+
+</script>
+</body>
+</html>
