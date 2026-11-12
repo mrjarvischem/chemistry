@@ -1,0 +1,668 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Crystal Lattice Explorer</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: structure tabs, then a large projector stage beside a notes column (stacks on narrow screens) */
+:root{
+  --bg:#f3ebdd; --panel:#fbf6ec; --stage:#fffaf2; --ink:#3a2a1c; --muted:#7a6553; --line:#dccbb2;
+  --accent:#8a5a2b; --accent-ink:#fff8ee;
+  --attract:#d35a22; --repel:#8d8378; --hbond:#2468c0; --vdw:#bf3d78; --cov:#3a2a1c; --stick:#8f8377; --elec:#2a72d4;
+  --f-display:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  --f-body:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#1b1611; --panel:#251f18; --stage:#201a14; --ink:#f1e6d4; --muted:#b9a68f; --line:#4a3d30;
+  --accent:#dba268; --accent-ink:#1b1611;
+  --attract:#f0864d; --repel:#aa9e91; --hbond:#6aa6ef; --vdw:#e470a5; --cov:#eadcc6; --stick:#a69887; --elec:#70b0ff; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#1b1611; --panel:#251f18; --stage:#201a14; --ink:#f1e6d4; --muted:#b9a68f; --line:#4a3d30;
+  --accent:#dba268; --accent-ink:#1b1611;
+  --attract:#f0864d; --repel:#aa9e91; --hbond:#6aa6ef; --vdw:#e470a5; --cov:#eadcc6; --stick:#a69887; --elec:#70b0ff; color-scheme:dark }
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px 28px}
+.wrap{max-width:1440px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:10px 24px}
+.eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
+h1{font-family:var(--f-display);font-weight:600;font-size:clamp(26px,3.2vw,38px);line-height:1.1;margin:2px 0 0;text-wrap:balance}
+.tabs{display:flex;flex-wrap:wrap;gap:6px}
+.tab{appearance:none;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:10px;
+  padding:7px 12px 6px;cursor:pointer;font:inherit;text-align:left;display:flex;flex-direction:column;line-height:1.2;min-width:0}
+.tab b{font-weight:650;font-size:15px}
+.tab small{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.tab[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.tab[aria-selected="true"] small{color:var(--accent-ink);opacity:.85}
+.tab:focus-visible,.tb:focus-visible,.seg button:focus-visible{outline:3px solid var(--hbond);outline-offset:2px}
+
+.main{display:grid;grid-template-columns:minmax(0,1fr) 350px;gap:18px;align-items:start}
+@media (max-width:960px){.main{grid-template-columns:minmax(0,1fr)}}
+.stage{position:relative;height:clamp(380px,70vh,760px);background:var(--stage);border:1px solid var(--line);border-radius:14px;overflow:hidden;touch-action:none}
+.stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.toolbar{position:absolute;top:10px;left:10px;right:10px;display:flex;flex-wrap:wrap;gap:6px;pointer-events:none}
+.toolbar>*{pointer-events:auto}
+.tb{appearance:none;font:inherit;font-size:13px;font-weight:600;border:1px solid var(--line);background:var(--panel);color:var(--ink);
+  border-radius:999px;padding:5px 12px;cursor:pointer}
+.tb[aria-pressed="false"]{color:var(--muted);background:transparent}
+.tb.back{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--panel)}
+.seg button{appearance:none;border:0;background:transparent;font:inherit;font-size:13px;font-weight:600;color:var(--muted);padding:5px 11px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.spacer{flex:1}
+.caption{position:absolute;left:10px;right:10px;bottom:10px;background:var(--panel);border:1px solid var(--line);border-radius:10px;
+  padding:8px 14px;font-size:clamp(14px,1.25vw,17px);pointer-events:none}
+.caption strong{color:var(--accent)}
+
+aside{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;gap:14px;min-width:0}
+aside h2{font-family:var(--f-display);font-weight:600;font-size:24px;margin:0;line-height:1.15}
+.type{display:inline-block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:650;color:var(--accent);margin-top:2px}
+aside h3{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0 0 4px;font-weight:650}
+aside p,aside ul{margin:0}
+aside ul{padding-left:18px;display:flex;flex-direction:column;gap:4px}
+.legend{display:flex;flex-direction:column;gap:6px;font-size:14px}
+.legend div{display:flex;align-items:center;gap:10px}
+.legend svg{flex:none}
+@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <div class="eyebrow">AQA A-level Chemistry · 3.1.3 Bonding</div>
+      <h1>Crystal Lattice Explorer</h1>
+    </div>
+    <nav class="tabs" role="tablist" id="tabs"></nav>
+  </header>
+
+  <div class="main">
+    <div class="stage" id="stage">
+      <canvas id="cv" aria-label="3D crystal structure. Drag to rotate, click a particle to zoom in."></canvas>
+      <div class="toolbar">
+        <button class="tb back" id="bBack" hidden>← Back to lattice</button>
+        <span class="seg" id="metalSeg" hidden>
+          <button id="mNa" data-m="Na">Na</button><button id="mMg" data-m="Mg">Mg</button><button id="mAl" data-m="Al">Al</button>
+        </span>
+        <span class="spacer"></span>
+        <button class="tb" id="bLabels" aria-pressed="true">Labels</button>
+        <button class="tb" id="bForces" aria-pressed="true">Forces</button>
+        <button class="tb" id="bPairs" aria-pressed="true" hidden>Electron pairs</button>
+        <button class="tb" id="bMotion" aria-pressed="true">Motion</button>
+        <button class="tb" id="bRotate" aria-pressed="false">Spin</button>
+        <button class="tb" id="bReset" aria-pressed="true">Reset view</button>
+      </div>
+      <div class="caption" id="caption"></div>
+    </div>
+    <aside id="notes"></aside>
+  </div>
+</div>
+
+<script>
+(()=>{
+const TAU=Math.PI*2;
+const add=(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]], sub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]],
+      mul=(a,s)=>[a[0]*s,a[1]*s,a[2]*s], len=a=>Math.hypot(a[0],a[1],a[2]), nrm=a=>mul(a,1/len(a)),
+      dist=(a,b)=>len(sub(a,b)), lerp=(a,b,k)=>a+(b-a)*k;
+const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+const T4=[[1,1,1],[1,-1,-1],[-1,1,-1],[-1,-1,1]].map(nrm); // tetrahedral directions
+
+const TYPES={Na:{c:'#8f6ad8'},Cl:{c:'#3ea84a'},M:{c:'#a8b2be'},C:{c:'#56504a'},O:{c:'#d63b2b'},H:{c:'#f3f0ea'},I:{c:'#8a3fb0'}};
+const METALS={
+  Na:{q:1,sym:'Na⁺',sign:'+',rMain:.34,rClose:1.0,mp:'98 °C'},
+  Mg:{q:2,sym:'Mg²⁺',sign:'2+',rMain:.27,rClose:.74,mp:'650 °C'},
+  Al:{q:3,sym:'Al³⁺',sign:'3+',rMain:.22,rClose:.58,mp:'660 °C'}};
+
+/* ---------- scene helpers ---------- */
+function Scene(){return{atoms:[],links:[],electrons:[],clouds:[],labels:[],tags:[],lonepairs:[],vib:0,eR:.07}}
+function addAtom(sc,ty,p,r,x){sc.atoms.push(Object.assign({ty,p:p.slice(),q:p.slice(),r,alpha:1,
+  ph:[Math.random()*TAU,Math.random()*TAU,Math.random()*TAU]},x||{}));return sc.atoms.length-1}
+function link(sc,a,b,s,x){sc.links.push(Object.assign({a,b,s},x||{}));return sc.links.length-1}
+function finish(sc,camYaw,camPitch){
+  let R=0;for(const a of sc.atoms)R=Math.max(R,len(a.p)+a.r);
+  sc.R=R;sc.D=R*4.2;sc.yaw=camYaw??.62;sc.pitch=camPitch??.42;return sc}
+function rnd(a,b){return a+Math.random()*(b-a)}
+function makeElectrons(sc,n,box,speed,opt){
+  for(let i=0;i<n;i++){
+    const q=opt&&opt.plane?null:[rnd(box[0][0],box[1][0]),rnd(box[0][1],box[1][1]),rnd(box[0][2],box[1][2])];
+    sc.electrons.push({q,v:nrm([rnd(-1,1),rnd(-1,1),rnd(-1,1)]),speed,box,opt:opt||null});
+  }
+}
+function stepElectrons(sc,dt){
+  for(const e of sc.electrons){
+    if(Math.random()<dt*1.6) e.v=nrm(add(e.v,[rnd(-.9,.9),rnd(-.9,.9),rnd(-.9,.9)]));
+    if(e.opt&&e.opt.plane){ // constrained to a disc in a horizontal plane
+      e.v[1]=0; if(len(e.v)<1e-3)e.v=[1,0,0]; e.v=nrm(e.v);
+      e.q=add(e.q,mul(e.v,e.speed*dt)); e.q[1]=e.opt.y;
+      const dx=e.q[0]-e.opt.cx,dz=e.q[2]-e.opt.cz,r=Math.hypot(dx,dz);
+      if(r>e.opt.R){const nx=dx/r,nz=dz/r,d=e.v[0]*nx+e.v[2]*nz;e.v[0]-=2*d*nx;e.v[2]-=2*d*nz;
+        e.q[0]=e.opt.cx+nx*e.opt.R*.999;e.q[2]=e.opt.cz+nz*e.opt.R*.999;}
+    } else {
+      e.q=add(e.q,mul(e.v,e.speed*dt));
+      for(let k=0;k<3;k++){ if(e.q[k]<e.box[0][k]){e.q[k]=e.box[0][k];e.v[k]=Math.abs(e.v[k]);}
+        if(e.q[k]>e.box[1][k]){e.q[k]=e.box[1][k];e.v[k]=-Math.abs(e.v[k]);} }
+    }
+  }
+}
+function planeElectrons(sc,n,y0,cx,cz,R,speed){
+  for(let i=0;i<n;i++){const a=rnd(0,TAU),r=R*Math.sqrt(Math.random());const y=y0+(i%2?.55:-.55);
+    sc.electrons.push({q:[cx+r*Math.cos(a),y,cz+r*Math.sin(a)],v:nrm([rnd(-1,1),0,rnd(-1,1)]),speed,opt:{plane:true,y,cx,cz,R}});}
+}
+
+/* ---------- lattice generators ---------- */
+function diamondPoints(L){ // a=2, cells 0..L
+  const pts=[];
+  for(let i=0;i<=L;i++)for(let j=0;j<=L;j++)for(let k=0;k<=L;k++){
+    if((i+j+k)%2===0){pts.push({p:[i,j,k],A:true});
+      if(i+.5<=L&&j+.5<=L&&k+.5<=L)pts.push({p:[i+.5,j+.5,k+.5],A:false});}}
+  const bl=Math.sqrt(.75);
+  const nb=pts.map(()=>[]);
+  for(let a=0;a<pts.length;a++)for(let b=a+1;b<pts.length;b++)if(Math.abs(dist(pts[a].p,pts[b].p)-bl)<.01){nb[a].push(b);nb[b].push(a)}
+  const keep=pts.map((_,i)=>nb[i].length>=2);
+  return {pts,nb,keep,bl,c:L/2};
+}
+function honeycomb(R,shift,centre){
+  const s3=Math.sqrt(3),out=[];
+  for(let n=-9;n<=9;n++)for(let m=-9;m<=9;m++){
+    const A=[n*s3+m*s3/2+shift[0],m*1.5+shift[1]];
+    for(const P of [A,[A[0],A[1]+1]]) if(Math.hypot(P[0]-centre[0],P[1]-centre[1])<=R)out.push(P);
+  }
+  return out;
+}
+function bondsByDistance(sc,idx,d,style,x){
+  for(let a=0;a<idx.length;a++)for(let b=a+1;b<idx.length;b++)
+    if(Math.abs(dist(sc.atoms[idx[a]].p,sc.atoms[idx[b]].p)-d)<.02*d)link(sc,idx[a],idx[b],style,x);
+}
+
+/* ---------- MAIN (giant) scenes ---------- */
+function mainNaCl(){
+  const sc=Scene();
+  for(let i=0;i<5;i++)for(let j=0;j<5;j++)for(let k=0;k<5;k++){
+    const t=(i+j+k)%2?'Na':'Cl';addAtom(sc,t,[i-2,j-2,k-2],t==='Na'?.24:.40);}
+  return finish(sc);
+}
+function mainMetal(m){
+  const sc=Scene(),M=METALS[m];
+  for(let i=0;i<5;i++)for(let j=0;j<5;j++)for(let k=0;k<5;k++) if((i+j+k)%2===0)addAtom(sc,'M',[i-2,j-2,k-2],M.rMain,{sign:M.sign});
+  makeElectrons(sc,Math.min(160,sc.atoms.length*M.q),[[-2.3,-2.3,-2.3],[2.3,2.3,2.3]],1.2);
+  sc.eR=.065;
+  return finish(sc);
+}
+function mainDiamond(){
+  const sc=Scene(),D=diamondPoints(4),map={};
+  D.pts.forEach((pt,i)=>{if(D.keep[i])map[i]=addAtom(sc,'C',sub(pt.p,[2,2,2]),.17)});
+  D.pts.forEach((pt,i)=>{if(!D.keep[i])return;for(const j of D.nb[i])if(j>i&&D.keep[j])link(sc,map[i],map[j],'stick')});
+  return finish(sc);
+}
+function mainGraphite(){
+  const sc=Scene(),gap=2.36,s3=Math.sqrt(3),C0=[s3/2,.5];
+  for(let L=0;L<3;L++){
+    const shift=L%2?[0,1]:[0,0];
+    const pts=honeycomb(3.9,shift,[C0[0],C0[1]+.5]);
+    const idx=pts.map(P=>addAtom(sc,'C',[P[0]-C0[0],(L-1)*gap,P[1]-C0[1]-.5],.17));
+    bondsByDistance(sc,idx,1,'stick');
+  }
+  return finish(sc,.62,.30);
+}
+function mainIce(){
+  const sc=Scene(),D=diamondPoints(4),bl=D.bl,oh=.33,map={},pos={};
+  D.pts.forEach((pt,i)=>{pos[pt.p.join()]=i});
+  D.pts.forEach((pt,i)=>{map[i]=addAtom(sc,'O',sub(pt.p,[2,2,2]),.17)});
+  D.pts.forEach((pt,i)=>{
+    const dirs=pt.A?[T4[0],T4[1]]:[mul(T4[2],-1),mul(T4[3],-1)];
+    for(const d of dirs){
+      const h=addAtom(sc,'H',add(sc.atoms[map[i]].p,mul(d,oh)),.095);
+      link(sc,map[i],h,'stick');
+      const partner=add(pt.p,mul(d,bl)).map(v=>Math.round(v*2)/2).join();
+      if(pos[partner]!==undefined)link(sc,h,map[pos[partner]],'hbond',{thin:true});
+    }
+  });
+  return finish(sc);
+}
+function mainIodine(){
+  const sc=Scene(),th=32*Math.PI/180,half=.31;
+  for(let i=0;i<5;i++)for(let j=0;j<5;j++)for(let k=0;k<5;k++){
+    if((i+j+k)%2)continue;
+    const s=j%2?-1:1,ax=[0,Math.sin(th)*s,Math.cos(th)],c=[i-2,(j-2)*.9,k-2];
+    const a=addAtom(sc,'I',add(c,mul(ax,half)),.25),b=addAtom(sc,'I',sub(c,mul(ax,half)),.25);
+    link(sc,a,b,'stick');
+  }
+  return finish(sc);
+}
+
+/* ---------- CLOSE-UP scenes ---------- */
+function closeNaCl(center){
+  const sc=Scene(),other=center==='Na'?'Cl':'Na',R={Na:.62,Cl:1.0},sp=2.6,id={};
+  sc.vib=.07;
+  const put=(i,j,k)=>{const t=Math.abs(i+j+k)%2?other:center;
+    id[[i,j,k].join()]=addAtom(sc,t,[i*sp,j*sp,k*sp],R[t],{sign:t==='Na'?'+':'−'});};
+  for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++)put(i,j,0);
+  put(0,0,1);put(0,0,-1);
+  const c=id['0,0,0'],g=k=>id[k];
+  const att=['1,0,0','-1,0,0','0,1,0','0,-1,0','0,0,1','0,0,-1'].map(k=>link(sc,c,g(k),'attract'));
+  const rep=['1,1,0','1,-1,0','-1,1,0','-1,-1,0'].map(k=>link(sc,c,g(k),'repel'));
+  [['1,1,0','1,0,0'],['1,1,0','0,1,0'],['-1,1,0','-1,0,0'],['-1,1,0','0,1,0'],['1,-1,0','1,0,0'],['1,-1,0','0,-1,0'],['-1,-1,0','-1,0,0'],['-1,-1,0','0,-1,0']]
+    .forEach(([a,b])=>link(sc,g(a),g(b),'attract',{faint:true}));
+  const cn=center==='Na'?'Na⁺':'Cl⁻',on=center==='Na'?'Cl⁻':'Na⁺';
+  sc.labels.push({at:{atom:c},dx:-150,dy:-120,text:`Each ${cn} is attracted\nto 6 ${on} around it`});
+  sc.labels.push({at:{link:att[0]},dx:70,dy:-80,text:'strong electrostatic attraction\nbetween oppositely charged ions'});
+  sc.labels.push({at:{link:rep[1]},dx:90,dy:70,text:'repulsion between like charges\n(further apart, so weaker)'});
+  sc.caption=`<strong>Ionic bonding:</strong> strong electrostatic attraction between oppositely charged ions, acting in all directions through the lattice.`;
+  return finish(sc,.55,.5);
+}
+function closeMetal(m){
+  const sc=Scene(),M=METALS[m],sp=2.5;sc.vib=.06;let c;
+  for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++){const a=addAtom(sc,'M',[i*sp,j*sp,0],M.rClose,{sign:M.sign});if(!i&&!j)c=a;}
+  for(const z of [-1.8,1.8])for(const x of [-1.25,1.25])for(const y of [-1.25,1.25])addAtom(sc,'M',[x,y,z],M.rClose,{sign:M.sign});
+  makeElectrons(sc,sc.atoms.length*M.q,[[-3.9,-3.9,-2.9],[3.9,3.9,2.9]],1.7);
+  sc.eR=.17;sc.eLinkR=2.1;
+  sc.labels.push({at:{atom:c},dx:-170,dy:-130,text:`positive metal ion (${M.sym})`});
+  sc.labels.push({at:{elec:0},dx:110,dy:-60,text:`delocalised electron\n(${M.q} per ${M.sym} ion)`});
+  sc.labels.push({at:{atom:5},dx:150,dy:160,text:'electrostatic attraction between\npositive ions and delocalised electrons'});
+  sc.caption=`<strong>Metallic bonding:</strong> strong electrostatic attraction between positive metal ions and a sea of delocalised electrons. ${M.sym}: ${M.q} delocalised electron${M.q>1?'s':''} per ion, m.p. ${M.mp}.`;
+  return finish(sc,.55,.55);
+}
+function closeDiamond(){
+  const sc=Scene(),b=1.54;sc.vib=.035;
+  const c=addAtom(sc,'C',[0,0,0],.34),n=[],L=[];
+  T4.forEach(d=>{const a=addAtom(sc,'C',mul(d,b),.34);n.push(a);L.push(link(sc,c,a,'covalent',{pairs:true}));});
+  let stub0=-1;
+  T4.forEach((d,k)=>T4.forEach((dj,j)=>{if(j===k)return;
+    const s=addAtom(sc,'C',add(sc.atoms[n[k]].p,mul(dj,-b)),.3,{alpha:.45});if(stub0<0)stub0=s;
+    link(sc,n[k],s,'covalent',{pairs:true,alpha:.45});}));
+  sc.labels.push({at:{link:L[0]},dx:120,dy:-90,text:'covalent bond =\nshared pair of electrons'});
+  sc.labels.push({at:{atom:c},dx:-190,dy:-40,text:'each C forms 4 covalent bonds\n109.5° – tetrahedral'});
+  sc.labels.push({at:{atom:stub0},dx:-110,dy:110,text:'structure continues in 3D:\nmany strong bonds to break'});
+  sc.caption=`<strong>Giant covalent (macromolecular):</strong> every C atom is joined to 4 others by strong covalent bonds – a shared pair of electrons attracted to both nuclei.`;
+  return finish(sc,.5,.42);
+}
+function closeGraphite(){
+  const sc=Scene(),bl=1.42,gap=3.35,s3=Math.sqrt(3),C0=[s3/2,.5];sc.vib=.03;
+  const layers=[];
+  for(let L=0;L<2;L++){
+    const shift=L?[0,1]:[0,0],cen=[C0[0],C0[1]+(L?1:0)];
+    const pts=honeycomb(2.05,shift,cen);
+    const y=(L?1:-1)*gap/2;
+    const idx=pts.map(P=>addAtom(sc,'C',[(P[0]-C0[0])*bl,y,(P[1]-C0[1]-.5)*bl],.34,{ph:[0,0,0]}));
+    const first=sc.links.length;bondsByDistance(sc,idx,bl,'covalent',{pairs:true});
+    layers.push({idx,first,y,cz:(cen[1]-C0[1]-.5)*bl});
+  }
+  let vdw0=-1;
+  for(const a of layers[1].idx)for(const b of layers[0].idx){const A=sc.atoms[a].p,B=sc.atoms[b].p;
+    if(Math.hypot(A[0]-B[0],A[2]-B[2])<.05){const l=link(sc,a,b,'vdw');if(vdw0<0||A[0]>sc.atoms[sc.links[vdw0].a].p[0])vdw0=l;}}
+  layers.forEach(Ly=>planeElectrons(sc,Ly.idx.length,Ly.y,0,Ly.cz,2.15*bl,1.3));
+  sc.eR=.13;
+  sc.labels.push({at:{link:layers[0].first},dx:-150,dy:90,text:'strong covalent bonds\nwithin each layer'});
+  sc.labels.push({at:{atom:layers[1].idx[0]},dx:-160,dy:-80,text:'each C bonded to 3 others\n(trigonal planar, 120°)'});
+  sc.labels.push({at:{elec:layers[0].idx.length+1},dx:150,dy:-110,text:'delocalised electrons (1 per C)\nfree to move along the layer'});
+  sc.labels.push({at:{link:vdw0},dx:150,dy:40,text:'weak van der Waals forces\nbetween layers (0.335 nm)'});
+  sc.caption=`<strong>Graphite:</strong> strong covalent bonds within layers, each C has 1 delocalised electron, and only weak van der Waals forces hold the layers together.`;
+  return finish(sc,.55,.38);
+}
+function closeIce(){
+  const sc=Scene(),OO=2.76,OH=.96;sc.vib=.045;
+  const mol=()=>{const p=[rnd(0,TAU),rnd(0,TAU),rnd(0,TAU)];return p};
+  const p0=mol();
+  const O0=addAtom(sc,'O',[0,0,0],.55,{ph:p0});
+  const H0=[0,1].map(k=>addAtom(sc,'H',mul(T4[k],OH),.3,{ph:p0}));
+  const cov0=link(sc,O0,H0[0],'covalent',{pairs:true});link(sc,O0,H0[1],'covalent',{pairs:true});
+  const On=[],donorH={};
+  T4.forEach((d,k)=>{
+    const ph=mol(),o=addAtom(sc,'O',mul(d,OO),.55,{ph});On.push(o);
+    [2,3].forEach(j=>{const h=addAtom(sc,'H',add(sc.atoms[o].p,mul(T4[j],-OH)),.3,{ph});
+      link(sc,o,h,'covalent',{pairs:true});if(j===k)donorH[k]=h;});
+  });
+  const hb1=link(sc,H0[0],On[0],'hbond');link(sc,H0[1],On[1],'hbond');
+  const hb3=link(sc,donorH[2],O0,'hbond');link(sc,donorH[3],O0,'hbond');
+  sc.lonepairs.push({atom:O0,dir:T4[2]},{atom:O0,dir:T4[3]});
+  sc.tags.push({atom:O0,text:'δ−'},{atom:H0[0],text:'δ+'},{atom:H0[1],text:'δ+'},{atom:On[0],text:'δ−'},{atom:On[1],text:'δ−'},{atom:donorH[2],text:'δ+'},{atom:donorH[3],text:'δ+'});
+  sc.labels.push({at:{link:hb1},dx:110,dy:-90,text:'hydrogen bond: lone pair on δ− O\nattracted to δ+ H of next molecule'});
+  sc.labels.push({at:{link:cov0},dx:-170,dy:-70,text:'O–H covalent bond\n(within the molecule)'});
+  sc.labels.push({at:{pt:mul(T4[2],.8),atom:O0},dx:-150,dy:90,text:'lone pair on O'});
+  sc.labels.push({at:{link:hb3},dx:120,dy:100,text:'O–H···O in a straight line (180°)\neach H₂O forms 4 H bonds'});
+  sc.caption=`<strong>Ice:</strong> covalent O–H bonds inside each molecule; hydrogen bonds between molecules hold them in an open tetrahedral lattice.`;
+  return finish(sc,3.15,.5);
+}
+function closeIodine(){
+  const sc=Scene(),bII=2.67,r=.85,a40=40*Math.PI/180;sc.vib=.05;
+  const mols=[];
+  for(let row=0;row<2;row++)for(let col=0;col<3;col++){
+    const s=(row+col)%2?-1:1,ax=[Math.cos(a40),s*Math.sin(a40),0],c=[(col-1)*5.5,(row-.5)*5.2,0],ph=[rnd(0,TAU),rnd(0,TAU),rnd(0,TAU)];
+    const a=addAtom(sc,'I',add(c,mul(ax,-bII/2)),r,{ph}),b=addAtom(sc,'I',add(c,mul(ax,bII/2)),r,{ph});
+    const l=link(sc,a,b,'covalent',{pairs:true});mols.push({a,b,l,row,col});
+    sc.clouds.push({a,b,col,row});
+  }
+  let v0=-1;
+  for(let i=0;i<mols.length;i++)for(let j=i+1;j<mols.length;j++){
+    const A=mols[i],B=mols[j];if(Math.abs(A.row-B.row)+Math.abs(A.col-B.col)!==1)continue;
+    let best=null,bd=1e9;for(const x of [A.a,A.b])for(const y of [B.a,B.b]){const d=dist(sc.atoms[x].p,sc.atoms[y].p);if(d<bd){bd=d;best=[x,y]}}
+    const l=link(sc,best[0],best[1],'vdw');if(v0<0&&A.row===1)v0=l;
+  }
+  sc.dipole=true;
+  sc.labels.push({at:{link:mols[4].l},dx:30,dy:-110,text:'I–I covalent bond (strong)'});
+  sc.labels.push({at:{link:v0<0?sc.links.length-1:v0},dx:-120,dy:-120,text:'van der Waals forces (weak)'});
+  sc.labels.push({at:{atom:mols[1].a},dx:40,dy:120,text:'temporary dipole induces a\ndipole in the next molecule'});
+  sc.caption=`<strong>Iodine:</strong> strong covalent bond inside each I₂ molecule; only weak van der Waals forces between molecules, from temporary and induced dipoles.`;
+  return finish(sc,.35,.45);
+}
+
+/* ---------- structure definitions ---------- */
+const STRUCTS={
+  nacl:{name:'Sodium chloride',tag:'ionic',main:()=>mainNaCl(),close:t=>closeNaCl(t==='Cl'?'Cl':'Na'),pairs:false,
+    hint:'Drag to rotate · click a Na⁺ or Cl⁻ ion to zoom in',
+    legend:[['attract','attraction (opposite charges)'],['repel','repulsion (like charges)'],['ball:Na','Na⁺ ion'],['ball:Cl','Cl⁻ ion']],
+    notes:`<div><h2>Sodium chloride</h2><span class="type">Giant ionic lattice</span></div>
+    <div><h3>Particles</h3><p>Na⁺ and Cl⁻ ions in a regular cubic arrangement. Each ion is surrounded by 6 ions of opposite charge (6 : 6 coordination).</p></div>
+    <div><h3>Bonding</h3><p>Strong electrostatic attraction between oppositely charged ions. It acts in all directions, so every ion is held by all its neighbours.</p></div>
+    <div><h3>Properties</h3><ul><li>High melting point (801 °C): lots of energy needed to overcome the many strong attractions.</li><li>Does not conduct as a solid: ions are fixed in place.</li><li>Conducts when molten or dissolved: ions are free to move.</li><li>Brittle: a shift in layers brings like charges together, which repel.</li></ul></div>`},
+  metal:{name:'Metal',tag:'metallic',main:()=>mainMetal(st.metal),close:()=>closeMetal(st.metal),pairs:false,metal:true,
+    hint:'Drag to rotate · click any metal ion to zoom in',
+    legend:[['ball:M','positive metal ion'],['elec','delocalised electron'],['elink','attraction ion ↔ electron']],
+    notes:()=>{const M=METALS[st.metal];return `<div><h2>Metal: ${({Na:'sodium',Mg:'magnesium',Al:'aluminium'})[st.metal]}</h2><span class="type">Giant metallic lattice</span></div>
+    <div><h3>Particles</h3><p>A lattice of positive ions (${M.sym}) in a sea of delocalised electrons. Each atom gives ${M.q} outer electron${M.q>1?'s':''} to the sea.</p></div>
+    <div><h3>Bonding</h3><p>Strong electrostatic attraction between the positive ions and the delocalised electrons.</p></div>
+    <div><h3>Comparing metals</h3><ul><li>Na⁺ (98 °C) → Mg²⁺ (650 °C) → Al³⁺ (660 °C)</li><li>Higher charge and more delocalised electrons give stronger attraction.</li><li>Smaller ions also attract the electrons more strongly.</li></ul></div>
+    <div><h3>Properties</h3><ul><li>Conduct as solids: delocalised electrons move through the structure.</li><li>Malleable and ductile: layers of ions slide, and the electrons still hold them together.</li></ul></div>`}},
+  diamond:{name:'Diamond',tag:'giant covalent',main:()=>mainDiamond(),close:()=>closeDiamond(),pairs:true,
+    hint:'Drag to rotate · click any carbon atom to zoom in',
+    legend:[['covalent','covalent bond'],['elec','electron in a shared pair'],['ball:C','carbon atom']],
+    notes:`<div><h2>Diamond</h2><span class="type">Giant covalent (macromolecular)</span></div>
+    <div><h3>Particles</h3><p>Carbon atoms. Each C is covalently bonded to 4 others in a tetrahedral arrangement (bond angle 109.5°, C–C 0.154 nm).</p></div>
+    <div><h3>Bonding</h3><p>Covalent bonds: a shared pair of electrons, attracted to the nuclei of both atoms. All 4 outer electrons of each C are used in bonding.</p></div>
+    <div><h3>Properties</h3><ul><li>Very high melting point (about 3550 °C): many strong covalent bonds must be broken.</li><li>Very hard: rigid 3D network of strong bonds.</li><li>Does not conduct: no delocalised electrons.</li></ul></div>`},
+  graphite:{name:'Graphite',tag:'giant covalent',main:()=>mainGraphite(),close:()=>closeGraphite(),pairs:true,
+    hint:'Drag to rotate · click any carbon atom to zoom in',
+    legend:[['covalent','covalent bond'],['elec','delocalised electron'],['vdw','van der Waals forces']],
+    notes:`<div><h2>Graphite</h2><span class="type">Giant covalent (macromolecular)</span></div>
+    <div><h3>Particles</h3><p>Layers of carbon atoms in hexagons. Each C is covalently bonded to 3 others (120°). C–C 0.142 nm; layers 0.335 nm apart.</p></div>
+    <div><h3>Bonding</h3><p>Strong covalent bonds within layers. The fourth outer electron of each C is delocalised and can move along the layer. Weak van der Waals forces act between layers.</p></div>
+    <div><h3>Properties</h3><ul><li>High melting point: strong covalent bonds within layers must break.</li><li>Conducts electricity along the layers: delocalised electrons move.</li><li>Soft and slippery: layers slide over each other, as only weak forces hold them.</li></ul></div>`},
+  ice:{name:'Ice',tag:'molecular · H bonds',main:()=>mainIce(),close:()=>closeIce(),pairs:true,
+    hint:'Drag to rotate · click any water molecule to zoom in',
+    legend:[['covalent','O–H covalent bond'],['hbond','hydrogen bond'],['elec','lone pair / bonding electrons'],['ball:O','oxygen'],['ball:H','hydrogen']],
+    notes:`<div><h2>Ice</h2><span class="type">Simple molecular lattice</span></div>
+    <div><h3>Particles</h3><p>H₂O molecules, each held in place by 4 neighbours in an open tetrahedral arrangement.</p></div>
+    <div><h3>Bonding</h3><p>Within molecules: covalent O–H bonds. Between molecules: hydrogen bonds, the attraction between a lone pair on a δ− O and a δ+ H on a neighbouring molecule. Each molecule forms up to 4: 2 through its H atoms and 2 through its lone pairs.</p></div>
+    <div><h3>Properties</h3><ul><li>Ice is less dense than liquid water: the H bonds hold molecules further apart.</li><li>Melting point and boiling point are high for a molecule with M<sub>r</sub> = 18, because hydrogen bonds are strong intermolecular forces.</li><li>Melting breaks some hydrogen bonds, not covalent bonds.</li></ul></div>`},
+  iodine:{name:'Iodine',tag:'molecular · vdW',main:()=>mainIodine(),close:()=>closeIodine(),pairs:true,
+    hint:'Drag to rotate · click any iodine molecule to zoom in',
+    legend:[['covalent','I–I covalent bond'],['vdw','van der Waals forces'],['cloud','electron cloud (temporary dipole)'],['ball:I','iodine atom']],
+    notes:`<div><h2>Iodine</h2><span class="type">Simple molecular lattice</span></div>
+    <div><h3>Particles</h3><p>I₂ molecules in a regular arrangement.</p></div>
+    <div><h3>Bonding</h3><p>Within molecules: a strong I–I covalent bond. Between molecules: weak van der Waals forces. Electrons move around, creating a temporary dipole that induces a dipole in a neighbouring molecule; these dipoles attract.</p></div>
+    <div><h3>Properties</h3><ul><li>Low melting point (114 °C): only weak van der Waals forces are overcome. The covalent bonds do not break.</li><li>I₂ has 106 electrons, so its van der Waals forces are stronger than for the other halogens: it is a solid at room temperature and sublimes on gentle warming.</li><li>Does not conduct: no ions or delocalised electrons.</li></ul></div>`}
+};
+const ORDER=['nacl','metal','diamond','graphite','ice','iodine'];
+
+/* ---------- state ---------- */
+const st={key:'nacl',mode:'main',labels:true,forces:true,pairs:true,motion:true,rotate:false,metal:'Mg',
+  t:0,zoom:1,fade:0,anim:null,hover:-1,pick:null,proj:[]};
+let sc=null,mainSc=null;
+const cam={yaw:.62,pitch:.42,center:[0,0,0],k:1};
+
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d'),stage=document.getElementById('stage');
+let W=0,H=0,DPR=1,uiS=1;
+function resize(){const r=stage.getBoundingClientRect();DPR=Math.min(2,window.devicePixelRatio||1);W=r.width;H=r.height;
+  cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR);uiS=Math.max(.75,Math.min(1.35,Math.min(W,H)/600));}
+new ResizeObserver(resize).observe(stage);resize();
+
+const baseScale=()=>Math.min(W,H)*(st.mode==='main'?.40:.40)/sc.R;
+function project(p){
+  const q=sub(p,cam.center),cy=Math.cos(cam.yaw),sy=Math.sin(cam.yaw),cp=Math.cos(cam.pitch),sp=Math.sin(cam.pitch);
+  const x1=q[0]*cy-q[2]*sy,z1=q[0]*sy+q[2]*cy;
+  const y2=q[1]*cp-z1*sp,z2=q[1]*sp+z1*cp;
+  const f=sc.D/Math.max(sc.D*.08,sc.D-z2*cam.k), s=baseScale()*st.zoom*cam.k;
+  return {x:W/2+x1*s*f,y:H/2-y2*s*f,z:z2,f,s:s*f};
+}
+
+/* ---------- colour helpers ---------- */
+function hex2rgb(h){h=h.trim().replace('#','');if(h.length===3)h=h.split('').map(c=>c+c).join('');const n=parseInt(h,16);return[(n>>16)&255,(n>>8)&255,n&255]}
+const rgba=(h,a)=>{const[r,g,b]=hex2rgb(h);return `rgba(${r},${g},${b},${a})`};
+function shade(h,f){const c=hex2rgb(h).map(v=>f>0?v+(255-v)*f:v*(1+f));return `rgb(${c.map(Math.round).join(',')})`}
+let C={};
+function readColours(){const cs=getComputedStyle(document.documentElement);
+  for(const k of ['stage','ink','muted','line','panel','accent','attract','repel','hbond','vdw','cov','stick','elec'])C[k]=cs.getPropertyValue('--'+k).trim();}
+
+/* ---------- drawing primitives ---------- */
+function ball(x,y,r,col,alpha){
+  ctx.globalAlpha=alpha;
+  const g=ctx.createRadialGradient(x-r*.38,y-r*.42,r*.08,x,y,r);
+  g.addColorStop(0,shade(col,.65));g.addColorStop(.45,col);g.addColorStop(1,shade(col,-.45));
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.fill();
+  ctx.lineWidth=Math.max(.6,r*.04);ctx.strokeStyle=rgba('#000000',.22);ctx.stroke();
+  ctx.globalAlpha=1;
+}
+function head(x,y,ux,uy,s,col){ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(x,y);
+  ctx.lineTo(x-ux*s-uy*s*.55,y-uy*s+ux*s*.55);ctx.lineTo(x-ux*s+uy*s*.55,y-uy*s-ux*s*.55);ctx.closePath();ctx.fill();}
+function drawLink(L,pa,pb,ra,rb){
+  const dx=pb.x-pa.x,dy=pb.y-pa.y,Ls=Math.hypot(dx,dy);if(Ls<1)return;
+  const ux=dx/Ls,uy=dy/Ls,avg=(pa.s+pb.s)/2;
+  ctx.save();ctx.globalAlpha=L.alpha??1;ctx.lineCap='round';
+  if(L.s==='stick'){ctx.strokeStyle=C.stick;ctx.lineWidth=Math.max(1.4,avg*.07);ctx.beginPath();ctx.moveTo(pa.x,pa.y);ctx.lineTo(pb.x,pb.y);ctx.stroke();}
+  else if(L.s==='covalent'){
+    ctx.strokeStyle=C.cov;ctx.lineWidth=Math.max(3,Math.min(11,avg*.14));ctx.beginPath();ctx.moveTo(pa.x,pa.y);ctx.lineTo(pb.x,pb.y);ctx.stroke();
+    if(L.pairs&&st.pairs&&st.mode!=='main'){
+      const sa=pa.x+ux*ra,sb=pb.x-ux*rb,ya=pa.y+uy*ra,yb=pb.y-uy*rb,mx=(sa+sb)/2,my=(ya+yb)/2,o=6*uiS,er=3.6*uiS;
+      for(const sgn of [-1,1]){ctx.beginPath();ctx.arc(mx-uy*o*sgn,my+ux*o*sgn,er,0,TAU);ctx.fillStyle=C.elec;ctx.fill();ctx.lineWidth=1.4;ctx.strokeStyle=C.stage;ctx.stroke();}
+    }
+  }
+  else if(L.s==='hbond'){
+    ctx.strokeStyle=C.hbond;ctx.lineWidth=L.thin?Math.max(1.2,avg*.04):3.2*uiS;ctx.setLineDash(L.thin?[4,4]:[8*uiS,6*uiS]);
+    ctx.beginPath();ctx.moveTo(pa.x+ux*ra,pa.y+uy*ra);ctx.lineTo(pb.x-ux*rb,pb.y-uy*rb);ctx.stroke();}
+  else if(L.s==='vdw'){
+    ctx.strokeStyle=C.vdw;ctx.lineWidth=4*uiS;ctx.setLineDash([.1,8*uiS]);
+    ctx.beginPath();ctx.moveTo(pa.x+ux*(ra+3),pa.y+uy*(ra+3));ctx.lineTo(pb.x-ux*(rb+3),pb.y-uy*(rb+3));ctx.stroke();}
+  else if(L.s==='attract'||L.s==='repel'){
+    const g=4*uiS,s=[pa.x+ux*(ra+g),pa.y+uy*(ra+g)],e=[pb.x-ux*(rb+g),pb.y-uy*(rb+g)];
+    const span=Math.hypot(e[0]-s[0],e[1]-s[1]);if(span<14*uiS){ctx.restore();return}
+    const m=[(s[0]+e[0])/2,(s[1]+e[1])/2],gap=Math.min(6*uiS,span*.1),hs=Math.min(11*uiS,span*.22);
+    const col=L.s==='attract'?C.attract:C.repel;
+    ctx.strokeStyle=col;ctx.lineWidth=L.s==='attract'?(L.faint?2:3.4)*uiS:2*uiS;
+    if(L.faint)ctx.globalAlpha=.45;
+    if(L.s==='attract'){
+      const pulse=st.motion?.85+.15*Math.sin(st.t*3):1;ctx.globalAlpha*=pulse;
+      const m1=[m[0]-ux*gap,m[1]-uy*gap],m2=[m[0]+ux*gap,m[1]+uy*gap];
+      ctx.beginPath();ctx.moveTo(s[0],s[1]);ctx.lineTo(m1[0]-ux*hs*.6,m1[1]-uy*hs*.6);ctx.moveTo(e[0],e[1]);ctx.lineTo(m2[0]+ux*hs*.6,m2[1]+uy*hs*.6);ctx.stroke();
+      head(m1[0],m1[1],ux,uy,hs,col);head(m2[0],m2[1],-ux,-uy,hs,col);
+    } else {
+      ctx.setLineDash([5*uiS,5*uiS]);ctx.beginPath();ctx.moveTo(s[0]+ux*hs,s[1]+uy*hs);ctx.lineTo(e[0]-ux*hs,e[1]-uy*hs);ctx.stroke();ctx.setLineDash([]);
+      head(s[0],s[1],-ux,-uy,hs*.85,col);head(e[0],e[1],ux,uy,hs*.85,col);
+    }
+  }
+  ctx.restore();
+}
+function drawLabel(ax,ay,dx,dy,text){
+  const lines=text.split('\n'),fs=Math.round(14*uiS),lh=fs*1.25,pad=8*uiS;
+  ctx.font=`600 ${fs}px ${getComputedStyle(document.body).fontFamily}`;
+  const w=Math.max(...lines.map(l=>ctx.measureText(l).width))+pad*2,h=lines.length*lh+pad*1.4;
+  let bx=ax+dx*uiS-w/2,by=ay+dy*uiS-h/2;
+  const top=56*uiS,bottom=H-64*uiS;bx=Math.max(8,Math.min(W-w-8,bx));by=Math.max(top,Math.min(bottom-h,by));
+  const cx=Math.max(bx,Math.min(bx+w,ax)),cy=Math.max(by,Math.min(by+h,ay));
+  ctx.strokeStyle=C.muted;ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(cx,cy);ctx.stroke();
+  ctx.fillStyle=C.ink;ctx.beginPath();ctx.arc(ax,ay,3*uiS,0,TAU);ctx.fill();
+  ctx.fillStyle=rgba(C.panel,.95);ctx.strokeStyle=C.line;ctx.lineWidth=1;
+  ctx.beginPath();ctx.roundRect(bx,by,w,h,7*uiS);ctx.fill();ctx.stroke();
+  ctx.fillStyle=C.ink;ctx.textBaseline='middle';ctx.textAlign='left';
+  lines.forEach((l,i)=>ctx.fillText(l,bx+pad,by+pad*.7+lh*(i+.5)));
+}
+
+/* ---------- render ---------- */
+function render(){
+  readColours();
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  ctx.fillStyle=C.stage;ctx.fillRect(0,0,W,H);
+  const P=sc.atoms.map(a=>{const p=project(a.q);p.r=a.r*p.s;return p});st.proj=P;
+  const items=[];
+  P.forEach((p,i)=>items.push({z:p.z,k:0,i}));
+  const forceStyles={attract:1,repel:1,hbond:1,vdw:1};
+  sc.links.forEach((L,j)=>{if(forceStyles[L.s]&&!st.forces)return;items.push({z:(P[L.a].z+P[L.b].z)/2-1e-3,k:1,j})});
+  const EP=sc.electrons.map(e=>project(e.q));
+  EP.forEach((p,i)=>items.push({z:p.z,k:2,i}));
+  if(sc.eLinkR&&st.forces){sc.atoms.forEach((a,i)=>sc.electrons.forEach((e,k)=>{const d=dist(a.q,e.q);
+    if(d<sc.eLinkR)items.push({z:(P[i].z+EP[k].z)/2-2e-3,k:3,i,e:k,w:1-d/sc.eLinkR})}));}
+  if(sc.clouds.length&&st.forces)sc.clouds.forEach((c,i)=>items.push({z:(P[c.a].z+P[c.b].z)/2+.02,k:4,i}));
+  items.sort((a,b)=>a.z-b.z);
+  for(const it of items){
+    if(it.k===0){const a=sc.atoms[it.i],p=P[it.i];ball(p.x,p.y,p.r,TYPES[a.ty].c,a.alpha);
+      if(a.sign&&p.r>9){ctx.fillStyle='#ffffff';ctx.globalAlpha=a.alpha;ctx.font=`700 ${Math.round(p.r*(a.sign.length>1?.62:.9))}px ${getComputedStyle(document.body).fontFamily}`;
+        ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(a.sign,p.x,p.y+p.r*.04);ctx.globalAlpha=1;}}
+    else if(it.k===1){const L=sc.links[it.j];drawLink(L,P[L.a],P[L.b],P[L.a].r,P[L.b].r);}
+    else if(it.k===2){const p=EP[it.i],r=Math.max(2.2,sc.eR*p.s);ctx.fillStyle=C.elec;ctx.beginPath();ctx.arc(p.x,p.y,r,0,TAU);ctx.fill();
+      if(r>5){ctx.strokeStyle='#ffffff';ctx.lineWidth=Math.max(1.2,r*.22);ctx.beginPath();ctx.moveTo(p.x-r*.45,p.y);ctx.lineTo(p.x+r*.45,p.y);ctx.stroke();}}
+    else if(it.k===3){const a=P[it.i],e=EP[it.e];ctx.strokeStyle=rgba(C.attract,.65*it.w);ctx.lineWidth=1.6*uiS;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(e.x,e.y);ctx.stroke();}
+    else if(it.k===4)drawCloud(sc.clouds[it.i],P);
+  }
+  // lone pairs
+  if(st.pairs&&st.mode!=='main')for(const lp of sc.lonepairs){const a=sc.atoms[lp.atom],p=project(add(a.q,mul(lp.dir,a.r+.2))),c=P[lp.atom];
+    const dx=p.x-c.x,dy=p.y-c.y,l=Math.hypot(dx,dy)||1,o=4.5*uiS;
+    for(const s of [-1,1]){ctx.beginPath();ctx.arc(p.x-dy/l*o*s,p.y+dx/l*o*s,3.6*uiS,0,TAU);ctx.fillStyle=C.elec;ctx.fill();ctx.strokeStyle=C.stage;ctx.lineWidth=1.4;ctx.stroke();}}
+  // hover
+  if(st.mode==='main'&&st.hover>=0&&!st.anim){const p=P[st.hover];ctx.strokeStyle=C.accent;ctx.lineWidth=3;ctx.beginPath();ctx.arc(p.x,p.y,p.r+5,0,TAU);ctx.stroke();}
+  // tags & labels
+  if(st.labels&&st.mode==='close'){
+    ctx.font=`700 ${Math.round(16*uiS)}px ${getComputedStyle(document.body).fontFamily}`;ctx.textAlign='center';ctx.textBaseline='middle';
+    for(const t of sc.tags){const p=P[t.atom];ctx.fillStyle=t.text==='δ+'?C.hbond:C.attract;ctx.fillText(t.text,p.x+p.r*.9,p.y-p.r*1.15);}
+    if(sc.dipole&&st.forces)for(const c of sc.clouds){const s=c.s||0;if(Math.abs(s)<.35)continue;
+      const A=P[c.a],B=P[c.b],neg=(sc.atoms[c.a].q[0]>sc.atoms[c.b].q[0])===(s>0)?A:B,pos=neg===A?B:A;
+      ctx.fillStyle=C.attract;ctx.fillText('δ−',neg.x,neg.y-neg.r*1.3);ctx.fillStyle=C.hbond;ctx.fillText('δ+',pos.x,pos.y-pos.r*1.3);}
+    for(const L of sc.labels){
+      let a;
+      if(L.at.pt){a=project(add(sc.atoms[L.at.atom].q,L.at.pt));}
+      else if(L.at.atom!==undefined)a=P[L.at.atom];
+      else if(L.at.link!==undefined){const k=sc.links[L.at.link];if(!st.forces&&forceStyles[k.s])continue;a={x:(P[k.a].x+P[k.b].x)/2,y:(P[k.a].y+P[k.b].y)/2};}
+      else if(L.at.elec!==undefined){const e=EP[L.at.elec%EP.length];a=e;}
+      drawLabel(a.x,a.y,L.dx,L.dy,L.text);
+    }
+  }
+  if(st.fade>0){ctx.fillStyle=C.stage;ctx.globalAlpha=Math.min(1,st.fade);ctx.fillRect(0,0,W,H);ctx.globalAlpha=1;}
+}
+function drawCloud(c,P){
+  const A=P[c.a],B=P[c.b],mx=(A.x+B.x)/2,my=(A.y+B.y)/2,ang=Math.atan2(B.y-A.y,B.x-A.x);
+  const half=Math.hypot(B.x-A.x,B.y-A.y)/2+A.r*1.25,wid=A.r*1.45,s=c.s||0;
+  const aIsNeg=(sc.atoms[c.a].q[0]>sc.atoms[c.b].q[0])===(s>0); // dense end
+  const shift=(aIsNeg?-1:1)*Math.abs(s)*half*.45;
+  ctx.save();ctx.translate(mx,my);ctx.rotate(ang);
+  const g=ctx.createRadialGradient(shift,0,0,shift,0,half*1.1);
+  g.addColorStop(0,rgba(C.vdw,.34));g.addColorStop(.7,rgba(C.vdw,.12));g.addColorStop(1,rgba(C.vdw,0));
+  ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(0,0,half,wid,0,0,TAU);ctx.fill();
+  ctx.strokeStyle=rgba(C.vdw,.35);ctx.lineWidth=1;ctx.stroke();ctx.restore();
+}
+
+/* ---------- animation loop ---------- */
+let last=performance.now();
+function frame(now){
+  const dt=Math.min(.05,(now-last)/1000);last=now;
+  const mdt=st.motion?dt:0;st.t+=mdt;
+  if(st.rotate&&!drag)cam.yaw+=dt*.3;
+  if(sc.vib)for(const a of sc.atoms)a.q=[0,1,2].map(k=>a.p[k]+sc.vib*Math.sin(st.t*(5+k)+a.ph[k]));
+  if(sc.electrons.length&&mdt)stepElectrons(sc,mdt);
+  if(sc.dipole)for(const c of sc.clouds)c.s=Math.sin(st.t*1.2-c.col*.8);
+  if(st.anim)runAnim(now);
+  render();
+  requestAnimationFrame(frame);
+}
+function runAnim(now){
+  const A=st.anim,k=Math.min(1,(now-A.t0)/A.dur);
+  if(A.type==='in'){
+    const e=ease(k);cam.center=[0,1,2].map(i=>lerp(0,A.target[i],e));cam.k=Math.exp(lerp(0,Math.log(5),e));
+    st.fade=k>.55?(k-.55)/.45:0;
+    if(k>=1){openClose(A.pickType);st.anim={type:'fadein',t0:now,dur:350};}
+  } else if(A.type==='fadein'){st.fade=1-k;if(k>=1){st.fade=0;st.anim=null;}}
+  else if(A.type==='fadeout'){st.fade=k;if(k>=1){
+      st.mode='main';sc=mainSc;cam.yaw=A.yaw;cam.pitch=A.pitch;st.zoom=A.zoom;
+      st.anim={type:'out',t0:now,dur:700,target:A.target};updateUI();}}
+  else if(A.type==='out'){const e=ease(k);cam.center=[0,1,2].map(i=>lerp(A.target[i],0,e));cam.k=Math.exp(lerp(Math.log(5),0,e));
+    st.fade=k<.4?1-k/.4:0;if(k>=1){st.anim=null;cam.k=1;cam.center=[0,0,0];st.fade=0;}}
+}
+
+/* ---------- mode switching ---------- */
+let saved=null;
+function setStruct(key){
+  st.key=key;st.mode='main';st.anim=null;st.fade=0;cam.k=1;cam.center=[0,0,0];st.zoom=1;
+  mainSc=sc=STRUCTS[key].main();cam.yaw=sc.yaw;cam.pitch=sc.pitch;
+  document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected',b.dataset.key===key));
+  try{localStorage.setItem('cle-tab',key)}catch(e){}
+  updateUI();
+}
+function zoomInto(i){
+  if(st.anim)return;
+  saved={yaw:cam.yaw,pitch:cam.pitch,zoom:st.zoom};
+  st.anim={type:'in',t0:performance.now(),dur:850,target:sc.atoms[i].q.slice(),pickType:sc.atoms[i].ty};
+  st.lastTarget=sc.atoms[i].q.slice();
+}
+function openClose(t){
+  sc=STRUCTS[st.key].close(t);st.mode='close';st.lastPickType=t;cam.k=1;cam.center=[0,0,0];st.zoom=1;cam.yaw=sc.yaw;cam.pitch=sc.pitch;updateUI();
+}
+function back(){
+  if(st.mode!=='close'||st.anim)return;
+  st.anim={type:'fadeout',t0:performance.now(),dur:250,target:st.lastTarget||[0,0,0],...saved};
+}
+
+/* ---------- UI ---------- */
+const $=id=>document.getElementById(id);
+const tabs=$('tabs');
+ORDER.forEach((k,n)=>{const b=document.createElement('button');b.className='tab';b.role='tab';b.dataset.key=k;b.id='tab-'+k;
+  b.innerHTML=`<small>${n+1} · ${STRUCTS[k].tag}</small><b>${STRUCTS[k].name}</b>`;b.onclick=()=>setStruct(k);tabs.appendChild(b);});
+function legendSVG(kind){
+  const w=46,h=18;let s='';
+  const css=v=>`var(--${v})`;
+  if(kind==='attract')s=`<line x1="3" y1="9" x2="17" y2="9" stroke="${css('attract')}" stroke-width="3"/><path d="M23 9 l-7 -4.5 v9z" fill="${css('attract')}"/><line x1="43" y1="9" x2="29" y2="9" stroke="${css('attract')}" stroke-width="3"/><path d="M23 9 l7 -4.5 v9z" fill="${css('attract')}"/>`;
+  else if(kind==='repel')s=`<line x1="10" y1="9" x2="36" y2="9" stroke="${css('repel')}" stroke-width="2" stroke-dasharray="4 4"/><path d="M3 9 l7 -4 v8z" fill="${css('repel')}"/><path d="M43 9 l-7 -4 v8z" fill="${css('repel')}"/>`;
+  else if(kind==='covalent')s=`<line x1="3" y1="9" x2="43" y2="9" stroke="${css('cov')}" stroke-width="5" stroke-linecap="round"/>`;
+  else if(kind==='hbond')s=`<line x1="3" y1="9" x2="43" y2="9" stroke="${css('hbond')}" stroke-width="3" stroke-dasharray="7 5"/>`;
+  else if(kind==='vdw')s=`<line x1="4" y1="9" x2="43" y2="9" stroke="${css('vdw')}" stroke-width="4" stroke-dasharray="0.1 8" stroke-linecap="round"/>`;
+  else if(kind==='elec')s=`<circle cx="23" cy="9" r="6" fill="${css('elec')}"/><line x1="20" y1="9" x2="26" y2="9" stroke="#fff" stroke-width="1.6"/>`;
+  else if(kind==='elink')s=`<line x1="3" y1="9" x2="43" y2="9" stroke="${css('attract')}" stroke-width="1.8" opacity=".7"/>`;
+  else if(kind==='cloud')s=`<ellipse cx="23" cy="9" rx="20" ry="7.5" fill="${css('vdw')}" opacity=".3"/>`;
+  else if(kind.startsWith('ball:')){const c=TYPES[kind.slice(5)].c;s=`<circle cx="23" cy="9" r="8" fill="${c}" stroke="rgba(0,0,0,.25)"/>`;}
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true">${s}</svg>`;
+}
+function updateUI(){
+  const S=STRUCTS[st.key],close=st.mode==='close';
+  $('bBack').hidden=!close;
+  $('metalSeg').hidden=!S.metal;
+  ['Na','Mg','Al'].forEach(m=>$('m'+m).setAttribute('aria-pressed',st.metal===m));
+  $('bPairs').hidden=!(S.pairs&&close);
+  $('bLabels').hidden=!close;
+  const notes=typeof S.notes==='function'?S.notes():S.notes;
+  $('notes').innerHTML=notes+`<div><h3>Key</h3><div class="legend">${S.legend.map(([k,t])=>`<div>${legendSVG(k)}<span>${t}</span></div>`).join('')}</div></div>`;
+  $('caption').innerHTML=close?sc.caption:`<strong>${S.name}:</strong> ${S.hint}`;
+  stage.style.cursor=close?'grab':'default';
+}
+function toggle(id,key){$(id).onclick=()=>{st[key]=!st[key];$(id).setAttribute('aria-pressed',st[key]);};}
+toggle('bLabels','labels');toggle('bForces','forces');toggle('bPairs','pairs');toggle('bMotion','motion');toggle('bRotate','rotate');
+$('bReset').onclick=()=>{cam.yaw=sc.yaw;cam.pitch=sc.pitch;st.zoom=1;};
+$('bBack').onclick=back;
+document.querySelectorAll('#metalSeg button').forEach(b=>b.onclick=()=>{st.metal=b.dataset.m;
+  mainSc=STRUCTS.metal.main();if(st.mode==='close'){sc=STRUCTS.metal.close();}else{sc=mainSc;}updateUI();});
+
+/* ---------- pointer ---------- */
+let drag=null;
+function pickAt(x,y){
+  let best=-1,bz=-1e9;
+  st.proj.forEach((p,i)=>{if(Math.hypot(p.x-x,p.y-y)<=p.r+3&&p.z>bz){bz=p.z;best=i}});
+  if(best<0){let bd=26;st.proj.forEach((p,i)=>{const d=Math.hypot(p.x-x,p.y-y)-p.r;if(d<bd){bd=d;best=i}});}
+  return best;
+}
+cv.addEventListener('pointerdown',e=>{const r=cv.getBoundingClientRect();drag={x:e.clientX,y:e.clientY,moved:false,yaw:cam.yaw,pitch:cam.pitch,rx:e.clientX-r.left,ry:e.clientY-r.top};cv.setPointerCapture(e.pointerId);});
+cv.addEventListener('pointermove',e=>{
+  const r=cv.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;
+  if(drag){const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.hypot(dx,dy)>5)drag.moved=true;
+    if(drag.moved&&!st.anim){cam.yaw=drag.yaw+dx*.008;cam.pitch=Math.max(-1.45,Math.min(1.45,drag.pitch+dy*.008));}}
+  else if(st.mode==='main'){st.hover=pickAt(x,y);stage.style.cursor=st.hover>=0?'pointer':'default';}
+});
+cv.addEventListener('pointerup',e=>{if(!drag)return;const d=drag;drag=null;
+  if(!d.moved&&st.mode==='main'){const i=pickAt(d.rx,d.ry);if(i>=0)zoomInto(i);}});
+cv.addEventListener('pointerleave',()=>{st.hover=-1});
+cv.addEventListener('wheel',e=>{e.preventDefault();if(st.anim)return;st.zoom=Math.max(.5,Math.min(2.6,st.zoom*Math.exp(-e.deltaY*.0012)));},{passive:false});
+window.addEventListener('keydown',e=>{
+  if(e.key==='Escape')back();
+  const n=parseInt(e.key,10);if(n>=1&&n<=6&&!e.ctrlKey&&!e.metaKey)setStruct(ORDER[n-1]);
+});
+
+let startKey='nacl';try{const s=localStorage.getItem('cle-tab');if(STRUCTS[s])startKey=s}catch(e){}
+setStruct(startKey);
+requestAnimationFrame(frame);
+})();
+</script>
+
+</body></html>
