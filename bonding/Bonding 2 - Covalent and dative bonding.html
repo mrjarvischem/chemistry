@@ -1,0 +1,668 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>[hidden]{display:none!important}body{margin:0}img{max-width:100%}</style>
+<title>Covalent and Dative Bonding</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,750&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one reading column (~760px) with wider interactive "bench" panels; sticky progress strip; positive ions blue-violet, negative ions green throughout */
+:root{
+  --bg:#f5efe3; --surface:#fffaf0; --sunk:#ece2cf; --ink:#2a2017; --muted:#6c5d4b; --line:#dccdb3;
+  --accent:#7a4a22; --accent-soft:#f0e0cb; --accent-ink:#fff8ee;
+  --cation:#4a4fa3; --cation-soft:#e3e3f6; --anion:#2c7743; --anion-soft:#dcefe1;
+  --oxy:#c0463a; --hyd:#f7f3ea;
+  --ok:#2b7a4b; --okbg:#e2f1e6; --bad:#b0392d; --badbg:#f8e1dc;
+  --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#1b1713; --surface:#25201a; --sunk:#2f2820; --ink:#efe6d7; --muted:#b4a590; --line:#463b2f;
+  --accent:#dba06a; --accent-soft:#3a2b1d; --accent-ink:#1b1713;
+  --cation:#9ea3f2; --cation-soft:#2c2d4a; --anion:#7fca92; --anion-soft:#1f3a28;
+  --oxy:#e0776b; --hyd:#e9e2d4;
+  --ok:#7fca92; --okbg:#1f3427; --bad:#ec8a7e; --badbg:#3d211d; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#1b1713; --surface:#25201a; --sunk:#2f2820; --ink:#efe6d7; --muted:#b4a590; --line:#463b2f;
+  --accent:#dba06a; --accent-soft:#3a2b1d; --accent-ink:#1b1713;
+  --cation:#9ea3f2; --cation-soft:#2c2d4a; --anion:#7fca92; --anion-soft:#1f3a28;
+  --oxy:#e0776b; --hyd:#e9e2d4;
+  --ok:#7fca92; --okbg:#1f3427; --bad:#ec8a7e; --badbg:#3d211d; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:820px;margin:0 auto}
+h1,h2,h3{font-family:var(--display);line-height:1.15;text-wrap:balance;margin:0}
+h1{font-size:clamp(2.2rem,6vw,3.4rem);font-weight:750;letter-spacing:-.02em}
+h2{font-size:clamp(1.5rem,3.6vw,2rem);font-weight:750;letter-spacing:-.01em}
+h3{font-size:1.15rem;font-weight:600}
+p{margin:0}
+sub,sup{font-size:.72em;line-height:0}
+.eyebrow{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.cat{color:var(--cation);font-weight:700}.an{color:var(--anion);font-weight:700}
+
+/* masthead */
+header.top{padding-block:40px 18px;display:grid;gap:14px}
+.lede{max-width:62ch;color:var(--muted);font-size:1.08rem}
+.spec{display:flex;flex-wrap:wrap;gap:8px}
+.tag{font-family:var(--mono);font-size:.78rem;padding:3px 9px;border:1px solid var(--line);border-radius:999px;color:var(--muted)}
+
+/* sticky progress */
+.progress{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding-block:10px;margin-bottom:8px}
+.progress .row{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.bar{flex:1 1 180px;height:8px;background:var(--sunk);border-radius:99px;overflow:hidden;min-width:120px}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .4s}
+.progress .stat{font-size:.88rem;color:var(--muted);font-variant-numeric:tabular-nums}
+nav.toc{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+nav.toc a{font-size:.82rem;text-decoration:none;color:var(--ink);padding:3px 10px;border-radius:999px;background:var(--surface);border:1px solid var(--line);white-space:nowrap}
+nav.toc a:hover,nav.toc a:focus-visible{border-color:var(--accent);color:var(--accent)}
+
+/* sections */
+section{padding-block:44px 8px;display:grid;gap:18px;scroll-margin-top:110px}
+.sechead{display:grid;gap:6px;border-top:2px solid var(--ink);padding-top:14px}
+.sechead .num{font-family:var(--mono);font-size:.82rem;color:var(--accent)}
+.prose{display:grid;gap:12px;max-width:66ch}
+.key{background:var(--accent-soft);border-left:4px solid var(--accent);padding:12px 16px;border-radius:0 8px 8px 0;max-width:66ch}
+.key b{color:var(--accent)}
+.warn{background:var(--badbg);border-left:4px solid var(--bad);padding:12px 16px;border-radius:0 8px 8px 0;max-width:66ch}
+.bench{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;gap:12px;min-width:0}
+.bench .lab{font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button,.btn{font:inherit;font-size:.92rem;font-weight:600;border:1px solid var(--line);background:var(--bg);color:var(--ink);padding:6px 12px;border-radius:8px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+select{font:inherit;font-size:.95rem;padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);max-width:100%}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.95rem}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.two>*{min-width:0}
+.caption{font-size:.9rem;color:var(--muted)}
+svg text{font-family:var(--body)}
+
+/* dot and cross */
+#dcSvg{width:100%;height:auto;max-height:260px}
+.note{font-size:.95rem}
+
+/* periodic table */
+.pt{display:grid;grid-template-columns:auto repeat(8,minmax(0,1fr));gap:4px;font-variant-numeric:tabular-nums}
+.pt .gh{font-size:.72rem;text-align:center;color:var(--muted);font-weight:600}
+.pt .ph{font-size:.72rem;color:var(--muted);align-self:center;padding-right:4px}
+.el{aspect-ratio:1/1;max-width:100%;border:1px solid var(--line);border-radius:6px;background:var(--bg);display:grid;place-items:center;font-weight:700;font-size:clamp(.8rem,2.6vw,1.05rem);padding:0;position:relative}
+.el small{position:absolute;top:2px;left:4px;font-size:.55rem;color:var(--muted);font-weight:400}
+.el.m{background:var(--cation-soft)}.el.n{background:var(--anion-soft)}
+.el.sel{outline:3px solid var(--accent);outline-offset:1px}
+.ionout{display:grid;gap:6px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.ionout .big{font-family:var(--display);font-size:2rem;font-weight:750}
+.cfg{font-family:var(--mono);font-size:.86rem;overflow-wrap:anywhere}
+
+/* compound ions */
+.ions{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.ioncard{border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--bg);display:grid;gap:4px;text-align:left;font-weight:400;cursor:default}
+.ioncard .f{font-family:var(--display);font-size:1.6rem;font-weight:750}
+.ioncard.pos .f{color:var(--cation)}.ioncard.neg .f{color:var(--anion)}
+.ioncard .n{font-weight:600}
+.ioncard .h{font-size:.82rem;color:var(--muted)}
+.hide-f .ioncard{cursor:pointer}
+.hide-f .ioncard:not(.shown) .f{color:transparent;background:var(--sunk);border-radius:6px}
+.hide-f .ioncard:not(.shown) .f::after{content:"tap to reveal";color:var(--muted);font-size:.8rem;font-family:var(--body);font-weight:400;position:relative}
+
+/* builder */
+.tiles{display:grid;gap:6px;padding:10px;background:var(--bg);border:1px dashed var(--line);border-radius:10px;min-height:96px}
+.trow{display:flex;gap:2px;flex-wrap:wrap;min-height:40px;align-items:center}
+.tile{height:36px;border-radius:6px;display:grid;place-items:center;font-weight:700;font-size:.85rem;color:#fff;transition:transform .2s}
+.tile.c{background:var(--cation);color:var(--surface)}.tile.a{background:var(--anion);color:var(--surface)}
+.status{font-weight:600}
+.status.good{color:var(--ok)}.status.bad{color:var(--bad)}
+.formula{font-family:var(--display);font-size:2.2rem;font-weight:750;min-height:1.3em}
+.steps{counter-reset:s;display:grid;gap:8px;padding:0;margin:0;list-style:none}
+.steps li{counter-increment:s;display:grid;grid-template-columns:30px 1fr;gap:8px;align-items:start}
+.steps li::before{content:counter(s);width:26px;height:26px;border-radius:50%;background:var(--ink);color:var(--bg);display:grid;place-items:center;font-size:.8rem;font-weight:700;margin-top:2px}
+
+/* canvases */
+.cv{width:100%;display:block;border-radius:10px;background:var(--bg);touch-action:none}
+#lat{height:380px;cursor:grab}
+#cond{height:240px}
+
+/* MCQ */
+.mcq{display:grid;gap:14px}
+.q{border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--surface);display:grid;gap:10px}
+.q .qh{display:flex;gap:10px;align-items:baseline}
+.q .qn{font-family:var(--mono);font-size:.78rem;color:var(--accent);white-space:nowrap}
+.q .qt{font-weight:600}
+.opts{display:grid;gap:6px}
+.opt{text-align:left;font-weight:400;display:grid;grid-template-columns:28px 1fr;gap:8px;align-items:start;padding:8px 10px;background:var(--bg)}
+.opt .l{font-family:var(--mono);font-weight:500;color:var(--muted)}
+.opt.right{background:var(--okbg);border-color:var(--ok)}
+.opt.wrong{background:var(--badbg);border-color:var(--bad);opacity:.85}
+.fb{font-size:.95rem;padding:10px 12px;border-radius:8px}
+.fb.right{background:var(--okbg);border-left:4px solid var(--ok)}
+.fb.wrong{background:var(--badbg);border-left:4px solid var(--bad)}
+.mcqhead{display:flex;align-items:center;gap:10px}
+.mcqhead h3{font-size:1rem}
+
+/* checklist */
+.check{display:grid;gap:8px;list-style:none;padding:0;margin:0}
+.check label{display:flex;gap:10px;align-items:flex-start;cursor:pointer}
+.check input{width:20px;height:20px;margin-top:3px;accent-color:var(--accent);flex:none}
+
+/* brittle */
+#brit{width:100%;height:auto;max-height:220px}
+#brit .top{transition:transform .8s ease}
+#brit.shifted .top{transform:translateX(56px)}
+#brit .rep{opacity:0;transition:opacity .4s .7s}
+#brit.shifted .rep{opacity:1}
+@media (prefers-reduced-motion: reduce){#brit .top,#brit .rep,.bar i{transition:none}}
+footer{margin-top:40px;color:var(--muted);font-size:.85rem;border-top:1px solid var(--line);padding-top:14px}
+</style>
+<style>
+.chips button{font-weight:600}
+ul.tight{margin:0;padding-left:20px;display:grid;gap:4px}
+svg.mol{display:block;margin:0 auto;max-width:100%;height:auto}
+td.sym{font-family:var(--display);font-size:1.5rem;font-weight:750;line-height:1}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+#mol{height:230px}
+#mal{width:100%;height:auto;max-height:220px}#mal .top{transition:transform .8s ease}#mal.shifted .top{transform:translateX(56px)}#mal .ok{opacity:0;transition:opacity .4s .7s}#mal.shifted .ok{opacity:1}
+#met2d{height:300px}#met3d{height:360px;cursor:grab}#metC{height:220px}
+:root{--elec:#b8740f}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--elec:#f2c063}}
+:root[data-theme="dark"]{--elec:#f2c063}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <p class="eyebrow">A-level Chemistry · Bonding · Run-through 2</p>
+  <h1>Covalent and dative bonding</h1>
+  <p class="lede">Shared pairs, multiple bonds, and bonds where one atom supplies both electrons. Use the diagram panels, then do the quick checks in each section. Wrong answers come with feedback, so read it before trying again.</p>
+  <div class="spec"><span class="tag">AQA 3.1.3.2</span><span class="tag">AQA 3.1.3.4</span><span class="tag">about 35 minutes</span></div>
+</header>
+
+<div class="progress" aria-label="Progress">
+  <div class="row"><div class="bar" aria-hidden="true"><i id="pbar"></i></div><span class="stat" id="pstat"></span></div>
+  <nav class="toc" aria-label="Sections">
+    <a href="#s1">1 Shared pairs</a><a href="#s2">2 Multiple bonds</a><a href="#s3">3 Dative bonds</a><a href="#s4">4 Lines and arrows</a><a href="#s5">5 Properties</a><a href="#s6">6 Check yourself</a>
+  </nav>
+</div>
+
+<section id="s1">
+  <div class="sechead"><span class="num">Section 1</span><h2>A covalent bond is a shared pair of electrons</h2></div>
+  <div class="prose">
+    <p>Covalent bonds form between <b>non-metal</b> atoms. Each atom puts one electron into the bond, giving a <b>shared pair</b>. Both nuclei are attracted to this shared pair, and that attraction holds the atoms together.</p>
+    <p>Pairs of outer electrons that are <b>not</b> in a bond are called <b>lone pairs</b>.</p>
+  </div>
+  <div class="bench" id="v1"></div>
+  <div class="key"><b>Definition.</b> A single covalent bond is a <b>shared pair of electrons</b> between two atoms. The bond is strong because both nuclei are attracted to the same pair.</div>
+  <div class="mcq" data-set="s1"></div>
+</section>
+
+<section id="s2">
+  <div class="sechead"><span class="num">Section 2</span><h2>Multiple bonds</h2></div>
+  <div class="prose">
+    <p>Atoms can share more than one pair. A <b>double bond</b> is two shared pairs (4 electrons). A <b>triple bond</b> is three shared pairs (6 electrons).</p>
+  </div>
+  <div class="bench" id="v2"></div>
+  <div class="mcq" data-set="s2"></div>
+</section>
+
+<section id="s3">
+  <div class="sechead"><span class="num">Section 3</span><h2>Dative covalent bonds, also called coordinate bonds</h2></div>
+  <div class="prose">
+    <p>In a <b>dative covalent bond</b> (also called a <b>coordinate bond</b>), the shared pair of electrons comes from <b>one atom only</b>. Two things are needed:</p>
+  </div>
+  <div class="two">
+    <div class="bench">
+      <span class="lab">The donor</span>
+      <p>An atom with a <b>lone pair</b> to give.</p>
+      <ul class="tight">
+        <li><b>Group 5</b>: N in NH<sub>3</sub>, P in PH<sub>3</sub> (one lone pair)</li>
+        <li><b>Group 6</b>: O in H<sub>2</sub>O (two lone pairs)</li>
+        <li>Halide ions such as Cl<sup>−</sup> (four lone pairs)</li>
+      </ul>
+    </div>
+    <div class="bench">
+      <span class="lab">The acceptor</span>
+      <p>A species that is <b>electron deficient</b>: it has room for another pair of electrons in its outer shell.</p>
+      <ul class="tight">
+        <li><b>H<sup>+</sup></b>: no electrons at all</li>
+        <li><b>AlCl<sub>3</sub></b> and <b>GaCl<sub>3</sub></b>: only 6 outer electrons on Al or Ga</li>
+        <li><b>BF<sub>3</sub></b>: only 6 outer electrons on B</li>
+      </ul>
+    </div>
+  </div>
+  <div class="bench" id="v3"></div>
+  <div class="bench">
+    <span class="lab">Aluminium chloride dimer, Al₂Cl₆</span>
+    <svg id="al2cl6" role="img" aria-label="Displayed formula of Al2Cl6 with two dative bonds from bridging chlorine atoms to aluminium" style="width:100%;height:auto;max-height:260px"></svg>
+    <p class="note">AlCl<sub>3</sub> is electron deficient. At low temperatures two molecules join: a lone pair on a Cl atom of each molecule forms a dative bond to the Al atom of the other. Each Al now has 8 outer electrons.</p>
+  </div>
+  <div class="key"><b>Once formed, a dative bond is just a covalent bond.</b> In NH<sub>4</sub><sup>+</sup> all four N–H bonds are identical in length and strength. You can't tell which one was dative. The diagram only records where the electrons came from.</div>
+  <div class="mcq" data-set="s3"></div>
+</section>
+
+<section id="s4">
+  <div class="sechead"><span class="num">Section 4</span><h2>Showing bonds with lines and arrows</h2></div>
+  <div class="prose"><p>Dot-and-cross diagrams get crowded, so in displayed formulae each shared pair is drawn as a line. A coordinate bond is drawn as an <b>arrow</b>, pointing <b>from the atom that donates the lone pair</b> to the atom that accepts it. Every panel above has a "Displayed formula" button to switch views.</p></div>
+  <div class="scroll"><table class="conv">
+    <thead><tr><th>Bond</th><th>Electrons</th><th>Drawn as</th><th>Example</th></tr></thead>
+    <tbody>
+      <tr><td>Single</td><td>1 shared pair</td><td class="sym">—</td><td>H–Cl</td></tr>
+      <tr><td>Double</td><td>2 shared pairs</td><td class="sym">=</td><td>O=C=O</td></tr>
+      <tr><td>Triple</td><td>3 shared pairs</td><td class="sym">≡</td><td>N≡N</td></tr>
+      <tr><td>Coordinate (dative)</td><td>1 pair, both from the donor</td><td class="sym">→</td><td>H<sub>3</sub>N→BF<sub>3</sub></td></tr>
+    </tbody>
+  </table></div>
+  <div class="warn">The arrow points <b>away from</b> the lone pair and <b>towards</b> the electron-deficient atom. In H<sub>3</sub>N→BF<sub>3</sub>, nitrogen donates and boron accepts.</div>
+  <div class="mcq" data-set="s4"></div>
+</section>
+
+<section id="s5">
+  <div class="sechead"><span class="num">Section 5</span><h2>Properties of simple molecular substances</h2></div>
+  <div class="prose">
+    <p>Substances such as Cl<sub>2</sub>, H<sub>2</sub>O, CH<sub>4</sub> and CO<sub>2</sub> are made of separate <b>molecules</b>. There are two kinds of attraction to keep apart:</p>
+  </div>
+  <div class="two">
+    <div class="bench"><span class="lab">Inside each molecule</span><p><b>Covalent bonds</b>: strong. These are <b>not</b> broken when the substance melts or boils.</p></div>
+    <div class="bench"><span class="lab">Between molecules</span><p><b>Intermolecular forces</b>: weak. These are what you overcome when it melts or boils. You'll meet the different types later in the course.</p></div>
+  </div>
+  <div class="bench">
+    <span class="lab">Chlorine, Cl₂: what changes on melting and boiling?</span>
+    <div class="controls">
+      <button id="stS" aria-pressed="true">Solid</button><button id="stL" aria-pressed="false">Liquid</button><button id="stG" aria-pressed="false">Gas</button>
+    </div>
+    <canvas id="mol" class="cv" aria-label="Chlorine molecules as solid, liquid and gas"></canvas>
+    <p class="note" id="molNote"></p>
+    <p class="caption"><span class="an">Solid green line</span>: Cl–Cl covalent bond. <span style="color:var(--accent);font-weight:700">Dashed lines</span>: weak intermolecular forces.</p>
+  </div>
+  <div class="scroll"><table>
+    <thead><tr><th>Substance</th><th>Bonding</th><th>Boiling point</th><th>State at 20 °C</th></tr></thead>
+    <tbody>
+      <tr><td>methane, CH<sub>4</sub></td><td>simple molecular</td><td class="num">−162 °C</td><td>gas</td></tr>
+      <tr><td>chlorine, Cl<sub>2</sub></td><td>simple molecular</td><td class="num">−34 °C</td><td>gas</td></tr>
+      <tr><td>water, H<sub>2</sub>O</td><td>simple molecular</td><td class="num">100 °C</td><td>liquid</td></tr>
+      <tr><td>sodium chloride, NaCl</td><td>ionic lattice</td><td class="num">1413 °C</td><td>solid</td></tr>
+    </tbody>
+  </table></div>
+  <div class="prose">
+    <p><b>Low melting and boiling points</b>: only weak intermolecular forces need to be overcome, which takes little energy. Many are gases or liquids at room temperature.</p>
+    <p><b>Do not conduct electricity</b>: molecules have no overall charge, and there are no ions or delocalised electrons free to move.</p>
+  </div>
+  <div class="warn"><b>Classic mistake.</b> "When water boils, the O–H bonds break." No: the molecules separate but stay intact. Steam is still H<sub>2</sub>O.</div>
+  <p class="caption">Giant covalent structures such as diamond and graphite behave very differently. They are covered separately.</p>
+  <div class="mcq" data-set="s5"></div>
+</section>
+
+<section id="s6">
+  <div class="sechead"><span class="num">Section 6</span><h2>Check yourself</h2></div>
+  <div class="mcq" data-set="s6"></div>
+  <div class="bench">
+    <span class="lab">Tick off what you can now do</span>
+    <ul class="check" id="check"></ul>
+  </div>
+</section>
+<footer>Bonding run-throughs · Part 2. Previous: ionic bonding. Next: metallic bonding.</footer>
+</div>
+
+<script>
+const Q={
+s1:[
+ {q:"Which statement best describes a single covalent bond?",o:[
+  ["A shared pair of electrons between two atoms.",1,"Correct. Both nuclei are attracted to the shared pair."],
+  ["The transfer of an electron from one atom to another.",0,"Transfer makes ions. That's ionic bonding."],
+  ["Electrostatic attraction between oppositely charged ions.",0,"That is an ionic bond."],
+  ["Attraction between positive ions and delocalised electrons.",0,"That is metallic bonding."]]},
+ {q:"How many lone pairs are on the nitrogen atom in NH<sub>3</sub>?",o:[
+  ["0",0,"Nitrogen has 5 outer electrons. Three are used in bonds; the other two form a pair."],
+  ["1",1,"Correct. Three bonding pairs and one lone pair."],
+  ["3",0,"Those three pairs are the bonding pairs to hydrogen, not lone pairs."],
+  ["4",0,"Nitrogen has four pairs in total around it, but only one is a lone pair."]]},
+ {q:"In H<sub>2</sub>O, how many electrons are in the outer shell of oxygen, counting shared electrons?",o:[
+  ["6",0,"That's oxygen before bonding. It gains a share of one electron from each H."],
+  ["8",1,"Correct: 2 bonding pairs and 2 lone pairs."],
+  ["4",0,"Count both bonding pairs and both lone pairs."],
+  ["10",0,"Oxygen's outer shell holds a maximum of 8."]]}
+],
+s2:[
+ {q:"How many electrons are in a double bond?",o:[
+  ["2",0,"Two electrons is a single bond (one shared pair)."],
+  ["4",1,"Correct: two shared pairs."],
+  ["6",0,"Six electrons is a triple bond."],
+  ["8",0,"A double bond is two pairs, so four electrons."]]},
+ {q:"How many lone pairs are there in total in a molecule of CO<sub>2</sub>?",o:[
+  ["0",0,"The carbon has none, but each oxygen still has lone pairs."],
+  ["2",0,"Each oxygen has two lone pairs, and there are two oxygens."],
+  ["4",1,"Correct: two on each O. Carbon has none."],
+  ["8",0,"That counts electrons, not pairs. Four pairs = eight electrons."]]}
+],
+s3:[
+ {q:"What is a dative covalent (coordinate) bond?",o:[
+  ["A shared pair of electrons in which both electrons come from the same atom.",1,"Correct."],
+  ["A bond containing only one electron.",0,"A dative bond still contains a pair. Both electrons just come from one atom."],
+  ["An ionic bond between a molecule and an ion.",0,"It's covalent: the pair is shared."],
+  ["Any bond between nitrogen and hydrogen.",0,"Most N–H bonds are ordinary covalent bonds. Dative describes where the electrons came from."]]},
+ {q:"Which of these can <b>accept</b> a lone pair to form a coordinate bond?",o:[
+  ["NH<sub>3</sub>",0,"NH₃ has a lone pair, so it is a donor."],
+  ["H<sub>2</sub>O",0,"H₂O has lone pairs, so it is a donor."],
+  ["CH<sub>4</sub>",0,"Carbon already has 8 outer electrons and no lone pairs, so it can neither give nor accept."],
+  ["AlCl<sub>3</sub>",1,"Correct. Al has only 6 outer electrons, so it is electron deficient."]]},
+ {q:"When NH<sub>4</sub><sup>+</sup> forms, which particle provides the electrons for the dative bond?",o:[
+  ["The H<sup>+</sup> ion",0,"H⁺ has no electrons at all. It is the acceptor."],
+  ["The nitrogen atom in NH<sub>3</sub>",1,"Correct. N donates its lone pair to H⁺."],
+  ["A hydrogen atom in NH<sub>3</sub>",0,"Those hydrogens have no lone pairs."],
+  ["One electron from N and one from H<sup>+</sup>",0,"That would be an ordinary covalent bond. H⁺ has no electrons to give."]]},
+ {q:"How do the four N–H bonds in NH<sub>4</sub><sup>+</sup> compare?",o:[
+  ["The dative bond is weaker than the other three.",0,"Once formed, a dative bond is identical to any other covalent bond."],
+  ["The dative bond is longer than the other three.",0,"All four bonds have the same length."],
+  ["All four are identical.",1,"Correct. You can't tell which one was dative."],
+  ["The dative bond is a double bond.",0,"It's a single shared pair."]]}
+],
+s4:[
+ {q:"How is a coordinate bond shown in a displayed formula?",o:[
+  ["An arrow from the atom donating the lone pair to the atom accepting it.",1,"Correct."],
+  ["An arrow from the accepting atom to the donating atom.",0,"Wrong way round. The arrow starts at the lone pair."],
+  ["A dashed line.",0,"Dashed lines aren't used for dative bonds at A-level."],
+  ["A double line.",0,"A double line means a double bond: two shared pairs."]]},
+ {q:"In H<sub>3</sub>N→BF<sub>3</sub>, which atom accepts the lone pair?",o:[
+  ["N",0,"The arrow starts at N, so N is the donor."],
+  ["B",1,"Correct. The arrow points to B, which had only 6 outer electrons."],
+  ["F",0,"F has lone pairs but isn't part of the dative bond."],
+  ["H",0,"The H atoms aren't involved in the dative bond."]]}
+],
+s5:[
+ {q:"When water boils, what is overcome?",o:[
+  ["The O–H covalent bonds.",0,"This is the classic mistake. Steam is still H₂O molecules, so the O–H bonds are intact."],
+  ["The intermolecular forces between water molecules.",1,"Correct."],
+  ["Ionic bonds between H<sup>+</sup> and O<sup>2−</sup>.",0,"Water is a simple molecular substance, not ionic."],
+  ["The attraction between nuclei and inner electrons.",0,"That doesn't change when a substance boils."]]},
+ {q:"Why does chlorine have a low boiling point?",o:[
+  ["The Cl–Cl covalent bond is weak.",0,"The Cl–Cl bond isn't broken on boiling, so its strength is irrelevant here."],
+  ["The intermolecular forces between Cl<sub>2</sub> molecules are weak, so little energy is needed to overcome them.",1,"Correct."],
+  ["Chlorine is made of ions.",0,"Chlorine is made of Cl₂ molecules."],
+  ["Chlorine atoms are small.",0,"Size alone doesn't explain it. Name the forces being overcome."]]},
+ {q:"Why don't simple molecular substances conduct electricity?",o:[
+  ["The covalent bonds are too strong.",0,"Bond strength isn't the issue. Conduction needs moving charged particles."],
+  ["The molecules have no overall charge, and there are no free ions or delocalised electrons.",1,"Correct."],
+  ["The molecules are too far apart.",0,"Even in a liquid there are no charged particles to carry current."],
+  ["The electrons are all in lone pairs.",0,"Many electrons are in bonding pairs. What matters is that none are free to move."]]}
+],
+s6:[
+ {q:"Which species contains a coordinate bond?",o:[
+  ["H<sub>2</sub>O",0,"All bonds in H₂O are ordinary covalent bonds."],
+  ["H<sub>3</sub>O<sup>+</sup>",1,"Correct. O donates a lone pair to H⁺."],
+  ["CH<sub>4</sub>",0,"All four C–H bonds have one electron from each atom."],
+  ["HCl",0,"H–Cl is an ordinary covalent bond."]]},
+ {q:"How many bonding pairs and lone pairs are on the oxygen atom in H<sub>3</sub>O<sup>+</sup>?",o:[
+  ["2 bonding, 2 lone",0,"That's water. In H₃O⁺ one lone pair has been used to bond to H⁺."],
+  ["3 bonding, 1 lone",1,"Correct."],
+  ["3 bonding, 0 lone",0,"Oxygen started with two lone pairs and only one was used."],
+  ["4 bonding, 0 lone",0,"There are only three H atoms."]]},
+ {q:"In Al<sub>2</sub>Cl<sub>6</sub>, where do the electrons in each dative bond come from?",o:[
+  ["A lone pair on a chlorine atom",1,"Correct. A bridging Cl donates to the Al of the other AlCl₃ unit."],
+  ["An aluminium atom",0,"Al is the electron-deficient acceptor."],
+  ["One electron from Al and one from Cl",0,"That describes an ordinary covalent bond."],
+  ["Delocalised electrons",0,"There are no delocalised electrons in Al₂Cl₆."]]},
+ {q:"Which molecule contains a triple bond?",o:[
+  ["O<sub>2</sub>",0,"O₂ has a double bond."],
+  ["CO<sub>2</sub>",0,"CO₂ has two double bonds."],
+  ["N<sub>2</sub>",1,"Correct: N≡N, three shared pairs."],
+  ["C<sub>2</sub>H<sub>4</sub>",0,"Ethene has a C=C double bond."]]}
+]};
+
+/* ================= molecule data ================= */
+const d45=50*Math.SQRT1_2, s60=50*Math.sin(Math.PI/3);
+const M={
+ H2:{name:'H₂',atoms:[{s:'H',x:0,y:0,e:'d'},{s:'H',x:50,y:0,e:'x'}],bonds:[[0,1,1]],note:'One shared pair. Each H now has 2 electrons, like helium.'},
+ Cl2:{name:'Cl₂',atoms:[{s:'Cl',x:0,y:0,e:'d',lp:[180,90,270]},{s:'Cl',x:50,y:0,e:'x',lp:[0,90,270]}],bonds:[[0,1,1]],note:'One shared pair. Each Cl has 3 lone pairs and 8 outer electrons.'},
+ HCl:{name:'HCl',atoms:[{s:'H',x:0,y:0,e:'d'},{s:'Cl',x:50,y:0,e:'x',lp:[0,90,270]}],bonds:[[0,1,1]],note:'One shared pair. Cl has 3 lone pairs.'},
+ H2O:{name:'H₂O',atoms:[{s:'O',x:0,y:0,e:'x',lp:[0,270]},{s:'H',x:-50,y:0,e:'d'},{s:'H',x:0,y:50,e:'d'}],bonds:[[0,1,1],[0,2,1]],note:'O: 2 bonding pairs and 2 lone pairs.'},
+ NH3:{name:'NH₃',atoms:[{s:'N',x:0,y:0,e:'x',lp:[270]},{s:'H',x:-50,y:0,e:'d'},{s:'H',x:50,y:0,e:'d'},{s:'H',x:0,y:50,e:'d'}],bonds:[[0,1,1],[0,2,1],[0,3,1]],note:'N: 3 bonding pairs and 1 lone pair. That lone pair can form a dative bond.'},
+ CH4:{name:'CH₄',atoms:[{s:'C',x:0,y:0,e:'x'},{s:'H',x:-50,y:0,e:'d'},{s:'H',x:50,y:0,e:'d'},{s:'H',x:0,y:-50,e:'d'},{s:'H',x:0,y:50,e:'d'}],bonds:[[0,1,1],[0,2,1],[0,3,1],[0,4,1]],note:'C: 4 bonding pairs and no lone pairs.'},
+ O2:{name:'O₂',atoms:[{s:'O',x:0,y:0,e:'d',lp:[145,215]},{s:'O',x:50,y:0,e:'x',lp:[35,325]}],bonds:[[0,1,2]],note:'Double bond: two shared pairs. Each O also has 2 lone pairs.'},
+ N2:{name:'N₂',atoms:[{s:'N',x:0,y:0,e:'d',lp:[180]},{s:'N',x:50,y:0,e:'x',lp:[0]}],bonds:[[0,1,3]],note:'Triple bond: three shared pairs. Each N has 1 lone pair.'},
+ CO2:{name:'CO₂',atoms:[{s:'O',x:-50,y:0,e:'x',lp:[145,215]},{s:'C',x:0,y:0,e:'d'},{s:'O',x:50,y:0,e:'x',lp:[35,325]}],bonds:[[1,0,2],[1,2,2]],note:'Two C=O double bonds. Carbon has 4 pairs, all bonding.'},
+ C2H4:{name:'C₂H₄',atoms:[{s:'C',x:-25,y:0,e:'d'},{s:'C',x:25,y:0,e:'x'},{s:'H',x:-25-d45,y:d45,e:'o'},{s:'H',x:-25-d45,y:-d45,e:'o'},{s:'H',x:25+d45,y:d45,e:'o'},{s:'H',x:25+d45,y:-d45,e:'o'}],bonds:[[0,1,2],[0,2,1],[0,3,1],[1,4,1],[1,5,1]],note:'Ethene: a C=C double bond plus four C–H single bonds.'},
+ NH4:{name:'NH₄⁺',atoms:[{s:'N',x:0,y:0,e:'x'},{s:'H',x:-50,y:0,e:'d'},{s:'H',x:50,y:0,e:'d'},{s:'H',x:0,y:50,e:'d'},{s:'H',x:0,y:-50,e:'d',ion:1}],bonds:[[0,1,1],[0,2,1],[0,3,1],[0,4,1,1]],anim:{group:[4],from:[0,-46],bond:3},charge:'+',
+   note:'N donates its lone pair to H⁺. Both electrons in the new bond are crosses: they both came from nitrogen.',pre:'NH₃ has a lone pair; H⁺ has no electrons.'},
+ H3O:{name:'H₃O⁺',atoms:[{s:'O',x:0,y:0,e:'x',lp:[0]},{s:'H',x:-50,y:0,e:'d'},{s:'H',x:0,y:50,e:'d'},{s:'H',x:0,y:-50,e:'d',ion:1}],bonds:[[0,1,1],[0,2,1],[0,3,1,1]],anim:{group:[3],from:[0,-46],bond:2},charge:'+',
+   note:'O uses one of its two lone pairs to bond to H⁺. This is what happens when an acid releases H⁺ into water.',pre:'H₂O has two lone pairs; H⁺ has none.'},
+ NH3BF3:(function(){const P=(cx,ang)=>[cx+50*Math.cos(ang*Math.PI/180),50*Math.sin(ang*Math.PI/180)];
+   const h=[100,180,260].map(a=>{const p=P(0,a);return {s:'H',x:p[0],y:p[1],e:'d'};});
+   const f=[280,0,80].map(a=>{const p=P(56,a);return {s:'F',x:p[0],y:p[1],e:'o',lp:[a,a+100,a-100]};});
+   return {name:'H₃N→BF₃',atoms:[{s:'N',x:0,y:0,e:'x'},...h,{s:'B',x:56,y:0,e:'d'},...f],
+   bonds:[[0,1,1],[0,2,1],[0,3,1],[4,5,1],[4,6,1],[4,7,1],[0,4,1,1]],anim:{group:[4,5,6,7],from:[40,0],bond:6},
+   note:'N donates its lone pair to B, which had only 6 outer electrons. Now both N and B have 8.',pre:'NH₃ has a lone pair; B in BF₃ has only 6 outer electrons.'};})()
+};
+</script>
+
+<script>
+/* shared MCQ engine: expects global Q = {setName:[{q,o:[[text,isRight,feedback],...]}]} */
+(function(){
+const $=s=>document.querySelector(s);
+const state={answered:0,first:0,total:0};
+Object.values(Q).forEach(a=>state.total+=a.length);
+function upd(){
+  $('#pbar').style.width=(100*state.answered/state.total)+'%';
+  $('#pstat').textContent=state.answered+' of '+state.total+' questions answered · '+state.first+' right first time';
+}
+let qnum=0;
+document.querySelectorAll('.mcq').forEach(box=>{
+  const set=Q[box.dataset.set]; if(!set) return;
+  const head=document.createElement('div');head.className='mcqhead';
+  head.innerHTML='<h3>'+(set.length<=2?'Quick check':'Questions')+'</h3><span class="caption">'+set.length+' question'+(set.length>1?'s':'')+'</span>';
+  box.appendChild(head);
+  set.forEach(item=>{
+    qnum++;
+    const el=document.createElement('div');el.className='q';
+    el.innerHTML='<div class="qh"><span class="qn">Q'+qnum+'</span><span class="qt">'+item.q+'</span></div><div class="opts"></div><div class="fb" hidden></div>';
+    const opts=el.querySelector('.opts'),fb=el.querySelector('.fb');
+    let tries=0,done=false;
+    const sh=item.o.slice();for(let i=sh.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[sh[i],sh[j]]=[sh[j],sh[i]];}
+    sh.forEach((o,oi)=>{
+      const b=document.createElement('button');b.className='opt';b.type='button';
+      b.innerHTML='<span class="l">'+'ABCD'[oi]+'</span><span>'+o[0]+'</span>';
+      b.addEventListener('click',()=>{
+        if(done||b.classList.contains('wrong'))return;
+        tries++;fb.hidden=false;
+        if(o[1]){b.classList.add('right');fb.className='fb right';fb.innerHTML=o[2];done=true;state.answered++;if(tries===1)state.first++;upd();
+          opts.querySelectorAll('.opt').forEach(x=>x.disabled=true);}
+        else{b.classList.add('wrong');fb.className='fb wrong';fb.innerHTML=o[2]+' <b>Try again.</b>';}
+      });
+      opts.appendChild(b);
+    });
+    box.appendChild(el);
+  });
+});
+upd();
+})();
+
+</script>
+<script>
+(function(){
+"use strict";
+const $=s=>document.querySelector(s);
+const RM=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const R=34,NS='http://www.w3.org/2000/svg';
+const rad=a=>a*Math.PI/180;
+function eSym(x,y,t){
+  if(t==='d')return '<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="4.6" fill="var(--cation)"/>';
+  if(t==='x')return '<path d="M'+(x-4.6).toFixed(1)+','+(y-4.6).toFixed(1)+'l9.2,9.2m0,-9.2l-9.2,9.2" stroke="var(--anion)" stroke-width="2.3" stroke-linecap="round"/>';
+  return '<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="4.2" fill="none" stroke="var(--accent)" stroke-width="2"/>';
+}
+const ease=u=>u<.5?2*u*u:1-Math.pow(-2*u+2,2)/2;
+
+function positions(sp,t,S){
+  return sp.atoms.map((a,i)=>{let x=a.x,y=a.y;if(sp.anim&&sp.anim.group.includes(i)){const k=1-t;x+=sp.anim.from[0]*k;y+=sp.anim.from[1]*k;}return [x*S,y*S];});
+}
+function render(svg,sp,mode,t,showLP){
+  const disp=mode==='disp'||sp.dispOnly, S=disp?(sp.ds||1.6):1;
+  const P=positions(sp,t,S), P0=positions(sp,0,S), P1=positions(sp,1,S);
+  const pad=disp?30:R+12;
+  let xs=[],ys=[];[P0,P1].forEach(L=>L.forEach(p=>{xs.push(p[0]);ys.push(p[1]);}));
+  let x0=Math.min(...xs)-pad,x1=Math.max(...xs)+pad,y0=Math.min(...ys)-pad,y1=Math.max(...ys)+pad;
+  if(sp.charge){x0-=10;x1+=26;y0-=12;y1+=10;}
+  svg.setAttribute('viewBox',[x0,y0,x1-x0,y1-y0].map(v=>v.toFixed(1)).join(' '));
+  if(svg.classList.contains('mol'))svg.style.width=((x1-x0)*1.7).toFixed(0)+'px';
+  let h='';
+  const tt=ease(t);
+  if(!disp){
+    sp.atoms.forEach((a,i)=>{const [x,y]=P[i];const dash=a.ion&&t<1;
+      h+='<circle cx="'+x+'" cy="'+y+'" r="'+R+'" fill="none" stroke="var(--muted)" stroke-width="1.5"'+(dash?' stroke-dasharray="4 4"':'')+'/>';});
+    sp.atoms.forEach((a,i)=>{const [x,y]=P[i];
+      h+='<text x="'+x+'" y="'+(y+7)+'" text-anchor="middle" font-size="20" font-weight="700" fill="var(--ink)">'+a.s+(a.ion&&t<1?'⁺':'')+'</text>';
+      (a.lp||[]).forEach(ang=>{[-11,11].forEach(o=>{h+=eSym(x+R*Math.cos(rad(ang+o)),y+R*Math.sin(rad(ang+o)),a.e);});});
+    });
+    sp.bonds.forEach((b,bi)=>{
+      const [ai,bj,n,dat]=b,A=P[ai],B=P[bj];
+      const dx=B[0]-A[0],dy=B[1]-A[1],L=Math.hypot(dx,dy),u=[dx/L,dy/L],p=[-u[1],u[0]];
+      const M=[(A[0]+B[0])/2,(A[1]+B[1])/2];
+      const ta=sp.atoms[ai].e,tb=dat?ta:sp.atoms[bj].e;
+      for(let j=0;j<n;j++){
+        const off=(j-(n-1)/2)*13;
+        let pa=[M[0]-u[0]*5+p[0]*off,M[1]-u[1]*5+p[1]*off],pb=[M[0]+u[0]*5+p[0]*off,M[1]+u[1]*5+p[1]*off];
+        if(dat&&sp.anim&&sp.anim.bond===bi&&t<1){ // lone pair travels from donor's shell into the overlap
+          const F=P1[bj],G=P1[ai],ang=Math.atan2(F[1]-G[1],F[0]-G[0]);
+          const la=[A[0]+R*Math.cos(ang-rad(11)),A[1]+R*Math.sin(ang-rad(11))],lb=[A[0]+R*Math.cos(ang+rad(11)),A[1]+R*Math.sin(ang+rad(11))];
+          const f1=[M[0]-u[0]*5,M[1]-u[1]*5],f2=[M[0]+u[0]*5,M[1]+u[1]*5];
+          // final positions computed at t=1 geometry
+          const B1=P1[bj],A1=P1[ai],M1=[(A1[0]+B1[0])/2,(A1[1]+B1[1])/2];
+          const g1=[M1[0]-u[0]*5,M1[1]-u[1]*5],g2=[M1[0]+u[0]*5,M1[1]+u[1]*5];
+          pa=[la[0]+(g1[0]-la[0])*tt,la[1]+(g1[1]-la[1])*tt];pb=[lb[0]+(g2[0]-lb[0])*tt,lb[1]+(g2[1]-lb[1])*tt];
+        }
+        h+=eSym(pa[0],pa[1],ta)+eSym(pb[0],pb[1],tb);
+      }
+    });
+  }else{
+    // displayed formula
+    const lineCol='var(--ink)';
+    sp.bonds.forEach((b,bi)=>{
+      const [ai,bj,n,dat]=b,A=P[ai],B=P[bj];
+      if(dat&&sp.anim&&sp.anim.bond===bi&&t<1)return;
+      const dx=B[0]-A[0],dy=B[1]-A[1],L=Math.hypot(dx,dy),u=[dx/L,dy/L],p=[-u[1],u[0]];
+      const s0=[A[0]+u[0]*15,A[1]+u[1]*15],s1=[B[0]-u[0]*15,B[1]-u[1]*15];
+      if(dat){
+        const tip=s1;
+        h+='<line x1="'+s0[0]+'" y1="'+s0[1]+'" x2="'+(tip[0]-u[0]*8)+'" y2="'+(tip[1]-u[1]*8)+'" stroke="var(--accent)" stroke-width="2.6"/>';
+        h+='<path d="M'+tip[0]+','+tip[1]+' L'+(tip[0]-u[0]*12+p[0]*6)+','+(tip[1]-u[1]*12+p[1]*6)+' L'+(tip[0]-u[0]*12-p[0]*6)+','+(tip[1]-u[1]*12-p[1]*6)+'Z" fill="var(--accent)"/>';
+      }else{
+        for(let j=0;j<n;j++){const off=(j-(n-1)/2)*6;
+          h+='<line x1="'+(s0[0]+p[0]*off)+'" y1="'+(s0[1]+p[1]*off)+'" x2="'+(s1[0]+p[0]*off)+'" y2="'+(s1[1]+p[1]*off)+'" stroke="'+lineCol+'" stroke-width="2.2"/>';}
+      }
+    });
+    sp.atoms.forEach((a,i)=>{const [x,y]=P[i];
+      h+='<text x="'+x+'" y="'+(y+7)+'" text-anchor="middle" font-size="20" font-weight="700" fill="var(--ink)">'+a.s+(a.ion&&t<1?'⁺':'')+'</text>';
+      const lps=(a.lp||[]).slice();
+      if(sp.anim&&t<1){const bnd=sp.bonds[sp.anim.bond];if(bnd[0]===i){const F=P1[bnd[1]],G=P1[i];lps.push(Math.atan2(F[1]-G[1],F[0]-G[0])*180/Math.PI);}}
+      if(showLP)lps.forEach(ang=>{const c=[x+21*Math.cos(rad(ang)),y+21*Math.sin(rad(ang))+(Math.abs(Math.sin(rad(ang)))>.7?0:-1)],q=[-Math.sin(rad(ang)),Math.cos(rad(ang))];
+        [-1,1].forEach(k=>h+='<circle cx="'+(c[0]+q[0]*4*k)+'" cy="'+(c[1]+q[1]*4*k)+'" r="2.4" fill="var(--muted)"/>');});
+    });
+  }
+  if(sp.charge&&t>=1){
+    const bx0=Math.min(...P1.map(p=>p[0]))-(disp?20:R+6),bx1=Math.max(...P1.map(p=>p[0]))+(disp?20:R+6),by0=Math.min(...P1.map(p=>p[1]))-(disp?22:R+6),by1=Math.max(...P1.map(p=>p[1]))+(disp?20:R+6);
+    h+='<path d="M'+(bx0+8)+','+by0+'h-8v'+(by1-by0)+'h8M'+(bx1-8)+','+by0+'h8v'+(by1-by0)+'h-8" fill="none" stroke="var(--ink)" stroke-width="2"/>';
+    h+='<text x="'+(bx1+5)+'" y="'+(by0+10)+'" font-size="20" font-weight="700" fill="var(--ink)">'+sp.charge+'</text>';
+  }
+  svg.innerHTML=h;
+}
+
+function viewer(host,keys,opts){
+  opts=opts||{};
+  host.innerHTML='<span class="lab">'+opts.label+'</span>'+
+    '<div class="controls chips" role="group" aria-label="Choose a molecule">'+keys.map((k,i)=>'<button data-k="'+k+'" aria-pressed="'+(i===0)+'">'+M[k].name+'</button>').join('')+'</div>'+
+    '<div class="controls"><button class="mode" aria-pressed="false">Displayed formula</button><button class="lpb" aria-pressed="true" hidden>Show lone pairs</button>'+(opts.dative?'<button class="primary go">Form the dative bond</button><button class="rs">Reset</button>':'')+'</div>'+
+    '<svg class="mol" role="img"></svg><p class="note"></p>'+
+    '<p class="caption">'+(opts.key||'Each atom\'s own electrons have their own symbol. Outer shells only.')+'</p>';
+  const svg=host.querySelector('svg'),note=host.querySelector('.note'),modeB=host.querySelector('.mode'),lpB=host.querySelector('.lpb');
+  const st={k:keys[0],mode:'dc',t:opts.dative?0:1,lp:true,anim:false};
+  function draw(){const sp=M[st.k];render(svg,sp,st.mode,st.t,st.lp);svg.setAttribute('aria-label',(st.mode==='dc'?'Dot-and-cross diagram of ':'Displayed formula of ')+sp.name);
+    note.textContent=sp.name+': '+(opts.dative&&st.t<1?sp.pre+' Press "Form the dative bond".':sp.note);
+    const go=host.querySelector('.go');if(go)go.disabled=st.t>=1||st.anim;}
+  host.querySelectorAll('.chips button').forEach(b=>b.addEventListener('click',()=>{host.querySelectorAll('.chips button').forEach(x=>x.setAttribute('aria-pressed',x===b));st.k=b.dataset.k;st.t=opts.dative?0:1;draw();}));
+  modeB.addEventListener('click',()=>{st.mode=st.mode==='dc'?'disp':'dc';modeB.setAttribute('aria-pressed',st.mode==='disp');modeB.textContent=st.mode==='disp'?'Dot-and-cross':'Displayed formula';lpB.hidden=st.mode!=='disp';draw();});
+  lpB.addEventListener('click',()=>{st.lp=!st.lp;lpB.setAttribute('aria-pressed',st.lp);draw();});
+  if(opts.dative){
+    host.querySelector('.go').addEventListener('click',()=>{if(st.anim)return;st.anim=true;const t0=performance.now(),dur=RM?1:1400;
+      (function fr(n){st.t=Math.min(1,(n-t0)/dur);draw();if(st.t<1)requestAnimationFrame(fr);else{st.anim=false;draw();}})(t0);});
+    host.querySelector('.rs').addEventListener('click',()=>{st.t=0;draw();});
+  }
+  draw();
+}
+viewer($('#v1'),['H2','Cl2','HCl','H2O','NH3','CH4'],{label:'Dot-and-cross: single bonds'});
+viewer($('#v2'),['O2','N2','CO2','C2H4'],{label:'Dot-and-cross: multiple bonds'});
+viewer($('#v3'),['NH4','H3O','NH3BF3'],{label:'Watch a dative bond form',dative:true,key:'Both electrons in the dative bond carry the donor\'s symbol, because both came from the donor.'});
+
+/* Al2Cl6 */
+render($('#al2cl6'),{dispOnly:true,ds:1,atoms:[{s:'Al',x:0,y:0},{s:'Al',x:120,y:0},{s:'Cl',x:60,y:-60},{s:'Cl',x:60,y:60},{s:'Cl',x:-55,y:-50},{s:'Cl',x:-55,y:50},{s:'Cl',x:175,y:-50},{s:'Cl',x:175,y:50}],
+  bonds:[[0,4,1],[0,5,1],[1,6,1],[1,7,1],[0,2,1],[2,1,1,1],[1,3,1],[3,0,1,1]]},'disp',1,false);
+
+/* ================= Cl2 states ================= */
+const cv=$('#mol');
+let W,H,ctx;
+function fit(){const r=cv.getBoundingClientRect(),d=devicePixelRatio||1;cv.width=r.width*d;cv.height=r.height*d;ctx=cv.getContext('2d');ctx.setTransform(d,0,0,d,0,0);W=r.width;H=r.height;}
+fit();addEventListener('resize',fit);
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const mols=[];const N=18;
+for(let i=0;i<N;i++)mols.push({x:W/2,y:H/2,a:0,vx:0,vy:0,va:0,ph:Math.random()*6});
+let mode='solid';
+const NOTE={solid:'Solid: molecules are held in a regular arrangement by weak intermolecular forces. They vibrate but stay in place.',
+ liquid:'Liquid: enough energy has been supplied to overcome some intermolecular forces. Molecules move past each other. Every Cl–Cl bond is still there.',
+ gas:'Gas: the intermolecular forces have been overcome and the molecules move apart. Still Cl₂ molecules: no covalent bonds have broken.'};
+function tgt(i){const cols=6,sp=Math.min(46,(W-60)/cols);const r=Math.floor(i/cols),c=i%cols;return [W/2-(cols-1)*sp/2+c*sp,H-30-(2-r)*30,(r+c)%2?0.6:-0.6];}
+function setMode(m){mode=m;['S','L','G'].forEach((k,j)=>$('#st'+k).setAttribute('aria-pressed',['solid','liquid','gas'][j]===m));$('#molNote').textContent=NOTE[m];
+  mols.forEach(p=>{const s=m==='gas'?2.2:.6;p.vx=(Math.random()-.5)*s*2;p.vy=(Math.random()-.5)*s*2;p.va=(Math.random()-.5)*.08;});}
+$('#stS').onclick=()=>setMode('solid');$('#stL').onclick=()=>setMode('liquid');$('#stG').onclick=()=>setMode('gas');
+setMode('solid');
+mols.forEach((p,i)=>{const t=tgt(i);p.x=t[0];p.y=t[1];p.a=t[2];});
+let last=0;
+function vis(){const r=cv.getBoundingClientRect();return r.bottom>0&&r.top<innerHeight;}
+function step(n){
+  requestAnimationFrame(step);
+  if(!vis()){last=n;return;}
+  const dt=Math.min(3,(n-last)/16.7||1);last=n;
+  const an=css('--anion'),acc=css('--accent'),ln=css('--line');
+  ctx.clearRect(0,0,W,H);
+  const floorTop=mode==='liquid'?H*.38:12;
+  mols.forEach((p,i)=>{
+    if(mode==='solid'){const t=tgt(i);p.ph+=.2*dt;p.x+=(t[0]-p.x)*.06*dt;p.y+=(t[1]-p.y)*.06*dt;p.a+=(t[2]-p.a)*.06*dt;}
+    else{
+      const sp=mode==='gas'?2.4:.7;
+      p.vx+=(Math.random()-.5)*.12*dt;p.vy+=(Math.random()-.5)*.12*dt;
+      const v=Math.hypot(p.vx,p.vy);if(v>sp){p.vx*=sp/v;p.vy*=sp/v;}
+      p.x+=p.vx*dt;p.y+=p.vy*dt;p.a+=p.va*dt;
+      if(p.x<20){p.x=20;p.vx=Math.abs(p.vx);}if(p.x>W-20){p.x=W-20;p.vx=-Math.abs(p.vx);}
+      if(p.y<floorTop){p.y=floorTop;p.vy=Math.abs(p.vy);}if(p.y>H-16){p.y=H-16;p.vy=-Math.abs(p.vy);}
+    }
+  });
+  if(mode!=='solid'){for(let i=0;i<N;i++)for(let j=i+1;j<N;j++){const a=mols[i],b=mols[j],dx=b.x-a.x,dy=b.y-a.y,dd=Math.hypot(dx,dy)||1;if(dd<30){const f=(30-dd)*.08;a.x-=dx/dd*f;a.y-=dy/dd*f;b.x+=dx/dd*f;b.y+=dy/dd*f;}}}
+  if(mode!=='gas'){ctx.save();ctx.setLineDash([3,4]);ctx.strokeStyle=acc;ctx.globalAlpha=.7;ctx.lineWidth=1.4;
+    for(let i=0;i<N;i++)for(let j=i+1;j<N;j++){const a=mols[i],b=mols[j],dd=Math.hypot(a.x-b.x,a.y-b.y);if(dd<(mode==='solid'?50:56)){ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();}}
+    ctx.restore();}
+  mols.forEach(p=>{
+    const jx=mode==='solid'?Math.sin(p.ph)*1.2:0,jy=mode==='solid'?Math.cos(p.ph*1.3)*1.2:0;
+    const ux=Math.cos(p.a)*8,uy=Math.sin(p.a)*8;
+    ctx.strokeStyle=an;ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(p.x+jx-ux,p.y+jy-uy);ctx.lineTo(p.x+jx+ux,p.y+jy+uy);ctx.stroke();
+    [-1,1].forEach(k=>{const g=ctx.createRadialGradient(p.x+jx+ux*k-3,p.y+jy+uy*k-3,1,p.x+jx+ux*k,p.y+jy+uy*k,10);g.addColorStop(0,'rgba(255,255,255,.7)');g.addColorStop(.4,an);g.addColorStop(1,an);
+      ctx.fillStyle=g;ctx.beginPath();ctx.arc(p.x+jx+ux*k,p.y+jy+uy*k,10,0,7);ctx.fill();});
+  });
+}
+requestAnimationFrame(step);
+
+/* checklist */
+const CK=['Define a covalent bond as a shared pair of electrons','Draw dot-and-cross diagrams for H₂, Cl₂, HCl, H₂O, NH₃ and CH₄','Draw dot-and-cross diagrams with double and triple bonds (O₂, N₂, CO₂, C₂H₄)','Explain what a dative (coordinate) bond is and what the donor and acceptor need','Draw NH₄⁺, H₃O⁺, H₃N→BF₃ and Al₂Cl₆ showing the dative bond','Use lines for shared pairs and arrows for coordinate bonds, arrow from donor to acceptor','Explain the low melting and boiling points of simple molecular substances','Explain why simple molecular substances do not conduct electricity'];
+let saved={};try{saved=JSON.parse(localStorage.getItem('cov-check')||'{}');}catch(e){}
+$('#check').innerHTML=CK.map((t,i)=>'<li><label><input type="checkbox" id="ck'+i+'"'+(saved[i]?' checked':'')+'><span>'+t+'</span></label></li>').join('');
+$('#check').addEventListener('change',e=>{saved[e.target.id.slice(2)]=e.target.checked;try{localStorage.setItem('cov-check',JSON.stringify(saved));}catch(err){}});
+})();
+
+</script>
+
+</body>
+</html>
