@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Knowledge Organiser Builder – GCSE Chemistry</title>
+<style>
+  :root { --navy:#1F3864; --blue:#2E74B5; --light:#D9E2F3; --pale:#F3F6FB; --grey:#595959; --line:#C5D3EA; }
+  * { box-sizing: border-box; }
+  sup, sub { line-height: 0; }
+  body { margin:0; font-family: Calibri, "Segoe UI", Carlito, Arial, sans-serif; color:#1a1a1a; background:#fff; }
+  header.top { background:var(--navy); color:#fff; padding:18px 20px 16px; }
+  header.top h1 { margin:0; font-size:1.45rem; }
+  header.top p { margin:4px 0 0; opacity:.85; font-size:.95rem; }
+  .wrap { max-width:1000px; margin:0 auto; padding:16px 16px 120px; }
+  .controls { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:14px; }
+  .controls input[type=search], .controls input[type=text] { flex:1 1 220px; padding:10px 12px; font-size:1rem; border:1px solid var(--line); border-radius:8px; }
+  .toggle { display:flex; align-items:center; gap:6px; font-size:.95rem; color:var(--grey); user-select:none; }
+  .help { background:var(--pale); border-left:4px solid var(--blue); padding:10px 14px; border-radius:6px; font-size:.93rem; color:#333; margin-bottom:16px; }
+  .help b { color:var(--navy); }
+  details.topic { border:1px solid var(--line); border-radius:10px; margin-bottom:10px; overflow:hidden; }
+  details.topic > summary { list-style:none; cursor:pointer; padding:12px 14px; background:var(--pale); display:flex; justify-content:space-between; align-items:center; font-weight:700; color:var(--navy); font-size:1.05rem; }
+  details.topic > summary::-webkit-details-marker { display:none; }
+  details.topic > summary::before { content:"▸"; margin-right:8px; transition:transform .15s; display:inline-block; }
+  details.topic[open] > summary::before { transform:rotate(90deg); }
+  summary .lab { flex:1; }
+  summary .cnt { font-weight:400; font-size:.85rem; color:var(--grey); }
+  .set { padding:4px 12px 12px; }
+  .set h3 { display:flex; align-items:center; gap:8px; margin:12px 0 6px; font-size:.98rem; color:var(--blue); }
+  .set h3 label { display:flex; align-items:center; gap:8px; cursor:pointer; }
+  table.q { width:100%; border-collapse:collapse; font-size:.97rem; }
+  table.q td { border-top:1px solid #E3E9F4; padding:8px 6px; vertical-align:top; }
+  table.q td.cb { width:34px; text-align:center; }
+  table.q td.qq { width:52%; }
+  table.q td.aa { color:#1F3864; }
+  table.q tr.sel td { background:#FFF6D6; }
+  table.q tr:hover td { background:#F7F9FD; }
+  table.q tr.sel:hover td { background:#FFEFB8; }
+  input[type=checkbox] { width:19px; height:19px; accent-color:var(--navy); cursor:pointer; }
+  body.hide-ans td.aa span.ans { filter:blur(6px); cursor:pointer; user-select:none; }
+  body.hide-ans td.aa.show span.ans { filter:none; }
+  .hint { font-size:.8rem; color:var(--grey); }
+  .bar { position:fixed; left:0; right:0; bottom:0; background:#fff; border-top:2px solid var(--navy); padding:10px 14px; display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:center; box-shadow:0 -4px 14px rgba(0,0,0,.08); z-index:5; }
+  .bar .n { font-weight:700; color:var(--navy); margin-right:6px; }
+  button { font:inherit; font-size:.95rem; padding:9px 14px; border-radius:8px; border:1px solid var(--navy); background:#fff; color:var(--navy); cursor:pointer; }
+  button.primary { background:var(--navy); color:#fff; }
+  button:disabled { opacity:.4; cursor:default; }
+  .none { color:var(--grey); padding:20px; text-align:center; display:none; }
+  #print { display:none; }
+  .paper { display:inline-block; font-size:.72rem; font-weight:700; padding:2px 8px; border-radius:20px; color:#fff; margin-left:8px; white-space:nowrap; vertical-align:1px; }
+  .paper.p1 { background:#1f6fd1; } .paper.p2 { background:#c2410c; } .paper.pboth { background:#2b8a3e; } .paper.tri { background:#7b3fb6; }
+  .set h3 .paper { font-size:.68rem; }
+  body.hide-triple .set[data-triple] { display:none !important; }
+  .tritoggle { display:none; }
+  .legend { display:flex; flex-wrap:wrap; gap:8px; align-items:center; font-size:.88rem; color:var(--grey); margin:-4px 0 14px; }
+  .legend .paper { margin-left:0; }
+  .filter { display:flex; gap:6px; flex-wrap:wrap; }
+  .filter button { padding:6px 12px; font-size:.88rem; }
+  .filter button[aria-pressed="true"] { background:var(--navy); color:#fff; }
+  .back { display:inline-block; color:#fff; opacity:.85; text-decoration:none; font-size:.9rem; margin-bottom:6px; }
+  .back:hover { opacity:1; text-decoration:underline; }
+
+  /* ---------- Print ---------- */
+  @media print {
+    body { background:#fff; }
+    header.top, .wrap, .bar { display:none !important; }
+    #print { display:block; }
+    .sheet { page-break-after:always; break-after:page; }
+    .sheet:last-child { page-break-after:auto; break-after:auto; }
+    .ptitle { text-align:center; font-weight:700; font-size:15pt; color:var(--navy); margin:0 0 2pt; }
+    .psub { text-align:center; font-style:italic; color:var(--grey); font-size:10.5pt; padding-bottom:4pt; border-bottom:1.2pt solid var(--navy); margin-bottom:10pt; }
+    table.pt { width:100%; border-collapse:collapse; font-size:11pt; table-layout:fixed; }
+    table.pt th { background:var(--navy) !important; color:#fff !important; font-weight:700; padding:5pt; border:0.6pt solid #8EA9DB; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    table.pt td { border:0.6pt solid #8EA9DB; padding:4pt 6pt; vertical-align:middle; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    table.pt td.num { text-align:center; }
+    table.pt tr.alt td { background:var(--light) !important; }
+    table.pt td.key { background:var(--light) !important; font-size:10pt; }
+    .tag { display:inline-block; font-size:7.5pt; font-weight:700; color:#fff !important; border-radius:3pt; padding:0 3pt; margin-right:4pt; vertical-align:1pt; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    .tag.p1 { background:#1f6fd1 !important; } .tag.p2 { background:#c2410c !important; } .tag.pboth { background:#2b8a3e !important; }
+    .psub .paper { font-style:normal; font-size:8.5pt; padding:1pt 6pt; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    .psub .paper.p1 { background:#1f6fd1 !important; } .psub .paper.p2 { background:#c2410c !important; } .psub .paper.pboth { background:#2b8a3e !important; } .psub .paper.tri { background:#7b3fb6 !important; }
+    .tag .t { margin-left:2pt; padding-left:2pt; border-left:0.6pt solid #fff; }
+    .portrait table.pt tr td { height:20mm; }
+    .landscape table.pt tr td { height:14.5mm; }
+    table.pt td.key.long { font-size:8.5pt; line-height:1.2; }
+    .foot { font-style:italic; color:var(--grey); font-size:9pt; margin-top:6pt; }
+  }
+</style>
+<style id="pagesize">@page { size: A4 portrait; margin: 15mm 17mm; }</style>
+</head>
+<body>
+<header class="top">
+  <a class="back" href="../#gcse/kos">← Mr Jarvis' Chemistry</a>
+  <h1>GCSE Chemistry – Knowledge Organiser Builder</h1>
+  <p>Tick the facts you don't know yet, then print your own knowledge organiser.</p>
+</header>
+
+<div class="wrap">
+  <div class="help">
+    <b>How to use:</b> open a topic, cover or hide the answers, and tick every question you can't answer. Then press <b>Print Q&amp;A sheet</b> or <b>Print self-test sheet</b> and choose <b>Save as PDF</b>. Your ticks are grouped into sets of 10. The self-test sheet is landscape; if it comes out portrait, switch to landscape in the print options. Coloured labels show which paper each topic is on. Sets marked <b>Triple only</b> are for separate Chemistry (8462) only – Combined Science students can hide them with the switch below.
+  </div>
+  <div class="controls">
+    <input type="search" id="search" placeholder="Search questions and answers (e.g. colour, equation, Kc)">
+    <input type="text" id="name" placeholder="Your name (printed on the sheet)">
+    <label class="toggle"><input type="checkbox" id="hide"> Hide answers <span class="hint">(tap to reveal)</span></label>
+  </div>
+  <div class="legend">
+    <span>Exam paper:</span>
+    <span class="paper p1">Paper 1</span><span class="paper p2">Paper 2</span><span class="paper pboth" id="lgBoth">Papers 1 &amp; 2</span><span class="paper tri" id="lgTri">Triple only</span>
+    <span class="filter" role="group" aria-label="Show topics for">
+      <button data-paper="all" aria-pressed="true">All</button><button data-paper="1" aria-pressed="false">Paper 1</button><button data-paper="2" aria-pressed="false">Paper 2</button>
+    </span>
+    <label class="toggle tritoggle" id="triWrap"><input type="checkbox" id="hideTri"> Hide triple only (Combined Science)</label>
+  </div>
+  <div id="topics"></div>
+  <div class="none" id="none">No questions match your search or paper filter.</div>
+</div>
+
+<div class="bar">
+  <span class="n" id="count">0 selected</span>
+  <button id="clear">Clear ticks</button>
+  <button class="primary" id="pQA">Print Q&amp;A sheet</button>
+  <button class="primary" id="pST">Print self-test sheet</button>
+</div>
+
+<div id="print"></div>
+
+<script>
+const DATA = [{"code":"C1","name":"Atomic Structure and the Periodic Table","paper":"1","sets":[{"title":"Atoms, Elements and Mixtures","items":[["Atom","Smallest part of an element that can exist"],["Element","Substance made of only one type of atom"],["Compound","Two or more elements chemically combined in fixed proportions"],["Mixture","Two or more substances not chemically combined"],["Methods to separate mixtures","Filtration, crystallisation, distillation, chromatography"],["Radius of an atom","About 0.1 nm (1 × 10^{−10} m)"],["Size of the nucleus compared with the atom","About 1/10 000 of the radius"],["Relative masses of proton, neutron, electron","1, 1, very small"],["Relative charges of proton, neutron, electron","+1, 0, −1"],["Why atoms have no overall charge","Equal numbers of protons and electrons"]]},{"title":"Atomic Number, Isotopes and the Atomic Model","items":[["Atomic number","Number of protons"],["Mass number","Number of protons + neutrons"],["Isotopes","Same number of protons, different number of neutrons"],["Relative atomic mass","Average mass of an element's atoms, taking isotope abundance into account"],["Plum pudding model","Ball of positive charge with electrons embedded in it"],["Experiment that replaced the plum pudding model","Alpha particle scattering"],["Conclusion of alpha scattering","Mass is concentrated in a tiny positive nucleus"],["Scientist who put electrons in shells","Niels Bohr"],["Scientist who showed neutrons exist","James Chadwick"],["Maximum electrons in the first three shells","2, 8, 8"]]},{"title":"The Periodic Table","items":[["Modern periodic table is ordered by","Atomic number"],["Group number tells you","Number of outer electrons"],["Period number tells you","Number of electron shells"],["Ions formed by metals","Positive ions"],["Ions formed by non-metals","Negative ions"],["Position of metals in the periodic table","Left and centre"],["Mendeleev ordered elements by","Atomic weight and properties"],["Why Mendeleev left gaps","For undiscovered elements"],["Why Mendeleev swapped some pairs","To match their properties"],["What explained the swapped pairs","Isotopes"]]},{"title":"Groups 0, 1 and 7","items":[["Name of Group 0","Noble gases"],["Why noble gases are unreactive","Full outer shell (stable)"],["Trend in boiling point down Group 0","Increases"],["Name of Group 1","Alkali metals"],["Trend in reactivity down Group 1","Increases"],["Products of a Group 1 metal with water","Metal hydroxide + hydrogen"],["Equation for sodium with water","2Na + 2H_{2}O → 2NaOH + H_{2}"],["Name of Group 7","Halogens"],["Trend in reactivity down Group 7","Decreases"],["Trend in melting and boiling point down Group 7","Increases"]]},{"title":"Group 7 and Reactivity","items":[["Form halogens exist in","Diatomic molecules"],["Appearance of chlorine","Green gas"],["Appearance of bromine","Red-brown liquid"],["Appearance of iodine","Grey-black solid"],["Halogen displacement","More reactive halogen displaces a less reactive one from its salt"],["Products of chlorine + potassium bromide","Potassium chloride + bromine"],["Charge on Group 1 ions","1+"],["Charge on Group 7 ions","1−"],["Why Group 1 gets more reactive down the group","Outer electron further from nucleus, lost more easily"],["Why Group 7 gets less reactive down the group","Outer shell further from nucleus, electron gained less easily"]]},{"title":"Transition Metals","triple":true,"items":[["Position of transition metals","Central block, between Groups 2 and 3"],["Transition metals compared with Group 1","Harder, denser, higher melting point, less reactive"],["Examples of transition metals","Cr, Mn, Fe, Co, Ni, Cu"],["Example of ions with different charges","Fe^{2+} and Fe^{3+}"],["Appearance of transition metal compounds","Coloured"],["Common use of transition metals","Catalysts"],["Catalyst in the Haber process","Iron"],["Colour of copper(II) compounds","Blue"],["Colour of iron(II) compounds","Green"],["Colour of iron(III) compounds","Orange-brown"]]}]},{"code":"C2","name":"Bonding, Structure and Properties","paper":"1","sets":[{"title":"Types of Bonding","items":[["Ionic bonding occurs between","Metal and non-metal"],["Covalent bonding occurs between","Non-metals"],["Metallic bonding occurs in","Metals"],["Ionic bond","Electrostatic attraction between oppositely charged ions"],["Covalent bond","Shared pair of electrons"],["Metallic bonding","Positive ions in a sea of delocalised electrons"],["What happens to electrons in ionic bonding","Transferred"],["Structure of an ionic compound","Giant ionic lattice"],["Formula of sodium chloride","NaCl"],["Formula of magnesium oxide","MgO"]]},{"title":"States and Properties","items":[["Three states of matter","Solid, liquid, gas"],["State symbols","(s), (l), (g), (aq)"],["Meaning of (aq)","Dissolved in water"],["Limitations of the particle model","Particles shown as solid spheres; no forces shown"],["Why ionic compounds have high melting points","Strong electrostatic forces in all directions"],["When ionic compounds conduct","When molten or dissolved"],["Why they conduct then","Ions free to move"],["Why simple molecular substances have low boiling points","Weak intermolecular forces"],["Do simple molecular substances conduct?","No"],["Polymer","Very large molecule of many repeating units"]]},{"title":"Giant Covalent Structures and Carbon","items":[["Examples of giant covalent substances","Diamond, graphite, silicon dioxide"],["Bonds per carbon in diamond","4"],["Why diamond is very hard","Every carbon has 4 strong covalent bonds"],["Bonds per carbon in graphite","3"],["Structure of graphite","Layers of hexagonal rings"],["Why graphite is soft","Layers slide (weak forces between layers)"],["Why graphite conducts","Delocalised electrons"],["Graphene","Single layer of graphite"],["Fullerenes","Hollow carbon molecules, e.g. C_{60}"],["Carbon nanotubes","Cylindrical fullerenes"]]},{"title":"Metals and Alloys","items":[["Why metals conduct electricity","Delocalised electrons"],["Why metals conduct heat","Delocalised electrons"],["Why metals have high melting points","Strong metallic bonds"],["Why pure metals are soft","Layers of atoms slide easily"],["Alloy","Mixture of a metal with other elements"],["Why alloys are harder","Different sized atoms distort the layers"],["Example of an alloy","Steel"],["Why polymers are solid at room temperature","Large molecules, strong intermolecular forces"],["Bonds within polymer molecules","Strong covalent bonds"],["Why diamond does not conduct","No delocalised electrons"]]},{"title":"Nanoparticles","triple":true,"items":[["Size of nanoparticles","1–100 nm"],["1 nm in metres","1 × 10^{−9} m"],["Size of fine particles (PM_{2.5})","100–2500 nm"],["Size of coarse particles (PM_{10})","2.5–10 μm"],["Why nanoparticles behave differently","Very high surface area to volume ratio"],["Effect of side length ÷ 10 on surface area : volume","× 10"],["Uses of nanoparticles","Medicine, electronics, cosmetics, sun creams, catalysts"],["Use of silver nanoparticles","Antibacterial, e.g. wound dressings"],["Why less nanoparticle catalyst is needed","Larger surface area"],["Risk of nanoparticles","Unknown effects on health"]]}]},{"code":"C3","name":"Quantitative Chemistry","paper":"1","sets":[{"title":"Mass and Moles","items":[["Law of conservation of mass","Mass of products = mass of reactants"],["Relative formula mass (*M*_{r})","Sum of the relative atomic masses in the formula"],["Why mass increases when a metal is heated in air","Oxygen from the air is added"],["Why mass decreases when a carbonate is heated","CO_{2} gas escapes"],["Mole","Amount containing 6.02 × 10^{23} particles"],["Avogadro constant","6.02 × 10^{23} per mole"],["Equation for moles","Moles = mass ÷ *M*_{r}"],["Mass of 1 mole of a substance","Its *M*_{r} in grams"],["Limiting reactant","Reactant completely used up"],["Reactant in excess","Reactant left over"]]},{"title":"Concentration and Measurement","items":[["Concentration equation","Mass of solute ÷ volume of solution"],["Units of concentration","g/dm^{3}"],["1 dm^{3} in cm^{3}","1000 cm^{3}"],["Convert cm^{3} to dm^{3}","÷ 1000"],["Mass of solute from concentration","Concentration × volume"],["Numbers in a balanced equation show","Mole ratio"],["Mean","Total ÷ number of values"],["Range","Highest − lowest value"],["Uncertainty","Range of results about the mean"],["Effect of more solute in the same volume","Higher concentration"]]},{"title":"Yield, Atom Economy, Titrations and Gases","triple":true,"items":[["Percentage yield equation","Actual mass ÷ maximum theoretical mass × 100"],["Reasons yield is below 100%","Reversible reaction, losses when separating, side reactions"],["Atom economy equation","*M*_{r} of desired product ÷ total *M*_{r} of reactants × 100"],["Why high atom economy matters","Less waste; more sustainable"],["Concentration in mol/dm^{3}","Moles ÷ volume in dm^{3}"],["Glassware to measure 25.0 cm^{3} of alkali","Pipette"],["Glassware to add acid in a titration","Burette"],["Volume of 1 mole of any gas at RTP","24 dm^{3}"],["Room temperature and pressure (RTP)","20 °C and 1 atm"],["Equation for gas volume at RTP","Moles × 24 dm^{3}"]]}]},{"code":"C4","name":"Chemical Changes","paper":"1","sets":[{"title":"Reactivity and Extraction","items":[["Reactivity series (most reactive first)","K, Na, Li, Ca, Mg, C, Zn, Fe, H, Cu"],["Products of a metal with water","Metal hydroxide + hydrogen"],["Products of a metal with acid","Salt + hydrogen"],["Oxidation (in terms of oxygen)","Gain of oxygen"],["Reduction (in terms of oxygen)","Loss of oxygen"],["Metals extracted by reduction with carbon","Those less reactive than carbon, e.g. iron"],["Metals extracted by electrolysis","Those more reactive than carbon, e.g. aluminium"],["Metal found uncombined in the Earth","Gold"],["Displacement reaction","More reactive metal displaces a less reactive one from a compound"],["Ore","Rock containing enough metal to extract"]]},{"title":"Redox and Salts","items":[["Oxidation (in terms of electrons)","Loss of electrons"],["Reduction (in terms of electrons)","Gain of electrons"],["Spectator ion","Ion that does not change in the reaction"],["Acid + alkali","Salt + water"],["Acid + metal oxide","Salt + water"],["Acid + metal carbonate","Salt + water + carbon dioxide"],["Salts made from hydrochloric acid","Chlorides"],["Salts made from sulfuric acid","Sulfates"],["Salts made from nitric acid","Nitrates"],["Base","Substance that neutralises an acid"]]},{"title":"pH and Strong and Weak Acids","items":[["pH of a neutral solution","7"],["pH of acids","Below 7"],["pH of alkalis","Above 7"],["Ion that makes solutions acidic","H^{+}"],["Ion that makes solutions alkaline","OH^{−}"],["Ionic equation for neutralisation","H^{+} + OH^{−} → H_{2}O"],["Strong acid","Completely ionised in water"],["Weak acid","Partially ionised in water"],["Examples of strong acids","Hydrochloric, nitric, sulfuric"],["Change in [H^{+}] when pH falls by 1","× 10"]]},{"title":"Electrolysis","items":[["Electrolysis","Splitting a compound using electricity"],["Electrolyte","Molten or dissolved ionic compound"],["Cathode","Negative electrode"],["Anode","Positive electrode"],["Ions attracted to the cathode","Positive ions"],["Products of electrolysis of molten lead bromide","Lead and bromine"],["Product at the cathode in aqueous solution","Hydrogen, unless the metal is less reactive than hydrogen"],["Product at the anode in aqueous solution","Oxygen, unless halide ions are present"],["Products of electrolysis of brine","Hydrogen, chlorine, sodium hydroxide"],["Half-equation for chloride ions at the anode","2Cl^{−} → Cl_{2} + 2e^{−}"]]},{"title":"Electrolysis of Aluminium Oxide","items":[["Aluminium is extracted from","Aluminium oxide"],["What aluminium oxide is dissolved in","Molten cryolite"],["Why cryolite is used","Lowers the melting point, saving energy"],["Material of the electrodes","Carbon (graphite)"],["Product at the cathode","Aluminium"],["Product at the anode","Oxygen"],["Why the anodes must be replaced","Carbon reacts with oxygen to form CO_{2}"],["Half-equation at the cathode","Al^{3+} + 3e^{−} → Al"],["Half-equation for hydrogen at the cathode","2H^{+} + 2e^{−} → H_{2}"],["Half-equation for oxygen at the anode","4OH^{−} → O_{2} + 2H_{2}O + 4e^{−}"]]},{"title":"Titrations","triple":true,"items":[["Purpose of a titration","Find volumes of acid and alkali that exactly react"],["Indicators for a titration","Phenolphthalein or methyl orange"],["Why universal indicator is not used","Gradual colour change"],["Phenolphthalein colours: acid / alkali","Colourless / pink"],["Methyl orange colours: acid / alkali","Red / yellow"],["Why a white tile is used","To see the colour change clearly"],["How acid is added near the end point","Dropwise"],["Where the burette is read","Bottom of the meniscus"],["Concordant results","Within 0.10 cm^{3} of each other"],["Burette is rinsed with","The acid it will contain"]]}]},{"code":"C5","name":"Energy Changes","paper":"1","sets":[{"title":"Exothermic and Endothermic","items":[["Exothermic reaction","Transfers energy to the surroundings; temperature rises"],["Endothermic reaction","Takes in energy from the surroundings; temperature falls"],["Examples of exothermic reactions","Combustion, oxidation, neutralisation"],["Examples of endothermic reactions","Thermal decomposition, citric acid + sodium hydrogencarbonate"],["Uses of exothermic reactions","Hand warmers, self-heating cans"],["Use of endothermic reactions","Sports injury cold packs"],["Activation energy","Minimum energy particles need to react"],["Bond breaking: endothermic or exothermic","Endothermic"],["Bond making: endothermic or exothermic","Exothermic"],["Energy change from bond energies","Bonds broken − bonds made"]]},{"title":"Reaction Profiles and Measuring Energy","items":[["Products on an exothermic profile","Lower than reactants"],["Products on an endothermic profile","Higher than reactants"],["Sign of energy change: exothermic","Negative"],["Sign of energy change: endothermic","Positive"],["Conservation of energy","Energy is not created or destroyed"],["Container for measuring temperature changes","Polystyrene cup with lid"],["Why polystyrene is used","Good insulator"],["Why a lid is used","Reduces heat loss"],["Main source of error","Heat loss to surroundings"],["Units of bond energy","kJ/mol"]]},{"title":"Chemical Cells and Fuel Cells","triple":true,"items":[["Simple chemical cell","Two different metals in an electrolyte"],["Factors affecting cell voltage","Metals used and the electrolyte"],["Why non-rechargeable cells stop working","Reactants are used up"],["Rechargeable cell","Reactions reversed by an external current"],["What a hydrogen fuel cell is supplied with","Hydrogen and oxygen (air)"],["Product of a hydrogen fuel cell","Water"],["Overall equation","2H_{2} + O_{2} → 2H_{2}O"],["Half-equation at the negative electrode","2H_{2} → 4H^{+} + 4e^{−}"],["Half-equation at the positive electrode","O_{2} + 4H^{+} + 4e^{−} → 2H_{2}O"],["Disadvantage of hydrogen fuel cells","Hydrogen is hard to store and flammable"]]}]},{"code":"C6","name":"Rate and Extent of Chemical Change","paper":"2","sets":[{"title":"Rates of Reaction","items":[["Mean rate equation","Quantity used or made ÷ time"],["Units of rate","g/s or cm^{3}/s (mol/s)"],["Rate at a point on a graph","Gradient of the tangent"],["Five factors affecting rate","Concentration, pressure, surface area, temperature, catalyst"],["Collision theory","Particles must collide with enough energy"],["Activation energy","Minimum energy for a collision to react"],["Catalyst","Speeds up a reaction without being used up"],["How a catalyst works","Different pathway with lower activation energy"],["Enzymes","Biological catalysts"],["Rate is proportional to","1/time"]]},{"title":"Reversible Reactions and Equilibrium","items":[["Symbol for a reversible reaction","⇌"],["Example of a reversible reaction","Ammonium chloride ⇌ ammonia + hydrogen chloride"],["If forward is exothermic, the reverse is","Endothermic (same amount of energy)"],["Heating blue hydrated copper sulfate gives","White anhydrous copper sulfate + water"],["Dynamic equilibrium","Forward and reverse rates are equal"],["Condition needed for equilibrium","Closed system"],["Le Chatelier's principle","System shifts to counteract a change"],["Effect of a catalyst on equilibrium position","None"],["Apparatus to measure gas volume","Gas syringe"],["Precipitate in the disappearing cross reaction","Sulfur"]]}]},{"code":"C7","name":"Organic Chemistry","paper":"2","sets":[{"title":"Crude Oil and Alkanes","items":[["Crude oil","Finite mixture of hydrocarbons from ancient plankton"],["Hydrocarbon","Compound of hydrogen and carbon only"],["General formula of alkanes","C_{n}H_{2n+2}"],["First four alkanes","Methane, ethane, propane, butane"],["Fractional distillation separates by","Boiling point"],["Fractions from crude oil","LPG, petrol, kerosene, diesel, heavy fuel oil"],["Longer chains: boiling point","Higher"],["Longer chains: viscosity","Higher"],["Longer chains: flammability","Lower"],["Products of complete combustion","Carbon dioxide + water"]]},{"title":"Cracking and Alkenes","items":[["Cracking","Breaking long hydrocarbons into shorter, more useful ones"],["Two methods of cracking","Catalytic cracking and steam cracking"],["Products of cracking","Shorter alkanes and alkenes"],["Why cracking is needed","Short chains are in higher demand"],["General formula of alkenes","C_{n}H_{2n}"],["Alkene functional group","C=C"],["Test for alkenes","Bromine water"],["Positive result for alkenes","Orange to colourless"],["Uses of alkenes","Making polymers and other chemicals"],["Unsaturated","Contains a C=C double bond"]]},{"title":"Alkenes and Alcohols","triple":true,"items":[["First four alkenes","Ethene, propene, butene, pentene"],["Alkene + hydrogen","Alkane (catalyst)"],["Alkene + steam","Alcohol (catalyst)"],["Alkene + bromine","Dibromoalkane"],["Alcohol functional group","–OH"],["First four alcohols","Methanol, ethanol, propanol, butanol"],["Alcohol + sodium","Hydrogen gas given off"],["Product of oxidising an alcohol","Carboxylic acid"],["Conditions for fermentation","Sugar solution, yeast, warm, no oxygen"],["Uses of ethanol","Fuel, solvent, drinks"]]},{"title":"Carboxylic Acids, Esters and Polymers","triple":true,"items":[["Carboxylic acid functional group","–COOH"],["First four carboxylic acids","Methanoic, ethanoic, propanoic, butanoic"],["Carboxylic acid + carbonate","Salt + water + carbon dioxide"],["Why carboxylic acids are weak acids","Partially ionise"],["Ester is made from","Carboxylic acid + alcohol (acid catalyst)"],["Ester from ethanol and ethanoic acid","Ethyl ethanoate"],["Monomers for addition polymerisation","Alkenes"],["Condensation polymerisation","Monomers with two functional groups join, losing a small molecule"],["Small molecule usually lost","Water"],["Monomers for a polyester","Diol + dicarboxylic acid"]]},{"title":"Natural Polymers","triple":true,"items":[["Functional groups in an amino acid","Amine (–NH_{2}) and carboxylic acid (–COOH)"],["Amino acids polymerise to form","Polypeptides and proteins"],["DNA stands for","Deoxyribonucleic acid"],["Monomers of DNA","Nucleotides"],["Structure of DNA","Double helix"],["Examples of natural polymers","Proteins, starch, cellulose, DNA"],["Monomer of starch and cellulose","Glucose"],["Type of polymerisation in proteins","Condensation"],["Polymer from ethene","Poly(ethene)"],["Functional groups needed per monomer (condensation)","2"]]}]},{"code":"C8","name":"Chemical Analysis","paper":"2","sets":[{"title":"Purity, Formulations and Chromatography","items":[["Pure substance (chemistry)","Single element or compound"],["Melting point of a pure substance","Sharp, specific value"],["Melting point of an impure substance","Lower and over a range"],["Formulation","Mixture designed as a useful product"],["Examples of formulations","Fuels, paints, medicines, alloys, fertilisers"],["Two phases in chromatography","Stationary and mobile"],["*R*_{f} equation","Distance moved by substance ÷ distance moved by solvent"],["Pure substance on a chromatogram","One spot"],["Why the start line is drawn in pencil","Pencil does not dissolve"],["How a substance is identified","Same *R*_{f} as a known sample"]]},{"title":"Gas Tests","items":[["Test for hydrogen","Lighted splint: squeaky pop"],["Test for oxygen","Glowing splint relights"],["Test for carbon dioxide","Limewater turns milky"],["Test for chlorine","Damp litmus paper is bleached"],["Limewater","Calcium hydroxide solution"],["Range of *R*_{f} values","Between 0 and 1"],["Why the solvent is below the start line","Spots would dissolve into the solvent"],["Stationary phase in paper chromatography","Paper"],["Mobile phase in paper chromatography","Solvent"],["Why a spot stays on the start line","Insoluble in the solvent"]]},{"title":"Flame Tests and Hydroxides","triple":true,"items":[["Flame colour: lithium","Crimson"],["Flame colour: sodium","Yellow"],["Flame colour: potassium","Lilac"],["Flame colour: calcium","Orange-red"],["Flame colour: copper","Green"],["Al^{3+} with NaOH","White precipitate, dissolves in excess"],["Ca^{2+} with NaOH","White precipitate"],["Mg^{2+} with NaOH","White precipitate"],["Cu^{2+} with NaOH","Blue precipitate"],["Fe^{2+} with NaOH","Green precipitate"]]},{"title":"Negative Ions and Instrumental Methods","triple":true,"items":[["Fe^{3+} with NaOH","Brown precipitate"],["Test for carbonate ions","Dilute acid; gas turns limewater milky"],["Reagents to test for halide ions","Dilute nitric acid + silver nitrate"],["Chloride with silver nitrate","White precipitate"],["Bromide with silver nitrate","Cream precipitate"],["Iodide with silver nitrate","Yellow precipitate"],["Test for sulfate ions","Dilute HCl + barium chloride: white precipitate"],["Advantages of instrumental methods","Accurate, sensitive, rapid"],["Flame emission spectroscopy identifies ions by","Wavelengths of light emitted (line spectrum)"],["Why flame tests fail for mixtures","Some colours mask others"]]}]},{"code":"C9","name":"Chemistry of the Atmosphere","paper":"2","sets":[{"title":"The Atmosphere Then and Now","items":[["Nitrogen in today's atmosphere","About 80%"],["Oxygen in today's atmosphere","About 20%"],["Other gases in small amounts","Carbon dioxide, water vapour, noble gases"],["Source of the early atmosphere","Volcanoes"],["Main gas in the early atmosphere","Carbon dioxide"],["How the oceans formed","Water vapour condensed"],["How CO_{2} decreased","Dissolved in oceans; photosynthesis; locked in rocks and fossil fuels"],["Where oxygen came from","Photosynthesis by algae and plants"],["Photosynthesis equation","6CO_{2} + 6H_{2}O → C_{6}H_{12}O_{6} + 6O_{2}"],["When the atmosphere became like today's","About 200 million years ago"]]},{"title":"Greenhouse Gases and Climate Change","items":[["Main greenhouse gases","Carbon dioxide, methane, water vapour"],["How greenhouse gases warm the Earth","Absorb infrared radiation from the Earth"],["Human sources of carbon dioxide","Burning fossil fuels, deforestation"],["Human sources of methane","Livestock, landfill, rice fields"],["Effects of climate change","Rising sea levels, extreme weather, habitat change"],["Carbon footprint","Total greenhouse gases emitted over a product's life"],["Ways to reduce carbon footprint","Renewable energy, efficiency, carbon capture"],["Why climate predictions are uncertain","Complex systems; simplified models"],["Limestone formed from","Shells and skeletons of sea creatures"],["Crude oil and natural gas formed from","Plankton buried in mud"]]},{"title":"Atmospheric Pollutants","items":[["Source of carbon monoxide","Incomplete combustion"],["Why carbon monoxide is dangerous","Toxic, colourless and odourless"],["Source of sulfur dioxide","Sulfur impurities in fuels"],["Source of oxides of nitrogen","Nitrogen + oxygen at high temperature in engines"],["Problems caused by SO_{2} and NO_{x}","Acid rain, breathing problems"],["Particulates","Solid carbon (soot) and unburnt hydrocarbons"],["Problems caused by particulates","Global dimming, lung damage"],["Global dimming","Less sunlight reaching the Earth's surface"],["Why the early atmosphere is uncertain","Little evidence from 4.6 billion years ago"],["Coal formed from","Plant deposits"]]}]},{"code":"C10","name":"Using Resources","paper":"2","sets":[{"title":"Sustainability and Water","items":[["Sustainable development","Meets present needs without harming future generations"],["Finite resource","Will run out"],["Renewable resource","Can be replaced"],["Potable water","Water safe to drink"],["Why potable water is not pure","Contains dissolved substances"],["Two stages to treat fresh water","Filtration, sterilisation"],["Sterilising agents","Chlorine, ozone, UV light"],["Methods of desalination","Distillation, reverse osmosis"],["Why desalination is expensive","Needs large amounts of energy"],["Waste water treatment stages","Screening, sedimentation, anaerobic digestion of sludge, aerobic treatment of effluent"]]},{"title":"Metal Extraction and Life Cycle Assessment","items":[["Phytomining","Plants absorb metal compounds; burned to ash"],["Bioleaching","Bacteria produce leachate containing metal compounds"],["Why new extraction methods are needed","High-grade ores are running out"],["How copper is got from its compounds","Displacement with scrap iron, or electrolysis"],["Life cycle assessment stages","Raw materials, manufacture, use, disposal"],["Why LCAs can be biased","Some values are judgements"],["Benefit of reducing, reusing and recycling","Saves resources, energy and waste"],["How glass bottles are recycled","Crushed and melted"],["How metals are recycled","Melted and recast"],["Why recycling metals saves energy","Less mining and extraction"]]},{"title":"Corrosion and Alloys","triple":true,"items":[["Corrosion","Destruction of a material by reaction with its environment"],["What rusting needs","Air (oxygen) and water"],["Barrier methods","Paint, grease, plastic coating, electroplating"],["Sacrificial protection","More reactive metal corrodes instead"],["Galvanising","Coating with zinc"],["Bronze","Copper + tin"],["Brass","Copper + zinc"],["Purity of 24 carat gold","100%"],["Steel","Iron + carbon (and other metals)"],["Stainless steel","Contains chromium and nickel; resists corrosion"]]},{"title":"Ceramics, Polymers and Composites","triple":true,"items":[["Soda-lime glass is made from","Sand, sodium carbonate, limestone"],["Borosilicate glass is made from","Sand + boron trioxide"],["How clay ceramics are made","Shape wet clay, heat in a furnace"],["Why LD and HD poly(ethene) differ","Different catalysts and conditions"],["Thermosoftening polymers","Soften when heated (no cross-links)"],["Thermosetting polymers","Do not melt (cross-links)"],["Composite","Reinforcement held in a matrix (binder)"],["Examples of composites","Fibreglass, carbon fibre, concrete"],["High carbon steel","Strong but brittle"],["Use of aluminium alloys","Aircraft (low density)"]]},{"title":"The Haber Process and Fertilisers","triple":true,"items":[["Haber process makes","Ammonia"],["Raw materials","Nitrogen (air), hydrogen (natural gas)"],["Equation","N_{2} + 3H_{2} ⇌ 2NH_{3}"],["Conditions","450 °C, 200 atm, iron catalyst"],["How ammonia is removed","Cooled so it liquefies"],["What happens to unreacted gases","Recycled"],["Elements in NPK fertilisers","Nitrogen, phosphorus, potassium"],["Source of potassium","Potassium chloride and sulfate (mined)"],["Phosphate rock is treated with","Nitric, sulfuric or phosphoric acid"],["Ammonia + nitric acid","Ammonium nitrate"]]}]},{"code":"RP1","name":"Making Salts","paper":"1","sets":[{"title":"Making Salts","items":[["Example salt made","Copper sulfate from copper oxide + sulfuric acid"],["Why the acid is warmed","Speeds up the reaction"],["Base is added until","Excess remains (no more dissolves)"],["Why excess base is used","Makes sure all the acid reacts"],["How excess base is removed","Filtration"],["How the filtrate is heated","Water bath until crystals start to form"],["Next step after heating","Leave to cool and crystallise"],["How crystals are dried","Pat with filter paper"],["Colour of copper sulfate crystals","Blue"],["Why not heat to dryness","Crystals would decompose"]]}]},{"code":"RP2","name":"Titration","paper":"1","sets":[{"title":"Titration","triple":true,"items":[["Glassware for measuring the alkali","Pipette (25.0 cm^{3})"],["Glassware for the acid","Burette"],["Indicator","Methyl orange or phenolphthalein"],["Why a white tile is used","To see the colour change clearly"],["Why do a rough titration first","Find the approximate end point"],["How acid is added near the end point","Dropwise"],["Where the burette is read","Bottom of the meniscus"],["Concordant results","Within 0.10 cm^{3}"],["Mean titre","Average of concordant results"],["Why the flask is swirled","Mixes the solutions"]]}]},{"code":"RP3","name":"Electrolysis","paper":"1","sets":[{"title":"Electrolysis","items":[["Electrodes used","Inert (graphite)"],["Why inert electrodes","Do not react with the products"],["Power supply","Low voltage d.c."],["Product at the cathode for NaCl(aq)","Hydrogen"],["Product at the anode for NaCl(aq)","Chlorine"],["Product at the cathode for CuSO_{4}(aq)","Copper"],["Product at the anode for CuSO_{4}(aq)","Oxygen"],["Test for chlorine","Bleaches damp litmus"],["Test for hydrogen","Squeaky pop"],["Test for oxygen","Relights a glowing splint"]]}]},{"code":"RP4","name":"Temperature Changes","paper":"1","sets":[{"title":"Temperature Changes","items":[["Container used","Polystyrene cup"],["Why a lid is used","Reduces heat loss"],["Why the cup sits in a beaker","Stops it falling over"],["Measuring instrument","Thermometer"],["Example reaction","Hydrochloric acid + sodium hydroxide"],["Independent variable","Volume of sodium hydroxide added"],["Dependent variable","Highest temperature reached"],["Control variables","Volume and concentration of acid"],["Why the mixture is stirred","Even temperature"],["Main source of error","Heat loss to surroundings"]]}]},{"code":"RP5","name":"Rates of Reaction","paper":"2","sets":[{"title":"Rates of Reaction","items":[["Method 1","Measure volume of gas produced"],["Method 2","Time for a cross to disappear"],["Reaction used for gas volume","Magnesium + hydrochloric acid"],["Reaction used for the disappearing cross","Sodium thiosulfate + hydrochloric acid"],["Independent variable","Concentration of acid"],["Dependent variable","Volume of gas, or time for cross to disappear"],["Control variables","Temperature, volumes, mass of magnesium"],["Apparatus to collect gas","Gas syringe or upturned measuring cylinder"],["Why the same person watches the cross","Same judgement each time"],["Hazard","Sulfur dioxide; ventilate the room"]]}]},{"code":"RP6","name":"Chromatography","paper":"2","sets":[{"title":"Chromatography","items":[["Start line drawn in","Pencil"],["Why spots are small","Clear separation"],["Solvent level","Below the start line"],["Usual solvent","Water"],["Why a lid is used","Stops the solvent evaporating"],["When the paper is removed","Solvent near the top"],["What is marked on removal","Solvent front"],["*R*_{f} equation","Distance moved by substance ÷ distance moved by solvent"],["Pure substance","One spot"],["How a colour is identified","Compare *R*_{f} with known samples"]]}]},{"code":"RP7","name":"Identifying Ions","paper":"2","sets":[{"title":"Identifying Ions","triple":true,"items":[["Equipment for flame tests","Nichrome wire loop"],["How the wire is cleaned","Dip in acid and heat"],["Reagent to test metal ions","Sodium hydroxide solution"],["Cu^{2+} with NaOH","Blue precipitate"],["Fe^{2+} with NaOH","Green precipitate"],["Fe^{3+} with NaOH","Brown precipitate"],["Test for carbonate","Add acid; limewater turns milky"],["Reagents for halides","Dilute nitric acid + silver nitrate"],["Why nitric acid is added first","Removes carbonate ions"],["Reagents for sulfate","Dilute HCl + barium chloride"]]}]},{"code":"RP8","name":"Water Purification","paper":"2","sets":[{"title":"Water Purification","items":[["How pH is measured","Universal indicator or pH meter"],["How dissolved solids are measured","Evaporate and weigh the residue"],["Method to purify water","Distillation"],["Water flow in the condenser","In at bottom, out at top"],["Why the condenser is cooled","Condenses the steam"],["Boiling point of pure water","100 °C"],["pH of pure water","7"],["Residue from evaporating pure water","None"],["Why heat gently","Avoid boiling over"],["Example sample to purify","Salt water"]]}]}];
+const LEVEL_LABEL = "AQA GCSE Chemistry";
+const HAS_TRIPLE = DATA.some(t => t.sets.some(s => s.triple));
+const HAS_BOTH = DATA.some(t => t.paper === "both");
+// Markup: ^{..} sup, _{..} sub, *..* italic, § bold
+function fmt(s) {
+  let out = "", i = 0, it = false, b = false;
+  const esc = c => c === "<" ? "&lt;" : c === ">" ? "&gt;" : c === "&" ? "&amp;" : c;
+  while (i < s.length) {
+    const c = s[i];
+    if ((c === "^" || c === "_") && s[i + 1] === "{") {
+      const j = s.indexOf("}", i); const tag = c === "^" ? "sup" : "sub";
+      out += `<${tag}>${[...s.slice(i + 2, j)].map(esc).join("")}</${tag}>`; i = j + 1; continue;
+    }
+    if (c === "*") { out += it ? "</i>" : "<i>"; it = !it; i++; continue; }
+    if (c === "§") { out += b ? "</b>" : "<b>"; b = !b; i++; continue; }
+    out += esc(c); i++;
+  }
+  return out;
+}
+const plain = s => s.replace(/[\^_]\{([^}]*)\}/g, "$1").replace(/[*§]/g, "").toLowerCase();
+
+const PAPER_LABEL = { "1": "Paper 1", "2": "Paper 2", "both": "Papers 1 & 2" };
+const badge = p => `<span class="paper p${p}">${PAPER_LABEL[p]}</span>`;
+const triBadge = `<span class="paper tri">Triple only</span>`;
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+};
+const SEL_KEY = "ko-selected-" + LEVEL_LABEL;
+const selected = new Set(store.get(SEL_KEY, store.get("ko-selected", [])));
+const index = []; // ordered list of all questions
+const byId = {};
+
+const topicsEl = document.getElementById("topics");
+DATA.forEach((t, ti) => {
+  const d = document.createElement("details"); d.className = "topic"; d.dataset.paper = t.paper;
+  const total = t.sets.reduce((n, s) => n + s.items.length, 0);
+  d.innerHTML = `<summary><span class="lab">${fmt(t.code + " " + t.name)}${badge(t.paper)}</span><span class="cnt" data-topic="${ti}"></span></summary>`;
+  t.sets.forEach((s, si) => {
+    const box = document.createElement("div"); box.className = "set"; if (s.triple) box.dataset.triple = "1";
+    const rows = s.items.map(([q, a], qi) => {
+      const id = `${t.code}|${si}|${qi}`;
+      const rec = { id, ti, code: t.code, paper: t.paper, triple: !!s.triple, q, a, text: plain(q + " " + a) };
+      index.push(rec); byId[id] = rec;
+      return `<tr data-id="${id}"><td class="cb"><input type="checkbox" data-id="${id}" aria-label="Select"></td><td class="qq">${fmt(q)}</td><td class="aa"><span class="ans">${fmt(a)}</span></td></tr>`;
+    }).join("");
+    box.innerHTML = `<h3><label><input type="checkbox" class="all" data-set="${ti}-${si}"> Set ${si + 1}: ${fmt(s.title)}</label>${s.triple ? triBadge : ""}</h3><table class="q"><tbody data-set="${ti}-${si}">${rows}</tbody></table>`;
+    d.appendChild(box);
+  });
+  d.dataset.total = total;
+  topicsEl.appendChild(d);
+});
+
+const hideTri = document.getElementById("hideTri");
+const activeItems = () => index.filter(r => selected.has(r.id) && !(hideTri.checked && r.triple));
+function refresh() {
+  document.querySelectorAll("input[data-id]").forEach(cb => {
+    const on = selected.has(cb.dataset.id); cb.checked = on;
+    cb.closest("tr").classList.toggle("sel", on);
+  });
+  document.querySelectorAll("tbody[data-set]").forEach(tb => {
+    const ids = [...tb.querySelectorAll("input[data-id]")].map(c => c.dataset.id);
+    const all = tb.closest(".set").querySelector("input.all");
+    const n = ids.filter(id => selected.has(id)).length;
+    all.checked = n === ids.length; all.indeterminate = n > 0 && n < ids.length;
+  });
+  document.querySelectorAll("details.topic").forEach((d, ti) => {
+    const n = activeItems().filter(r => r.ti === ti).length;
+    d.querySelector(".cnt").textContent = n ? `${n} ticked / ${d.dataset.total}` : `${d.dataset.total} questions`;
+  });
+  const n = activeItems().length;
+  document.getElementById("count").textContent = `${n} selected` + (n ? ` (${Math.ceil(n / 10)} set${n > 10 ? "s" : ""})` : "");
+  document.getElementById("pQA").disabled = document.getElementById("pST").disabled = !n;
+  store.set(SEL_KEY, [...selected]);
+}
+
+topicsEl.addEventListener("change", e => {
+  const el = e.target;
+  if (el.dataset.id) { el.checked ? selected.add(el.dataset.id) : selected.delete(el.dataset.id); }
+  else if (el.classList.contains("all")) {
+    const tb = topicsEl.querySelector(`tbody[data-set="${el.dataset.set}"]`);
+    tb.querySelectorAll("tr").forEach(tr => {
+      if (tr.style.display === "none") return;
+      el.checked ? selected.add(tr.dataset.id) : selected.delete(tr.dataset.id);
+    });
+  }
+  refresh();
+});
+topicsEl.addEventListener("click", e => {
+  const td = e.target.closest("td.aa");
+  if (td && document.body.classList.contains("hide-ans")) { td.classList.toggle("show"); return; }
+  const tr = e.target.closest("tr[data-id]");
+  if (tr && !e.target.closest("input")) {
+    const id = tr.dataset.id; selected.has(id) ? selected.delete(id) : selected.add(id); refresh();
+  }
+});
+
+const hide = document.getElementById("hide");
+hide.checked = store.get("ko-hide", false);
+const applyHide = () => { document.body.classList.toggle("hide-ans", hide.checked); store.set("ko-hide", hide.checked);
+  document.querySelectorAll("td.aa.show").forEach(td => td.classList.remove("show")); };
+hide.addEventListener("change", applyHide); applyHide();
+
+const nameEl = document.getElementById("name");
+nameEl.value = store.get("ko-name", "");
+nameEl.addEventListener("input", () => store.set("ko-name", nameEl.value));
+
+let paperFilter = "all";
+const paperOk = d => paperFilter === "all" || d.dataset.paper === paperFilter || d.dataset.paper === "both";
+document.querySelectorAll(".filter button").forEach(b => b.addEventListener("click", () => {
+  paperFilter = b.dataset.paper;
+  document.querySelectorAll(".filter button").forEach(x => x.setAttribute("aria-pressed", x === b));
+  applySearch();
+}));
+document.getElementById("search").addEventListener("input", applySearch);
+function applySearch() {
+  const term = document.getElementById("search").value.trim().toLowerCase();
+  let any = false;
+  document.querySelectorAll("details.topic").forEach(d => {
+    let hits = 0;
+    d.querySelectorAll("tr[data-id]").forEach(tr => {
+      const show = !term || byId[tr.dataset.id].text.includes(term);
+      tr.style.display = show ? "" : "none"; if (show) hits++;
+    });
+    d.querySelectorAll(".set").forEach(s => { s.style.display = [...s.querySelectorAll("tr[data-id]")].some(tr => tr.style.display !== "none") ? "" : "none"; });
+    const show = hits && paperOk(d);
+    d.style.display = show ? "" : "none";
+    if (term && show) d.open = true;
+    if (show) any = true;
+  });
+  document.getElementById("none").style.display = any ? "none" : "block";
+}
+
+document.getElementById("clear").addEventListener("click", () => {
+  if (selected.size && confirmClear()) { selected.clear(); refresh(); }
+});
+function confirmClear() { return window.confirm ? window.confirm("Clear all ticks?") : true; }
+
+function buildPrint(mode) {
+  const items = activeItems();
+  const name = nameEl.value.trim();
+  const codes = [...new Set(items.map(r => r.code))];
+  const sets = []; for (let i = 0; i < items.length; i += 10) sets.push(items.slice(i, i + 10));
+  const land = mode === "st";
+  document.getElementById("pagesize").textContent = land
+    ? "@page { size: A4 landscape; margin: 11mm 12mm; }"
+    : "@page { size: A4 portrait; margin: 15mm 17mm; }";
+  const tag = r => (codes.length > 1 || r.triple) ? `<span class="tag p${r.paper}">${fmt(r.code)}${r.triple ? '<span class="t">T</span>' : ""}</span>` : "";
+  const html = sets.map((set, si) => {
+    const sub = `${LEVEL_LABEL}  •  ${codes.map(fmt).join(", ")}  •  Set ${si + 1} of ${sets.length}${name ? "  •  " + name.replace(/</g, "&lt;") : ""}`;
+    return sheetHTML(`My Knowledge Organiser${land ? ": Self-Test" : ""}`, sub, set, land, tag);
+  }).join("");
+  document.getElementById("print").innerHTML = html;
+  setTimeout(() => window.print(), 50);
+}
+// One printed page: title, subtitle, table of up to 10 questions
+function sheetHTML(title, sub, set, land, tag = () => "") {
+    const head = `<div class="ptitle">${title}</div><div class="psub">${sub}</div>`;
+    if (!land) {
+      return `<div class="sheet portrait">${head}<table class="pt"><colgroup><col style="width:7%"><col style="width:49%"><col style="width:44%"></colgroup>
+        <thead><tr><th>#</th><th>Question</th><th>Answer</th></tr></thead><tbody>${
+        set.map((r, i) => `<tr class="${i % 2 ? "alt" : ""}"><td class="num">${i + 1}</td><td>${tag(r)}${fmt(r.q)}</td><td>${fmt(r.a)}</td></tr>`).join("")}</tbody></table></div>`;
+    }
+    return `<div class="sheet landscape">${head}<table class="pt"><colgroup><col style="width:3.6%"><col style="width:21%"><col style="width:19.1%"><col style="width:19.1%"><col style="width:19.1%"><col style="width:18.1%"></colgroup>
+      <thead><tr><th>#</th><th>Question</th><th>Attempt 1</th><th>Attempt 2</th><th>Attempt 3</th><th>Answer</th></tr></thead><tbody>${
+      set.map((r, i) => `<tr><td class="num">${i + 1}</td><td>${tag(r)}${fmt(r.q)}</td><td></td><td></td><td></td><td class="key${plain(r.a).length > 70 ? " long" : ""}">${fmt(r.a)}</td></tr>`).join("")}</tbody></table>
+      <div class="foot">Fold the Answer column behind the page. Answer each question from memory, then unfold and check. Repeat on a later day in the next Attempt column.</div></div>`;
+}
+// Whole-topic sheets (used to make the downloadable PDFs)
+function topicPrint(code, mode) {
+  const t = DATA.find(x => x.code === code); const land = mode === "st";
+  document.getElementById("pagesize").textContent = land
+    ? "@page { size: A4 landscape; margin: 11mm 12mm; }" : "@page { size: A4 portrait; margin: 15mm 17mm; }";
+  document.getElementById("print").innerHTML = t.sets.map((s, si) => sheetHTML(
+    `${fmt(t.code + " " + t.name)} – Knowledge Organiser${land ? ": Self-Test" : ""}`,
+    `${LEVEL_LABEL}  •  Set ${si + 1}: ${fmt(s.title)}  ${badge(t.paper)}${s.triple ? " " + triBadge : ""}`,
+    s.items.map(([q, a]) => ({ q, a })), land)).join("");
+}
+document.getElementById("pQA").addEventListener("click", () => buildPrint("qa"));
+document.getElementById("pST").addEventListener("click", () => buildPrint("st"));
+
+if (!HAS_BOTH) document.getElementById("lgBoth").remove();
+if (!HAS_TRIPLE) document.getElementById("lgTri").remove();
+else {
+  document.getElementById("triWrap").style.display = "flex";
+  hideTri.checked = store.get("ko-hidetri-" + LEVEL_LABEL, false);
+  const applyTri = () => { document.body.classList.toggle("hide-triple", hideTri.checked); store.set("ko-hidetri-" + LEVEL_LABEL, hideTri.checked); refresh(); };
+  hideTri.addEventListener("change", applyTri); document.body.classList.toggle("hide-triple", hideTri.checked);
+}
+refresh();
+</script>
+</body>
+</html>
