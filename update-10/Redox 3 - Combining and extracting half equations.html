@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Combining and Extracting Half Equations Run-Through</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,750&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style>[hidden]{display:none!important}
+:root{
+  --bg:#f5efe3; --surface:#fffaf0; --sunk:#ece2cf; --ink:#2a2017; --muted:#6c5d4b; --line:#dccdb3;
+  --accent:#7a4a22; --accent-soft:#f0e0cb; --accent-ink:#fff8ee;
+  --cation:#4a4fa3; --cation-soft:#e3e3f6; --anion:#2c7743; --anion-soft:#dcefe1;
+  --oxy:#c0463a; --hyd:#f7f3ea;
+  --ok:#2b7a4b; --okbg:#e2f1e6; --bad:#b0392d; --badbg:#f8e1dc;
+  --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#1b1713; --surface:#25201a; --sunk:#2f2820; --ink:#efe6d7; --muted:#b4a590; --line:#463b2f;
+  --accent:#dba06a; --accent-soft:#3a2b1d; --accent-ink:#1b1713;
+  --cation:#9ea3f2; --cation-soft:#2c2d4a; --anion:#7fca92; --anion-soft:#1f3a28;
+  --oxy:#e0776b; --hyd:#e9e2d4;
+  --ok:#7fca92; --okbg:#1f3427; --bad:#ec8a7e; --badbg:#3d211d; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#1b1713; --surface:#25201a; --sunk:#2f2820; --ink:#efe6d7; --muted:#b4a590; --line:#463b2f;
+  --accent:#dba06a; --accent-soft:#3a2b1d; --accent-ink:#1b1713;
+  --cation:#9ea3f2; --cation-soft:#2c2d4a; --anion:#7fca92; --anion-soft:#1f3a28;
+  --oxy:#e0776b; --hyd:#e9e2d4;
+  --ok:#7fca92; --okbg:#1f3427; --bad:#ec8a7e; --badbg:#3d211d; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:820px;margin:0 auto}
+h1,h2,h3{font-family:var(--display);line-height:1.15;text-wrap:balance;margin:0}
+h1{font-size:clamp(2.2rem,6vw,3.4rem);font-weight:750;letter-spacing:-.02em}
+h2{font-size:clamp(1.5rem,3.6vw,2rem);font-weight:750;letter-spacing:-.01em}
+h3{font-size:1.15rem;font-weight:600}
+p{margin:0}
+sub,sup{font-size:.72em;line-height:0}
+.eyebrow{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.cat{color:var(--cation);font-weight:700}.an{color:var(--anion);font-weight:700}
+
+/* masthead */
+header.top{padding-block:40px 18px;display:grid;gap:14px}
+.lede{max-width:62ch;color:var(--muted);font-size:1.08rem}
+.spec{display:flex;flex-wrap:wrap;gap:8px}
+.tag{font-family:var(--mono);font-size:.78rem;padding:3px 9px;border:1px solid var(--line);border-radius:999px;color:var(--muted)}
+
+/* sticky progress */
+.progress{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding-block:10px;margin-bottom:8px}
+.progress .row{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.bar{flex:1 1 180px;height:8px;background:var(--sunk);border-radius:99px;overflow:hidden;min-width:120px}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .4s}
+.progress .stat{font-size:.88rem;color:var(--muted);font-variant-numeric:tabular-nums}
+nav.toc{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+nav.toc a{font-size:.82rem;text-decoration:none;color:var(--ink);padding:3px 10px;border-radius:999px;background:var(--surface);border:1px solid var(--line);white-space:nowrap}
+nav.toc a:hover,nav.toc a:focus-visible{border-color:var(--accent);color:var(--accent)}
+
+/* sections */
+section{padding-block:44px 8px;display:grid;gap:18px;scroll-margin-top:110px}
+.sechead{display:grid;gap:6px;border-top:2px solid var(--ink);padding-top:14px}
+.sechead .num{font-family:var(--mono);font-size:.82rem;color:var(--accent)}
+.prose{display:grid;gap:12px;max-width:66ch}
+.key{background:var(--accent-soft);border-left:4px solid var(--accent);padding:12px 16px;border-radius:0 8px 8px 0;max-width:66ch}
+.key b{color:var(--accent)}
+.warn{background:var(--badbg);border-left:4px solid var(--bad);padding:12px 16px;border-radius:0 8px 8px 0;max-width:66ch}
+.bench{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;gap:12px;min-width:0}
+.bench .lab{font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button,.btn{font:inherit;font-size:.92rem;font-weight:600;border:1px solid var(--line);background:var(--bg);color:var(--ink);padding:6px 12px;border-radius:8px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+select{font:inherit;font-size:.95rem;padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);max-width:100%}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.95rem}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.two>*{min-width:0}
+.caption{font-size:.9rem;color:var(--muted)}
+svg text{font-family:var(--body)}
+
+/* MCQ */
+.mcq{display:grid;gap:14px}
+.q{border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--surface);display:grid;gap:10px}
+.q .qh{display:flex;gap:10px;align-items:baseline}
+.q .qn{font-family:var(--mono);font-size:.78rem;color:var(--accent);white-space:nowrap}
+.q .qt{font-weight:600}
+.opts{display:grid;gap:6px}
+.opt{text-align:left;font-weight:400;display:grid;grid-template-columns:28px 1fr;gap:8px;align-items:start;padding:8px 10px;background:var(--bg)}
+.opt .l{font-family:var(--mono);font-weight:500;color:var(--muted)}
+.opt.right{background:var(--okbg);border-color:var(--ok)}
+.opt.wrong{background:var(--badbg);border-color:var(--bad);opacity:.85}
+.fb{font-size:.95rem;padding:10px 12px;border-radius:8px}
+.fb.right{background:var(--okbg);border-left:4px solid var(--ok)}
+.fb.wrong{background:var(--badbg);border-left:4px solid var(--bad)}
+.mcqhead{display:flex;align-items:center;gap:10px}
+.mcqhead h3{font-size:1rem}
+
+/* checklist */
+.check{display:grid;gap:8px;list-style:none;padding:0;margin:0}
+.check label{display:flex;gap:10px;align-items:flex-start;cursor:pointer}
+.check input{width:20px;height:20px;margin-top:3px;accent-color:var(--accent);flex:none}
+
+footer{margin-top:40px;color:var(--muted);font-size:.85rem;border-top:1px solid var(--line);padding-top:14px}
+/* additions for the redox run-throughs */
+:root{--ox:#b0392d;--oxsoft:#f8e1dc;--red:#2f5fa8;--redsoft:#dfe8f7;--elec:#d98a1a}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--ox:#ec8a7e;--oxsoft:#3d211d;--red:#8fb1ec;--redsoft:#1f2b40;--elec:#f0b45a}}
+:root[data-theme="dark"]{--ox:#ec8a7e;--oxsoft:#3d211d;--red:#8fb1ec;--redsoft:#1f2b40;--elec:#f0b45a}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{min-width:58px}
+.eq{font-family:var(--display);font-size:clamp(1.02rem,2.5vw,1.3rem);font-weight:600;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 14px;overflow-x:auto;white-space:nowrap}
+.eq small{font-family:var(--body);font-weight:400;font-size:.8rem;color:var(--muted)}
+.readout{display:grid;gap:10px;align-content:start}
+.readout h3{font-size:1.25rem}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:14px}
+.two>*{min-width:0}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.card{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--bg);display:grid;gap:6px;align-content:start}
+.card h3{font-size:1.05rem}
+.stepper{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.stepper .caption{flex:1 1 200px}
+details{border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:10px 14px}
+details summary{cursor:pointer;font-weight:700}
+details[open] summary{margin-bottom:8px}
+.up{color:var(--ox);font-weight:700}.down{color:var(--red);font-weight:700}
+.pill{display:inline-block;font-size:.78rem;font-weight:700;padding:2px 9px;border-radius:999px;background:var(--sunk);color:var(--ink)}
+.pill.ox{background:var(--oxsoft);color:var(--ox)}.pill.red{background:var(--redsoft);color:var(--red)}
+.svgbox{width:100%;height:auto;display:block}
+.svgbox text{fill:var(--ink)}
+/* equation rows */
+.eqrows{display:grid;gap:8px}
+.eqrow{display:grid;grid-template-columns:30px 1fr;gap:10px;align-items:start;animation:rise .35s ease both}
+.eqrow .n{font-family:var(--mono);font-size:.8rem;background:var(--accent);color:var(--accent-ink);border-radius:999px;width:26px;height:26px;display:grid;place-items:center;margin-top:8px}
+.eqrow .body{display:grid;gap:4px;min-width:0}
+.eqrow .cap{font-size:.95rem;color:var(--muted)}
+.eqrow .cap b{color:var(--ink)}
+.t{display:inline-block;padding:0 3px;border-radius:5px;transition:background .3s}
+.t.new{background:var(--accent-soft);box-shadow:0 0 0 2px var(--accent) inset}
+.t.e{color:var(--elec)}
+.t.x{text-decoration:line-through;text-decoration-thickness:2px;opacity:.5}
+.op{color:var(--muted);padding:0 4px;font-weight:400}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.eqrow{animation:none}}
+.tally{font-size:.9rem;width:auto}
+.tally td,.tally th{padding:4px 10px;text-align:center}
+.tally td.okc{color:var(--ok);font-weight:700}.tally td.badc{color:var(--bad);font-weight:700}
+.verdict{font-weight:700;padding:6px 10px;border-radius:8px;display:inline-block}
+.verdict.ok{background:var(--okbg);color:var(--ok)}.verdict.bad{background:var(--badbg);color:var(--bad)}
+/* oxidation-state grid */
+.osgrid{display:inline-grid;gap:4px 6px;align-items:center;font-family:var(--display);font-weight:600;font-size:1.25rem}
+.osgrid .rl{font-family:var(--body);font-size:.78rem;font-weight:600;color:var(--muted);text-align:right;padding-right:6px;letter-spacing:.04em;text-transform:uppercase}
+.osgrid .c{text-align:center;min-width:56px;padding:2px 6px;border-radius:6px}
+.osgrid .c.k{color:var(--accent)}
+.osgrid .c.u{color:var(--ox)}
+.osgrid .f{font-size:1.6rem}
+.osgrid .hide{visibility:hidden}
+.sum{font-family:var(--display);font-weight:600;font-size:1.2rem}
+.answer{font-family:var(--display);font-weight:750;font-size:1.6rem;color:var(--ok)}
+/* builder */
+.builder{display:grid;gap:12px}
+.bside{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;font-family:var(--display);font-weight:600;font-size:1.2rem}
+.bterm{display:inline-flex;flex-direction:column;align-items:center;gap:2px;border:1px dashed var(--line);border-radius:8px;padding:4px 6px;min-width:64px}
+.bterm.on{border-style:solid;border-color:var(--accent);background:var(--accent-soft)}
+.bterm .ctl{display:flex;gap:4px}
+.bterm .ctl button{padding:0 8px;font-size:.9rem;line-height:1.6}
+.bterm .v{min-height:1.6em}
+.bterm.off .v{opacity:.35}
+.arrow{font-family:var(--display);font-size:1.6rem;padding:0 6px}
+.drill{display:grid;gap:12px;justify-items:start}
+.drill .target{font-family:var(--display);font-size:2.2rem;font-weight:750}
+.drill .target .el{color:var(--ox)}
+.numpad{display:flex;flex-wrap:wrap;gap:6px}
+.numpad button{min-width:52px;font-family:var(--mono)}
+.numpad button.right{background:var(--okbg);border-color:var(--ok)}
+.numpad button.wrong{background:var(--badbg);border-color:var(--bad)}
+.ann{display:inline-flex;flex-direction:column;align-items:center;vertical-align:bottom}
+.ann .a1{font-family:var(--body);font-size:.75rem;font-weight:700;min-height:1.2em;opacity:0;transition:opacity .4s}
+.ann .a2{font-family:var(--body);font-size:.75rem;font-weight:700;min-height:1.2em;opacity:0;transition:opacity .4s}
+.ann.s1 .a1,.ann.s2 .a2{opacity:1}
+.ann .a2.ox{color:var(--ox)}.ann .a2.red{color:var(--red)}.ann .a2.spec{color:var(--muted)}
+.eq.annotated{white-space:nowrap;line-height:1.3;padding-block:6px}
+.halves{display:grid;gap:8px}
+.half{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center}
+.half .lbl{font-size:.82rem;font-weight:700;white-space:nowrap}
+.ebar{display:flex;gap:3px;flex-wrap:wrap;min-height:16px}
+.ebar i{width:14px;height:14px;border-radius:50%;background:var(--elec);display:block}
+.mult{display:flex;align-items:center;gap:6px}
+.mult .big{font-family:var(--display);font-size:1.5rem;font-weight:750;min-width:2.2ch;text-align:center}
+
+.stack{display:grid;gap:12px;min-width:0}
+.stack .prose p{margin:0}
+.eq.annotated{display:flex;align-items:center;gap:2px;width:max-content;max-width:100%}
+.eq.annotated .op{align-self:center}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <p class="eyebrow">A-level Chemistry · Redox · Run-through 3</p>
+  <h1>Combining and extracting half equations</h1>
+  <p class="lede">Put an oxidation and a reduction together to get the overall equation, then do it backwards: pull the two half equations out of a full equation. Along the way, name the oxidising and reducing agents. Try every panel, then answer the questions at the end of each section.</p>
+  <div class="spec"><span class="tag">AQA 3.1.7</span><span class="tag">7 sections</span><span class="tag">about 50 minutes</span></div>
+</header>
+
+<div class="progress" aria-label="Progress">
+  <div class="row"><div class="bar" aria-hidden="true"><i id="pbar"></i></div><span class="stat" id="pstat">0 questions answered</span></div>
+  <nav class="toc" aria-label="Sections">
+    <a href="#s1">1 Lost = gained</a><a href="#s2">2 Combining</a><a href="#s3">3 Balance the electrons</a><a href="#s4">4 Cancelling H⁺ and H₂O</a><a href="#s5">5 Agents</a><a href="#s6">6 Extracting</a><a href="#s7">7 Check yourself</a>
+  </nav>
+</div>
+
+<!-- 1 -->
+<section id="s1">
+  <div class="sechead"><span class="num">Section 1</span><h2>Electrons lost = electrons gained</h2></div>
+  <div class="prose"><p>An oxidation can't happen on its own. The electrons lost by one species are gained by another. Electrons are never left over, so they never appear in the overall equation.</p></div>
+  <div class="bench">
+    <span class="lab">Chlorine oxidising iron(II) ions</span>
+    <div id="tr1"></div>
+  </div>
+  <div class="key"><b>Count them.</b> Each Fe<sup>2+</sup> loses <b>1</b> electron. Each Cl<sub>2</sub> gains <b>2</b>. So you need <b>2</b> Fe<sup>2+</sup> for every Cl<sub>2</sub>: 2Fe<sup>2+</sup> + Cl<sub>2</sub> → 2Fe<sup>3+</sup> + 2Cl<sup>−</sup>.</div>
+  <div class="mcq" data-set="s1"></div>
+</section>
+
+<!-- 2 -->
+<section id="s2">
+  <div class="sechead"><span class="num">Section 2</span><h2>Combining half equations</h2></div>
+  <div class="grid3">
+    <div class="card"><h3>① Write both halves</h3><p>One oxidation ↑, one reduction ↓.</p></div>
+    <div class="card"><h3>② Match the electrons</h3><p>Multiply one or both so they have the same number of electrons.</p></div>
+    <div class="card"><h3>③ Add them</h3><p>Reactants on the left, products on the right.</p></div>
+    <div class="card"><h3>④ Cancel</h3><p>The electrons (always), and any H<sup>+</sup> or H<sub>2</sub>O on both sides.</p></div>
+    <div class="card"><h3>⑤ Check</h3><p>Atoms balance and the total charge is the same on both sides.</p></div>
+  </div>
+  <div class="bench">
+    <span class="lab">Step through a worked example</span>
+    <div id="cb1"></div>
+  </div>
+  <div class="warn">Multiply the <b>whole</b> half equation, not just the species with the electrons. If you × 5 the Fe<sup>2+</sup> half, it's 5Fe<sup>2+</sup> → 5Fe<sup>3+</sup> + 5e<sup>−</sup>.</div>
+  <div class="mcq" data-set="s2"></div>
+</section>
+
+<!-- 3 -->
+<section id="s3">
+  <div class="sechead"><span class="num">Section 3</span><h2>Balance the electrons yourself</h2></div>
+  <div class="prose"><p>Change the multipliers until the electrons lost equal the electrons gained. Aim for the <b>lowest common multiple</b>. Then add and cancel.</p></div>
+  <div class="bench">
+    <span class="lab">Choose the multipliers</span>
+    <div id="bal"></div>
+  </div>
+  <div class="mcq" data-set="s3" data-title="Spot the error"></div>
+</section>
+
+<!-- 4 -->
+<section id="s4">
+  <div class="sechead"><span class="num">Section 4</span><h2>Cancelling H<sup>+</sup> and H<sub>2</sub>O</h2></div>
+  <div class="prose"><p>When both halves contain H<sup>+</sup> or H<sub>2</sub>O, they can end up on <b>both</b> sides after adding. Take the smaller number away from both sides. Sometimes every number then divides by the same amount.</p></div>
+  <div class="bench">
+    <span class="lab">Step through a worked example</span>
+    <div id="cb2"></div>
+  </div>
+  <div class="warn">Never leave the same species on both sides. 8H<sup>+</sup> on the left and 6H<sup>+</sup> on the right becomes 2H<sup>+</sup> on the left.</div>
+  <div class="mcq" data-set="s4"></div>
+</section>
+
+<!-- 5 -->
+<section id="s5">
+  <div class="sechead"><span class="num">Section 5</span><h2>Oxidising and reducing agents</h2></div>
+  <div class="two">
+    <div class="card"><h3>Oxidising agent</h3><p><b>Takes electrons</b> from something else, so it oxidises it. It gains electrons, so it is itself <span class="down">reduced ↓</span>. An electron acceptor.</p></div>
+    <div class="card"><h3>Reducing agent</h3><p><b>Gives electrons</b> to something else, so it reduces it. It loses electrons, so it is itself <span class="up">oxidised ↑</span>. An electron donor.</p></div>
+  </div>
+  <div class="bench">
+    <span class="lab">Which is which?</span>
+    <div id="tr2"></div>
+  </div>
+  <div class="key"><b>The agent is named after what it does to the other substance.</b> Oxidation is loss of electrons, so an oxidising agent takes electrons from the other substance. So an oxidising agent <b>gains</b> electrons: it is reduced.</div>
+  <div class="scroll"><table>
+    <thead><tr><th></th><th>Oxidation</th><th>Reduction</th><th>Oxidising agent</th><th>Reducing agent</th></tr></thead>
+    <tbody>
+      <tr><th>Electrons</th><td>loses (OIL)</td><td>gains (RIG)</td><td>gains: takes them</td><td>loses: gives them</td></tr>
+      <tr><th>Oxidation state</th><td><span class="up">↑ increases</span></td><td><span class="down">↓ decreases</span></td><td>its own goes <span class="down">↓</span></td><td>its own goes <span class="up">↑</span></td></tr>
+      <tr><th>Zn + Cu<sup>2+</sup></th><td>Zn → Zn<sup>2+</sup></td><td>Cu<sup>2+</sup> → Cu</td><td>Cu<sup>2+</sup>: is reduced</td><td>Zn: is oxidised</td></tr>
+    </tbody>
+  </table></div>
+  <div class="prose"><p>In a combined equation, the <b>oxidising agent</b> is the reactant in the <b>reduction</b> half, the one that gains electrons.</p></div>
+  <div class="mcq" data-set="s5"></div>
+</section>
+
+<!-- 6 -->
+<section id="s6">
+  <div class="sechead"><span class="num">Section 6</span><h2>Extracting half equations</h2></div>
+  <div class="prose"><p>This is combining in reverse. Oxidation states tell you which species belong in each half.</p></div>
+  <div class="grid3">
+    <div class="card"><h3>① Oxidation states</h3><p>For the atoms in every species.</p></div>
+    <div class="card"><h3>② Up and down</h3><p>The atom going ↑ is the oxidation half (e<sup>−</sup> on the right). The atom going ↓ is the reduction half (e<sup>−</sup> on the left).</p></div>
+    <div class="card"><h3>③ Leave out spectators</h3><p>Ions whose oxidation states don't change, e.g. SO<sub>4</sub><sup>2−</sup>, or Cl<sup>−</sup> in HCl.</p></div>
+    <div class="card"><h3>④ Balance each half</h3><p>H<sup>+</sup>, then H<sub>2</sub>O, then e<sup>−</sup>. Divide out the multipliers.</p></div>
+  </div>
+  <div class="bench">
+    <span class="lab">Work through a reaction</span>
+    <div id="ext"></div>
+  </div>
+  <div class="warn">The big numbers in front (like the 6 in 6Fe<sup>2+</sup>) were only there to balance electrons. Divide them out to get the simplest half equation: Fe<sup>2+</sup> → Fe<sup>3+</sup> + e<sup>−</sup>.</div>
+  <div class="mcq" data-set="s6"></div>
+</section>
+
+<!-- 7 -->
+<section id="s7">
+  <div class="sechead"><span class="num">Section 7</span><h2>Check yourself</h2></div>
+  <div class="mcq" data-set="s7" data-title="End-of-topic quiz"></div>
+  <div class="bench">
+    <span class="lab">Tick off what you can now do</span>
+    <ul class="check" id="check"></ul>
+  </div>
+</section>
+<footer>Redox run-throughs · Part 3 of 3. Before: oxidation states and writing half equations.</footer>
+
+</div>
+<script>
+/* ===== shared engine for the redox run-throughs ===== */
+const $=s=>document.querySelector(s);
+const $$=s=>Array.from(document.querySelectorAll(s));
+const RM=(typeof window!=='undefined')&&window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const MINUS='−';
+function sgn(v){if(Math.abs(v)<1e-9)return '0';const s=(Math.round(v*100)/100).toString();return v>0?'+'+s:MINUS+s.replace('-','');}
+function signedTerm(v){return v<0?'('+sgn(v)+')':sgn(v);}
+
+/* ---------- formulae ---------- */
+function splitCoef(t){const m=t.match(/^(\d+)(?=[A-Za-z(])/);return m?{n:+m[1],s:t.slice(m[1].length)}:{n:1,s:t};}
+function fmtSpecies(s){
+  if(s==='e^-')return 'e<sup>'+MINUS+'</sup>';
+  const i=s.indexOf('^');const f=i<0?s:s.slice(0,i),c=i<0?null:s.slice(i+1);
+  let h=f.replace(/(\d+)/g,'<sub>$1</sub>');
+  if(c!==null)h+='<sup>'+c.replace('-',MINUS)+'</sup>';
+  return h;
+}
+function fmtTerm(t){const {n,s}=splitCoef(t.trim());return (n>1?n:'')+fmtSpecies(s);}
+function fmt(str){
+  str=str.trim();
+  if(/ -> | \+ /.test(str)){
+    return str.split(' -> ').map(side=>side.split(' + ').map(fmtTerm).join(' + ')).join(' → ');
+  }
+  return fmtTerm(str);
+}
+function fmtText(str){return String(str).replace(/\{([^{}]+)\}/g,(m,x)=>fmt(x));}
+function parseSpecies(s){
+  const atoms={};let charge=0;
+  if(s==='e^-')return {atoms,charge:-1};
+  const i=s.indexOf('^');const f=i<0?s:s.slice(0,i);
+  if(i>=0){const c=s.slice(i+1);const m=c.match(/^(\d*)([+-])$/);charge=(m[1]?+m[1]:1)*(m[2]==='+'?1:-1);}
+  const toks=f.match(/[A-Z][a-z]?|\d+|\(|\)/g)||[];
+  const stack=[{}];
+  for(let k=0;k<toks.length;k++){
+    const t=toks[k];
+    if(t==='('){stack.push({});continue;}
+    if(t===')'){const g=stack.pop();let m=1;if(/^\d+$/.test(toks[k+1]||'')){m=+toks[k+1];k++;}const top=stack[stack.length-1];for(const e in g)top[e]=(top[e]||0)+g[e]*m;continue;}
+    if(/^[A-Z]/.test(t)){let m=1;if(/^\d+$/.test(toks[k+1]||'')){m=+toks[k+1];k++;}const top=stack[stack.length-1];top[t]=(top[t]||0)+m;}
+  }
+  Object.assign(atoms,stack[0]);
+  return {atoms,charge};
+}
+function parseEq(str){
+  if(typeof str!=='string')return str;
+  const [l,r]=str.split(' -> ');
+  const side=x=>x.split(' + ').map(t=>splitCoef(t.trim()));
+  return {L:side(l),R:side(r)};
+}
+function eqToStr(eq){const side=a=>a.map(t=>(t.n>1?t.n:'')+t.s).join(' + ');return side(eq.L)+' -> '+side(eq.R);}
+function tallySide(terms){const atoms={};let charge=0;terms.forEach(t=>{const p=parseSpecies(t.s);for(const e in p.atoms)atoms[e]=(atoms[e]||0)+p.atoms[e]*t.n;charge+=p.charge*t.n;});return {atoms,charge};}
+function tally(eq){eq=parseEq(eq);const L=tallySide(eq.L),R=tallySide(eq.R);const els=[];[L,R].forEach(x=>{for(const e in x.atoms)if(!els.includes(e))els.push(e);});
+  const order=['C','N','S','P','Mn','Cr','V','Fe','Cu','Zn','Al','Mg','Na','Cl','Br','I','Sn','Pb','Ag','As','Te','Re','O','H'];
+  els.sort((a,b)=>{const i=order.indexOf(a),j=order.indexOf(b);return (i<0?50:i)-(j<0?50:j);});
+  const ok=els.every(e=>(L.atoms[e]||0)===(R.atoms[e]||0))&&L.charge===R.charge;
+  return {L,R,els,ok};}
+function tallyHTML(eq){
+  const t=tally(eq);
+  let h='<div class="scroll"><table class="tally"><thead><tr><th></th>'+t.els.map(e=>'<th>'+e+'</th>').join('')+'<th>charge</th></tr></thead><tbody>';
+  const row=(lab,S)=>'<tr><th>'+lab+'</th>'+t.els.map(e=>{const a=t.L.atoms[e]||0,b=t.R.atoms[e]||0;return '<td class="'+(a===b?'okc':'badc')+'">'+(S.atoms[e]||0)+'</td>';}).join('')+'<td class="'+(t.L.charge===t.R.charge?'okc':'badc')+'">'+sgn(S.charge)+'</td></tr>';
+  h+=row('left',t.L)+row('right',t.R)+'</tbody></table></div>';
+  h+='<span class="verdict '+(t.ok?'ok':'bad')+'">'+(t.ok?'Atoms and charge balance ✓':'Not balanced yet')+'</span>';
+  return h;
+}
+/* render an equation; prev = previous equation (new or changed terms are highlighted); marks = {'L:H^+':{x:true,to:2}} */
+function eqHTML(eq,prev,marks){
+  eq=parseEq(eq);if(prev)prev=parseEq(prev);marks=marks||{};
+  const side=(arr,key)=>arr.map(t=>{
+    const isNew=prev&&!prev[key].some(p=>p.s===t.s&&p.n===t.n);
+    const mk=marks[key+':'+t.s];
+    let cls='t'+(t.s==='e^-'?' e':'')+(isNew?' new':'');
+    const body=(t.n>1?t.n:'')+fmtSpecies(t.s);
+    if(mk&&mk.x){return '<span class="'+cls+' x">'+body+'</span>'+(mk.to?' <span class="t new">'+(mk.to>1?mk.to:'')+fmtSpecies(t.s)+'</span>':'');}
+    return '<span class="'+cls+'">'+body+'</span>';
+  }).join('<span class="op">+</span>');
+  return '<div class="eq">'+side(eq.L,'L')+'<span class="op">→</span>'+side(eq.R,'R')+'</div>';
+}
+function scaleEq(eq,m){eq=parseEq(eq);const f=a=>a.map(t=>({n:t.n*m,s:t.s}));return {L:f(eq.L),R:f(eq.R)};}
+function mergeSide(a){const out=[];a.forEach(t=>{const o=out.find(x=>x.s===t.s);if(o)o.n+=t.n;else out.push({n:t.n,s:t.s});});return out;}
+function eCount(eq){eq=parseEq(eq);const l=eq.L.find(t=>t.s==='e^-'),r=eq.R.find(t=>t.s==='e^-');return {lost:r?r.n:0,gained:l?l.n:0};}
+function gcd(a,b){return b?gcd(b,a%b):a;}
+function lcm(a,b){return a*b/gcd(a,b);}
+/* add two (already multiplied) half equations and cancel; returns {added, marks, net, cancelled[]} */
+function addCancel(a,b){
+  a=parseEq(a);b=parseEq(b);
+  const L=mergeSide(a.L.concat(b.L)),R=mergeSide(a.R.concat(b.R));
+  const marks={},cancelled=[];
+  L.forEach(t=>{const r=R.find(x=>x.s===t.s);if(!r)return;cancelled.push(t.s);
+    if(t.n>r.n){marks['R:'+t.s]={x:true};marks['L:'+t.s]={x:true,to:t.n-r.n};}
+    else if(r.n>t.n){marks['L:'+t.s]={x:true};marks['R:'+t.s]={x:true,to:r.n-t.n};}
+    else{marks['L:'+t.s]={x:true};marks['R:'+t.s]={x:true};}});
+  const net={L:[],R:[]};
+  L.forEach(t=>{const r=R.find(x=>x.s===t.s);const v=t.n-(r?r.n:0);if(v>0)net.L.push({n:v,s:t.s});});
+  R.forEach(t=>{const l=L.find(x=>x.s===t.s);const v=t.n-(l?l.n:0);if(v>0)net.R.push({n:v,s:t.s});});
+  return {added:{L,R},marks,net,cancelled};
+}
+function simplify(eq){const all=eq.L.concat(eq.R).map(t=>t.n);const g=all.reduce(gcd);return {g,eq:g>1?scaleEq(eq,1/g):eq};}
+function chargeLine(eq){
+  eq=parseEq(eq);
+  const side=a=>{const parts=[];let tot=0;a.forEach(t=>{const q=parseSpecies(t.s).charge*t.n;tot+=q;if(q)parts.push(q);});
+    if(!parts.length)return '0';
+    const expr=parts.map((q,i)=>i===0?sgn(q).replace(/^\+/,''):(q<0?MINUS+' '+(-q):'+ '+q)).join(' ');
+    return parts.length>1?expr+' = '+sgn(tot):sgn(tot);};
+  const t=tally(eq);
+  return 'Check charge: &nbsp;left &nbsp;'+side(eq.L)+' &nbsp;&nbsp;&nbsp; right &nbsp;'+side(eq.R)+' &nbsp;'+(t.ok?'✓':'✗');
+}
+const CAN_NAME={'e^-':'electrons','H^+':'H<sup>+</sup>','H2O':'H<sub>2</sub>O','OH^-':'OH<sup>'+MINUS+'</sup>'};
+/* worked combining example → steps for EqStepper */
+function combineSteps(h1,h2,lab1,lab2){
+  const A=parseEq(h1),B=parseEq(h2);
+  const ea=eCount(A),eb=eCount(B);const na=ea.lost||ea.gained,nb=eb.lost||eb.gained;
+  const m=lcm(na,nb),ma=m/na,mb=m/nb;
+  const Am=scaleEq(A,ma),Bm=scaleEq(B,mb);
+  const steps=[{cap:lab1,eq:A,noHi:true},{cap:lab2,eq:B,noHi:true}];
+  if(ma>1||mb>1){
+    const which=[];if(ma>1)which.push('× '+ma+' the first half');if(mb>1)which.push('× '+mb+' the second half');
+    const eqs=[];if(ma>1)eqs.push(Am);if(mb>1)eqs.push(Bm);
+    steps.push({cap:'<b>'+na+'e<sup>'+MINUS+'</sup></b> and <b>'+nb+'e<sup>'+MINUS+'</sup></b>: make them both <b>'+m+'e<sup>'+MINUS+'</sup></b>. '+which.join(' and ')+'.',eqs:eqs,prevs:eqs.map((e,i)=>(ma>1&&i===0)?A:B)});
+  }else steps.push({cap:'Both halves already have <b>'+m+'e<sup>'+MINUS+'</sup></b>, so no multiplying is needed.'});
+  const ac=addCancel(Am,Bm);
+  const names=ac.cancelled.map(s=>CAN_NAME[s]||fmtSpecies(s));
+  steps.push({cap:'Add the two halves, then cancel what appears on both sides: <b>'+names.join(', ')+'</b>.',eq:ac.added,marks:ac.marks,noHi:true});
+  steps.push({cap:'Overall equation',eq:ac.net,noHi:true});
+  const sm=simplify(ac.net);
+  if(sm.g>1)steps.push({cap:'Every number divides by '+sm.g+', so divide through.',eq:sm.eq,noHi:true});
+  steps.push({cap:chargeLine(sm.eq),eq:null});
+  return steps;
+}
+/* progressive stepper: steps [{cap, eq|eqs, marks, noHi}] */
+function EqStepper(host,steps,opts){
+  opts=opts||{};
+  host.classList.add('stack');
+  host.innerHTML='<div class="stepper"><button class="primary" type="button">Next step</button><button type="button">Back</button><button type="button">Show all</button><span class="caption"></span></div><div class="eqrows" aria-live="polite"></div>'+(opts.tally?'<div class="tallywrap"></div>':'');
+  const [bN,bB,bA]=host.querySelectorAll('button'),cap=host.querySelector('.caption'),rows=host.querySelector('.eqrows'),tw=host.querySelector('.tallywrap');
+  let k=0;
+  function render(){
+    let h='',prev=null,last=null;
+    steps.slice(0,k).forEach((s,i)=>{
+      let body='<div class="cap">'+fmtText(s.cap)+'</div>';
+      if(s.eqs){s.eqs.forEach((e,j)=>{body+=eqHTML(e,s.prevs?s.prevs[j]:null);});last=s.eqs[s.eqs.length-1];}
+      if(s.eq){body+=eqHTML(s.eq,s.noHi?null:prev,s.marks);prev=s.eq;last=s.eq;}
+      if(s.html)body+=s.html;
+      let badge=i+1;const cm=s.cap.match(/^([\u2460-\u2468])\s*/);if(cm){badge=cm[1].charCodeAt(0)-0x245F;body=body.replace(cm[0],'');}else if(/^Check/.test(s.cap))badge='✓';
+      h+='<div class="eqrow"><span class="n">'+badge+'</span><div class="body">'+body+'</div></div>';
+    });
+    rows.innerHTML=h;
+    cap.textContent=k===0?'Press Next step to start':'Step '+k+' of '+steps.length;
+    bN.disabled=k>=steps.length;bB.disabled=k===0;bA.disabled=k>=steps.length;
+    bN.textContent=k===0?'Start':'Next step';
+    if(tw){const lastStep=steps[k-1];const e=lastStep&&(lastStep.tallyEq||(lastStep.eq&&!lastStep.marks?lastStep.eq:null));tw.innerHTML=e?'<span class="lab">Balance check for the latest line</span>'+tallyHTML(e):'';}
+  }
+  bN.onclick=()=>{if(k<steps.length)k++;render();};
+  bB.onclick=()=>{if(k>0)k--;render();};
+  bA.onclick=()=>{k=steps.length;render();};
+  host.reset=()=>{k=0;render();};
+  render();
+  return host;
+}
+/* pick one of several worked examples */
+function StepperPicker(host,examples,opts){
+  host.classList.add('stack');
+  host.innerHTML='<div class="chips" role="group" aria-label="Choose an example"></div><div class="lede2 prose"></div><div class="stp"></div>';
+  const chips=host.querySelector('.chips'),q=host.querySelector('.lede2'),stp=host.querySelector('.stp');
+  function pick(i){
+    chips.querySelectorAll('button').forEach((b,j)=>b.setAttribute('aria-pressed',j===i));
+    const ex=examples[i];q.innerHTML='<p><b>'+fmtText(ex.q)+'</b></p>';
+    EqStepper(stp,typeof ex.steps==='function'?ex.steps():ex.steps,opts);
+  }
+  examples.forEach((ex,i)=>{const b=document.createElement('button');b.type='button';b.innerHTML=fmtText(ex.label);b.onclick=()=>pick(i);chips.appendChild(b);});
+  pick(0);
+}
+
+/* ---------- oxidation-state calculator ---------- */
+function osSolve(d){let known=0,unk=null;d.parts.forEach(p=>{if(p[2]===null)unk=p;else known+=p[1]*p[2];});return unk?(d.charge-known)/unk[1]:null;}
+function OSCalc(host,list,opts){
+  host.classList.add('stack');
+  opts=opts||{};
+  host.innerHTML='<div class="chips" role="group" aria-label="Choose a species"></div><div class="prose qline"></div><div class="stepper"><button class="primary" type="button">Start</button><button type="button">Back</button><button type="button">Show all</button><span class="caption"></span></div><div class="scroll"><div class="osgrid"></div></div><div class="sum"></div><div class="answer" aria-live="polite"></div><div class="caption note"></div>';
+  const chips=host.querySelector('.chips'),ql=host.querySelector('.qline'),g=host.querySelector('.osgrid'),sum=host.querySelector('.sum'),ans=host.querySelector('.answer'),note=host.querySelector('.note');
+  const [bN,bB,bA]=host.querySelectorAll('.stepper button'),cap=host.querySelector('.stepper .caption');
+  let d,k=0;
+  const CAPS=['① Put the known values above each atom','② Multiply by the number of atoms','③ Add them up: the total is ','④ Solve for the unknown'];
+  function render(){
+    const x=osSolve(d);const unk=d.parts.find(p=>p[2]===null);
+    g.style.gridTemplateColumns='auto repeat('+d.parts.length+',auto)';
+    let h='<span class="rl">each atom</span>'+d.parts.map(p=>'<span class="c '+(p[2]===null?'u':'k')+(k>=1?'':' hide')+'">'+(p[2]===null?(k>=4?sgn(x):'x'):sgn(p[2]))+'</span>').join('');
+    h+='<span class="rl"></span>'+d.parts.map(p=>'<span class="c f">'+p[0]+(p[1]>1?'<sub>'+p[1]+'</sub>':'')+'</span>').join('');
+    h+='<span class="rl">total</span>'+d.parts.map(p=>'<span class="c '+(p[2]===null?'u':'k')+(k>=2?'':' hide')+'">'+(p[2]===null?(p[1]>1?p[1]+'x':'x'):sgn(p[1]*p[2]))+'</span>').join('');
+    g.innerHTML=h;
+    const chg=d.charge?('<sup>'+(Math.abs(d.charge)>1?Math.abs(d.charge):'')+(d.charge>0?'+':MINUS)+'</sup>'):'';
+    g.querySelectorAll('.c.f')[d.parts.length-1].innerHTML+=chg;
+    if(k>=3){sum.innerHTML=d.parts.map(p=>p[2]===null?(p[1]>1?p[1]+'x':'x'):signedTerm(p[1]*p[2])).join(' + ')+' = '+sgn(d.charge)+' &nbsp;<small class="caption">'+(d.charge?'the charge on the ion':'a neutral compound')+'</small>';}else sum.innerHTML='';
+    if(k>=4){let a='';if(unk[1]>1)a=unk[1]+'x = '+sgn(x*unk[1])+' &nbsp;→&nbsp; ';a+=unk[0]+' = '+sgn(x);if(d.name)a+=' &nbsp;→&nbsp; '+d.name;ans.innerHTML=a;note.innerHTML=d.note||'';}else{ans.innerHTML='';note.innerHTML='';}
+    cap.textContent=k===0?'Press Start':(k===3?CAPS[2]+(d.charge?'the ion charge, '+sgn(d.charge):'0 for a compound'):CAPS[k-1]);
+    bN.textContent=k===0?'Start':'Next step';bN.disabled=k>=4;bB.disabled=k===0;bA.disabled=k>=4;
+  }
+  function pick(i){d=list[i];k=0;chips.querySelectorAll('button').forEach((b,j)=>b.setAttribute('aria-pressed',j===i));ql.innerHTML='<p><b>'+fmtText(d.q||('Work out the oxidation state of '+d.parts.find(p=>p[2]===null)[0]+' in {'+d.f+'}'))+'</b></p>';render();}
+  list.forEach((d,i)=>{const b=document.createElement('button');b.type='button';b.innerHTML=fmt(d.f);b.onclick=()=>pick(i);chips.appendChild(b);});
+  bN.onclick=()=>{if(k<4)k++;render();};bB.onclick=()=>{if(k>0)k--;render();};bA.onclick=()=>{k=4;render();};
+  pick(0);
+}
+/* quick-fire drill */
+function OSDrill(host,list){
+  host.innerHTML='<div class="drill"><div class="caption">Oxidation state of the atom in red?</div><div class="target" aria-live="polite"></div><div class="numpad" role="group" aria-label="Choose an oxidation state"></div><div class="fbx"></div><div class="controls"><button class="primary" type="button">Next species</button><span class="caption score"></span></div></div>';
+  const tg=host.querySelector('.target'),np=host.querySelector('.numpad'),fb=host.querySelector('.fbx'),nx=host.querySelector('.controls button'),sc=host.querySelector('.score');
+  let order=[],i=-1,cur,done,tries,right=0,seen=0;
+  const vals=[-4,-3,-2,-1,0,1,2,3,4,5,6,7];
+  function shuffle(){order=list.map((_,j)=>j);for(let a=order.length-1;a>0;a--){const b=Math.floor(Math.random()*(a+1));[order[a],order[b]]=[order[b],order[a]];}}
+  function next(){i++;if(i>=order.length){shuffle();i=0;}cur=list[order[i]];done=false;tries=0;
+    const unk=cur.parts.find(p=>p[2]===null)[0];
+    tg.innerHTML=cur.parts.map(p=>(p[2]===null?'<span class="el">'+p[0]+'</span>':p[0])+(p[1]>1?'<sub>'+p[1]+'</sub>':'')).join('')+(cur.charge?'<sup>'+(Math.abs(cur.charge)>1?Math.abs(cur.charge):'')+(cur.charge>0?'+':MINUS)+'</sup>':'');
+    fb.innerHTML='';np.innerHTML='';
+    vals.forEach(v=>{const b=document.createElement('button');b.type='button';b.textContent=sgn(v);b.onclick=()=>choose(v,b);np.appendChild(b);});}
+  function choose(v,b){if(done)return;tries++;const x=osSolve(cur);
+    const work=cur.parts.map(p=>p[2]===null?(p[1]>1?p[1]+'x':'x'):signedTerm(p[1]*p[2])).join(' + ')+' = '+sgn(cur.charge);
+    if(Math.abs(v-x)<1e-9){b.classList.add('right');done=true;seen++;if(tries===1)right++;fb.innerHTML='<div class="fb right">'+work+' → '+cur.parts.find(p=>p[2]===null)[0]+' = '+sgn(x)+(cur.tip?' · '+fmtText(cur.tip):'')+'</div>';sc.textContent=right+' of '+seen+' right first time';}
+    else{b.classList.add('wrong');fb.innerHTML='<div class="fb wrong">Not '+sgn(v)+'. '+(tries>=2?'Set it up: '+work.replace('x','x')+'. ':'Remember the total must be '+sgn(cur.charge)+'. ')+'</div>';}}
+  nx.onclick=next;shuffle();next();
+}
+
+/* ---------- SVG helpers ---------- */
+const SVGNS='http://www.w3.org/2000/svg';
+function sv(tag,attrs,parent){const e=document.createElementNS(SVGNS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+function svgLabel(t,str,size){
+  while(t.firstChild)t.removeChild(t.firstChild);
+  const i=str.indexOf('^');const f=i<0?str:str.slice(0,i),c=i<0?null:str.slice(i+1);
+  let cur=0;const put=(txt,d,fs)=>{const ts=sv('tspan',{dy:d-cur},t);if(fs)ts.setAttribute('font-size',fs);ts.textContent=txt;cur=d;};
+  f.split(/(\d+)/).forEach((p,j)=>{if(!p)return;if(j%2===1)put(p,size*.25,size*.65);else put(p,0,null);});
+  if(c)put(c.replace('-',MINUS),-size*.4,size*.62);
+}
+function tween(dur,fn,done){if(RM){fn(1);if(done)done();return;}const t0=performance.now();function f(now){let t=Math.min(1,(now-t0)/dur);const e=t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;fn(e);if(t<1)requestAnimationFrame(f);else if(done)done();}requestAnimationFrame(f);}
+
+/* ---------- bonds → pretend ionic ---------- */
+const EN={H:2.20,C:2.55,N:3.04,O:3.44,F:3.98,S:2.58,Cl:3.16,P:2.19,Na:.93};
+const ACOL={H:['#e9e4d8','#2a2017'],C:['#4a4a4a','#fff'],N:['#3f5fbf','#fff'],O:['#c0463a','#fff'],F:['#8fc46a','#1e2a12'],S:['#d4b21c','#2a2017'],Cl:['#2c9a52','#fff'],P:['#d9822b','#2a2017']};
+function BondViewer(host,mols){
+  host.innerHTML='<div class="controls"><div class="chips" role="group" aria-label="Choose a species"></div></div><div class="controls"><button class="primary" type="button">Make the bonds ionic</button><button type="button">Reset</button></div><div class="two"><svg class="svgbox" viewBox="0 0 400 270" role="img"></svg><div class="readout" aria-live="polite"></div></div>';
+  const chips=host.querySelector('.chips'),svg=host.querySelector('svg'),out=host.querySelector('.readout');
+  const [go,rs]=host.querySelectorAll('.controls:nth-of-type(2) button');
+  let m,E=[],ionic=false;
+  function osOf(i){let v=m.atoms[i][3]||0;m.bonds.forEach(b=>{const o=b[2]||1;if(b[0]!==i&&b[1]!==i)return;const j=b[0]===i?b[1]:b[0];const a=EN[m.atoms[i][0]],c=EN[m.atoms[j][0]];if(a>c)v-=o;else if(a<c)v+=o;});return v;}
+  function draw(){
+    while(svg.firstChild)svg.removeChild(svg.firstChild);E=[];
+    const gB=sv('g',{},svg),gA=sv('g',{},svg),gE=sv('g',{},svg),gL=sv('g',{},svg);
+    m.bonds.forEach(b=>{const A=m.atoms[b[0]],B=m.atoms[b[1]],o=b[2]||1;const dx=B[1]-A[1],dy=B[2]-A[2],L=Math.hypot(dx,dy),ux=dx/L,uy=dy/L,px=-uy,py=ux;
+      for(let k=0;k<o;k++){const off=(k-(o-1)/2)*12;sv('line',{x1:A[1]+px*off,y1:A[2]+py*off,x2:B[1]+px*off,y2:B[2]+py*off,stroke:'currentColor','stroke-width':3,class:'bond',opacity:.55},gB);}
+      const mx=(A[1]+B[1])/2,my=(A[2]+B[2])/2;
+      const eA=EN[A[0]],eB=EN[B[0]];
+      for(let k=0;k<o;k++)for(const s of [-1,1]){
+        const off=(k-(o-1)/2)*12;const x=mx+ux*s*6+px*off,y=my+uy*s*6+py*off;
+        const to=eA>eB?0:eB>eA?1:(s<0?0:1);
+        const c=sv('circle',{cx:x,cy:y,r:4.6,fill:'var(--elec)',stroke:'var(--surface)','stroke-width':1.2},gE);
+        E.push({c,x,y,to:b[to],from:b[1-to],bi:b});
+      }});
+    m.atoms.forEach((a,i)=>{const col=ACOL[a[0]]||['#888','#fff'];sv('circle',{cx:a[1],cy:a[2],r:24,fill:col[0],stroke:'var(--line)'},gA);
+      const t=sv('text',{x:a[1],y:a[2]+6,'text-anchor':'middle','font-size':17,'font-weight':700,style:'fill:'+col[1]},gA);t.textContent=a[0];
+      if(a[3]){const f=sv('text',{x:a[1]+20,y:a[2]-16,'font-size':15,'font-weight':700},gA);f.textContent=a[3]>0?'+':MINUS;}
+      const ol=sv('text',{x:a[4]==='r'?a[1]+30:a[1],y:a[4]==='r'?a[2]-28:(a[2]<=140?a[2]-33:a[2]+46),'text-anchor':a[4]==='r'?'start':'middle','font-size':17,'font-weight':800,class:'osl',opacity:0,style:'fill:var(--accent)'},gL);ol.textContent=sgn(osOf(i));});
+    if(m.charge){const t=sv('text',{x:6,y:264,'text-anchor':'start','font-size':16,'font-weight':700},svg);t.textContent='overall charge '+sgn(m.charge);}
+    // electron targets
+    const cnt={};E.forEach(e=>{const key=e.to+'|'+e.bi.join(',');cnt[key]=(cnt[key]||0)+1;});const idx={};
+    E.forEach(e=>{const key=e.to+'|'+e.bi.join(',');idx[key]=(idx[key]||0);const j=idx[key]++;const n=cnt[key];
+      const R=m.atoms[e.to],O=m.atoms[e.from];const dx=O[1]-R[1],dy=O[2]-R[2],L=Math.hypot(dx,dy),ux=dx/L,uy=dy/L;
+      const off=(j-(n-1)/2)*10;e.tx=R[1]+ux*33-uy*off;e.ty=R[2]+uy*33+ux*off;});
+  }
+  function readout(){
+    const groups=[];m.atoms.forEach((a,i)=>{const os=osOf(i);let gained=0,lost=0,shared=0;m.bonds.forEach(b=>{if(b[0]!==i&&b[1]!==i)return;const j=b[0]===i?b[1]:b[0];const o=b[2]||1;const x=EN[a[0]],y=EN[m.atoms[j][0]];if(x>y)gained+=o;else if(x<y)lost+=o;else shared+=o;});
+      const key=a[0]+os+'|'+gained+'|'+lost+'|'+shared+'|'+(a[3]||0);const g=groups.find(z=>z.key===key);if(g)g.n++;else groups.push({key,el:a[0],os,gained,lost,shared,f:a[3]||0,n:1});});
+    let h='<h3>'+m.name+'</h3>';
+    if(!ionic){h+='<p>Each dot is an electron in a bond. Electronegativities: '+[...new Set(m.atoms.map(a=>a[0]))].map(e=>e+' '+EN[e].toFixed(2)).join(', ')+'.</p><p class="caption">Predict the oxidation states, then press <b>Make the bonds ionic</b>.</p>';}
+    else{
+      h+='<ul class="obs" style="margin:0;padding-left:18px;display:grid;gap:4px">'+groups.map(g=>{const bits=[];if(g.gained)bits.push('takes '+g.gained+' electron'+(g.gained>1?'s':''));if(g.lost)bits.push('loses '+g.lost+' electron'+(g.lost>1?'s':''));if(g.shared)bits.push('splits '+(g.shared>1?g.shared+' shared pairs':'its shared pair')+' equally (no gain)');if(g.f)bits.push('already carries '+sgn(g.f)+' charge');return '<li><b>'+g.el+(g.n>1?' (×'+g.n+')':'')+'</b>: '+bits.join(', ')+' → <b>'+sgn(g.os)+'</b></li>';}).join('')+'</ul>';
+      const tot=groups.reduce((s,g)=>s+g.os*g.n,0);
+      h+='<p class="sum" style="font-size:1.05rem">Check: '+groups.map(g=>(g.n>1?g.n+'('+sgn(g.os)+')':'('+sgn(g.os)+')')).join(' + ')+' = '+sgn(tot)+' ✓</p>';
+      if(m.note)h+='<div class="key">'+fmtText(m.note)+'</div>';}
+    out.innerHTML=h;
+  }
+  function pick(i){m=mols[i];ionic=false;chips.querySelectorAll('button').forEach((b,j)=>b.setAttribute('aria-pressed',j===i));svg.setAttribute('aria-label','Bonding electrons in '+m.k);draw();readout();go.disabled=false;}
+  function makeIonic(){if(ionic)return;ionic=true;go.disabled=true;
+    svg.querySelectorAll('.bond').forEach(b=>{b.setAttribute('stroke-dasharray','4 6');b.setAttribute('opacity',.2);});
+    tween(1100,t=>{E.forEach(e=>{e.c.setAttribute('cx',e.x+(e.tx-e.x)*t);e.c.setAttribute('cy',e.y+(e.ty-e.y)*t);});},()=>{svg.querySelectorAll('.osl').forEach(l=>l.setAttribute('opacity',1));readout();});}
+  mols.forEach((mm,i)=>{const b=document.createElement('button');b.type='button';b.innerHTML=fmt(mm.k);b.onclick=()=>pick(i);chips.appendChild(b);});
+  go.onclick=makeIonic;rs.onclick=()=>pick(mols.indexOf(m));
+  pick(0);
+}
+
+/* ---------- electron transfer animation ---------- */
+function Transfer(host,scene){
+  host.innerHTML='<div class="controls"><button class="primary" type="button">Transfer the electrons</button><button type="button">Reset</button></div><svg class="svgbox" viewBox="0 0 '+scene.w+' '+scene.h+'" role="img"></svg><p class="caption tcap" aria-live="polite"></p>';
+  const svg=host.querySelector('svg'),cap=host.querySelector('.tcap');const [go,rs]=host.querySelectorAll('button');
+  svg.setAttribute('aria-label',scene.alt||'Electron transfer animation');
+  let P={},EL=[],busy=false,done=false;
+  function setup(){
+    while(svg.firstChild)svg.removeChild(svg.firstChild);P={};EL=[];busy=false;done=false;go.disabled=false;
+    const gB=sv('g',{},svg),gA=sv('g',{},svg),gE=sv('g',{},svg),gT=sv('g',{},svg);
+    (scene.bonds||[]).forEach(b=>{const a=scene.parts.find(p=>p.id===b[0]),c=scene.parts.find(p=>p.id===b[1]);b.el=sv('line',{x1:a.x,y1:a.y,x2:c.x,y2:c.y,stroke:'currentColor','stroke-width':4,opacity:.6},gB);});
+    scene.parts.forEach(p=>{const o={p,x:p.x,r:p.r};o.c=sv('circle',{cx:p.x,cy:p.y,r:p.r,fill:p.c,stroke:'var(--line)','stroke-width':1.5},gA);
+      o.t=sv('text',{x:p.x,y:p.y+7,'text-anchor':'middle','font-size':20,'font-weight':700,style:'fill:'+(p.tc||'#fff')},gA);svgLabel(o.t,p.l,20);
+      if(p.tag){o.g=sv('text',{x:p.x,y:p.y+p.r+30,'text-anchor':'middle','font-size':14,'font-weight':700,opacity:0,style:'fill:'+(p.tagc||'var(--ink)')},gT);o.g.textContent=p.tag;}
+      if(p.os!==undefined){o.os=sv('text',{x:p.x,y:p.y-p.r-12,'text-anchor':'middle','font-size':15,'font-weight':800,style:'fill:var(--accent)'},gT);o.os.textContent=sgn(p.os);}
+      P[p.id]=o;});
+    const cnt={};scene.e.forEach(e=>{cnt[e[0]]=(cnt[e[0]]||0)+1;});const ix={};
+    const cntTo={};scene.e.forEach(e=>{cntTo[e[1]]=(cntTo[e[1]]||0)+1;});const ixTo={};
+    scene.e.forEach(e=>{const A=scene.parts.find(p=>p.id===e[0]),B=scene.parts.find(p=>p.id===e[1]);
+      const j=ix[e[0]]=(ix[e[0]]||0)+1,n=cnt[e[0]];const ang=-Math.PI/2+((j-1)-(n-1)/2)*.55;
+      const x0=A.x+Math.cos(ang)*(A.r+2),y0=A.y+Math.sin(ang)*(A.r+2);
+      const jt=ixTo[e[1]]=(ixTo[e[1]]||0)+1,nt=cntTo[e[1]];const r1=B.to&&B.to.r?B.to.r:B.r;const bx=B.to&&B.to.x!==undefined?B.to.x:B.x;const ang2=-Math.PI/2+((jt-1)-(nt-1)/2)*.55;
+      const x1=bx+Math.cos(ang2)*(r1+2),y1=B.y+Math.sin(ang2)*(r1+2);
+      const c=sv('circle',{cx:x0,cy:y0,r:6,fill:'var(--elec)',stroke:'var(--surface)','stroke-width':1.5},gE);
+      const t=sv('text',{x:x0,y:y0-9,'text-anchor':'middle','font-size':11,'font-weight':700,style:'fill:var(--elec)'},gE);t.textContent='e'+MINUS;
+      EL.push({c,t,x0,y0,x1,y1});});
+    cap.innerHTML=fmtText(scene.before);
+  }
+  function play(){if(busy||done)return;busy=true;go.disabled=true;
+    let k=0;const one=()=>{if(k>=EL.length){finish();return;}const e=EL[k++];const cx=(e.x0+e.x1)/2,cy=Math.min(e.y0,e.y1)-80;
+      tween(900,t=>{const u=1-t;const x=u*u*e.x0+2*u*t*cx+t*t*e.x1,y=u*u*e.y0+2*u*t*cy+t*t*e.y1;e.c.setAttribute('cx',x);e.c.setAttribute('cy',y);e.t.setAttribute('x',x);e.t.setAttribute('y',y-9);});
+      setTimeout(one,RM?0:380);};
+    one();}
+  function finish(){setTimeout(()=>{
+    (scene.bonds||[]).forEach(b=>b.el.setAttribute('opacity',0));
+    tween(600,t=>{Object.values(P).forEach(o=>{const to=o.p.to;if(!to)return;const x=o.p.x+((to.x!==undefined?to.x:o.p.x)-o.p.x)*t,r=o.p.r+((to.r||o.p.r)-o.p.r)*t;o.c.setAttribute('cx',x);o.c.setAttribute('r',r);o.t.setAttribute('x',x);if(o.g){o.g.setAttribute('x',x);o.g.setAttribute('y',o.p.y+r+30);}if(o.os){o.os.setAttribute('x',x);o.os.setAttribute('y',o.p.y-r-12);}});
+      EL.forEach(e=>{e.c.setAttribute('opacity',1-t);e.t.setAttribute('opacity',1-t);});},()=>{
+      Object.values(P).forEach(o=>{const to=o.p.to;if(o.g)o.g.setAttribute('opacity',1);if(!to)return;if(to.c)o.c.setAttribute('fill',to.c);if(to.tc)o.t.setAttribute('style','fill:'+to.tc);if(to.l)svgLabel(o.t,to.l,20);if(o.os&&to.os!==undefined)o.os.textContent=sgn(to.os);});
+      cap.innerHTML=fmtText(scene.after);busy=false;done=true;});
+  },RM?0:900);}
+  go.onclick=play;rs.onclick=setup;setup();
+}
+
+/* ---------- MCQs + checklist (house engine) ---------- */
+function initMCQ(Q,CK,CKKEY){
+  const state={answered:0,first:0,total:0};
+  Object.values(Q).forEach(a=>state.total+=a.length);
+  function upd(){$('#pbar').style.width=(100*state.answered/state.total)+'%';$('#pstat').textContent=state.answered+' of '+state.total+' questions answered · '+state.first+' right first time';}
+  let qnum=0;
+  $$('.mcq').forEach(box=>{
+    const set=Q[box.dataset.set];if(!set)return;
+    const head=document.createElement('div');head.className='mcqhead';
+    head.innerHTML='<h3>'+(box.dataset.title||(set.length<=2?'Quick check':'Questions'))+'</h3><span class="caption">'+set.length+' question'+(set.length>1?'s':'')+'</span>';
+    box.appendChild(head);
+    set.forEach(item=>{
+      qnum++;
+      const el=document.createElement('div');el.className='q';
+      el.innerHTML='<div class="qh"><span class="qn">Q'+qnum+'</span><span class="qt">'+fmtText(item.q)+'</span></div><div class="opts"></div><div class="fb" hidden></div>';
+      const opts=el.querySelector('.opts'),fb=el.querySelector('.fb');let tries=0,done=false;
+      const sh=item.o.slice();for(let i=sh.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[sh[i],sh[j]]=[sh[j],sh[i]];}
+      sh.forEach((o,oi)=>{
+        const b=document.createElement('button');b.className='opt';b.type='button';
+        b.innerHTML='<span class="l">'+'ABCDE'[oi]+'</span><span>'+fmtText(o[0])+'</span>';
+        b.addEventListener('click',()=>{
+          if(done||b.classList.contains('wrong'))return;tries++;fb.hidden=false;fb.innerHTML=fmtText(o[2]);
+          if(o[1]){b.classList.add('right');fb.className='fb right';done=true;state.answered++;if(tries===1)state.first++;upd();opts.querySelectorAll('.opt').forEach(x=>x.disabled=true);}
+          else{b.classList.add('wrong');fb.className='fb wrong';fb.innerHTML=fmtText(o[2])+' <b>Try again.</b>';}
+        });
+        opts.appendChild(b);
+      });
+      box.appendChild(el);
+    });
+  });
+  upd();
+  let saved={};try{saved=JSON.parse(localStorage.getItem(CKKEY)||'{}');}catch(e){}
+  $('#check').innerHTML=CK.map((t,i)=>'<li><label><input type="checkbox" id="ck'+i+'"'+(saved[i]?' checked':'')+'><span>'+fmtText(t)+'</span></label></li>').join('');
+  $('#check').addEventListener('change',e=>{saved[e.target.id.slice(2)]=e.target.checked;try{localStorage.setItem(CKKEY,JSON.stringify(saved));}catch(err){}});
+}
+if(typeof module!=='undefined')module.exports={parseSpecies,parseEq,tally,scaleEq,addCancel,simplify,eCount,lcm,eqToStr,osSolve,combineSteps,fmt};
+
+/* ---------- build-it-yourself half equation ---------- */
+function HalfBuilder(host,probs){
+  host.classList.add('stack');
+  host.innerHTML='<div class="chips" role="group" aria-label="Choose a change"></div><div class="prose bq"></div><div class="builder"><div class="bside" aria-label="Equation builder"></div></div><div class="btally"></div><div class="controls"><button type="button" class="ans">Show the answer</button><button type="button" class="clr">Clear</button></div><div class="bfb" aria-live="polite"></div>';
+  const chips=host.querySelector('.chips'),bq=host.querySelector('.bq'),bs=host.querySelector('.bside'),bt=host.querySelector('.btally'),fb=host.querySelector('.bfb');
+  let P,v;
+  const slots=()=>[['L',P.from],['L','H^+'],['L','H2O'],['L','e^-'],['R',P.to],['R','H^+'],['R','H2O'],['R','e^-']];
+  function eqNow(){const e={L:[],R:[]};slots().forEach((s,i)=>{if(v[i]>0)e[s[0]].push({n:v[i],s:s[1]});});return e;}
+  function render(){
+    let h='';slots().forEach((s,i)=>{if(i===4)h+='<span class="arrow">→</span>';
+      h+='<span class="bterm '+(v[i]>0?'on':'off')+'"><span class="v">'+(v[i]>1?v[i]:(v[i]===0?'0':''))+fmtSpecies(s[1])+'</span><span class="ctl"><button type="button" data-i="'+i+'" data-d="-1" aria-label="fewer '+s[1]+' on the '+(s[0]==='L'?'left':'right')+'">−</button><button type="button" data-i="'+i+'" data-d="1" aria-label="more '+s[1]+' on the '+(s[0]==='L'?'left':'right')+'">+</button></span></span>';});
+    bs.innerHTML=h;
+    const e=eqNow();const t=tally(e);bt.innerHTML=tallyHTML(e);
+    const dup=['H^+','H2O','e^-'].some(s=>v[slots().findIndex(x=>x[0]==='L'&&x[1]===s)]>0&&v[slots().findIndex(x=>x[0]==='R'&&x[1]===s)]>0);
+    const g=v.filter(x=>x>0).reduce(gcd,0);
+    if(t.ok&&!dup&&g===1){const el=eCount(e);fb.innerHTML='<div class="fb right"><b>Balanced.</b> '+(el.gained?'Electrons on the left: a <b>reduction</b>.':'Electrons on the right: an <b>oxidation</b>.')+(P.os?' Check: '+P.os+'.':'')+'</div>';}
+    else if(t.ok&&dup)fb.innerHTML='<div class="fb wrong">It balances, but the same thing is on both sides. Cancel it down.</div>';
+    else if(t.ok&&g>1)fb.innerHTML='<div class="fb wrong">It balances, but every number divides by '+g+'. Use the smallest whole numbers.</div>';
+    else fb.innerHTML='';
+  }
+  bs.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const i=+b.dataset.i,d=+b.dataset.d;const min=(i===0||i===4)?1:0;v[i]=Math.max(min,Math.min(20,v[i]+d));render();
+    const nb=bs.querySelector('button[data-i="'+i+'"][data-d="'+d+'"]');if(nb)nb.focus();});
+  function pick(i){P=probs[i];v=[1,0,0,0,1,0,0,0];chips.querySelectorAll('button').forEach((b,j)=>b.setAttribute('aria-pressed',j===i));bq.innerHTML='<p><b>Balance {'.replace('{','')+fmt(P.from)+' → '+fmt(P.to)+'</b> in acidic conditions. Use the + and − buttons.</p>';render();}
+  probs.forEach((p,i)=>{const b=document.createElement('button');b.type='button';b.innerHTML=fmt(p.from)+' → '+fmt(p.to);b.onclick=()=>pick(i);chips.appendChild(b);});
+  host.querySelector('.ans').onclick=()=>{const a=parseEq(P.ans);v=slots().map(s=>{const t=a[s[0]].find(x=>x.s===s[1]);return t?t.n:0;});render();};
+  host.querySelector('.clr').onclick=()=>pick(probs.indexOf(P));
+  pick(0);
+}
+
+/* ---------- electron balancer: choose multipliers ---------- */
+function ElectronBalancer(host,pairs){
+  host.classList.add('stack');
+  host.innerHTML='<div class="chips" role="group" aria-label="Choose a pair"></div><div class="halves"></div><div class="estat" aria-live="polite"></div><div class="controls"><button class="primary go" type="button">Add and cancel</button></div><div class="eres" aria-live="polite"></div>';
+  const chips=host.querySelector('.chips'),hv=host.querySelector('.halves'),st=host.querySelector('.estat'),go=host.querySelector('.go'),res=host.querySelector('.eres');
+  let P,m=[1,1];
+  function half(i){return parseEq(i===0?P.a:P.b);}
+  function render(){
+    let h='';[0,1].forEach(i=>{const e=half(i),c=eCount(e),n=(c.lost||c.gained)*m[i];const ox=c.lost>0;
+      h+='<div class="bench" style="padding:10px 12px"><div class="half"><span class="lbl '+(ox?'up':'down')+'">'+(ox?'Oxidation ↑<br>loses':'Reduction ↓<br>gains')+' '+n+'e<sup>'+MINUS+'</sup></span><div class="mult"><button type="button" data-i="'+i+'" data-d="-1" aria-label="smaller multiplier">−</button><span class="big">×'+m[i]+'</span><button type="button" data-i="'+i+'" data-d="1" aria-label="bigger multiplier">+</button></div></div>'+eqHTML(scaleEq(e,m[i]))+'<div class="ebar" aria-hidden="true">'+'<i></i>'.repeat(n)+'</div></div>';});
+    hv.innerHTML=h;
+    const a=eCount(scaleEq(half(0),m[0])),b=eCount(scaleEq(half(1),m[1]));const na=a.lost||a.gained,nb=b.lost||b.gained;
+    const ok=na===nb;go.disabled=!ok;
+    st.innerHTML=ok?'<span class="verdict ok">'+na+' electrons lost = '+nb+' electrons gained ✓</span>':'<span class="verdict bad">'+(a.lost?na:nb)+' lost, '+(a.lost?nb:na)+' gained: not equal yet</span>';
+    res.innerHTML='';
+  }
+  hv.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const i=+b.dataset.i;m[i]=Math.max(1,Math.min(10,m[i]+(+b.dataset.d)));render();const nb=hv.querySelector('button[data-i="'+i+'"][data-d="'+b.dataset.d+'"]');if(nb)nb.focus();});
+  go.onclick=()=>{const ac=addCancel(scaleEq(half(0),m[0]),scaleEq(half(1),m[1]));const sm=simplify(ac.net);
+    let h='<div class="eqrows"><div class="eqrow"><span class="n">1</span><div class="body"><div class="cap">Add the halves and cancel what is on both sides</div>'+eqHTML(ac.added,null,ac.marks)+'</div></div>';
+    h+='<div class="eqrow"><span class="n">2</span><div class="body"><div class="cap">Overall equation</div>'+eqHTML(ac.net)+'</div></div>';
+    if(sm.g>1)h+='<div class="eqrow"><span class="n">3</span><div class="body"><div class="cap">It balances, but every number divides by '+sm.g+'. Use the <b>lowest</b> common multiple of electrons next time.</div>'+eqHTML(sm.eq)+'</div></div>';
+    h+='</div><p class="caption">'+chargeLine(sm.eq)+'</p>';res.innerHTML=h;};
+  function pick(i){P=pairs[i];m=[1,1];chips.querySelectorAll('button').forEach((b,j)=>b.setAttribute('aria-pressed',j===i));render();}
+  pairs.forEach((p,i)=>{const b=document.createElement('button');b.type='button';b.innerHTML=fmtText(p.label);b.onclick=()=>pick(i);chips.appendChild(b);});
+  pick(0);
+}
+
+/* ---------- extracting half equations ---------- */
+function Extractor(host,items){
+  host.classList.add('stack');
+  host.innerHTML='<div class="chips" role="group" aria-label="Choose a reaction"></div><div class="xq"></div><div class="stepper"><button class="primary" type="button">① Oxidation states</button><button type="button">② Which go up and down?</button><button type="button">③ Write the halves</button><button type="button">Reset</button></div><div class="xh" aria-live="polite"></div>';
+  const chips=host.querySelector('.chips'),xq=host.querySelector('.xq'),xh=host.querySelector('.xh');const [b1,b2,b3,br]=host.querySelectorAll('.stepper button');
+  let I,k=0;
+  const TAG={L:{ox:'↑ oxidised',red:'↓ reduced',spec:'spectator'},R:{ox:'↑',red:'↓',spec:''}};
+  function render(){
+    const e=parseEq(I.eq);
+    const side=(arr,key)=>arr.map((t,j)=>{const a=(I.ann[key]||[])[j]||[];const tag=a[2]!==undefined?a[2]:(a[1]?TAG[key][a[1]]:'');
+      return '<span class="ann'+(k>=1?' s1':'')+(k>=2?' s2':'')+'"><span class="a1">'+(a[0]?fmtText(a[0]):'')+'</span><span class="t'+(t.s==='e^-'?' e':'')+'">'+(t.n>1?t.n:'')+fmtSpecies(t.s)+'</span><span class="a2 '+(a[1]||'')+'">'+tag+'</span></span>';}).join('<span class="op">+</span>');
+    xq.innerHTML='<div class="eq annotated">'+side(e.L,'L')+'<span class="op">→</span>'+side(e.R,'R')+'</div>';
+    if(k>=3)xh.innerHTML='<div class="halves"><div class="half"><span class="lbl up">Oxidation ↑</span>'+eqHTML(I.ox)+'</div><div class="half"><span class="lbl down">Reduction ↓</span>'+eqHTML(I.red)+'</div></div>'+(I.note?'<div class="key" style="margin-top:10px">'+fmtText(I.note)+'</div>':'');
+    else xh.innerHTML='';
+  }
+  b1.onclick=()=>{k=Math.max(k,1);render();};b2.onclick=()=>{k=Math.max(k,2);render();};b3.onclick=()=>{k=3;render();};br.onclick=()=>{k=0;render();};
+  function pick(i){I=items[i];k=0;chips.querySelectorAll('button').forEach((b,j)=>b.setAttribute('aria-pressed',j===i));render();}
+  items.forEach((p,i)=>{const b=document.createElement('button');b.type='button';b.innerHTML=fmtText(p.label);b.onclick=()=>pick(i);chips.appendChild(b);});
+  pick(0);
+}
+function CombinePicker(host,list){StepperPicker(host,list,{});}
+
+/* ===== Run-through 3: combining and extracting half equations ===== */
+const mk=(label,q,a,la,b,lb)=>({label,q,a,b,steps:()=>combineSteps(a,b,la,lb)});
+const COMB=[
+ mk('{Fe^2+} + {Cl2}','Combine the half equations for {Fe^2+ -> Fe^3+} and {Cl2 -> Cl^-}.',
+   'Fe^2+ -> Fe^3+ + e^-','<span class="up">Oxidation ↑</span> Fe: +2 → +3',
+   'Cl2 + 2e^- -> 2Cl^-','<span class="down">Reduction ↓</span> Cl: 0 → −1 (× 2 atoms)'),
+ mk('{MnO4^-} + {Fe^2+}','Combine the half equations for {MnO4^- -> Mn^2+} and {Fe^2+ -> Fe^3+}.',
+   'MnO4^- + 8H^+ + 5e^- -> Mn^2+ + 4H2O','<span class="down">Reduction ↓</span> Mn: +7 → +2',
+   'Fe^2+ -> Fe^3+ + e^-','<span class="up">Oxidation ↑</span> Fe: +2 → +3'),
+ mk('{Al} + {Cl2}','Combine {Al -> Al^3+ + 3e^-} and {Cl2 + 2e^- -> 2Cl^-}.',
+   'Al -> Al^3+ + 3e^-','<span class="up">Oxidation ↑</span> Al: 0 → +3',
+   'Cl2 + 2e^- -> 2Cl^-','<span class="down">Reduction ↓</span> Cl: 0 → −1 (× 2 atoms)'),
+ mk('{Cr2O7^2-} + {Sn^2+}','Combine the half equations for dichromate(VI) and tin(II).',
+   'Cr2O7^2- + 14H^+ + 6e^- -> 2Cr^3+ + 7H2O','<span class="down">Reduction ↓</span> Cr: +6 → +3 (× 2 atoms)',
+   'Sn^2+ -> Sn^4+ + 2e^-','<span class="up">Oxidation ↑</span> Sn: +2 → +4'),
+ mk('{MnO4^-} + {I^-}','Combine the half equations for manganate(VII) and iodide.',
+   'MnO4^- + 8H^+ + 5e^- -> Mn^2+ + 4H2O','<span class="down">Reduction ↓</span> Mn: +7 → +2',
+   '2I^- -> I2 + 2e^-','<span class="up">Oxidation ↑</span> I: −1 → 0 (× 2 atoms)')
+];
+const COMB2=[
+ mk('{H2O2} + {NO3^-}','Combine {H2O2 -> O2 + 2H^+ + 2e^-} and {NO3^- + 4H^+ + 3e^- -> NO + 2H2O}.',
+   'H2O2 -> O2 + 2H^+ + 2e^-','<span class="up">Oxidation ↑</span> O: −1 → 0',
+   'NO3^- + 4H^+ + 3e^- -> NO + 2H2O','<span class="down">Reduction ↓</span> N: +5 → +2'),
+ mk('{NO3^-} + {SO3^2-}','Combine the half equations for nitrate(V) and sulfate(IV).',
+   'NO3^- + 4H^+ + 3e^- -> NO + 2H2O','<span class="down">Reduction ↓</span> N: +5 → +2',
+   'SO3^2- + H2O -> SO4^2- + 2H^+ + 2e^-','<span class="up">Oxidation ↑</span> S: +4 → +6'),
+ mk('{Cr2O7^2-} + {H2O2}','Combine the half equations for dichromate(VI) and hydrogen peroxide.',
+   'Cr2O7^2- + 14H^+ + 6e^- -> 2Cr^3+ + 7H2O','<span class="down">Reduction ↓</span> Cr: +6 → +3 (× 2 atoms)',
+   'H2O2 -> O2 + 2H^+ + 2e^-','<span class="up">Oxidation ↑</span> O: −1 → 0'),
+ mk('{PbO2} + {I2}','Combine {PbO2 + 4H^+ + 2e^- -> Pb^2+ + 2H2O} and {I2 + 6H2O -> 2IO3^- + 12H^+ + 10e^-}.',
+   'PbO2 + 4H^+ + 2e^- -> Pb^2+ + 2H2O','<span class="down">Reduction ↓</span> Pb: +4 → +2',
+   'I2 + 6H2O -> 2IO3^- + 12H^+ + 10e^-','<span class="up">Oxidation ↑</span> I: 0 → +5 (× 2 atoms)'),
+ mk('{IO3^-} + {I^-}','Combine the half equations for iodate(V) and iodide. Both make iodine.',
+   '2IO3^- + 12H^+ + 10e^- -> I2 + 6H2O','<span class="down">Reduction ↓</span> I: +5 → 0 (× 2 atoms)',
+   '2I^- -> I2 + 2e^-','<span class="up">Oxidation ↑</span> I: −1 → 0 (× 2 atoms)')
+];
+const PAIRS=[
+ {label:'{Mg} and {Ag^+}',a:'Mg -> Mg^2+ + 2e^-',b:'Ag^+ + e^- -> Ag'},
+ {label:'{Zn} and {Fe^3+}',a:'Zn -> Zn^2+ + 2e^-',b:'Fe^3+ + e^- -> Fe^2+'},
+ {label:'{Al} and {Cu^2+}',a:'Al -> Al^3+ + 3e^-',b:'Cu^2+ + 2e^- -> Cu'},
+ {label:'{Na} and {Cl2}',a:'Na -> Na^+ + e^-',b:'Cl2 + 2e^- -> 2Cl^-'},
+ {label:'{Sn^2+} and {MnO4^-}',a:'Sn^2+ -> Sn^4+ + 2e^-',b:'MnO4^- + 8H^+ + 5e^- -> Mn^2+ + 4H2O'},
+ {label:'{V^2+} and {MnO4^-}',a:'V^2+ -> V^3+ + e^-',b:'MnO4^- + 8H^+ + 5e^- -> Mn^2+ + 4H2O'},
+ {label:'{Cu} and {NO3^-}',a:'Cu -> Cu^2+ + 2e^-',b:'NO3^- + 2H^+ + e^- -> NO2 + H2O'}
+];
+const EXT=[
+ {label:'{Zn + CuSO4}',eq:'Zn + CuSO4 -> Cu + ZnSO4',ionic:false,
+  ann:{L:[['Zn 0','ox'],['Cu +2','red','↓ Cu reduced']],R:[['Cu 0','red'],['Zn +2','ox']]},
+  ox:'Zn -> Zn^2+ + 2e^-',red:'Cu^2+ + 2e^- -> Cu',
+  note:'{SO4^2-} is a spectator ion: S stays +6 and O stays −2. Leave it out of both halves.'},
+ {label:'{Zn + 2HCl}',eq:'Zn + 2HCl -> ZnCl2 + H2',ionic:false,
+  ann:{L:[['Zn 0','ox'],['H +1','red','↓ H reduced']],R:[['Zn +2','ox'],['H 0','red']]},
+  ox:'Zn -> Zn^2+ + 2e^-',red:'2H^+ + 2e^- -> H2',
+  note:'Cl stays −1, so {Cl^-} is a spectator. Don\'t write {2Cl^- -> Cl2 + 2e^-}: chlorine isn\'t oxidised here.'},
+ {label:'{H2O2} + {I^-}',eq:'H2O2 + 2I^- + 2H^+ -> I2 + 2H2O',ionic:true,
+  ann:{L:[['O −1','red'],['I −1','ox'],['','']],R:[['I 0','ox'],['O −2','red']]},
+  red:'H2O2 + 2H^+ + 2e^- -> 2H2O',ox:'2I^- -> I2 + 2e^-',
+  note:'The H<sup>+</sup> and H<sub>2</sub>O go with the oxygen-containing species: they balance its O and H.'},
+ {label:'{Cr2O7^2-} + {Fe^2+}',eq:'Cr2O7^2- + 6Fe^2+ + 14H^+ -> 2Cr^3+ + 6Fe^3+ + 7H2O',ionic:true,
+  ann:{L:[['Cr +6','red'],['Fe +2','ox'],['','']],R:[['Cr +3','red'],['Fe +3','ox'],['','']]},
+  red:'Cr2O7^2- + 14H^+ + 6e^- -> 2Cr^3+ + 7H2O',ox:'Fe^2+ -> Fe^3+ + e^-',
+  note:'The 6 in front of {Fe^2+} only balanced the electrons. Divide it out: {Fe^2+ -> Fe^3+ + e^-}.'},
+ {label:'{MnO4^-} + {SO2}',eq:'2MnO4^- + 5SO2 + 2H2O -> 2Mn^2+ + 5SO4^2- + 4H^+',ionic:true,
+  ann:{L:[['Mn +7','red'],['S +4','ox'],['','']],R:[['Mn +2','red'],['S +6','ox'],['','']]},
+  red:'MnO4^- + 8H^+ + 5e^- -> Mn^2+ + 4H2O',ox:'SO2 + 2H2O -> SO4^2- + 4H^+ + 2e^-',
+  note:'Check: oxidation × 5 = 10e<sup>−</sup> lost; reduction × 2 = 10e<sup>−</sup> gained. Adding and cancelling 16H<sup>+</sup> and 8H<sub>2</sub>O gives the equation.'},
+ {label:'{VO2^+} + {Zn}',eq:'2VO2^+ + 4H^+ + Zn -> 2VO^2+ + 2H2O + Zn^2+',ionic:true,
+  ann:{L:[['V +5','red'],['',''],['Zn 0','ox']],R:[['V +4','red'],['',''],['Zn +2','ox']]},
+  red:'VO2^+ + 2H^+ + e^- -> VO^2+ + H2O',ox:'Zn -> Zn^2+ + 2e^-'},
+ {label:'{BrO3^-} + {Br^-}',eq:'BrO3^- + 5Br^- + 6H^+ -> 3Br2 + 3H2O',ionic:true,
+  ann:{L:[['Br +5','red'],['Br −1','ox'],['','']],R:[['Br 0','','↑ and ↓'],['','']]},
+  red:'2BrO3^- + 12H^+ + 10e^- -> Br2 + 6H2O',ox:'2Br^- -> Br2 + 2e^-',
+  note:'The same element goes up <b>and</b> down: Br +5 → 0 and −1 → 0. Both halves make {Br2}.'}
+];
+const TR1={w:600,h:280,alt:'Animation: two iron(II) ions each give one electron to a chlorine molecule',
+ before:'Two {Fe^2+} ions and one {Cl2} molecule. How many electrons does each give, and how many does Cl<sub>2</sub> need?',
+ after:'Each {Fe^2+} loses <b>one</b> electron (+2 → +3). The {Cl2} gains <b>two</b> (0 → −1 for each atom). Lost = gained, so 2Fe<sup>2+</sup> for every Cl<sub>2</sub>.',
+ parts:[{id:'f1',x:110,y:85,r:30,l:'Fe^2+',c:'#9a6b3f',os:2,to:{l:'Fe^3+',r:27,os:3}},
+        {id:'f2',x:110,y:205,r:30,l:'Fe^2+',c:'#9a6b3f',os:2,to:{l:'Fe^3+',r:27,os:3}},
+        {id:'c1',x:425,y:145,r:28,l:'Cl',c:'#2c9a52',os:0,to:{x:385,r:36,l:'Cl^-',os:-1}},
+        {id:'c2',x:481,y:145,r:28,l:'Cl',c:'#2c9a52',os:0,to:{x:525,r:36,l:'Cl^-',os:-1}}],
+ bonds:[['c1','c2']],e:[['f1','c1'],['f2','c2']]};
+const TR2={w:600,h:250,alt:'Animation: zinc acts as the reducing agent and copper(II) ions as the oxidising agent',
+ before:'Zinc and copper(II) ions. Which one is the oxidising agent?',
+ after:'Zinc <b>gives</b> electrons, so it is the <b>reducing agent</b> (and is oxidised). Cu<sup>2+</sup> <b>takes</b> electrons, so it is the <b>oxidising agent</b> (and is reduced).',
+ parts:[{id:'zn',x:150,y:125,r:38,l:'Zn',c:'#8e959c',os:0,to:{r:28,l:'Zn^2+',os:2},tag:'reducing agent · oxidised ↑',tagc:'var(--ox)'},
+        {id:'cu',x:450,y:125,r:28,l:'Cu^2+',c:'#3f6fc0',os:2,to:{r:38,l:'Cu',c:'#c47a3a',os:0},tag:'oxidising agent · reduced ↓',tagc:'var(--red)'}],
+ e:[['zn','cu'],['zn','cu']]};
+
+const CKKEY='redox3-check';
+const Q={
+s1:[
+ {q:"Why must the electrons cancel when you combine two half equations?",o:[
+  ["Electrons lost by one species are gained by the other, so none are left over.",1,"Correct. Electrons never appear in an overall equation."],
+  ["Electrons have no mass.",0,"Mass isn't the reason. Every electron lost must be gained by something."],
+  ["Electrons are spectators.",0,"Electrons are transferred, not spectators. The number lost equals the number gained."],
+  ["To make the atoms balance.",0,"Electrons don't contain atoms. They cancel because lost = gained."]]},
+ {q:"Each {Fe^2+} loses one electron and each {Cl2} gains two. How many {Fe^2+} react with one {Cl2}?",o:[
+  ["2",1,"Correct. 2 × 1 electron lost = 2 electrons gained."],
+  ["1",0,"One Fe<sup>2+</sup> gives only one electron. Cl<sub>2</sub> needs two."],
+  ["3",0,"Cl<sub>2</sub> needs exactly two electrons, so 2Fe<sup>2+</sup>."],
+  ["4",0,"Each Cl atom gains one electron: two in total, so 2Fe<sup>2+</sup>."]]}
+],
+s2:[
+ {q:"Combine {Na -> Na^+ + e^-} and {Cl2 + 2e^- -> 2Cl^-}.",o:[
+  ["{2Na + Cl2 -> 2Na^+ + 2Cl^-}",1,"Correct. × 2 the sodium half so 2 electrons are lost and gained."],
+  ["{Na + Cl2 -> Na^+ + 2Cl^-}",0,"Check the charge: left 0, right −1. You need 2Na."],
+  ["{2Na + Cl2 + 2e^- -> 2Na^+ + 2Cl^- + 2e^-}",0,"The electrons are on both sides: cancel them."],
+  ["{Na + Cl -> Na^+ + Cl^-}",0,"Chlorine is diatomic. Use the half equations given."]]},
+ {q:"Combine {Al -> Al^3+ + 3e^-} and {Cl2 + 2e^- -> 2Cl^-}. What is the overall equation?",o:[
+  ["{2Al + 3Cl2 -> 2Al^3+ + 6Cl^-}",1,"Correct. The lowest common multiple of 3 and 2 is 6 electrons."],
+  ["{Al + Cl2 -> Al^3+ + 2Cl^-}",0,"3 electrons lost but only 2 gained. Multiply to 6 of each."],
+  ["{2Al + 3Cl2 -> 2Al^3+ + 3Cl^-}",0,"Count Cl: 6 on the left, so 6Cl<sup>−</sup>."],
+  ["{3Al + 2Cl2 -> 3Al^3+ + 4Cl^-}",0,"That's 9 electrons lost and 4 gained. You need 2Al and 3Cl<sub>2</sub>."]]},
+ {q:"{MnO4^- + 8H^+ + 5e^- -> Mn^2+ + 4H2O} and {Fe^2+ -> Fe^3+ + e^-}. What do you multiply the iron half by?",o:[
+  ["5",1,"Correct. 5 × 1 electron = 5 electrons, matching the manganate(VII) half."],
+  ["8",0,"8 is the number of H<sup>+</sup>. Match the electrons: × 5."],
+  ["2",0,"That gives only 2 electrons. The Mn half has 5."],
+  ["Nothing: they already match.",0,"The Fe half has 1 electron and the Mn half has 5. × 5."]]}
+],
+s3:[
+ {q:"A student combined the halves to get {Fe^2+ + Cl2 -> Fe^3+ + 2Cl^-}. What is wrong?",o:[
+  ["The electrons don't balance: it should be 2Fe<sup>2+</sup> → 2Fe<sup>3+</sup>.",1,"Correct. Check the charge: left +2, right +1."],
+  ["It should be Cl<sup>−</sup>, not 2Cl<sup>−</sup>.",0,"Cl<sub>2</sub> makes 2Cl<sup>−</sup>. The iron needs × 2."],
+  ["The Cl should be on the left.",0,"The species are on the right sides. The iron needs × 2."],
+  ["Nothing is wrong.",0,"Charge: left +2, right +3 − 2 = +1. It doesn't balance."]]},
+ {q:"A student wrote {MnO4^- + 8H^+ + Fe^2+ -> Mn^2+ + 4H2O + Fe^3+}. What is wrong?",o:[
+  ["Mn gains 5 electrons, so it needs 5Fe<sup>2+</sup> → 5Fe<sup>3+</sup>.",1,"Correct. Charge check: left +9, right +5."],
+  ["It should be 4H<sup>+</sup>.",0,"8H<sup>+</sup> is right for 4 O. The iron needs × 5."],
+  ["The water should be on the left.",0,"Water is a product here. The iron needs × 5."],
+  ["Nothing is wrong.",0,"Left: −1 + 8 + 2 = +9. Right: +2 + 3 = +5. It doesn't balance."]]},
+ {q:"A student wrote {H2O2 + 2Cu^2+ -> O2 + 2H^+ + 2Cu^2+}. What is wrong?",o:[
+  ["Copper is reduced, so the product should be 2Cu<sup>+</sup>.",1,"Correct. {Cu^2+ + e^- -> Cu^+}: copper ends up as Cu<sup>+</sup>."],
+  ["It needs 4H<sup>+</sup>.",0,"Two H in {H2O2} make 2H<sup>+</sup>. The copper product is wrong."],
+  ["O<sub>2</sub> should be H<sub>2</sub>O.",0,"Here {H2O2} is oxidised to O<sub>2</sub>. The copper product is wrong."],
+  ["Nothing is wrong.",0,"Cu<sup>2+</sup> appears unchanged on both sides, so nothing has been reduced."]]}
+],
+s4:[
+ {q:"After adding, an equation has 8H<sup>+</sup> on the left and 6H<sup>+</sup> on the right. What do you write?",o:[
+  ["2H<sup>+</sup> on the left, none on the right",1,"Correct. Take 6 from both sides."],
+  ["14H<sup>+</sup> on the left",0,"Cancel, don't add: 8 − 6 = 2 on the left."],
+  ["2H<sup>+</sup> on the right",0,"There were more on the left, so the 2 stay on the left."],
+  ["Leave them as they are",0,"Never leave the same species on both sides."]]},
+ {q:"Combine {H2O2 -> O2 + 2H^+ + 2e^-} and {Cr2O7^2- + 14H^+ + 6e^- -> 2Cr^3+ + 7H2O}.",o:[
+  ["{Cr2O7^2- + 3H2O2 + 8H^+ -> 2Cr^3+ + 3O2 + 7H2O}",1,"Correct. × 3 the peroxide half, then 14 − 6 = 8H<sup>+</sup> left."],
+  ["{Cr2O7^2- + 3H2O2 + 14H^+ -> 2Cr^3+ + 3O2 + 6H^+ + 7H2O}",0,"H<sup>+</sup> is on both sides: cancel to 8H<sup>+</sup> on the left."],
+  ["{Cr2O7^2- + H2O2 + 12H^+ -> 2Cr^3+ + O2 + 7H2O}",0,"The electrons don't match: 2 lost, 6 gained. × 3 the peroxide half."],
+  ["{Cr2O7^2- + 3H2O2 + 8H^+ -> 2Cr^3+ + 3O2 + 4H2O}",0,"Water isn't on both sides, so it doesn't cancel: 7H<sub>2</sub>O."]]},
+ {q:"Combining {2IO3^- + 12H^+ + 10e^- -> I2 + 6H2O} with 5 × {2I^- -> I2 + 2e^-} gives {2IO3^- + 12H^+ + 10I^- -> 6I2 + 6H2O}. What is the final step?",o:[
+  ["Divide everything by 2: {IO3^- + 6H^+ + 5I^- -> 3I2 + 3H2O}",1,"Correct. Always use the smallest whole numbers."],
+  ["Cancel the iodine",0,"I<sub>2</sub> is only on the right. Every number divides by 2."],
+  ["Add 10e<sup>−</sup> to the right",0,"The electrons have already cancelled. Divide everything by 2."],
+  ["Nothing: it's finished",0,"It balances, but every coefficient divides by 2."]]}
+],
+s5:[
+ {q:"Which is the definition of an oxidising agent?",o:[
+  ["An electron acceptor: it gains electrons and is itself reduced.",1,"Correct. It oxidises something else by taking its electrons."],
+  ["An electron donor: it loses electrons and is itself oxidised.",0,"That's a reducing agent."],
+  ["A substance that is oxidised.",0,"The oxidising agent oxidises something else, and is itself reduced."],
+  ["A substance that contains oxygen.",0,"Many don't, for example Cl<sub>2</sub>. It's an electron acceptor."]]},
+ {q:"In {Cl2 + 2Br^- -> 2Cl^- + Br2}, what is the reducing agent?",o:[
+  ["{Br^-}",1,"Correct. Br −1 → 0: it loses electrons, so it reduces the chlorine."],
+  ["{Cl2}",0,"Cl<sub>2</sub> gains electrons (0 → −1). It's the oxidising agent."],
+  ["{Br2}",0,"Br<sub>2</sub> is a product. The reducing agent is the reactant that loses electrons: Br<sup>−</sup>."],
+  ["{Cl^-}",0,"Cl<sup>−</sup> is a product. The reducing agent is Br<sup>−</sup>."]]},
+ {q:"In {MnO4^- + 8H^+ + 5Fe^2+ -> Mn^2+ + 4H2O + 5Fe^3+}, what is the oxidising agent?",o:[
+  ["{MnO4^-}",1,"Correct. Mn +7 → +2: it gains electrons."],
+  ["{Fe^2+}",0,"Fe +2 → +3: it loses electrons, so it's the reducing agent."],
+  ["{H^+}",0,"H stays +1. The oxidising agent is {MnO4^-}."],
+  ["{Mn^2+}",0,"That's the product of the reduction. The oxidising agent is {MnO4^-}."]]}
+],
+s6:[
+ {q:"In {Mg + CuSO4 -> MgSO4 + Cu}, what are the two half equations?",o:[
+  ["{Mg -> Mg^2+ + 2e^-} and {Cu^2+ + 2e^- -> Cu}",1,"Correct. {SO4^2-} is a spectator ion and is left out."],
+  ["{Mg -> Mg^2+ + 2e^-} and {CuSO4 + 2e^- -> Cu + SO4^2-}",0,"{SO4^2-} doesn't change, so leave it out: {Cu^2+ + 2e^- -> Cu}."],
+  ["{Mg + 2e^- -> Mg^2+} and {Cu^2+ -> Cu + 2e^-}",0,"The electrons are on the wrong sides. Mg is oxidised, Cu<sup>2+</sup> is reduced."],
+  ["{Mg -> Mg^2+ + e^-} and {Cu^2+ + e^- -> Cu}",0,"Both change by 2: 0 → +2 and +2 → 0."]]},
+ {q:"A student extracted {2Cl^- -> Cl2 + 2e^-} from {Zn + 2HCl -> ZnCl2 + H2}. What is wrong?",o:[
+  ["Cl stays −1: it's a spectator. The reduction half is {2H^+ + 2e^- -> H2}.",1,"Correct. Hydrogen is reduced, +1 → 0."],
+  ["It should be {Cl2 + 2e^- -> 2Cl^-}.",0,"Cl isn't involved at all: it stays −1. Hydrogen is reduced."],
+  ["It should be 4Cl<sup>−</sup>.",0,"Chlorine doesn't change. The other half is {2H^+ + 2e^- -> H2}."],
+  ["Nothing is wrong.",0,"Cl is −1 in HCl and −1 in ZnCl<sub>2</sub>. It isn't oxidised."]]},
+ {q:"Which is the reduction half equation for {2Fe^3+ + 2I^- -> 2Fe^2+ + I2}?",o:[
+  ["{Fe^3+ + e^- -> Fe^2+}",1,"Correct. Fe +3 → +2, and divide out the 2."],
+  ["{Fe^3+ -> Fe^2+ + e^-}",0,"Fe goes down, so the electron is gained: left side."],
+  ["{2I^- -> I2 + 2e^-}",0,"That's the oxidation half."],
+  ["{2Fe^3+ + e^- -> 2Fe^2+}",0,"Check the charge: left +5, right +4. Simplest form: {Fe^3+ + e^- -> Fe^2+}."]]}
+],
+s7:[
+ {q:"Combine {Mg -> Mg^2+ + 2e^-} and {Ag^+ + e^- -> Ag}.",o:[
+  ["{Mg + 2Ag^+ -> Mg^2+ + 2Ag}",1,"Correct. × 2 the silver half."],
+  ["{Mg + Ag^+ -> Mg^2+ + Ag}",0,"Charge: left +1, right +2. × 2 the silver half."],
+  ["{2Mg + Ag^+ -> 2Mg^2+ + Ag}",0,"That gives 4 electrons lost and 1 gained."],
+  ["{Mg + 2Ag -> Mg^2+ + 2Ag^+}",0,"Silver ions are reduced to silver, not the other way round."]]},
+ {q:"Combine {Zn -> Zn^2+ + 2e^-} and {Fe^3+ + e^- -> Fe^2+}.",o:[
+  ["{Zn + 2Fe^3+ -> Zn^2+ + 2Fe^2+}",1,"Correct. × 2 the iron half."],
+  ["{Zn + Fe^3+ -> Zn^2+ + Fe^2+}",0,"Charge: left +3, right +4. × 2 the iron half."],
+  ["{Zn + 2Fe^3+ -> Zn^2+ + 2Fe}",0,"Fe<sup>3+</sup> is reduced to Fe<sup>2+</sup>, not Fe."],
+  ["{2Zn + Fe^3+ -> 2Zn^2+ + Fe^2+}",0,"That's 4 electrons lost and 1 gained."]]},
+ {q:"Combine {NO3^- + 4H^+ + 3e^- -> NO + 2H2O} and {SO3^2- + H2O -> SO4^2- + 2H^+ + 2e^-}.",o:[
+  ["{2NO3^- + 2H^+ + 3SO3^2- -> 2NO + H2O + 3SO4^2-}",1,"Correct. 6 electrons; then cancel 6H<sup>+</sup> and 3H<sub>2</sub>O."],
+  ["{2NO3^- + 8H^+ + 3SO3^2- + 3H2O -> 2NO + 4H2O + 3SO4^2- + 6H^+}",0,"Right multipliers, but H<sup>+</sup> and H<sub>2</sub>O are on both sides. Cancel them."],
+  ["{NO3^- + 2H^+ + SO3^2- -> NO + H2O + SO4^2-}",0,"3 electrons gained, 2 lost. Multiply to 6 of each."],
+  ["{3NO3^- + 2H^+ + 2SO3^2- -> 3NO + H2O + 2SO4^2-}",0,"That's 9 electrons gained and 4 lost. × 2 nitrate, × 3 sulfite."]]},
+ {q:"In {Cr2O7^2- + 3H2O2 + 8H^+ -> 2Cr^3+ + 3O2 + 7H2O}, what is the reducing agent?",o:[
+  ["{H2O2}",1,"Correct. O −1 → 0: it loses electrons."],
+  ["{Cr2O7^2-}",0,"Cr +6 → +3: it gains electrons, so it's the oxidising agent."],
+  ["{H^+}",0,"H stays +1. The reducing agent is {H2O2}."],
+  ["{O2}",0,"O<sub>2</sub> is a product. The reducing agent is {H2O2}."]]},
+ {q:"What are the half equations in {Cl2 + 2I^- -> 2Cl^- + I2}?",o:[
+  ["{Cl2 + 2e^- -> 2Cl^-} and {2I^- -> I2 + 2e^-}",1,"Correct. Cl 0 → −1 (reduced); I −1 → 0 (oxidised)."],
+  ["{Cl2 -> 2Cl^- + 2e^-} and {2I^- + 2e^- -> I2}",0,"Electrons on the wrong sides. Check the charges."],
+  ["{Cl2 + e^- -> Cl^-} and {I^- -> I2 + e^-}",0,"Balance the atoms first: 2Cl<sup>−</sup> and 2I<sup>−</sup>."],
+  ["{Cl2 + 2e^- -> 2Cl^-} and {I2 + 2e^- -> 2I^-}",0,"Iodide is oxidised here, not iodine reduced."]]},
+ {q:"In {H2SO4 + 6H^+ + 6I^- -> S + 3I2 + 4H2O}, what is the reduction half equation?",o:[
+  ["{H2SO4 + 6H^+ + 6e^- -> S + 4H2O}",1,"Correct. S +6 → 0: 6 electrons gained."],
+  ["{2I^- -> I2 + 2e^-}",0,"That's the oxidation half."],
+  ["{H2SO4 + 6e^- -> S + 4H2O}",0,"Check H: 2 on the left, 8 on the right. It needs 6H<sup>+</sup>."],
+  ["{SO4^2- + 8H^+ + 8e^- -> S + 4H2O}",0,"S +6 → 0 is 6 electrons; check the charge."]]},
+ {q:"What must balance in an overall redox equation?",o:[
+  ["Atoms and total charge",1,"Correct. And there must be no electrons left."],
+  ["Only the atoms",0,"The charge must balance too."],
+  ["The number of molecules on each side",0,"The number of particles can differ. Atoms and charge must balance."],
+  ["Oxidation states on each side",0,"Oxidation states change in redox. Atoms and charge balance."]]},
+ {q:"What is a spectator ion?",o:[
+  ["An ion whose oxidation state doesn't change, so it's left out of the half equations.",1,"Correct. For example {SO4^2-} in {Zn + CuSO4}."],
+  ["An ion that is oxidised.",0,"A spectator isn't oxidised or reduced."],
+  ["An ion that is reduced.",0,"A spectator isn't oxidised or reduced."],
+  ["An ion that only appears on one side.",0,"It appears unchanged on both sides."]]}
+]
+};
+const CK=[
+ "Explain why electrons lost must equal electrons gained",
+ "Multiply half equations so the electrons match, using the lowest common multiple",
+ "Add half equations and cancel electrons, H<sup>+</sup> and H<sub>2</sub>O",
+ "Divide through when every coefficient shares a factor",
+ "Check an overall equation by atoms and charge",
+ "Define and identify oxidising and reducing agents",
+ "Extract the two half equations from a full equation, leaving out spectator ions"
+];
+Transfer($('#tr1'),TR1);
+Transfer($('#tr2'),TR2);
+CombinePicker($('#cb1'),COMB);
+CombinePicker($('#cb2'),COMB2);
+ElectronBalancer($('#bal'),PAIRS);
+Extractor($('#ext'),EXT);
+initMCQ(Q,CK,CKKEY);
+
+</script>
+</body>
+</html>
