@@ -172,7 +172,8 @@
   /* knowledge organisers: exam paper labels */
   .paper{ flex:none; font-size:.7rem; font-weight:700; color:#fff; padding:2px 8px; border-radius:20px; white-space:nowrap; }
   .paper.p1{ background:#1f6fd1; } .paper.p2{ background:#c2410c; } .paper.pboth{ background:#2b8a3e; }
-  .topic summary .paper{ margin-left:auto; }
+  .paper.tri{ background:#7b3fb6; } .paper.tri-some{ background:#efe8fa; color:#5b2f9e; }
+  .topic .pills{ display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
   .paper-key{ display:flex; flex-wrap:wrap; align-items:center; gap:8px; font-size:.88rem; color:var(--ink-soft); margin:0 0 18px; }
 
   footer{ border-top:1px solid var(--line); padding:26px 20px; color:var(--muted); font-size:.88rem; }
@@ -231,7 +232,8 @@
      To add one more sheet, just increase the number. For a single PDF
      with a different name use pdf("Exact file name without .pdf").
    • Knowledge organisers live in the ko folder. ko("C5") adds both PDFs
-     for C5 under a topic (see "kos" in the A-level section).
+     for C5 under a topic (see "kos" in the A-level section). GCSE uses
+     koG(5) for the files that start "GCSE-C5".
    • Revision records live in the revisionrecord folder. rr("File name")
      points at "revisionrecord/File name" – type the name exactly as it
      appears in GitHub, including the .pdf or .xlsx on the end.
@@ -248,10 +250,11 @@ const sheets = (base, n) => {
 /* Knowledge organisers live in the ko folder.
    ko("C1") adds the Q&A sheet and the self-test sheet for C1. */
 const KO_FOLDER = "ko/";
-const ko = code => [
-  { title: `${code} – Q&A sheet`, url: `${KO_FOLDER}${code}-knowledge-organiser.pdf` },
-  { title: `${code} – Self-test sheet`, url: `${KO_FOLDER}${code}-self-test.pdf` },
+const ko = (code, label = code) => [
+  { title: `${label} – Q&A sheet`, url: `${KO_FOLDER}${code}-knowledge-organiser.pdf` },
+  { title: `${label} – Self-test sheet`, url: `${KO_FOLDER}${code}-self-test.pdf` },
 ];
+const koG = n => ko(`GCSE-C${n}`, `C${n}`);   // GCSE files start "GCSE-", e.g. GCSE-C4-self-test.pdf
 
 /* The screenshot cut these two names off – check they match the files exactly */
 const EQUILIBRIUM = "AQA 3.1.4 and 3.1.10 Equilibrium constants Kc and Kp";
@@ -329,6 +332,42 @@ const SITE = {
         { title: "Strong and weak acids", url: "mixed/strong-weak-acids.html" },
       ],
     },
+    koBuilder: KO_FOLDER + "gcse-knowledge-organiser-builder.html",
+    koNote: "Triple only = separate Chemistry (8462) only, not Combined Science. Each PDF puts its triple-only sets at the end.",
+    kos: {
+      "1. Atomic structure and the periodic table": koG(1),
+      "2. Bonding, structure and properties of matter": koG(2),
+      "3. Quantitative chemistry": koG(3),
+      "4. Chemical changes": koG(4),
+      "5. Energy changes": koG(5),
+      "6. Rate and extent of chemical change": koG(6),
+      "7. Organic chemistry": koG(7),
+      "8. Chemical analysis": koG(8),
+      "9. Chemistry of the atmosphere": koG(9),
+      "10. Using resources": koG(10),
+      "RP1 Making salts": ko("GCSE-RP1", "RP1"),
+      "RP2 Titration": ko("GCSE-RP2", "RP2"),
+      "RP3 Electrolysis": ko("GCSE-RP3", "RP3"),
+      "RP4 Temperature changes": ko("GCSE-RP4", "RP4"),
+      "RP5 Rates of reaction": ko("GCSE-RP5", "RP5"),
+      "RP6 Chromatography": ko("GCSE-RP6", "RP6"),
+      "RP7 Identifying ions": ko("GCSE-RP7", "RP7"),
+      "RP8 Water purification": ko("GCSE-RP8", "RP8"),
+    },
+    /* Topics whose PDFs include some triple-only sets */
+    koTripleTopics: ["1. Atomic structure and the periodic table", "2. Bonding, structure and properties of matter",
+      "3. Quantitative chemistry", "4. Chemical changes", "5. Energy changes", "7. Organic chemistry",
+      "8. Chemical analysis", "10. Using resources"],
+    koExtraTopics: [
+      { name: "RP1 Making salts", group: "Required practicals", paper: "1" },
+      { name: "RP2 Titration", group: "Required practicals", paper: "1", triple: true },
+      { name: "RP3 Electrolysis", group: "Required practicals", paper: "1" },
+      { name: "RP4 Temperature changes", group: "Required practicals", paper: "1" },
+      { name: "RP5 Rates of reaction", group: "Required practicals", paper: "2" },
+      { name: "RP6 Chromatography", group: "Required practicals", paper: "2" },
+      { name: "RP7 Identifying ions", group: "Required practicals", paper: "2", triple: true },
+      { name: "RP8 Water purification", group: "Required practicals", paper: "2" },
+    ],
   },
 
   alevel: {
@@ -530,6 +569,7 @@ const SITE = {
       ],
     },
     koBuilder: KO_FOLDER + "knowledge-organiser-builder.html",
+    koNote: "Everything can also come up on Paper 3.",
     kos: {
       "3.1.1 Atomic structure": ko("C1"),
       "3.1.2 Amount of substance": ko("C2"),
@@ -629,6 +669,8 @@ const topicGroup = t => typeof t === "string" ? "" : (t.group || "");
 const PAPER_LABEL = { "1": "Paper 1", "2": "Paper 2", "both": "Papers 1 & 2" };
 function paperOf(t) {
   if (t && t.paper) return t.paper;
+  const g = /^(\d+)\. /.exec(topicName(t));          // GCSE: topics 1–5 Paper 1, 6–10 Paper 2
+  if (g) return +g[1] <= 5 ? "1" : "2";
   const m = /^3\.(\d)\.(\d+)/.exec(topicName(t));
   if (!m) return "";
   const [b, c] = [+m[1], +m[2]];
@@ -661,7 +703,9 @@ function renderCards(items, catTitle) {
   }).join("")}</div>`;
 }
 
-function renderTopics(topics, links, paperLabels) {
+function renderTopics(topics, links, paperLabels, tripleTopics = []) {
+  const tri = t => !paperLabels ? "" : (t && t.triple) ? `<span class="paper tri">Triple only</span>`
+    : tripleTopics.includes(topicName(t)) ? `<span class="paper tri-some">Includes triple</span>` : "";
   const known = new Set(topics.map(topicName));
   const extra = Object.keys(links).filter(k => !known.has(k)).map(k => ({ name: k, group: "Other" }));
   let html = "", currentGroup = null, open = false;
@@ -675,7 +719,7 @@ function renderTopics(topics, links, paperLabels) {
     }
     const items = (links[topicName(t)] || []).filter(i => i.url);
     html += items.length
-      ? `<details class="topic"><summary><span class="name">${esc(topicName(t))}</span>${paperLabels ? paperPill(paperOf(t)) : ""}<span class="count">${items.length}</span></summary>
+      ? `<details class="topic"><summary><span class="name">${esc(topicName(t))}${paperLabels ? `<span class="pills">${paperPill(paperOf(t))}${tri(t)}</span>` : ""}</span><span class="count">${items.length}</span></summary>
            <ul>${items.map(i => /\.pdf(#|$)/i.test(i.url)
              ? `<li><a href="${esc(i.url)}" target="_blank" rel="noopener" data-pdf>${esc(i.title)}</a></li>`
              : `<li><a href="${esc(i.url)}">${esc(i.title)}</a></li>`).join("")}</ul></details>`
@@ -700,7 +744,7 @@ function renderKoIntro(L) {
       <span class="title">Knowledge organiser builder</span>
       <span class="desc">Browse every fact on screen, tick the ones you don't know yet and print your own knowledge organiser as a PDF.</span>
     </a></div>
-    <div class="paper-key"><span>Exam paper:</span>${paperPill("1")}${paperPill("2")}${paperPill("both")}<span>Everything can also come up on Paper 3.</span></div>`;
+    <div class="paper-key"><span>Exam paper:</span>${paperPill("1")}${paperPill("2")}${L.koTripleTopics ? `<span class="paper tri">Triple only</span>` : paperPill("both")}<span>${esc(L.koNote || "")}</span></div>`;
 }
 
 function renderRecords(items) {
@@ -751,7 +795,7 @@ function renderCategory(level, L, c) {
   else body = `<div class="tools"><button class="link-btn" data-toggle-all>Open all topics</button></div>
                ${c.key === "activities" ? renderTrackerCard(level) : ""}
                ${c.key === "kos" ? renderKoIntro(L) : ""}
-               ${renderTopics(c.key === "kos" ? [...L.topics, ...(L.koExtraTopics || [])] : L.topics, L[c.key] || {}, c.paperLabels)}`;
+               ${renderTopics(c.key === "kos" ? [...L.topics, ...(L.koExtraTopics || [])] : L.topics, L[c.key] || {}, c.paperLabels, c.key === "kos" ? (L.koTripleTopics || []) : [])}`;
   return `
     <div class="crumbs"><a href="#${SLUG[level]}">← ${esc(L.name)} home</a><span>/</span><span>${esc(c.title)}</span></div>
     <div class="page-head"><span class="icon">${ICONS[c.key]}</span><h2>${esc(c.title)}</h2></div>
