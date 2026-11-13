@@ -1,0 +1,550 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Percentage yield and atom economy</title>
+<style>
+
+:root{
+  --paper:#efe6d6; --panel:#faf6ee; --stage:#fcf9f3; --ink:#33241a; --muted:#7a6553;
+  --line:#dccfb9; --chip:#f2e8d8; --accent:#c4621a; --btn:#8c4a1c; --accent-ink:#fff8ef;
+  --good:#3f7d3a; --warn:#b8402e; --minus:#2b4f8f; --weak:#c8691f; --soft:#efe3cc;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#1a1410; --panel:#241c16; --stage:#15100c; --ink:#efe4d3; --muted:#b39f88;
+    --line:#43362b; --chip:#30261e; --accent:#f0954a; --btn:#d9955a; --accent-ink:#1a1410;
+    --good:#8bc47f; --warn:#e67a63; --minus:#6fa3f0; --weak:#f0a050; --soft:#30261e; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#1a1410; --panel:#241c16; --stage:#15100c; --ink:#efe4d3; --muted:#b39f88;
+  --line:#43362b; --chip:#30261e; --accent:#f0954a; --btn:#d9955a; --accent-ink:#1a1410;
+  --good:#8bc47f; --warn:#e67a63; --minus:#6fa3f0; --weak:#f0a050; --soft:#30261e; color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:18px 16px 28px}
+[hidden]{display:none!important}
+.wrap{max-width:1360px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 20px}
+h1{font-family:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;font-weight:600;font-size:clamp(1.45rem,2.5vw,2.05rem);letter-spacing:-.01em;margin:0;text-wrap:balance}
+header p{margin:0;color:var(--muted);font-size:.95rem}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;border-bottom:1px solid var(--line)}
+.tab{background:none;border:none;border-bottom:3px solid transparent;border-radius:0;padding:8px 12px;font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;font-size:1.08rem;font-weight:600;color:var(--muted);margin-bottom:-1px}
+.tab:hover:not(:disabled){border-color:transparent;color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--btn)}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 350px;gap:16px;align-items:start}
+@media (max-width:920px){.layout{grid-template-columns:1fr}}
+.stage{background:var(--stage);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.canvas-box{position:relative;width:100%;aspect-ratio:16/10}
+@media (max-width:600px){.canvas-box{aspect-ratio:4/5}}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+.ov{position:absolute;top:10px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.ov.l{left:12px}.ov.r{right:12px}
+.pill{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:3px 11px;font-size:.82rem;font-weight:650}
+.small{font-size:.8rem;padding:5px 10px}
+.toast{position:absolute;left:12px;bottom:12px;max-width:calc(100% - 24px);background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:.88rem;pointer-events:none;transition:opacity .3s;opacity:0}
+.caption{border-top:1px solid var(--line);padding:12px 16px 14px;font-size:1.04rem;line-height:1.55;min-height:6.4em}
+.panel{display:flex;flex-direction:column;gap:12px}
+.group{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.group h2{margin:0;font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.btns{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button{font:inherit;font-weight:600;font-size:.92rem;padding:8px 12px;border-radius:7px;border:1px solid var(--line);background:var(--chip);color:var(--ink);cursor:pointer}
+button:hover:not(:disabled){border-color:var(--btn)}
+button.primary{background:var(--btn);border-color:var(--btn);color:var(--accent-ink)}
+button[aria-pressed="true"]{background:var(--good);border-color:var(--good);color:var(--accent-ink)}
+button:disabled{opacity:.42;cursor:not-allowed}
+:focus-visible{outline:2px solid var(--btn);outline-offset:2px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{padding:6px 10px}
+.seg button.right{background:var(--good);border-color:var(--good);color:var(--accent-ink);opacity:1}
+.seg button.wrong{background:var(--warn);border-color:var(--warn);color:var(--accent-ink);opacity:1}
+.tog{display:flex;gap:8px;align-items:center;font-size:.9rem;cursor:pointer}
+input[type=checkbox]{accent-color:var(--btn);width:16px;height:16px}
+input[type=range]{width:100%;accent-color:var(--btn)}
+.speed{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;font-size:.88rem}
+.fb{margin:0;font-size:.92rem}
+.note{margin:0;font-size:.85rem;color:var(--muted)}
+.tally{display:grid;grid-template-columns:1fr auto;gap:3px 12px;font-size:.9rem;font-variant-numeric:tabular-nums}
+.tally b{text-align:right}
+ul.pts{margin:0;padding-left:18px;font-size:.88rem;display:flex;flex-direction:column;gap:4px}
+.key{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px 10px;font-size:.86rem}
+.dot{display:inline-block;width:13px;height:13px;border-radius:50%;margin-right:7px;vertical-align:-2px;border:1px solid rgba(0,0,0,.3)}
+.stubkey{display:inline-block;width:26px;height:5px;margin-right:7px;vertical-align:2px;border-radius:3px;background:linear-gradient(90deg,#8e8a84,rgba(142,138,132,0))}
+
+.cmpbox{display:none;padding:16px;overflow:auto}
+.stage.cmpmode .canvas-box,.stage.cmpmode .caption{display:none}
+.stage.cmpmode .cmpbox:not([hidden]){display:block}
+table.cmp{width:100%;border-collapse:collapse;font-size:clamp(13px,1.15vw,16px);line-height:1.35}
+table.cmp th,table.cmp td{border:1px solid var(--line);padding:10px 10px;vertical-align:top;text-align:left}
+table.cmp thead th{background:var(--btn);color:#fff;font-weight:700}
+table.cmp tbody th{background:var(--soft);font-weight:700;width:15%}
+table.cmp td.hid{color:transparent;cursor:pointer;background:repeating-linear-gradient(45deg,var(--soft),var(--soft) 8px,transparent 8px,transparent 16px)}
+table.cmp td.hid *{color:transparent}
+.seg button.right{background:var(--good);color:#fff;border-color:var(--good)}
+.seg button.wrong{background:var(--warn);color:#fff;border-color:var(--warn)}
+
+.stepper .steps{list-style:none;margin:8px 0;padding:0;counter-reset:st}
+.stepper .steps li{counter-increment:st;border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:0 0 6px;line-height:1.4}
+.stepper .steps li::before{content:"Step " counter(st);display:block;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.stepper .steps li.done{border-color:var(--good);background:color-mix(in srgb,var(--good) 9%,transparent)}
+.stepper .steps li.done>b{display:block}
+.stepper .steps li.cur{border-color:var(--btn)}
+.stepper .ans{display:flex;gap:6px;align-items:center;margin:6px 0 2px;flex-wrap:wrap}
+.stepper .ans input{width:96px;padding:7px 8px;border:1px solid var(--line);border-radius:8px;background:var(--stage);color:var(--ink);font:inherit;font-weight:600}
+.stepper .ans input.no{border-color:var(--warn)}
+.stepper .msg{margin:4px 0 0;font-size:13px;color:var(--warn)}
+.stepper .ans.opts button{text-align:left}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><h1>Percentage yield and atom economy</h1><p>AQA GCSE Chemistry 4.3.3.1 and 4.3.3.2 (chemistry only)</p></header>
+<nav class="tabs" role="tablist">
+<button class="tab" role="tab" data-mode="yield" aria-selected="true">1 · Percentage yield</button>
+<button class="tab" role="tab" data-mode="theo" aria-selected="false">2 · Theoretical yield (HT)</button>
+<button class="tab" role="tab" data-mode="ae" aria-selected="false">3 · Atom economy</button>
+</nav>
+<div class="layout">
+<section class="stage"><div class="canvas-box"><canvas id="cv" aria-label="Model"></canvas><div class="ov l"><span class="pill" id="pill"></span><span class="pill" id="pill2" hidden></span></div><div class="toast" id="toast"></div></div><div class="caption" id="caption"></div></section>
+<aside>
+<div class="panel" data-for="yield">
+<div class="group stepper" id="st_yield"></div>
+<div class="group"><h2>Key points</h2><ul class="pts">
+<li>The <b>theoretical yield</b> is the maximum mass of product that could be made, calculated from the equation.</li>
+<li>The <b>actual yield</b> is the mass you really get.</li>
+<li>Percentage yield = actual mass ÷ maximum theoretical mass × 100.</li>
+<li>It is not always possible to get 100 % because: the reaction may be <b>reversible</b> and not go to completion; some product may be <b>lost</b> when it is separated from the reaction mixture; some reactants may react in <b>different ways</b> to the expected reaction.</li></ul></div>
+</div>
+<div class="panel" data-for="theo" hidden>
+<div class="group stepper" id="st_theo"></div>
+<div class="group"><h2>Method</h2><ul class="pts">
+<li>Use a reacting mass calculation to find the <b>theoretical</b> mass of product: mass → moles → ratio → moles → mass.</li>
+<li>Then percentage yield = actual mass ÷ theoretical mass × 100.</li></ul></div>
+</div>
+<div class="panel" data-for="ae" hidden>
+<div class="group stepper" id="st_ae"></div>
+<div class="group"><h2>Key points</h2><ul class="pts">
+<li><b>Atom economy</b> measures how much of the starting materials ends up as <b>useful</b> product.</li>
+<li>Atom economy = relative formula mass of the desired product from the equation ÷ sum of the relative formula masses of all the reactants from the equation × 100.</li>
+<li>"From the equation" means you <b>do</b> multiply each <i>M</i><sub>r</sub> by its coefficient (big number) here.</li>
+<li>A high atom economy is important for <b>sustainable development</b> and for <b>economic</b> reasons: less waste, and fewer raw materials used.</li>
+<li>A reaction with only one product has an atom economy of 100 %.</li></ul></div>
+</div>
+</aside>
+</div>
+</div>
+
+<script>
+(() => {
+const $=id=>document.getElementById(id);
+const cv=$('cv'), ctx=cv.getContext('2d');
+let cw=800, ch=500;
+function resize(){
+  const r=cv.getBoundingClientRect(), d=Math.min(2,window.devicePixelRatio||1);
+  cw=Math.max(50,r.width); ch=Math.max(50,r.height);
+  cv.width=Math.round(cw*d); cv.height=Math.round(ch*d); ctx.setTransform(d,0,0,d,0,0);
+}
+new ResizeObserver(resize).observe(cv); resize();
+const TH={};
+function readTheme(){const s=getComputedStyle(document.documentElement);['stage','ink','muted','line','accent','good','warn','minus','weak','soft','panel'].forEach(k=>TH[k]=s.getPropertyValue('--'+k).trim()||'#888');}
+readTheme(); matchMedia('(prefers-color-scheme: dark)').addEventListener('change',readTheme);
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const TAU=Math.PI*2, PI=Math.PI, s3=Math.sqrt(3), clamp=(v,a,b)=>Math.max(a,Math.min(b,v)), lerp=(a,b,t)=>a+(b-a)*t;
+const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+function rgb(h){h=h.replace('#','');if(h.length===3)h=h.split('').map(c=>c+c).join('');const n=parseInt(h,16);return [n>>16&255,n>>8&255,n&255];}
+function mix(a,b,t){const A=rgb(a),B=rgb(b);return `rgb(${A.map((v,i)=>Math.round(v+(B[i]-v)*t)).join(',')})`;}
+function rgba(c,a){ if(c.startsWith('#')){const [r,g,b]=rgb(c);return `rgba(${r},${g},${b},${a})`;} const m=c.match(/[\d.]+/g); return `rgba(${m[0]},${m[1]},${m[2]},${a})`; }
+function sprite(hex){
+  const S=96,c=document.createElement('canvas');c.width=c.height=S;const g=c.getContext('2d');
+  const gr=g.createRadialGradient(S*.36,S*.32,S*.03,S*.5,S*.5,S*.5);
+  gr.addColorStop(0,mix(hex,'#ffffff',.75));gr.addColorStop(.28,mix(hex,'#ffffff',.18));
+  gr.addColorStop(.72,hex);gr.addColorStop(1,mix(hex,'#000000',.5));
+  g.fillStyle=gr;g.beginPath();g.arc(S/2,S/2,S/2-1,0,TAU);g.fill();return c;
+}
+const EL={C:{col:'#5a5a5a',br:.27},Si:{col:'#c9a36b',br:.36},O:{col:'#d6452f',br:.27},H:{col:'#eeeae0',br:.2},Cl:{col:'#4f9e3f',br:.32},X:{col:'#3d8fd1',br:.22}};
+const SPR={}; for(const k in EL) SPR[k]=sprite(EL[k].col);
+const STICK='#8e8a84', ELEC='#f2c230';
+let toastT=0; function toast(t){$('toast').textContent=t;$('toast').style.opacity=1;toastT=4.5;}
+function setPressed(el,v){el.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===v));}
+function elecDot(x,y,r,a=1){ctx.globalAlpha=a*.3;ctx.fillStyle=ELEC;ctx.beginPath();ctx.arc(x,y,r*2,0,TAU);ctx.fill();ctx.globalAlpha=a;ctx.strokeStyle='#7a5a00';ctx.lineWidth=1;ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.fill();ctx.stroke();ctx.globalAlpha=1;}
+
+/* ===== reusable step-by-step fill-in engine ===== */
+function makeStepper(el,gen,title='Work it out'){
+  const S={q:null,i:0,score:0,done:0,helped:false,msg:'',tries:0,el,onchange:null};
+  const fin=()=>S.i>=S.q.steps.length;
+  function render(focus){
+    const q=S.q; let h=`<h2>${title}</h2><p class="fb">${q.text}</p><ol class="steps">`;
+    q.steps.forEach((s,k)=>{
+      if(k<S.i) h+=`<li class="done"><span>${s.p}</span><b>✓ ${s.work??s.a}</b></li>`;
+      else if(k===S.i&&s.opts) h+=`<li class="cur"><span>${s.p}</span><div class="ans opts">${s.opts.map((o,j)=>`<button data-act="opt" data-v="${j}">${o}</button>`).join('')}<button data-act="show">Show me</button></div>${S.msg?`<p class="msg">${S.msg}</p>`:''}</li>`;
+      else if(k===S.i) h+=`<li class="cur"><span>${s.p}</span><div class="ans"><input autocomplete="off" inputmode="${typeof s.a==='number'?'decimal':'text'}" aria-label="Your answer">${s.unit?`<span>${s.unit}</span>`:''}<button class="primary" data-act="check">Check</button><button data-act="show">Show me</button></div>${S.msg?`<p class="msg">${S.msg}</p>`:''}</li>`;
+    });
+    h+='</ol>';
+    if(fin()) h+=`<p class="fb">${q.end||'✓ Finished.'}</p>`;
+    h+=`<div class="btns"><button data-act="next"${fin()?' class="primary"':''}>New question ▶</button><span class="note">${S.done?`Without help: ${S.score} of ${S.done}`:''}</span></div>`;
+    el.innerHTML=h; if(focus){const inp=el.querySelector('input');if(inp)inp.focus({preventScroll:true});}
+    if(S.onchange) S.onchange(S);
+  }
+  function ok(s,raw){
+    let t=raw.trim(); if(!t) return null;
+    if(typeof s.a==='number'){t=t.replace(/[⁻⁰¹²³⁴-⁹]+$/,m=>'^'+[...m].map(c=>c==='⁻'?'-':'⁰¹²³⁴⁵⁶⁷⁸⁹'.indexOf(c)).join('')).replace(/\s/g,'').replace(',','.').replace(/[%a-zA-Z°³²\/]+$/,'');let v;
+      const m=t.match(/^(-?[\d.]+)[x×*]10\^?(-?\d+)$/i); v=m?parseFloat(m[1])*Math.pow(10,+m[2]):Number(t);
+      if(!isFinite(v)) return false; return Math.abs(v-s.a)<=(s.tol??Math.abs(s.a)*.006+1e-12);}
+    const u=t.toLowerCase(); return [s.a,...(s.alt||[])].some(a=>String(a).toLowerCase()===u);
+  }
+  function advance(){S.i++;S.msg='';S.tries=0;if(fin()){S.done++;if(!S.helped)S.score++;}render(true);}
+  function check(){const s=S.q.steps[S.i], inp=el.querySelector('input'), r=ok(s,inp.value); if(r===null)return;
+    if(r) advance(); else {S.tries++;S.msg=(S.tries>1&&s.hint)?s.hint:(S.tries>1?'Not quite. Try again, or press Show me.':(s.hint1||'Not quite. Try again.'));render(true);const i2=el.querySelector('input');if(i2)i2.className='no';}}
+  el.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const a=b.dataset.act;
+    if(a==='check')check(); else if(a==='opt'){const st=S.q.steps[S.i];if(st.opts[+b.dataset.v]===st.a)advance();else{S.tries++;S.msg=st.hint||'Not quite. Try again.';render(false);}} else if(a==='show'){S.helped=true;advance();} else if(a==='next')S.next(true);});
+  el.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.tagName==='INPUT'){e.preventDefault();check();}});
+  S.next=(focus)=>{S.q=gen();S.i=0;S.helped=false;S.msg='';S.tries=0;render(!!focus);};
+  S.fin=fin; S.next(false); return S;
+}
+function drawWork(S,x,y,lh,fs,maxW){
+  ctx.textAlign='left'; ctx.textBaseline='top';
+  S.q.steps.forEach((s,k)=>{ if(k>=S.i) return; ctx.font=`600 ${fs}px system-ui,sans-serif`; let f=fs; const t=s.work??String(s.a); while(maxW&&ctx.measureText(t).width>maxW&&f>10){f-=1;ctx.font=`600 ${f}px system-ui,sans-serif`;}
+    ctx.fillStyle=TH.good; ctx.fillText('✓',x,y+k*lh); ctx.fillStyle=TH.ink; ctx.fillText(t,x+fs*1.3,y+k*lh); });
+}
+/* ===== shared chemistry data ===== */
+const ELS=[[1,'H','hydrogen',1,1,1],[2,'He','helium',4,1,18],[3,'Li','lithium',7,2,1],[4,'Be','beryllium',9,2,2],[5,'B','boron',11,2,13],[6,'C','carbon',12,2,14],[7,'N','nitrogen',14,2,15],[8,'O','oxygen',16,2,16],[9,'F','fluorine',19,2,17],[10,'Ne','neon',20,2,18],
+[11,'Na','sodium',23,3,1],[12,'Mg','magnesium',24,3,2],[13,'Al','aluminium',27,3,13],[14,'Si','silicon',28,3,14],[15,'P','phosphorus',31,3,15],[16,'S','sulfur',32,3,16],[17,'Cl','chlorine',35.5,3,17],[18,'Ar','argon',40,3,18],
+[19,'K','potassium',39,4,1],[20,'Ca','calcium',40,4,2],[21,'Sc','scandium',45,4,3],[22,'Ti','titanium',48,4,4],[23,'V','vanadium',51,4,5],[24,'Cr','chromium',52,4,6],[25,'Mn','manganese',55,4,7],[26,'Fe','iron',56,4,8],[27,'Co','cobalt',59,4,9],[28,'Ni','nickel',59,4,10],[29,'Cu','copper',63.5,4,11],[30,'Zn','zinc',65,4,12],[31,'Ga','gallium',70,4,13],[32,'Ge','germanium',73,4,14],[33,'As','arsenic',75,4,15],[34,'Se','selenium',79,4,16],[35,'Br','bromine',80,4,17],[36,'Kr','krypton',84,4,18],
+[37,'Rb','rubidium',85,5,1],[38,'Sr','strontium',88,5,2],[47,'Ag','silver',108,5,11],[50,'Sn','tin',119,5,14],[53,'I','iodine',127,5,17],[54,'Xe','xenon',131,5,18],
+[55,'Cs','caesium',133,6,1],[56,'Ba','barium',137,6,2],[78,'Pt','platinum',195,6,10],[79,'Au','gold',197,6,11],[80,'Hg','mercury',201,6,12],[82,'Pb','lead',207,6,14]].map(a=>({z:a[0],s:a[1],n:a[2],ar:a[3],p:a[4],g:a[5]}));
+const EL_={}; ELS.forEach(e=>EL_[e.s]=e);
+const ECOL={H:'#f1efe9',C:'#5a5a5a',N:'#4f86c9',O:'#d6452f',F:'#7fc66a',Na:'#8a63c9',Mg:'#4f9e3f',Al:'#aeb4c0',Si:'#b59a6a',P:'#e0822e',S:'#e0b020',Cl:'#3fae5a',K:'#a05fd0',Ca:'#7fa650',Fe:'#b5651d',Cu:'#c8763a',Zn:'#7d8ea0',Br:'#9a3b2a',X:'#c4621a'};
+const _as={}; const aspr=s=>_as[s]||(_as[s]=sprite(ECOL[s]||'#8d8f98'));
+const SUBD='₀₁₂₃₄₅₆₇₈₉';
+const fF=f=>f.replace(/\d/g,d=>SUBD[d]);
+const nf=x=>String(+(+x).toFixed(4));
+function parseF(f){ // -> [[sym,count],...] in order of first appearance
+  const out=[], add=(s,n)=>{const e=out.find(o=>o[0]===s); if(e)e[1]+=n; else out.push([s,n]);};
+  const re=/\(([^)]+)\)(\d*)|([A-Z][a-z]?)(\d*)/g; let m;
+  while((m=re.exec(f))){ if(m[1]){const k=+(m[2]||1); parseF(m[1]).forEach(([s,n])=>add(s,n*k));} else add(m[3],+(m[4]||1)); }
+  return out;
+}
+const mrOf=f=>parseF(f).reduce((t,[s,n])=>t+n*EL_[s].ar,0);
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+function pickNew(a,last){let v;do{v=pick(a);}while(a.length>1&&v===last);return v;}
+/* periodic table */
+function drawPT(R,o={}){
+  const cwid=R.w/18, chei=R.h/6, rects=[];
+  for(const e of ELS){const x=R.x+(e.g-1)*cwid, y=R.y+(e.p-1)*chei, sel=o.sel===e.s, hi=o.hi===e.s;
+    ctx.fillStyle=hi?rgba(TH.good,.35):sel?rgba(TH.accent,.3):rgba(TH.muted,.07); ctx.fillRect(x+1,y+1,cwid-2,chei-2);
+    ctx.strokeStyle=hi?TH.good:sel?TH.accent:TH.line; ctx.lineWidth=hi||sel?2.5:1; ctx.strokeRect(x+1,y+1,cwid-2,chei-2);
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillStyle=TH.ink; ctx.font=`600 ${Math.min(chei*.25,cwid*.3)}px system-ui,sans-serif`; ctx.fillText(nf(e.ar),x+cwid/2,y+chei*.2);
+    ctx.font=`700 ${Math.min(chei*.36,cwid*.42)}px system-ui,sans-serif`; ctx.fillText(e.s,x+cwid/2,y+chei*.52);
+    ctx.fillStyle=TH.muted; ctx.font=`500 ${Math.min(chei*.21,cwid*.26)}px system-ui,sans-serif`; ctx.fillText(e.z,x+cwid/2,y+chei*.83);
+    rects.push({x,y,w:cwid,h:chei,s:e.s});}
+  return {rects,cwid,chei};
+}
+function atomAt(sym,x,y,r){ctx.drawImage(aspr(sym),x-r,y-r,2*r,2*r);ctx.fillStyle=sym==='H'?'#333':'#fff';ctx.font=`700 ${r*.85}px system-ui,sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(sym,x,y+1);}
+/* groups of atoms for a formula: comp=[[sym,n]], labels(k)->string under group k */
+function drawGroups(comp,R,label){
+  const tot=comp.reduce((t,c)=>t+Math.min(c[1],12),0), per=6, gw=R.w/comp.length;
+  comp.forEach(([s,n],k)=>{const shown=Math.min(n,12), cols=Math.min(per,shown), rows=Math.ceil(shown/per), r=Math.min(gw/(cols*2+1.2),R.h/(rows*2+2.6),30), cx=R.x+gw*(k+.5), top=R.y+r;
+    for(let i=0;i<shown;i++){const row=Math.floor(i/per), inRow=Math.min(per,shown-row*per), c=i%per; atomAt(s,cx+(c-(inRow-1)/2)*2.1*r,top+row*2.1*r,r);}
+    ctx.fillStyle=TH.ink; ctx.font=`600 ${clamp(R.w/52,12,17)}px system-ui,sans-serif`; ctx.textAlign='center'; ctx.textBaseline='top'; ctx.fillText(label(k,s,n),cx,top+rows*2.1*r-r+8);
+    if(k<comp.length-1){ctx.fillStyle=TH.muted;ctx.font=`700 ${clamp(R.w/40,16,24)}px system-ui,sans-serif`;ctx.textBaseline='middle';ctx.fillText('+',R.x+gw*(k+1),top+(rows-1)*1.05*r);}
+  });
+}
+/* ===== shared helpers for quantitative chemistry ===== */
+const NAMES={Mg:'magnesium',O2:'oxygen',SiO2:'silicon dioxide',C2H6:'ethane',H2S:'hydrogen sulfide',MgO:'magnesium oxide',CaCO3:'calcium carbonate',CaO:'calcium oxide',CO2:'carbon dioxide',HCl:'hydrochloric acid',MgCl2:'magnesium chloride',H2:'hydrogen',H2O:'water',N2:'nitrogen',NH3:'ammonia',CH4:'methane',Na:'sodium',Cl2:'chlorine',NaCl:'sodium chloride',Fe2O3:'iron(III) oxide',CO:'carbon monoxide',Fe:'iron',Zn:'zinc',CuSO4:'copper sulfate',ZnSO4:'zinc sulfate',Cu:'copper',Al:'aluminium',AlCl3:'aluminium chloride',CuO:'copper oxide',NaOH:'sodium hydroxide',H2SO4:'sulfuric acid',Na2SO4:'sodium sulfate',CuCO3:'copper carbonate',Na2O:'sodium oxide',C:'carbon',ZnCl2:'zinc chloride',S:'sulfur',SO2:'sulfur dioxide',C2H4:'ethene',C2H5OH:'ethanol',C6H12O6:'glucose',Ca:'calcium',KNO3:'potassium nitrate',Na2CO3:'sodium carbonate',Al2O3:'aluminium oxide',Li:'lithium',Li2O:'lithium oxide',K:'potassium',KCl:'potassium chloride',FeS:'iron sulfide',ZnO:'zinc oxide',PbO:'lead oxide',Pb:'lead',C3H8:'propane',NO:'nitrogen monoxide',NO2:'nitrogen dioxide',HNO3:'nitric acid',NH4NO3:'ammonium nitrate',CaCl2:'calcium chloride',TiCl4:'titanium chloride',Ti:'titanium',FeCl3:'iron(III) chloride'};
+const nm=f=>NAMES[f]||fF(f);
+const SUPC={'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
+const supS=n=>String(n).split('').map(c=>SUPC[c]).join('');
+function fmtE(v,n=3){const e=Math.floor(Math.log10(Math.abs(v))+1e-9), m=Number((v/Math.pow(10,e)).toPrecision(n));return `${m} × 10${supS(e)}`;}
+const sf=(x,n=3)=>{if(!x)return '0';const v=Number((+x).toPrecision(n));return Math.abs(v)>=1e5||Math.abs(v)<1e-3?fmtE(v,n):String(v);};
+const NA=6.02e23;
+function rx(s){const side=t=>t.split('+').map(x=>{const m=x.trim().match(/^(\d*)(.+?)(?:\((s|l|g|aq)\))?$/);return {c:+(m[1]||1),f:m[2],st:m[3]};});const [l,r]=s.split('->');const L=side(l),R=side(r);return {L,R,all:[...L,...R],nL:L.length,s};}
+const spT=s=>(s.c>1?s.c:'')+fF(s.f)+(s.st?`(${s.st})`:'');
+const eqT=r=>r.L.map(spT).join(' + ')+' → '+r.R.map(spT).join(' + ');
+function srand(seed){let s=seed%2147483647||1;return()=>(s=s*16807%2147483647)/2147483647;}
+function drawEq(r,R,fs){
+  const n=r.all.length, colW=R.w/n, cs=r.all.map((_,i)=>R.x+colW*(i+.5));
+  let f=fs; const font=()=>ctx.font=`700 ${f}px "Cambria Math",Cambria,Georgia,serif`; font();
+  while(f>12&&Math.max(...r.all.map(s=>ctx.measureText(spT(s)).width))>colW*.74){f-=1;font();}
+  ctx.fillStyle=TH.ink; ctx.textAlign='center'; ctx.textBaseline='middle';
+  r.all.forEach((s,i)=>{ctx.fillText(spT(s),cs[i],R.y); if(i<n-1){ctx.fillStyle=TH.muted;ctx.fillText(i===r.nL-1?'→':'+',R.x+colW*(i+1),R.y);ctx.fillStyle=TH.ink;}});
+  return {cs,colW,f};
+}
+function drawGrid(E,labelX,y,rowH,rows,fs){
+  rows.forEach((row,k)=>{const yy=y+k*rowH; ctx.fillStyle=TH.muted; ctx.font=`600 ${fs*.9}px system-ui,sans-serif`; ctx.textAlign='right'; ctx.textBaseline='middle'; ctx.fillText(row.l,labelX,yy);
+    row.v.forEach((v,i)=>{ if(v===undefined||v===null) return; const w=Math.min(E.colW*.8,170), h=rowH*.78, x=E.cs[i]-w/2, q=v==='?';
+      ctx.fillStyle=q?rgba(TH.accent,.16):row.given?rgba(TH.muted,.1):rgba(TH.good,.13); ctx.strokeStyle=q?TH.accent:TH.line; ctx.lineWidth=q?2:1; ctx.beginPath(); ctx.roundRect?ctx.roundRect(x,yy-h/2,w,h,6):ctx.rect(x,yy-h/2,w,h); ctx.fill(); ctx.stroke();
+      ctx.fillStyle=q?TH.accent:TH.ink; ctx.font=`700 ${fs}px system-ui,sans-serif`; ctx.textAlign='center'; ctx.fillText(String(v),E.cs[i],yy+1); });});
+}
+function molCentre(f){const c=parseF(f), one=c.find(x=>x[1]===1&&x[0]!=='H'); return one?one[0]:c.slice().sort((a,b)=>EL_[b[0]].ar-EL_[a[0]].ar)[0][0];}
+function molAtoms(f,x,y,r){
+  const list=[]; parseF(f).forEach(([s,n])=>{for(let i=0;i<n;i++)list.push(s);}); const rr=s=>r*(s==='H'?.72:1);
+  if(list.length===1) return [{s:list[0],x,y,r:rr(list[0])}];
+  if(list.length===2) return [{s:list[0],x:x-r*.8,y,r:rr(list[0])},{s:list[1],x:x+r*.8,y,r:rr(list[1])}];
+  const c=molCentre(f), i0=list.indexOf(c), rest=list.filter((_,i)=>i!==i0);
+  return [...rest.map((s,i)=>{const a=(rest.length===2?Math.PI:-Math.PI/2)+i*TAU/rest.length; return {s,x:x+Math.cos(a)*r*1.4,y:y+Math.sin(a)*r*1.4,r:rr(s)};}),{s:c,x,y,r:rr(c)}];
+}
+function drawMol(f,x,y,r){molAtoms(f,x,y,r).forEach(a=>atomAt(a.s,a.x,a.y,a.r));}
+const molW=(f,r)=>{const n=parseF(f).reduce((t,c)=>t+c[1],0);return n===1?r*2.4:n===2?r*4:r*5.2;};
+function drawSide(side,R,r){ // c copies of each species, centred row
+  const items=[]; side.forEach((s,k)=>{for(let i=0;i<s.c;i++)items.push(s.f); if(k<side.length-1)items.push(null);});
+  let w=items.reduce((t,f)=>t+(f?molW(f,r):r*1.6),0); if(w>R.w){r*=R.w/w;w=R.w;}
+  let x=R.x+(R.w-w)/2; items.forEach(f=>{if(!f){ctx.fillStyle=TH.muted;ctx.font=`700 ${r*1.3}px system-ui,sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('+',x+r*.8,R.y);x+=r*1.6;return;} const mw=molW(f,r); drawMol(f,x+mw/2,R.y,r); x+=mw;});
+}
+function drawChain(R,boxes,ops,fs){
+  const n=boxes.length, bw=Math.min(R.w/(n+(n-1)*.9),210), gap=(R.w-bw*n)/(n-1||1), bh=R.h;
+  boxes.forEach((b,i)=>{const x=R.x+i*(bw+gap), q=b.v==='?';
+    ctx.fillStyle=q?rgba(TH.accent,.16):rgba(TH.good,.12); ctx.strokeStyle=q?TH.accent:TH.line; ctx.lineWidth=q?2.5:1.5; ctx.beginPath(); ctx.roundRect?ctx.roundRect(x,R.y,bw,bh,10):ctx.rect(x,R.y,bw,bh); ctx.fill(); ctx.stroke();
+    ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillStyle=TH.muted; ctx.font=`600 ${fs*.8}px system-ui,sans-serif`; ctx.fillText(b.l,x+bw/2,R.y+bh*.27);
+    ctx.fillStyle=q?TH.accent:TH.ink; let f=fs*1.15; ctx.font=`700 ${f}px system-ui,sans-serif`; while(ctx.measureText(String(b.v)).width>bw-10&&f>10){f--;ctx.font=`700 ${f}px system-ui,sans-serif`;} ctx.fillText(String(b.v),x+bw/2,R.y+bh*.66);
+    if(i<n-1){const ax=x+bw+6, bx=x+bw+gap-6, ay=R.y+bh/2; ctx.strokeStyle=TH.ink; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx,ay); ctx.stroke(); ctx.fillStyle=TH.ink; ctx.beginPath(); ctx.moveTo(bx,ay); ctx.lineTo(bx-9,ay-6); ctx.lineTo(bx-9,ay+6); ctx.fill();
+      ctx.font=`700 ${fs*.85}px system-ui,sans-serif`; ctx.fillStyle=TH.btn||TH.accent; ctx.fillText(ops[i]||'',(ax+bx)/2,ay-fs*.9);}
+  });
+}
+function drawScale(cx,y,w,text){ // y = top of pan
+  ctx.fillStyle=rgba(TH.muted,.55); ctx.fillRect(cx-w/2,y,w,7); ctx.fillRect(cx-8,y+7,16,10);
+  const h=w*.26; ctx.fillStyle=rgba(TH.muted,.22); ctx.strokeStyle=TH.muted; ctx.lineWidth=1.5; ctx.beginPath(); ctx.roundRect?ctx.roundRect(cx-w*.45,y+17,w*.9,h,8):ctx.rect(cx-w*.45,y+17,w*.9,h); ctx.fill(); ctx.stroke();
+  ctx.fillStyle='#1d2a1d'; ctx.fillRect(cx-w*.3,y+17+h*.2,w*.6,h*.6); ctx.fillStyle='#9be28a'; ctx.font=`700 ${h*.42}px ui-monospace,Menlo,monospace`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(text,cx,y+17+h*.52);
+}
+function drawBeaker(x,y,w,h,fill,n,col,seed=7){
+  const ly=y+h*(1-fill); ctx.fillStyle=rgba(col,.14); ctx.fillRect(x,ly,w,y+h-ly);
+  const rnd=srand(seed), r=Math.max(2.5,Math.min(6,w/40)); ctx.fillStyle=col; for(let i=0;i<n;i++){const px=x+r+rnd()*(w-2*r), py=ly+r+rnd()*(y+h-ly-2*r); ctx.beginPath(); ctx.arc(px,py,r,0,TAU); ctx.fill();}
+  ctx.strokeStyle=TH.ink; ctx.lineWidth=2.5; ctx.beginPath(); ctx.moveTo(x-6,y-4); ctx.lineTo(x,y); ctx.lineTo(x,y+h); ctx.lineTo(x+w,y+h); ctx.lineTo(x+w,y); ctx.lineTo(x+w+6,y-4); ctx.stroke();
+  ctx.strokeStyle=rgba(col,.8); ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(x,ly); ctx.lineTo(x+w,ly); ctx.stroke();
+}
+function bigText(t,x,y,fs,col,align='center',w=700){ctx.fillStyle=col||TH.ink;ctx.font=`${w} ${fs}px system-ui,sans-serif`;ctx.textAlign=align;ctx.textBaseline='middle';ctx.fillText(t,x,y);}
+const FS=()=>clamp(cw/52,13,18);
+const ST={};
+function stp(key,gen,title){return ST[key]=makeStepper($('st_'+key),gen,title);}
+/* app shell: T = {key:{draw(dt),cap(),pill()->[a,b],click(x,y),over(x,y)}} */
+function runApp(T){
+  let mode=Object.keys(T)[0], lastCap='', uiT=1, last=performance.now();
+  document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{mode=t.dataset.mode;
+    document.querySelectorAll('.tab').forEach(x=>x.setAttribute('aria-selected',x===t));
+    document.querySelectorAll('.panel').forEach(p=>p.hidden=p.dataset.for!==mode); lastCap=''; uiT=1;});
+  const xy=e=>{const r=cv.getBoundingClientRect();return [e.clientX-r.left,e.clientY-r.top];};
+  cv.addEventListener('pointerdown',e=>{if(T[mode].click)T[mode].click(...xy(e));});
+  cv.addEventListener('pointermove',e=>{cv.style.cursor=T[mode].over&&T[mode].over(...xy(e))?'pointer':'default';});
+  function frame(now){const dt=Math.min(.04,(now-last)/1000); last=now;
+    ctx.fillStyle=TH.stage; ctx.fillRect(0,0,cw,ch); T[mode].draw(dt);
+    uiT+=dt; if(uiT>.15){uiT=0;const c=T[mode].cap();if(c!==lastCap){$('caption').textContent=c;lastCap=c;}
+      const P=T[mode].pill?T[mode].pill():['',null]; $('pill').textContent=P[0]; $('pill').hidden=!P[0]; $('pill2').hidden=!P[1]; if(P[1])$('pill2').textContent=P[1];}
+    if(toastT>0){toastT-=dt;if(toastT<=0)$('toast').style.opacity=0;}
+    requestAnimationFrame(frame);}
+  window.__st=ST; requestAnimationFrame(frame);
+}
+const RXM=['2Mg + O2 -> 2MgO','CaCO3 -> CaO + CO2','Mg + 2HCl -> MgCl2 + H2','2H2 + O2 -> 2H2O','N2 + 3H2 -> 2NH3','CH4 + 2O2 -> CO2 + 2H2O','2Na + Cl2 -> 2NaCl','Fe2O3 + 3CO -> 2Fe + 3CO2','Zn + CuSO4 -> ZnSO4 + Cu','2Al + 3Cl2 -> 2AlCl3','CuO + H2 -> Cu + H2O','2NaOH + H2SO4 -> Na2SO4 + 2H2O','4Na + O2 -> 2Na2O','2Cu + O2 -> 2CuO','C + O2 -> CO2','Zn + 2HCl -> ZnCl2 + H2'].map(rx);
+const MRH='<i>M</i><sub>r</sub>';
+const isEl=f=>{const c=parseF(f);return c.length===1&&c[0][1]===1;};
+const mrWork=f=>isEl(f)?`Aᵣ of ${f} = ${nf(mrOf(f))}`:`Mᵣ of ${fF(f)} = ${parseF(f).map(([s,n])=>n>1?`(${n} × ${nf(EL_[s].ar)})`:nf(EL_[s].ar)).join(' + ')} = ${nf(mrOf(f))}`;
+const mrSt=f=>({p:`${isEl(f)?'<i>A</i><sub>r</sub>':MRH} of ${fF(f)}`,a:mrOf(f),tol:.01,work:mrWork(f),hint:'Add the relative atomic masses of all the atoms in the formula. Do not include the coefficient (big number) from the equation.'});
+function gridView(s,r,rows,extra){const fs=FS(), rowH=clamp(ch/13,34,50), E=drawEq(r,{x:cw*.2,y:ch*.17,w:cw*.76},clamp(cw/28,20,36)), gy=ch*.17+clamp(cw/28,20,36)*1.5+rowH*.4;
+  drawGrid(E,cw*.185,gy,rowH,rows,fs); const wy=gy+rows.length*rowH+(extra||0); drawWork(s,cw*.07,wy,clamp(ch/24,20,28),clamp(cw/56,12,17),cw*.86); return {E,gy,rowH,wy,ey:ch*.17};}
+const twoOf=n=>{const i=Math.floor(Math.random()*n);let j;do{j=Math.floor(Math.random()*n);}while(j===i);return [i,j];};
+const link=(r,i,j)=>{const a=i<r.nL,b=j<r.nL;return a&&b?'that reacts with':a&&!b?'needed to make':!a&&b?'that can be made from':'made at the same time as';};
+function gridPos(n,R,r){ if(!n) return []; const cell=r*5.4, cols=Math.max(1,Math.min(n,Math.floor(R.w/cell))), rows=Math.ceil(n/cols), sc=Math.min(1,R.h/(rows*cell)), c2=cell*sc, x0=R.x+(R.w-Math.min(n,cols)*c2)/2, y0=R.y+(R.h-rows*c2)/2;
+  return Array.from({length:n},(_,i)=>({x:x0+(i%cols+.5)*c2,y:y0+(Math.floor(i/cols)+.5)*c2,r:r*sc,c:c2}));}
+function ringAt(p){ctx.strokeStyle=TH.warn;ctx.lineWidth=2;ctx.setLineDash([4,3]);ctx.beginPath();ctx.arc(p.x,p.y,p.c*.47,0,TAU);ctx.stroke();ctx.setLineDash([]);}
+function drawMany(list,R,r,ring){const P=gridPos(list.length,R,r); list.forEach((f,i)=>{if(ring&&ring(i))ringAt(P[i]); drawMol(f,P[i].x,P[i].y,P[i].r);});}
+const rep=(f,n)=>Array.from({length:n},()=>f);
+let lq={};
+function yBars(x,y,w,h,theo,act,showA,showP,pct){const fs=FS(),bw=w*.32;
+  ctx.strokeStyle=TH.ink;ctx.lineWidth=2;ctx.setLineDash([6,4]);ctx.strokeRect(x,y,bw,h);ctx.setLineDash([]);ctx.fillStyle=rgba('#4f86c9',.15);ctx.fillRect(x,y,bw,h);
+  bigText('theoretical',x+bw/2,y-30,fs*.85,TH.muted,'center',600);bigText(theo,x+bw/2,y-11,fs,TH.ink);
+  const x2=x+w-bw,ah=h*(pct/100);ctx.strokeStyle=TH.muted;ctx.lineWidth=1;ctx.setLineDash([6,4]);ctx.strokeRect(x2,y,bw,h);ctx.setLineDash([]);
+  if(showA){ctx.fillStyle=rgba('#4f9e3f',.55);ctx.fillRect(x2,y+h-ah,bw,ah);ctx.strokeStyle=TH.ink;ctx.lineWidth=2;ctx.strokeRect(x2,y+h-ah,bw,ah);}
+  bigText('actual',x2+bw/2,y-30,fs*.85,TH.muted,'center',600);bigText(act,x2+bw/2,y-11,fs,TH.ink);
+  bigText(showP?`${nf(+pct.toFixed(1))} %`:'? %',x+w/2,y+h/2,fs*1.5,TH.accent);bigText('yield',x+w/2,y+h/2+fs*1.6,fs*.85,TH.muted,'center',600);}
+const PROD=['aspirin','ammonia','copper sulfate crystals','magnesium oxide','ethanol','iron','sodium chloride crystals','zinc chloride'];
+/* ---- yield ---- */
+stp('yield',()=>{const t=pickNew([0,0,1],lq.a);lq.a=t;const theo=pick([5,8,10,12.5,20,25,40,50,64,80,2.5,16]),pct=pick([45,60,62.5,75,80,90,36,50,25,95,70,85]),act=+(theo*pct/100).toFixed(4),p=pick(PROD);
+  if(t===0) return {t,theo,pct,act,text:`A student calculates that the maximum theoretical mass of ${p} is <b>${theo} g</b>. The student actually makes <b>${nf(act)} g</b>. Calculate the percentage yield.`,end:`✓ ${nf(pct)} %`,steps:[
+    {p:'Which mass goes on top of the division?',opts:['The actual mass','The theoretical mass'],a:'The actual mass',work:'percentage yield = actual mass ÷ theoretical mass × 100',hint:'The actual mass is the part; the theoretical mass is the whole.'},
+    {p:`Percentage yield = ${nf(act)} ÷ ${theo} × 100`,a:pct,tol:.15,unit:'%',work:`${nf(act)} ÷ ${theo} × 100 = ${nf(pct)} %`,hint:'Divide, then multiply by 100.'}]};
+  return {t,theo,pct,act,text:`The maximum theoretical mass of ${p} is <b>${theo} g</b>. The percentage yield of the reaction is <b>${pct} %</b>. Calculate the mass of ${p} actually made.`,end:`✓ ${nf(act)} g`,steps:[
+    {p:`${pct} % as a decimal`,a:pct/100,tol:.0005,work:`${pct} % = ${pct} ÷ 100 = ${pct/100}`,hint:'Divide the percentage by 100.'},
+    {p:`Actual mass = ${pct/100} × ${theo}`,a:act,unit:'g',work:`${pct/100} × ${theo} = ${nf(act)} g`,hint:'Find that fraction of the theoretical mass.'}]};},'Calculate');
+function drawYield(){const s=ST.yield,q=s.q,t=q.t; yBars(cw*.2,ch*.2,cw*.6,ch*.38,q.theo+' g',t===0||s.fin()?nf(q.act)+' g':'? g',t===0||s.fin(),t===1||s.fin(),q.pct);
+  drawWork(s,cw*.1,ch*.68,clamp(ch/22,22,30),FS(),cw*.8);}
+/* ---- theo ---- */
+const TY=[['2Mg + O2 -> 2MgO',0,2],['CaCO3 -> CaO + CO2',0,1],['N2 + 3H2 -> 2NH3',0,2],['Fe2O3 + 3CO -> 2Fe + 3CO2',0,2],['CuO + H2 -> Cu + H2O',0,2],['2Na + Cl2 -> 2NaCl',0,2],['Zn + 2HCl -> ZnCl2 + H2',0,2],['2Cu + O2 -> 2CuO',0,2],['Mg + 2HCl -> MgCl2 + H2',0,2],['CuCO3 -> CuO + CO2',0,1],['2Al + 3Cl2 -> 2AlCl3',0,2]].map(([s,a,b])=>[rx(s),a,b]);
+stp('theo',()=>{let q;do{const [r,i,j]=pick(TY),A=r.all[i],P=r.all[j],k=pick([0.1,0.2,0.5,0.25,1,0.05,2]),pct=pick([50,60,75,80,90,25,40,70]),nA=+(A.c*k).toFixed(4),nP=+(P.c*k).toFixed(4),mA=+(nA*mrOf(A.f)).toFixed(4),mT=+(nP*mrOf(P.f)).toFixed(4),act=+(mT*pct/100).toFixed(4);q={r,i,j,A,P,pct,nA,nP,mA,mT,act};}while(q.r===lq.b||Math.abs(q.act*1000-Math.round(q.act*1000))>1e-6);lq.b=q.r;
+  const {r,A,P,pct,nA,nP,mA,mT,act}=q;
+  return {...q,text:`${eqT(r)}<br><b>${nf(mA)} g</b> of ${nm(A.f)} reacts completely. <b>${nf(act)} g</b> of ${nm(P.f)} is collected. Calculate the percentage yield. (The ${MRH} values are in the table.)`,end:`✓ Percentage yield = ${pct} %`,steps:[
+    {p:`Moles of ${fF(A.f)} = ${nf(mA)} ÷ ${nf(mrOf(A.f))}`,a:nA,unit:'mol',work:`moles of ${fF(A.f)} = ${nf(mA)} ÷ ${nf(mrOf(A.f))} = ${nA} mol`,hint:'moles = mass ÷ Mᵣ'},
+    {p:`Moles of ${fF(P.f)} that could be made (ratio ${A.c} : ${P.c})`,a:nP,unit:'mol',work:`moles of ${fF(P.f)} = ${nA} ÷ ${A.c} × ${P.c} = ${nP} mol`,hint:`Divide by ${A.c}, then multiply by ${P.c}.`},
+    {p:`Theoretical mass of ${fF(P.f)} = moles × ${nf(mrOf(P.f))}`,a:mT,unit:'g',work:`theoretical mass = ${nP} × ${nf(mrOf(P.f))} = ${nf(mT)} g`,hint:'mass = moles × Mᵣ'},
+    {p:`Percentage yield = ${nf(act)} ÷ theoretical mass × 100`,a:pct,tol:.15,unit:'%',work:`${nf(act)} ÷ ${nf(mT)} × 100 = ${pct} %`,hint:'actual mass ÷ theoretical mass × 100'}]};},'Calculate the percentage yield');
+function drawTheo(){const s=ST.theo,q=s.q,r=q.r,at=(k,a,b)=>k===q.i?a:k===q.j?b:undefined;
+  const G=gridView(s,r,[{l:'mass (g)',v:r.all.map((x,k)=>at(k,nf(q.mA),s.i>2?nf(q.mT):'?'))},{l:'Mᵣ',given:1,v:r.all.map((x,k)=>at(k,nf(mrOf(x.f)),nf(mrOf(x.f))))},{l:'moles (mol)',v:r.all.map((x,k)=>at(k,s.i>0?q.nA:'?',s.i>1?q.nP:'?'))}]);
+  bigText('↑ theoretical mass',G.E.cs[q.j],G.gy-G.rowH*.62,FS()*.72,TH.accent,'center',600);
+  yBars(cw*.62,G.wy+34,cw*.32,ch*.17,s.i>2?nf(q.mT)+' g':'? g',nf(q.act)+' g',s.i>2,s.fin(),q.pct);}
+/* ---- atom economy ---- */
+NAMES.MgCl2='magnesium chloride';
+const AE=[['CH4 + H2O -> CO + 3H2',3],['Zn + 2HCl -> ZnCl2 + H2',3],['C6H12O6 -> 2C2H5OH + 2CO2',1],['C2H4 + H2O -> C2H5OH',2],['CaCO3 -> CaO + CO2',1],['Fe2O3 + 3CO -> 2Fe + 3CO2',2],['2Mg + O2 -> 2MgO',2],['CuO + H2 -> Cu + H2O',2],['N2 + 3H2 -> 2NH3',2],['TiCl4 + 2Mg -> Ti + 2MgCl2',2],['2Al2O3 -> 4Al + 3O2',1],['CuCO3 -> CuO + CO2',1],['Mg + 2HCl -> MgCl2 + H2',2],['2NaCl -> 2Na + Cl2',2]].map(([s,j])=>[rx(s),j]);
+stp('ae',()=>{const [r,j]=pickNew(AE,lq.c);lq.c=AE.find(x=>x[0]===r);const P=r.all[j],tot=r.L.reduce((t,x)=>t+x.c*mrOf(x.f),0),des=P.c*mrOf(P.f),ae=des/tot*100,sum=side=>side.map(x=>x.c>1?`(${x.c} × ${nf(mrOf(x.f))})`:nf(mrOf(x.f))).join(' + ');
+  return {r,j,P,tot,des,ae,text:`${eqT(r)}<br>The desired product is <b>${nm(P.f)}</b>. Calculate the atom economy. (The ${MRH} values are in the table.)`,end:`✓ Atom economy = ${nf(+ae.toFixed(1))} %${r.R.length===1?'. There is only one product, so no atoms are wasted.':''}`,steps:[
+    {p:`Sum of the ${MRH} of all the <b>reactants</b>, from the equation: ${sum(r.L)}`,a:tot,tol:.01,work:`reactants: ${sum(r.L)} = ${nf(tot)}`,hint:'Multiply each Mᵣ by its coefficient (big number), then add.'},
+    {p:`${MRH} of the <b>desired product</b>, from the equation: ${sum([P])}`,a:des,tol:.01,work:`desired product: ${sum([P])}${P.c>1?' = '+nf(des):''}`,hint:'Multiply the Mᵣ by the coefficient (big number) in front of the desired product.'},
+    {p:`Atom economy = ${nf(des)} ÷ ${nf(tot)} × 100`,a:ae,tol:.15,unit:'%',work:`${nf(des)} ÷ ${nf(tot)} × 100 = ${nf(+ae.toFixed(1))} %`,hint:'Divide, then multiply by 100.'}]};},'Calculate the atom economy');
+function drawAE(){const s=ST.ae,q=s.q,r=q.r,fs=FS();
+  const G=gridView(s,r,[{l:'Mᵣ',given:1,v:r.all.map(x=>nf(mrOf(x.f)))},{l:'Mᵣ × coefficient',v:r.all.map((x,k)=>k<r.nL?(s.i>0?nf(x.c*mrOf(x.f)):'?'):k===q.j?(s.i>1?nf(q.des):'?'):undefined)}],ch*.19);
+  const x=G.E.cs[q.j],w=Math.min(G.E.colW*.86,180);ctx.strokeStyle=TH.good;ctx.lineWidth=3;ctx.beginPath();ctx.roundRect?ctx.roundRect(x-w/2,G.ey-28,w,56,10):ctx.rect(x-w/2,G.ey-28,w,56);ctx.stroke();bigText('desired product',x,G.ey-40,fs*.8,TH.good);
+  const by=G.gy+2*G.rowH+ch*.03,bx=cw*.2,bw=cw*.7,bh=ch*.075,f=q.des/q.tot;
+  ctx.fillStyle=rgba('#4f9e3f',.5);ctx.fillRect(bx,by,bw*f,bh);ctx.fillStyle=rgba(TH.muted,.25);ctx.fillRect(bx+bw*f,by,bw*(1-f),bh);ctx.strokeStyle=TH.ink;ctx.lineWidth=1.5;ctx.strokeRect(bx,by,bw,bh);ctx.beginPath();ctx.moveTo(bx+bw*f,by);ctx.lineTo(bx+bw*f,by+bh);ctx.stroke();
+  bigText('all reactant atoms',bx-10,by+bh/2,fs*.8,TH.muted,'right',600);
+  if(f>.16) bigText(s.fin()?`useful: ${nf(+q.ae.toFixed(1))} %`:'useful: ? %',bx+bw*f/2,by+bh/2,fs*.9,TH.ink); else bigText(s.fin()?`useful: ${nf(+q.ae.toFixed(1))} %`:'useful: ? %',bx+bw*f/2,by+bh+14,fs*.8,TH.ink);
+  if(1-f>.12) bigText('waste',bx+bw*f+bw*(1-f)/2,by+bh/2,fs*.9,TH.muted,'center',600);}
+runApp({
+ yield:{draw:drawYield,pill:()=>['% yield = actual ÷ theoretical × 100',null],cap:()=>{const s=ST.yield,q=s.q;return s.fin()?`Only ${nf(q.pct)} % of the maximum possible mass was obtained. Yields are less than 100 % because some reactions are reversible, some product is lost when it is separated from the mixture, and some reactants may react in other ways.`:'The dashed box is the theoretical yield: the most product you could possibly make. The actual yield is always the same or less. Percentage yield compares the two.';}},
+ theo:{draw:drawTheo,pill:()=>['Find the theoretical mass first',null],cap:()=>{const s=ST.theo;return ['The theoretical mass is not given, so calculate it from the equation. Start by converting the mass of the reactant to moles.','Use the ratio in the equation to find the moles of product that could be made.','Convert the moles of product to a mass. This is the theoretical (maximum) mass.','Now compare the mass actually collected with the theoretical mass.'][s.i]||'Percentage yield = actual mass ÷ theoretical mass × 100.';}},
+ ae:{draw:drawAE,pill:()=>['Atom economy: how much of the reactants becomes useful product',null],cap:()=>{const s=ST.ae,q=s.q;return s.fin()?(q.r.R.length===1?'All the atoms in the reactants end up in the desired product, so the atom economy is 100 %.':`${nf(+q.ae.toFixed(1))} % of the mass of the reactants ends up in the desired product. The rest becomes other products, which may be waste. Reactions with a high atom economy are better for sustainable development and for cost.`):s.i===0?'The bar represents all the atoms in the reactants. First find their total relative mass, using the coefficients (big numbers) in the equation.':s.i===1?'Now find the relative mass of the desired product, including its coefficient (big number) from the equation.':'Atom economy = relative mass of desired product ÷ total relative mass of reactants × 100.';}}
+});
+
+})();
+</script>
+<style>
+.mcq{border-color:var(--good)}
+.mcq-q{margin:0;font-weight:600;font-size:.95rem}
+.mcq-opts{display:flex;flex-direction:column;gap:6px}
+.mcq-opts button{display:flex;gap:9px;align-items:flex-start;text-align:left;font-weight:500;line-height:1.35;padding:7px 10px;opacity:1}
+.mcq-opts button:disabled{cursor:default;opacity:.75}
+.mcq-opts button.right,.mcq-opts button.wrong{opacity:1;color:#fff}
+.mcq-opts button.right{background:var(--good);border-color:var(--good)}
+.mcq-opts button.wrong{background:var(--warn);border-color:var(--warn)}
+.mcq-l{flex:none;font-weight:800;width:1.2em}
+.mcq-fb{margin:0;font-size:.9rem;padding:8px 10px;border-radius:7px;border:1px solid var(--line);background:var(--chip)}
+.mcq-fb.ok b{color:var(--good)} .mcq-fb.no b{color:var(--warn)}
+.mcq-score{margin:0;font-size:1rem}
+.fq{padding:22px 26px 26px;display:flex;flex-direction:column;gap:14px;min-height:560px}
+.fq-head{display:flex;justify-content:space-between;font-weight:700;color:var(--muted);font-size:.9rem;letter-spacing:.04em;text-transform:uppercase}
+.fq-bar{height:8px;border-radius:4px;background:var(--chip);border:1px solid var(--line);overflow:hidden}
+.fq-bar span{display:block;height:100%;background:var(--good);transition:width .3s}
+.fq-q{margin:6px 0 0;font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;font-size:clamp(1.25rem,2.2vw,1.6rem);font-weight:600;line-height:1.3}
+.fq-opts button{font-size:1.08rem;padding:12px 14px}
+.fq .mcq-fb{font-size:1.02rem}
+.fq-big{margin:20px 0 0;font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;font-size:clamp(1.6rem,3vw,2.2rem)}
+.fq-msg{margin:0;font-size:1.05rem;color:var(--muted)}
+.fq-h{margin:8px 0 0;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.fq-review{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:10px}
+.fq-review p{margin:0}
+
+</style>
+<script>
+window.MCQ={n:10,tabs:{
+yield:[
+{q:"What is the correct calculation for percentage yield?",o:["Actual mass ÷ theoretical mass × 100","Theoretical mass ÷ actual mass × 100","Actual mass × theoretical mass ÷ 100","Actual mass − theoretical mass"],a:0,e:"Actual over theoretical."},
+{q:"The theoretical mass is 20 g. The actual mass is 15 g. What is the percentage yield?",o:["75 %","133 %","5 %","35 %"],a:0,e:"15 ÷ 20 × 100 = 75 %."},
+{q:"Which is a reason why the yield is less than 100 %?",o:["Some product is lost when it is separated from the mixture","Atoms are destroyed in the reaction","The equation is not balanced","The reactants are too pure"],a:0,e:"Also: reversible reactions, and reactants reacting in other ways."},
+{q:"The theoretical mass is 50 g and the percentage yield is 80 %. What mass is actually made?",o:["40 g","62.5 g","30 g","4000 g"],a:0,e:"0.8 × 50 = 40 g."},
+{q:"A reversible reaction may give a low yield because:",o:["It may not go to completion","It makes too much product","It destroys atoms","It has no reactants"],a:0,e:"Some product turns back into reactants."}],
+theo:[
+{q:"What is the theoretical yield?",o:["The maximum mass of product that could be made","The mass of product actually collected","The mass of reactant used","The mass lost during the reaction"],a:0,e:"It is calculated from the balanced equation."},
+{q:"2Mg + O₂ → 2MgO. 2.4 g of Mg (0.1 mol) should give what theoretical mass of MgO? (Mᵣ = 40)",o:["4.0 g","2.0 g","8.0 g","2.4 g"],a:0,e:"0.1 mol MgO × 40 = 4.0 g."},
+{q:"The theoretical mass of MgO is 4.0 g. A student collects 3.0 g. What is the percentage yield?",o:["75 %","133 %","25 %","12 %"],a:0,e:"3.0 ÷ 4.0 × 100."},
+{q:"A student calculates a percentage yield of 110 %. What is the most likely explanation?",o:["The product was not dry or was impure","The reaction made extra atoms","The theoretical yield is always too high","110 % is a normal yield"],a:0,e:"You cannot make more than the theoretical maximum."}],
+ae:[
+{q:"What does atom economy measure?",o:["The amount of starting materials that end up as useful products","How fast the reaction is","How much product is lost in the experiment","The cost of the reactants"],a:0,e:"It is calculated from the equation, not from an experiment."},
+{q:"A reaction has only one product. What is its atom economy?",o:["100 %","50 %","0 %","It cannot be calculated"],a:0,e:"All the reactant atoms end up in the desired product."},
+{q:"CaCO₃ → CaO + CO₂. Mᵣ: CaCO₃ = 100, CaO = 56. What is the atom economy for making CaO?",o:["56 %","44 %","100 %","178 %"],a:0,e:"56 ÷ 100 × 100."},
+{q:"Why is a high atom economy important?",o:["Less waste and better use of resources: sustainable and economic","It makes the reaction faster","It increases the percentage yield to 100 %","It makes the product purer"],a:0,e:"Important for sustainable development and for economic reasons."},
+{q:"Zn + 2HCl → ZnCl₂ + H₂. Mᵣ: Zn = 65, HCl = 36.5, H₂ = 2. What is the atom economy for making hydrogen?",o:["1.4 %","2.0 %","3.1 %","98.6 %"],a:0,e:"2 ÷ (65 + 73) × 100 = 1.4 %."}]},
+final:[
+{q:"Percentage yield =",o:["actual mass ÷ theoretical mass × 100","theoretical mass ÷ actual mass × 100","desired product ÷ reactants × 100","mass ÷ Mᵣ × 100"],a:0,e:"It compares what you got with the maximum possible."},
+{q:"Theoretical mass 8 g, actual mass 6 g. Percentage yield?",o:["75 %","133 %","48 %","2 %"],a:0,e:"6 ÷ 8 × 100."},
+{q:"Theoretical mass 40 g, percentage yield 25 %. Actual mass?",o:["10 g","160 g","15 g","30 g"],a:0,e:"0.25 × 40."},
+{q:"Which does NOT reduce the percentage yield?",o:["Using a balanced equation","Losing product during filtering","A reversible reaction","Side reactions"],a:0,e:"The three reasons are: reversible reactions, losses on separation, other reactions."},
+{q:"Atom economy is calculated from:",o:["The balanced equation","The mass collected in an experiment","The rate of reaction","The temperature"],a:0,e:"It uses relative formula masses."},
+{q:"C₂H₄ + H₂O → C₂H₅OH. What is the atom economy for making ethanol?",o:["100 %","50 %","72 %","28 %"],a:0,e:"There is only one product."},
+{q:"C₆H₁₂O₆ → 2C₂H₅OH + 2CO₂. Mᵣ: glucose = 180, ethanol = 46. What is the atom economy for ethanol?",o:["51.1 %","25.6 %","48.9 %","100 %"],a:0,e:"(2 × 46) ÷ 180 × 100."},
+{q:"Two reactions make the same product. Reaction A has an atom economy of 90 %, B has 30 %. Which statement is correct?",o:["A wastes fewer of the reactant atoms","B wastes fewer of the reactant atoms","A must have a higher percentage yield","B is always cheaper"],a:0,e:"Atom economy and yield are different things."},
+{q:"A reaction has 100 % atom economy but only 60 % yield. This means:",o:["No waste products are made, but some product is not obtained","40 % of atoms become waste products","The equation is wrong","The reaction is impossible"],a:0,e:"Atom economy comes from the equation; yield from the experiment."},
+{q:"How could the atom economy of a process be improved?",o:["Find a use for the other products","Heat the reaction more strongly","Use more reactant","Filter more carefully"],a:0,e:"If by-products are useful, less is wasted. Careful filtering improves yield, not atom economy."}]};
+
+</script>
+<script>
+(() => {
+const B = window.MCQ; if (!B) return;
+const q$ = s => document.querySelector(s);
+const L = 'ABCD';
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function prep(q){const idx=shuffle(q.o.map((_,i)=>i));return {q:q.q,o:idx.map(i=>q.o[i]),a:idx.indexOf(q.a),e:q.e,src:q};}
+function optsHTML(q,ans){return q.o.map((o,k)=>{let c='';if(ans!==null){if(k===q.a)c='right';else if(k===ans)c='wrong';}return `<button data-k="${k}" class="${c}" ${ans!==null?'disabled':''}><span class="mcq-l">${L[k]}</span><span>${o}</span></button>`;}).join('');}
+function fbHTML(q,ans){return ans===null?'':`<p class="mcq-fb ${ans===q.a?'ok':'no'}"><b>${ans===q.a?'Correct.':'Not quite.'}</b> ${q.e}</p>`;}
+
+/* ---------- per-tab check questions ---------- */
+document.querySelectorAll('.panel[data-for]').forEach(p => {
+  const bank = B.tabs[p.dataset.for]; if (!bank) return;
+  const g = document.createElement('div'); g.className = 'group mcq';
+  const anchor = [...p.querySelectorAll('.group')].find(x => /^key$/i.test(x.querySelector('h2')?.textContent||''));
+  anchor ? p.insertBefore(g, anchor) : p.appendChild(g);
+  let qs, i, score, ans;
+  const start = () => { qs = shuffle(bank).map(prep); i = 0; score = 0; ans = null; render(); };
+  function render(){
+    if (i >= qs.length) {
+      g.innerHTML = `<h2>Check your understanding</h2><p class="mcq-score">You scored <b>${score} out of ${qs.length}</b>.</p><div class="btns"><button class="primary mcq-again">Try again</button></div>`;
+      g.querySelector('.mcq-again').onclick = start; return;
+    }
+    const q = qs[i];
+    g.innerHTML = `<h2>Check your understanding · ${i+1} of ${qs.length}</h2><p class="mcq-q">${q.q}</p><div class="mcq-opts">${optsHTML(q,ans)}</div>${fbHTML(q,ans)}${ans===null?'':`<div class="btns"><button class="primary mcq-next">${i+1<qs.length?'Next question':'See my score'}</button></div>`}`;
+    g.querySelectorAll('.mcq-opts button').forEach(b => b.onclick = () => { ans = +b.dataset.k; if (ans === q.a) score++; render(); });
+    const n = g.querySelector('.mcq-next'); if (n) n.onclick = () => { i++; ans = null; render(); };
+  }
+  start();
+});
+
+/* ---------- end of topic quiz ---------- */
+const nav = q$('.tabs'), stage = q$('.stage'), aside = q$('aside');
+const tab = document.createElement('button');
+tab.className = 'tab'; tab.setAttribute('role','tab'); tab.setAttribute('aria-selected','false');
+tab.textContent = `${nav.querySelectorAll('.tab').length + 1} · End of topic quiz`;
+nav.appendChild(tab);
+const panel = document.createElement('div'); panel.className = 'panel'; panel.hidden = true;
+panel.innerHTML = `<div class="group"><h2>End of topic quiz</h2><p class="fb">${B.n||10} multiple choice questions covering the whole topic. Each new quiz picks a different set of questions.</p><div class="tally" id="fqTally"></div><div class="btns"><button id="fqNew">Start a new quiz</button></div></div>`;
+aside.appendChild(panel);
+const box = document.createElement('div'); box.className = 'fq'; box.hidden = true; stage.appendChild(box);
+const hideEls = [...stage.children].filter(x => x !== box);
+let Q, qi, sc, an, wrong;
+function newQuiz(){
+  const pool = B.final.slice(), extra = Object.values(B.tabs).flat();
+  const n = B.n || 10, nf = Math.min(pool.length, Math.ceil(n*.6));
+  const pick = shuffle(pool).slice(0, nf).concat(shuffle(extra).slice(0, n - nf));
+  Q = shuffle(pick).map(prep); qi = 0; sc = 0; an = null; wrong = []; renderQ();
+}
+function tally(){ q$('#fqTally').innerHTML = `<span>Question</span><b>${Math.min(qi+1,Q.length)} of ${Q.length}</b><span>Score so far</span><b>${sc}</b>`; }
+function renderQ(){
+  tally();
+  if (qi >= Q.length) {
+    const pc = Math.round(sc/Q.length*100), msg = pc>=80?'Excellent work.':pc>=60?'Good work: review the questions below.':'Keep going: look back at the tabs for the questions you missed.';
+    box.innerHTML = `<div class="fq-head"><span>End of topic quiz</span><span>Finished</span></div><div class="fq-bar"><span style="width:100%"></span></div>
+      <p class="fq-big">You scored <b>${sc} out of ${Q.length}</b> (${pc}%)</p><p class="fq-msg">${msg}</p>
+      ${wrong.length?`<h3 class="fq-h">Questions to review</h3><ol class="fq-review">${wrong.map(q=>`<li><p>${q.q}</p><p><b>Answer:</b> ${q.o[q.a]}. ${q.e}</p></li>`).join('')}</ol>`:''}
+      <div class="btns"><button class="primary fq-again">Try a new quiz</button></div>`;
+    box.querySelector('.fq-again').onclick = newQuiz; return;
+  }
+  const q = Q[qi];
+  box.innerHTML = `<div class="fq-head"><span>Question ${qi+1} of ${Q.length}</span><span>Score: ${sc}</span></div><div class="fq-bar"><span style="width:${qi/Q.length*100}%"></span></div>
+    <p class="fq-q">${q.q}</p><div class="mcq-opts fq-opts">${optsHTML(q,an)}</div>${fbHTML(q,an)}
+    ${an===null?'':`<div class="btns"><button class="primary fq-next">${qi+1<Q.length?'Next question ▶':'See my score'}</button></div>`}`;
+  box.querySelectorAll('.mcq-opts button').forEach(b => b.onclick = () => { an = +b.dataset.k; if (an === q.a) sc++; else wrong.push(q); renderQ(); });
+  const n = box.querySelector('.fq-next'); if (n) n.onclick = () => { qi++; an = null; renderQ(); };
+}
+function showQuiz(on){
+  box.hidden = !on; hideEls.forEach(x => x.hidden = on); panel.hidden = !on;
+  if (on) {
+    nav.querySelectorAll('.tab').forEach(x => x.setAttribute('aria-selected', x === tab));
+    aside.querySelectorAll('.panel').forEach(p => { if (p !== panel) p.hidden = true; });
+    if (!Q) newQuiz();
+  }
+}
+tab.onclick = () => showQuiz(true);
+nav.querySelectorAll('.tab').forEach(t => { if (t !== tab) t.addEventListener('click', () => showQuiz(false)); });
+q$('#fqNew').onclick = newQuiz;
+})();
+
+</script>
+</body>
+</html>
