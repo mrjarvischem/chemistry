@@ -1,0 +1,838 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>States of matter, structure and properties</title>
+<style>
+
+:root{
+  --paper:#efe6d6; --panel:#faf6ee; --stage:#fcf9f3; --ink:#33241a; --muted:#7a6553;
+  --line:#dccfb9; --chip:#f2e8d8; --accent:#c4621a; --btn:#8c4a1c; --accent-ink:#fff8ef;
+  --good:#3f7d3a; --warn:#b8402e; --minus:#2b4f8f; --weak:#c8691f; --soft:#efe3cc;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#1a1410; --panel:#241c16; --stage:#15100c; --ink:#efe4d3; --muted:#b39f88;
+    --line:#43362b; --chip:#30261e; --accent:#f0954a; --btn:#d9955a; --accent-ink:#1a1410;
+    --good:#8bc47f; --warn:#e67a63; --minus:#6fa3f0; --weak:#f0a050; --soft:#30261e; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#1a1410; --panel:#241c16; --stage:#15100c; --ink:#efe4d3; --muted:#b39f88;
+  --line:#43362b; --chip:#30261e; --accent:#f0954a; --btn:#d9955a; --accent-ink:#1a1410;
+  --good:#8bc47f; --warn:#e67a63; --minus:#6fa3f0; --weak:#f0a050; --soft:#30261e; color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:18px 16px 28px}
+[hidden]{display:none!important}
+.wrap{max-width:1360px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 20px}
+h1{font-family:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;font-weight:600;font-size:clamp(1.45rem,2.5vw,2.05rem);letter-spacing:-.01em;margin:0;text-wrap:balance}
+header p{margin:0;color:var(--muted);font-size:.95rem}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;border-bottom:1px solid var(--line)}
+.tab{background:none;border:none;border-bottom:3px solid transparent;border-radius:0;padding:8px 12px;font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;font-size:1.08rem;font-weight:600;color:var(--muted);margin-bottom:-1px}
+.tab:hover:not(:disabled){border-color:transparent;color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--btn)}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 350px;gap:16px;align-items:start}
+@media (max-width:920px){.layout{grid-template-columns:1fr}}
+.stage{background:var(--stage);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.canvas-box{position:relative;width:100%;aspect-ratio:16/10}
+@media (max-width:600px){.canvas-box{aspect-ratio:4/5}}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+.ov{position:absolute;top:10px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.ov.l{left:12px}.ov.r{right:12px}
+.pill{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:3px 11px;font-size:.82rem;font-weight:650}
+.small{font-size:.8rem;padding:5px 10px}
+.toast{position:absolute;left:12px;bottom:12px;max-width:calc(100% - 24px);background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:.88rem;pointer-events:none;transition:opacity .3s;opacity:0}
+.caption{border-top:1px solid var(--line);padding:12px 16px 14px;font-size:1.04rem;line-height:1.55;min-height:6.4em}
+.panel{display:flex;flex-direction:column;gap:12px}
+.group{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.group h2{margin:0;font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.btns{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button{font:inherit;font-weight:600;font-size:.92rem;padding:8px 12px;border-radius:7px;border:1px solid var(--line);background:var(--chip);color:var(--ink);cursor:pointer}
+button:hover:not(:disabled){border-color:var(--btn)}
+button.primary{background:var(--btn);border-color:var(--btn);color:var(--accent-ink)}
+button[aria-pressed="true"]{background:var(--good);border-color:var(--good);color:var(--accent-ink)}
+button:disabled{opacity:.42;cursor:not-allowed}
+:focus-visible{outline:2px solid var(--btn);outline-offset:2px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{padding:6px 10px}
+.seg button.right{background:var(--good);border-color:var(--good);color:var(--accent-ink);opacity:1}
+.seg button.wrong{background:var(--warn);border-color:var(--warn);color:var(--accent-ink);opacity:1}
+.tog{display:flex;gap:8px;align-items:center;font-size:.9rem;cursor:pointer}
+input[type=checkbox]{accent-color:var(--btn);width:16px;height:16px}
+input[type=range]{width:100%;accent-color:var(--btn)}
+.speed{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;font-size:.88rem}
+.fb{margin:0;font-size:.92rem}
+.note{margin:0;font-size:.85rem;color:var(--muted)}
+.tally{display:grid;grid-template-columns:1fr auto;gap:3px 12px;font-size:.9rem;font-variant-numeric:tabular-nums}
+.tally b{text-align:right}
+ul.pts{margin:0;padding-left:18px;font-size:.88rem;display:flex;flex-direction:column;gap:4px}
+.key{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px 10px;font-size:.86rem}
+.dot{display:inline-block;width:13px;height:13px;border-radius:50%;margin-right:7px;vertical-align:-2px;border:1px solid rgba(0,0,0,.3)}
+.stubkey{display:inline-block;width:26px;height:5px;margin-right:7px;vertical-align:2px;border-radius:3px;background:linear-gradient(90deg,#8e8a84,rgba(142,138,132,0))}
+
+.cmpbox{display:none;padding:16px;overflow:auto}
+.stage.cmpmode .canvas-box,.stage.cmpmode .caption{display:none}
+.stage.cmpmode .cmpbox:not([hidden]){display:block}
+table.cmp{width:100%;border-collapse:collapse;font-size:clamp(13px,1.15vw,16px);line-height:1.35}
+table.cmp th,table.cmp td{border:1px solid var(--line);padding:10px 10px;vertical-align:top;text-align:left}
+table.cmp thead th{background:var(--btn);color:#fff;font-weight:700}
+table.cmp tbody th{background:var(--soft);font-weight:700;width:15%}
+table.cmp td.hid{color:transparent;cursor:pointer;background:repeating-linear-gradient(45deg,var(--soft),var(--soft) 8px,transparent 8px,transparent 16px)}
+table.cmp td.hid *{color:transparent}
+.seg button.right{background:var(--good);color:#fff;border-color:var(--good)}
+.seg button.wrong{background:var(--warn);color:#fff;border-color:var(--warn)}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>States of matter, structure and properties</h1>
+    <p>AQA GCSE 4.2.2.1 to 4.2.2.6 / Trilogy 5.2.2.1 to 5.2.2.6</p>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab" role="tab" data-mode="states" aria-selected="true">1 · States of matter</button>
+    <button class="tab" role="tab" data-mode="predict" aria-selected="false">2 · Predict the state</button>
+    <button class="tab" role="tab" data-mode="symbols" aria-selected="false">3 · State symbols</button>
+    <button class="tab" role="tab" data-mode="struct" aria-selected="false">4 · Structure and properties</button>
+    <button class="tab" role="tab" data-mode="cmp" aria-selected="false">5 · Compare structures</button>
+  </nav>
+
+  <div class="layout">
+    <section class="stage">
+      <div class="canvas-box">
+        <canvas id="cv" aria-label="Particle model"></canvas>
+        <div class="ov l"><span class="pill" id="pill"></span><span class="pill" id="pill2" hidden></span></div>
+        <div class="toast" id="toast"></div>
+      </div>
+      <div class="caption" id="caption"></div>
+      <div class="cmpbox" id="cmpbox">
+        <table class="cmp">
+          <thead><tr><th></th><th>Giant ionic</th><th>Small molecules</th><th>Polymers</th><th>Giant covalent</th><th>Metals</th></tr></thead>
+          <tbody>
+            <tr><th>Example</th><td>Sodium chloride</td><td>Water, methane, oxygen</td><td>Poly(ethene)</td><td>Diamond, graphite, silicon dioxide</td><td>Iron, copper, magnesium</td></tr>
+            <tr><th>Particles</th><td>Positive and negative ions in a giant lattice</td><td>Separate molecules, each with a few atoms</td><td>Very large molecules: long chains of atoms</td><td>Atoms, all joined in one giant structure</td><td>Positive ions and delocalised electrons</td></tr>
+            <tr><th>Forces overcome on melting and broken on boiling</th><td>Strong electrostatic forces between oppositely charged ions</td><td>Weak intermolecular forces between molecules. <b>Not</b> the covalent bonds</td><td>Intermolecular forces between the chains, which are relatively strong</td><td>Strong covalent bonds between the atoms</td><td>Strong metallic bonds</td></tr>
+            <tr><th>Melting and boiling points</th><td>High</td><td>Low: usually gases or liquids at room temperature</td><td>Solids at room temperature</td><td>Very high</td><td>Mostly high</td></tr>
+            <tr><th>Conducts electricity?</th><td>Not when solid. Yes when melted or dissolved: the ions are free to move</td><td>No: the molecules have no overall electric charge</td><td>No</td><td>No (except graphite, which has delocalised electrons)</td><td>Yes: delocalised electrons carry charge</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <aside>
+      <!-- 1 states -->
+      <div class="panel" data-for="states">
+        <div class="group">
+          <h2>Substance</h2>
+          <div class="seg" id="subSeg"></div>
+          <div class="tally" id="t1"></div>
+        </div>
+        <div class="group">
+          <h2>Change the temperature</h2>
+          <div class="btns"><button class="primary" id="bHeat" aria-pressed="false">Heat</button><button id="bCool" aria-pressed="false">Cool</button><button id="bStop">Pause</button><button id="bReset1">Reset</button></div>
+          <label class="tog"><input type="checkbox" id="cForce" checked> Show forces between particles</label>
+          <div class="speed"><span>Speed</span><input type="range" id="rSpeed" min="0.5" max="3" step="0.5" value="1"><span id="sTxt">1×</span></div>
+        </div>
+        <div class="group">
+          <h2>Key points</h2>
+          <ul class="pts">
+            <li><b>Melting:</b> the forces holding the particles in fixed positions are <b>overcome</b>, so the particles can move past each other.</li>
+            <li><b>Boiling:</b> the forces between the particles are <b>broken</b> completely, so the particles separate.</li>
+            <li>Melting and freezing happen at the <b>melting point</b>; boiling and condensing happen at the <b>boiling point</b>.</li>
+            <li>The <b>stronger the forces</b> between the particles, the more energy is needed and the <b>higher</b> the melting and boiling points.</li>
+            <li>A single atom is not solid, liquid or gas: atoms themselves do not have the bulk properties of the material.</li>
+          </ul>
+        </div>
+        <div class="group">
+          <h2>Limitations of the model (HT)</h2>
+          <ul class="pts">
+            <li>In the simple model there are <b>no forces</b> between the spheres. Untick "Show forces" to see the simple model.</li>
+            <li>All particles are shown as <b>spheres</b>, but real particles have different shapes.</li>
+            <li>The spheres are <b>solid</b>, but real atoms are mostly empty space.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 2 predict -->
+      <div class="panel" data-for="predict" hidden>
+        <div class="group">
+          <h2>What state is it?</h2>
+          <p class="fb" id="q2Txt"></p>
+          <div class="seg" id="q2Seg"><button data-v="solid">Solid</button><button data-v="liquid">Liquid</button><button data-v="gas">Gas</button></div>
+          <p class="fb" id="q2Fb"></p>
+          <div class="btns"><button class="primary" id="q2Next">Next ▶</button><span class="note" id="q2Score"></span></div>
+          <label class="tog"><input type="checkbox" id="q2Help"> Show the number line before answering</label>
+        </div>
+        <div class="group">
+          <h2>How to work it out</h2>
+          <ul class="pts">
+            <li>Below the melting point: <b>solid</b>.</li>
+            <li>Between the melting point and the boiling point: <b>liquid</b>.</li>
+            <li>Above the boiling point: <b>gas</b>.</li>
+            <li>Take care with negative numbers: −50 °C is warmer than −100 °C.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 3 symbols -->
+      <div class="panel" data-for="symbols" hidden>
+        <div class="group">
+          <h2>Add the state symbols</h2>
+          <p class="fb" id="eqWords"></p>
+          <p class="note">Click each box in the equation to change its state symbol.</p>
+          <div class="btns"><button class="primary" id="eqCheck">Check</button><button id="eqShow">Show answer</button><button id="eqNext">Next equation ▶</button></div>
+          <p class="fb" id="eqFb"></p>
+          <p class="note" id="eqScore"></p>
+        </div>
+        <div class="group">
+          <h2>State symbols</h2>
+          <div class="tally"><span>(s)</span><b>solid</b><span>(l)</span><b>liquid</b><span>(g)</span><b>gas</b><span>(aq)</span><b>aqueous: dissolved in water</b></div>
+          <p class="note">A pure liquid such as water is (l). A solution in water is (aq). Molten sodium chloride is (l); salt solution is (aq).</p>
+        </div>
+      </div>
+
+      <!-- 4 structure -->
+      <div class="panel" data-for="struct" hidden>
+        <div class="group">
+          <h2>Type of structure</h2>
+          <div class="seg" id="stSeg">
+            <button data-v="small" aria-pressed="true">Small molecules</button>
+            <button data-v="poly" aria-pressed="false">Polymer</button>
+            <button data-v="gc" aria-pressed="false">Giant covalent</button>
+            <button data-v="ion" aria-pressed="false">Giant ionic</button>
+          </div>
+          <div class="tally" id="t4"></div>
+        </div>
+        <div class="group">
+          <h2>Change the temperature</h2>
+          <div class="btns"><button class="primary" id="bHeat4" aria-pressed="false">Heat</button><button id="bCool4" aria-pressed="false">Cool</button><button id="bStop4">Pause</button><button id="bReset4">Reset</button></div>
+          <label class="tog"><input type="checkbox" id="cForce4" checked> Show forces and bonds</label>
+        </div>
+        <div class="group">
+          <h2>Does it conduct electricity?</h2>
+          <div class="btns"><button id="bCond4">Test it</button></div>
+          <p class="fb" id="cond4"></p>
+        </div>
+        <div class="group" id="sizeG">
+          <h2>Bigger molecules, higher boiling points</h2>
+          <div class="tally"><span>Methane, CH₄</span><b>−162 °C</b><span>Ethane, C₂H₆</span><b>−89 °C</b><span>Propane, C₃H₈</span><b>−42 °C</b><span>Butane, C₄H₁₀</span><b>−1 °C</b></div>
+          <p class="note">Intermolecular forces increase with the size of the molecules, so larger molecules have higher melting and boiling points.</p>
+        </div>
+        <div class="group"><h2>What to notice</h2><ul class="pts" id="notice4"></ul></div>
+      </div>
+
+      <!-- 5 compare -->
+      <div class="panel" data-for="cmp" hidden>
+        <div class="group">
+          <h2>Summary table</h2>
+          <div class="btns"><button class="primary" id="cHide">Hide answers (quiz mode)</button></div>
+          <p class="note">In quiz mode, click a cell to reveal it.</p>
+        </div>
+        <div class="group">
+          <h2>Explaining a melting point</h2>
+          <ul class="pts">
+            <li>Name the <b>structure</b> (e.g. giant ionic lattice, small molecules).</li>
+            <li>Name the <b>forces or bonds</b> that must be overcome, and say whether they are strong or weak.</li>
+            <li>Link to <b>energy</b>: strong forces need a lot of energy, so the melting point is high.</li>
+          </ul>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+(() => {
+const $=id=>document.getElementById(id);
+const cv=$('cv'), ctx=cv.getContext('2d');
+let cw=800, ch=500;
+function resize(){
+  const r=cv.getBoundingClientRect(), d=Math.min(2,window.devicePixelRatio||1);
+  cw=Math.max(50,r.width); ch=Math.max(50,r.height);
+  cv.width=Math.round(cw*d); cv.height=Math.round(ch*d); ctx.setTransform(d,0,0,d,0,0);
+}
+new ResizeObserver(resize).observe(cv); resize();
+const TH={};
+function readTheme(){const s=getComputedStyle(document.documentElement);['stage','ink','muted','line','accent','good','warn','minus','weak','soft','panel'].forEach(k=>TH[k]=s.getPropertyValue('--'+k).trim()||'#888');}
+readTheme(); matchMedia('(prefers-color-scheme: dark)').addEventListener('change',readTheme);
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const TAU=Math.PI*2, PI=Math.PI, s3=Math.sqrt(3), clamp=(v,a,b)=>Math.max(a,Math.min(b,v)), lerp=(a,b,t)=>a+(b-a)*t;
+const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+function rgb(h){h=h.replace('#','');if(h.length===3)h=h.split('').map(c=>c+c).join('');const n=parseInt(h,16);return [n>>16&255,n>>8&255,n&255];}
+function mix(a,b,t){const A=rgb(a),B=rgb(b);return `rgb(${A.map((v,i)=>Math.round(v+(B[i]-v)*t)).join(',')})`;}
+function rgba(c,a){ if(c.startsWith('#')){const [r,g,b]=rgb(c);return `rgba(${r},${g},${b},${a})`;} const m=c.match(/[\d.]+/g); return `rgba(${m[0]},${m[1]},${m[2]},${a})`; }
+function sprite(hex){
+  const S=96,c=document.createElement('canvas');c.width=c.height=S;const g=c.getContext('2d');
+  const gr=g.createRadialGradient(S*.36,S*.32,S*.03,S*.5,S*.5,S*.5);
+  gr.addColorStop(0,mix(hex,'#ffffff',.75));gr.addColorStop(.28,mix(hex,'#ffffff',.18));
+  gr.addColorStop(.72,hex);gr.addColorStop(1,mix(hex,'#000000',.5));
+  g.fillStyle=gr;g.beginPath();g.arc(S/2,S/2,S/2-1,0,TAU);g.fill();return c;
+}
+const EL={C:{col:'#5a5a5a',br:.27},Si:{col:'#c9a36b',br:.36},O:{col:'#d6452f',br:.27},H:{col:'#eeeae0',br:.2},Cl:{col:'#4f9e3f',br:.32},X:{col:'#3d8fd1',br:.22}};
+const SPR={}; for(const k in EL) SPR[k]=sprite(EL[k].col);
+const STICK='#8e8a84', ELEC='#f2c230';
+let toastT=0; function toast(t){$('toast').textContent=t;$('toast').style.opacity=1;toastT=4.5;}
+function setPressed(el,v){el.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===v));}
+function elecDot(x,y,r,a=1){ctx.globalAlpha=a*.3;ctx.fillStyle=ELEC;ctx.beginPath();ctx.arc(x,y,r*2,0,TAU);ctx.fill();ctx.globalAlpha=a;ctx.strokeStyle='#7a5a00';ctx.lineWidth=1;ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.fill();ctx.stroke();ctx.globalAlpha=1;}
+
+
+const COLS={blue:'#4f86c9',red:'#d6452f',grey:'#8d8f98',purple:'#8a63c9',green:'#4f9e3f',teal:'#2f9c95',dark:'#5a5a5a',silver:'#aeb4c0'};
+const PS={}; for(const k in COLS) PS[k]=sprite(COLS[k]);
+const fmtT=t=>`${Math.round(t)<0?'−':''}${Math.abs(Math.round(t))} °C`;
+
+/* ================= particle engine ================= */
+function makeSim(o){
+  const W=o.W||11, H=o.H||8, cols=o.cols||8, rows=o.rows||5;
+  const S={W,H,parts:[],E:0,dir:0,flashes:[],t:0,mp:o.mp,bp:o.bp,skin:o.skin||'sphere',col:o.col||'blue',maxE:o.maxE||5,rate:o.rate||.2};
+  const x0=(W-(cols-1)-.5)/2;
+  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){const hx=x0+c+(r%2?.5:0),hy=.55+r*.87;
+    S.parts.push({hx,hy,x:hx,y:hy,vx:0,vy:0,st:'s',r,c,ph:Math.random()*6.28,ph2:Math.random()*6.28,fr:8+Math.random()*5,ang:(r+c)%2?0.5:-0.4,va:(Math.random()-.5)*3,m:0,b:0});}
+  const n=S.parts.length;
+  S.parts.map((p,i)=>[i,(rows-1-p.r)+Math.random()*1.6]).sort((a,b)=>a[1]-b[1]).forEach(([i],k)=>S.parts[i].m=(k+.5)/n);
+  S.parts.map((p,i)=>[i,Math.random()]).sort((a,b)=>a[1]-b[1]).forEach(([i],k)=>S.parts[i].b=(k+.5)/n);
+  const span=S.bp-S.mp; S.tmin=Math.max(-273,Math.min(o.tmin??1e9,S.mp-span*.6-20)); S.tmax=S.bp+span*.6+20;
+  S.tempAt=E=>E<1?lerp(S.tmin,S.mp,E):E<2?S.mp:E<3?lerp(S.mp,S.bp,E-2):E<4?S.bp:lerp(S.bp,S.tmax,E-4);
+  S.temp=()=>S.tempAt(S.E);
+  S.phase=()=>S.E<1?'solid':S.E<2?'melt':S.E<3?'liquid':S.E<4?'boil':'gas';
+  S.setTemp=T=>{ S.E = T<=S.mp ? clamp((T-S.tmin)/(S.mp-S.tmin),0,.999) : T<S.bp ? 2+(T-S.mp)/(S.bp-S.mp) : 4+clamp((T-S.bp)/(S.tmax-S.bp),0,1); };
+  S.step=(dt,speed=1)=>{
+    S.t+=dt;
+    if(S.dir){ S.E=clamp(S.E+S.dir*S.rate*dt*speed,0,S.maxE); if(S.E<=0||S.E>=S.maxE) S.dir=0; }
+    const fm=clamp(S.E-1,0,1), fb=clamp(S.E-3,0,1), Tf=S.E/5;
+    for(const p of S.parts){
+      const want=fb>p.b?'g':fm>p.m?'l':'s';
+      if(want!==p.st){
+        if(want==='g'){p.vx=(Math.random()-.5)*6;p.vy=2+Math.random()*4;S.flashes.push({x:p.x,y:p.y,t:0});}
+        else if(want==='l'&&p.st==='s'){p.vx=(Math.random()-.5);p.vy=(Math.random()-.5);}
+        p.st=want;
+      }
+    }
+    const sub=2, h=dt/sub, P=S.parts;
+    for(let q=0;q<sub;q++){
+      for(const p of P){
+        if(p.st==='s'){const a=.02+.09*clamp(S.E,0,1.2), tx=p.hx+a*Math.sin(S.t*p.fr+p.ph), ty=p.hy+a*Math.sin(S.t*p.fr*1.13+p.ph2), k=Math.min(1,h*7); p.x+=(tx-p.x)*k; p.y+=(ty-p.y)*k; p.ang+=(((p.r+p.c)%2?0.5:-0.4)-p.ang)*k; continue;}
+        p.ang+=p.va*h*(p.st==='g'?2.5:1);
+        if(p.st==='g'){const v0=4.5+Tf*3, sp=Math.hypot(p.vx,p.vy)||1; p.vx*=v0/sp; p.vy*=v0/sp; p.x+=p.vx*h; p.y+=p.vy*h;
+          if(p.x<.5){p.x=.5;p.vx=Math.abs(p.vx);} if(p.x>W-.5){p.x=W-.5;p.vx=-Math.abs(p.vx);} if(p.y<.5){p.y=.5;p.vy=Math.abs(p.vy);} if(p.y>H-.5){p.y=H-.5;p.vy=-Math.abs(p.vy);} continue;}
+        let fx=0, fy=-7;
+        for(const o2 of P){ if(o2===p||o2.st==='g') continue; const dx=p.x-o2.x, dy=p.y-o2.y; if(Math.abs(dx)>1||Math.abs(dy)>1) continue; const d=Math.hypot(dx,dy)||.01; if(d<1){const kk=240*(1-d)/d; fx+=dx*kk; fy+=dy*kk;} }
+        const g=3.2, kT=.35+Tf*1.1, sN=Math.sqrt(2*g*kT*h);
+        p.vx+=(-g*p.vx+fx)*h+sN*gauss(); p.vy+=(-g*p.vy+fy)*h+sN*gauss();
+        p.x+=p.vx*h; p.y+=p.vy*h;
+        if(p.x<.5){p.x=.5;p.vx=Math.abs(p.vx)*.5;} if(p.x>W-.5){p.x=W-.5;p.vx=-Math.abs(p.vx)*.5;} if(p.y<.5){p.y=.5;p.vy=Math.abs(p.vy)*.3;} if(p.y>H-.5){p.y=H-.5;p.vy=-Math.abs(p.vy);}
+      }
+    }
+    S.flashes.forEach(f=>f.t+=dt); S.flashes=S.flashes.filter(f=>f.t<.5);
+  };
+  return S;
+}
+let spare=null;
+function gauss(){if(spare!==null){const s=spare;spare=null;return s;}let u,v,s;do{u=Math.random()*2-1;v=Math.random()*2-1;s=u*u+v*v;}while(s>=1||s===0);const m=Math.sqrt(-2*Math.log(s)/s);spare=v*m;return u*m;}
+
+function drawSim(S,R,forces){
+  const u=Math.min(R.w/S.W,R.h/S.H), bw=S.W*u, bh=S.H*u, bx=R.x+(R.w-bw)/2, by=R.y+(R.h-bh)/2, X=x=>bx+x*u, Y=y=>by+bh-y*u;
+  ctx.fillStyle=rgba(TH.muted,.06); ctx.fillRect(bx,by,bw,bh); ctx.strokeStyle=TH.muted; ctx.lineWidth=1.6; ctx.strokeRect(bx,by,bw,bh);
+  const P=S.parts, sk=S.skin;
+  if(forces){
+    ctx.lineCap='round';
+    for(let i=0;i<P.length;i++){const a=P[i]; if(a.st==='g') continue;
+      for(let j=i+1;j<P.length;j++){const b=P[j]; if(b.st==='g') continue; const dx=b.x-a.x, dy=b.y-a.y; if(Math.abs(dx)>1.4||Math.abs(dy)>1.4) continue; const d=Math.hypot(dx,dy); if(d>1.38) continue;
+        const hold=a.st==='s'&&b.st==='s', ux=dx/d, uy=dy/d;
+        let r0=.0;
+        if(sk==='mol'){ r0=.34; ctx.strokeStyle=TH.weak; ctx.lineWidth=2; ctx.setLineDash([4,4]); ctx.globalAlpha=hold?.95:.4; }
+        else if(sk==='cov'){ if(!hold) continue; ctx.strokeStyle=STICK; ctx.lineWidth=Math.max(3,.15*u); ctx.setLineDash([]); ctx.globalAlpha=1; }
+        else if(sk==='ion'){ ctx.strokeStyle=TH.accent; ctx.lineWidth=hold?2:1.6; ctx.setLineDash(hold?[]:[3,5]); ctx.globalAlpha=hold?.6:.35; }
+        else { ctx.strokeStyle=TH.ink; ctx.lineWidth=hold?2.2:1.6; ctx.setLineDash(hold?[]:[3,5]); ctx.globalAlpha=hold?.55:.35; }
+        ctx.beginPath(); ctx.moveTo(X(a.x+ux*r0),Y(a.y+uy*r0)); ctx.lineTo(X(b.x-ux*r0),Y(b.y-uy*r0)); ctx.stroke();
+      }}
+    ctx.setLineDash([]); ctx.globalAlpha=1;
+  }
+  for(const p of P){
+    const x=X(p.x), y=Y(p.y);
+    if(sk==='mol'){
+      const c=Math.cos(p.ang), s=Math.sin(p.ang), rO=.3*u, rH=.17*u;
+      for(const sg of [-1,1]){const a=sg*0.91, hx=x+(Math.sin(a)*c-Math.cos(a)*s)*.33*u, hy=y+(Math.sin(a)*s+Math.cos(a)*c)*.33*u; ctx.drawImage(SPR.H,hx-rH,hy-rH,2*rH,2*rH);}
+      ctx.drawImage(SPR.O,x-rO,y-rO,2*rO,2*rO);
+    } else if(sk==='cov'){ const r=.3*u; ctx.drawImage(PS.dark,x-r,y-r,2*r,2*r); }
+    else if(sk==='ion'){ const pos=(p.r+p.c)%2===0, r=(pos?.3:.44)*u; ctx.drawImage(PS[pos?'purple':'green'],x-r,y-r,2*r,2*r); if(r>8){ctx.fillStyle='#fff';ctx.font=`700 ${Math.round(r*1.1)}px system-ui,sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(pos?'+':'−',x,y+1);} }
+    else { const r=.46*u; ctx.drawImage(PS[S.col],x-r,y-r,2*r,2*r); }
+  }
+  for(const f of S.flashes){ ctx.globalAlpha=1-f.t/.5; ctx.strokeStyle=TH.warn; ctx.lineWidth=2.5; ctx.beginPath(); ctx.arc(X(f.x),Y(f.y),(.5+f.t*1.1)*u,0,TAU); ctx.stroke(); ctx.globalAlpha=1; }
+  return {bx,by,bw,bh,u};
+}
+function phaseLabel(S,forceName='forces'){
+  const ph=S.phase(), d=S.dir;
+  if(ph==='melt') return d<0?`Freezing: ${forceName} hold particles in place again`:`Melting: ${forceName} being overcome`;
+  if(ph==='boil') return d<0?`Condensing: ${forceName} form again`:`Boiling: ${forceName} being broken`;
+  return {solid:'Solid',liquid:'Liquid',gas:'Gas'}[ph];
+}
+
+/* ================= TAB 1: states of matter ================= */
+const SUBS={
+  O2:{name:'Oxygen',mp:-219,bp:-183,col:'red'},
+  H2O:{name:'Water',mp:0,bp:100,col:'blue'},
+  Na:{name:'Sodium',mp:98,bp:883,col:'silver'},
+  NaCl:{name:'Sodium chloride',mp:801,bp:1413,col:'green'},
+  Fe:{name:'Iron',mp:1538,bp:2862,col:'grey'}
+};
+const T1={key:'H2O',S:null,forces:true,speed:1};
+function build1(){const s=SUBS[T1.key];T1.S=makeSim({mp:s.mp,bp:s.bp,col:s.col,cols:8,rows:5});ui1();}
+$('subSeg').innerHTML=Object.entries(SUBS).map(([k,s])=>`<button data-v="${k}" aria-pressed="${k===T1.key}">${s.name}</button>`).join('');
+$('subSeg').onclick=e=>{const b=e.target.closest('button');if(!b)return;T1.key=b.dataset.v;setPressed($('subSeg'),T1.key);build1();};
+function ui1(){
+  const S=T1.S;
+  $('bHeat').setAttribute('aria-pressed',S.dir>0); $('bCool').setAttribute('aria-pressed',S.dir<0);
+  $('t1').innerHTML=`<span>Temperature</span><b>${fmtT(S.temp())}</b><span>Melting point</span><b>${fmtT(S.mp)}</b><span>Boiling point</span><b>${fmtT(S.bp)}</b>`;
+  $('pill').textContent=phaseLabel(S); $('pill2').hidden=false; $('pill2').textContent=fmtT(S.temp());
+}
+function drawGraph(S,R){
+  const x0=R.x+46, y0=R.y+R.h-34, w=R.w-60, h=R.h-70, XE=E=>x0+E/5*w, YT=T=>y0-(T-S.tmin)/(S.tmax-S.tmin)*h;
+  ctx.strokeStyle=TH.ink; ctx.lineWidth=1.6; ctx.beginPath(); ctx.moveTo(x0,y0-h-8); ctx.lineTo(x0,y0); ctx.lineTo(x0+w+6,y0); ctx.stroke();
+  ctx.fillStyle=TH.muted; ctx.font='600 12px system-ui,sans-serif'; ctx.textAlign='center'; ctx.textBaseline='top'; ctx.fillText('energy transferred (time heating) →',x0+w/2,y0+12);
+  ctx.save(); ctx.translate(R.x+12,y0-h/2); ctx.rotate(-Math.PI/2); ctx.textBaseline='middle'; ctx.fillText('temperature',0,0); ctx.restore();
+  for(const [T,lab] of [[S.mp,'melting point'],[S.bp,'boiling point']]){ ctx.strokeStyle=TH.line; ctx.setLineDash([4,4]); ctx.lineWidth=1.2; ctx.beginPath(); ctx.moveTo(x0,YT(T)); ctx.lineTo(x0+w,YT(T)); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle=TH.muted; ctx.textAlign='right'; ctx.textBaseline='middle'; ctx.font='600 11px system-ui,sans-serif'; ctx.fillText(fmtT(T).replace(' °C','°'),x0-4,YT(T)); }
+  const pts=[0,1,2,3,4,5].map(E=>[XE(E),YT(S.tempAt(E))]);
+  ctx.strokeStyle=rgba(TH.muted,.5); ctx.lineWidth=3; ctx.lineJoin='round'; ctx.beginPath(); pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1])); ctx.stroke();
+  ctx.strokeStyle=TH.accent; ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(pts[0][0],pts[0][1]); for(let i=1;i<=5;i++){ if(S.E>=i) ctx.lineTo(pts[i][0],pts[i][1]); else { ctx.lineTo(XE(S.E),YT(S.temp())); break; } } ctx.stroke();
+  ctx.fillStyle=TH.accent; ctx.beginPath(); ctx.arc(XE(S.E),YT(S.temp()),6,0,TAU); ctx.fill();
+  ctx.font='600 12px system-ui,sans-serif'; ctx.fillStyle=TH.ink; ctx.textAlign='center';
+  ctx.textBaseline='top'; ctx.textAlign='left'; ctx.fillText('solid',XE(.5)+12,YT(S.tempAt(.5))+2); ctx.fillText('liquid',XE(2.5)+12,YT(S.tempAt(2.5))+2); ctx.fillText('gas',XE(4.5)+12,YT(S.tempAt(4.5))+2); ctx.textAlign='center';
+  ctx.textBaseline='bottom'; ctx.fillStyle=TH.muted; ctx.fillText('melting ⇄ freezing',XE(1.5),YT(S.mp)-6); ctx.fillText('boiling ⇄ condensing',XE(3.5),YT(S.bp)-6);
+}
+function draw1(){
+  const narrow=cw<620;
+  const R1=narrow?{x:10,y:44,w:cw-20,h:ch*.5}:{x:14,y:46,w:cw*.56,h:ch-60};
+  const R2=narrow?{x:6,y:ch*.56,w:cw-12,h:ch*.42}:{x:cw*.58+14,y:46,w:cw*.42-22,h:ch-60};
+  drawSim(T1.S,R1,T1.forces); drawGraph(T1.S,R2);
+}
+function cap1(){
+  const S=T1.S, ph=S.phase(), d=S.dir, n=SUBS[T1.key].name.toLowerCase();
+  if(ph==='solid') return `Solid ${n}: the particles are close together in a regular pattern. Forces between the particles hold them in fixed positions, so they can only vibrate. Heating makes them vibrate more. Press Heat.`;
+  if(ph==='melt') return d<0?`Freezing at ${fmtT(S.mp)}: as energy is transferred to the surroundings, the forces between the particles hold them in fixed positions again. The temperature stays at the melting point until all the liquid has frozen.`
+    :`Melting at ${fmtT(S.mp)}: the temperature stays the same while energy is transferred. The energy is used to overcome the forces that hold the particles in fixed positions, so the particles can move past each other. They are still close together and still attract each other.`;
+  if(ph==='liquid') return `Liquid ${n}: the particles are still close together but are arranged randomly and move past each other. Forces still act between them (dashed lines). ${d<0?'Cooling slows the particles down.':'Heating makes them move faster.'}`;
+  if(ph==='boil') return d<0?`Condensing at ${fmtT(S.bp)}: forces form between the particles again as they come back together into a liquid. The temperature stays at the boiling point until all the gas has condensed.`
+    :`Boiling at ${fmtT(S.bp)}: the temperature stays the same while energy is transferred. The energy is used to break the forces between the particles completely, so the particles separate and escape as a gas.`;
+  return `${SUBS[T1.key].name} gas: the particles are far apart and move quickly in all directions. The forces between them have been broken. The stronger the forces between the particles of a substance, the higher its melting and boiling points.`;
+}
+$('bHeat').onclick=()=>{T1.S.dir=T1.S.dir>0?0:1;ui1();};
+$('bCool').onclick=()=>{T1.S.dir=T1.S.dir<0?0:-1;ui1();};
+$('bStop').onclick=()=>{T1.S.dir=0;ui1();};
+$('bReset1').onclick=build1;
+$('cForce').onchange=e=>{T1.forces=e.target.checked;};
+$('rSpeed').oninput=e=>{T1.speed=+e.target.value;$('sTxt').textContent=T1.speed+'×';};
+
+/* ================= TAB 2: predict the state ================= */
+const DATA=[['Oxygen',-219,-183],['Nitrogen',-210,-196],['Chlorine',-101,-34],['Bromine',-7,59],['Mercury',-39,357],['Ethanol',-114,78],['Water',0,100],['Sodium',98,883],['Sulfur',115,445],['Gallium',30,2204],['Sodium chloride',801,1413],['Iron',1538,2862],['Ammonia',-78,-33],['Methane',-182,-162]];
+const Q2={rows:[],sub:null,T:20,ans:null,score:0,tries:0,help:false};
+function newQ2(){
+  const sh=DATA.slice().sort(()=>Math.random()-.5); Q2.rows=sh.slice(0,5).sort((a,b)=>a[1]-b[1]); Q2.sub=Q2.rows[Math.floor(Math.random()*5)];
+  const [,mp,bp]=Q2.sub, r=Math.random();
+  let T; if(r<.3) T=20; else { const zone=Math.floor(Math.random()*3), span=bp-mp, pad=Math.max(15,span*.4);
+    T = zone===0 ? mp-5-Math.random()*pad : zone===1 ? mp+span*(.15+.7*Math.random()) : bp+5+Math.random()*pad; T=Math.max(-270,Math.round(T/5)*5); if(Math.abs(T-mp)<3||Math.abs(T-bp)<3) T=20; }
+  if(Math.abs(T-mp)<3||Math.abs(T-bp)<3) T+=7;
+  Q2.T=T; Q2.ans=null; ui2();
+}
+const stateAt=(mp,bp,T)=>T<mp?'solid':T<bp?'liquid':'gas';
+function ui2(){
+  const [n,mp,bp]=Q2.sub, cor=stateAt(mp,bp,Q2.T);
+  $('q2Txt').innerHTML=`What is the state of <b>${n.toLowerCase()}</b> at <b>${fmtT(Q2.T)}</b>?`;
+  $('q2Seg').querySelectorAll('button').forEach(b=>{b.className='';b.disabled=Q2.ans!==null;if(Q2.ans!==null){if(b.dataset.v===cor)b.className='right';else if(b.dataset.v===Q2.ans)b.className='wrong';}});
+  const why=cor==='solid'?`${fmtT(Q2.T)} is below the melting point (${fmtT(mp)}), so it is a solid.`:cor==='liquid'?`${fmtT(Q2.T)} is above the melting point (${fmtT(mp)}) but below the boiling point (${fmtT(bp)}), so it is a liquid.`:`${fmtT(Q2.T)} is above the boiling point (${fmtT(bp)}), so it is a gas.`;
+  $('q2Fb').textContent=Q2.ans===null?'Use the data table.':(Q2.ans===cor?'✓ Correct. ':'✗ Not quite. ')+why;
+  $('q2Score').textContent=Q2.tries?`Score ${Q2.score} / ${Q2.tries}`:'';
+  $('pill').textContent='Predict the state'; $('pill2').hidden=true;
+}
+$('q2Seg').onclick=e=>{const b=e.target.closest('button');if(!b||Q2.ans!==null)return;Q2.ans=b.dataset.v;Q2.tries++;if(Q2.ans===stateAt(Q2.sub[1],Q2.sub[2],Q2.T))Q2.score++;ui2();};
+$('q2Next').onclick=newQ2;
+$('q2Help').onchange=e=>{Q2.help=e.target.checked;};
+function draw2(){
+  const fs=clamp(cw/52,13,19), tx=cw*.08, tw=cw*.84, rowH=fs*2.1, ty=54;
+  ctx.font=`700 ${fs}px system-ui,sans-serif`; ctx.textBaseline='middle';
+  const colX=[tx+12,tx+tw*.55,tx+tw*.8];
+  ctx.fillStyle=rgba(TH.muted,.14); ctx.fillRect(tx,ty,tw,rowH);
+  ctx.fillStyle=TH.ink; ctx.textAlign='left'; ['Substance','Melting point','Boiling point'].forEach((t,i)=>ctx.fillText(t,colX[i],ty+rowH/2));
+  ctx.font=`500 ${fs}px system-ui,sans-serif`;
+  Q2.rows.forEach((r,i)=>{const y=ty+rowH*(i+1); ctx.strokeStyle=TH.line; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(tx,y); ctx.lineTo(tx+tw,y); ctx.stroke();
+    ctx.fillStyle=TH.ink; ctx.fillText(r[0],colX[0],y+rowH/2); ctx.fillText(fmtT(r[1]),colX[1],y+rowH/2); ctx.fillText(fmtT(r[2]),colX[2],y+rowH/2);});
+  ctx.strokeStyle=TH.line; ctx.strokeRect(tx,ty,tw,rowH*6);
+  const qy=ty+rowH*6+fs*2.2;
+  ctx.fillStyle=TH.ink; ctx.textAlign='center'; ctx.font=`600 ${fs*1.25}px "Iowan Old Style",Palatino,Georgia,serif`;
+  ctx.fillText(`What is the state of ${Q2.sub[0].toLowerCase()} at ${fmtT(Q2.T)}?`,cw/2,qy);
+  if(Q2.help||Q2.ans!==null){
+    const [n,mp,bp]=Q2.sub, lo=Math.min(mp,Q2.T), hi=Math.max(bp,Q2.T), pad=(hi-lo)*.18+10, a=lo-pad, b=hi+pad, x0=cw*.1, x1=cw*.9, y=Math.min(ch-58,qy+fs*4.2), XX=T=>x0+(T-a)/(b-a)*(x1-x0), bh=fs*1.5;
+    const seg=(t0,t1,col,lab)=>{ctx.fillStyle=rgba(col,.3);ctx.fillRect(XX(t0),y-bh/2,XX(t1)-XX(t0),bh);ctx.fillStyle=TH.ink;ctx.font=`600 ${fs*.8}px system-ui,sans-serif`;ctx.textAlign='center';ctx.fillText(lab,(XX(t0)+XX(t1))/2,y);};
+    seg(a,mp,COLS.blue,'solid'); seg(mp,bp,COLS.green,'liquid'); seg(bp,b,'#e0822e','gas');
+    ctx.strokeStyle=TH.ink; ctx.lineWidth=2;
+    for(const [T,lab] of [[mp,'melting point'],[bp,'boiling point']]){ctx.beginPath();ctx.moveTo(XX(T),y-bh/2-6);ctx.lineTo(XX(T),y+bh/2+6);ctx.stroke();ctx.fillStyle=TH.muted;ctx.font=`600 ${fs*.72}px system-ui,sans-serif`;ctx.textBaseline='top';ctx.fillText(`${lab} ${fmtT(T)}`,clamp(XX(T),x0+50,x1-50),y+bh/2+9);ctx.textBaseline='middle';}
+    const mx=XX(Q2.T); ctx.fillStyle=TH.accent; ctx.beginPath(); ctx.moveTo(mx,y-bh/2-2); ctx.lineTo(mx-8,y-bh/2-16); ctx.lineTo(mx+8,y-bh/2-16); ctx.closePath(); ctx.fill();
+    ctx.font=`700 ${fs*.85}px system-ui,sans-serif`; ctx.textBaseline='bottom'; ctx.fillText(fmtT(Q2.T),clamp(mx,x0+24,x1-24),y-bh/2-18); ctx.textBaseline='middle';
+  }
+}
+const cap2=()=>'To predict the state of a substance, compare the temperature with its melting point and boiling point. Below the melting point it is a solid; between the two it is a liquid; above the boiling point it is a gas. Room temperature is about 20 °C.';
+
+/* ================= TAB 3: state symbols ================= */
+const EQS=[
+  {w:'Sodium metal burns in chlorine gas to make solid sodium chloride.',p:[['2Na','s'],'+',['Cl₂','g'],'→',['2NaCl','s']]},
+  {w:'Magnesium ribbon reacts with dilute hydrochloric acid to make magnesium chloride solution and hydrogen gas.',p:[['Mg','s'],'+',['2HCl','aq'],'→',['MgCl₂','aq'],'+',['H₂','g']]},
+  {w:'Solid calcium carbonate is heated strongly. It breaks down into solid calcium oxide and carbon dioxide gas.',p:[['CaCO₃','s'],'→',['CaO','s'],'+',['CO₂','g']]},
+  {w:'Hydrogen gas burns in oxygen gas to make liquid water.',p:[['2H₂','g'],'+',['O₂','g'],'→',['2H₂O','l']]},
+  {w:'Sodium hydroxide solution neutralises dilute hydrochloric acid to make sodium chloride solution and water.',p:[['NaOH','aq'],'+',['HCl','aq'],'→',['NaCl','aq'],'+',['H₂O','l']]},
+  {w:'Zinc metal is added to copper sulfate solution. Zinc sulfate solution and solid copper form.',p:[['Zn','s'],'+',['CuSO₄','aq'],'→',['ZnSO₄','aq'],'+',['Cu','s']]},
+  {w:'Silver nitrate solution is added to sodium chloride solution. A white precipitate of silver chloride forms in sodium nitrate solution.',p:[['AgNO₃','aq'],'+',['NaCl','aq'],'→',['AgCl','s'],'+',['NaNO₃','aq']]},
+  {w:'Magnesium ribbon burns in oxygen gas to make solid magnesium oxide.',p:[['2Mg','s'],'+',['O₂','g'],'→',['2MgO','s']]},
+  {w:'Molten sodium chloride is electrolysed. Liquid sodium metal and chlorine gas are produced.',p:[['2NaCl','l'],'→',['2Na','l'],'+',['Cl₂','g']]},
+  {w:'Sodium metal reacts with water to make sodium hydroxide solution and hydrogen gas.',p:[['2Na','s'],'+',['2H₂O','l'],'→',['2NaOH','aq'],'+',['H₂','g']]}
+];
+const Q3={i:0,pick:[],checked:false,score:0,done:0,rects:[],fb:''};
+const CYC=[null,'s','l','g','aq'];
+function newQ3(i){Q3.i=i;Q3.pick=EQS[i].p.filter(x=>Array.isArray(x)).map(()=>null);Q3.checked=false;Q3.fb='';ui3();}
+function ui3(){
+  $('eqWords').textContent=EQS[Q3.i].w; $('eqFb').textContent=Q3.fb;
+  $('eqScore').textContent=Q3.done?`Equations completed correctly: ${Q3.score} of ${Q3.done}`:'';
+  $('pill').textContent=`Equation ${Q3.i+1} of ${EQS.length}`; $('pill2').hidden=true;
+}
+function draw3(){
+  const eq=EQS[Q3.i]; let fs=clamp(cw/22,18,40);
+  const meas=f=>{ctx.font=`600 ${f}px "Cambria Math",Cambria,Georgia,serif`;let w=0;for(const x of eq.p){w+=Array.isArray(x)?ctx.measureText(x[0]).width+f*1.75:ctx.measureText(x).width+f*.9;}return w;};
+  while(meas(fs)>cw*.94&&fs>12) fs-=1;
+  let x=(cw-meas(fs))/2, y=ch*.42, k=0; Q3.rects=[];
+  ctx.textBaseline='middle';
+  for(const part of eq.p){
+    ctx.font=`600 ${fs}px "Cambria Math",Cambria,Georgia,serif`;
+    if(!Array.isArray(part)){ctx.fillStyle=TH.ink;ctx.textAlign='left';ctx.fillText(part,x+fs*.45,y);x+=ctx.measureText(part).width+fs*.9;continue;}
+    ctx.fillStyle=TH.ink; ctx.textAlign='left'; ctx.fillText(part[0],x,y); x+=ctx.measureText(part[0]).width+fs*.1;
+    const bw=fs*1.5, bh=fs*1.15, by=y-bh/2+fs*.12, v=Q3.pick[k], ok=v===part[1];
+    ctx.fillStyle=Q3.checked?(ok?rgba(TH.good,.25):rgba(TH.warn,.25)):rgba(TH.muted,.12); ctx.strokeStyle=Q3.checked?(ok?TH.good:TH.warn):TH.accent; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.roundRect?ctx.roundRect(x,by,bw,bh,6):ctx.rect(x,by,bw,bh); ctx.fill(); ctx.stroke();
+    ctx.fillStyle=v?TH.ink:TH.muted; ctx.font=`600 ${fs*.62}px system-ui,sans-serif`; ctx.textAlign='center'; ctx.fillText(v?`(${v})`:'( ? )',x+bw/2,by+bh/2+1);
+    Q3.rects.push({x,y:by,w:bw,h:bh,k}); x+=bw+fs*.15; k++;
+  }
+  ctx.fillStyle=TH.muted; ctx.font=`500 ${clamp(cw/55,13,17)}px system-ui,sans-serif`; ctx.textAlign='center';
+  const words=eq.w.split(' '), lines=[]; let line='';
+  for(const w of words){ if(ctx.measureText(line+' '+w).width>cw*.8){lines.push(line);line=w;} else line=line?line+' '+w:w; } lines.push(line);
+  lines.forEach((l,i)=>ctx.fillText(l,cw/2,ch*.42+fs*1.9+i*22));
+}
+function click3(x,y){const r=Q3.rects.find(r=>x>=r.x-4&&x<=r.x+r.w+4&&y>=r.y-4&&y<=r.y+r.h+4);if(!r)return;if(Q3.checked){Q3.checked=false;Q3.fb='';}Q3.pick[r.k]=CYC[(CYC.indexOf(Q3.pick[r.k])+1)%CYC.length];ui3();}
+$('eqCheck').onclick=()=>{
+  const ans=EQS[Q3.i].p.filter(x=>Array.isArray(x)).map(x=>x[1]);
+  if(Q3.pick.some(v=>v===null)){Q3.fb='Choose a state symbol for every substance first.';ui3();return;}
+  const right=Q3.pick.filter((v,i)=>v===ans[i]).length, first=!Q3.checked&&!Q3.counted;
+  Q3.checked=true; if(!Q3.counted){Q3.counted=true;Q3.done++;if(right===ans.length)Q3.score++;}
+  Q3.fb=right===ans.length?'✓ All correct.':`${right} of ${ans.length} correct. Red boxes are wrong: read the description again, then click to change them.`; ui3();
+};
+$('eqShow').onclick=()=>{Q3.pick=EQS[Q3.i].p.filter(x=>Array.isArray(x)).map(x=>x[1]);Q3.checked=true;if(!Q3.counted){Q3.counted=true;Q3.done++;}Q3.fb='Answer shown.';ui3();};
+$('eqNext').onclick=()=>{Q3.counted=false;newQ3((Q3.i+1)%EQS.length);};
+const cap3=()=>'State symbols show the state of each substance in a chemical equation: (s) solid, (l) liquid, (g) gas and (aq) aqueous, which means dissolved in water. Read the description, then click each box to set its state symbol.';
+
+/* ================= TAB 4: structure and properties ================= */
+const ST={
+  small:{name:'Water',f:'small molecules',mp:0,bp:100,skin:'mol',force:'intermolecular forces',
+    notice:['Each molecule stays whole: the <b>covalent bonds inside the molecules are not broken</b>.','Only the <b>weak intermolecular forces</b> between molecules (dashed) are overcome on melting and broken on boiling.','Weak forces need little energy, so the melting and boiling points are <b>low</b>.']},
+  poly:{name:'Poly(ethene)',f:'polymer',mp:120,bp:null,skin:'poly',force:'intermolecular forces',
+    notice:['The atoms in each chain are joined by <b>strong covalent bonds</b>, which do not break on melting.','The chains are very long, so there are many intermolecular forces between them: together these are <b>relatively strong</b>.','So polymers are <b>solids at room temperature</b>.']},
+  gc:{name:'Silicon dioxide',f:'giant covalent structure',mp:1710,bp:2230,skin:'cov',force:'covalent bonds',
+    notice:['<b>All</b> the atoms are joined by strong covalent bonds.','These <b>covalent bonds themselves</b> must be overcome to melt or boil the substance.','That needs a very large amount of energy, so the melting point is <b>very high</b>.']},
+  ion:{name:'Sodium chloride',f:'giant ionic lattice',mp:801,bp:1413,skin:'ion',force:'electrostatic forces',
+    notice:['<b>Strong electrostatic forces</b> act in all directions between oppositely charged ions.','Large amounts of energy are needed to overcome the many strong forces, so the melting point is <b>high</b>.','Once melted, the ions are <b>free to move</b>, so the liquid conducts electricity.']}
+};
+const T4={key:'small',S:null,forces:true,cond:false,chains:null};
+function build4(){
+  const s=ST[T4.key];
+  T4.S=makeSim({mp:s.mp,bp:s.bp??s.mp+400,skin:s.skin,cols:8,rows:5,tmin:-30,maxE:s.bp===null?2.7:5});
+  T4.S.setTemp(T4.key==='small'?-30:20);
+  for(let i=0;i<400;i++) T4.S.step(.02,1);
+  T4.cond=false; ui4();
+}
+function ui4(){
+  const s=ST[T4.key], S=T4.S;
+  $('bHeat4').setAttribute('aria-pressed',S.dir>0); $('bCool4').setAttribute('aria-pressed',S.dir<0);
+  $('t4').innerHTML=`<span>Example</span><b>${s.name}</b><span>Temperature</span><b>${fmtT(S.temp())}</b><span>Melting point</span><b>${fmtT(s.mp)}</b><span>Boiling point</span><b>${s.bp===null?'breaks down first':fmtT(s.bp)}</b><span>State at 20 °C</span><b>${stateAt(s.mp,s.bp??1e9,20)}</b>`;
+  $('sizeG').hidden=T4.key!=='small';
+  $('notice4').innerHTML=s.notice.map(t=>`<li>${t}</li>`).join('');
+  const ph=S.phase(), fluid=ph!=='solid';
+  $('cond4').textContent=!T4.cond?'':T4.key==='small'?'No, in any state. The molecules have no overall electric charge, so there are no charged particles to carry the current.'
+    :T4.key==='poly'?'No. There are no ions or delocalised electrons that are free to move.'
+    :T4.key==='gc'?'No. The atoms have no charge and there are no delocalised electrons. (Graphite is the exception: it has delocalised electrons.)'
+    :fluid&&ph!=='gas'?'Yes. Now it has melted, the ions are free to move, so charge can flow.':ph==='gas'?'Test it as a liquid: molten sodium chloride conducts because its ions are free to move.':'Not as a solid: the ions are held in fixed positions and cannot move. Heat it until it melts, then test again.';
+  $('pill').textContent=`${s.name}: ${phaseLabel(S,s.force)}`; $('pill2').hidden=false; $('pill2').textContent=fmtT(S.temp());
+}
+function drawThermo(S,R,s){
+  const lo=-250, hi=2500, x=R.x+R.w/2-9, y0=R.y+R.h-30, y1=R.y+26, YT=T=>y0-(clamp(T,lo,hi)-lo)/(hi-lo)*(y0-y1);
+  ctx.fillStyle=rgba(TH.muted,.15); ctx.strokeStyle=TH.muted; ctx.lineWidth=1.5; ctx.beginPath(); ctx.roundRect?ctx.roundRect(x,y1-6,18,y0-y1+12,9):ctx.rect(x,y1-6,18,y0-y1+12); ctx.fill(); ctx.stroke();
+  const T=S.temp(); ctx.fillStyle='#d8502b'; ctx.beginPath(); ctx.roundRect?ctx.roundRect(x+4,YT(T),10,y0-YT(T)+4,5):ctx.rect(x+4,YT(T),10,y0-YT(T)+4); ctx.fill();
+  ctx.font='600 12px system-ui,sans-serif'; ctx.textBaseline='middle';
+  const mark=(t,lab,col,side,dy=0)=>{const yy=YT(t);ctx.strokeStyle=col;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x-6,yy);ctx.lineTo(x+24,yy);ctx.stroke();ctx.fillStyle=col;ctx.textAlign=side>0?'left':'right';ctx.fillText(lab,side>0?x+28:x-10,yy+dy);};
+  mark(20,'20 °C room',TH.muted,-1); const close=s.bp!==null&&YT(s.mp)-YT(s.bp)<15; mark(s.mp,`m.p. ${fmtT(s.mp)}`,TH.minus,1,close?8:0); if(s.bp!==null) mark(s.bp,`b.p. ${fmtT(s.bp)}`,TH.warn,1,close?-8:0);
+  ctx.fillStyle=TH.muted; ctx.textAlign='center'; ctx.fillText('2500 °C',x+9,y1-18); ctx.fillText('−250 °C',x+9,y0+18);
+}
+function drawPoly(S,R){
+  const u=Math.min(R.w/11,R.h/8), bw=11*u, bh=8*u, bx=R.x+(R.w-bw)/2, by=R.y+(R.h-bh)/2;
+  ctx.fillStyle=rgba(TH.muted,.06); ctx.fillRect(bx,by,bw,bh); ctx.strokeStyle=TH.muted; ctx.lineWidth=1.6; ctx.strokeRect(bx,by,bw,bh);
+  ctx.save(); ctx.beginPath(); ctx.rect(bx,by,bw,bh); ctx.clip();
+  const fm=clamp(S.E-1,0,1), molten=clamp(S.E-2,0,1), a=.04+.1*clamp(S.E,0,1)+.22*fm, t=S.t, nC=6, nB=30, sp=.42;
+  if(!T4.slide) T4.slide=Array.from({length:nC},(_,i)=>0);
+  const ch=[];
+  for(let c=0;c<nC;c++){ T4.slide[c]+=(fm>.02?(c%2?1:-1)*(.15+.35*molten)*fm*.016:0); const sh=Math.sin(T4.slide[c]*1.2)*1.6*fm, pts=[];
+    for(let k=-4;k<nB+4;k++){ const x=k*sp-.6+sh, y=6.4-c*.95-(1-fm)*0+a*Math.sin(k*.9+t*(1.2+fm*2.2)+c*1.7)+fm*.5*Math.sin(k*.25+t*.8+c); pts.push([bx+x*u,by+bh-(y-0.6+ (fm* -0.6))*u]); } ch.push(pts); }
+  if(T4.forces){ ctx.strokeStyle=TH.weak; ctx.lineWidth=2; ctx.setLineDash([4,4]); ctx.globalAlpha=.95-.6*fm;
+    for(let c=0;c<nC-1;c++) for(let k=1;k<ch[c].length;k+=2){ if(fm>.05&&(k+Math.floor(t*3)+c)%3===0) continue; const p=ch[c][k], q=ch[c+1][k]; ctx.beginPath(); ctx.moveTo(p[0],p[1]+.2*u); ctx.lineTo(q[0],q[1]-.2*u); ctx.stroke(); }
+    ctx.setLineDash([]); ctx.globalAlpha=1; }
+  for(const pts of ch){ ctx.strokeStyle=STICK; ctx.lineWidth=Math.max(3,.13*u); ctx.lineJoin='round'; ctx.beginPath(); pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1])); ctx.stroke();
+    const r=.19*u; for(const p of pts) ctx.drawImage(PS.dark,p[0]-r,p[1]-r,2*r,2*r); }
+  ctx.restore();
+}
+function draw4(){
+  const s=ST[T4.key], narrow=cw<620;
+  const R1=narrow?{x:8,y:44,w:cw-110,h:ch-56}:{x:14,y:46,w:cw*.7,h:ch-60}, R2=narrow?{x:cw-104,y:44,w:100,h:ch-56}:{x:cw*.72,y:46,w:cw*.26,h:ch-60};
+  if(T4.key==='poly') drawPoly(T4.S,R1); else drawSim(T4.S,R1,T4.forces);
+  drawThermo(T4.S,R2,s);
+}
+function cap4(){
+  const S=T4.S, ph=S.phase(), d=S.dir, k=T4.key, s=ST[k];
+  if(k==='small'){
+    if(ph==='solid') return 'Ice is made of small water molecules. Inside each molecule, the atoms are joined by strong covalent bonds. Between the molecules there are only weak intermolecular forces (dashed). Heat it and watch which forces are affected.';
+    if(ph==='melt') return 'Melting at 0 °C: the weak intermolecular forces between the molecules are overcome, so the molecules can move past each other. The covalent bonds inside each molecule are not affected: every molecule is still H₂O.';
+    if(ph==='liquid') return 'Liquid water: the molecules move past each other. Intermolecular forces still act between them, but the molecules are no longer held in fixed positions. Water is a liquid at room temperature because its melting point is below 20 °C and its boiling point is above it.';
+    if(ph==='boil') return 'Boiling at 100 °C: the intermolecular forces between the molecules are broken completely, so the molecules separate. The covalent bonds are still not broken: steam is made of whole H₂O molecules.';
+    return 'Steam: separate water molecules, far apart. Only weak intermolecular forces had to be overcome and then broken, which needs little energy. That is why substances made of small molecules have low melting and boiling points.';
+  }
+  if(k==='poly'){
+    if(ph==='solid') return 'Poly(ethene) has very large molecules: long chains of atoms joined by strong covalent bonds. Intermolecular forces (dashed) act all along the chains. Because the chains are so long, these forces add up to be relatively strong, so polymers are solids at room temperature.';
+    return 'When poly(ethene) is heated to about 120 °C, the intermolecular forces between the chains are overcome and the chains slide past each other: it melts. The covalent bonds along each chain are not broken. Heated much more strongly, a polymer breaks down instead of boiling.';
+  }
+  if(k==='gc'){
+    if(ph==='solid') return `Silicon dioxide has a giant covalent structure: all the atoms are linked to other atoms by strong covalent bonds. There are no separate molecules and no weak forces to overcome. It is still solid at ${fmtT(S.temp())}. Keep heating.`;
+    if(ph==='melt') return 'Melting at 1710 °C: to melt a giant covalent structure, the strong covalent bonds themselves must be overcome. This needs a very large amount of energy, so the melting point is very high.';
+    if(ph==='liquid') return 'Molten silicon dioxide: many covalent bonds have been overcome, so the atoms can move. Compare the thermometer with water: far more energy was needed.';
+    if(ph==='boil') return 'Boiling at 2230 °C: the remaining covalent bonds are broken completely and the atoms separate.';
+    return 'All the covalent bonds have been broken. Substances with giant covalent structures are solids with very high melting points, because strong covalent bonds must be overcome to melt or boil them.';
+  }
+  if(ph==='solid') return 'Sodium chloride is a giant ionic lattice. Strong electrostatic forces of attraction act in all directions between the oppositely charged ions, holding them in fixed positions. The solid does not conduct electricity because the ions cannot move.';
+  if(ph==='melt') return 'Melting at 801 °C: large amounts of energy are needed to overcome the many strong electrostatic forces, so the ions can move past each other. This is why ionic compounds have high melting points.';
+  if(ph==='liquid') return 'Molten sodium chloride: the ions are free to move, so charge can flow and the liquid conducts electricity. The ions still attract each other strongly.';
+  if(ph==='boil') return 'Boiling at 1413 °C: the electrostatic forces between the ions are broken completely and the ions separate. Ionic compounds have high boiling points as well as high melting points.';
+  return 'The forces between the ions have been broken. Ionic compounds have high melting points and high boiling points because of the large amounts of energy needed to break the many strong bonds.';
+}
+$('stSeg').onclick=e=>{const b=e.target.closest('button');if(!b)return;T4.key=b.dataset.v;T4.slide=null;setPressed($('stSeg'),T4.key);build4();};
+$('bHeat4').onclick=()=>{T4.S.dir=T4.S.dir>0?0:1;ui4();};
+$('bCool4').onclick=()=>{T4.S.dir=T4.S.dir<0?0:-1;ui4();};
+$('bStop4').onclick=()=>{T4.S.dir=0;ui4();};
+$('bReset4').onclick=()=>{T4.slide=null;build4();};
+$('cForce4').onchange=e=>{T4.forces=e.target.checked;};
+$('bCond4').onclick=()=>{T4.cond=true;ui4();};
+
+/* ================= TAB 5: compare ================= */
+let quizTable=false;
+$('cHide').onclick=()=>{quizTable=!quizTable;$('cHide').textContent=quizTable?'Show all answers':'Hide answers (quiz mode)';document.querySelectorAll('table.cmp td').forEach(td=>td.classList.toggle('hid',quizTable));};
+document.querySelectorAll('table.cmp td').forEach(td=>td.onclick=()=>td.classList.remove('hid'));
+
+/* ================= tabs, pointer, loop ================= */
+let mode='states';
+const stage=document.querySelector('.stage');
+function uiMode(){({states:ui1,predict:ui2,symbols:ui3,struct:ui4,cmp:()=>{}})[mode]();}
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+  mode=t.dataset.mode;
+  document.querySelectorAll('.tab').forEach(x=>x.setAttribute('aria-selected',x===t));
+  document.querySelectorAll('.panel').forEach(p=>p.hidden=p.dataset.for!==mode);
+  stage.classList.toggle('cmpmode',mode==='cmp');
+  uiMode(); lastCap='';
+});
+cv.addEventListener('pointerdown',e=>{const r=cv.getBoundingClientRect();if(mode==='symbols')click3(e.clientX-r.left,e.clientY-r.top);});
+cv.addEventListener('pointermove',e=>{const r=cv.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;cv.style.cursor=mode==='symbols'&&Q3.rects.some(q=>x>=q.x&&x<=q.x+q.w&&y>=q.y&&y<=q.y+q.h)?'pointer':'default';});
+let lastCap='', uiT=0, last=performance.now();
+function frame(now){
+  const dt=Math.min(.04,(now-last)/1000); last=now;
+  ctx.fillStyle=TH.stage; ctx.fillRect(0,0,cw,ch);
+  if(mode==='states'){T1.S.step(dt,T1.speed);draw1();}
+  else if(mode==='predict') draw2();
+  else if(mode==='symbols') draw3();
+  else if(mode==='struct'){T4.S.step(dt,1);draw4();}
+  uiT+=dt;
+  if(uiT>.15){uiT=0;
+    const c=mode==='states'?cap1():mode==='predict'?cap2():mode==='symbols'?cap3():mode==='struct'?cap4():'';
+    if(c!==lastCap){$('caption').textContent=c;lastCap=c;}
+    if(mode==='states') ui1(); if(mode==='struct') ui4();
+  }
+  if(toastT>0){toastT-=dt;if(toastT<=0)$('toast').style.opacity=0;}
+  requestAnimationFrame(frame);
+}
+build1(); build4(); newQ2(); newQ3(0); ui1();
+window.__prop={T1,T4,Q2,Q3};
+requestAnimationFrame(frame);
+})();
+
+</script>
+<style>
+.mcq{border-color:var(--good)}
+.mcq-q{margin:0;font-weight:600;font-size:.95rem}
+.mcq-opts{display:flex;flex-direction:column;gap:6px}
+.mcq-opts button{display:flex;gap:9px;align-items:flex-start;text-align:left;font-weight:500;line-height:1.35;padding:7px 10px;opacity:1}
+.mcq-opts button:disabled{cursor:default;opacity:.75}
+.mcq-opts button.right,.mcq-opts button.wrong{opacity:1;color:#fff}
+.mcq-opts button.right{background:var(--good);border-color:var(--good)}
+.mcq-opts button.wrong{background:var(--warn);border-color:var(--warn)}
+.mcq-l{flex:none;font-weight:800;width:1.2em}
+.mcq-fb{margin:0;font-size:.9rem;padding:8px 10px;border-radius:7px;border:1px solid var(--line);background:var(--chip)}
+.mcq-fb.ok b{color:var(--good)} .mcq-fb.no b{color:var(--warn)}
+.mcq-score{margin:0;font-size:1rem}
+.fq{padding:22px 26px 26px;display:flex;flex-direction:column;gap:14px;min-height:560px}
+.fq-head{display:flex;justify-content:space-between;font-weight:700;color:var(--muted);font-size:.9rem;letter-spacing:.04em;text-transform:uppercase}
+.fq-bar{height:8px;border-radius:4px;background:var(--chip);border:1px solid var(--line);overflow:hidden}
+.fq-bar span{display:block;height:100%;background:var(--good);transition:width .3s}
+.fq-q{margin:6px 0 0;font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;font-size:clamp(1.25rem,2.2vw,1.6rem);font-weight:600;line-height:1.3}
+.fq-opts button{font-size:1.08rem;padding:12px 14px}
+.fq .mcq-fb{font-size:1.02rem}
+.fq-big{margin:20px 0 0;font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;font-size:clamp(1.6rem,3vw,2.2rem)}
+.fq-msg{margin:0;font-size:1.05rem;color:var(--muted)}
+.fq-h{margin:8px 0 0;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.fq-review{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:10px}
+.fq-review p{margin:0}
+
+</style>
+<script>
+window.MCQ={n:10,tabs:{
+states:[
+{q:"What happens to the forces between particles when a solid melts?",o:["They are overcome, so the particles can move past each other","They are broken completely, so the particles separate","They get stronger","Nothing: the forces do not change"],a:0,e:"On melting, the forces holding the particles in fixed positions are overcome. The particles stay close together."},
+{q:"What happens to the forces between particles when a liquid boils?",o:["They are broken completely, so the particles separate","They are overcome just enough for particles to slide past each other","They become stronger","The particles themselves break apart"],a:0,e:"On boiling, the forces between the particles are broken and the particles move far apart."},
+{q:"While a pure substance is melting, its temperature:",o:["Stays the same","Rises steadily","Falls","Rises then falls"],a:0,e:"The energy transferred is used to overcome the forces between particles, not to raise the temperature."},
+{q:"Substance X has a much higher boiling point than substance Y. What does this tell you?",o:["The forces between the particles in X are stronger","The particles in X are bigger","X has more particles","The particles in X move faster"],a:0,e:"The stronger the forces between the particles, the more energy is needed to change state."},
+{q:"Which change of state takes place at the boiling point as well as boiling?",o:["Condensing","Freezing","Melting","Dissolving"],a:0,e:"Boiling and condensing take place at the boiling point; melting and freezing at the melting point."},
+{q:"(HT) Which is a limitation of the simple particle model?",o:["It shows no forces between the particles","It shows particles moving in gases","It shows particles close together in solids","It shows three states"],a:0,e:"In the simple model there are no forces, all particles are spheres and the spheres are solid."}
+],
+predict:[
+{q:"A substance melts at −7 °C and boils at 59 °C. What is its state at 20 °C?",o:["Liquid","Solid","Gas","Aqueous"],a:0,e:"20 °C is between the melting point and the boiling point."},
+{q:"A substance melts at −101 °C and boils at −34 °C. What is its state at 20 °C?",o:["Gas","Liquid","Solid","It cannot be predicted"],a:0,e:"20 °C is above the boiling point of −34 °C."},
+{q:"A substance melts at 98 °C and boils at 883 °C. What is its state at 50 °C?",o:["Solid","Liquid","Gas","Aqueous"],a:0,e:"50 °C is below the melting point of 98 °C."},
+{q:"A substance melts at −219 °C and boils at −183 °C. What is its state at −200 °C?",o:["Liquid","Solid","Gas","It cannot be predicted"],a:0,e:"−200 °C is warmer than −219 °C but colder than −183 °C, so it is a liquid."},
+{q:"Which substance is a liquid at 20 °C?",o:["Melts at −39 °C, boils at 357 °C","Melts at 30 °C, boils at 2204 °C","Melts at −182 °C, boils at −162 °C","Melts at 115 °C, boils at 445 °C"],a:0,e:"20 °C must be above the melting point and below the boiling point."}
+],
+symbols:[
+{q:"What does the state symbol (aq) mean?",o:["Dissolved in water","A liquid","A gas","A precipitate"],a:0,e:"(aq) stands for aqueous: an aqueous solution is a substance dissolved in water."},
+{q:"What is the correct state symbol for water at room temperature?",o:["(l)","(aq)","(s)","(g)"],a:0,e:"Pure water is a liquid, (l). (aq) is only for substances dissolved in water."},
+{q:"What is the state symbol for molten sodium chloride?",o:["(l)","(aq)","(s)","(g)"],a:0,e:"Molten means melted, so it is a liquid. It is not dissolved in water."},
+{q:"Mg + 2HCl → MgCl₂ + H₂. What are the state symbols for dilute hydrochloric acid and hydrogen?",o:["HCl(aq) and H₂(g)","HCl(l) and H₂(g)","HCl(aq) and H₂(l)","HCl(g) and H₂(aq)"],a:0,e:"Dilute acids are solutions in water, (aq). Hydrogen is a gas."},
+{q:"A precipitate forms when two solutions are mixed. What is the state symbol for the precipitate?",o:["(s)","(aq)","(l)","(g)"],a:0,e:"A precipitate is an insoluble solid."}
+],
+struct:[
+{q:"When water boils, what is broken?",o:["The intermolecular forces between the molecules","The covalent bonds inside the molecules","The ionic bonds","The water molecules themselves"],a:0,e:"Only the weak intermolecular forces are broken. Steam is still made of H₂O molecules."},
+{q:"Why do substances made of small molecules have low melting and boiling points?",o:["The intermolecular forces are weak, so little energy is needed to overcome them","The covalent bonds are weak","The molecules have no charge","The atoms are small"],a:0,e:"It is the weak intermolecular forces that are overcome, not the strong covalent bonds."},
+{q:"Propane has a higher boiling point than methane. Why?",o:["Propane molecules are larger, so the intermolecular forces are stronger","Propane has stronger covalent bonds","Propane molecules are charged","Methane is a giant structure"],a:0,e:"Intermolecular forces increase with the size of the molecules."},
+{q:"Why are polymers solids at room temperature?",o:["The molecules are very large, so the intermolecular forces between them are relatively strong","They are giant ionic lattices","Their covalent bonds break easily","They have delocalised electrons"],a:0,e:"Long polymer chains have many intermolecular forces acting between them."},
+{q:"What must be overcome to melt silicon dioxide?",o:["Strong covalent bonds","Weak intermolecular forces","Electrostatic forces between ions","Metallic bonds"],a:0,e:"In a giant covalent structure all the atoms are joined by strong covalent bonds."},
+{q:"Why does solid sodium chloride not conduct electricity, but molten sodium chloride does?",o:["In the liquid the ions are free to move","In the liquid there are delocalised electrons","The solid has no ions","Melting makes new ions"],a:0,e:"In the solid the ions are held in fixed positions. When melted or dissolved they can move, so charge can flow."}
+],
+cmp:[
+{q:"A substance melts at 1650 °C and does not conduct electricity as a solid or a liquid. What is its structure?",o:["Giant covalent","Giant ionic","Small molecules","Metallic"],a:0,e:"A very high melting point with no conduction in any state suggests a giant covalent structure."},
+{q:"A substance melts at 770 °C. It conducts electricity when molten but not when solid. What is its structure?",o:["Giant ionic","Giant covalent","Small molecules","Metallic"],a:0,e:"Ionic compounds conduct only when melted or dissolved, when the ions are free to move."},
+{q:"A substance boils at −42 °C and does not conduct electricity. What is its structure?",o:["Small molecules","Giant ionic","Giant covalent","Metallic"],a:0,e:"A low boiling point means only weak intermolecular forces need to be broken."},
+{q:"A substance melts at 1085 °C and conducts electricity as a solid. What is its structure?",o:["Metallic","Giant ionic","Giant covalent","Small molecules"],a:0,e:"Metals conduct as solids because their delocalised electrons can move."},
+{q:"Which structure has the weakest forces to overcome on melting?",o:["Small molecules","Giant ionic","Giant covalent","Metallic"],a:0,e:"Small molecules have only weak intermolecular forces between them."}
+]},
+final:[
+{q:"Which statement about melting is correct?",o:["Forces between particles are overcome so particles can move past each other","Forces between particles are broken completely","The particles get bigger","The particles stop moving"],a:0,e:"Melting: forces overcome. Boiling: forces broken."},
+{q:"Which statement about boiling is correct?",o:["Forces between the particles are broken and the particles separate","The particles break into atoms","Forces between particles get stronger","The particles stay touching but move faster"],a:0,e:"On boiling the forces between particles are broken, so the particles move far apart."},
+{q:"Melting and freezing both take place at the:",o:["Melting point","Boiling point","Room temperature","Condensing point"],a:0,e:"Melting and freezing are the reverse of each other and happen at the same temperature."},
+{q:"A substance melts at −114 °C and boils at 78 °C. What is its state at 100 °C?",o:["Gas","Liquid","Solid","Aqueous"],a:0,e:"100 °C is above the boiling point."},
+{q:"Why is a single atom of gold not 'solid'?",o:["Atoms themselves do not have the bulk properties of the material","Gold atoms are liquids","Gold atoms are too heavy","A single atom is a gas"],a:0,e:"Properties such as state depend on how many particles are arranged and held together."},
+{q:"What does (l) mean in a chemical equation?",o:["Liquid","Dissolved in water","Large","Lattice"],a:0,e:"(s) solid, (l) liquid, (g) gas, (aq) aqueous."},
+{q:"Sodium chloride solution has the state symbol:",o:["(aq)","(l)","(s)","(g)"],a:0,e:"A solution in water is aqueous."},
+{q:"Why do ionic compounds have high melting points?",o:["Large amounts of energy are needed to overcome the many strong electrostatic forces between the ions","They have strong intermolecular forces","They have delocalised electrons","Their molecules are large"],a:0,e:"Strong electrostatic forces act in all directions in a giant ionic lattice."},
+{q:"Why do substances made of small molecules not conduct electricity?",o:["The molecules have no overall electric charge","The covalent bonds are too strong","The molecules cannot move","They contain ions that are fixed"],a:0,e:"There are no charged particles free to carry the current."},
+{q:"When methane boils, the covalent bonds in the molecules:",o:["Are not broken","Are all broken","Become ionic bonds","Become weaker"],a:0,e:"Only the intermolecular forces between the molecules are broken."},
+{q:"Which substance has a giant covalent structure?",o:["Silicon dioxide","Sodium chloride","Water","Poly(ethene)"],a:0,e:"Diamond, graphite and silicon dioxide are giant covalent structures."},
+{q:"Which is the best explanation of why diamond has a very high melting point?",o:["Many strong covalent bonds must be overcome, which needs a lot of energy","It has strong intermolecular forces","It has strong ionic bonds","Its molecules are very large"],a:0,e:"Name the structure, the bonds overcome, and link to energy."},
+{q:"In a polymer, the atoms within each chain are joined by:",o:["Strong covalent bonds","Intermolecular forces","Ionic bonds","Metallic bonds"],a:0,e:"Covalent bonds hold each chain together; intermolecular forces act between chains."},
+{q:"(HT) In the simple particle model, particles are shown as:",o:["Solid spheres with no forces between them","Molecules with bonds","Ions with charges","Empty space"],a:0,e:"These are limitations: real particles are not solid spheres, and forces do act between them."}
+]};
+
+</script>
+<script>
+(() => {
+const B = window.MCQ; if (!B) return;
+const q$ = s => document.querySelector(s);
+const L = 'ABCD';
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function prep(q){const idx=shuffle(q.o.map((_,i)=>i));return {q:q.q,o:idx.map(i=>q.o[i]),a:idx.indexOf(q.a),e:q.e,src:q};}
+function optsHTML(q,ans){return q.o.map((o,k)=>{let c='';if(ans!==null){if(k===q.a)c='right';else if(k===ans)c='wrong';}return `<button data-k="${k}" class="${c}" ${ans!==null?'disabled':''}><span class="mcq-l">${L[k]}</span><span>${o}</span></button>`;}).join('');}
+function fbHTML(q,ans){return ans===null?'':`<p class="mcq-fb ${ans===q.a?'ok':'no'}"><b>${ans===q.a?'Correct.':'Not quite.'}</b> ${q.e}</p>`;}
+
+/* ---------- per-tab check questions ---------- */
+document.querySelectorAll('.panel[data-for]').forEach(p => {
+  const bank = B.tabs[p.dataset.for]; if (!bank) return;
+  const g = document.createElement('div'); g.className = 'group mcq';
+  const anchor = [...p.querySelectorAll('.group')].find(x => /^key$/i.test(x.querySelector('h2')?.textContent||''));
+  anchor ? p.insertBefore(g, anchor) : p.appendChild(g);
+  let qs, i, score, ans;
+  const start = () => { qs = shuffle(bank).map(prep); i = 0; score = 0; ans = null; render(); };
+  function render(){
+    if (i >= qs.length) {
+      g.innerHTML = `<h2>Check your understanding</h2><p class="mcq-score">You scored <b>${score} out of ${qs.length}</b>.</p><div class="btns"><button class="primary mcq-again">Try again</button></div>`;
+      g.querySelector('.mcq-again').onclick = start; return;
+    }
+    const q = qs[i];
+    g.innerHTML = `<h2>Check your understanding · ${i+1} of ${qs.length}</h2><p class="mcq-q">${q.q}</p><div class="mcq-opts">${optsHTML(q,ans)}</div>${fbHTML(q,ans)}${ans===null?'':`<div class="btns"><button class="primary mcq-next">${i+1<qs.length?'Next question':'See my score'}</button></div>`}`;
+    g.querySelectorAll('.mcq-opts button').forEach(b => b.onclick = () => { ans = +b.dataset.k; if (ans === q.a) score++; render(); });
+    const n = g.querySelector('.mcq-next'); if (n) n.onclick = () => { i++; ans = null; render(); };
+  }
+  start();
+});
+
+/* ---------- end of topic quiz ---------- */
+const nav = q$('.tabs'), stage = q$('.stage'), aside = q$('aside');
+const tab = document.createElement('button');
+tab.className = 'tab'; tab.setAttribute('role','tab'); tab.setAttribute('aria-selected','false');
+tab.textContent = `${nav.querySelectorAll('.tab').length + 1} · End of topic quiz`;
+nav.appendChild(tab);
+const panel = document.createElement('div'); panel.className = 'panel'; panel.hidden = true;
+panel.innerHTML = `<div class="group"><h2>End of topic quiz</h2><p class="fb">${B.n||10} multiple choice questions covering the whole topic. Each new quiz picks a different set of questions.</p><div class="tally" id="fqTally"></div><div class="btns"><button id="fqNew">Start a new quiz</button></div></div>`;
+aside.appendChild(panel);
+const box = document.createElement('div'); box.className = 'fq'; box.hidden = true; stage.appendChild(box);
+const hideEls = [...stage.children].filter(x => x !== box);
+let Q, qi, sc, an, wrong;
+function newQuiz(){
+  const pool = B.final.slice(), extra = Object.values(B.tabs).flat();
+  const n = B.n || 10, nf = Math.min(pool.length, Math.ceil(n*.6));
+  const pick = shuffle(pool).slice(0, nf).concat(shuffle(extra).slice(0, n - nf));
+  Q = shuffle(pick).map(prep); qi = 0; sc = 0; an = null; wrong = []; renderQ();
+}
+function tally(){ q$('#fqTally').innerHTML = `<span>Question</span><b>${Math.min(qi+1,Q.length)} of ${Q.length}</b><span>Score so far</span><b>${sc}</b>`; }
+function renderQ(){
+  tally();
+  if (qi >= Q.length) {
+    const pc = Math.round(sc/Q.length*100), msg = pc>=80?'Excellent work.':pc>=60?'Good work: review the questions below.':'Keep going: look back at the tabs for the questions you missed.';
+    box.innerHTML = `<div class="fq-head"><span>End of topic quiz</span><span>Finished</span></div><div class="fq-bar"><span style="width:100%"></span></div>
+      <p class="fq-big">You scored <b>${sc} out of ${Q.length}</b> (${pc}%)</p><p class="fq-msg">${msg}</p>
+      ${wrong.length?`<h3 class="fq-h">Questions to review</h3><ol class="fq-review">${wrong.map(q=>`<li><p>${q.q}</p><p><b>Answer:</b> ${q.o[q.a]}. ${q.e}</p></li>`).join('')}</ol>`:''}
+      <div class="btns"><button class="primary fq-again">Try a new quiz</button></div>`;
+    box.querySelector('.fq-again').onclick = newQuiz; return;
+  }
+  const q = Q[qi];
+  box.innerHTML = `<div class="fq-head"><span>Question ${qi+1} of ${Q.length}</span><span>Score: ${sc}</span></div><div class="fq-bar"><span style="width:${qi/Q.length*100}%"></span></div>
+    <p class="fq-q">${q.q}</p><div class="mcq-opts fq-opts">${optsHTML(q,an)}</div>${fbHTML(q,an)}
+    ${an===null?'':`<div class="btns"><button class="primary fq-next">${qi+1<Q.length?'Next question ▶':'See my score'}</button></div>`}`;
+  box.querySelectorAll('.mcq-opts button').forEach(b => b.onclick = () => { an = +b.dataset.k; if (an === q.a) sc++; else wrong.push(q); renderQ(); });
+  const n = box.querySelector('.fq-next'); if (n) n.onclick = () => { qi++; an = null; renderQ(); };
+}
+function showQuiz(on){
+  box.hidden = !on; hideEls.forEach(x => x.hidden = on); panel.hidden = !on;
+  if (on) {
+    nav.querySelectorAll('.tab').forEach(x => x.setAttribute('aria-selected', x === tab));
+    aside.querySelectorAll('.panel').forEach(p => { if (p !== panel) p.hidden = true; });
+    if (!Q) newQuiz();
+  }
+}
+tab.onclick = () => showQuiz(true);
+nav.querySelectorAll('.tab').forEach(t => { if (t !== tab) t.addEventListener('click', () => showQuiz(false)); });
+q$('#fqNew').onclick = newQuiz;
+})();
+
+</script>
+</body>
+</html>
