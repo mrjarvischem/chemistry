@@ -169,6 +169,12 @@
   .ext.pdf{ background:#c0392b; } .ext.xlsx{ background:#1d7044; }
   .empty{ border:1px dashed var(--line); border-radius:var(--radius); padding:28px; text-align:center; color:var(--muted); }
 
+  /* knowledge organisers: exam paper labels */
+  .paper{ flex:none; font-size:.7rem; font-weight:700; color:#fff; padding:2px 8px; border-radius:20px; white-space:nowrap; }
+  .paper.p1{ background:#1f6fd1; } .paper.p2{ background:#c2410c; } .paper.pboth{ background:#2b8a3e; }
+  .topic summary .paper{ margin-left:auto; }
+  .paper-key{ display:flex; flex-wrap:wrap; align-items:center; gap:8px; font-size:.88rem; color:var(--ink-soft); margin:0 0 18px; }
+
   footer{ border-top:1px solid var(--line); padding:26px 20px; color:var(--muted); font-size:.88rem; }
   footer .wrap{ display:flex; flex-wrap:wrap; justify-content:space-between; gap:8px; }
 
@@ -224,6 +230,8 @@
      files named "AQA 3.1.1 Atomic structure - Sheet 1.pdf" and so on.
      To add one more sheet, just increase the number. For a single PDF
      with a different name use pdf("Exact file name without .pdf").
+   • Knowledge organisers live in the ko folder. ko("C5") adds both PDFs
+     for C5 under a topic (see "kos" in the A-level section).
    • Revision records live in the revisionrecord folder. rr("File name")
      points at "revisionrecord/File name" – type the name exactly as it
      appears in GitHub, including the .pdf or .xlsx on the end.
@@ -236,6 +244,14 @@ const sheets = (base, n) => {
   const label = base.replace(/^AQA\s+[\d.]+(\s+and\s+[\d.]+)?\s+/, "");   // "AQA 3.1.8 Lattice enthalpies" → "Lattice enthalpies"
   return Array.from({ length: n }, (_, i) => pdf(`${base} - Sheet ${i + 1}`, `${label} – Sheet ${i + 1}`));
 };
+
+/* Knowledge organisers live in the ko folder.
+   ko("C1") adds the Q&A sheet and the self-test sheet for C1. */
+const KO_FOLDER = "ko/";
+const ko = code => [
+  { title: `${code} – Q&A sheet`, url: `${KO_FOLDER}${code}-knowledge-organiser.pdf` },
+  { title: `${code} – Self-test sheet`, url: `${KO_FOLDER}${code}-self-test.pdf` },
+];
 
 /* The screenshot cut these two names off – check they match the files exactly */
 const EQUILIBRIUM = "AQA 3.1.4 and 3.1.10 Equilibrium constants Kc and Kp";
@@ -513,6 +529,71 @@ const SITE = {
         { title: "¹H NMR scanner", url: "organic-1/1hnmr-scanner.html" },
       ],
     },
+    koBuilder: KO_FOLDER + "knowledge-organiser-builder.html",
+    kos: {
+      "3.1.1 Atomic structure": ko("C1"),
+      "3.1.2 Amount of substance": ko("C2"),
+      "3.1.3 Bonding": ko("C3"),
+      "3.1.4 Energetics": ko("C4"),
+      "3.1.5 Kinetics": ko("C5"),
+      "3.1.6 Chemical equilibria and Kc": ko("C6"),
+      "3.1.7 Oxidation, reduction and redox equations": ko("C7"),
+      "3.1.8 Thermodynamics": ko("C17"),
+      "3.1.9 Rate equations": ko("C18"),
+      "3.1.10 Equilibrium constant Kp": ko("C19"),
+      "3.1.11 Electrode potentials and cells": ko("C20"),
+      "3.1.12 Acids and bases": ko("C21"),
+      "3.2.1 Periodicity": ko("C8"),
+      "3.2.2 Group 2, the alkaline earth metals": ko("C9"),
+      "3.2.3 Group 7, the halogens": ko("C10"),
+      "3.2.4 Properties of Period 3 elements and their oxides": ko("C22"),
+      "3.2.5 Transition metals": ko("C23"),
+      "3.2.6 Reactions of ions in aqueous solution": ko("C24"),
+      "3.3.1 Introduction to organic chemistry": ko("C11"),
+      "3.3.2 Alkanes": ko("C12"),
+      "3.3.3 Halogenoalkanes": ko("C13"),
+      "3.3.4 Alkenes": ko("C14"),
+      "3.3.5 Alcohols": ko("C15"),
+      "3.3.6 Organic analysis": ko("C16"),
+      "3.3.7 Optical isomerism": ko("C25"),
+      "3.3.8 Aldehydes and ketones": ko("C26"),
+      "3.3.9 Carboxylic acids and derivatives": ko("C26"),
+      "3.3.10 Aromatic chemistry": ko("C27"),
+      "3.3.11 Amines": ko("C28"),
+      "3.3.12 Polymers": ko("C29"),
+      "3.3.13 Amino acids, proteins and DNA": ko("C30"),
+      "3.3.14 Organic synthesis": ko("C31"),
+      "3.3.15 NMR spectroscopy": ko("C32"),
+      "3.3.16 Chromatography": ko("C33"),
+      "RP1 Volumetric solution and titration": ko("RP1"),
+      "RP2 Measuring an enthalpy change": ko("RP2"),
+      "RP3 Rate and temperature": ko("RP3"),
+      "RP4 Tests for ions": ko("RP4"),
+      "RP5 Distillation of a product": ko("RP5"),
+      "RP6 Tests for organic functional groups": ko("RP6"),
+      "RP7 Measuring rate of reaction": ko("RP7"),
+      "RP8 Electrochemical cells": ko("RP8"),
+      "RP9 pH curves": ko("RP9"),
+      "RP10 Preparing pure organic compounds": ko("RP10"),
+      "RP11 Tests for transition metal ions": ko("RP11"),
+      "RP12 Thin-layer chromatography": ko("RP12"),
+    },
+    /* Extra headings shown only on the knowledge organiser page.
+       paper: "1", "2" or "both" sets the coloured exam paper label. */
+    koExtraTopics: [
+      { name: "RP1 Volumetric solution and titration", group: "Required practicals", paper: "both" },
+      { name: "RP2 Measuring an enthalpy change", group: "Required practicals", paper: "both" },
+      { name: "RP3 Rate and temperature", group: "Required practicals", paper: "2" },
+      { name: "RP4 Tests for ions", group: "Required practicals", paper: "1" },
+      { name: "RP5 Distillation of a product", group: "Required practicals", paper: "2" },
+      { name: "RP6 Tests for organic functional groups", group: "Required practicals", paper: "2" },
+      { name: "RP7 Measuring rate of reaction", group: "Required practicals", paper: "2" },
+      { name: "RP8 Electrochemical cells", group: "Required practicals", paper: "1" },
+      { name: "RP9 pH curves", group: "Required practicals", paper: "1" },
+      { name: "RP10 Preparing pure organic compounds", group: "Required practicals", paper: "2" },
+      { name: "RP11 Tests for transition metal ions", group: "Required practicals", paper: "1" },
+      { name: "RP12 Thin-layer chromatography", group: "Required practicals", paper: "2" },
+    ],
   },
 };
 /* ===================== END OF EDITABLE SECTION ===================== */
@@ -524,6 +605,7 @@ const ICONS = {
   quizzes: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.4 2.3c-.6.3-.9.9-.9 1.5V14M12 17h.01"/></svg>',
   activities: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M10 2h4M12 2v3"/></svg>',
   records: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8l1.5 1.5L12 7M8 14l1.5 1.5L12 13M14 8h2M14 14h2"/></svg>',
+  kos: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>',
   walkthroughs: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2V5z"/><path d="M19 19v2H6M8 7h7M8 11h5"/></svg>',
 };
 
@@ -533,6 +615,7 @@ const CATS = [
   { key: "quizzes",      title: "Multiple choice revision quizzes", blurb: "Quick-fire quizzes by topic. Open a topic to see the quizzes inside it.", type: "topics" },
   { key: "activities",   title: "25-minute revision activities", blurb: "Printable revision activities for each topic. Download the PDF, set a 25-minute timer and work through it, then record it on your revision tracker.", type: "topics" },
   { key: "walkthroughs", title: "Topic walkthroughs",            blurb: "Guided explanations that build each topic up from the basics.", type: "topics" },
+  { key: "kos",          title: "Knowledge organisers",           blurb: "Key facts, definitions and equations for every topic, in sets of 10. Learn from the Q&A sheet, then test yourself on the self-test sheet – or build your own from just the facts you don't know yet.", type: "topics", paperLabels: true },
   { key: "records",      title: "Revision records",               blurb: "Track what you've revised and when. Each topic shows roughly how many marks it's worth, so you can spend your time where it counts. Print the PDF or fill in the Excel version on screen.", type: "records" },
 ];
 const SLUG = { gcse: "gcse", alevel: "a-level" };
@@ -540,6 +623,22 @@ const SLUG = { gcse: "gcse", alevel: "a-level" };
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
 const topicName = t => typeof t === "string" ? t : t.name;
 const topicGroup = t => typeof t === "string" ? "" : (t.group || "");
+
+/* AQA 7405 exam papers. Paper 1: 3.1.1–3.1.4, 3.1.6–3.1.8, 3.1.10–3.1.12 and 3.2.
+   Paper 2: 3.1.2–3.1.6, 3.1.9 and 3.3. Everything can also come up on Paper 3. */
+const PAPER_LABEL = { "1": "Paper 1", "2": "Paper 2", "both": "Papers 1 & 2" };
+function paperOf(t) {
+  if (t && t.paper) return t.paper;
+  const m = /^3\.(\d)\.(\d+)/.exec(topicName(t));
+  if (!m) return "";
+  const [b, c] = [+m[1], +m[2]];
+  if (b === 2) return "1";
+  if (b === 3) return "2";
+  const p1 = (c >= 1 && c <= 4) || (c >= 6 && c <= 8) || (c >= 10 && c <= 12);
+  const p2 = (c >= 2 && c <= 6) || c === 9;
+  return p1 && p2 ? "both" : p1 ? "1" : "2";
+}
+const paperPill = p => p ? `<span class="paper p${p}">${PAPER_LABEL[p]}</span>` : "";
 
 function liveCount(L, key) {
   const v = L[key];
@@ -562,7 +661,7 @@ function renderCards(items, catTitle) {
   }).join("")}</div>`;
 }
 
-function renderTopics(topics, links) {
+function renderTopics(topics, links, paperLabels) {
   const known = new Set(topics.map(topicName));
   const extra = Object.keys(links).filter(k => !known.has(k)).map(k => ({ name: k, group: "Other" }));
   let html = "", currentGroup = null, open = false;
@@ -576,7 +675,7 @@ function renderTopics(topics, links) {
     }
     const items = (links[topicName(t)] || []).filter(i => i.url);
     html += items.length
-      ? `<details class="topic"><summary><span class="name">${esc(topicName(t))}</span><span class="count">${items.length}</span></summary>
+      ? `<details class="topic"><summary><span class="name">${esc(topicName(t))}</span>${paperLabels ? paperPill(paperOf(t)) : ""}<span class="count">${items.length}</span></summary>
            <ul>${items.map(i => /\.pdf(#|$)/i.test(i.url)
              ? `<li><a href="${esc(i.url)}" target="_blank" rel="noopener" data-pdf>${esc(i.title)}</a></li>`
              : `<li><a href="${esc(i.url)}">${esc(i.title)}</a></li>`).join("")}</ul></details>`
@@ -592,6 +691,16 @@ function renderTrackerCard(level) {
       <span class="title">Track your 25-minute sessions</span>
       <span class="desc">Download the revision record, then log the date each time you finish an activity.</span>
     </a></div>`;
+}
+
+function renderKoIntro(L) {
+  if (!L.koBuilder) return "";
+  return `<div class="grid tracker-card"><a class="card" href="${esc(L.koBuilder)}">
+      <span class="code">Build your own</span>
+      <span class="title">Knowledge organiser builder</span>
+      <span class="desc">Browse every fact on screen, tick the ones you don't know yet and print your own knowledge organiser as a PDF.</span>
+    </a></div>
+    <div class="paper-key"><span>Exam paper:</span>${paperPill("1")}${paperPill("2")}${paperPill("both")}<span>Everything can also come up on Paper 3.</span></div>`;
 }
 
 function renderRecords(items) {
@@ -610,6 +719,7 @@ function renderRecords(items) {
 
 function catCount(L, c) {
   if (c.type === "records") return (L.records || []).length;
+  if (c.key === "kos") return new Set(Object.values(L.kos || {}).map(v => v[0] && v[0].url)).size;
   return liveCount(L, c.key);
 }
 
@@ -640,7 +750,8 @@ function renderCategory(level, L, c) {
   else if (c.type === "records") body = renderRecords(L.records);
   else body = `<div class="tools"><button class="link-btn" data-toggle-all>Open all topics</button></div>
                ${c.key === "activities" ? renderTrackerCard(level) : ""}
-               ${renderTopics(L.topics, L[c.key] || {})}`;
+               ${c.key === "kos" ? renderKoIntro(L) : ""}
+               ${renderTopics(c.key === "kos" ? [...L.topics, ...(L.koExtraTopics || [])] : L.topics, L[c.key] || {}, c.paperLabels)}`;
   return `
     <div class="crumbs"><a href="#${SLUG[level]}">← ${esc(L.name)} home</a><span>/</span><span>${esc(c.title)}</span></div>
     <div class="page-head"><span class="icon">${ICONS[c.key]}</span><h2>${esc(c.title)}</h2></div>
