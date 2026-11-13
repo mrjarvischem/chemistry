@@ -1,0 +1,880 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Metallic Bonding Walkthrough</title>
+<style>
+:root{
+  --paper:#efe6d6; --panel:#faf6ee; --stage:#fcf9f3; --ink:#33241a; --muted:#7a6553;
+  --line:#dccfb9; --chip:#f2e8d8; --accent:#8c4a1c; --accent-ink:#fff8ef;
+  --good:#3f7d3a; --warn:#b8402e; --sea:#3f8fc6; --msoft:#dfe6f2; --elec:#e0a91c;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#1a1410; --panel:#241c16; --stage:#15100c; --ink:#efe4d3; --muted:#b39f88;
+    --line:#43362b; --chip:#30261e; --accent:#d9955a; --accent-ink:#1a1410;
+    --good:#8bc47f; --warn:#e67a63; --sea:#6fb3e0; --msoft:#2e3646; --elec:#f2c230; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#1a1410; --panel:#241c16; --stage:#15100c; --ink:#efe4d3; --muted:#b39f88;
+  --line:#43362b; --chip:#30261e; --accent:#d9955a; --accent-ink:#1a1410;
+  --good:#8bc47f; --warn:#e67a63; --sea:#6fb3e0; --msoft:#2e3646; --elec:#f2c230; color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:18px 16px 28px}
+[hidden]{display:none!important}
+.wrap{max-width:1360px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 20px}
+h1{font-family:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;font-weight:600;font-size:clamp(1.45rem,2.5vw,2.05rem);letter-spacing:-.01em;margin:0;text-wrap:balance}
+header p{margin:0;color:var(--muted);font-size:.95rem}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;border-bottom:1px solid var(--line)}
+.tab{background:none;border:none;border-bottom:3px solid transparent;border-radius:0;padding:8px 12px;font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;font-size:1.08rem;font-weight:600;color:var(--muted);margin-bottom:-1px}
+.tab:hover:not(:disabled){border-color:transparent;color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 350px;gap:16px;align-items:start}
+@media (max-width:920px){.layout{grid-template-columns:1fr}}
+.stage{background:var(--stage);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.canvas-box{position:relative;width:100%;aspect-ratio:16/10}
+@media (max-width:600px){.canvas-box{aspect-ratio:4/5}}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+.ov{position:absolute;top:10px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.ov.l{left:12px}
+.pill{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:3px 11px;font-size:.82rem;font-weight:650}
+.toast{position:absolute;left:12px;bottom:12px;max-width:calc(100% - 24px);background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:.88rem;pointer-events:none;transition:opacity .3s;opacity:0}
+.caption{border-top:1px solid var(--line);padding:12px 16px 14px;font-size:1.04rem;line-height:1.55;min-height:6.4em}
+.panel{display:flex;flex-direction:column;gap:12px}
+.group{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.group h2{margin:0;font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.btns{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button{font:inherit;font-weight:600;font-size:.92rem;padding:8px 12px;border-radius:7px;border:1px solid var(--line);background:var(--chip);color:var(--ink);cursor:pointer}
+button:hover:not(:disabled){border-color:var(--accent)}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+button[aria-pressed="true"]{background:var(--good);border-color:var(--good);color:var(--accent-ink)}
+button:disabled{opacity:.42;cursor:not-allowed}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{padding:6px 10px;display:flex;flex-direction:column;align-items:center;line-height:1.15;min-width:3.2em}
+.seg button small{font-size:.68rem;font-weight:500;opacity:.8}
+.steplab{font-weight:700;font-size:.9rem;font-variant-numeric:tabular-nums}
+.dots{display:flex;gap:7px}
+.sdot{width:14px;height:14px;border-radius:50%;border:2px solid var(--muted);background:transparent;padding:0}
+.sdot[aria-current="step"]{background:var(--ink);border-color:var(--ink)}
+.tog{display:flex;gap:8px;align-items:center;font-size:.9rem;cursor:pointer}
+input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.fb{margin:0;font-size:.92rem}
+.note{margin:0;font-size:.85rem;color:var(--muted)}
+.tally{display:grid;grid-template-columns:1fr auto;gap:3px 12px;font-size:.9rem;font-variant-numeric:tabular-nums}
+.tally b{text-align:right}
+.meter-row{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;font-size:.88rem;font-variant-numeric:tabular-nums}
+.meter{position:relative;height:10px;border-radius:5px;background:var(--chip);border:1px solid var(--line);overflow:hidden}
+.meter>span{position:absolute;inset:0 auto 0 0;width:0;transition:width .25s}
+#iFill{background:var(--good)} #tFill{background:linear-gradient(90deg,#d9b36b,#d8702b,#b8321f)} #fFill{background:var(--accent)}
+.speed{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;font-size:.88rem}
+.key{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px 10px;font-size:.86rem}
+.dot{display:inline-block;width:13px;height:13px;border-radius:50%;margin-right:7px;vertical-align:-2px;border:1px solid rgba(0,0,0,.25)}
+ul.pts{margin:0;padding-left:18px;font-size:.88rem;display:flex;flex-direction:column;gap:3px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Metallic bonding, conductivity and alloys</h1>
+    <p>AQA Combined Science: Trilogy 5.2.1.5, 5.2.2.7 and 5.2.2.8</p>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab" role="tab" data-mode="bond" aria-selected="true">1 · Metallic bonding</button>
+    <button class="tab" role="tab" data-mode="spec" aria-selected="false">2 · Specification diagrams</button>
+    <button class="tab" role="tab" data-mode="cond" aria-selected="false">3 · Conducting electricity and heat</button>
+    <button class="tab" role="tab" data-mode="alloy" aria-selected="false">4 · Layers and alloys</button>
+  </nav>
+
+  <div class="layout">
+    <section class="stage">
+      <div class="canvas-box">
+        <canvas id="cv" aria-label="Metallic bonding model"></canvas>
+        <div class="ov l"><span class="pill" id="pill1"></span><span class="pill" id="pill2" hidden></span></div>
+        <div class="toast" id="toast"></div>
+      </div>
+      <div class="caption" id="caption"></div>
+    </section>
+
+    <aside>
+      <!-- 1: bonding walkthrough -->
+      <div class="panel" data-for="bond">
+        <div class="group">
+          <h2>Choose a metal</h2>
+          <div class="seg" id="metSeg"></div>
+        </div>
+        <div class="group">
+          <h2>Walkthrough</h2>
+          <div class="btns"><span class="steplab" id="stepLab"></span><div class="dots" id="dots"></div></div>
+          <div class="btns">
+            <button id="bBack">◀ Back</button>
+            <button class="primary" id="bNext">Next ▶</button>
+            <button id="bRestart">Restart</button>
+          </div>
+          <p class="note" id="hint1"></p>
+        </div>
+        <div class="group"><h2>Count the charges</h2><div class="tally" id="tally1"></div><p class="note" id="note1"></p></div>
+        <div class="group">
+          <h2>Melting and boiling points</h2>
+          <div class="tally">
+            <span>Sodium</span><b>98 °C / 883 °C</b>
+            <span>Magnesium</span><b>650 °C / 1091 °C</b>
+            <span>Aluminium</span><b>660 °C / 2519 °C</b>
+            <span>Iron</span><b>1538 °C / 2862 °C</b>
+            <span>Tungsten</span><b>3422 °C / 5555 °C</b>
+          </div>
+          <p class="note">Metals have giant structures with strong metallic bonding, so a lot of energy is needed to overcome the bonds. This means most metals have high melting and boiling points.</p>
+        </div>
+        <div class="group">
+          <h2>Key</h2>
+          <div class="key">
+            <span><i class="dot" style="background:#7d90b4"></i>Metal atom / positive ion</span>
+            <span><i class="dot" style="background:#f2c230"></i>Electron</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- spec diagrams -->
+      <div class="panel" data-for="spec" hidden>
+        <div class="group">
+          <h2>Diagram</h2>
+          <div class="seg" id="sMode"><button data-v="side" aria-pressed="true">Side by side</button><button data-v="anim" aria-pressed="false">Watch it change</button></div>
+          <div id="sAnimCtl" hidden style="display:flex;flex-direction:column;gap:8px">
+            <div class="speed"><span>Atoms</span><input type="range" id="sProg" min="0" max="100" step="1" value="0"><span>Ions</span></div>
+            <div class="btns"><button class="primary" id="sPlay">Play</button></div>
+          </div>
+          <label class="tog"><input type="checkbox" id="sLab" checked> Show labels</label>
+          <label class="tog"><input type="checkbox" id="sEl"> Draw the delocalised electrons as ⊖</label>
+        </div>
+        <div class="group">
+          <h2>Outer electrons per atom</h2>
+          <div class="seg" id="sQ"><button data-v="1" aria-pressed="true">1<small>e.g. Na → Na⁺</small></button><button data-v="2" aria-pressed="false">2<small>e.g. Mg → Mg²⁺</small></button></div>
+          <p class="note">The specification diagram shows one outer electron per atom.</p>
+        </div>
+        <div class="group">
+          <h2>Reading the diagram</h2>
+          <ul class="pts">
+            <li><b>Dashed circle with +:</b> the nucleus and inner shells. Once the outer electrons have gone, this is the <b>positive ion</b>.</li>
+            <li><b>Solid outer circle:</b> the outer shell of each atom, with its electron(s) ⊖.</li>
+            <li><b>Grey shading:</b> the <b>delocalised electrons</b>, free to move through the whole structure.</li>
+          </ul>
+        </div>
+        <div class="group">
+          <h2>Strengths and limitations</h2>
+          <ul class="pts">
+            <li>✓ Shows the regular arrangement of positive ions.</li>
+            <li>✓ Shows the delocalised electrons are spread through the whole structure, not belonging to one ion.</li>
+            <li>✗ 2D only, and shows only a few ions of a giant structure.</li>
+            <li>✗ The shading does not show how many electrons there are, or that they move.</li>
+            <li>✗ The attraction between the ions and the electrons is not shown.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 2: conduction -->
+      <div class="panel" data-for="cond" hidden>
+        <div class="group">
+          <h2>Electrical conductivity</h2>
+          <div class="btns"><button class="primary" id="bPower" aria-pressed="false">Switch on</button></div>
+          <div class="speed"><span>Potential difference</span><input type="range" id="rPd" min="0.5" max="3" step="0.5" value="1.5"><span id="pdTxt">1.5 V</span></div>
+          <div class="meter-row"><span>Current</span><div class="meter"><span id="iFill"></span></div><span id="iTxt">none</span></div>
+        </div>
+        <div class="group">
+          <h2>Thermal conductivity</h2>
+          <div class="btns"><button class="primary" id="bHeat" aria-pressed="false">Heat the left end</button><button id="bRe2">Reset</button></div>
+          <div class="meter-row"><span>Right end</span><div class="meter"><span id="tFill"></span></div><span id="tTxt">20 °C</span></div>
+        </div>
+        <div class="group">
+          <h2>Why metals conduct</h2>
+          <ul class="pts">
+            <li><b>Electricity:</b> the delocalised electrons are free to move through the whole structure, so they carry electrical charge through the metal.</li>
+            <li><b>Thermal energy:</b> energy is transferred through the metal by the delocalised electrons.</li>
+            <li>The positive ions stay in their fixed positions; they only vibrate.</li>
+          </ul>
+        </div>
+        <div class="group">
+          <h2>Key</h2>
+          <div class="key">
+            <span><i class="dot" style="background:#7d90b4"></i>Positive metal ion</span>
+            <span><i class="dot" style="background:#f2c230"></i>Delocalised electron</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3: layers and alloys -->
+      <div class="panel" data-for="alloy" hidden>
+        <div class="group">
+          <h2>Structure</h2>
+          <div class="seg" id="typeSeg">
+            <button data-v="pure" aria-pressed="true">Pure metal</button>
+            <button data-v="alloy" aria-pressed="false">Alloy</button>
+          </div>
+          <div id="alloyCtl" hidden>
+            <div class="speed"><span>Other atoms</span><input type="range" id="rPc" min="5" max="25" step="5" value="10"><span id="pcTxt">10%</span></div>
+            <div class="seg" id="sizeSeg" style="margin-top:8px">
+              <button data-v="big" aria-pressed="true">Larger atoms</button>
+              <button data-v="small" aria-pressed="false">Smaller atoms</button>
+            </div>
+          </div>
+        </div>
+        <div class="group">
+          <h2>Apply a force</h2>
+          <div class="btns"><button class="primary" id="bPush">Push the top layers</button><button id="bRe3">Reset</button></div>
+          <p class="note">You can also drag the top layers sideways.</p>
+          <div class="meter-row"><span>Force needed</span><div class="meter"><span id="fFill"></span></div><span id="fTxt"></span></div>
+          <p class="fb" id="res3"></p>
+        </div>
+        <div class="group">
+          <h2>Examples of alloys</h2>
+          <ul class="pts">
+            <li><b>Brass:</b> copper with zinc</li>
+            <li><b>Bronze:</b> copper with tin</li>
+            <li><b>Steel:</b> iron with carbon and other elements</li>
+            <li><b>Aluminium alloys:</b> aluminium with copper or magnesium</li>
+          </ul>
+          <p class="note">Pure metals are too soft for many uses, so they are mixed with other metals to make alloys, which are harder.</p>
+        </div>
+        <div class="group">
+          <h2>Key</h2>
+          <div class="key">
+            <span><i class="dot" style="background:#7d90b4"></i>Metal atom</span>
+            <span><i class="dot" style="background:#c98a2c"></i>Atom of another element</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+(() => {
+const $ = id => document.getElementById(id);
+const cv = $('cv'), ctx = cv.getContext('2d');
+let cw = 800, ch = 500;
+function resize(){
+  const r = cv.getBoundingClientRect(), d = Math.min(2, window.devicePixelRatio || 1);
+  cw = Math.max(50, r.width); ch = Math.max(50, r.height);
+  cv.width = Math.round(cw*d); cv.height = Math.round(ch*d); ctx.setTransform(d,0,0,d,0,0);
+}
+new ResizeObserver(resize).observe(cv); resize();
+const TH = {};
+function readTheme(){ const s=getComputedStyle(document.documentElement); ['stage','ink','muted','line','accent','good','warn','sea','msoft','elec','panel'].forEach(k=>TH[k]=s.getPropertyValue('--'+k).trim()||'#888'); }
+readTheme(); matchMedia('(prefers-color-scheme: dark)').addEventListener('change', readTheme);
+
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const TAU=Math.PI*2, clamp=(v,a,b)=>Math.max(a,Math.min(b,v)), lerp=(a,b,t)=>a+(b-a)*t;
+const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+let spare=null;
+function gauss(){ if(spare!==null){const s=spare;spare=null;return s;} let u,v,s; do{u=Math.random()*2-1;v=Math.random()*2-1;s=u*u+v*v;}while(s>=1||s===0); const m=Math.sqrt(-2*Math.log(s)/s); spare=v*m; return u*m; }
+function rgb(h){h=h.replace('#','');const n=parseInt(h,16);return [n>>16&255,n>>8&255,n&255];}
+function mix(a,b,t){const A=rgb(a),B=rgb(b);return '#'+A.map((v,i)=>Math.round(v+(B[i]-v)*t).toString(16).padStart(2,'0')).join('');}
+function sprite(hex){
+  const S=96,c=document.createElement('canvas');c.width=c.height=S;const g=c.getContext('2d');
+  const gr=g.createRadialGradient(S*.36,S*.32,S*.03,S*.5,S*.5,S*.5);
+  gr.addColorStop(0,mix(hex,'#ffffff',.75));gr.addColorStop(.28,mix(hex,'#ffffff',.18));
+  gr.addColorStop(.72,hex);gr.addColorStop(1,mix(hex,'#000000',.5));
+  g.fillStyle=gr;g.beginPath();g.arc(S/2,S/2,S/2-1,0,TAU);g.fill();return c;
+}
+const ION='#7d90b4', ALLOY='#c98a2c', HOT='#d8502b';
+const SPR={ion:sprite(ION), alloy:sprite(ALLOY)};
+const sprCache={};
+function ionSprite(t){ const k=Math.round(clamp(t,0,1)*10); return sprCache[k]||(sprCache[k]=sprite(mix(ION,HOT,k/10))); }
+const SUPP={1:'⁺',2:'²⁺',3:'³⁺'};
+let toastT=0;
+function toast(t){ $('toast').textContent=t; $('toast').style.opacity=1; toastT=5; }
+function electron(x,y,r,glow){
+  if(glow>0){ ctx.globalAlpha=glow*.5; ctx.fillStyle=HOT; ctx.beginPath(); ctx.arc(x,y,r*2.2,0,TAU); ctx.fill(); ctx.globalAlpha=1; }
+  ctx.fillStyle='#f2c230'; ctx.strokeStyle='#7a5a00'; ctx.lineWidth=1; ctx.beginPath(); ctx.arc(x,y,r,0,TAU); ctx.fill(); ctx.stroke();
+}
+function ionBall(x,y,r,spr,label){
+  ctx.drawImage(spr,x-r,y-r,r*2,r*2);
+  if(label&&r>9){ ctx.fillStyle='#fff'; ctx.font=`700 ${Math.round(r*.62)}px system-ui,sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(label,x,y+1); }
+}
+function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+
+/* ========== MODE 1: walkthrough ========== */
+const METALS={
+  Na:{name:'sodium',cfg:[2,8,1]},
+  Mg:{name:'magnesium',cfg:[2,8,2]},
+  Al:{name:'aluminium',cfg:[2,8,3]}
+};
+const STEPS=[
+  ['Metal atoms in a lattice','Solid {name} is a giant structure of atoms arranged in a regular pattern, in layers. Each {sym} atom has the electronic structure {cfg}.'],
+  ['Look at the outer shell','Only the outer shell is involved in bonding. Each {sym} atom has {q} in its outer shell. These outer electrons are only loosely held by the atom.'],
+  ['The outer electrons are delocalised','The outer electrons leave their atoms and become delocalised: they are free to move through the whole structure. This leaves positive ions, {ion}, arranged in a regular pattern in a "sea" of delocalised electrons.'],
+  ['Metallic bonding','The positive ions and the delocalised electrons attract each other. This strong electrostatic attraction is metallic bonding. The delocalised electrons are shared by all the ions, so the bonding acts throughout the giant structure. Click any ion to see its attraction to the electrons around it.']
+];
+const M1={m:'Mg',s:0,t0:0,dur:0,atoms:[],els:[],sel:-1,rows:4,cols:7,geo:null};
+const qOf=()=>METALS[M1.m].cfg.at(-1);
+function build1(){
+  M1.atoms=[]; M1.els=[];
+  for(let r=0;r<M1.rows;r++)for(let c=0;c<M1.cols;c++) M1.atoms.push({x:c+(r%2)*.5, y:r*.866, ph:Math.random()*TAU});
+  const q=qOf();
+  M1.atoms.forEach((a,i)=>{ for(let k=0;k<q;k++) M1.els.push({a:i,k,x:0,y:0,vx:0,vy:0,free:false}); });
+  M1.sel=Math.floor(M1.rows/2)*M1.cols+Math.floor(M1.cols/2);
+  M1.s=0; M1.dur=0; ui1();
+}
+const prog1=()=>M1.dur?ease(clamp((performance.now()-M1.t0)/M1.dur,0,1)):1;
+function homePos(e,t){
+  const a=M1.atoms[e.a], q=qOf(), th=a.ph+e.k*TAU/q+t*.35;
+  return [a.x+.45*Math.cos(th), a.y+.45*Math.sin(th)];
+}
+function jump(s){
+  s=clamp(s,0,STEPS.length-1); const fwd=s===M1.s+1;
+  if(s>=2&&M1.s<2){ const t=performance.now()/1000; M1.els.forEach(e=>{const [x,y]=homePos(e,t); e.x=x;e.y=y;e.vx=gauss()*.3;e.vy=gauss()*.3;e.free=true;}); }
+  if(s<2) M1.els.forEach(e=>e.free=false);
+  M1.s=s; M1.t0=performance.now(); M1.dur=fwd&&!reduce?1400:0; ui1();
+}
+const B1=()=>({x0:-.6,x1:M1.cols-1+.5+.6,y0:-.6,y1:(M1.rows-1)*.866+.6});
+function step1(dt){
+  if(M1.s<2) return;
+  const b=B1(), g=1.6, sN=Math.sqrt(2*g*dt)*.9;
+  for(const e of M1.els){
+    e.vx+=-g*e.vx*dt+sN*gauss(); e.vy+=-g*e.vy*dt+sN*gauss();
+    e.x+=e.vx*dt; e.y+=e.vy*dt;
+    if(e.x<b.x0){e.x=b.x0;e.vx=Math.abs(e.vx);} if(e.x>b.x1){e.x=b.x1;e.vx=-Math.abs(e.vx);}
+    if(e.y<b.y0){e.y=b.y0;e.vy=Math.abs(e.vy);} if(e.y>b.y1){e.y=b.y1;e.vy=-Math.abs(e.vy);}
+  }
+}
+function draw1(){
+  const s=M1.s, p=prog1(), t=performance.now()/1000, met=METALS[M1.m], q=qOf();
+  const innerA = s===0?1 : s===1?1-p : 0;
+  const outerA = s<=1?1 : s===2?1-p : 0;
+  const ionA = s<2?0 : s===2?p : 1;
+  const bondA = s===3?p:0;
+  const b=B1(), d=Math.min(cw*.92/(b.x1-b.x0), ch*.86/(b.y1-b.y0));
+  const ox=cw/2-(b.x0+b.x1)/2*d, oy=ch/2-(b.y0+b.y1)/2*d;
+  const X=x=>ox+x*d, Y=y=>oy+y*d; M1.geo={d,ox,oy};
+  const er=clamp(d*.045,2.5,6);
+  if(ionA>0){ ctx.globalAlpha=ionA*.12; ctx.fillStyle=TH.sea; rr(X(b.x0),Y(b.y0),(b.x1-b.x0)*d,(b.y1-b.y0)*d,d*.25); ctx.fill(); ctx.globalAlpha=1; }
+  M1.atoms.forEach((a,i)=>{
+    const x=X(a.x), y=Y(a.y);
+    ctx.lineWidth=1.2; ctx.strokeStyle=TH.muted;
+    if(innerA>0){
+      ctx.globalAlpha=innerA*.8; [.17,.3].forEach(r=>{ctx.beginPath();ctx.arc(x,y,r*d,0,TAU);ctx.stroke();});
+      ctx.globalAlpha=innerA;
+      for(let k=0;k<2;k++){const th=a.ph*.5+k*Math.PI+t*.6; electron(x+.17*d*Math.cos(th),y+.17*d*Math.sin(th),er*.8,0);}
+      for(let k=0;k<8;k++){const th=a.ph+k*TAU/8+t*.45; electron(x+.3*d*Math.cos(th),y+.3*d*Math.sin(th),er*.8,0);}
+      ctx.globalAlpha=1;
+    }
+    if(outerA>0){ ctx.globalAlpha=outerA; ctx.lineWidth=1.6; ctx.strokeStyle=s>=1?TH.accent:TH.muted; ctx.beginPath(); ctx.arc(x,y,.45*d,0,TAU); ctx.stroke(); ctx.globalAlpha=1; }
+    if(ionA>0){
+      ctx.globalAlpha=ionA; ionBall(x,y,.3*d,SPR.ion,'');
+      ctx.fillStyle='#fff'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.font=`700 ${Math.round(d*.15)}px system-ui,sans-serif`; ctx.fillText(M1.m+SUPP[q],x,y+1); ctx.globalAlpha=1;
+      if(i===M1.sel&&bondA>0){ ctx.globalAlpha=bondA; ctx.strokeStyle=TH.accent; ctx.lineWidth=3; ctx.beginPath(); ctx.arc(x,y,.3*d+3,0,TAU); ctx.stroke(); ctx.globalAlpha=1; }
+    }
+    if(ionA<1){
+      ctx.globalAlpha=1-ionA; ctx.fillStyle=TH.msoft; ctx.strokeStyle=TH.ink; ctx.lineWidth=1.2;
+      ctx.beginPath(); ctx.arc(x,y,.11*d,0,TAU); ctx.fill(); ctx.stroke();
+      ctx.fillStyle=TH.ink; ctx.font=`700 ${Math.round(d*.11)}px "Iowan Old Style",Palatino,Georgia,serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(M1.m,x,y+1); ctx.globalAlpha=1;
+    }
+  });
+  if(bondA>0&&M1.sel>=0){
+    const a=M1.atoms[M1.sel], near=M1.els.map(e=>[e,Math.hypot(e.x-a.x,e.y-a.y)]).sort((u,v)=>u[1]-v[1]).slice(0,6);
+    ctx.globalAlpha=bondA; ctx.strokeStyle=TH.accent; ctx.lineWidth=2; ctx.setLineDash([5,5]);
+    for(const [e] of near){ ctx.beginPath(); ctx.moveTo(X(a.x),Y(a.y)); ctx.lineTo(X(e.x),Y(e.y)); ctx.stroke(); }
+    ctx.setLineDash([]); ctx.globalAlpha=1;
+  }
+  for(const e of M1.els){
+    let x,y;
+    if(e.free){ x=e.x; y=e.y; } else { [x,y]=homePos(e,t); }
+    electron(X(x),Y(y),er,0);
+  }
+  if(bondA>0){
+    const a=M1.atoms[M1.sel]; ctx.globalAlpha=bondA; ctx.fillStyle=TH.accent; ctx.font=`700 ${Math.max(12,Math.round(d*.13))}px system-ui,sans-serif`;
+    ctx.textAlign='center'; ctx.textBaseline='bottom'; ctx.fillText('electrostatic attraction',X(a.x),Y(a.y)-.5*d); ctx.globalAlpha=1;
+  }
+}
+function cap1(){
+  const met=METALS[M1.m], q=qOf();
+  return STEPS[M1.s][1].replaceAll('{name}',met.name).replaceAll('{sym}',M1.m).replaceAll('{cfg}',met.cfg.join(','))
+    .replaceAll('{q}',`${q} electron${q>1?'s':''}`).replaceAll('{ion}',M1.m+SUPP[q]);
+}
+function ui1(){
+  $('stepLab').textContent=`Step ${M1.s+1} of ${STEPS.length}: ${STEPS[M1.s][0]}`;
+  $('dots').innerHTML=STEPS.map((_,i)=>`<button class="sdot" data-i="${i}" aria-label="Step ${i+1}"${i===M1.s?' aria-current="step"':''}></button>`).join('');
+  $('bBack').disabled=M1.s===0; $('bNext').disabled=M1.s===STEPS.length-1;
+  const q=qOf(), n=M1.atoms.length;
+  if(M1.s<2){
+    $('tally1').innerHTML=`<span>${METALS[M1.m].name[0].toUpperCase()+METALS[M1.m].name.slice(1)} atoms</span><b>${n}</b><span>Outer electrons per atom</span><b>${q}</b>`;
+    $('note1').textContent='Atoms are neutral: each has the same number of protons and electrons.';
+  } else {
+    $('tally1').innerHTML=`<span>${M1.m}${SUPP[q]} ions</span><b>${n}</b><span>Total positive charge</span><b>+${n*q}</b><span>Delocalised electrons</span><b>${n*q}</b><span>Total negative charge</span><b>−${n*q}</b>`;
+    $('note1').textContent='The charges balance, so the metal has no overall charge.';
+  }
+  $('hint1').textContent=['Press Next to look at the outer shells.','Press Next to free the outer electrons.','Press Next to see the bonding.','Click an ion in the model to pick a different one.'][M1.s];
+  $('pill1').textContent=['Atoms','Outer shells','Ions and delocalised electrons','Metallic bonding'][M1.s];
+}
+$('metSeg').innerHTML=Object.entries(METALS).map(([k,v])=>`<button data-v="${k}" aria-pressed="${k===M1.m}">${k}<small>${v.cfg.join(',')}</small></button>`).join('');
+$('metSeg').onclick=e=>{const b=e.target.closest('button');if(!b)return;M1.m=b.dataset.v;$('metSeg').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));build1();};
+$('bNext').onclick=()=>jump(M1.s+1); $('bBack').onclick=()=>jump(M1.s-1); $('bRestart').onclick=()=>jump(0);
+$('dots').onclick=e=>{const b=e.target.closest('.sdot');if(b)jump(+b.dataset.i);};
+function click1(x,y){
+  if(M1.s<2||!M1.geo) return; const {d,ox,oy}=M1.geo;
+  const i=M1.atoms.findIndex(a=>Math.hypot(ox+a.x*d-x,oy+a.y*d-y)<.32*d);
+  if(i>=0){ M1.sel=i; if(M1.s<3) jump(3); }
+}
+
+/* ========== MODE 2: conduction ========== */
+const M2={rows:5,cols:11,atoms:[],els:[],T:[],power:false,pd:1.5,heat:false,I:0,cross:0,wire:[],simT:0,geo:null};
+function build2(){
+  M2.atoms=[]; M2.els=[]; M2.T=Array(M2.cols).fill(20); M2.I=0; M2.cross=0; M2.simT=0;
+  for(let r=0;r<M2.rows;r++)for(let c=0;c<M2.cols;c++) M2.atoms.push({c,x:c+(r%2)*.5,y:r*.866,ph:[Math.random()*TAU,Math.random()*TAU]});
+  const b=B2(), n=M2.atoms.length*2;
+  for(let i=0;i<n;i++) M2.els.push({x:lerp(b.x0,b.x1,Math.random()),y:lerp(b.y0,b.y1,Math.random()),vx:0,vy:0,E:20});
+  M2.wire=Array.from({length:22},(_,k)=>k/22);
+}
+const B2=()=>({x0:-.55,x1:M2.cols-1+.5+.55,y0:-.55,y1:(M2.rows-1)*.866+.55});
+function step2(dt){
+  M2.simT+=dt; const b=B2(), T=M2.T, n=M2.cols;
+  if(M2.heat) T[0]+=(420-T[0])*.9*dt;
+  const nt=T.slice();
+  for(let c=0;c<n;c++){ const l=T[Math.max(0,c-1)], r=T[Math.min(n-1,c+1)]; nt[c]+=(l+r-2*T[c])*5*dt - (T[c]-20)*.015*dt; }
+  M2.T=nt;
+  const field=M2.power?M2.pd*.55:0;
+  let cross=0;
+  for(const e of M2.els){
+    const c=clamp(Math.round(e.x),0,n-1), Tl=M2.T[c];
+    e.E+=(Tl-e.E)*2*dt;
+    const sig=.75*Math.sqrt((e.E+273)/293), g=1.6, sN=Math.sqrt(2*g*dt)*sig;
+    e.vx+=(-g*e.vx+field)*dt+sN*gauss(); e.vy+=-g*e.vy*dt+sN*gauss();
+    e.x+=e.vx*dt; e.y+=e.vy*dt;
+    if(e.y<b.y0){e.y=b.y0;e.vy=Math.abs(e.vy);} if(e.y>b.y1){e.y=b.y1;e.vy=-Math.abs(e.vy);}
+    if(M2.power){ if(e.x>b.x1){e.x-=b.x1-b.x0;cross++;e.E=20;} else if(e.x<b.x0){e.x+=b.x1-b.x0;cross--;} }
+    else { if(e.x<b.x0){e.x=b.x0;e.vx=Math.abs(e.vx);} if(e.x>b.x1){e.x=b.x1;e.vx=-Math.abs(e.vx);} }
+  }
+  const tau=1.2; M2.I=M2.I*Math.exp(-dt/tau)+cross/tau;
+  if(M2.power){ const du=Math.max(0,M2.I)*.02*dt; M2.wire=M2.wire.map(u=>(u+du)%1); }
+}
+function draw2(){
+  const b=B2(), d=Math.min(cw*.7/(b.x1-b.x0), ch*.44/(b.y1-b.y0));
+  const w=(b.x1-b.x0)*d, h=(b.y1-b.y0)*d, L=cw/2-w/2, Tp=ch*.36, X=x=>L+(x-b.x0)*d, Y=y=>Tp+(y-b.y0)*d;
+  const er=clamp(d*.06,2.5,6), ymid=Tp+h/2, top=ch*.12, R=L+w, wx0=L-d*.5, wx1=R+d*.5;
+  // circuit wires
+  const wc=M2.power?TH.ink:TH.muted;
+  ctx.strokeStyle=wc; ctx.lineWidth=2.4;
+  const path=[[R,ymid],[wx1,ymid],[wx1,top],[wx0,top],[wx0,ymid],[L,ymid]];
+  // gap for the cell and switch on the top wire
+  const cx=cw/2, sx=cw/2+w*.28;
+  ctx.beginPath(); ctx.moveTo(R,ymid); ctx.lineTo(wx1,ymid); ctx.lineTo(wx1,top); ctx.lineTo(sx+14,top); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(sx-14,top); ctx.lineTo(cx+8,top); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx-8,top); ctx.lineTo(wx0,top); ctx.lineTo(wx0,ymid); ctx.lineTo(L,ymid); ctx.stroke();
+  // switch
+  ctx.beginPath(); ctx.moveTo(sx-14,top); ctx.lineTo(sx+14,M2.power?top:top-16); ctx.stroke();
+  ctx.fillStyle=wc; [sx-14,sx+14].forEach(x=>{ctx.beginPath();ctx.arc(x,top,3,0,TAU);ctx.fill();});
+  // cell: short thick = negative (left), long thin = positive (right)
+  ctx.lineWidth=6; ctx.beginPath(); ctx.moveTo(cx-8,top-10); ctx.lineTo(cx-8,top+10); ctx.stroke();
+  ctx.lineWidth=2.4; ctx.beginPath(); ctx.moveTo(cx+8,top-20); ctx.lineTo(cx+8,top+20); ctx.stroke();
+  const fs=Math.max(12,Math.min(16,cw/60));
+  ctx.fillStyle=TH.ink; ctx.font=`700 ${fs*1.2}px system-ui,sans-serif`; ctx.textAlign='center'; ctx.textBaseline='bottom';
+  ctx.fillText('−',cx-20,top-6); ctx.fillText('+',cx+22,top-6);
+  ctx.font=`600 ${fs}px system-ui,sans-serif`; ctx.textBaseline='top';
+  ctx.fillText(M2.power?`${M2.pd} V: switch closed`:'switch open',cx,top+24);
+  // wire electrons: they leave the right end, travel round to the + terminal; from the − terminal to the left end
+  if(M2.power&&M2.I>0.05){
+    const segs=[]; for(let i=0;i<path.length-1;i++){const [a,c]=[path[i],path[i+1]];segs.push([a,c,Math.hypot(c[0]-a[0],c[1]-a[1])]);}
+    const tot=segs.reduce((s,q)=>s+q[2],0);
+    for(const u of M2.wire){ let dd=u*tot; for(const [a,c,l] of segs){ if(dd<=l){const t=dd/l; electron(a[0]+(c[0]-a[0])*t,a[1]+(c[1]-a[1])*t,er*.85,0); break;} dd-=l; } }
+  }
+  // flame
+  if(M2.heat){
+    const t=performance.now()/1000, fx=X(0), fy=Tp+h+6, bw=d*.3;
+    ctx.fillStyle=TH.muted; ctx.fillRect(fx-bw/2,fy+d*.55,bw,d*.6);
+    for(const [sc,col,al] of [[1,'#f2a23a',.85],[.6,'#4d7bd8',.9]]){
+      const hh=d*.6*sc*(1+Math.sin(t*17)*.06), ww=bw*1.3*sc, by=fy+d*.55;
+      ctx.beginPath(); ctx.moveTo(fx-ww/2,by); ctx.quadraticCurveTo(fx-ww*.7,by-hh*.45,fx+Math.sin(t*9)*ww*.15,by-hh);
+      ctx.quadraticCurveTo(fx+ww*.7,by-hh*.45,fx+ww/2,by); ctx.closePath(); ctx.globalAlpha=al; ctx.fillStyle=col; ctx.fill(); ctx.globalAlpha=1;
+    }
+  }
+  // metal block
+  ctx.fillStyle=TH.sea; ctx.globalAlpha=.1; rr(L,Tp,w,h,d*.2); ctx.fill(); ctx.globalAlpha=1;
+  ctx.strokeStyle=TH.line; ctx.lineWidth=1.5; rr(L,Tp,w,h,d*.2); ctx.stroke();
+  for(const a of M2.atoms){
+    const Tl=M2.T[a.c], amp=(.015+.11*clamp((Tl-20)/380,0,1))*d, t=M2.simT;
+    const x=X(a.x)+amp*Math.sin(t*11+a.ph[0]), y=Y(a.y)+amp*Math.sin(t*12.3+a.ph[1]);
+    ionBall(x,y,.3*d,ionSprite((Tl-20)/380),'+');
+  }
+  for(const e of M2.els) electron(X(e.x),Y(e.y),er,clamp((e.E-30)/380,0,1));
+  ctx.fillStyle=TH.muted; ctx.font=`600 ${fs}px system-ui,sans-serif`; ctx.textBaseline='bottom';
+  ctx.textAlign='left'; ctx.fillText(`Left end ${Math.round(M2.T[0])} °C`,L,Tp-6);
+  ctx.textAlign='right'; ctx.fillText(`Right end ${Math.round(M2.T.at(-1))} °C`,R,Tp-6); ctx.textBaseline='top';
+  if(M2.power){ ctx.textAlign='center'; ctx.fillStyle=TH.ink; ctx.fillText('electrons drift towards the positive terminal  →',cw/2,Tp+h+8); }
+}
+function cap2(){
+  const hot=M2.T.at(-1)>25;
+  if(M2.power&&M2.heat) return 'Delocalised electrons drift through the metal towards the positive terminal, carrying charge: this is the electric current. At the same time, energy is transferred from the hot end to the cold end by the delocalised electrons.';
+  if(M2.power) return 'When a potential difference is applied, the delocalised electrons drift through the metal towards the positive terminal. They carry electrical charge through the metal, so metals are good conductors of electricity. The positive ions stay in place and only vibrate. Increase the potential difference to make the electrons drift faster.';
+  if(M2.heat) return 'Heating the left end makes the ions there vibrate more and gives the delocalised electrons more energy (shown glowing). The electrons move through the whole structure, so they transfer this energy to the cold end quickly. Metals are good conductors of thermal energy because energy is transferred by the delocalised electrons.';
+  if(hot) return 'The heat source is off. The energy carried through the metal by the delocalised electrons has warmed the far end.';
+  return 'The delocalised electrons move randomly through the metal in all directions, so there is no overall flow of charge. Switch on the power to apply a potential difference, or heat one end.';
+}
+function ui2(){
+  $('bPower').setAttribute('aria-pressed',M2.power); $('bPower').textContent=M2.power?'Switch off':'Switch on';
+  $('bHeat').setAttribute('aria-pressed',M2.heat); $('bHeat').textContent=M2.heat?'Stop heating':'Heat the left end';
+  const I=Math.max(0,M2.I); $('iFill').style.width=Math.min(100,I/14*100)+'%'; $('iTxt').textContent=I<.3?'none':'flowing';
+  const Tr=M2.T.at(-1); $('tFill').style.width=Math.min(100,(Tr-20)/400*100)+'%'; $('tTxt').textContent=Math.round(Tr)+' °C';
+  $('pill1').textContent=M2.power?'Current flowing':'No current'; $('pill2').textContent=M2.heat?'Heating':'Not heating';
+}
+$('bPower').onclick=()=>{M2.power=!M2.power;};
+$('bHeat').onclick=()=>{M2.heat=!M2.heat;};
+$('bRe2').onclick=()=>{M2.power=false;M2.heat=false;build2();};
+$('rPd').oninput=e=>{M2.pd=+e.target.value;$('pdTxt').textContent=M2.pd+' V';};
+
+/* ========== MODE 3: layers and alloys ========== */
+const M3={rows:6,cols:12,slip:3,type:'pure',pc:10,size:'big',atoms:[],s:0,anim:null,drag:null,geo:null};
+function build3(){
+  const A=[], {rows,cols}=M3;
+  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++) A.push({r,c,hx:c,hy:r,x:c,y:r,alloy:false,rad:.48});
+  if(M3.type==='alloy'){
+    const n=Math.max(1,Math.round(A.length*M3.pc/100)), rad=M3.size==='big'?.66:.3;
+    const near=A.filter(a=>(a.r===M3.slip-1||a.r===M3.slip)&&a.c>1&&a.c<cols-2);
+    const pick=new Set([near[Math.floor(Math.random()*near.length)]]);
+    while(pick.size<n){ const a=A[Math.floor(Math.random()*A.length)]; if(a.c>0&&a.c<cols-1) pick.add(a); }
+    pick.forEach(a=>{a.alloy=true;a.rad=rad;});
+    for(let it=0;it<120;it++){
+      for(const a of A){ if(a.alloy) continue;
+        let fx=(a.hx-a.x)*.25, fy=(a.hy-a.y)*.25;
+        for(const o of A){ if(o===a||!o.alloy) continue; const dx=a.x-o.x, dy=a.y-o.y, dd=Math.hypot(dx,dy)||1e-3; if(dd>1.6) continue;
+          const want=a.rad+o.rad; fx+=dx/dd*(want-dd)*.35; fy+=dy/dd*(want-dd)*.35; }
+        a.x+=fx; a.y+=fy; }
+    }
+  }
+  M3.atoms=A; M3.s=0; M3.anim=null; ui3();
+}
+const blocked=()=>M3.type==='alloy';
+const maxSlip=()=>blocked()?.18:3;
+function draw3(){
+  const {rows,cols}=M3, d=Math.min(cw*.86/(cols+3.4), ch*.78/(rows+1.2));
+  const L=cw/2-(cols-1+3)/2*d, Tp=ch/2-(rows-1)/2*d+d*.2, X=x=>L+x*d, Y=y=>Tp+y*d; M3.geo={d,L,Tp};
+  let s=M3.s;
+  if(M3.anim){ const a=M3.anim, t=clamp((performance.now()-a.t0)/a.dur,0,1);
+    s = a.bounce ? a.from+(a.to-a.from)*Math.sin(Math.PI*t)*(1+.15*Math.sin(t*40)) : lerp(a.from,a.to,ease(t));
+    if(t>=1){ M3.s=a.bounce?a.from:a.to; M3.anim=null; s=M3.s; ui3(); } }
+  // slip plane
+  const yS=Y(M3.slip-.5);
+  ctx.strokeStyle=TH.accent; ctx.globalAlpha=.6; ctx.setLineDash([8,6]); ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(X(-1.2),yS); ctx.lineTo(X(cols+2.2),yS); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha=1;
+  // atoms: draw bottom layers first
+  const list=M3.atoms.slice().sort((a,b)=>(a.alloy?1:0)-(b.alloy?1:0));
+  for(const a of list){ const sh=a.r<M3.slip?s:0; ionBall(X(a.x+sh),Y(a.y),a.rad*d*.98,a.alloy?SPR.alloy:SPR.ion,''); }
+  // force arrow
+  const pushing=M3.anim||M3.drag;
+  const ay=Y((M3.slip-1)/2), ax=X(-1.3+s);
+  ctx.globalAlpha=pushing?1:.55; ctx.strokeStyle=TH.warn; ctx.fillStyle=TH.warn; ctx.lineWidth=5;
+  ctx.beginPath(); ctx.moveTo(ax-d*.9,ay); ctx.lineTo(ax-d*.15,ay); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(ax-d*.3,ay-d*.2); ctx.lineTo(ax-d*.3,ay+d*.2); ctx.closePath(); ctx.fill();
+  ctx.font=`700 ${Math.max(12,Math.round(d*.3))}px system-ui,sans-serif`; ctx.textAlign='center'; ctx.textBaseline='bottom'; ctx.fillText('force',ax-d*.5,ay-d*.25);
+  ctx.globalAlpha=1;
+  ctx.fillStyle=TH.muted; ctx.font=`600 ${Math.max(11,Math.round(d*.26))}px system-ui,sans-serif`; ctx.textAlign='left'; ctx.textBaseline='bottom';
+  ctx.fillText('layers slide along here',X(cols-.5+Math.max(0,s)),yS-4);
+}
+function push3(){
+  if(M3.anim) return;
+  if(blocked()){ M3.anim={from:M3.s,to:M3.s+.18,t0:performance.now(),dur:900,bounce:true}; toast('The layers are distorted, so they cannot slide easily.'); }
+  else if(M3.s>=3){ toast('Reset to start again.'); }
+  else { M3.anim={from:M3.s,to:Math.round(M3.s)+1,t0:performance.now(),dur:reduce?10:900}; }
+}
+function cap3(){
+  if(M3.type==='pure'){
+    if(M3.s>=1) return `The layers have slid over each other by ${Math.round(M3.s)} position${Math.round(M3.s)>1?'s':''}. The metal has changed shape without breaking, because the delocalised electrons are still shared throughout the structure and the metallic bonding holds. This is why pure metals can be bent and shaped, but it also means pure metals are too soft for many uses.`;
+    return 'In a pure metal all the atoms are the same size and are arranged in regular layers. Push the top layers, or drag them sideways: the layers slide over each other easily.';
+  }
+  return `An alloy is a mixture of a metal with atoms of other elements. The ${M3.size==='big'?'larger':'smaller'} atoms are a different size from the metal atoms, so they distort the layers. The layers can no longer slide over each other easily, so a much larger force is needed to change the shape. This is why alloys are harder than pure metals.`;
+}
+function ui3(){
+  $('alloyCtl').hidden=M3.type!=='alloy';
+  const f=M3.type==='pure'?18:clamp(55+M3.pc*1.6,55,98);
+  $('fFill').style.width=f+'%'; $('fTxt').textContent=M3.type==='pure'?'small':'large';
+  $('res3').textContent=M3.type==='pure'
+    ? (M3.s>=1?'The layers slid: the pure metal is soft and easy to shape.':'Push to see what happens.')
+    : 'The different-sized atoms distort the layers, so they cannot slide easily: the alloy is harder.';
+  $('pill1').textContent=M3.type==='pure'?'Pure metal':`Alloy: ${M3.pc}% other atoms`;
+}
+$('typeSeg').onclick=e=>{const b=e.target.closest('button');if(!b)return;M3.type=b.dataset.v;$('typeSeg').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));build3();};
+$('sizeSeg').onclick=e=>{const b=e.target.closest('button');if(!b)return;M3.size=b.dataset.v;$('sizeSeg').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));build3();};
+$('rPc').oninput=e=>{M3.pc=+e.target.value;$('pcTxt').textContent=M3.pc+'%';build3();};
+$('bPush').onclick=push3; $('bRe3').onclick=build3;
+
+
+/* ========== MODE 4: specification diagrams ========== */
+const M4={mode:'side',p:0,play:null,lab:true,el:false,q:1,els:[],t:0};
+function build4(){ M4.els=[]; for(let i=0;i<8*2;i++) M4.els.push({x:(Math.random()*2-1)*2.6,y:(Math.random()*2-1)*1.9,vx:0,vy:0}); }
+const SPOS=(()=>{const r3=Math.sqrt(3);return [[-2,-r3],[0,-r3],[2,-r3],[-1,0],[1,0],[-2,r3],[0,r3],[2,r3]];})();
+function eMinus(x,y,r,al=1){ctx.globalAlpha=al;ctx.fillStyle=TH.stage;ctx.strokeStyle=TH.ink;ctx.lineWidth=Math.max(1.3,r*.18);ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.fill();ctx.stroke();ctx.beginPath();ctx.moveTo(x-r*.55,y);ctx.lineTo(x+r*.55,y);ctx.stroke();ctx.globalAlpha=1;}
+function ionCore(x,y,R,lab,al=1){ctx.globalAlpha=al;ctx.strokeStyle=TH.ink;ctx.lineWidth=1.6;ctx.setLineDash([R*.16,R*.12]);ctx.beginPath();ctx.arc(x,y,R*.42,0,TAU);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle=TH.ink;ctx.font=`600 ${Math.round(R*(lab.length>1?.32:.42))}px system-ui,sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(lab,x,y+1);ctx.globalAlpha=1;}
+function leader(x1,y1,x2,y2,t,align){ctx.strokeStyle=TH.accent;ctx.fillStyle=TH.accent;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.beginPath();ctx.arc(x1,y1,2.5,0,TAU);ctx.fill();ctx.font='600 14px system-ui,sans-serif';ctx.textAlign=align;ctx.textBaseline='middle';ctx.fillText(t,x2+(align==='left'?5:align==='right'?-5:0),y2+(align==='center'?(y2>y1?10:-10):0));}
+function seaRect(cx,cy,R,al){const w=6.6*R,h=5.0*R;ctx.globalAlpha=al;ctx.fillStyle=rgbaOf(TH.muted,.3);if(ctx.roundRect){ctx.beginPath();ctx.roundRect(cx-w/2,cy-h/2,w,h,R*.35);}else{ctx.beginPath();ctx.rect(cx-w/2,cy-h/2,w,h);}ctx.fill();ctx.globalAlpha=1;return {w,h};}
+function rgbaOf(c,a){if(c.startsWith('#')){const [r,g,b]=rgb(c);return `rgba(${r},${g},${b},${a})`;}const m=c.match(/[\d.]+/g);return `rgba(${m[0]},${m[1]},${m[2]},${a})`;}
+const eAng=(i,k,q)=>[-.7,2.3,.4,3.6,-2.2,1.2,2.9,-.2][i]+k*Math.PI;
+function drawAtoms(cx,cy,R,p){
+  // p: 0 = atoms, 1 = ions in a sea
+  const shellA=clamp(1-p/.35,0,1), seaA=clamp((p-.35)/.45,0,1), lab=M4.q===1?'+':'2+', free=clamp((p-.2)/.45,0,1);
+  if(seaA>0) seaRect(cx,cy,R,seaA);
+  SPOS.forEach(([u,v])=>{const x=cx+u*R,y=cy+v*R; if(shellA>0){ctx.globalAlpha=shellA;ctx.strokeStyle=TH.ink;ctx.lineWidth=1.8;ctx.beginPath();ctx.arc(x,y,R*.98,0,TAU);ctx.stroke();ctx.globalAlpha=1;} ionCore(x,y,R,p>.5?lab:'+');});
+  const showE=M4.el||p<.8, eA=M4.el?1:clamp(1-(p-.6)/.25,0,1);
+  if(showE&&eA>0) SPOS.forEach(([u,v],i)=>{for(let k=0;k<M4.q;k++){
+    const a=eAng(i,k,M4.q), ox=cx+(u+Math.cos(a)*.98)*R, oy=cy+(v+Math.sin(a)*.98)*R, e=M4.els[i*2+k];
+    const fx=cx+e.x*R, fy=cy+e.y*R; eMinus(lerp(ox,fx,ease(free)),lerp(oy,fy,ease(free)),R*.15,eA);}});
+}
+function drawRight(cx,cy,R){
+  seaRect(cx,cy,R,1); const lab=M4.q===1?'+':'2+';
+  SPOS.forEach(([u,v])=>ionCore(cx+u*R,cy+v*R,R,lab));
+  if(M4.el) SPOS.forEach((_,i)=>{for(let k=0;k<M4.q;k++){const e=M4.els[i*2+k];eMinus(cx+e.x*R,cy+e.y*R,R*.15);}});
+}
+function step4(dt){
+  M4.t+=dt;
+  if(M4.play){const t=clamp((performance.now()-M4.play.t0)/M4.play.dur,0,1);M4.p=t;$('sProg').value=Math.round(t*100);if(t>=1){M4.play=null;$('sPlay').textContent='Play again';}}
+  const damp=Math.pow(.25,dt);
+  for(const e of M4.els){e.vx=e.vx*damp+(Math.random()-.5)*dt*9;e.vy=e.vy*damp+(Math.random()-.5)*dt*9;e.x+=e.vx*dt;e.y+=e.vy*dt;
+    if(Math.abs(e.x)>3.0){e.x=Math.sign(e.x)*3.0;e.vx*=-1;} if(Math.abs(e.y)>2.25){e.y=Math.sign(e.y)*2.25;e.vy*=-1;}}
+}
+function draw4(){
+  if(M4.mode==='side'){
+    const R=Math.min(cw*.056,ch*.11), lx=cw*.25, rx=cw*.75, cy=ch*.44;
+    drawAtoms(lx,cy,R,0); drawRight(rx,cy,R);
+    // arrow
+    const ax0=lx+3.25*R, ax1=rx-3.55*R; ctx.strokeStyle=TH.ink; ctx.fillStyle=TH.ink; ctx.lineWidth=Math.max(4,R*.12);
+    ctx.beginPath();ctx.moveTo(ax0,cy);ctx.lineTo(ax1-R*.35,cy);ctx.stroke();ctx.beginPath();ctx.moveTo(ax1,cy);ctx.lineTo(ax1-R*.5,cy-R*.28);ctx.lineTo(ax1-R*.5,cy+R*.28);ctx.closePath();ctx.fill();
+    ctx.fillStyle=TH.muted; ctx.font='600 15px system-ui,sans-serif'; ctx.textAlign='center'; ctx.textBaseline='top';
+    ctx.fillText('Metal atoms',lx,cy+3.6*R+34); ctx.fillText('Positive ions and delocalised electrons',rx,cy+3.6*R+34);
+    if(M4.lab){
+      const r3=Math.sqrt(3), a=eAng(0,0,M4.q);
+      leader(lx+(-2+Math.cos(a)*.98)*R,cy+(-r3+Math.sin(a)*.98)*R,lx-2.6*R,cy-r3*R-1.3*R,'electron','center');
+      leader(lx+(2-.42)*R,cy-r3*R,lx+3.2*R,cy-r3*R-1.3*R,'positive core','center');
+      leader(lx+(2+.98*.7)*R,cy+(r3+.7)*R,lx+3.4*R,cy+r3*R+1.5*R,'outer shell','center');
+      leader(rx+R*.42,cy-r3*R+R*.1,rx+2.4*R,cy-r3*R-1.35*R,'positive ion','center');
+      leader(rx+1.4*R,cy+2.3*R,rx+1.4*R,cy+3.1*R,'delocalised electrons','center');
+    }
+  } else {
+    const R=Math.min(cw*.085,ch*.15), cx=cw/2, cy=ch*.5;
+    drawAtoms(cx,cy,R,M4.p);
+    if(M4.lab&&M4.p>.8) leader(cx+1.8*R,cy+2.3*R,cx+1.8*R,cy+2.95*R,'delocalised electrons','center');
+  }
+}
+function cap4(){
+  const ion=M4.q===1?'+':'2+';
+  if(M4.mode==='side') return `This is how the specification represents metallic bonding. On the left, metal atoms are packed together in a regular pattern: each dashed circle with + is the nucleus and inner shells, and the solid circle is the outer shell with its electron. On the right, the outer electrons have become delocalised. The shaded area represents the delocalised electrons, free to move through the whole structure, and each dashed circle is now a positive ion (${ion}). The sharing of delocalised electrons gives rise to strong metallic bonds.`;
+  const p=M4.p;
+  if(p<.2) return 'Metal atoms are packed together in a regular pattern. Each atom has its outer electron(s) on its outer shell. Press Play or drag the slider.';
+  if(p<.8) return 'The outer electrons leave their atoms and become delocalised: they are free to move through the whole structure, not just around one atom. The atoms are left as positive ions.';
+  return `The shaded area represents the delocalised electrons, shared by all the positive ions (${ion}). The strong electrostatic attraction between the positive ions and the delocalised electrons is metallic bonding.`;
+}
+$('sMode').onclick=e=>{const b=e.target.closest('button');if(!b)return;M4.mode=b.dataset.v;$('sMode').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));$('sAnimCtl').hidden=M4.mode!=='anim';$('pill1').textContent=M4.mode==='side'?'As shown in the specification':'Atoms to ions';};
+$('sProg').oninput=e=>{M4.play=null;M4.p=+e.target.value/100;$('sPlay').textContent='Play';};
+$('sPlay').onclick=()=>{M4.play={t0:performance.now(),dur:reduce?10:5000};$('sPlay').textContent='Playing…';};
+$('sLab').onchange=e=>{M4.lab=e.target.checked;};
+$('sEl').onchange=e=>{M4.el=e.target.checked;};
+$('sQ').onclick=e=>{const b=e.target.closest('button');if(!b)return;M4.q=+b.dataset.v;$('sQ').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));};
+
+/* ========== tabs, pointer, loop ========== */
+let mode='bond';
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+  mode=t.dataset.mode;
+  document.querySelectorAll('.tab').forEach(x=>x.setAttribute('aria-selected',x===t));
+  document.querySelectorAll('.panel').forEach(p=>p.hidden=p.dataset.for!==mode);
+  $('pill2').hidden=mode!=='cond';
+  if(mode==='bond') ui1(); if(mode==='alloy') ui3(); if(mode==='spec') $('pill1').textContent=M4.mode==='side'?'As shown in the specification':'Atoms to ions';
+  lastCap='';
+});
+function pt(e){const r=cv.getBoundingClientRect();return [e.clientX-r.left,e.clientY-r.top];}
+cv.addEventListener('pointerdown',e=>{
+  const [x,y]=pt(e);
+  if(mode==='bond'){click1(x,y);return;}
+  if(mode==='alloy'&&M3.geo&&!M3.anim){
+    const {d,Tp}=M3.geo; if(y<Tp+(M3.slip-.5)*d&&y>Tp-d){ cv.setPointerCapture(e.pointerId); M3.drag={x0:x,s0:M3.s}; }
+  }
+});
+cv.addEventListener('pointermove',e=>{
+  const [x,y]=pt(e);
+  if(mode==='alloy'){
+    if(M3.drag){ const {d}=M3.geo; let s=M3.drag.s0+(x-M3.drag.x0)/d; s=clamp(s,0,M3.drag.s0+maxSlip()); if(!blocked()) s=Math.min(s,3); M3.s=s; }
+    else if(M3.geo){ const {d,Tp}=M3.geo; cv.style.cursor=y<Tp+(M3.slip-.5)*d&&y>Tp-d?'grab':'default'; }
+  } else if(mode==='bond'&&M1.geo){ const {d,ox,oy}=M1.geo; cv.style.cursor=M1.s>=2&&M1.atoms.some(a=>Math.hypot(ox+a.x*d-x,oy+a.y*d-y)<.32*d)?'pointer':'default'; }
+  else cv.style.cursor='default';
+});
+function endDrag(){
+  if(!M3.drag) return; const d0=M3.drag.s0; M3.drag=null;
+  if(blocked()){ if(M3.s>d0+.05) toast('The layers are distorted, so they cannot slide easily.'); M3.anim={from:M3.s,to:d0,t0:performance.now(),dur:300}; }
+  else { M3.anim={from:M3.s,to:Math.round(M3.s),t0:performance.now(),dur:250}; }
+}
+cv.addEventListener('pointerup',endDrag); cv.addEventListener('pointercancel',endDrag);
+
+let lastCap='', uiT=0, last=performance.now();
+function frame(now){
+  const dt=Math.min(.05,(now-last)/1000); last=now;
+  ctx.fillStyle=TH.stage; ctx.fillRect(0,0,cw,ch);
+  if(mode==='bond'){ step1(dt); draw1(); }
+  else if(mode==='cond'){ const n=Math.max(1,Math.ceil(dt*60)); for(let i=0;i<n;i++) step2(dt/n); draw2(); }
+  else if(mode==='spec'){ step4(dt); draw4(); }
+  else draw3();
+  uiT+=dt;
+  if(uiT>.15){ uiT=0;
+    const c=mode==='bond'?cap1():mode==='cond'?cap2():mode==='spec'?cap4():cap3();
+    if(c!==lastCap){$('caption').textContent=c;lastCap=c;}
+    if(mode==='cond') ui2();
+  }
+  if(toastT>0){toastT-=dt;if(toastT<=0)$('toast').style.opacity=0;}
+  requestAnimationFrame(frame);
+}
+build1(); build2(); build3(); build4(); ui1();
+requestAnimationFrame(frame);
+})();
+</script>
+<style>
+.mcq{border-color:var(--good)}
+.mcq-q{margin:0;font-weight:600;font-size:.95rem}
+.mcq-opts{display:flex;flex-direction:column;gap:6px}
+.mcq-opts button{display:flex;gap:9px;align-items:flex-start;text-align:left;font-weight:500;line-height:1.35;padding:7px 10px;opacity:1}
+.mcq-opts button:disabled{cursor:default;opacity:.75}
+.mcq-opts button.right,.mcq-opts button.wrong{opacity:1;color:#fff}
+.mcq-opts button.right{background:var(--good);border-color:var(--good)}
+.mcq-opts button.wrong{background:var(--warn);border-color:var(--warn)}
+.mcq-l{flex:none;font-weight:800;width:1.2em}
+.mcq-fb{margin:0;font-size:.9rem;padding:8px 10px;border-radius:7px;border:1px solid var(--line);background:var(--chip)}
+.mcq-fb.ok b{color:var(--good)} .mcq-fb.no b{color:var(--warn)}
+.mcq-score{margin:0;font-size:1rem}
+.fq{padding:22px 26px 26px;display:flex;flex-direction:column;gap:14px;min-height:560px}
+.fq-head{display:flex;justify-content:space-between;font-weight:700;color:var(--muted);font-size:.9rem;letter-spacing:.04em;text-transform:uppercase}
+.fq-bar{height:8px;border-radius:4px;background:var(--chip);border:1px solid var(--line);overflow:hidden}
+.fq-bar span{display:block;height:100%;background:var(--good);transition:width .3s}
+.fq-q{margin:6px 0 0;font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;font-size:clamp(1.25rem,2.2vw,1.6rem);font-weight:600;line-height:1.3}
+.fq-opts button{font-size:1.08rem;padding:12px 14px}
+.fq .mcq-fb{font-size:1.02rem}
+.fq-big{margin:20px 0 0;font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;font-size:clamp(1.6rem,3vw,2.2rem)}
+.fq-msg{margin:0;font-size:1.05rem;color:var(--muted)}
+.fq-h{margin:8px 0 0;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.fq-review{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:10px}
+.fq-review p{margin:0}
+</style>
+<script>
+window.MCQ={n:10,tabs:{
+bond:[
+{q:"What are delocalised electrons?",o:["Outer electrons that are free to move through the whole structure","Electrons shared between two atoms","Electrons transferred to a non-metal","Electrons in the inner shells"],a:0,e:"In a metal, the outer electrons leave their atoms and can move through the whole structure."},
+{q:"Metallic bonding is the attraction between:",o:["Positive metal ions and delocalised electrons","Oppositely charged ions","Two nuclei and a shared pair of electrons","Neighbouring metal atoms' nuclei"],a:0,e:"The strong electrostatic attraction between the positive ions and the sea of delocalised electrons is metallic bonding."},
+{q:"Magnesium atoms have the electronic structure 2,8,2. How many delocalised electrons does each atom provide?",o:["2","1","8","12"],a:0,e:"Only the outer electrons are delocalised. Magnesium has 2, leaving Mg²⁺ ions."},
+{q:"Why do most metals have high melting points?",o:["A lot of energy is needed to overcome the strong metallic bonding","They have weak forces between molecules","They contain strong covalent bonds","Their ions are free to move"],a:0,e:"Metals have giant structures with strong metallic bonding, so a lot of energy is needed to overcome it."},
+{q:"How are the atoms arranged in a solid metal?",o:["In a regular pattern in a giant structure","As separate small molecules","In a random arrangement","In pairs"],a:0,e:"Metals consist of giant structures of atoms arranged in a regular pattern."}
+],
+spec:[
+{q:"In the specification diagram of a metal, what does the grey shaded area represent?",o:["The delocalised electrons","The positive ions","The nuclei","Empty space"],a:0,e:"The shading shows the delocalised electrons, spread through the whole structure."},
+{q:"In the diagram, what does each dashed circle with a + sign represent once the outer electrons have gone?",o:["A positive metal ion","A delocalised electron","A shared pair of electrons","A negative ion"],a:0,e:"The + core is the nucleus and inner shells: a positive metal ion."},
+{q:"What is a limitation of the specification diagram of metallic bonding?",o:["It is 2D and shows only a few ions of a giant structure","It shows electrons shared in pairs","It shows the ions as negative","It shows the metal as separate molecules"],a:0,e:"The real structure is 3D and contains an enormous number of ions."},
+{q:"Why does a piece of metal have no overall charge?",o:["The total charge of the positive ions equals the total charge of the delocalised electrons","The ions have no charge","The electrons stay in their atoms","Metals contain negative ions too"],a:0,e:"Every delocalised electron came from one of the atoms, so the charges balance."}
+],
+cond:[
+{q:"Why are metals good conductors of electricity?",o:["The delocalised electrons can move and carry charge through the metal","The positive ions move to the electrodes","Metals contain free protons","The bonds break when a current flows"],a:0,e:"Delocalised electrons are free to move through the whole structure, so they carry electrical charge."},
+{q:"When a potential difference is applied to a metal, which particles move through it?",o:["Delocalised electrons","Positive ions","Protons","Whole atoms"],a:0,e:"The electrons drift through the metal; the ions stay in their positions."},
+{q:"How is thermal energy transferred through a metal?",o:["By the delocalised electrons","By the ions moving through the metal","By convection currents","By shared pairs of electrons"],a:0,e:"Metals are good thermal conductors because energy is transferred by the delocalised electrons."},
+{q:"When a potential difference is applied, the delocalised electrons drift towards:",o:["The positive terminal","The negative terminal","The centre of the metal","Both terminals equally"],a:0,e:"Electrons are negative, so they are attracted towards the positive terminal."}
+],
+alloy:[
+{q:"What is an alloy?",o:["A mixture of a metal with other elements","A compound of a metal and a non-metal","A pure metal","A metal with no delocalised electrons"],a:0,e:"An alloy is a mixture of a metal with other elements, usually other metals."},
+{q:"Why can pure metals be bent and shaped?",o:["The layers of atoms can slide over each other","The atoms are different sizes","The metallic bonds are weak","There are no bonds between the atoms"],a:0,e:"In a pure metal, all the atoms are the same size and are arranged in layers that can slide."},
+{q:"Why are alloys harder than pure metals?",o:["Atoms of different sizes distort the layers, so they cannot slide easily","Alloys have covalent bonds","Alloys have no delocalised electrons","The atoms in an alloy are further apart"],a:0,e:"The different-sized atoms disrupt the regular layers, so a larger force is needed to make them slide."},
+{q:"Which of these is an alloy?",o:["Steel","Iron","Copper","Aluminium"],a:0,e:"Steel is iron mixed with carbon and other elements."},
+{q:"Brass is an alloy of copper and:",o:["Zinc","Tin","Iron","Carbon"],a:0,e:"Brass is copper with zinc. Bronze is copper with tin."}
+]},
+final:[
+{q:"Which is the best description of the structure of a metal?",o:["A giant structure of positive ions in a sea of delocalised electrons","Small molecules held by weak forces","A giant lattice of positive and negative ions","Atoms joined by shared pairs of electrons"],a:0,e:"Metals are giant structures of positive ions with delocalised electrons that are free to move."},
+{q:"Which property of metals is explained by delocalised electrons?",o:["They are good conductors of electricity","They are soft when pure","They are shiny when cut","They are dense"],a:0,e:"Delocalised electrons can move and carry charge, so metals conduct electricity."},
+{q:"Sodium atoms have the electronic structure 2,8,1. What is the charge on the ions in sodium metal?",o:["1+","1−","2+","8+"],a:0,e:"Each sodium atom loses its 1 outer electron to the sea of delocalised electrons, leaving Na⁺."},
+{q:"Aluminium atoms have the electronic structure 2,8,3. How many delocalised electrons does each atom provide?",o:["3","2","8","13"],a:0,e:"All 3 outer electrons are delocalised, leaving Al³⁺ ions."},
+{q:"Gold for jewellery is usually mixed with copper. Why?",o:["The alloy is harder than pure gold","The alloy conducts electricity better","Pure gold reacts with air","Copper makes the gold lighter"],a:0,e:"Pure gold is soft. Atoms of a different size distort the layers, making the alloy harder."},
+{q:"When a current flows through a copper wire, what happens to the copper ions?",o:["They stay in their positions and vibrate","They move to the positive terminal","They move to the negative terminal","They become atoms"],a:0,e:"Only the delocalised electrons drift through the wire. The ions stay in the lattice."},
+{q:"Which statement about metallic bonding is correct?",o:["It is strong and acts throughout the giant structure","It is weak, so metals melt easily","It only acts between pairs of atoms","It acts between separate molecules"],a:0,e:"The delocalised electrons are shared by all the ions, so the strong bonding acts throughout the structure."},
+{q:"Steel is an alloy of iron with:",o:["Carbon and other elements","Copper","Zinc only","Tin"],a:0,e:"Steels are iron mixed with carbon and often other elements."},
+{q:"Why can an alloy still conduct electricity?",o:["It still contains delocalised electrons","It contains ions that can move","Its layers can slide","It contains covalent bonds"],a:0,e:"Alloys are still metallic, so they have delocalised electrons that can carry charge."},
+{q:"A pure metal is bent into a new shape. What happens to its structure?",o:["Layers of atoms slide over each other and the metallic bonding holds","The metallic bonds all break","The atoms become ions","Electrons become fixed in place"],a:0,e:"The layers slide but the delocalised electrons are still shared, so the metal changes shape without breaking."},
+{q:"Which particles are attracted to each other in metallic bonding?",o:["Positive ions and delocalised electrons","Positive ions and negative ions","Neutral atoms","Protons and neutrons"],a:0,e:"Metallic bonding is the attraction between the positive metal ions and the delocalised electrons."}
+]};
+</script>
+<script>
+(() => {
+const B = window.MCQ; if (!B) return;
+const q$ = s => document.querySelector(s);
+const L = 'ABCD';
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function prep(q){const idx=shuffle(q.o.map((_,i)=>i));return {q:q.q,o:idx.map(i=>q.o[i]),a:idx.indexOf(q.a),e:q.e,src:q};}
+function optsHTML(q,ans){return q.o.map((o,k)=>{let c='';if(ans!==null){if(k===q.a)c='right';else if(k===ans)c='wrong';}return `<button data-k="${k}" class="${c}" ${ans!==null?'disabled':''}><span class="mcq-l">${L[k]}</span><span>${o}</span></button>`;}).join('');}
+function fbHTML(q,ans){return ans===null?'':`<p class="mcq-fb ${ans===q.a?'ok':'no'}"><b>${ans===q.a?'Correct.':'Not quite.'}</b> ${q.e}</p>`;}
+
+/* ---------- per-tab check questions ---------- */
+document.querySelectorAll('.panel[data-for]').forEach(p => {
+  const bank = B.tabs[p.dataset.for]; if (!bank) return;
+  const g = document.createElement('div'); g.className = 'group mcq';
+  const anchor = [...p.querySelectorAll('.group')].find(x => /^key$/i.test(x.querySelector('h2')?.textContent||''));
+  anchor ? p.insertBefore(g, anchor) : p.appendChild(g);
+  let qs, i, score, ans;
+  const start = () => { qs = shuffle(bank).map(prep); i = 0; score = 0; ans = null; render(); };
+  function render(){
+    if (i >= qs.length) {
+      g.innerHTML = `<h2>Check your understanding</h2><p class="mcq-score">You scored <b>${score} out of ${qs.length}</b>.</p><div class="btns"><button class="primary mcq-again">Try again</button></div>`;
+      g.querySelector('.mcq-again').onclick = start; return;
+    }
+    const q = qs[i];
+    g.innerHTML = `<h2>Check your understanding · ${i+1} of ${qs.length}</h2><p class="mcq-q">${q.q}</p><div class="mcq-opts">${optsHTML(q,ans)}</div>${fbHTML(q,ans)}${ans===null?'':`<div class="btns"><button class="primary mcq-next">${i+1<qs.length?'Next question':'See my score'}</button></div>`}`;
+    g.querySelectorAll('.mcq-opts button').forEach(b => b.onclick = () => { ans = +b.dataset.k; if (ans === q.a) score++; render(); });
+    const n = g.querySelector('.mcq-next'); if (n) n.onclick = () => { i++; ans = null; render(); };
+  }
+  start();
+});
+
+/* ---------- end of topic quiz ---------- */
+const nav = q$('.tabs'), stage = q$('.stage'), aside = q$('aside');
+const tab = document.createElement('button');
+tab.className = 'tab'; tab.setAttribute('role','tab'); tab.setAttribute('aria-selected','false');
+tab.textContent = `${nav.querySelectorAll('.tab').length + 1} · End of topic quiz`;
+nav.appendChild(tab);
+const panel = document.createElement('div'); panel.className = 'panel'; panel.hidden = true;
+panel.innerHTML = `<div class="group"><h2>End of topic quiz</h2><p class="fb">${B.n||10} multiple choice questions covering the whole topic. Each new quiz picks a different set of questions.</p><div class="tally" id="fqTally"></div><div class="btns"><button id="fqNew">Start a new quiz</button></div></div>`;
+aside.appendChild(panel);
+const box = document.createElement('div'); box.className = 'fq'; box.hidden = true; stage.appendChild(box);
+const hideEls = [...stage.children].filter(x => x !== box);
+let Q, qi, sc, an, wrong;
+function newQuiz(){
+  const pool = B.final.slice(), extra = Object.values(B.tabs).flat();
+  const n = B.n || 10, nf = Math.min(pool.length, Math.ceil(n*.6));
+  const pick = shuffle(pool).slice(0, nf).concat(shuffle(extra).slice(0, n - nf));
+  Q = shuffle(pick).map(prep); qi = 0; sc = 0; an = null; wrong = []; renderQ();
+}
+function tally(){ q$('#fqTally').innerHTML = `<span>Question</span><b>${Math.min(qi+1,Q.length)} of ${Q.length}</b><span>Score so far</span><b>${sc}</b>`; }
+function renderQ(){
+  tally();
+  if (qi >= Q.length) {
+    const pc = Math.round(sc/Q.length*100), msg = pc>=80?'Excellent work.':pc>=60?'Good work: review the questions below.':'Keep going: look back at the tabs for the questions you missed.';
+    box.innerHTML = `<div class="fq-head"><span>End of topic quiz</span><span>Finished</span></div><div class="fq-bar"><span style="width:100%"></span></div>
+      <p class="fq-big">You scored <b>${sc} out of ${Q.length}</b> (${pc}%)</p><p class="fq-msg">${msg}</p>
+      ${wrong.length?`<h3 class="fq-h">Questions to review</h3><ol class="fq-review">${wrong.map(q=>`<li><p>${q.q}</p><p><b>Answer:</b> ${q.o[q.a]}. ${q.e}</p></li>`).join('')}</ol>`:''}
+      <div class="btns"><button class="primary fq-again">Try a new quiz</button></div>`;
+    box.querySelector('.fq-again').onclick = newQuiz; return;
+  }
+  const q = Q[qi];
+  box.innerHTML = `<div class="fq-head"><span>Question ${qi+1} of ${Q.length}</span><span>Score: ${sc}</span></div><div class="fq-bar"><span style="width:${qi/Q.length*100}%"></span></div>
+    <p class="fq-q">${q.q}</p><div class="mcq-opts fq-opts">${optsHTML(q,an)}</div>${fbHTML(q,an)}
+    ${an===null?'':`<div class="btns"><button class="primary fq-next">${qi+1<Q.length?'Next question ▶':'See my score'}</button></div>`}`;
+  box.querySelectorAll('.mcq-opts button').forEach(b => b.onclick = () => { an = +b.dataset.k; if (an === q.a) sc++; else wrong.push(q); renderQ(); });
+  const n = box.querySelector('.fq-next'); if (n) n.onclick = () => { qi++; an = null; renderQ(); };
+}
+function showQuiz(on){
+  box.hidden = !on; hideEls.forEach(x => x.hidden = on); panel.hidden = !on;
+  if (on) {
+    nav.querySelectorAll('.tab').forEach(x => x.setAttribute('aria-selected', x === tab));
+    aside.querySelectorAll('.panel').forEach(p => { if (p !== panel) p.hidden = true; });
+    if (!Q) newQuiz();
+  }
+}
+tab.onclick = () => showQuiz(true);
+nav.querySelectorAll('.tab').forEach(t => { if (t !== tab) t.addEventListener('click', () => showQuiz(false)); });
+q$('#fqNew').onclick = newQuiz;
+})();
+</script>
+</body>
+</html>

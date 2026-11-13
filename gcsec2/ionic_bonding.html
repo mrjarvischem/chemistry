@@ -1,0 +1,1002 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ionic Bonding Walkthrough</title>
+<style>
+:root{
+  --paper:#efe6d6; --panel:#faf6ee; --stage:#fcf9f3; --ink:#33241a; --muted:#7a6553;
+  --line:#dccfb9; --chip:#f2e8d8; --accent:#8c4a1c; --accent-ink:#fff8ef;
+  --good:#3f7d3a; --warn:#b8402e; --melt:#e0822e; --water:#3f8fc6;
+  --metal:#7a52bd; --non:#3f8a33; --msoft:#e6dcf5; --xsoft:#dcecd5;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#1a1410; --panel:#241c16; --stage:#15100c; --ink:#efe4d3; --muted:#b39f88;
+    --line:#43362b; --chip:#30261e; --accent:#d9955a; --accent-ink:#1a1410;
+    --good:#8bc47f; --warn:#e67a63; --melt:#f09a48; --water:#6fb3e0;
+    --metal:#b496ea; --non:#86cc74; --msoft:#3a2f4d; --xsoft:#2c3d27; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#1a1410; --panel:#241c16; --stage:#15100c; --ink:#efe4d3; --muted:#b39f88;
+  --line:#43362b; --chip:#30261e; --accent:#d9955a; --accent-ink:#1a1410;
+  --good:#8bc47f; --warn:#e67a63; --melt:#f09a48; --water:#6fb3e0;
+  --metal:#b496ea; --non:#86cc74; --msoft:#3a2f4d; --xsoft:#2c3d27; color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:18px 16px 28px}
+[hidden]{display:none!important}
+.wrap{max-width:1360px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 20px}
+h1{font-family:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;font-weight:600;font-size:clamp(1.45rem,2.5vw,2.05rem);letter-spacing:-.01em;margin:0;text-wrap:balance}
+header p{margin:0;color:var(--muted);font-size:.95rem}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;border-bottom:1px solid var(--line)}
+.tab{background:none;border:none;border-bottom:3px solid transparent;border-radius:0;padding:8px 12px;font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;font-size:1.08rem;font-weight:600;color:var(--muted);margin-bottom:-1px}
+.tab:hover:not(:disabled){border-color:transparent;color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 350px;gap:16px;align-items:start}
+@media (max-width:920px){.layout{grid-template-columns:1fr}}
+.stage{background:var(--stage);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.canvas-box{position:relative;width:100%;aspect-ratio:16/10}
+@media (max-width:600px){.canvas-box{aspect-ratio:4/5}}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+.ov{position:absolute;top:10px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.ov.l{left:12px}.ov.r{right:12px}
+.pill{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:3px 11px;font-size:.82rem;font-weight:650}
+.pill b{font-variant-numeric:tabular-nums}
+.toast{position:absolute;left:12px;bottom:12px;max-width:calc(100% - 24px);background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:.88rem;pointer-events:none;transition:opacity .3s;opacity:0}
+.caption{border-top:1px solid var(--line);padding:12px 16px 14px;font-size:1.04rem;line-height:1.55;min-height:6.4em}
+.panel{display:flex;flex-direction:column;gap:12px}
+.group{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.group h2{margin:0;font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.btns{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button{font:inherit;font-weight:600;font-size:.92rem;padding:8px 12px;border-radius:7px;border:1px solid var(--line);background:var(--chip);color:var(--ink);cursor:pointer}
+button:hover:not(:disabled){border-color:var(--accent)}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+button[aria-pressed="true"]{background:var(--good);border-color:var(--good);color:var(--accent-ink)}
+button:disabled{opacity:.42;cursor:not-allowed}
+.small{font-size:.8rem;padding:5px 10px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{padding:6px 10px;display:flex;flex-direction:column;align-items:center;line-height:1.15;min-width:3.2em}
+.seg button small{font-size:.68rem;font-weight:500;opacity:.8}
+.seg button.right{background:var(--good);border-color:var(--good);color:var(--accent-ink)}
+.seg button.wrong{background:var(--warn);border-color:var(--warn);color:var(--accent-ink)}
+.pick{display:flex;flex-direction:column;gap:5px}
+.lab{font-size:.82rem;font-weight:650;color:var(--muted)}
+.tog{display:flex;gap:8px;align-items:center;font-size:.9rem;cursor:pointer}
+input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.fb{margin:0;font-size:.92rem}
+.note{margin:0;font-size:.85rem;color:var(--muted)}
+.big{font-family:"Cambria Math",Cambria,"Iowan Old Style",Georgia,serif;font-size:1.9rem;font-weight:700;line-height:1.1}
+.ionrow{font-size:.95rem}
+.ionrow+.note{margin-bottom:6px}
+.tally{display:grid;grid-template-columns:1fr auto;gap:3px 12px;font-size:.9rem;font-variant-numeric:tabular-nums}
+.tally b{text-align:right}
+.lims{display:flex;flex-direction:column;gap:6px;font-size:.88rem}
+.lims ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:3px}
+.lims .h{font-weight:700;font-size:.82rem}
+.lims .h.g{color:var(--good)} .lims .h.b{color:var(--warn)}
+.meter-row{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;font-size:.88rem;font-variant-numeric:tabular-nums}
+.meter{position:relative;height:10px;border-radius:5px;background:var(--chip);border:1px solid var(--line);overflow:hidden}
+.meter>span{position:absolute;inset:0 auto 0 0;width:0;background:linear-gradient(90deg,#d9b36b,#d8702b,#b8321f)}
+.mark{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--ink);opacity:.55;left:89.3%}
+.speed{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;font-size:.88rem}
+.key{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px 10px;font-size:.86rem}
+.dot{display:inline-block;width:13px;height:13px;border-radius:50%;margin-right:7px;vertical-align:-2px;border:1px solid rgba(0,0,0,.25)}
+.fbuild{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.fpart{display:flex;align-items:center;gap:4px}
+.fpart .sy{font-family:"Cambria Math",Cambria,Georgia,serif;font-size:1.5rem;font-weight:700;min-width:1.4em;text-align:center}
+.fpart .n{min-width:1.4em;text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
+.fpart button{padding:2px 9px}
+.preview{font-family:"Cambria Math",Cambria,Georgia,serif;font-size:1.6rem;font-weight:700}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Ionic bonding: from atoms to a giant lattice</h1>
+    <p>AQA GCSE 4.2.1.1–4.2.1.3 and 4.2.2.3</p>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab" role="tab" data-mode="transfer" aria-selected="true">1 · Electron transfer</button>
+    <button class="tab" role="tab" data-mode="lattice" aria-selected="false">2 · Giant ionic lattice</button>
+    <button class="tab" role="tab" data-mode="model" aria-selected="false">3 · Formula from a model</button>
+    <button class="tab" role="tab" data-mode="props" aria-selected="false">4 · Properties</button>
+  </nav>
+
+  <div class="layout">
+    <section class="stage">
+      <div class="canvas-box">
+        <canvas id="cv" aria-label="Ionic bonding model"></canvas>
+        <div class="ov l"><span class="pill" id="statePill" hidden>Solid</span><span class="pill" id="tempPill" hidden><b id="tempTxt">20</b> °C</span></div>
+        <div class="ov r"><button class="small" id="bView" hidden>Reset view</button></div>
+        <div class="toast" id="toast"></div>
+      </div>
+      <div class="caption" id="caption"></div>
+    </section>
+
+    <aside>
+      <!-- 1: electron transfer -->
+      <div class="panel" data-for="transfer">
+        <div class="group">
+          <h2>Choose the elements</h2>
+          <div class="pick"><span class="lab">Metal (Group 1 or 2)</span><div class="seg" id="metSeg"></div></div>
+          <div class="pick"><span class="lab">Non-metal (Group 6 or 7)</span><div class="seg" id="nonSeg"></div></div>
+        </div>
+        <div class="group">
+          <h2>Predict the charges</h2>
+          <div class="pick"><span class="lab" id="predMLab"></span><div class="seg" id="predM"></div></div>
+          <div class="pick"><span class="lab" id="predXLab"></span><div class="seg" id="predX"></div></div>
+          <p class="fb" id="predFb"></p>
+        </div>
+        <div class="group">
+          <h2>Transfer electrons</h2>
+          <div class="btns">
+            <button class="primary" id="bTr">Transfer an electron</button>
+            <button id="bAll">Transfer all</button>
+            <button id="bRe1">Reset</button>
+          </div>
+          <label class="tog"><input type="checkbox" id="cOO"> Outer shells only</label>
+        </div>
+        <div class="group"><h2>Atoms to ions</h2><div id="ionInfo"></div></div>
+        <div class="group"><h2>Formula</h2><div id="fml"></div></div>
+        <div class="group">
+          <h2>Key</h2>
+          <div class="key">
+            <span><b style="color:var(--metal)">●</b> electron from the metal</span>
+            <span><b style="color:var(--non)">×</b> electron from the non-metal</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2: lattice -->
+      <div class="panel" data-for="lattice" hidden>
+        <div class="group">
+          <h2>Representation</h2>
+          <div class="seg" id="repSeg">
+            <button data-v="ball" aria-pressed="true">Ball and stick</button>
+            <button data-v="space" aria-pressed="false">3D space-filling</button>
+            <button data-v="flat" aria-pressed="false">2D diagram</button>
+            <button data-v="dc" aria-pressed="false">Dot and cross</button>
+          </div>
+          <label class="tog"><input type="checkbox" id="cChg" checked> Charges on ions</label>
+        </div>
+        <div class="group" id="sizeGroup">
+          <h2>Size of model</h2>
+          <div class="speed"><span>Ions per edge</span><input type="range" id="rSize" min="2" max="6" step="1" value="3"><span id="sizeTxt">3</span></div>
+        </div>
+        <div class="group"><h2>Strengths and limitations</h2><div class="lims" id="lims"></div></div>
+        <div class="group"><h2>Count the ions</h2><div class="tally" id="tally2"></div><p class="note" id="note2"></p></div>
+        <div class="group" id="selGroup"><h2>Selected ion</h2><p class="fb" id="selInfo">Click an ion in the model.</p></div>
+        <div class="group">
+          <h2>Key</h2>
+          <div class="key">
+            <span><i class="dot" style="background:#8a63c9"></i>Na⁺ ion</span>
+            <span><i class="dot" style="background:#4f9e3f"></i>Cl⁻ ion</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3: model -->
+      <div class="panel" data-for="model" hidden>
+        <div class="group">
+          <h2>Model</h2>
+          <div class="btns"><button id="bPrev3" aria-label="Previous model">◀</button><span id="pz3"></span><button id="bNext3" aria-label="Next model">▶</button></div>
+          <div class="key" id="key3"></div>
+          <label class="tog"><input type="checkbox" id="cLab3" checked> Label ions with symbols</label>
+        </div>
+        <div class="group">
+          <h2>Your count</h2>
+          <div class="tally" id="tally3"></div>
+          <div class="btns"><button id="bClr3">Clear ticks</button><button id="bRev3">Reveal counts</button></div>
+        </div>
+        <div class="group">
+          <h2>Write the empirical formula</h2>
+          <div class="fbuild" id="fbuild"></div>
+          <div class="btns"><span class="preview" id="fprev"></span><button class="primary" id="bChk3">Check</button></div>
+          <p class="fb" id="fb3"></p>
+        </div>
+      </div>
+
+      <!-- 4: properties -->
+      <div class="panel" data-for="props" hidden>
+        <div class="group">
+          <h2>Compound</h2>
+          <div class="seg" id="cmpSeg">
+            <button data-v="NaCl" aria-pressed="true">Sodium chloride</button>
+            <button data-v="MgO" aria-pressed="false">Magnesium oxide</button>
+          </div>
+        </div>
+        <div class="group">
+          <h2>Change the state</h2>
+          <div class="btns">
+            <button class="primary" id="bHeat">Heat to melt</button>
+            <button class="primary" id="bDis">Dissolve in water</button>
+            <button id="bRe4">Reset</button>
+          </div>
+          <div class="meter-row"><span>Temperature</span><div class="meter"><span id="tFill"></span><i class="mark"></i></div><span id="tTxt2">20 °C</span></div>
+          <p class="note" id="mpHint"></p>
+        </div>
+        <div class="group">
+          <h2>Does it conduct?</h2>
+          <div class="btns"><button id="bTest" aria-pressed="false">Test conductivity</button></div>
+          <p class="fb" id="condTxt"></p>
+        </div>
+        <div class="group">
+          <h2>Melting points</h2>
+          <div class="tally">
+            <span>Sodium chloride (Na⁺ Cl⁻)</span><b>801 °C</b>
+            <span>Magnesium oxide (Mg²⁺ O²⁻)</span><b>2852 °C</b>
+            <span>Water (small molecules)</span><b>0 °C</b>
+          </div>
+          <p class="note">Ionic compounds have high melting and boiling points because a large amount of energy is needed to break the many strong bonds. Ions with larger charges attract each other more strongly.</p>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+(() => {
+const $ = id => document.getElementById(id);
+const cv = $('cv'), ctx = cv.getContext('2d');
+let cw = 800, ch = 500;
+function resize(){
+  const r = cv.getBoundingClientRect(), d = Math.min(2, window.devicePixelRatio || 1);
+  cw = Math.max(50, r.width); ch = Math.max(50, r.height);
+  cv.width = Math.round(cw*d); cv.height = Math.round(ch*d); ctx.setTransform(d,0,0,d,0,0);
+}
+new ResizeObserver(resize).observe(cv); resize();
+
+const TH = {};
+function readTheme(){
+  const s = getComputedStyle(document.documentElement);
+  ['stage','ink','muted','line','accent','good','warn','melt','water','metal','non','msoft','xsoft','panel'].forEach(k => TH[k] = s.getPropertyValue('--'+k).trim() || '#888');
+}
+readTheme();
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', readTheme);
+
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const TAU = Math.PI*2, PI = Math.PI;
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+const ease = t => t<.5 ? 2*t*t : 1-Math.pow(-2*t+2,2)/2;
+const gcd = (a,b) => b ? gcd(b, a%b) : a;
+const wrapA = a => ((a+PI)%TAU+TAU)%TAU-PI;
+let spare = null;
+function gauss(){ if(spare!==null){const s=spare;spare=null;return s;} let u,v,s; do{u=Math.random()*2-1;v=Math.random()*2-1;s=u*u+v*v;}while(s>=1||s===0); const m=Math.sqrt(-2*Math.log(s)/s); spare=v*m; return u*m; }
+function rgb(h){h=h.replace('#','');const n=parseInt(h,16);return [n>>16&255,n>>8&255,n&255];}
+function mix(a,b,t){const A=rgb(a),B=rgb(b);return `rgb(${A.map((v,i)=>Math.round(v+(B[i]-v)*t)).join(',')})`;}
+function sprite(hex){
+  const S=96,c=document.createElement('canvas');c.width=c.height=S;const g=c.getContext('2d');
+  const gr=g.createRadialGradient(S*.36,S*.32,S*.03,S*.5,S*.5,S*.5);
+  gr.addColorStop(0,mix(hex,'#ffffff',.75));gr.addColorStop(.28,mix(hex,'#ffffff',.18));
+  gr.addColorStop(.72,hex);gr.addColorStop(1,mix(hex,'#000000',.5));
+  g.fillStyle=gr;g.beginPath();g.arc(S/2,S/2,S/2-1,0,TAU);g.fill();return c;
+}
+const COL = {M:'#8a63c9', X:'#4f9e3f'};
+const SPR = {M:sprite(COL.M), X:sprite(COL.X)};
+const SUBD = '₀₁₂₃₄₅₆₇₈₉';
+const subN = n => n>1 ? String(n).split('').map(d=>SUBD[d]).join('') : '';
+const SUPP = {1:'⁺',2:'²⁺',3:'³⁺'}, SUPM = {1:'⁻',2:'²⁻',3:'³⁻'};
+const ionS = (sym,q) => sym + (q>0 ? SUPP[q] : SUPM[-q]);
+const cap = s => s[0].toUpperCase()+s.slice(1);
+const pl = (n,w) => `${n} ${w}${n===1?'':'s'}`;
+
+let toastT = 0;
+function toast(t){ $('toast').textContent=t; $('toast').style.opacity=1; toastT=5; }
+
+/* ============ shared 3D projection ============ */
+let yaw=-0.5, baseYaw=-0.5, pitch=0.42, sway=!reduce, swayT=0;
+const CAM=26; let F=300, pcx=0, pcy=0, yOff=0;
+function proj(x,y,z){
+  y-=yOff;
+  const c1=Math.cos(yaw),s1=Math.sin(yaw),X=c1*x+s1*z,Z=-s1*x+c1*z;
+  const c2=Math.cos(pitch),s2=Math.sin(pitch),Y=c2*y-s2*Z,Z2=s2*y+c2*Z;
+  const d=CAM-Z2,s=F/d; return {sx:pcx+X*s,sy:pcy-Y*s,d,s};
+}
+function ball(it){
+  ctx.globalAlpha=it.al; ctx.drawImage(it.spr,it.sx-it.r,it.sy-it.r,it.r*2,it.r*2);
+  if(it.ring){ctx.globalAlpha=1;ctx.strokeStyle=it.ring;ctx.lineWidth=Math.max(2.5,it.r*.14);ctx.beginPath();ctx.arc(it.sx,it.sy,it.r+2,0,TAU);ctx.stroke();}
+  if(it.lab&&it.r>6){ctx.globalAlpha=Math.max(.3,it.al);ctx.fillStyle='#fff';ctx.font=`700 ${Math.round(it.r*(it.lab.length>1?.8:1.2))}px system-ui,sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(it.lab,it.sx,it.sy+it.r*.06);}
+  ctx.globalAlpha=1;
+}
+function line3(a,b,col,lw){ctx.beginPath();ctx.moveTo(a.sx,a.sy);ctx.lineTo(b.sx,b.sy);ctx.strokeStyle=col;ctx.lineWidth=lw;ctx.stroke();}
+
+/* ============ MODE 1: electron transfer (dot and cross) ============ */
+const MET = {
+  Li:{name:'lithium',cfg:[2,1],g:1}, Na:{name:'sodium',cfg:[2,8,1],g:1}, K:{name:'potassium',cfg:[2,8,8,1],g:1},
+  Mg:{name:'magnesium',cfg:[2,8,2],g:2}, Ca:{name:'calcium',cfg:[2,8,8,2],g:2}
+};
+const NON = {
+  O:{name:'oxygen',ion:'oxide',cfg:[2,6],g:6}, S:{name:'sulfur',ion:'sulfide',cfg:[2,8,6],g:6},
+  F:{name:'fluorine',ion:'fluoride',cfg:[2,7],g:7}, Cl:{name:'chlorine',ion:'chloride',cfg:[2,8,7],g:7}
+};
+const NOBLE = {'2':'helium','2,8':'neon','2,8,8':'argon'};
+const rU = s => 1.15 + .8*s;
+
+function makeDC(ms, xs){
+  const m=MET[ms], x=NON[xs], qm=m.g, qx=8-x.g, g=gcd(qm,qx), nM=qx/g, nX=qm/g;
+  const order = nM===nX ? ['M','X'] : nM===2 ? ['M','X','M'] : ['X','M','X'];
+  const atoms = order.map((t,i)=>({t, sym:t==='M'?ms:xs, d:t==='M'?m:x, i, e:[], lost:0, gained:0, bA:0, sA:[]}));
+  atoms.forEach(a=>{
+    const L=atoms[a.i-1], R=atoms[a.i+1];
+    a.both = !!(L&&R);
+    a.dirP = R ? 1 : 3;
+    const rot = a.t==='X' && !a.both ? (R ? -PI : 0) : 0;
+    a.comp = [-PI/2,0,PI/2,PI].map(c=>c+rot);
+    a.d.cfg.forEach((c,s)=>{
+      const outer = s===a.d.cfg.length-1;
+      for(let k=0;k<c;k++){
+        let p;
+        if(s===0) p=[0,2][k];
+        else if(outer&&a.t==='M') p = a.both ? (k?1:3) : a.dirP;
+        else if(outer&&a.t==='X') p = (qx===1 ? [0,1,2,3,0,1,2] : a.both ? [0,2,1,3,0,2] : [0,1,2,0,1,2])[k];
+        else p = k%4;
+        a.e.push({own:a.t, shell:s, p, ang:null, fly:null});
+      }
+    });
+  });
+  return {ms, xs, m, x, qm, qx, nM, nX, atoms, drag:null, L:null};
+}
+const occShells = a => [...new Set(a.e.map(e=>e.shell))];
+const outerOf = a => Math.max(-1, ...a.e.map(e=>e.shell));
+const arrived = a => a.e.filter(e=>e.own==='M'&&a.t==='X'&&!e.fly).length;
+const isIon = (st,a) => a.t==='M' ? a.lost>=st.qm : arrived(a)>=st.qx;
+const allDone = st => st.atoms.every(a=>isIon(st,a));
+
+function transfer(st,a,e,b,from,delay=0){
+  a.e.splice(a.e.indexOf(e),1); a.lost++;
+  const p = (st.qx===2 && b.both) ? (a.i>b.i ? 1 : 3) : 3;
+  b.e.push({own:'M', shell:b.d.cfg.length-1, p, ang:null, fly:{from, t:-delay}});
+  b.gained++;
+}
+function autoTransfer(st, delay=0){
+  for(const a of st.atoms){
+    if(a.t!=='M'||a.lost>=st.qm) continue;
+    const o=outerOf(a), e=a.e.find(f=>f.shell===o&&!f.dragging);
+    if(!e) continue;
+    let b = st.atoms[a.i + (e.p===1?1:-1)];
+    if(!b||b.t!=='X'||b.gained>=st.qx) b = st.atoms.find(c=>c.t==='X'&&c.gained<st.qx);
+    if(!b) return false;
+    transfer(st,a,e,b,[e.sx??a.sx,e.sy??a.sy],delay);
+    return true;
+  }
+  return false;
+}
+function eAng(a,e){
+  const pts=a.e.filter(f=>f.shell===e.shell&&f.p===e.p&&!f.dragging), k=pts.indexOf(e), base=a.comp[e.p];
+  if(pts.length<2||k<0) return base;
+  const off=.42/rU(e.shell); return base + (k ? off : -off);
+}
+function dcLayout(st,reg){
+  const N=st.atoms.length, maxS=Math.max(...st.atoms.map(a=>a.d.cfg.length))-1, Rm=rU(maxS), SP=2*Rm+2.5;
+  const Wu=(N-1)*SP+2*Rm+2.6, Hu=2*Rm+4.6, u=Math.min(reg.w/Wu, reg.h/Hu);
+  return {u, SP, Rm, N, cx:reg.x+reg.w/2, cy:reg.y+reg.h/2-.9*u};
+}
+function mark(x,y,own,r){
+  if(own==='M'){ctx.fillStyle=TH.metal;ctx.beginPath();ctx.arc(x,y,r*.85,0,TAU);ctx.fill();}
+  else{ctx.strokeStyle=TH.non;ctx.lineWidth=Math.max(2,r*.42);ctx.lineCap='round';ctx.beginPath();ctx.moveTo(x-r,y-r);ctx.lineTo(x+r,y+r);ctx.moveTo(x+r,y-r);ctx.lineTo(x-r,y+r);ctx.stroke();}
+}
+function bracket(x,y,r,q,al,u){
+  ctx.globalAlpha=al; ctx.strokeStyle=TH.ink; ctx.lineWidth=Math.max(2,u*.08); ctx.lineCap='butt';
+  const w=Math.min(r*.25,u*.7); ctx.beginPath();
+  ctx.moveTo(x-r+w,y-r);ctx.lineTo(x-r,y-r);ctx.lineTo(x-r,y+r);ctx.lineTo(x-r+w,y+r);
+  ctx.moveTo(x+r-w,y-r);ctx.lineTo(x+r,y-r);ctx.lineTo(x+r,y+r);ctx.lineTo(x+r-w,y+r);ctx.stroke();
+  ctx.fillStyle=q.includes('+')?TH.accent:TH.ink; ctx.font=`700 ${Math.round(u*.85)}px system-ui,sans-serif`;
+  ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(q,x+r+.12*u,y-r+.2*u); ctx.globalAlpha=1;
+}
+function drawDC(st,reg,oo,dt){
+  const L=dcLayout(st,reg), u=L.u; st.L=L;
+  const er=clamp(u*.17,3.5,8), k=Math.min(1,dt*9);
+  for(const a of st.atoms){
+    const x=L.cx+(a.i-(L.N-1)/2)*L.SP*u, y=L.cy; a.sx=x; a.sy=y;
+    const ion=isIon(st,a), occ=occShells(a), outer=outerOf(a);
+    let vis;
+    if(!oo) vis=occ;
+    else if(a.t==='M'&&a.lost>=st.qm) vis=[];
+    else vis=[a.t==='M'?outer:a.d.cfg.length-1];
+    a.vis=vis;
+    for(let s=0;s<a.d.cfg.length;s++){
+      const on=vis.includes(s)?1:0; if(a.sA[s]==null) a.sA[s]=on; a.sA[s]+=(on-a.sA[s])*Math.min(1,dt*6);
+      if(a.sA[s]>.01){ctx.globalAlpha=a.sA[s];ctx.strokeStyle=TH.muted;ctx.lineWidth=1.6;ctx.beginPath();ctx.arc(x,y,rU(s)*u,0,TAU);ctx.stroke();ctx.globalAlpha=1;}
+    }
+    ctx.fillStyle=a.t==='M'?TH.msoft:TH.xsoft; ctx.strokeStyle=TH.ink; ctx.lineWidth=1.4;
+    ctx.beginPath(); ctx.arc(x,y,.62*u,0,TAU); ctx.fill(); ctx.stroke();
+    ctx.fillStyle=TH.ink; ctx.font=`700 ${Math.round(u*.62)}px "Iowan Old Style",Palatino,Georgia,serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(a.sym,x,y+1);
+    for(const e of a.e){
+      if(e.dragging) continue;
+      const tg=eAng(a,e); if(e.ang==null) e.ang=tg; else e.ang+=wrapA(tg-e.ang)*k;
+      let ex=x+Math.cos(e.ang)*rU(e.shell)*u, ey=y+Math.sin(e.ang)*rU(e.shell)*u;
+      if(e.fly){
+        e.fly.t+=dt/(reduce?.05:.9);
+        const t=ease(clamp(e.fly.t,0,1)), [fx,fy]=e.fly.from, mx=(fx+ex)/2, my=Math.min(fy,ey)-1.8*u;
+        ex=(1-t)*(1-t)*fx+2*(1-t)*t*mx+t*t*ex; ey=(1-t)*(1-t)*fy+2*(1-t)*t*my+t*t*ey;
+        if(e.fly.t>=1){e.fly=null; uiDirty=true;}
+        e.sx=ex; e.sy=ey; mark(ex,ey,e.own,er); continue;
+      }
+      e.sx=ex; e.sy=ey; e.shown=vis.includes(e.shell);
+      if(e.shown) mark(ex,ey,e.own,er);
+    }
+    a.bA+=((ion?1:0)-a.bA)*Math.min(1,dt*5);
+    if(a.bA>.01){
+      const ro = vis.length ? rU(Math.max(...vis))+.5 : 1.05;
+      bracket(x,y,ro*u, a.t==='M'?(st.qm>1?st.qm+'+':'+'):(st.qx>1?st.qx+'−':'−'), a.bA, u);
+    }
+    const cfg=a.d.cfg.map((_,s)=>a.e.filter(e=>e.shell===s&&!(e.fly&&e.fly.t<1)).length).filter(n=>n>0).join(',');
+    const nm = ion ? (a.t==='M' ? `${cap(a.d.name)} ion, ${ionS(a.sym,st.qm)}` : `${cap(a.d.ion)} ion, ${ionS(a.sym,-st.qx)}`) : `${cap(a.d.name)} atom`;
+    ctx.fillStyle=TH.ink; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.font=`700 ${Math.round(u*.48)}px "Iowan Old Style",Palatino,Georgia,serif`; ctx.fillText(nm,x,y+(L.Rm+1.1)*u);
+    ctx.fillStyle=TH.muted; ctx.font=`${Math.round(u*.44)}px system-ui,sans-serif`; ctx.fillText(`(${cfg})`,x,y+(L.Rm+1.8)*u);
+  }
+  if(st.drag){ const d=st.drag; ctx.globalAlpha=.2; ctx.fillStyle=TH.accent; ctx.beginPath(); ctx.arc(d.x,d.y,er*3,0,TAU); ctx.fill(); ctx.globalAlpha=1; mark(d.x,d.y,'M',er*1.2); }
+}
+
+let tm='Na', tn='Cl', T1=null, oo=false, pred={m:null,x:null}, uiDirty=true;
+function build1(){ T1=makeDC(tm,tn); pred={m:null,x:null}; renderPred(); uiDirty=true; }
+function segButtons(el, items, cur){ el.innerHTML=items.map(([v,l])=>`<button data-v="${v}" aria-pressed="${v===cur}">${l}</button>`).join(''); }
+function setPressed(el,v){ el.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.v===v)); }
+segButtons($('metSeg'), Object.entries(MET).map(([k,d])=>[k,`${k}<small>Group ${d.g}</small>`]), tm);
+segButtons($('nonSeg'), Object.entries(NON).map(([k,d])=>[k,`${k}<small>Group ${d.g}</small>`]), tn);
+$('metSeg').onclick=e=>{const b=e.target.closest('button');if(!b)return;tm=b.dataset.v;setPressed($('metSeg'),tm);build1();};
+$('nonSeg').onclick=e=>{const b=e.target.closest('button');if(!b)return;tn=b.dataset.v;setPressed($('nonSeg'),tn);build1();};
+
+function renderPred(){
+  const st=T1;
+  $('predMLab').textContent=`Charge on a ${st.m.name} ion`;
+  $('predXLab').textContent=`Charge on ${/^[aeiou]/.test(st.x.ion)?'an':'a'} ${st.x.ion} ion`;
+  const mk=(vals,sign,chosen,right)=>vals.map(v=>{let c='';if(chosen!=null){if(v===right)c='right';else if(v===chosen)c='wrong';}
+    return `<button data-v="${v}" class="${c}" ${chosen!=null?'disabled':''}>${sign}${v}</button>`;}).join('');
+  $('predM').innerHTML=mk([1,2,3],'+',pred.m,st.qm);
+  $('predX').innerHTML=mk([1,2,3],'−',pred.x,st.qx);
+  const lines=[];
+  if(pred.m!=null) lines.push(pred.m===st.qm
+    ? `✓ ${cap(st.m.name)} is in Group ${st.m.g}, so its atoms lose ${pl(st.qm,'electron')} to form ${ionS(st.ms,st.qm)} ions.`
+    : `✗ ${cap(st.m.name)} is in Group ${st.m.g}: it has ${pl(st.m.g,'outer electron')} to lose, so the ion is ${ionS(st.ms,st.qm)}.`);
+  if(pred.x!=null) lines.push(pred.x===st.qx
+    ? `✓ ${cap(st.x.name)} is in Group ${st.x.g}, so its atoms gain 8 − ${st.x.g} = ${pl(st.qx,'electron')} to form ${ionS(st.xs,-st.qx)} ions.`
+    : `✗ ${cap(st.x.name)} is in Group ${st.x.g}: it needs 8 − ${st.x.g} = ${pl(st.qx,'more electron')}, so the ion is ${ionS(st.xs,-st.qx)}.`);
+  $('predFb').textContent = lines.length ? lines.join(' ') : 'Use the group number of each element. Metals lose electrons; non-metals gain them.';
+}
+$('predM').onclick=e=>{const b=e.target.closest('button');if(!b||pred.m!=null)return;pred.m=+b.dataset.v;renderPred();};
+$('predX').onclick=e=>{const b=e.target.closest('button');if(!b||pred.x!=null)return;pred.x=+b.dataset.v;renderPred();};
+
+$('bTr').onclick=()=>{ if(!autoTransfer(T1)) toast('All the electrons have been transferred.'); uiDirty=true; };
+$('bAll').onclick=()=>{ let n=0; while(autoTransfer(T1,n*.55)) n++; if(!n) toast('All the electrons have been transferred.'); uiDirty=true; };
+$('bRe1').onclick=build1;
+$('cOO').onchange=e=>{ oo=e.target.checked; };
+
+function info1(){
+  const st=T1, done=allDone(st);
+  const mIon=st.atoms.filter(a=>a.t==='M').every(a=>isIon(st,a)), xIon=st.atoms.filter(a=>a.t==='X').every(a=>isIon(st,a));
+  const mc=st.m.cfg, xc=st.x.cfg, mi=mc.slice(0,-1).join(','), xi=[...xc.slice(0,-1),8].join(',');
+  $('ionInfo').innerHTML =
+   `<div class="ionrow"><b>${st.ms}</b> atom (${mc.join(',')}) → ${mIon?`<b>${ionS(st.ms,st.qm)}</b> ion (${mi})`:'?'}</div>
+    <p class="note">Group ${st.m.g}: loses ${pl(st.qm,'electron')}${mIon?` · same electronic structure as ${NOBLE[mi]}`:''}</p>
+    <div class="ionrow"><b>${st.xs}</b> atom (${xc.join(',')}) → ${xIon?`<b>${ionS(st.xs,-st.qx)}</b> ion (${xi})`:'?'}</div>
+    <p class="note">Group ${st.x.g}: gains ${pl(st.qx,'electron')}${xIon?` · same electronic structure as ${NOBLE[xi]}`:''}</p>`;
+  const f=st.ms+subN(st.nM)+st.xs+subN(st.nX);
+  $('fml').innerHTML = done
+   ? `<div class="big">${f}</div><p class="note">${cap(st.m.name)} ${st.x.ion}: ${st.nM} × (${st.qm}+) and ${st.nX} × (${st.qx}−). The charges cancel, so the compound has no overall charge.</p>`
+   : `<p class="note">The total positive charge must equal the total negative charge. Finish the electron transfer to see the formula.</p>`;
+}
+function cap1(){
+  const st=T1, m=st.m, x=st.x, tot=st.qm*st.nM, sent=st.atoms.reduce((s,a)=>s+a.lost,0);
+  if(sent===0) return `${cap(m.name)} is a metal in Group ${m.g} (${m.cfg.join(',')}). ${cap(x.name)} is a non-metal in Group ${x.g} (${x.cfg.join(',')}). When a metal atom reacts with a non-metal atom, electrons in the outer shell of the metal atom are transferred to the non-metal atom. Drag an outer electron (●) from a ${m.name} atom onto a ${x.name} atom, or press Transfer.`;
+  if(!allDone(st)) return `${pl(sent,'electron')} of ${tot} transferred. Each ${m.name} atom must lose ${pl(st.qm,'electron')} and each ${x.name} atom must gain ${pl(st.qx,'electron')}, so that every particle has a full outer shell.`;
+  let s=`Each ${m.name} atom has lost ${pl(st.qm,'electron')} to become a positive ion, ${ionS(st.ms,st.qm)}. Each ${x.name} atom has gained ${pl(st.qx,'electron')} to become a negative ion, ${ionS(st.xs,-st.qx)}. Both ions have the electronic structure of a noble gas (Group 0). The oppositely charged ions attract each other with strong electrostatic forces: this is ionic bonding.`;
+  if(st.nM>1) s+=` Two ${m.name} atoms are needed, because each ${x.name} atom gains 2 electrons but each ${m.name} atom gives only 1.`;
+  if(st.nX>1) s+=` Two ${x.name} atoms are needed, because each ${m.name} atom gives 2 electrons but each ${x.name} atom takes only 1.`;
+  return s;
+}
+function hitElectron(st,x,y){
+  let best=null,bd=16;
+  for(const a of st.atoms) for(const e of a.e){ if(e.fly||!e.shown||e.sx==null) continue; const d=Math.hypot(e.sx-x,e.sy-y); if(d<bd){bd=d;best=[a,e];} }
+  return best;
+}
+function down1(x,y){
+  const st=T1, h=hitElectron(st,x,y); if(!h) return;
+  const [a,e]=h;
+  if(a.t==='X'){ toast(a.e.indexOf(e)>=0&&e.own==='M' ? 'That electron has already been transferred.' : `Non-metal atoms gain electrons to fill their outer shell. They do not give them away.`); return; }
+  if(e.shell!==outerOf(a)){ toast('Only electrons in the outer shell are transferred.'); return; }
+  e.dragging=true; st.drag={a,e,x,y};
+}
+function move1(x,y){ if(T1.drag){T1.drag.x=x;T1.drag.y=y;} }
+function up1(x,y){
+  const st=T1, d=st.drag; if(!d) return; st.drag=null; d.e.dragging=false;
+  const b=st.atoms.find(c=>Math.hypot(c.sx-x,c.sy-y)<(rU(c.d.cfg.length-1)+.4)*st.L.u);
+  if(!b||b===d.a){ toast(`Drop the electron onto a ${st.x.name} atom.`); return; }
+  if(b.t==='M'){ toast('Metal atoms lose electrons. Drop it on the non-metal atom.'); return; }
+  if(b.gained>=st.qx){ toast(`That ${st.x.name} atom already has a full outer shell.`); return; }
+  transfer(st,d.a,d.e,b,[x,y]); uiDirty=true;
+}
+
+/* ============ MODE 2: giant lattice representations ============ */
+const L2 = {n:3, style:'ball', sel:-1, ions:[], pairs:[], charges:true, items:[]};
+function build2(){
+  const n=L2.n, o=(n-1)/2; L2.ions=[]; L2.pairs=[];
+  for(let i=0;i<n;i++)for(let j=0;j<n;j++)for(let k=0;k<n;k++) L2.ions.push({t:(i+j+k)%2?'M':'X',i,j,k,x:i-o,y:j-o,z:k-o});
+  L2.ions.forEach((a,p)=>L2.ions.forEach((b,q)=>{ if(q>p && Math.abs(a.i-b.i)+Math.abs(a.j-b.j)+Math.abs(a.k-b.k)===1) L2.pairs.push([p,q]); }));
+  L2.sel=-1; uiDirty=true;
+}
+const nbrs2 = idx => { const a=L2.ions[idx]; const r=[]; L2.ions.forEach((b,q)=>{ if(Math.abs(a.i-b.i)+Math.abs(a.j-b.j)+Math.abs(a.k-b.k)===1) r.push(q); }); return r; };
+let dcStatic=null;
+function buildStatic(){ dcStatic=makeDC('Na','Cl'); while(autoTransfer(dcStatic)); dcStatic.atoms.forEach(a=>a.e.forEach(e=>e.fly=null)); }
+function draw2(dt){
+  if(L2.style==='flat') return drawFlat();
+  if(L2.style==='dc'){ drawDC(dcStatic,{x:cw*.08,y:ch*.06,w:cw*.84,h:ch*.88},true,dt); return; }
+  const n=L2.n, ext=(n-1)/2+.75; yOff=0; F=Math.min(cw,ch)*.46*CAM/(ext*1.8); pcx=cw/2; pcy=ch/2;
+  const space=L2.style==='space', RM=space?.36:.17, RX=space?.64:.27, sel=L2.sel, ns=sel>=0?new Set(nbrs2(sel)):null;
+  const items=[]; L2.items=[];
+  L2.ions.forEach((o,q)=>{
+    const p=proj(o.x,o.y,o.z), hl=sel<0||q===sel||ns.has(q);
+    const it={kind:'b',q,d:p.d,sx:p.sx,sy:p.sy,r:(o.t==='M'?RM:RX)*p.s,spr:SPR[o.t],al:hl?1:(space?.15:.22),lab:L2.charges?(o.t==='M'?'+':'−'):null,ring:q===sel?TH.accent:null};
+    items.push(it); L2.items.push(it);
+  });
+  if(!space) for(const [a,b] of L2.pairs){
+    const A=L2.ions[a],B=L2.ions[b],pa=proj(A.x,A.y,A.z),pb=proj(B.x,B.y,B.z);
+    const hot=sel>=0&&((a===sel&&ns.has(b))||(b===sel&&ns.has(a)));
+    items.push({kind:'s',d:(pa.d+pb.d)/2+.001,a:pa,b:pb,w:(hot?.08:.04)*(pa.s+pb.s)/2,col:hot?TH.accent:TH.muted,al:sel>=0&&!hot?.12:(hot?1:.55)});
+  }
+  items.sort((a,b)=>b.d-a.d);
+  ctx.lineCap='round';
+  for(const it of items){ if(it.kind==='s'){ctx.globalAlpha=it.al;line3(it.a,it.b,it.col,it.w);ctx.globalAlpha=1;} else ball(it); }
+}
+function flatGrid(){ const m=L2.n+3; return {m, c:Math.min(cw*.82/m, ch*.82/m)}; }
+function drawFlat(){
+  const {m,c}=flatGrid(), x0=cw/2-(m-1)/2*c, y0=ch/2-(m-1)/2*c;
+  for(let i=0;i<m;i++)for(let j=0;j<m;j++){
+    const t=(i+j)%2?'M':'X', r=(t==='M'?.4:.6)*c*.98;
+    ball({sx:x0+i*c,sy:y0+j*c,r,spr:SPR[t],al:1,lab:L2.charges?(t==='M'?'+':'−'):null});
+  }
+}
+function pick2(x,y){
+  const its=L2.items.slice().sort((a,b)=>a.d-b.d);
+  const hit=its.find(it=>Math.hypot(it.sx-x,it.sy-y)<it.r);
+  L2.sel = hit ? (hit.q===L2.sel?-1:hit.q) : -1; uiDirty=true;
+}
+const LIM = {
+  ball:{good:['Shows the regular 3D arrangement of the ions','Shows each ion is surrounded by 6 oppositely charged ions'],
+        bad:['The sticks suggest bonds are physical links between pairs of ions; the forces really act in all directions','The ions are drawn far apart; really they touch','Shows only a tiny part of the giant lattice','Does not show how the ions formed']},
+  space:{good:['Shows the ions are packed closely together','Shows the relative sizes of the ions (Cl⁻ is larger than Na⁺)'],
+        bad:['The ions in the middle are hidden, so the arrangement is hard to see','Does not show the forces between the ions','Shows only a tiny part of the giant lattice','Does not show how the ions formed']},
+  flat:{good:['Easy to see the alternating pattern of ions','Easy to count the ions and work out the ratio'],
+        bad:['Shows only one layer, not the 3D structure','Each ion appears to have 4 neighbours, but really it has 6','Shows only a tiny part of the giant lattice']},
+  dc:{good:['Shows how electrons are transferred to form the ions','Shows the charge and electronic structure of each ion'],
+        bad:['Shows only one pair of ions, not the giant lattice','Does not show the 3D arrangement of the ions','Does not show the relative sizes of the ions','Dots and crosses suggest electrons are different; all electrons are identical']}
+};
+function info2(){
+  const s=L2.style, l=LIM[s];
+  $('lims').innerHTML=`<span class="h g">Strengths</span><ul>${l.good.map(t=>`<li>${t}</li>`).join('')}</ul><span class="h b">Limitations</span><ul>${l.bad.map(t=>`<li>${t}</li>`).join('')}</ul>`;
+  $('sizeGroup').hidden = s==='dc';
+  $('selGroup').hidden = !(s==='ball'||s==='space');
+  let nM,nX;
+  if(s==='dc'){nM=1;nX=1;}
+  else if(s==='flat'){const m=L2.n+3;nX=Math.ceil(m*m/2);nM=Math.floor(m*m/2);}
+  else{nM=L2.ions.filter(o=>o.t==='M').length;nX=L2.ions.length-nM;}
+  $('tally2').innerHTML=`<span>Na⁺ ions</span><b>${nM}</b><span>Cl⁻ ions</span><b>${nX}</b><span>Empirical formula</span><b>NaCl</b>`;
+  $('note2').textContent = nM===nX
+    ? 'One Na⁺ ion for every Cl⁻ ion, so the empirical formula is NaCl. A real grain of salt contains about a billion billion (10¹⁸) ions.'
+    : 'The counts are not equal because this model is a small piece cut from the lattice. In the whole giant lattice there is one Na⁺ ion for every Cl⁻ ion, so the empirical formula is NaCl.';
+  if(L2.sel>=0){
+    const o=L2.ions[L2.sel], k=nbrs2(L2.sel).length, me=o.t==='M'?'Na⁺':'Cl⁻', them=o.t==='M'?'Cl⁻':'Na⁺';
+    $('selInfo').textContent = k<6
+      ? `This ${me} ion touches ${k} ${them} ions in this model, because it is on the edge. Inside the real giant lattice every ion is surrounded by 6 oppositely charged ions.`
+      : `This ${me} ion is surrounded by 6 ${them} ions. Each one attracts it, so the electrostatic forces act in all directions.`;
+  } else $('selInfo').textContent='Click an ion in the model to see the ions around it.';
+}
+function cap2(){
+  switch(L2.style){
+    case 'ball': return 'Sodium chloride is a giant ionic lattice: a regular arrangement of Na⁺ and Cl⁻ ions that repeats in all three directions. Strong electrostatic forces of attraction act in all directions between the oppositely charged ions; this is ionic bonding. Drag to rotate. Click an ion to see its neighbours.';
+    case 'space': return 'A space-filling model shows the ions touching, packed as closely as possible. The larger spheres are Cl⁻ ions and the smaller spheres are Na⁺ ions. Drag to rotate. Click an ion to pick it out.';
+    case 'flat': return 'A 2D diagram shows one layer of the lattice. Every Na⁺ ion is next to Cl⁻ ions and every Cl⁻ ion is next to Na⁺ ions, so the ions alternate.';
+    default: return 'A dot and cross diagram shows one Na⁺ ion and one Cl⁻ ion. The dot in the chloride ion is the electron that came from the sodium atom. The square brackets and charges show these are ions.';
+  }
+}
+$('repSeg').onclick=e=>{const b=e.target.closest('button');if(!b)return;L2.style=b.dataset.v;L2.sel=-1;setPressed($('repSeg'),L2.style);updateView();uiDirty=true;};
+$('cChg').onchange=e=>{L2.charges=e.target.checked;};
+$('rSize').oninput=e=>{L2.n=+e.target.value;$('sizeTxt').textContent=L2.n;build2();};
+
+/* ============ MODE 3: formula from a model ============ */
+const MNAME={Na:'sodium',Mg:'magnesium',K:'potassium',Ca:'calcium',Li:'lithium',Al:'aluminium'};
+const XNAME={Cl:'chloride',O:'oxide',F:'fluoride',S:'sulfide'};
+const PUZ=[
+  {M:'Na',X:'Cl',qm:1,qx:1,t:'MX'}, {M:'Mg',X:'Cl',qm:2,qx:1,t:'XMX'}, {M:'K',X:'O',qm:1,qx:2,t:'MXM'},
+  {M:'Mg',X:'O',qm:2,qx:2,t:'MX'}, {M:'Ca',X:'F',qm:2,qx:1,t:'XMX'}, {M:'Li',X:'S',qm:1,qx:2,t:'MXM'},
+  {M:'Al',X:'O',qm:3,qx:2,t:'MXMXX'}
+];
+const P3={pi:0, marked:new Set(), a:1, b:1, rev:false, labels:true, cells:[], fb:''};
+function grid3(pz){ const L=pz.t.length; return L===2?{cols:8,rows:5,off:1}:L===3?{cols:6,rows:5,off:1}:{cols:10,rows:4,off:2}; }
+function counts3(pz){ const g=grid3(pz); let m=0,x=0; for(let r=0;r<g.rows;r++)for(let c=0;c<g.cols;c++){ if(pz.t[(c+r*g.off)%pz.t.length]==='M') m++; else x++; } return {m,x}; }
+function build3(){ P3.marked=new Set(); P3.a=1; P3.b=1; P3.rev=false; P3.fb=''; uiDirty=true; }
+function draw3(){
+  const pz=PUZ[P3.pi], g=grid3(pz), c=Math.min(cw*.88/g.cols, ch*.84/g.rows), x0=cw/2-(g.cols-1)/2*c, y0=ch/2-(g.rows-1)/2*c;
+  P3.cells=[];
+  for(let r=0;r<g.rows;r++)for(let col=0;col<g.cols;col++){
+    const t=pz.t[(col+r*g.off)%pz.t.length], x=x0+col*c, y=y0+r*c, rad=(t==='M'?.3:.44)*c, idx=r*g.cols+col;
+    P3.cells.push({x,y,r:rad,t,idx});
+    const done=P3.marked.has(idx);
+    ctx.globalAlpha=done?.35:1; ctx.drawImage(SPR[t],x-rad,y-rad,rad*2,rad*2); ctx.globalAlpha=1;
+    const q=t==='M'?pz.qm:-pz.qx, lab=P3.labels?ionS(t==='M'?pz.M:pz.X,q):(q>0?(q>1?q+'+':'+'):(q<-1?(-q)+'−':'−'));
+    ctx.fillStyle='#fff'; ctx.font=`700 ${Math.round(c*(P3.labels?.17:.24))}px system-ui,sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(lab,x,y+1);
+    if(done){ ctx.strokeStyle=TH.good; ctx.lineWidth=Math.max(3,c*.06); ctx.lineCap='round'; ctx.beginPath();
+      ctx.moveTo(x-rad*.45,y); ctx.lineTo(x-rad*.1,y+rad*.38); ctx.lineTo(x+rad*.5,y-rad*.4); ctx.stroke(); }
+  }
+}
+function click3(x,y){
+  const h=P3.cells.find(c=>Math.hypot(c.x-x,c.y-y)<c.r+3); if(!h) return;
+  if(P3.marked.has(h.idx)) P3.marked.delete(h.idx); else P3.marked.add(h.idx); uiDirty=true;
+}
+function info3(){
+  const pz=PUZ[P3.pi], cnt=counts3(pz), mi=ionS(pz.M,pz.qm), xi=ionS(pz.X,-pz.qx);
+  $('pz3').textContent=`Model ${P3.pi+1} of ${PUZ.length}`;
+  $('key3').innerHTML=`<span><i class="dot" style="background:${COL.M}"></i>${mi} ${MNAME[pz.M]} ion</span><span><i class="dot" style="background:${COL.X}"></i>${xi} ${XNAME[pz.X]} ion</span>`;
+  const mm=[...P3.marked].filter(i=>P3.cells[i]&&P3.cells[i].t==='M').length, mx=P3.marked.size-mm;
+  $('tally3').innerHTML=`<span>${mi} ions ticked</span><b>${mm}${P3.rev?' / '+cnt.m:''}</b><span>${xi} ions ticked</span><b>${mx}${P3.rev?' / '+cnt.x:''}</b>`;
+  $('fbuild').innerHTML=`<div class="fpart"><span class="sy">${pz.M}</span><button data-k="a" data-d="-1" aria-label="fewer">−</button><span class="n">${P3.a}</span><button data-k="a" data-d="1" aria-label="more">+</button></div>
+    <div class="fpart"><span class="sy">${pz.X}</span><button data-k="b" data-d="-1" aria-label="fewer">−</button><span class="n">${P3.b}</span><button data-k="b" data-d="1" aria-label="more">+</button></div>`;
+  $('fprev').textContent=pz.M+subN(P3.a)+pz.X+subN(P3.b);
+  $('fb3').textContent=P3.fb;
+}
+function check3(){
+  const pz=PUZ[P3.pi], c=counts3(pz), g=gcd(c.m,c.x), A=c.m/g, B=c.x/g, mi=ionS(pz.M,pz.qm), xi=ionS(pz.X,-pz.qx), f=pz.M+subN(A)+pz.X+subN(B);
+  if(P3.a===A&&P3.b===B) P3.fb=`✓ Correct. ${c.m} ${mi} ions and ${c.x} ${xi} ions simplify to ${A} : ${B}, so the empirical formula is ${f}. Check the charges: ${A} × (+${pz.qm}) + ${B} × (−${pz.qx}) = 0.`;
+  else if(P3.a*c.x===P3.b*c.m) P3.fb='Right ratio, but an empirical formula uses the simplest whole-number ratio. Divide both numbers by the same factor.';
+  else P3.fb=`✗ Not quite. Count each type of ion, then write the simplest whole-number ratio. Hint: the total positive charge must equal the total negative charge.`;
+  uiDirty=true;
+}
+function cap3(){
+  const pz=PUZ[P3.pi];
+  let s='This diagram shows the ions in part of the structure of a compound. You can tell it is ionic because it is made of positive and negative ions in a regular arrangement. Click each ion to tick it off as you count, then write the empirical formula: the simplest whole-number ratio of the ions.';
+  if(pz.M==='Al') s+=' Aluminium is in Group 3, so its atoms lose 3 electrons to form Al³⁺ ions.';
+  return s;
+}
+$('fbuild').onclick=e=>{const b=e.target.closest('button');if(!b)return;const k=b.dataset.k;P3[k]=clamp(P3[k]+ +b.dataset.d,1,9);P3.fb='';uiDirty=true;};
+$('bChk3').onclick=check3;
+$('bClr3').onclick=()=>{P3.marked=new Set();uiDirty=true;};
+$('bRev3').onclick=()=>{P3.rev=true;uiDirty=true;};
+$('bPrev3').onclick=()=>{P3.pi=(P3.pi+PUZ.length-1)%PUZ.length;build3();};
+$('bNext3').onclick=()=>{P3.pi=(P3.pi+1)%PUZ.length;build3();};
+$('cLab3').onchange=e=>{P3.labels=e.target.checked;};
+
+/* ============ MODE 4: properties ============ */
+const CMP={NaCl:{name:'sodium chloride',mp:801,lab:['+','−'],sol:true},MgO:{name:'magnesium oxide',mp:2852,lab:['2+','2−'],sol:false}};
+const W4=4.2,H4=2.6,D4=2.6,XE=3.75,YT=H4+1.7,R4={M:.3,X:.44};
+const P4={cmp:'NaCl',state:'solid',T:20,test:false,ions:[],level:-H4,simT:0};
+function build4(){
+  P4.ions=[]; P4.state='solid'; P4.T=20; P4.level=-H4; P4.simT=0;
+  for(let i=0;i<4;i++)for(let j=0;j<4;j++)for(let k=0;k<4;k++){
+    const hx=i-1.5,hy=-H4+.55+j,hz=k-1.5;
+    P4.ions.push({t:(i+j+k)%2?'M':'X',q:(i+j+k)%2?1:-1,x:hx,y:hy,z:hz,hx,hy,hz,vx:0,vy:0,vz:0,bound:true,
+      ph:[Math.random()*6.28,Math.random()*6.28,Math.random()*6.28],fr:[9+Math.random()*4,9+Math.random()*4,9+Math.random()*4]});
+  }
+  uiDirty=true;
+}
+function melt4(){ P4.state='molten'; P4.level=.4; P4.ions.forEach(o=>{o.bound=false;o.vx=gauss();o.vy=gauss()*.6;o.vz=gauss();}); uiDirty=true; }
+function step4(dt){
+  P4.simT+=dt; const c=CMP[P4.cmp];
+  if(P4.state==='heating'){ P4.T=Math.min(c.mp,P4.T+c.mp/6*dt); if(P4.T>=c.mp) melt4(); }
+  if(P4.state==='molten') P4.T=Math.min(c.mp+30,P4.T+dt*5);
+  if(P4.state==='dissolving'){
+    let left=0;
+    for(const o of P4.ions){ if(!o.bound) continue; left++; if(Math.random()<dt*.9){o.bound=false;const l=Math.hypot(o.hx,o.hy+H4-2,o.hz)||1;o.vx=o.hx/l*1.4;o.vy=(o.hy+H4-2)/l*1.4;o.vz=o.hz/l*1.4;} }
+    if(!left){P4.state='dissolved';uiDirty=true;}
+  }
+  const free=P4.ions.some(o=>!o.bound), field=P4.test?.6:0;
+  const xl=P4.test?-XE+.1:-W4, xr=P4.test?XE-.1:W4, G=2.2, sN=Math.sqrt(2*G*1.2*dt);
+  const amp=.012+.13*clamp((P4.T-20)/(c.mp-20),0,1), live=P4.ions, f=new Float32Array(live.length*3);
+  if(free) for(let a=0;a<live.length;a++){const p=live[a];for(let b=a+1;b<live.length;b++){const q=live[b];if(p.bound&&q.bound)continue;
+    const dx=p.x-q.x,dy=p.y-q.y,dz=p.z-q.z,rr=R4[p.t]+R4[q.t];if(Math.abs(dx)>rr||Math.abs(dy)>rr||Math.abs(dz)>rr)continue;
+    const d=Math.hypot(dx,dy,dz)||.001;if(d<rr){const k=34*(rr-d)/d;f[a*3]+=dx*k;f[a*3+1]+=dy*k;f[a*3+2]+=dz*k;f[b*3]-=dx*k;f[b*3+1]-=dy*k;f[b*3+2]-=dz*k;}}}
+  for(let a=0;a<live.length;a++){const o=live[a];
+    if(o.bound){o.x=o.hx+amp*Math.sin(P4.simT*o.fr[0]+o.ph[0]);o.y=o.hy+amp*Math.sin(P4.simT*o.fr[1]+o.ph[1]);o.z=o.hz+amp*Math.sin(P4.simT*o.fr[2]+o.ph[2]);continue;}
+    const r=R4[o.t];
+    o.vx+=(-G*o.vx-o.q*field+f[a*3])*dt+sN*gauss(); o.vy+=(-G*o.vy+f[a*3+1])*dt+sN*gauss(); o.vz+=(-G*o.vz+f[a*3+2])*dt+sN*gauss();
+    o.x+=o.vx*dt; o.y+=o.vy*dt; o.z+=o.vz*dt;
+    if(o.y<-H4+r){o.y=-H4+r;o.vy=Math.abs(o.vy);} if(o.y>P4.level-r){o.y=P4.level-r;o.vy=-Math.abs(o.vy);}
+    if(o.z<-D4+r){o.z=-D4+r;o.vz=Math.abs(o.vz);} if(o.z>D4-r){o.z=D4-r;o.vz=-Math.abs(o.vz);}
+    if(o.x<xl+r){o.x=xl+r;o.vx=Math.abs(o.vx);} if(o.x>xr-r){o.x=xr-r;o.vx=-Math.abs(o.vx);}
+  }
+}
+function prism(x0,x1,y0,y1,z0,z1){const c=[];for(const x of[x0,x1])for(const y of[y0,y1])for(const z of[z0,z1])c.push(proj(x,y,z));return c;}
+const FACES=[[0,1,3,2],[4,5,7,6],[0,1,5,4],[2,3,7,6],[0,2,6,4],[1,3,7,5]];
+const EDGES=[[0,1],[2,3],[4,5],[6,7],[0,2],[1,3],[4,6],[5,7],[0,4],[1,5],[2,6],[3,7]];
+function poly(pts,fill,stroke,lw){ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p.sx,p.sy):ctx.moveTo(p.sx,p.sy));ctx.closePath();if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=lw||1;ctx.stroke();}}
+function drawFlame(){
+  const t=performance.now()/1000, b0=proj(0,-H4-1.6,0), b1=proj(0,-H4-.9,0), tip=proj(0,-H4-.1,0), w=.32*b1.s;
+  ctx.fillStyle=TH.muted; ctx.globalAlpha=.8; ctx.fillRect(b1.sx-w/2,b1.sy,w,b0.sy-b1.sy); ctx.globalAlpha=1;
+  const hgt=b1.sy-tip.sy;
+  for(const [sc,col,al] of [[1,'#f2a23a',.8],[.62,'#4d7bd8',.9]]){
+    const fl=Math.sin(t*17)*.06+Math.sin(t*11.3)*.05, h=hgt*sc*(1+fl), ww=w*1.2*sc;
+    ctx.beginPath();ctx.moveTo(b1.sx-ww/2,b1.sy);ctx.quadraticCurveTo(b1.sx-ww*.7,b1.sy-h*.45,b1.sx+Math.sin(t*9)*ww*.15,b1.sy-h);
+    ctx.quadraticCurveTo(b1.sx+ww*.7,b1.sy-h*.45,b1.sx+ww/2,b1.sy);ctx.closePath();ctx.globalAlpha=al;ctx.fillStyle=col;ctx.fill();ctx.globalAlpha=1;
+  }
+}
+const conducts = () => P4.test && P4.ions.some(o=>!o.bound);
+function draw4(){
+  yOff=.6; F=Math.min(cw*.45*CAM/(W4+.9), ch*.45*CAM/(H4+2.4)); pcx=cw/2; pcy=ch*.52;
+  const c=CMP[P4.cmp];
+  if(P4.state==='heating'||P4.state==='molten') drawFlame();
+  const bx=prism(-W4,W4,-H4,H4,-D4,D4);
+  ctx.globalAlpha=.07; poly([bx[0],bx[4],bx[5],bx[1]],TH.muted,null); ctx.globalAlpha=1;
+  for(const [a,b] of EDGES) line3(bx[a],bx[b],TH.muted,1.4);
+  if(P4.level>-H4+.01){
+    const col=P4.state==='molten'?TH.melt:TH.water, lq=prism(-W4+.02,W4-.02,-H4+.02,P4.level,-D4+.02,D4-.02);
+    ctx.globalAlpha=P4.state==='molten'?.09:.06; for(const fc of FACES) poly(fc.map(i=>lq[i]),col,null);
+    ctx.globalAlpha=.7; poly([lq[2],lq[3],lq[7],lq[6]],null,col,1.5); ctx.globalAlpha=1;
+  }
+  if(P4.test){
+    for(const s of [-1,1]){ const p=prism(s*XE-.07,s*XE+.07,-H4+.25,H4+.7,-D4+.3,D4-.3); for(const fc of FACES) poly(fc.map(i=>p[i]),'#4c4b50','#2f2e33',1); }
+    const lit=conducts(), wc=lit?TH.ink:TH.muted, bulb=proj(0,YT,0), br=.42*bulb.s;
+    for(const s of [-1,1]){ const a=proj(s*XE,H4+.7,0), b=proj(s*XE,YT,0), cpt=proj(s*.42,YT,0); line3(a,b,wc,2.2); line3(b,cpt,wc,2.2); }
+    const cl=proj(-XE*.55,YT,0), fs=Math.max(11,Math.min(15,cw/62));
+    ctx.strokeStyle=wc; ctx.lineWidth=5; ctx.beginPath(); ctx.moveTo(cl.sx-4,cl.sy-.2*cl.s); ctx.lineTo(cl.sx-4,cl.sy+.2*cl.s); ctx.stroke();
+    ctx.lineWidth=2.2; ctx.beginPath(); ctx.moveTo(cl.sx+4,cl.sy-.4*cl.s); ctx.lineTo(cl.sx+4,cl.sy+.4*cl.s); ctx.stroke();
+    ctx.fillStyle=TH.stage; ctx.fillRect(cl.sx-3,cl.sy-2,6,4);
+    if(lit){ const g=ctx.createRadialGradient(bulb.sx,bulb.sy,br*.3,bulb.sx,bulb.sy,br*3); g.addColorStop(0,'rgba(255,214,90,.75)'); g.addColorStop(1,'rgba(255,214,90,0)'); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(bulb.sx,bulb.sy,br*3,0,TAU); ctx.fill(); }
+    ctx.fillStyle=lit?'#ffd75a':TH.panel; ctx.strokeStyle=TH.ink; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(bulb.sx,bulb.sy,br,0,TAU); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(bulb.sx-br*.7,bulb.sy-br*.7); ctx.lineTo(bulb.sx+br*.7,bulb.sy+br*.7); ctx.moveTo(bulb.sx+br*.7,bulb.sy-br*.7); ctx.lineTo(bulb.sx-br*.7,bulb.sy+br*.7); ctx.stroke();
+    ctx.fillStyle=TH.ink; ctx.font=`600 ${fs}px system-ui,sans-serif`; ctx.textAlign='center'; ctx.textBaseline='bottom';
+    ctx.fillText(lit?'Bulb lights: charge flows':'Bulb off: no current',bulb.sx,bulb.sy-br-6);
+    for(const s of [-1,1]){ const t=proj(s*XE,H4+1.1,0); ctx.font=`700 ${fs*1.3}px system-ui,sans-serif`; ctx.textBaseline='middle'; ctx.fillText(s<0?'−':'+',t.sx+s*fs*1.3,t.sy); }
+  }
+  const items=P4.ions.map(o=>{const p=proj(o.x,o.y,o.z);return{d:p.d,sx:p.sx,sy:p.sy,r:R4[o.t]*p.s,spr:SPR[o.t],al:1,lab:o.t==='M'?c.lab[0]:c.lab[1]};});
+  items.sort((a,b)=>b.d-a.d).forEach(ball);
+}
+function info4(){
+  const c=CMP[P4.cmp], solid=P4.state==='solid';
+  $('bHeat').disabled=!solid; $('bDis').disabled=!solid||!c.sol;
+  $('bHeat').textContent=P4.state==='heating'?'Heating…':'Heat to melt';
+  $('bTest').setAttribute('aria-pressed',P4.test); $('bTest').textContent=P4.test?'Remove electrodes':'Test conductivity';
+  $('mpHint').textContent=`Marker shows the melting point of ${c.name}, ${c.mp} °C.`+(c.sol?'':' Magnesium oxide does not dissolve in water.');
+  $('condTxt').textContent=!P4.test?'Put electrodes and a bulb in the circuit to test it.':conducts()?'Yes: the ions are free to move, so charge can flow.':'No: the ions are held in fixed positions in the lattice, so they cannot move and charge cannot flow.';
+  $('statePill').textContent={solid:'Solid',heating:'Heating',molten:'Molten',dissolving:'Dissolving',dissolved:'Solution'}[P4.state];
+  $('tempPill').hidden = mode!=='props' || P4.state==='dissolving' || P4.state==='dissolved';
+}
+function cap4(){
+  const c=CMP[P4.cmp], n=c.name;
+  switch(P4.state){
+    case 'solid': return `Solid ${n} is a giant ionic lattice. Strong electrostatic forces of attraction act in all directions between the oppositely charged ions and hold them in fixed positions; they can only vibrate.`+(P4.test?' The ions cannot move, so the solid does not conduct electricity.':'');
+    case 'heating': return `Heating gives the ions more energy, so they vibrate more. A large amount of energy is needed to overcome the many strong electrostatic forces between the ions, so ${n} has a high melting point (${c.mp} °C).`;
+    case 'molten': return `At ${c.mp} °C the lattice breaks down. The ions are no longer in fixed positions and are free to move, so molten ${n} conducts electricity.`+(P4.test?' Positive ions move towards the negative electrode and negative ions towards the positive electrode, so charge flows and the bulb lights.':' Test its conductivity.');
+    default: return `When ${n} dissolves, water molecules pull ions away from the lattice. The ions are free to move through the solution, so the solution conducts electricity.`+(P4.test?' Positive ions move towards the negative electrode and negative ions towards the positive electrode, so the bulb lights.':' Test its conductivity.');
+  }
+}
+$('cmpSeg').onclick=e=>{const b=e.target.closest('button');if(!b)return;P4.cmp=b.dataset.v;setPressed($('cmpSeg'),P4.cmp);build4();};
+$('bHeat').onclick=()=>{if(P4.state==='solid'){P4.state='heating';uiDirty=true;}};
+$('bDis').onclick=()=>{if(P4.state==='solid'&&CMP[P4.cmp].sol){P4.state='dissolving';P4.level=H4-.3;uiDirty=true;}};
+$('bRe4').onclick=build4;
+$('bTest').onclick=()=>{P4.test=!P4.test;uiDirty=true;};
+
+/* ============ tabs, pointer, loop ============ */
+let mode='transfer';
+const is3D = () => mode==='props' || (mode==='lattice' && (L2.style==='ball'||L2.style==='space'));
+function updateView(){
+  $('bView').hidden=!is3D(); $('statePill').hidden=mode!=='props'; $('tempPill').hidden=mode!=='props';
+  cv.style.cursor = is3D() ? 'grab' : 'default';
+}
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+  mode=t.dataset.mode;
+  document.querySelectorAll('.tab').forEach(x=>x.setAttribute('aria-selected',x===t));
+  document.querySelectorAll('.panel').forEach(p=>p.hidden=p.dataset.for!==mode);
+  updateView(); uiDirty=true; lastCap='';
+});
+$('bView').onclick=()=>{baseYaw=yaw=-0.5;pitch=0.42;swayT=0;};
+
+function pt(e){const r=cv.getBoundingClientRect();return [e.clientX-r.left,e.clientY-r.top];}
+let ptr=null;
+cv.addEventListener('pointerdown',e=>{
+  const [x,y]=pt(e); cv.setPointerCapture(e.pointerId);
+  if(mode==='transfer'){down1(x,y);return;}
+  if(mode==='model'){click3(x,y);return;}
+  if(is3D()){ptr={x0:x,y0:y,cx:e.clientX,cy:e.clientY,yaw,pitch,moved:false};cv.style.cursor='grabbing';}
+});
+cv.addEventListener('pointermove',e=>{
+  const [x,y]=pt(e);
+  if(mode==='transfer'){move1(x,y);cv.style.cursor=T1.drag?'grabbing':hitElectron(T1,x,y)?'grab':'default';return;}
+  if(mode==='model'){cv.style.cursor=P3.cells.some(c=>Math.hypot(c.x-x,c.y-y)<c.r)?'pointer':'default';return;}
+  if(!ptr) return;
+  if(Math.hypot(x-ptr.x0,y-ptr.y0)>4) ptr.moved=true;
+  if(ptr.moved){ yaw=baseYaw=ptr.yaw+(e.clientX-ptr.cx)*.008; pitch=clamp(ptr.pitch+(e.clientY-ptr.cy)*.006,-0.2,1.3); swayT=0; }
+});
+function endPtr(e){
+  const [x,y]=pt(e);
+  if(mode==='transfer'){up1(x,y);return;}
+  if(ptr){ if(!ptr.moved&&mode==='lattice') pick2(x,y); ptr=null; cv.style.cursor=is3D()?'grab':'default'; }
+}
+cv.addEventListener('pointerup',endPtr); cv.addEventListener('pointercancel',endPtr);
+
+let lastCap='', capT=0;
+function uiTick(dt){
+  capT+=dt;
+  if(uiDirty){
+    uiDirty=false;
+    if(mode==='transfer') info1(); else if(mode==='lattice') info2(); else if(mode==='model') info3(); else info4();
+  }
+  if(capT>.15){
+    capT=0;
+    const c = mode==='transfer'?cap1():mode==='lattice'?cap2():mode==='model'?cap3():cap4();
+    if(c!==lastCap){$('caption').textContent=c;lastCap=c;}
+    if(mode==='props'){
+      const mp=CMP[P4.cmp].mp; $('tempTxt').textContent=Math.round(P4.T); $('tTxt2').textContent=Math.round(P4.T)+' °C';
+      $('tFill').style.width=Math.min(100,P4.T/(mp*1.12)*100)+'%'; info4();
+    }
+  }
+  if(toastT>0){toastT-=dt;if(toastT<=0)$('toast').style.opacity=0;}
+}
+
+let last=performance.now();
+function frame(now){
+  const dt=Math.min(.05,(now-last)/1000); last=now;
+  if(sway&&!ptr&&is3D()){swayT+=dt;yaw=baseYaw+.3*Math.sin(swayT*.35);}
+  if(mode==='props'){const n=Math.max(1,Math.ceil(dt*60)),h=dt/n;for(let i=0;i<n;i++)step4(h);}
+  ctx.fillStyle=TH.stage; ctx.fillRect(0,0,cw,ch);
+  if(mode==='transfer') drawDC(T1,{x:cw*.03,y:ch*.04,w:cw*.94,h:ch*.92},oo,dt);
+  else if(mode==='lattice') draw2(dt);
+  else if(mode==='model') draw3();
+  else draw4();
+  uiTick(dt);
+  requestAnimationFrame(frame);
+}
+build1(); build2(); buildStatic(); build3(); build4(); updateView();
+requestAnimationFrame(frame);
+})();
+</script>
+<style>
+.mcq{border-color:var(--good)}
+.mcq-q{margin:0;font-weight:600;font-size:.95rem}
+.mcq-opts{display:flex;flex-direction:column;gap:6px}
+.mcq-opts button{display:flex;gap:9px;align-items:flex-start;text-align:left;font-weight:500;line-height:1.35;padding:7px 10px;opacity:1}
+.mcq-opts button:disabled{cursor:default;opacity:.75}
+.mcq-opts button.right,.mcq-opts button.wrong{opacity:1;color:#fff}
+.mcq-opts button.right{background:var(--good);border-color:var(--good)}
+.mcq-opts button.wrong{background:var(--warn);border-color:var(--warn)}
+.mcq-l{flex:none;font-weight:800;width:1.2em}
+.mcq-fb{margin:0;font-size:.9rem;padding:8px 10px;border-radius:7px;border:1px solid var(--line);background:var(--chip)}
+.mcq-fb.ok b{color:var(--good)} .mcq-fb.no b{color:var(--warn)}
+.mcq-score{margin:0;font-size:1rem}
+.fq{padding:22px 26px 26px;display:flex;flex-direction:column;gap:14px;min-height:560px}
+.fq-head{display:flex;justify-content:space-between;font-weight:700;color:var(--muted);font-size:.9rem;letter-spacing:.04em;text-transform:uppercase}
+.fq-bar{height:8px;border-radius:4px;background:var(--chip);border:1px solid var(--line);overflow:hidden}
+.fq-bar span{display:block;height:100%;background:var(--good);transition:width .3s}
+.fq-q{margin:6px 0 0;font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;font-size:clamp(1.25rem,2.2vw,1.6rem);font-weight:600;line-height:1.3}
+.fq-opts button{font-size:1.08rem;padding:12px 14px}
+.fq .mcq-fb{font-size:1.02rem}
+.fq-big{margin:20px 0 0;font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;font-size:clamp(1.6rem,3vw,2.2rem)}
+.fq-msg{margin:0;font-size:1.05rem;color:var(--muted)}
+.fq-h{margin:8px 0 0;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.fq-review{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:10px}
+.fq-review p{margin:0}
+</style>
+<script>
+window.MCQ={n:10,tabs:{
+transfer:[
+{q:"What happens to the outer electron of a sodium atom when sodium reacts with chlorine?",o:["It is transferred to the chlorine atom","It is shared with the chlorine atom","It moves into an inner shell of the sodium atom","The chlorine atom gives the sodium atom an electron"],a:0,e:"Metal atoms lose their outer electrons. The electron is transferred to the non-metal atom, not shared."},
+{q:"Magnesium is in Group 2. What is the charge on a magnesium ion?",o:["2+","2−","1+","6−"],a:0,e:"Group 2 atoms have 2 outer electrons. They lose both, so they form 2+ ions."},
+{q:"Oxygen is in Group 6. What is the charge on an oxide ion?",o:["2−","6−","2+","6+"],a:0,e:"Group 6 atoms have 6 outer electrons. They gain 8 − 6 = 2 electrons, so they form 2− ions."},
+{q:"What is the electronic structure of a chloride ion, Cl⁻?",o:["2,8,8","2,8,7","2,8,6","2,8"],a:0,e:"A chlorine atom (2,8,7) gains 1 electron to become 2,8,8, the same as argon."},
+{q:"What is the formula of the ionic compound formed between calcium and fluorine?",o:["CaF₂","CaF","Ca₂F","Ca₂F₃"],a:0,e:"Calcium forms Ca²⁺ and fluorine forms F⁻. Two F⁻ ions are needed to balance the 2+ charge."},
+{q:"Which statement about Na⁺ and Cl⁻ ions is correct?",o:["Both have the electronic structure of a noble gas","Both have 8 electrons in total","Na⁺ has more electrons than a Na atom","Cl⁻ has more protons than a Cl atom"],a:0,e:"Na⁺ (2,8) has the structure of neon and Cl⁻ (2,8,8) has the structure of argon."}
+],
+lattice:[
+{q:"What holds the ions together in sodium chloride?",o:["Strong electrostatic forces of attraction between oppositely charged ions","Shared pairs of electrons","Weak forces between molecules","Attraction between positive ions and delocalised electrons"],a:0,e:"Ionic bonding is the strong electrostatic attraction between oppositely charged ions."},
+{q:"In which directions do the electrostatic forces act in an ionic lattice?",o:["In all directions","Only between pairs of ions","Only along the layers","Only from positive ions to the ions above them"],a:0,e:"Each ion is attracted to all the oppositely charged ions around it, so the forces act in all directions."},
+{q:"How many Cl⁻ ions surround each Na⁺ ion in the sodium chloride lattice?",o:["6","4","8","2"],a:0,e:"Each Na⁺ ion is surrounded by 6 Cl⁻ ions, and each Cl⁻ ion by 6 Na⁺ ions."},
+{q:"What is a limitation of a ball and stick model of sodium chloride?",o:["The sticks suggest bonds between pairs of ions, but the forces act in all directions","It does not show the 3D arrangement of the ions","It shows electrons being transferred","It shows the ions touching each other"],a:0,e:"The sticks look like bonds between pairs of ions. Really, each ion is attracted to all the ions around it, and the ions are much closer together."},
+{q:"What is a limitation of a dot and cross diagram of sodium chloride?",o:["It does not show the giant lattice structure","It does not show the charges on the ions","It does not show where the electrons came from","It shows too many ions"],a:0,e:"A dot and cross diagram shows one pair of ions. It does not show how the ions are arranged in the giant lattice."}
+],
+model:[
+{q:"A diagram of part of an ionic compound shows 12 Mg²⁺ ions and 24 Cl⁻ ions. What is the empirical formula?",o:["MgCl₂","Mg₁₂Cl₂₄","Mg₂Cl","MgCl"],a:0,e:"12 : 24 simplifies to 1 : 2, so the empirical formula is MgCl₂."},
+{q:"How can you tell from a diagram that a compound is ionic?",o:["It is made of positive and negative ions in a regular arrangement","The atoms are joined by lines","It is made of separate molecules","It shows metal atoms in a sea of electrons"],a:0,e:"An ionic compound is a giant structure of oppositely charged ions."},
+{q:"A diagram shows Al³⁺ ions and O²⁻ ions. What is the formula of the compound?",o:["Al₂O₃","AlO","Al₃O₂","AlO₃"],a:0,e:"2 × (+3) = +6 and 3 × (−2) = −6, so the charges cancel with 2 Al³⁺ and 3 O²⁻."},
+{q:"A small model of sodium chloride shows 14 Na⁺ ions and 13 Cl⁻ ions. Why are the numbers not equal?",o:["The model is only a small piece cut from the giant lattice","The formula of sodium chloride is Na₁₄Cl₁₃","Some chloride ions have escaped","Chlorine is diatomic"],a:0,e:"A small piece of the lattice can have unequal numbers at the edges. In the whole lattice the ratio is 1 : 1, so the formula is NaCl."}
+],
+props:[
+{q:"Why does sodium chloride have a high melting point?",o:["Large amounts of energy are needed to break the many strong bonds between the ions","Its covalent bonds are very strong","It has weak forces between molecules","It has delocalised electrons"],a:0,e:"Ionic compounds have strong electrostatic forces acting in all directions. A lot of energy is needed to overcome them."},
+{q:"Why does solid sodium chloride not conduct electricity?",o:["The ions are held in fixed positions and cannot move","It contains no ions","It has no electrons","It is a covalent compound"],a:0,e:"In the solid, the ions can only vibrate about fixed positions, so they cannot move to carry charge."},
+{q:"When does sodium chloride conduct electricity?",o:["When it is melted or dissolved in water","Only when it is solid","Never","Only when it is cooled"],a:0,e:"When melted or dissolved, the ions are free to move, so charge can flow."},
+{q:"Magnesium oxide (Mg²⁺ O²⁻) has a much higher melting point than sodium chloride (Na⁺ Cl⁻). Why?",o:["The ions have larger charges, so the attraction between them is stronger","Magnesium oxide is covalent","Magnesium oxide molecules are bigger","Magnesium oxide has delocalised electrons"],a:0,e:"Ions with larger charges attract each other more strongly, so more energy is needed to separate them."}
+]},
+final:[
+{q:"Which pair of elements forms an ionic compound?",o:["Potassium and bromine","Carbon and oxygen","Copper and zinc","Hydrogen and chlorine"],a:0,e:"Ionic compounds form between a metal and a non-metal. Potassium is a metal; bromine is a non-metal."},
+{q:"A potassium atom has the electronic structure 2,8,8,1. What is the electronic structure of a potassium ion?",o:["2,8,8","2,8,8,2","2,8,7","2,8,8,1"],a:0,e:"Potassium loses its 1 outer electron, leaving 2,8,8."},
+{q:"Sulfur is in Group 6. Which ion does it form?",o:["S²⁻","S⁶⁻","S²⁺","S⁶⁺"],a:0,e:"Sulfur gains 2 electrons to fill its outer shell, forming S²⁻."},
+{q:"What is the formula of lithium oxide?",o:["Li₂O","LiO","LiO₂","Li₂O₃"],a:0,e:"Li⁺ and O²⁻: two Li⁺ ions balance one O²⁻ ion."},
+{q:"In a dot and cross diagram of sodium chloride, what does the dot in the chloride ion represent?",o:["The electron transferred from the sodium atom","An electron shared by both atoms","A proton","An electron from another chlorine atom"],a:0,e:"Dots and crosses show which atom each electron came from. The dot is the electron that was transferred from sodium."},
+{q:"Which is the best description of ionic bonding?",o:["Electrostatic attraction between oppositely charged ions","A shared pair of electrons","Attraction between positive ions and delocalised electrons","Weak forces between molecules"],a:0,e:"Ionic bonding is the strong electrostatic attraction between oppositely charged ions."},
+{q:"Which statement about solid ionic compounds is correct?",o:["They have high melting points and do not conduct electricity","They have low melting points and conduct electricity","They have low melting points and do not conduct electricity","They have high melting points and conduct electricity"],a:0,e:"Strong forces between ions give high melting points; ions fixed in the solid cannot move, so it does not conduct."},
+{q:"Why does molten sodium chloride conduct electricity?",o:["The ions are free to move and carry charge","The electrons are free to move","Ions only form when it melts","The covalent bonds break"],a:0,e:"In the molten state the ions can move, so they carry charge through the liquid."},
+{q:"How is the structure of sodium chloride described?",o:["A giant ionic lattice","Small molecules","A giant covalent structure","A polymer"],a:0,e:"Sodium chloride is a giant structure of ions: a giant ionic lattice."},
+{q:"When magnesium reacts with oxygen, how many electrons does each magnesium atom transfer?",o:["2","1","6","8"],a:0,e:"Magnesium (Group 2) has 2 outer electrons, which it transfers to an oxygen atom."},
+{q:"What is the charge on the ion of a Group 1 metal?",o:["1+","1−","7−","7+"],a:0,e:"Group 1 atoms lose their single outer electron, forming 1+ ions."},
+{q:"Which diagram is best for showing how the ions in sodium chloride formed?",o:["A dot and cross diagram","A space-filling model","A ball and stick model","A 2D diagram of one layer"],a:0,e:"Only a dot and cross diagram shows electrons being transferred from one atom to another."}
+]};
+</script>
+<script>
+(() => {
+const B = window.MCQ; if (!B) return;
+const q$ = s => document.querySelector(s);
+const L = 'ABCD';
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function prep(q){const idx=shuffle(q.o.map((_,i)=>i));return {q:q.q,o:idx.map(i=>q.o[i]),a:idx.indexOf(q.a),e:q.e,src:q};}
+function optsHTML(q,ans){return q.o.map((o,k)=>{let c='';if(ans!==null){if(k===q.a)c='right';else if(k===ans)c='wrong';}return `<button data-k="${k}" class="${c}" ${ans!==null?'disabled':''}><span class="mcq-l">${L[k]}</span><span>${o}</span></button>`;}).join('');}
+function fbHTML(q,ans){return ans===null?'':`<p class="mcq-fb ${ans===q.a?'ok':'no'}"><b>${ans===q.a?'Correct.':'Not quite.'}</b> ${q.e}</p>`;}
+
+/* ---------- per-tab check questions ---------- */
+document.querySelectorAll('.panel[data-for]').forEach(p => {
+  const bank = B.tabs[p.dataset.for]; if (!bank) return;
+  const g = document.createElement('div'); g.className = 'group mcq';
+  const anchor = [...p.querySelectorAll('.group')].find(x => /^key$/i.test(x.querySelector('h2')?.textContent||''));
+  anchor ? p.insertBefore(g, anchor) : p.appendChild(g);
+  let qs, i, score, ans;
+  const start = () => { qs = shuffle(bank).map(prep); i = 0; score = 0; ans = null; render(); };
+  function render(){
+    if (i >= qs.length) {
+      g.innerHTML = `<h2>Check your understanding</h2><p class="mcq-score">You scored <b>${score} out of ${qs.length}</b>.</p><div class="btns"><button class="primary mcq-again">Try again</button></div>`;
+      g.querySelector('.mcq-again').onclick = start; return;
+    }
+    const q = qs[i];
+    g.innerHTML = `<h2>Check your understanding · ${i+1} of ${qs.length}</h2><p class="mcq-q">${q.q}</p><div class="mcq-opts">${optsHTML(q,ans)}</div>${fbHTML(q,ans)}${ans===null?'':`<div class="btns"><button class="primary mcq-next">${i+1<qs.length?'Next question':'See my score'}</button></div>`}`;
+    g.querySelectorAll('.mcq-opts button').forEach(b => b.onclick = () => { ans = +b.dataset.k; if (ans === q.a) score++; render(); });
+    const n = g.querySelector('.mcq-next'); if (n) n.onclick = () => { i++; ans = null; render(); };
+  }
+  start();
+});
+
+/* ---------- end of topic quiz ---------- */
+const nav = q$('.tabs'), stage = q$('.stage'), aside = q$('aside');
+const tab = document.createElement('button');
+tab.className = 'tab'; tab.setAttribute('role','tab'); tab.setAttribute('aria-selected','false');
+tab.textContent = `${nav.querySelectorAll('.tab').length + 1} · End of topic quiz`;
+nav.appendChild(tab);
+const panel = document.createElement('div'); panel.className = 'panel'; panel.hidden = true;
+panel.innerHTML = `<div class="group"><h2>End of topic quiz</h2><p class="fb">${B.n||10} multiple choice questions covering the whole topic. Each new quiz picks a different set of questions.</p><div class="tally" id="fqTally"></div><div class="btns"><button id="fqNew">Start a new quiz</button></div></div>`;
+aside.appendChild(panel);
+const box = document.createElement('div'); box.className = 'fq'; box.hidden = true; stage.appendChild(box);
+const hideEls = [...stage.children].filter(x => x !== box);
+let Q, qi, sc, an, wrong;
+function newQuiz(){
+  const pool = B.final.slice(), extra = Object.values(B.tabs).flat();
+  const n = B.n || 10, nf = Math.min(pool.length, Math.ceil(n*.6));
+  const pick = shuffle(pool).slice(0, nf).concat(shuffle(extra).slice(0, n - nf));
+  Q = shuffle(pick).map(prep); qi = 0; sc = 0; an = null; wrong = []; renderQ();
+}
+function tally(){ q$('#fqTally').innerHTML = `<span>Question</span><b>${Math.min(qi+1,Q.length)} of ${Q.length}</b><span>Score so far</span><b>${sc}</b>`; }
+function renderQ(){
+  tally();
+  if (qi >= Q.length) {
+    const pc = Math.round(sc/Q.length*100), msg = pc>=80?'Excellent work.':pc>=60?'Good work: review the questions below.':'Keep going: look back at the tabs for the questions you missed.';
+    box.innerHTML = `<div class="fq-head"><span>End of topic quiz</span><span>Finished</span></div><div class="fq-bar"><span style="width:100%"></span></div>
+      <p class="fq-big">You scored <b>${sc} out of ${Q.length}</b> (${pc}%)</p><p class="fq-msg">${msg}</p>
+      ${wrong.length?`<h3 class="fq-h">Questions to review</h3><ol class="fq-review">${wrong.map(q=>`<li><p>${q.q}</p><p><b>Answer:</b> ${q.o[q.a]}. ${q.e}</p></li>`).join('')}</ol>`:''}
+      <div class="btns"><button class="primary fq-again">Try a new quiz</button></div>`;
+    box.querySelector('.fq-again').onclick = newQuiz; return;
+  }
+  const q = Q[qi];
+  box.innerHTML = `<div class="fq-head"><span>Question ${qi+1} of ${Q.length}</span><span>Score: ${sc}</span></div><div class="fq-bar"><span style="width:${qi/Q.length*100}%"></span></div>
+    <p class="fq-q">${q.q}</p><div class="mcq-opts fq-opts">${optsHTML(q,an)}</div>${fbHTML(q,an)}
+    ${an===null?'':`<div class="btns"><button class="primary fq-next">${qi+1<Q.length?'Next question ▶':'See my score'}</button></div>`}`;
+  box.querySelectorAll('.mcq-opts button').forEach(b => b.onclick = () => { an = +b.dataset.k; if (an === q.a) sc++; else wrong.push(q); renderQ(); });
+  const n = box.querySelector('.fq-next'); if (n) n.onclick = () => { qi++; an = null; renderQ(); };
+}
+function showQuiz(on){
+  box.hidden = !on; hideEls.forEach(x => x.hidden = on); panel.hidden = !on;
+  if (on) {
+    nav.querySelectorAll('.tab').forEach(x => x.setAttribute('aria-selected', x === tab));
+    aside.querySelectorAll('.panel').forEach(p => { if (p !== panel) p.hidden = true; });
+    if (!Q) newQuiz();
+  }
+}
+tab.onclick = () => showQuiz(true);
+nav.querySelectorAll('.tab').forEach(t => { if (t !== tab) t.addEventListener('click', () => showQuiz(false)); });
+q$('#fqNew').onclick = newQuiz;
+})();
+</script>
+</body>
+</html>
