@@ -139,12 +139,16 @@
      in the "topics" list exactly. Anything not listed shows "Coming soon".
    • The particles & quantum walkthroughs live in the a-physics-1 folder.
      Add more folders the same way, e.g. "a-physics-2/L1.html".
-   • Knowledge organisers go in the ko-physics folder. koP("P3.2.1") adds
-     both PDFs for a topic, for files named
-       ko-physics/P3.2.1-knowledge-organiser.pdf
-       ko-physics/P3.2.1-self-test.pdf
+   • Knowledge organisers live in the p-ko folder with the builder.
+     NOTHING TO EDIT HERE: this page reads the topic list from
+     p-ko/knowledge-organiser-builder.html and links each topic's PDFs,
+       p-ko/P1-knowledge-organiser.pdf
+       p-ko/P1-self-test.pdf
+     under the spec topics in that topic's "spec" list. Just upload the
+     new builder and the new PDFs.
    ===================================================================== */
-const KO_FOLDER = "ko-physics/";
+const KO_FOLDER = "p-ko/";
+const KO_BUILDER = KO_FOLDER + "knowledge-organiser-builder.html";
 const koP = (code, label = code) => [
   { title: `${label} – Q&A sheet`, url: `${KO_FOLDER}${code}-knowledge-organiser.pdf` },
   { title: `${label} – Self-test sheet`, url: `${KO_FOLDER}${code}-self-test.pdf` },
@@ -195,9 +199,7 @@ const PHYS = {
     ],
   },
   koNote: "Everything can also come up on Paper 3.",
-  kos: {
-    // "3.2.1 Particles": koP("P3.2.1"),
-  },
+  kos: {},   // filled in automatically from the builder (see loadKOs below)
 };
 /* ===================== END OF EDITABLE SECTION ===================== */
 
@@ -246,7 +248,8 @@ function renderCategory(c) {
   const pills = CATS.map(x => `<a href="#${x.key}"${x.key === c.key ? ' aria-current="page"' : ""}>${esc(x.title)}</a>`).join("");
   const extra = c.key === "walkthroughs" && PHYS.hub
     ? `<div class="grid tracker-card"><a class="card" href="${esc(PHYS.hub.url)}"><span class="code">Progress hub</span><span class="title">${esc(PHYS.hub.title)}</span><span class="desc">${esc(PHYS.hub.desc)}</span></a></div>`
-    : c.key === "kos" ? `<div class="paper-key"><span>Exam paper:</span>${paperPill("1")}${paperPill("2")}${paperPill("3")}<span>${esc(PHYS.koNote)}</span></div>` : "";
+    : c.key === "kos" ? `<div class="grid tracker-card"><a class="card" href="${esc(KO_BUILDER)}"><span class="code">Build your own</span><span class="title">Knowledge organiser builder</span><span class="desc">Browse every fact on screen, tick the ones you don't know yet and print your own knowledge organiser as a PDF.</span></a></div>
+      <div class="paper-key"><span>Exam paper:</span>${paperPill("1")}${paperPill("2")}${paperPill("3")}<span>${esc(PHYS.koNote)}</span></div>` : "";
   return `<div class="crumbs"><a href="#">← A-level Physics home</a><span>/</span><span>${esc(c.title)}</span></div>
     <div class="page-head"><span class="icon">${ICONS[c.key]}</span><h2>${esc(c.title)}</h2></div>
     <p class="page-blurb">${esc(c.blurb)}</p>
@@ -268,6 +271,22 @@ function render() {
     toggle.textContent = open ? "Close all topics" : "Open all topics";
   });
 }
+/* Read the knowledge organiser topics from the builder, so new KOs appear
+   as soon as the builder and PDFs are uploaded to p-ko. */
+async function loadKOs() {
+  try {
+    const html = await (await fetch(KO_BUILDER, { cache: "no-cache" })).text();
+    const line = html.split("\n").find(l => l.startsWith("const DATA = "));
+    const data = JSON.parse(line.slice(13).replace(/;\s*$/, ""));
+    const plain = s => s.replace(/[\^_]\{([^}]*)\}/g, "$1").replace(/[*§]/g, "");
+    data.forEach(t => (t.spec || []).forEach(code => {
+      const topic = PHYS.topics.find(x => x.name.split(" ")[0] === code);
+      if (topic) (PHYS.kos[topic.name] ||= []).push(...koP(t.code, `${t.code} ${plain(t.name)}`));
+    }));
+    render();
+  } catch (e) { /* builder not uploaded yet: KOs stay "Coming soon" */ }
+}
+loadKOs();
 window.addEventListener("hashchange", () => { render(); document.querySelector("main").scrollIntoView({ behavior: "instant", block: "start" }); });
 render();
 </script>
