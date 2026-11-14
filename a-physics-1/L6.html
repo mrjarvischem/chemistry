@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>6 · Quarks and conservation laws — A-level Physics 3.2</title>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="core.css">
+<style>
+.slots{display:flex;gap:12px;margin:12px 0}
+.slot{width:62px;height:62px;border-radius:50%;border:3px dashed #c7cbe0;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.slot .qk{width:54px;height:54px;font-size:1.5rem;margin:0}
+.qbtn{background:none;border:none;padding:0;cursor:pointer}.qbtn .qk{width:52px;height:52px;font-size:1.45rem}
+.ident{margin-top:10px;padding:12px;border-radius:10px;font-weight:700}
+.ident.ok{background:var(--goodbg);color:var(--good)}.ident.no{background:var(--badbg);color:var(--bad)}.ident.meh{background:#eef0f6;color:var(--mute)}
+.chal span{display:inline-flex;gap:4px;align-items:center;padding:4px 10px;border-radius:999px;border:1px solid var(--line);margin:3px}
+.chal span.done{background:var(--goodbg);border-color:var(--good);color:var(--good)}
+.bstage{position:relative;height:300px}
+.obj{position:absolute;transform:translate(-50%,-50%);transition:left 1s ease,top 1s ease,opacity .7s,transform .7s}
+.nuc{width:180px;height:180px;border-radius:50%;border:3px solid rgba(255,255,255,.35);background:rgba(91,63,208,.28);transition:background .8s,border-color .8s}
+.nuc.done{background:rgba(30,142,90,.3);border-color:#58d68d}
+.boson{background:#f1c40f;color:#1d2433;font-weight:700;padding:8px 14px;border-radius:999px;font-size:1.1rem}
+.lep{background:#58d68d;color:#0d1120;font-weight:700;padding:8px 14px;border-radius:999px;font-size:1.1rem}
+.zones{display:grid;grid-template-columns:1fr auto 1fr;gap:10px}
+.zone{min-height:70px;border:2px dashed #c7cbe0;border-radius:12px;padding:8px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;cursor:pointer}
+.zone.act{border-color:var(--acc);background:#f3f0ff}.zone .lbl{width:100%;font-size:.78rem;color:var(--mute);text-transform:uppercase}
+.verdict{margin-top:10px;padding:12px;border-radius:10px;font-weight:700}.verdict.y{background:var(--goodbg);color:var(--good)}.verdict.n{background:var(--badbg);color:var(--bad)}.verdict.w{background:var(--warnbg);color:var(--warn)}
+@media(max-width:780px){.zones{grid-template-columns:1fr}}
+</style>
+</head>
+<body data-lesson="6" data-next="L7.html">
+<header class="top"><a class="home" href="index.html">← All lessons</a>
+<h1>Lesson 6 · Quarks, antiquarks and conservation laws</h1>
+<p>AQA A-level Physics 3.2.1.6 – 3.2.1.7 · about 25 minutes</p></header>
+<main>
+
+<section id="f1" data-title="Quarks & hadrons" data-mins="8">
+<h2>Quarks, antiquarks and hadrons</h2>
+<p class="lead">Hadrons are made of <b>quarks</b>. You need the up (u), down (d) and strange (s) quarks and their antiquarks. Antiquarks have the opposite charge, baryon number and strangeness.</p>
+<div class="card tablewrap"><table class="t" style="text-align:center"><tr><th></th><th>u</th><th>d</th><th>s</th><th><span class="ov">u</span></th><th><span class="ov">d</span></th><th><span class="ov">s</span></th></tr>
+<tr><th>charge Q</th><td>+⅔</td><td>−⅓</td><td>−⅓</td><td>−⅔</td><td>+⅓</td><td>+⅓</td></tr>
+<tr><th>baryon number B</th><td>+⅓</td><td>+⅓</td><td>+⅓</td><td>−⅓</td><td>−⅓</td><td>−⅓</td></tr>
+<tr><th>strangeness S</th><td>0</td><td>0</td><td><b>−1</b></td><td>0</td><td>0</td><td><b>+1</b></td></tr></table></div>
+<div class="key">Baryons = <b>3 quarks</b>. Antibaryons = <b>3 antiquarks</b>. Mesons = <b>1 quark + 1 antiquark</b>.</div>
+<div class="card"><h3>Quark builder</h3>
+ <div class="row"><button class="btn on" id="m3">Baryon (3)</button><button class="btn" id="m2">Meson (2)</button><button class="btn" id="clr">Clear</button></div>
+ <div class="slots" id="slots"></div><div class="row" id="qpal"></div>
+ <div class="read" id="readout" style="margin-top:10px"></div><div id="ident"></div>
+ <div class="chal" style="margin-top:10px"><b>Challenge — build each of these:</b> <span id="chal"></span></div></div>
+<div class="tip">Kaons: “K<sup>+</sup> = u<span class="ov">s</span>”. A strange quark has S = −1, so K<sup>+</sup> (with an anti-strange) has S = <b>+1</b>. Students often get this sign backwards.</div>
+<div id="q1a"></div><div id="q1b"></div>
+</section>
+
+<section id="f2" data-title="Quarks in β decay" data-mins="6">
+<h2>Change of quark character in β decay</h2>
+<p class="lead">In β decay the weak interaction changes the <b>flavour</b> (character) of a quark.</p>
+<div class="row" style="margin-bottom:10px"><button class="btn on" id="bm">β<sup>−</sup> decay</button><button class="btn" id="bp">β<sup>+</sup> decay</button></div>
+<div class="grid2">
+ <div class="card" style="padding:10px"><div class="stage bstage" id="stage"><div class="obj nuc" id="nuc"></div><div class="obj" id="nlabel" style="font-weight:700;white-space:nowrap"></div><div class="obj" id="q0"></div><div class="obj" id="q1"></div><div class="obj" id="q2"></div><div class="obj boson" id="W"></div><div class="obj lep" id="l1"></div><div class="obj lep" id="l2"></div></div></div>
+ <div class="card"><div id="bSt"></div><div class="cap" id="bCap"></div><div id="bTab"></div></div>
+</div>
+<div class="key">β<sup>−</sup>: <b>d → u</b> + W<sup>−</sup> (udd → uud). &nbsp; β<sup>+</sup>: <b>u → d</b> + W<sup>+</sup> (uud → udd).</div>
+<div id="q2a"></div><div id="q2b"></div>
+</section>
+
+<section id="f3" data-title="Applying conservation laws" data-mins="7">
+<h2>Applying the conservation laws</h2>
+<div class="card"><h3>The method</h3>
+<ol style="margin:0;padding-left:20px;line-height:1.8"><li>Check <b>charge Q</b>, <b>baryon number B</b>, and <b>lepton numbers L<sub>e</sub> and L<sub>μ</sub></b> separately — all must balance in <i>every</i> interaction.</li>
+<li>Check <b>strangeness S</b>: must balance for a <b>strong</b> interaction; may change by ±1 in a <b>weak</b> one.</li>
+<li>Any neutrino involved → it must be weak.</li>
+<li>Energy and momentum are also always conserved (data for any unfamiliar particle will be given).</li></ol></div>
+<div class="card"><h3>Conservation checker</h3><p style="margin-top:0">Load an example, or build your own: tap Before or After, then tap particles. Tap a particle in a box to remove it.</p>
+<div class="row" id="presets"></div>
+<div class="zones" style="margin-top:12px"><div class="zone act" id="zb"></div><div style="font-size:1.8rem;color:var(--mute);align-self:center">→</div><div class="zone" id="za"></div></div>
+<div class="row" style="margin-top:10px" id="cpal"></div>
+<div id="ctable" style="margin-top:10px"></div><div id="cverdict"></div><div id="cnote"></div></div>
+<div id="q3a"></div><div id="q3b"></div><div id="q3c"></div>
+</section>
+
+<section id="f4" data-title="Exam practice" data-mins="7">
+<h2>Exam practice</h2>
+<div id="ex1"></div><div id="ex2"></div><div id="ex3"></div><div id="ex4"></div>
+<div class="summary"><h3>Lesson summary</h3><ul>
+<li>u: +⅔, d: −⅓, s: −⅓ (S = −1). Antiquarks: everything opposite. Each quark B = +⅓.</li>
+<li>p = uud, n = udd, π⁺ = u<span class="ov">d</span>, π⁻ = d<span class="ov">u</span>, π⁰ = u<span class="ov">u</span>/d<span class="ov">d</span>, K⁺ = u<span class="ov">s</span>, K⁻ = s<span class="ov">u</span>, K⁰ = d<span class="ov">s</span>, K̄⁰ = s<span class="ov">d</span>.</li>
+<li>β⁻: d → u; β⁺: u → d.</li>
+<li>Always conserved: Q, B, L<sub>e</sub>, L<sub>μ</sub> (and energy, momentum). S: conserved in strong, can change by ±1 in weak.</li></ul></div>
+</section>
+</main>
+<script src="core.js"></script>
+<script>
+/* ---------- builder ---------- */
+let mode=3,slots=[null,null,null];
+const LOOK={};for(const id in P)if(P[id].q)LOOK[[...P[id].q].sort().join(',')]=id;LOOK['d,d~']='pi0';
+$('qpal').innerHTML=['u','d','s','u~','d~','s~'].map(t=>`<button class="qbtn" data-t="${t}">${qChip(t)}</button>`).join('');
+const chal=['n','pb','pim','Kp','K0','Km'];const done=new Set();
+function setMode(m){mode=m;slots=Array(m).fill(null);$('m3').classList.toggle('on',m===3);$('m2').classList.toggle('on',m===2);renderB()}
+$('m3').onclick=()=>setMode(3);$('m2').onclick=()=>setMode(2);$('clr').onclick=()=>setMode(mode);
+$('qpal').onclick=e=>{const b=e.target.closest('.qbtn');if(!b)return;const i=slots.indexOf(null);if(i<0)return;slots[i]=b.dataset.t;renderB()};
+$('slots').onclick=e=>{const s=e.target.closest('.slot');if(s){slots[+s.dataset.i]=null;renderB()}};
+function renderB(){$('slots').innerHTML=slots.map((t,i)=>`<div class="slot" data-i="${i}">${t?qChip(t):''}</div>`).join('');
+ const f=slots.filter(Boolean);const line=(lab,k,fmt)=>!f.length?`${lab}: —`:`${lab}: ${f.map(t=>fmt(qi(t)[k])).join('  ')}  = <b>${fmt(f.reduce((a,t)=>a+qi(t)[k],0))}</b>`;
+ $('readout').innerHTML=[line('Charge Q','Q',fr),line('Baryon no. B','B',fr),line('Strangeness S','S',sg)].join('<br>');
+ const el=$('ident');if(f.length<mode){el.innerHTML=`<div class="ident meh">Add ${mode-f.length} more…</div>`;return}
+ const anti=f.filter(t=>t.endsWith('~')).length;
+ if(mode===3&&anti!==0&&anti!==3){el.innerHTML='<div class="ident no">✗ Not a valid hadron — 3 quarks or 3 antiquarks, never a mix.</div>';return}
+ if(mode===2&&anti!==1){el.innerHTML='<div class="ident no">✗ Not a valid meson — must be one quark + one antiquark.</div>';return}
+ const id=LOOK[[...f].sort().join(',')];
+ if(id){el.innerHTML=`<div class="ident ok">✓ That’s the ${P[id].sym} — ${P[id].name}.</div>`;if(chal.includes(id)){done.add(id);renderChal()}}
+ else el.innerHTML=`<div class="ident meh">A valid ${mode===3?(anti?'antibaryon':'baryon'):'meson'}, but not one on the spec (data would be given).</div>`;}
+function renderChal(){$('chal').innerHTML=chal.map(id=>`<span class="${done.has(id)?'done':''}">${done.has(id)?'✓':'○'} ${P[id].sym}</span>`).join('')+(done.size===chal.length?' <b style="color:var(--good)">All done!</b>':'')}
+renderChal();renderB();
+MCQ('q1a',{q:'What is the quark structure of a K⁻?',opts:['u'+ov('s'),'s'+ov('u'),'d'+ov('s'),'us'],a:1,why:'s (−⅓) + ū (−⅔) = −1; S = −1.'});
+MCQ('q1b',{q:'A particle has quark structure '+ov('u')+ov('d')+ov('d')+'. What is it?',opts:['neutron','antiproton','antineutron','π⁻'],a:2,why:'Three antiquarks → antibaryon. Charge −⅔ + ⅓ + ⅓ = 0 → antineutron.'});
+
+/* ---------- beta quark animation ---------- */
+const BETA={minus:{start:['u','d','d'],to:'u',nuc:['neutron (udd)','proton (uud)'],W:'W<sup>−</sup>',l1:'e<sup>−</sup>',l2:ov('ν')+'<sub>e</sub>',before:['n'],after:['p','em','veb'],
+ caps:['A neutron: <b>udd</b>. Charge +⅔ − ⅓ − ⅓ = 0.','The weak interaction acts on one <b>down</b> quark.','The d becomes a <b>u</b> and emits a <b>W⁻</b>. Charge: −⅓ → +⅔ + (−1) ✓','The W⁻ decays into an electron and an electron antineutrino.','<b>uud</b> — now a proton. n → p + e⁻ + ν̄<sub>e</sub>']},
+ plus:{start:['u','d','u'],to:'d',nuc:['proton (uud)','neutron (udd)'],W:'W<sup>+</sup>',l1:'e<sup>+</sup>',l2:'ν<sub>e</sub>',before:['p'],after:['n','ep','ve'],
+ caps:['A proton in a proton-rich nucleus: <b>uud</b>.','The weak interaction acts on one <b>up</b> quark.','The u becomes a <b>d</b> and emits a <b>W⁺</b>. Charge: +⅔ → −⅓ + (+1) ✓','The W⁺ decays into a positron and an electron neutrino.','<b>udd</b> — now a neutron. p → n + e⁺ + ν<sub>e</sub>']}};
+let bk='minus',bstep;
+const pos=(id,x,y,o=1,sc=1)=>{const e=$(id);e.style.left=x+'%';e.style.top=y+'%';e.style.opacity=o;e.style.transform=`translate(-50%,-50%) scale(${sc})`};
+function renderBeta(bs){const c=BETA[bk];$('nuc').classList.toggle('done',bs>=4);pos('nuc',28,52);$('nlabel').textContent=bs>=4?c.nuc[1]:c.nuc[0];pos('nlabel',28,10);
+ const Q=[[21,42],[35,42],[28,66]];c.start.forEach((t,i)=>{const tok=(i===2&&bs>=2)?c.to:t;$('q'+i).innerHTML=qChip(tok,(i===2&&(bs===1||bs===2))?'glow':'');pos('q'+i,Q[i][0],Q[i][1])});
+ $('W').innerHTML=c.W;if(bs<2)pos('W',28,66,0,.4);else if(bs===2)pos('W',62,52);else pos('W',65,52,0,.4);
+ $('l1').innerHTML=c.l1;$('l2').innerHTML=c.l2;if(bs<3){pos('l1',62,52,0,.4);pos('l2',62,52,0,.4)}else{pos('l1',85,22);pos('l2',85,80)}
+ $('bCap').innerHTML=c.caps[bs];$('bTab').innerHTML=bs>=4?consTable(c.before,c.after):'';}
+bstep=Stepper('bSt',{n:5,render:renderBeta,auto:2300});
+$('bm').onclick=()=>{bk='minus';$('bm').classList.add('on');$('bp').classList.remove('on');bstep.reset()};
+$('bp').onclick=()=>{bk='plus';$('bp').classList.add('on');$('bm').classList.remove('on');bstep.reset()};
+MCQ('q2a',{q:'What quark change happens in β⁺ decay?',opts:['d → u','u → d','s → u','u → s'],a:1,why:'p (uud) → n (udd): an up quark becomes a down quark.'});
+MCQ('q2b',{q:'In β⁻ decay, which exchange particle is emitted by the changing quark?',opts:['W⁺','W⁻','π⁻','virtual photon'],a:1,why:'d (−⅓) → u (+⅔) + W⁻ (−1).'});
+
+/* ---------- conservation checker ---------- */
+const PRE=[[['n'],['p','em','veb'],'β⁻ decay — a neutrino is involved, so weak.'],[['n'],['p','em','ve'],'Classic trap: β⁻ needs an <b>anti</b>neutrino to balance L<sub>e</sub>.'],[['mum'],['em','veb','vm'],'Muon decay — check L<sub>e</sub> and L<sub>μ</sub> separately.'],[['mum'],['em','g'],'Never observed: L<sub>μ</sub> and L<sub>e</sub> both fail.'],[['p','p'],['p','n','pip'],'Pion production in a p–p collision (strong).'],[['p','p'],['p','p','n'],'Charge balances, but baryon number doesn’t.'],[['Kp'],['pip','pi0'],'Kaon → pions: ΔS = −1, so weak.'],[['pim','p'],['K0','L0'],'Associated production: S = +1 and −1 → strong is fine.'],[['Km','p'],['pi0','n'],'Q and B balance but S: −1 → 0. Not strong.'],[['p'],['ep','pi0'],'Proton decay — never observed: B and L<sub>e</sub> fail.'],[['p','pb'],['pip','pim','pi0'],'p–p̄ annihilation into pions.'],[['em','ep'],['g','g'],'e⁻e⁺ annihilation.']];
+const inline=l=>l.map(id=>P[id].sym).join(' + ');
+$('presets').innerHTML=PRE.map((p,i)=>`<button class="btn" style="font-size:.88rem;padding:6px 10px" data-i="${i}">${inline(p[0])} → ${inline(p[1])}</button>`).join('');
+let before=[],after=[],side='b',note='';
+$('presets').onclick=e=>{const b=e.target.closest('.btn');if(!b)return;const p=PRE[+b.dataset.i];before=[...p[0]];after=[...p[1]];note=p[2];renderC()};
+$('cpal').innerHTML=['p','n','pb','nb','L0','pip','pim','pi0','Kp','Km','K0','K0b','em','ep','ve','veb','mum','mup','vm','vmb','g'].map(id=>pChip(id,'sm')).join('');
+$('cpal').onclick=e=>{const b=e.target.closest('.pc');if(!b)return;(side==='b'?before:after).push(b.dataset.id);note='';renderC()};
+['zb','za'].forEach(z=>$(z).onclick=e=>{const s=z==='zb'?'b':'a';const b=e.target.closest('.pc');if(b&&side===s){(s==='b'?before:after).splice(+b.dataset.k,1);note=''}side=s;renderC()});
+function renderC(){const z=(l,lab)=>`<div class="lbl">${lab}</div>`+(l.length?l.map((id,k)=>pChip(id,'sm').replace('data-id',`data-k="${k}" data-id`)).join(''):'<span style="color:#aab">tap here, then add particles</span>');
+ $('zb').innerHTML=z(before,'Before');$('za').innerHTML=z(after,'After');$('zb').classList.toggle('act',side==='b');$('za').classList.toggle('act',side==='a');
+ if(!before.length||!after.length){$('ctable').innerHTML='<div style="color:var(--mute)">Add particles to both sides.</div>';$('cverdict').innerHTML='';$('cnote').innerHTML='';return}
+ $('ctable').innerHTML=consTable(before,after);
+ const fails=[['Q','charge'],['B','baryon number'],['Le','electron lepton number'],['Lm','muon lepton number']].filter(([k])=>ptot(before,k)!==ptot(after,k)).map(x=>x[1]);
+ const dS=ptot(after,'S')-ptot(before,'S'),all=[...before,...after],nu=all.some(id=>['ve','veb','vm','vmb'].includes(id)),had=all.every(id=>['baryon','meson'].includes(P[id].fam));let v;
+ if(fails.length)v=['n','✗ Cannot happen — '+fails.join(' and ')+' not conserved.'];else if(Math.abs(dS)>1)v=['n','✗ Cannot happen — strangeness changes by '+Math.abs(dS)+'.'];
+ else if(dS)v=['w','⚠ Only possible by the weak interaction — strangeness changes by '+sg(dS)+'.'];else if(nu)v=['y','✓ Allowed — a neutrino is involved, so it is weak.'];else if(had)v=['y','✓ Allowed — all conserved including S, so it can be strong.'];else v=['y','✓ Allowed by the conservation laws.'];
+ $('cverdict').innerHTML=`<div class="verdict ${v[0]}">${v[1]}</div>`;$('cnote').innerHTML=note?`<div class="note">${note}</div>`:'';}
+renderC();
+MCQ('q3a',{q:'p + p → p + p + n. Why can’t this happen?',opts:['charge is not conserved','baryon number is not conserved','strangeness is not conserved','lepton number is not conserved'],a:1,why:'B: 2 → 3.'});
+MCQ('q3b',{q:'π⁻ + p → K⁰ + Λ⁰ (Λ⁰: S = −1). Which interaction is this?',opts:['strong — S is conserved (0 → +1 − 1)','weak — S changes','electromagnetic','it cannot happen'],a:0});
+MCQ('q3c',{q:'Which interaction is <b>not</b> possible by any interaction?',opts:['K⁺ → π⁺ + π⁰','μ⁻ → e⁻ + ν̄<sub>e</sub> + ν<sub>μ</sub>','p → e⁺ + π⁰','n → p + e⁻ + ν̄<sub>e</sub>'],a:2,why:'B: 1 → 0 and L<sub>e</sub>: 0 → −1. Proton decay has never been observed.'});
+
+/* ---------- exam ---------- */
+ExamQ('ex1',{title:'Question 1',stem:'<p>A negative pion collides with a proton: π⁻ + p → K⁰ + Λ⁰. This is a strong interaction. The Λ⁰ is a baryon.</p>',parts:[
+ {label:'01.1',q:'Deduce the quark structure of the Λ⁰.',marks:2,ms:['Strangeness conserved: K⁰ (d s̄) has S = +1, so Λ⁰ must have S = −1 / contain an s quark','Λ⁰ is a neutral baryon with an s: <b>uds</b>'],guide:'Alternative: count quarks: dū + uud → ds̄ + ? → ? = uds (an s s̄ pair is created).'},
+ {label:'01.2',q:'The Λ⁰ later decays: Λ⁰ → p + π⁻. State and explain which interaction is responsible.',marks:2,ms:['Weak','Strangeness changes (from −1 to 0); strangeness can only change in a weak interaction'],guide:'Do not accept “strangeness is not conserved in the strong interaction” as the explanation on its own.'}]});
+ExamQ('ex2',{title:'Question 2',parts:[
+ {label:'02',q:'Describe, in terms of quarks, what happens in β⁺ decay.',marks:2,ms:['An up quark changes into a down quark (uud → udd)','A W⁺ is emitted, which decays into a positron and an electron neutrino']}]});
+ExamQ('ex3',{title:'Question 3',parts:[
+ {label:'03',q:'Show whether the interaction K⁻ + p → π⁰ + n can take place by the <b>strong</b> interaction.',marks:3,ms:['Charge: −1 + 1 = 0 → 0 + 0 ✓ and baryon number: 0 + 1 → 0 + 1 ✓','Strangeness: −1 + 0 → 0 + 0 — not conserved','So it cannot be a strong interaction (strangeness must be conserved in strong interactions)']}]});
+ExamQ('ex4',{title:'Question 4 · multiple choice',parts:[
+ {label:'04',q:'What is the quark structure of the K⁰ meson?',opts:['u'+ov('s'),'d'+ov('s'),'s'+ov('d'),'d'+ov('d')],a:1,marks:1,ms:['<b>B</b> — d (−⅓) + s̄ (+⅓) = 0; S = +1.']}]});
+</script>
+</body>
+</html>
