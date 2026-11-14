@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Knowledge Organiser Builder – A-level Physics</title>
+<style>
+  :root { --navy:#1F3864; --blue:#2E74B5; --light:#D9E2F3; --pale:#F3F6FB; --grey:#595959; --line:#C5D3EA; }
+  * { box-sizing: border-box; }
+  sup, sub { line-height: 0; }
+  body { margin:0; font-family: Calibri, "Segoe UI", Carlito, Arial, sans-serif; color:#1a1a1a; background:#fff; }
+  header.top { background:var(--navy); color:#fff; padding:18px 20px 16px; }
+  header.top h1 { margin:0; font-size:1.45rem; }
+  header.top p { margin:4px 0 0; opacity:.85; font-size:.95rem; }
+  .wrap { max-width:1000px; margin:0 auto; padding:16px 16px 120px; }
+  .controls { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:14px; }
+  .controls input[type=search], .controls input[type=text] { flex:1 1 220px; padding:10px 12px; font-size:1rem; border:1px solid var(--line); border-radius:8px; }
+  .toggle { display:flex; align-items:center; gap:6px; font-size:.95rem; color:var(--grey); user-select:none; }
+  .help { background:var(--pale); border-left:4px solid var(--blue); padding:10px 14px; border-radius:6px; font-size:.93rem; color:#333; margin-bottom:16px; }
+  .help b { color:var(--navy); }
+  details.topic { border:1px solid var(--line); border-radius:10px; margin-bottom:10px; overflow:hidden; }
+  details.topic > summary { list-style:none; cursor:pointer; padding:12px 14px; background:var(--pale); display:flex; justify-content:space-between; align-items:center; font-weight:700; color:var(--navy); font-size:1.05rem; }
+  details.topic > summary::-webkit-details-marker { display:none; }
+  details.topic > summary::before { content:"▸"; margin-right:8px; transition:transform .15s; display:inline-block; }
+  details.topic[open] > summary::before { transform:rotate(90deg); }
+  summary .lab { flex:1; }
+  summary .cnt { font-weight:400; font-size:.85rem; color:var(--grey); }
+  .set { padding:4px 12px 12px; }
+  .set h3 { display:flex; align-items:center; gap:8px; margin:12px 0 6px; font-size:.98rem; color:var(--blue); }
+  .set h3 label { display:flex; align-items:center; gap:8px; cursor:pointer; }
+  table.q { width:100%; border-collapse:collapse; font-size:.97rem; }
+  table.q td { border-top:1px solid #E3E9F4; padding:8px 6px; vertical-align:top; }
+  table.q td.cb { width:34px; text-align:center; }
+  table.q td.qq { width:52%; }
+  table.q td.aa { color:#1F3864; }
+  table.q tr.sel td { background:#FFF6D6; }
+  table.q tr:hover td { background:#F7F9FD; }
+  table.q tr.sel:hover td { background:#FFEFB8; }
+  input[type=checkbox] { width:19px; height:19px; accent-color:var(--navy); cursor:pointer; }
+  body.hide-ans td.aa span.ans { filter:blur(6px); cursor:pointer; user-select:none; }
+  body.hide-ans td.aa.show span.ans { filter:none; }
+  .hint { font-size:.8rem; color:var(--grey); }
+  .bar { position:fixed; left:0; right:0; bottom:0; background:#fff; border-top:2px solid var(--navy); padding:10px 14px; display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:center; box-shadow:0 -4px 14px rgba(0,0,0,.08); z-index:5; }
+  .bar .n { font-weight:700; color:var(--navy); margin-right:6px; }
+  button { font:inherit; font-size:.95rem; padding:9px 14px; border-radius:8px; border:1px solid var(--navy); background:#fff; color:var(--navy); cursor:pointer; }
+  button.primary { background:var(--navy); color:#fff; }
+  button:disabled { opacity:.4; cursor:default; }
+  .none { color:var(--grey); padding:20px; text-align:center; display:none; }
+  #print { display:none; }
+  .paper { display:inline-block; font-size:.72rem; font-weight:700; padding:2px 8px; border-radius:20px; color:#fff; margin-left:8px; white-space:nowrap; vertical-align:1px; }
+  .paper.p1 { background:#1f6fd1; } .paper.p2 { background:#c2410c; } .paper.pboth { background:#2b8a3e; } .paper.tri { background:#7b3fb6; }
+  .set h3 .paper { font-size:.68rem; }
+  body.hide-triple .set[data-triple] { display:none !important; }
+  .tritoggle { display:none; }
+  .legend { display:flex; flex-wrap:wrap; gap:8px; align-items:center; font-size:.88rem; color:var(--grey); margin:-4px 0 14px; }
+  .legend .paper { margin-left:0; }
+  .filter { display:flex; gap:6px; flex-wrap:wrap; }
+  .filter button { padding:6px 12px; font-size:.88rem; }
+  .filter button[aria-pressed="true"] { background:var(--navy); color:#fff; }
+  .back { display:inline-block; color:#fff; opacity:.85; text-decoration:none; font-size:.9rem; margin-bottom:6px; }
+  .back:hover { opacity:1; text-decoration:underline; }
+
+  /* ---------- Print ---------- */
+  @media print {
+    body { background:#fff; }
+    header.top, .wrap, .bar { display:none !important; }
+    #print { display:block; }
+    .sheet { page-break-after:always; break-after:page; }
+    .sheet:last-child { page-break-after:auto; break-after:auto; }
+    .ptitle { text-align:center; font-weight:700; font-size:15pt; color:var(--navy); margin:0 0 2pt; }
+    .psub { text-align:center; font-style:italic; color:var(--grey); font-size:10.5pt; padding-bottom:4pt; border-bottom:1.2pt solid var(--navy); margin-bottom:10pt; }
+    table.pt { width:100%; border-collapse:collapse; font-size:11pt; table-layout:fixed; }
+    table.pt th { background:var(--navy) !important; color:#fff !important; font-weight:700; padding:5pt; border:0.6pt solid #8EA9DB; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    table.pt td { border:0.6pt solid #8EA9DB; padding:4pt 6pt; vertical-align:middle; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    table.pt td.num { text-align:center; }
+    table.pt tr.alt td { background:var(--light) !important; }
+    table.pt td.key { background:var(--light) !important; font-size:10pt; }
+    .tag { display:inline-block; font-size:7.5pt; font-weight:700; color:#fff !important; border-radius:3pt; padding:0 3pt; margin-right:4pt; vertical-align:1pt; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    .tag.p1 { background:#1f6fd1 !important; } .tag.p2 { background:#c2410c !important; } .tag.pboth { background:#2b8a3e !important; }
+    .psub .paper { font-style:normal; font-size:8.5pt; padding:1pt 6pt; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    .psub .paper.p1 { background:#1f6fd1 !important; } .psub .paper.p2 { background:#c2410c !important; } .psub .paper.pboth { background:#2b8a3e !important; } .psub .paper.tri { background:#7b3fb6 !important; }
+    .tag .t { margin-left:2pt; padding-left:2pt; border-left:0.6pt solid #fff; }
+    .portrait table.pt tr td { height:20mm; }
+    .landscape table.pt tr td { height:14.5mm; }
+    table.pt td.key.long { font-size:8.5pt; line-height:1.2; }
+    .foot { font-style:italic; color:var(--grey); font-size:9pt; margin-top:6pt; }
+  }
+</style>
+<style id="pagesize">@page { size: A4 portrait; margin: 15mm 17mm; }</style>
+</head>
+<body>
+<header class="top">
+  <a class="back" href="../a-level-physics.html#kos">← Mr Jarvis' Physics</a>
+  <h1>A-level Physics – Knowledge Organiser Builder</h1>
+  <p>Tick the facts you don't know yet, then print your own knowledge organiser.</p>
+</header>
+
+<div class="wrap">
+  <div class="help">
+    <b>How to use:</b> open a topic, cover or hide the answers, and tick every question you can't answer. Then press <b>Print Q&amp;A sheet</b> or <b>Print self-test sheet</b> and choose <b>Save as PDF</b>. Your ticks are grouped into sets of 10. The self-test sheet is landscape; if it comes out portrait, switch to landscape in the print options. Coloured labels show which A-level paper each topic is examined on; everything can also come up on Paper 3.
+  </div>
+  <div class="controls">
+    <input type="search" id="search" placeholder="Search questions and answers (e.g. quark, photon, work function)">
+    <input type="text" id="name" placeholder="Your name (printed on the sheet)">
+    <label class="toggle"><input type="checkbox" id="hide"> Hide answers <span class="hint">(tap to reveal)</span></label>
+  </div>
+  <div class="legend">
+    <span>Exam paper:</span>
+    <span class="paper p1">Paper 1</span><span class="paper p2">Paper 2</span><span class="paper pboth" id="lgBoth">Papers 1 &amp; 2</span><span class="paper tri" id="lgTri">Triple only</span>
+    <span class="filter" role="group" aria-label="Show topics for">
+      <button data-paper="all" aria-pressed="true">All</button><button data-paper="1" aria-pressed="false">Paper 1</button><button data-paper="2" aria-pressed="false">Paper 2</button>
+    </span>
+    <label class="toggle tritoggle" id="triWrap"><input type="checkbox" id="hideTri"> Hide triple only (Combined Science)</label>
+  </div>
+  <div id="topics"></div>
+  <div class="none" id="none">No questions match your search or paper filter.</div>
+</div>
+
+<div class="bar">
+  <span class="n" id="count">0 selected</span>
+  <button id="clear">Clear ticks</button>
+  <button class="primary" id="pQA">Print Q&amp;A sheet</button>
+  <button class="primary" id="pST">Print self-test sheet</button>
+</div>
+
+<div id="print"></div>
+
+<script>
+const DATA = [{"code": "P1", "name": "Particles and Radiation", "paper": "1", "sets": [{"title": "Constituents of the Atom", "items": [["Charge of a proton", "+1.60 × 10^{−19} C"], ["Charge of an electron", "−1.60 × 10^{−19} C"], ["Mass of a proton", "1.67 × 10^{−27} kg"], ["Mass of an electron", "9.11 × 10^{−31} kg"], ["Specific charge", "Charge ÷ mass (unit C kg^{−1})"], ["Specific charge of a proton", "9.58 × 10^{7} C kg^{−1}"], ["Specific charge of an electron", "1.76 × 10^{11} C kg^{−1}"], ["Proton number (*Z*)", "Number of protons"], ["Nucleon number (*A*)", "Number of protons + neutrons"], ["Isotopes", "Same number of protons, different number of neutrons"]]}, {"title": "Stable and Unstable Nuclei", "items": [["Role of the strong nuclear force", "Holds the nucleus together, overcoming electrostatic repulsion between protons"], ["Range over which the strong force is attractive", "Up to about 3 fm"], ["Strong force at separations below about 0.5 fm", "Repulsive"], ["Nuclei that undergo α decay", "Very large nuclei (too many nucleons)"], ["Nuclei that undergo β^{−} decay", "Neutron-rich nuclei"], ["What an α particle is", "2 protons + 2 neutrons (a helium nucleus)"], ["Change in *A* and *Z* in α decay", "*A* decreases by 4, *Z* decreases by 2"], ["Change in *A* and *Z* in β^{−} decay", "*A* unchanged, *Z* increases by 1"], ["Evidence that led to the neutrino being proposed", "β particles are emitted with a range of energies"], ["Why the neutrino was needed", "To conserve energy (and momentum) in β decay"]]}, {"title": "Particles, Antiparticles and Photons", "items": [["Antiparticle of the electron", "Positron"], ["How an antiparticle compares with its particle", "Same mass and rest energy, opposite charge"], ["Rest energy of an electron", "0.511 MeV"], ["Rest energy of a proton", "938 MeV"], ["Photon energy equation", "*E* = *hf* = *hc*/λ"], ["Converting MeV to J", "× 1.60 × 10^{−13}"], ["Annihilation", "Particle + antiparticle → two photons"], ["Why annihilation produces two photons", "To conserve momentum"], ["Pair production", "Photon → particle + antiparticle"], ["Minimum photon energy for pair production", "Total rest energy of the particle and antiparticle"]]}, {"title": "Particle Interactions", "items": [["Exchange particle for the electromagnetic force", "Virtual photon"], ["Exchange particles for the weak interaction", "W^{+} and W^{−} bosons"], ["Exchange particle for the strong force between nucleons", "Pion"], ["Particles the strong interaction acts on", "Hadrons only"], ["Interaction responsible for β decay", "Weak interaction"], ["Exchange particle in β^{−} decay", "W^{−}"], ["Exchange particle in β^{+} decay", "W^{+}"], ["Equation for β^{−} decay", "n → p + e^{−} + ν̄_{e}"], ["Equation for β^{+} decay", "p → n + e^{+} + ν_{e}"], ["Equation for electron capture", "p + e^{−} → n + ν_{e}"]]}, {"title": "Classification of Particles", "items": [["Hadrons", "Particles that feel the strong interaction"], ["Two classes of hadron", "Baryons and mesons"], ["Quark structure of a baryon", "Three quarks"], ["Quark structure of a meson", "Quark + antiquark"], ["The only stable baryon", "Proton"], ["Baryon number of a baryon, antibaryon and meson", "+1, −1, 0"], ["Products of free neutron decay", "Proton, electron and antineutrino"], ["Two types of meson in the AQA spec", "Pions and kaons"], ["Leptons", "Particles that do not feel the strong interaction (e.g. electron, muon, neutrinos)"], ["What a muon decays into", "Electron (+ neutrinos)"]]}, {"title": "Quarks and Antiquarks", "items": [["Charge of an up quark", "+⅔*e*"], ["Charge of a down quark", "−⅓*e*"], ["Charge of a strange quark", "−⅓*e*"], ["Baryon number of a quark", "+⅓"], ["Strangeness of a strange quark", "−1"], ["Quark structure of a proton", "uud"], ["Quark structure of a neutron", "udd"], ["Quark structure of a π^{+}", "ud̄"], ["Quark structure of a K^{+}", "us̄"], ["Quark change in β^{−} decay", "d → u"]]}, {"title": "Conservation Laws", "items": [["Quantities conserved in every particle interaction", "Charge, baryon number, lepton number (plus energy and momentum)"], ["Electron lepton number of an electron", "*L*_{e} = +1"], ["Electron lepton number of a positron", "*L*_{e} = −1"], ["Muon lepton number of a muon neutrino", "*L*_{μ} = +1"], ["Baryon number of a lepton", "0"], ["Quantity conserved in strong but not weak interactions", "Strangeness"], ["Allowed change in strangeness in a weak interaction", "0, +1 or −1"], ["Why strange particles are produced in pairs", "Made by the strong interaction, which conserves strangeness"], ["Interaction by which strange particles decay", "Weak"], ["What kaons decay into", "Pions (or leptons)"]]}, {"title": "The Photoelectric Effect", "items": [["Photoelectric effect", "Electrons emitted from a metal surface when light above a threshold frequency shines on it"], ["Threshold frequency", "Minimum frequency of light that causes electrons to be emitted"], ["Work function (φ)", "Minimum energy needed to remove an electron from the metal surface"], ["Effect of increasing intensity above the threshold frequency", "More electrons emitted per second; *E*_{k(max)} unchanged"], ["Effect of increasing intensity below the threshold frequency", "Still no electrons emitted"], ["Effect of increasing frequency", "*E*_{k(max)} increases"], ["Time delay before emission", "None (emission is instant)"], ["Why the wave theory cannot explain the effect", "It predicts emission at any frequency if the light is intense enough"], ["How the photon model explains the threshold frequency", "One photon gives all its energy to one electron, so *hf* must be ≥ φ"], ["Scientist who explained the effect using photons", "Einstein"]]}, {"title": "Photoelectric Equation and Stopping Potential", "items": [["Photoelectric equation", "*hf* = φ + *E*_{k(max)}"], ["Threshold frequency equation", "*f*_{0} = φ/*h*"], ["Why the kinetic energy is a maximum", "Electrons below the surface lose energy escaping"], ["Stopping potential (*V*_{s})", "Minimum p.d. needed to stop the fastest photoelectrons"], ["Equation linking stopping potential and *E*_{k(max)}", "*eV*_{s} = *E*_{k(max)}"], ["Electronvolt (eV)", "Energy gained by an electron accelerated through a p.d. of 1 V"], ["1 eV in joules", "1.60 × 10^{−19} J"], ["Gradient of an *E*_{k(max)} against *f* graph", "*h*"], ["*x*-intercept of an *E*_{k(max)} against *f* graph", "Threshold frequency *f*_{0}"], ["*y*-intercept of an *E*_{k(max)} against *f* graph", "−φ"]]}, {"title": "Energy Levels and Spectra", "items": [["Excitation", "An electron moves up to a higher energy level"], ["Ionisation", "An electron is removed from the atom"], ["Ground state", "Lowest energy level of an atom"], ["Energy a photon needs to excite an atom", "Exactly equal to the difference between two energy levels"], ["Energy a colliding electron needs to excite an atom", "Kinetic energy at least equal to the energy difference"], ["Photon emitted when an electron moves down a level", "*hf* = *E*_{1} − *E*_{2}"], ["How mercury atoms are excited in a fluorescent tube", "Collisions with free electrons accelerated by the p.d."], ["Job of the phosphor coating", "Absorbs UV photons and emits visible light"], ["Line absorption spectrum", "Dark lines on a continuous spectrum"], ["What line spectra show", "Electrons in atoms have discrete energy levels"]]}, {"title": "Wave–Particle Duality", "items": [["Evidence that light behaves as a wave", "Diffraction and interference"], ["Evidence that light behaves as a particle", "Photoelectric effect"], ["Evidence that electrons behave as waves", "Electron diffraction"], ["de Broglie equation", "λ = *h*/*mv*"], ["Quantity *mv*", "Momentum"], ["Effect of increasing electron speed on the diffraction pattern", "Rings get closer together (λ decreases)"], ["How electron speed is changed in an electron diffraction tube", "Change the accelerating p.d."], ["Condition for significant diffraction", "Wavelength similar to the gap or atomic spacing"], ["Electron or proton at the same speed: longer λ", "Electron (smaller mass)"], ["Why a thrown ball shows no diffraction", "Its wavelength is far too small"]]}], "spec": ["3.2.1", "3.2.2"]}];
+const LEVEL_LABEL = "AQA A-level Physics";
+const HAS_TRIPLE = DATA.some(t => t.sets.some(s => s.triple));
+const HAS_BOTH = DATA.some(t => t.paper === "both");
+// Markup: ^{..} sup, _{..} sub, *..* italic, § bold
+function fmt(s) {
+  let out = "", i = 0, it = false, b = false;
+  const esc = c => c === "<" ? "&lt;" : c === ">" ? "&gt;" : c === "&" ? "&amp;" : c;
+  while (i < s.length) {
+    const c = s[i];
+    if ((c === "^" || c === "_") && s[i + 1] === "{") {
+      const j = s.indexOf("}", i); const tag = c === "^" ? "sup" : "sub";
+      out += `<${tag}>${[...s.slice(i + 2, j)].map(esc).join("")}</${tag}>`; i = j + 1; continue;
+    }
+    if (c === "*") { out += it ? "</i>" : "<i>"; it = !it; i++; continue; }
+    if (c === "§") { out += b ? "</b>" : "<b>"; b = !b; i++; continue; }
+    out += esc(c); i++;
+  }
+  return out;
+}
+const plain = s => s.replace(/[\^_]\{([^}]*)\}/g, "$1").replace(/[*§]/g, "").toLowerCase();
+
+const PAPER_LABEL = { "1": "Paper 1", "2": "Paper 2", "both": "Papers 1 & 2" };
+const badge = p => `<span class="paper p${p}">${PAPER_LABEL[p]}</span>`;
+const triBadge = `<span class="paper tri">Triple only</span>`;
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+};
+const SEL_KEY = "ko-selected-" + LEVEL_LABEL;
+const selected = new Set(store.get(SEL_KEY, store.get("ko-selected", [])));
+const index = []; // ordered list of all questions
+const byId = {};
+
+const topicsEl = document.getElementById("topics");
+DATA.forEach((t, ti) => {
+  const d = document.createElement("details"); d.className = "topic"; d.dataset.paper = t.paper;
+  const total = t.sets.reduce((n, s) => n + s.items.length, 0);
+  d.innerHTML = `<summary><span class="lab">${fmt(t.code + " " + t.name)}${badge(t.paper)}</span><span class="cnt" data-topic="${ti}"></span></summary>`;
+  t.sets.forEach((s, si) => {
+    const box = document.createElement("div"); box.className = "set"; if (s.triple) box.dataset.triple = "1";
+    const rows = s.items.map(([q, a], qi) => {
+      const id = `${t.code}|${si}|${qi}`;
+      const rec = { id, ti, code: t.code, paper: t.paper, triple: !!s.triple, q, a, text: plain(q + " " + a) };
+      index.push(rec); byId[id] = rec;
+      return `<tr data-id="${id}"><td class="cb"><input type="checkbox" data-id="${id}" aria-label="Select"></td><td class="qq">${fmt(q)}</td><td class="aa"><span class="ans">${fmt(a)}</span></td></tr>`;
+    }).join("");
+    box.innerHTML = `<h3><label><input type="checkbox" class="all" data-set="${ti}-${si}"> Set ${si + 1}: ${fmt(s.title)}</label>${s.triple ? triBadge : ""}</h3><table class="q"><tbody data-set="${ti}-${si}">${rows}</tbody></table>`;
+    d.appendChild(box);
+  });
+  d.dataset.total = total;
+  topicsEl.appendChild(d);
+});
+
+const hideTri = document.getElementById("hideTri");
+const activeItems = () => index.filter(r => selected.has(r.id) && !(hideTri.checked && r.triple));
+function refresh() {
+  document.querySelectorAll("input[data-id]").forEach(cb => {
+    const on = selected.has(cb.dataset.id); cb.checked = on;
+    cb.closest("tr").classList.toggle("sel", on);
+  });
+  document.querySelectorAll("tbody[data-set]").forEach(tb => {
+    const ids = [...tb.querySelectorAll("input[data-id]")].map(c => c.dataset.id);
+    const all = tb.closest(".set").querySelector("input.all");
+    const n = ids.filter(id => selected.has(id)).length;
+    all.checked = n === ids.length; all.indeterminate = n > 0 && n < ids.length;
+  });
+  document.querySelectorAll("details.topic").forEach((d, ti) => {
+    const n = activeItems().filter(r => r.ti === ti).length;
+    d.querySelector(".cnt").textContent = n ? `${n} ticked / ${d.dataset.total}` : `${d.dataset.total} questions`;
+  });
+  const n = activeItems().length;
+  document.getElementById("count").textContent = `${n} selected` + (n ? ` (${Math.ceil(n / 10)} set${n > 10 ? "s" : ""})` : "");
+  document.getElementById("pQA").disabled = document.getElementById("pST").disabled = !n;
+  store.set(SEL_KEY, [...selected]);
+}
+
+topicsEl.addEventListener("change", e => {
+  const el = e.target;
+  if (el.dataset.id) { el.checked ? selected.add(el.dataset.id) : selected.delete(el.dataset.id); }
+  else if (el.classList.contains("all")) {
+    const tb = topicsEl.querySelector(`tbody[data-set="${el.dataset.set}"]`);
+    tb.querySelectorAll("tr").forEach(tr => {
+      if (tr.style.display === "none") return;
+      el.checked ? selected.add(tr.dataset.id) : selected.delete(tr.dataset.id);
+    });
+  }
+  refresh();
+});
+topicsEl.addEventListener("click", e => {
+  const td = e.target.closest("td.aa");
+  if (td && document.body.classList.contains("hide-ans")) { td.classList.toggle("show"); return; }
+  const tr = e.target.closest("tr[data-id]");
+  if (tr && !e.target.closest("input")) {
+    const id = tr.dataset.id; selected.has(id) ? selected.delete(id) : selected.add(id); refresh();
+  }
+});
+
+const hide = document.getElementById("hide");
+hide.checked = store.get("ko-hide", false);
+const applyHide = () => { document.body.classList.toggle("hide-ans", hide.checked); store.set("ko-hide", hide.checked);
+  document.querySelectorAll("td.aa.show").forEach(td => td.classList.remove("show")); };
+hide.addEventListener("change", applyHide); applyHide();
+
+const nameEl = document.getElementById("name");
+nameEl.value = store.get("ko-name", "");
+nameEl.addEventListener("input", () => store.set("ko-name", nameEl.value));
+
+let paperFilter = "all";
+const paperOk = d => paperFilter === "all" || d.dataset.paper === paperFilter || d.dataset.paper === "both";
+document.querySelectorAll(".filter button").forEach(b => b.addEventListener("click", () => {
+  paperFilter = b.dataset.paper;
+  document.querySelectorAll(".filter button").forEach(x => x.setAttribute("aria-pressed", x === b));
+  applySearch();
+}));
+document.getElementById("search").addEventListener("input", applySearch);
+function applySearch() {
+  const term = document.getElementById("search").value.trim().toLowerCase();
+  let any = false;
+  document.querySelectorAll("details.topic").forEach(d => {
+    let hits = 0;
+    d.querySelectorAll("tr[data-id]").forEach(tr => {
+      const show = !term || byId[tr.dataset.id].text.includes(term);
+      tr.style.display = show ? "" : "none"; if (show) hits++;
+    });
+    d.querySelectorAll(".set").forEach(s => { s.style.display = [...s.querySelectorAll("tr[data-id]")].some(tr => tr.style.display !== "none") ? "" : "none"; });
+    const show = hits && paperOk(d);
+    d.style.display = show ? "" : "none";
+    if (term && show) d.open = true;
+    if (show) any = true;
+  });
+  document.getElementById("none").style.display = any ? "none" : "block";
+}
+
+document.getElementById("clear").addEventListener("click", () => {
+  if (selected.size && confirmClear()) { selected.clear(); refresh(); }
+});
+function confirmClear() { return window.confirm ? window.confirm("Clear all ticks?") : true; }
+
+function buildPrint(mode) {
+  const items = activeItems();
+  const name = nameEl.value.trim();
+  const codes = [...new Set(items.map(r => r.code))];
+  const sets = []; for (let i = 0; i < items.length; i += 10) sets.push(items.slice(i, i + 10));
+  const land = mode === "st";
+  document.getElementById("pagesize").textContent = land
+    ? "@page { size: A4 landscape; margin: 11mm 12mm; }"
+    : "@page { size: A4 portrait; margin: 15mm 17mm; }";
+  const tag = r => (codes.length > 1 || r.triple) ? `<span class="tag p${r.paper}">${fmt(r.code)}${r.triple ? '<span class="t">T</span>' : ""}</span>` : "";
+  const html = sets.map((set, si) => {
+    const sub = `${LEVEL_LABEL}  •  ${codes.map(fmt).join(", ")}  •  Set ${si + 1} of ${sets.length}${name ? "  •  " + name.replace(/</g, "&lt;") : ""}`;
+    return sheetHTML(`My Knowledge Organiser${land ? ": Self-Test" : ""}`, sub, set, land, tag);
+  }).join("");
+  document.getElementById("print").innerHTML = html;
+  setTimeout(() => window.print(), 50);
+}
+// One printed page: title, subtitle, table of up to 10 questions
+function sheetHTML(title, sub, set, land, tag = () => "") {
+    const head = `<div class="ptitle">${title}</div><div class="psub">${sub}</div>`;
+    if (!land) {
+      return `<div class="sheet portrait">${head}<table class="pt"><colgroup><col style="width:7%"><col style="width:49%"><col style="width:44%"></colgroup>
+        <thead><tr><th>#</th><th>Question</th><th>Answer</th></tr></thead><tbody>${
+        set.map((r, i) => `<tr class="${i % 2 ? "alt" : ""}"><td class="num">${i + 1}</td><td>${tag(r)}${fmt(r.q)}</td><td>${fmt(r.a)}</td></tr>`).join("")}</tbody></table></div>`;
+    }
+    return `<div class="sheet landscape">${head}<table class="pt"><colgroup><col style="width:3.6%"><col style="width:21%"><col style="width:19.1%"><col style="width:19.1%"><col style="width:19.1%"><col style="width:18.1%"></colgroup>
+      <thead><tr><th>#</th><th>Question</th><th>Attempt 1</th><th>Attempt 2</th><th>Attempt 3</th><th>Answer</th></tr></thead><tbody>${
+      set.map((r, i) => `<tr><td class="num">${i + 1}</td><td>${tag(r)}${fmt(r.q)}</td><td></td><td></td><td></td><td class="key${plain(r.a).length > 70 ? " long" : ""}">${fmt(r.a)}</td></tr>`).join("")}</tbody></table>
+      <div class="foot">Fold the Answer column behind the page. Answer each question from memory, then unfold and check. Repeat on a later day in the next Attempt column.</div></div>`;
+}
+// Whole-topic sheets (used to make the downloadable PDFs)
+function topicPrint(code, mode) {
+  const t = DATA.find(x => x.code === code); const land = mode === "st";
+  document.getElementById("pagesize").textContent = land
+    ? "@page { size: A4 landscape; margin: 11mm 12mm; }" : "@page { size: A4 portrait; margin: 15mm 17mm; }";
+  document.getElementById("print").innerHTML = t.sets.map((s, si) => sheetHTML(
+    `${fmt(t.code + " " + t.name)} – Knowledge Organiser${land ? ": Self-Test" : ""}`,
+    `${LEVEL_LABEL}  •  Set ${si + 1}: ${fmt(s.title)}  ${badge(t.paper)}${s.triple ? " " + triBadge : ""}`,
+    s.items.map(([q, a]) => ({ q, a })), land)).join("");
+}
+document.getElementById("pQA").addEventListener("click", () => buildPrint("qa"));
+document.getElementById("pST").addEventListener("click", () => buildPrint("st"));
+
+if (!HAS_BOTH) document.getElementById("lgBoth").remove();
+if (!HAS_TRIPLE) document.getElementById("lgTri").remove();
+else {
+  document.getElementById("triWrap").style.display = "flex";
+  hideTri.checked = store.get("ko-hidetri-" + LEVEL_LABEL, false);
+  const applyTri = () => { document.body.classList.toggle("hide-triple", hideTri.checked); store.set("ko-hidetri-" + LEVEL_LABEL, hideTri.checked); refresh(); };
+  hideTri.addEventListener("change", applyTri); document.body.classList.toggle("hide-triple", hideTri.checked);
+}
+refresh();
+</script>
+</body>
+</html>
