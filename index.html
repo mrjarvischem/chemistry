@@ -57,6 +57,9 @@
   .level-btn .dot{ display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:8px; vertical-align:1px; }
   .level-btn[data-level="gcse"] .dot{ background:var(--gcse); }
   .level-btn[data-level="alevel"] .dot{ background:#a07ce0; }
+  a.level-btn{ text-decoration:none; display:inline-block; }
+  .level-btn.physics .dot{ background:#f08a4b; }
+  [hidden]{ display:none !important; }
 
   /* ---------- Main ---------- */
   main{ padding:36px 20px 60px; }
@@ -199,6 +202,7 @@
     <div class="level-switch" role="tablist">
       <button class="level-btn" role="tab" data-level="gcse"><span class="dot"></span>GCSE</button>
       <button class="level-btn" role="tab" data-level="alevel"><span class="dot"></span>A-level</button>
+      <a class="level-btn physics" id="physicsLink" href="a-level-physics.html" hidden><span class="dot"></span>A-level Physics</a>
     </div>
   </div>
 </header>
@@ -238,6 +242,12 @@
      points at "revisionrecord/File name" – type the name exactly as it
      appears in GitHub, including the .pdf or .xlsx on the end.
    ===================================================================== */
+/* A-level Physics has its own page: a-level-physics.html
+   Set SHOW_PHYSICS to true to add an "A-level Physics" tab to this page.
+   While it is false the physics page is unlisted – only people you send
+   the link to can find it. */
+const SHOW_PHYSICS = false;
+
 const RR_FOLDER = "revisionrecord/";
 const rr = file => RR_FOLDER + encodeURIComponent(file);
 const PDF_FOLDER = "25minpdf-1/";
@@ -858,6 +868,7 @@ document.querySelectorAll(".level-btn").forEach(b => b.addEventListener("click",
   const { cat } = parseHash();
   location.hash = SLUG[b.dataset.level] + (cat ? "/" + cat.key : "");   // stay on the same resource type when switching level
 }));
+if (SHOW_PHYSICS) document.getElementById("physicsLink").hidden = false;
 window.addEventListener("hashchange", () => {
   render();
   document.querySelector("main").scrollIntoView({ behavior: "instant", block: "start" });
