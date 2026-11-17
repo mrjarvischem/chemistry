@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Electrolysis Virtual Lab · GCSE Chemistry Required Practical</title>
+<style>
+:root{--bg:#f4ecdc;--panel:#fffaf0;--line:#d9c8a7;--ink:#3b2a1a;--brown:#7a4e2d;--brown2:#a8743f;--muted:#7d6a55;--soft:#efe3cb;--ok:#2e7d4f;--bad:#b23a2a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;font-size:16px;line-height:1.35}
+.wrap{max-width:1420px;margin:0 auto;padding:0 16px 28px}
+header{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;padding:14px 4px 10px}
+h1{margin:0;font-size:27px;color:var(--brown)}
+.sub{color:var(--muted);font-size:15px}
+.top{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:14px;align-items:start}
+.bottom{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;margin-top:14px;align-items:start}
+@media (max-width:1050px){.top,.bottom{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px}
+.full{margin-top:14px}
+canvas.app,canvas.graph{width:100%;height:auto;display:block;border-radius:8px;border:1px solid var(--line);background:#fffdf8}
+.controls h3{margin:12px 0 6px;font-size:13px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);border-bottom:1px solid var(--line);padding-bottom:3px}
+.controls h3:first-child{margin-top:0}
+.seg{display:flex;border:1px solid var(--brown2);border-radius:9px;overflow:hidden}
+.seg button{flex:1;border:0;background:#fff;color:var(--ink);padding:7px 4px;font-size:14px;cursor:pointer;border-right:1px solid var(--line);font-family:inherit}
+.seg button:last-child{border-right:0}
+.seg button.on{background:var(--brown);color:#fff;font-weight:600}
+.seg button:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:8px;align-items:center;font-size:14.5px;margin:6px 0}
+.row .seg{flex:1}
+.chk{display:flex;align-items:center;gap:8px;font-size:14.5px;margin:6px 0;cursor:pointer}
+.chk input{width:17px;height:17px;accent-color:var(--brown)}
+.btnrow{display:flex;gap:8px;margin-top:8px}
+.btn{flex:1;border:1px solid var(--brown);background:#fff;color:var(--brown);border-radius:9px;padding:9px 8px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit}
+.btn.primary{background:var(--brown);color:#fff}
+.btn.big{font-size:17px;padding:11px}
+.btn.on{background:#2e7d4f;border-color:#2e7d4f;color:#fff}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+select{font-family:inherit;font-size:15px;padding:6px;border:1px solid var(--brown2);border-radius:7px;background:#fff;color:var(--ink);width:100%}
+input[type=range]{width:100%;accent-color:var(--brown)}
+.val{color:var(--brown);font-weight:700}
+.note{font-size:13px;color:var(--muted);margin-top:3px}
+.result{margin-top:8px;background:#fff6e2;border-left:5px solid var(--brown2);border-radius:8px;padding:8px 10px;font-size:15px;min-height:42px}
+.result b{color:var(--brown)}
+.tabbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px;font-size:14.5px}
+.smallbtn{border:1px solid var(--brown2);background:#fff;color:var(--brown);border-radius:7px;padding:5px 10px;font-size:14px;cursor:pointer;font-family:inherit}
+table{border-collapse:collapse;width:100%;font-size:14.5px;background:#fff}
+th,td{border:1px solid var(--line);padding:5px 6px;text-align:center;vertical-align:top}
+th{background:var(--soft);color:var(--brown);font-weight:600}
+td.l{text-align:left}
+td textarea{width:100%;min-width:150px;font-family:inherit;font-size:14px;border:1px solid var(--line);border-radius:6px;padding:4px;resize:vertical;min-height:44px}
+td select{width:auto;font-size:14px;padding:3px}
+td.ok select{border:2px solid var(--ok);background:#eaf6ee}
+td.bad select{border:2px solid var(--bad);background:#fbeceb}
+.ans{font-size:13px;color:var(--ok);margin-top:4px;text-align:left}
+td input{width:80px;font-size:15px;padding:3px;text-align:center;border:1px solid var(--line);border-radius:5px}
+td.okc input{border-color:var(--ok);background:#eaf6ee}
+td.badc input{border-color:var(--bad);background:#fbeceb}
+tr.now td{background:#fff1c9}
+tr.now input{border:2px solid var(--brown)}
+.tablewrap{max-height:420px;overflow:auto;border-radius:8px;border:1px solid var(--line)}
+.empty{color:var(--muted);font-style:italic;padding:12px}
+.x{border:0;background:none;color:#a33;cursor:pointer;font-size:16px}
+.ions{font-size:15px}
+.ions h4{margin:8px 0 4px;color:var(--brown)}
+.eq{font-family:"Cambria Math","Times New Roman",serif;font-size:17px;background:#fff6e2;border-radius:6px;padding:4px 8px;display:inline-block;margin:2px 0}
+details.method summary{cursor:pointer;color:var(--brown);font-weight:600}
+details.method ol{margin:6px 0 0 18px;padding:0;font-size:15px}
+.disabledbox{opacity:.55}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Electrolysis – Virtual Lab</h1>
+  <div class="sub">GCSE Chemistry Required Practical · Electrolysis of aqueous solutions with inert electrodes · Identify the products at each electrode</div>
+</header>
+
+<div class="top">
+  <div class="card">
+    <canvas class="app" id="cv" width="820" height="520"></canvas>
+    <details class="method" style="margin-top:10px"><summary>Method</summary><ol>
+      <li>Pour the solution into the electrolysis cell. Fill two small test tubes with the solution and turn them upside down over the electrodes (or fill the Hofmann voltameter).</li>
+      <li>Connect the electrodes to a low-voltage DC power supply. The electrode connected to the negative terminal is the cathode; the positive one is the anode.</li>
+      <li>Switch on and watch both electrodes closely. Record what you see.</li>
+      <li>Test any gas collected: lighted splint (hydrogen), glowing splint (oxygen), damp blue litmus paper (chlorine).</li>
+      <li>Switch off, clean the electrodes and repeat with the other solutions.</li>
+    </ol>
+    <div class="note">Safety: chlorine is toxic – use a fume cupboard or keep the time short. Wear eye protection.</div></details>
+  </div>
+
+  <aside class="card controls" id="ctl">
+    <h3>Apparatus</h3>
+    <div class="seg" id="sApp"><button data-v="cell" class="on">Cell + test tubes</button><button data-v="hof">Hofmann voltameter</button></div>
+    <h3>Solution (aqueous)</h3>
+    <select id="sSol"></select>
+    <div class="row">Concentration <div class="seg" id="sConc"><button data-v="0.5">0.5</button><button data-v="1" class="on">1.0</button><button data-v="2">2.0</button></div> mol/dm³</div>
+    <h3>Power supply</h3>
+    <div class="row">Voltage <input type="range" id="sV" min="0" max="12" step="1" value="6"><span class="val" id="vV" style="min-width:44px;text-align:right">6 V</span></div>
+    <div class="btnrow"><button class="btn primary big" id="bPower">⏻ Switch on</button></div>
+    <div class="btnrow"><button class="btn" id="bReset">↺ Fresh solution &amp; clean electrodes</button></div>
+    <div class="row">Speed <div class="seg" id="sSpeed"><button data-v="1" class="on">1×</button><button data-v="5">5×</button><button data-v="20">20×</button><button data-v="60">60×</button></div></div>
+    <label class="chk"><input type="checkbox" id="cUI"> Add universal indicator to the solution</label>
+    <label class="chk"><input type="checkbox" id="cHints"> Label what is happening</label>
+    <h3>Test the products</h3>
+    <div class="seg" id="sTest"><button data-v="lit" class="on">🔥 Lighted splint</button><button data-v="glow">Glowing splint</button><button data-v="litmus">Damp blue litmus</button></div>
+    <div class="btnrow"><button class="btn" id="tCat">Test at cathode (−)</button><button class="btn" id="tAn">Test at anode (+)</button></div>
+    <div class="result" id="res">Switch on, watch both electrodes, then test the products.</div>
+  </aside>
+</div>
+
+<div class="card full">
+  <div class="tabbar"><b>Results – what forms at each electrode?</b>
+    <button class="smallbtn" id="bCheck">Check my products</button>
+    <button class="smallbtn" id="bAnswers">Show model answers</button>
+    <button class="smallbtn" id="bAll">Add all 10 solutions to the table</button>
+    <button class="smallbtn" id="bCopyO">Copy table</button>
+    <span class="note" id="msgO"></span></div>
+  <div class="tablewrap"><table id="obsT"></table></div>
+  <div class="note">A row is added each time you switch on with a new solution. Type what you saw (and the test result), then choose the product.</div>
+</div>
+
+<div class="bottom">
+  <div class="card" id="volCard">
+    <div class="tabbar"><b>Gas volumes (Hofmann voltameter)</b>
+      <button class="smallbtn" id="bCopyV">Copy (paste into Excel)</button><button class="smallbtn" id="bCheckV">Check my readings</button><span class="note" id="msgV"></span></div>
+    <div class="row">Reading every <div class="seg" id="sInt"><button data-v="30">30 s</button><button data-v="60" class="on">60 s</button><button data-v="120">120 s</button></div></div>
+    <div class="row"><div class="seg" id="sMode"><button data-v="self" class="on">I'll read the scales</button><button data-v="auto">Record automatically</button></div></div>
+    <label class="chk"><input type="checkbox" id="cPause" checked> Pause at each reading time</label>
+    <div class="tablewrap"><table id="volT"></table></div>
+    <div class="note" id="volNote"></div>
+  </div>
+  <div class="card">
+    <div class="tabbar"><b>Graph of gas volume against time</b><span class="note" id="ratio"></span></div>
+    <canvas class="graph" id="gr" width="760" height="420"></canvas>
+  </div>
+</div>
+
+<div class="card full ions" id="ionsCard">
+  <div class="tabbar"><b>Explain it – ions and half equations</b><button class="smallbtn" id="bIons">Show for this solution</button><span class="note">Try to explain your results first.</span></div>
+  <div id="ions"></div>
+</div>
+</div>
+
+<script>
+(() => {
+"use strict";
+const $ = id => document.getElementById(id);
+const F = 96500;
+function gauss(){ let u=0; while(!u) u=Math.random(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*Math.random()); }
+function fmtClock(t){ const m=Math.floor(t/60), s=Math.floor(t-60*m); return m+':'+(s<10?'0':'')+s; }
+function niceMax(v){ if (v<=0) return 1; const p=Math.pow(10,Math.floor(Math.log10(v))), m=v/p; return (m<=1?1:m<=2?2:m<=2.5?2.5:m<=4?4:m<=5?5:m<=6?6:m<=8?8:10)*p; }
+function fmtN(v){ return Math.abs(v-Math.round(v))<1e-9 ? String(Math.round(v)) : (+v.toPrecision(4)).toString(); }
+function rr(g,x,y,w,h,r){ g.beginPath(); g.moveTo(x+r,y); g.arcTo(x+w,y,x+w,y+h,r); g.arcTo(x+w,y+h,x,y+h,r); g.arcTo(x,y+h,x,y,r); g.arcTo(x,y,x+w,y,r); g.closePath(); }
+function segWire(el, cb){ el.addEventListener('click', e => { const b=e.target.closest('button'); if (!b||b.disabled||!el.contains(b)) return; el.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b)); cb(b.dataset.v); }); }
+function copyText(txt, el){ const done=()=>{ el.textContent='Copied – paste into Excel.'; setTimeout(()=>el.textContent='',2500); }; const fb=()=>{ const ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta); ta.select(); try{document.execCommand('copy'); done();}catch(e){} ta.remove(); }; if (navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(done,fb); else fb(); }
+
+/* ---------------- chemistry data ---------------- */
+const PROD = { H2:'hydrogen', O2:'oxygen', Cl2:'chlorine', Br2:'bromine', I2:'iodine', Cu:'copper', Ag:'silver' };
+const PROD_OPTS = ['', 'hydrogen','oxygen','chlorine','bromine','iodine','copper','silver','sodium','potassium','sulfur dioxide'];
+const HALF = {
+  H2:'2H⁺ + 2e⁻ → H₂', Cu:'Cu²⁺ + 2e⁻ → Cu', Ag:'Ag⁺ + e⁻ → Ag',
+  O2:'4OH⁻ → O₂ + 2H₂O + 4e⁻', Cl2:'2Cl⁻ → Cl₂ + 2e⁻', Br2:'2Br⁻ → Br₂ + 2e⁻', I2:'2I⁻ → I₂ + 2e⁻'
+};
+const OBS = {
+  H2:'Bubbles of colourless gas. Lighted splint: squeaky pop.',
+  Cu:'Pink-brown (orange-brown) solid coats the electrode. No gas.',
+  Ag:'Grey / silvery solid (crystals) forms on the electrode. No gas.',
+  O2:'Bubbles of colourless gas. Glowing splint relights.',
+  Cl2:'Bubbles of pale green gas; smells of bleach. Damp blue litmus turns red then white (bleached).',
+  Br2:'Solution turns orange-brown (yellow-orange) around the electrode. No gas collects.',
+  I2:'Solution turns brown around the electrode. No gas collects.'
+};
+// name, formula, positive ion (metal) & negative ion, cathode, anode, colour, conductivity factor
+const SOL = {
+  CuSO4:{ name:'Copper(II) sulfate', f:'CuSO₄', pos:'Cu²⁺', neg:'SO₄²⁻', metal:'copper', cat:'Cu', an:'O2', col:[70,140,215,.55], k:1 },
+  CuCl2:{ name:'Copper(II) chloride', f:'CuCl₂', pos:'Cu²⁺', neg:'Cl⁻', metal:'copper', cat:'Cu', an:'Cl2', col:[60,160,165,.5], k:1 },
+  NaCl: { name:'Sodium chloride', f:'NaCl', pos:'Na⁺', neg:'Cl⁻', metal:'sodium', cat:'H2', an:'Cl2', col:null, k:1 },
+  Na2SO4:{ name:'Sodium sulfate', f:'Na₂SO₄', pos:'Na⁺', neg:'SO₄²⁻', metal:'sodium', cat:'H2', an:'O2', col:null, k:1 },
+  KBr:  { name:'Potassium bromide', f:'KBr', pos:'K⁺', neg:'Br⁻', metal:'potassium', cat:'H2', an:'Br2', col:null, k:1.1 },
+  KI:   { name:'Potassium iodide', f:'KI', pos:'K⁺', neg:'I⁻', metal:'potassium', cat:'H2', an:'I2', col:null, k:1.1 },
+  AgNO3:{ name:'Silver nitrate', f:'AgNO₃', pos:'Ag⁺', neg:'NO₃⁻', metal:'silver', cat:'Ag', an:'O2', col:null, k:0.9 },
+  H2SO4:{ name:'Sulfuric acid (dilute)', f:'H₂SO₄', pos:'H⁺', neg:'SO₄²⁻', metal:null, cat:'H2', an:'O2', col:null, k:2 },
+  HCl:  { name:'Hydrochloric acid', f:'HCl', pos:'H⁺', neg:'Cl⁻', metal:null, cat:'H2', an:'Cl2', col:null, k:2 },
+  NaOH: { name:'Sodium hydroxide', f:'NaOH', pos:'Na⁺', neg:'OH⁻', metal:'sodium', cat:'H2', an:'O2', col:null, k:1.6 },
+};
+const KEYS = Object.keys(SOL);
+$('sSol').innerHTML = KEYS.map(k=>`<option value="${k}"${k==='NaCl'?' selected':''}>${SOL[k].name} – ${SOL[k].f}</option>`).join('');
+
+/* ---------------- state ---------------- */
+const st = { app:'cell', sol:'NaCl', c:1, V:6, on:false, speed:1, ui:false, hints:false, test:'lit', t:0 };
+let ch;                   // chemistry state for current fill
+function freshChem(){
+  ch = { ne:0, catGas:0, anGas:0, anDissolved:0, dep:0, hal:0, uiCat:0, uiAn:0, catTotal:0, anTotal:0, noiseI:0 };
+  bubbles = []; anim = null;
+}
+let bubbles = [], anim = null, tubeFull = false;
+const CAP = () => st.app==='cell' ? 12 : 48;          // tube capacity (cm³)
+const DISSOLVE = () => st.app==='cell' ? 1.2 : 3.0;   // chlorine that dissolves before gas collects (cm³)
+function current(){
+  const Ed = 1.6, R = 8/(Math.pow(st.c,0.85)*SOL[st.sol].k);
+  return st.on ? Math.max(0, (st.V-Ed)/R) : 0;
+}
+
+/* ---------------- simulation ---------------- */
+function step(dt){
+  const s=SOL[st.sol], I=current(); if (I<=0) return;
+  const dne = I*dt/F; ch.ne += dne;
+  // cathode
+  if (s.cat==='H2'){ const dv = dne/2*24000; ch.catTotal += dv; ch.catGas = Math.min(CAP(), ch.catGas+dv); ch.uiCat += dne; }
+  else ch.dep += dne/(s.cat==='Cu'?2:1);
+  // anode
+  if (s.an==='O2'){ const dv=dne/4*24000; ch.anTotal+=dv; ch.anGas=Math.min(CAP(), ch.anGas+dv); ch.uiAn += dne; }
+  else if (s.an==='Cl2'){ const dv=dne/2*24000; ch.anTotal+=dv; if (ch.anDissolved < DISSOLVE()){ ch.anDissolved += dv; } else ch.anGas=Math.min(CAP(), ch.anGas+dv*0.92); ch.uiAn += dne; }
+  else ch.hal += dne/2;
+  st.t += dt;
+  if (st.app==='hof' && (ch.catGas>=CAP()-1e-6 || ch.anGas>=CAP()-1e-6) && st.on){ st.on=false; tubeFull=true; }
+}
+function bubbleSpawn(dtReal){
+  const s=SOL[st.sol], I=current(); if (I<=0) return;
+  const rate = Math.min(40, 28*I*Math.sqrt(st.speed));
+  const geo = geom();
+  const spawn = (side) => {
+    const e = side==='cat' ? geo.cat : geo.an, gasV = side==='cat' ? ch.catGas : ch.anGas;
+    const top = geo.gasLevel(side, gasV);
+    bubbles.push({ x:e.x+(Math.random()*2-1)*e.w*0.5, y:e.top+Math.random()*(e.bot-e.top), r:1.2+Math.random()*2.2, vy:60+Math.random()*60, top, side, ph:Math.random()*6, green: side==='an'&&s.an==='Cl2' });
+  };
+  let n = rate*dtReal; while (n>0){ if (Math.random()<n){ if (s.cat==='H2') spawn('cat'); if (s.an==='O2'||s.an==='Cl2'){ if (s.cat!=='H2' || Math.random()<(s.an==='O2'?0.5:0.85)) spawn('an'); } } n-=1; }
+  if (bubbles.length>260) bubbles.splice(0, bubbles.length-260);
+}
+
+/* ---------------- geometry ---------------- */
+function geom(){
+  if (st.app==='cell'){
+    const tubeTop=150, tubeLen=190;
+    return {
+      cat:{x:390, top:340, bot:440, w:14}, an:{x:510, top:340, bot:440, w:14},
+      tubeTop, gasLevel:(side,v)=> tubeTop + 6 + Math.min(1,v/CAP())*(tubeLen-6),
+      testPt:side=>({x:side==='cat'?390:510, y:tubeTop-4})
+    };
+  }
+  return {
+    cat:{x:320, top:372, bot:404, w:10}, an:{x:540, top:372, bot:404, w:10},
+    gasLevel:(side,v)=> 80 + 6*v,
+    testPt:side=>({x:side==='cat'?320:540, y:34})
+  };
+}
+
+/* ---------------- drawing ---------------- */
+const cv=$('cv'), g=cv.getContext('2d'), W=cv.width, H=cv.height;
+const GLASS='rgba(214,232,242,0.30)', GL='#6f8fa0';
+function label(txt,x,y,o={}){ g.font=(o.bold?'600 ':'')+(o.size||14)+'px Segoe UI, Arial'; g.fillStyle=o.col||'#3b2a1a'; g.textAlign=o.align||'center'; g.textBaseline='middle'; g.fillText(txt,x,y); }
+function liquidColour(){
+  const s=SOL[st.sol];
+  if (st.ui) return 'rgba(120,190,95,.55)';
+  if (s.col){ const fade = Math.max(0.5, 1 - ch.dep/0.05); return `rgba(${s.col[0]},${s.col[1]},${s.col[2]},${s.col[3]*fade})`; }
+  return 'rgba(205,228,240,.5)';
+}
+function wire(pts, col){ g.strokeStyle=col; g.lineWidth=3.5; g.lineJoin='round'; g.beginPath(); pts.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1])); g.stroke(); g.lineJoin='miter'; }
+function drawSupply(){
+  g.fillStyle='#e7dcc6'; rr(g,24,24,190,92,10); g.fill(); g.strokeStyle='#8a7d66'; g.lineWidth=2; g.stroke();
+  g.fillStyle='#1d2820'; rr(g,38,38,84,38,5); g.fill();
+  g.font='bold 24px Consolas, monospace'; g.fillStyle='#a6f3a6'; g.textAlign='right'; g.textBaseline='middle'; g.fillText(st.V+' V', 114, 58);
+  g.beginPath(); g.arc(140,56,7,0,Math.PI*2); g.fillStyle=st.on?'#3fd45a':'#7a2a20'; g.fill();
+  label('DC power supply', 82, 96, {size:12, col:'#5f5546'});
+  g.beginPath(); g.arc(165,98,9,0,Math.PI*2); g.fillStyle='#222'; g.fill(); label('−',165,98,{size:16,bold:true,col:'#fff'});
+  g.beginPath(); g.arc(195,98,9,0,Math.PI*2); g.fillStyle='#c0392b'; g.fill(); label('+',195,98,{size:15,bold:true,col:'#fff'});
+  // ammeter
+  g.fillStyle='#f4efe4'; rr(g,24,150,130,62,10); g.fill(); g.strokeStyle='#8a7d66'; g.stroke();
+  g.fillStyle='#1d2820'; rr(g,36,160,106,32,5); g.fill();
+  g.fillStyle='#555'; g.beginPath(); g.arc(89,150,4,0,Math.PI*2); g.arc(89,212,4,0,Math.PI*2); g.fill();
+  const I=current(); const shown = I>0 ? Math.max(0, I+ch.noiseI) : 0;
+  g.font='bold 21px Consolas, monospace'; g.fillStyle='#a6f3a6'; g.textAlign='right'; g.fillText(shown.toFixed(2)+' A', 136, 177);
+  label('Ammeter', 89, 202, {size:12, col:'#5f5546'});
+  // clock
+  g.fillStyle='#1d2820'; rr(g,W-134,10,124,40,8); g.fill();
+  g.font='bold 22px Consolas, monospace'; g.fillStyle='#a6f3a6'; g.textAlign='center'; g.fillText('⏱ '+fmtClock(st.t), W-72, 31);
+}
+function drawBubbles(side){
+  for (const b of bubbles){ if (b.side!==side) continue; g.beginPath(); g.arc(b.x,b.y,b.r,0,Math.PI*2); g.fillStyle=b.green?'rgba(225,240,170,.85)':'rgba(255,255,255,.75)'; g.fill(); g.strokeStyle='rgba(80,110,130,.7)'; g.lineWidth=1; g.stroke(); }
+}
+function drawElectrode(e, side, plate){
+  const s=SOL[st.sol];
+  if (plate){ g.fillStyle='#c9ccd0'; g.fillRect(e.x-e.w/2, e.top, e.w, e.bot-e.top); g.strokeStyle='#7d8287'; g.lineWidth=1; g.strokeRect(e.x-e.w/2, e.top, e.w, e.bot-e.top); }
+  else { g.fillStyle='#3c3c3f'; g.fillRect(e.x-e.w/2, e.top, e.w, e.bot-e.top); g.beginPath(); g.ellipse(e.x, e.top, e.w/2, 3, 0, 0, Math.PI*2); g.fill(); }
+  if (side==='cat' && s.cat!=='H2' && ch.dep>0){
+    const a = Math.min(1, ch.dep/0.0004);
+    if (s.cat==='Cu'){ g.fillStyle=`rgba(184,98,52,${a})`; g.fillRect(e.x-e.w/2-1.5, e.top-1, e.w+3, e.bot-e.top-6); }
+    else {
+      g.fillStyle=`rgba(190,194,198,${a})`; g.fillRect(e.x-e.w/2-1.5, e.top-1, e.w+3, e.bot-e.top-6);
+      g.strokeStyle=`rgba(150,155,160,${a})`; g.lineWidth=1.3;
+      const n=Math.floor(Math.min(1,ch.dep/0.0015)*14);
+      for (let i=0;i<n;i++){ const y=e.top+4+i*((e.bot-e.top-12)/14), sd=i%2?1:-1, L=5+Math.min(12,ch.dep*6000)*((i*7)%5)/5; g.beginPath(); g.moveTo(e.x+sd*e.w/2, y); g.lineTo(e.x+sd*(e.w/2+L), y-3); g.lineTo(e.x+sd*(e.w/2+L*0.6), y-7); g.stroke(); }
+    }
+  }
+}
+function drawSolutionEffects(clipFn){
+  const s=SOL[st.sol], geo=geom();
+  g.save(); clipFn(); g.clip();
+  const glow = (e, col, amt, rmax) => { if (amt<=0) return; const a=Math.min(0.85, amt); const r=30+Math.min(rmax, amt*rmax);
+    const gr=g.createRadialGradient(e.x, e.top+10, 4, e.x, e.top+10, r); gr.addColorStop(0, col.replace('A', a)); gr.addColorStop(1, col.replace('A', 0)); g.fillStyle=gr; g.fillRect(e.x-r, e.top+10-r*1.4, 2*r, r*2); };
+  if (s.an==='Br2') glow(geo.an, 'rgba(222,130,40,A)', ch.hal/0.00025, 70);
+  if (s.an==='I2')  glow(geo.an, 'rgba(120,58,18,A)', ch.hal/0.00022, 70);
+  if (st.ui){
+    if (s.cat==='H2') glow(geo.cat, 'rgba(110,50,160,A)', ch.uiCat/0.0005, 60);
+    if (s.an==='O2') glow(geo.an, 'rgba(215,60,45,A)', ch.uiAn/0.0005, 60);
+    if (s.an==='Cl2'){ const bleach = Math.min(1, ch.uiAn/0.0012); glow(geo.an, bleach>0.6 ? 'rgba(245,245,235,A)' : 'rgba(215,60,45,A)', ch.uiAn/0.0005, 60); }
+  }
+  g.restore();
+}
+function drawCell(){
+  const s=SOL[st.sol], geo=geom();
+  const bx0=290, bx1=610, by0=200, by1=445, lq=222;
+  // wires
+  wire([[165,107],[165,132],[89,132],[89,150]], '#222');
+  wire([[89,212],[89,470],[390,470],[390,460]], '#222');
+  wire([[195,107],[195,128],[240,128],[240,484],[510,484],[510,460]], '#c0392b');
+  // cell
+  g.fillStyle=GLASS; g.fillRect(bx0,by0,bx1-bx0,by1-by0);
+  g.fillStyle=liquidColour(); g.fillRect(bx0+3, lq, bx1-bx0-6, by1-lq);
+  drawSolutionEffects(()=>{ g.beginPath(); g.rect(bx0+3, lq, bx1-bx0-6, by1-lq); });
+  // electrodes
+  drawElectrode(geo.cat,'cat'); drawElectrode(geo.an,'an');
+  // test tubes
+  for (const side of ['cat','an']){
+    const e=geo[side], x=e.x, tw=40, top=geo.tubeTop, mouth=420, gasV= side==='cat'?ch.catGas:ch.anGas;
+    const lvl = geo.gasLevel(side, gasV);
+    // liquid inside tube (part above the beaker surface too)
+    g.fillStyle=liquidColour(); g.fillRect(x-tw/2+2, lvl, tw-4, Math.max(0,lq-lvl));
+    // gas
+    if (gasV>0.01){ g.fillStyle = (side==='an'&&s.an==='Cl2') ? `rgba(215,235,150,${0.35+0.4*Math.min(1,gasV/6)})` : 'rgba(255,255,255,.75)';
+      g.beginPath(); g.moveTo(x-tw/2+2, lvl); g.lineTo(x-tw/2+2, top+tw/2); g.arc(x, top+tw/2, tw/2-2, Math.PI, 0); g.lineTo(x+tw/2-2, lvl); g.closePath(); g.fill();
+      g.strokeStyle='rgba(60,100,130,.7)'; g.lineWidth=1.5; g.beginPath(); g.moveTo(x-tw/2+2,lvl); g.quadraticCurveTo(x,lvl+4,x+tw/2-2,lvl); g.stroke(); }
+    drawBubbles(side);
+    // tube glass
+    g.strokeStyle=GL; g.lineWidth=2.5; g.beginPath(); g.moveTo(x-tw/2, mouth); g.lineTo(x-tw/2, top+tw/2); g.arc(x, top+tw/2, tw/2, Math.PI, 0); g.lineTo(x+tw/2, mouth); g.stroke();
+    g.fillStyle='rgba(214,232,242,.18)'; g.fillRect(x-tw/2, top+tw/2, tw, mouth-top-tw/2);
+  }
+  // beaker outline + base
+  g.strokeStyle=GL; g.lineWidth=3; g.beginPath(); g.moveTo(bx0,by0-8); g.lineTo(bx0,by1); g.lineTo(bx1,by1); g.lineTo(bx1,by0-8); g.stroke();
+  g.fillStyle='#4a4a4a'; g.fillRect(bx0-6, by1, bx1-bx0+12, 10);
+  g.fillStyle='#333'; g.fillRect(387, 455, 6, 8); g.fillRect(507, 455, 6, 8);
+  label('−  Cathode', 390, 505, {size:15, bold:true}); label('+  Anode', 510, 505, {size:15, bold:true, col:'#a93226'});
+  label(`${SOL[st.sol].name} solution, ${st.c.toFixed(1)} mol/dm³`, 450, 128, {size:14});
+  if (st.hints) hints(geo);
+}
+function drawHof(){
+  const s=SOL[st.sol], geo=geom();
+  const cx=320, ax=540, tw=28, top=70, bot=410, ry=430;
+  wire([[165,107],[165,132],[89,132],[89,150]], '#222');
+  wire([[89,212],[89,466],[320,466],[320,432]], '#222');
+  wire([[195,107],[195,128],[240,128],[240,478],[540,478],[540,432]], '#c0392b');
+  // stand
+  g.fillStyle='#6b5b4b'; g.fillRect(270,486,340,8);
+  const hv = 150 - (ch.catGas+ch.anGas)*1.1;          // reservoir level
+  const liq = liquidColour();
+  // reservoir bulb + tube
+  g.fillStyle=GLASS; g.beginPath(); g.arc(430,78,34,0,Math.PI*2); g.fill(); g.fillRect(419,106,22,ry-106);
+  g.fillStyle=liq; g.save(); g.beginPath(); g.arc(430,78,32,0,Math.PI*2); g.rect(421,106,18,ry-106); g.clip(); g.fillRect(380, Math.max(46,hv), 100, 600); g.restore();
+  g.strokeStyle=GL; g.lineWidth=2.5; g.beginPath(); g.arc(430,78,34,0.62*Math.PI+Math.PI*0.08, 0.38*Math.PI-Math.PI*0.08, false); g.stroke();
+  g.beginPath(); g.moveTo(419,108); g.lineTo(419,ry-14); g.moveTo(441,108); g.lineTo(441,ry-14); g.stroke();
+  // connecting tube
+  g.fillStyle=liq; g.fillRect(cx-tw/2+2, bot, ax-cx+tw-4, ry-bot);
+  g.strokeStyle=GL; g.lineWidth=2.5; g.strokeRect(cx-tw/2, bot, ax-cx+tw, ry-bot);
+  // side tubes
+  for (const side of ['cat','an']){
+    const x = side==='cat'?cx:ax, v = side==='cat'?ch.catGas:ch.anGas, lvl = geo.gasLevel(side, v);
+    g.fillStyle=GLASS; g.fillRect(x-tw/2, top, tw, bot-top);
+    g.fillStyle=liq; g.fillRect(x-tw/2+2, lvl, tw-4, bot-lvl+2);
+    if (v>0.01){ g.fillStyle=(side==='an'&&s.an==='Cl2')?`rgba(215,235,150,${0.35+0.4*Math.min(1,v/15)})`:'rgba(255,255,255,.8)'; g.fillRect(x-tw/2+2, top, tw-4, lvl-top);
+      g.strokeStyle='rgba(60,100,130,.75)'; g.lineWidth=1.5; g.beginPath(); g.moveTo(x-tw/2+2,lvl); g.quadraticCurveTo(x,lvl+5,x+tw/2-2,lvl); g.stroke(); }
+    // scale (0 at y=80, 6 px per cm³)
+    g.strokeStyle='#3b2a1a'; g.fillStyle='#3b2a1a'; g.font='11px Segoe UI, Arial'; g.textAlign=side==='cat'?'right':'left'; g.textBaseline='middle';
+    for (let c=0;c<=48;c++){ const y=80+c*6, L=c%10===0?11:c%5===0?8:4; g.lineWidth=c%10===0?1.3:0.9; const xe = side==='cat'? x-tw/2 : x+tw/2;
+      g.beginPath(); g.moveTo(xe,y); g.lineTo(side==='cat'?xe+L:xe-L,y); g.stroke(); if (c%10===0) g.fillText(c, side==='cat'? xe-4 : xe+4, y); }
+    // tap
+    g.fillStyle='#d8d2c4'; g.fillRect(x-5, top-22, 10, 22); g.fillStyle='#8a7d66'; g.fillRect(x-16, top-14, 32, 6);
+    g.strokeStyle=GL; g.lineWidth=2.5; g.strokeRect(x-tw/2, top, tw, bot-top);
+  }
+  drawSolutionEffects(()=>{ g.beginPath(); g.rect(cx-tw/2+2, top, tw-4, bot-top); g.rect(ax-tw/2+2, top, tw-4, bot-top); });
+  drawElectrode(geo.cat,'cat',true); drawElectrode(geo.an,'an',true);
+  g.fillStyle='#555'; g.fillRect(cx-1.5, 404, 3, 28); g.fillRect(ax-1.5, 404, 3, 28);
+  drawBubbles('cat'); drawBubbles('an');
+  label('−  Cathode', cx-58, 450, {size:15, bold:true}); label('+  Anode', ax+50, 450, {size:15, bold:true, col:'#a93226'});
+  label('Hofmann voltameter', 430, 14, {size:14, bold:true});
+  label(`${SOL[st.sol].name}, ${st.c.toFixed(1)} mol/dm³`, 430, 503, {size:13, col:'#5f5546'});
+  // magnifiers
+  magnifier(660, 62, 'Cathode (−)', ch.catGas, s.cat!=='H2');
+  magnifier(660, 274, 'Anode (+)', ch.anGas, false, s.an==='Cl2');
+  if (st.hints) hints(geo);
+}
+function magnifier(x, y, title, v, nogas, green){
+  const w=150, h=196, zoom=26, yc=y+h/2+10, Y=c=>yc+(c-v)*zoom;
+  g.fillStyle='#fffaf0'; rr(g,x,y,w,h,10); g.fill(); g.strokeStyle='#a8743f'; g.lineWidth=2; g.stroke();
+  label('🔍 '+title, x+w/2, y+13, {size:12.5, bold:true, col:'#7a4e2d'});
+  g.save(); rr(g,x+4,y+26,w-8,h-30,8); g.clip();
+  const b0=x+58, b1=x+w-12;
+  g.fillStyle = green ? 'rgba(225,240,170,.9)' : 'rgba(255,255,255,.85)'; g.fillRect(b0, y, b1-b0, Y(v)-y);
+  g.fillStyle=liquidColour(); g.fillRect(b0, Y(v), b1-b0, y+h-Y(v));
+  g.strokeStyle='rgba(60,100,130,.9)'; g.lineWidth=2.5; g.beginPath(); g.moveTo(b0,Y(v)); g.quadraticCurveTo((b0+b1)/2, Y(v)+10, b1, Y(v)); g.stroke();
+  g.strokeStyle='#3b2a1a'; g.fillStyle='#3b2a1a'; g.font='600 15px Segoe UI, Arial'; g.textAlign='right'; g.textBaseline='middle';
+  for (let i=Math.floor((v-4)*5); i<=Math.ceil((v+4)*5); i++){ if (i<0) continue; const c=i/5, yy=Y(c), L = i%5===0?26:i%5===0?18:10; g.lineWidth=i%5===0?2:1.1; g.beginPath(); g.moveTo(b0,yy); g.lineTo(b0+(i%5===0?26:10),yy); g.stroke(); if (i%5===0) g.fillText(c, b0-6, yy); }
+  g.strokeStyle='#6f8fa0'; g.lineWidth=2; g.beginPath(); g.moveTo(b0,y); g.lineTo(b0,y+h); g.moveTo(b1,y); g.lineTo(b1,y+h); g.stroke();
+  g.restore();
+  if (nogas) label('no gas collects', x+w/2, y+h-14, {size:12, col:'#7d6a55'});
+}
+function hints(geo){
+  const s=SOL[st.sol], I=current(), active = ch.ne>0.00003;
+  const tag = (txt, x, y, col) => { g.font='600 13px Segoe UI, Arial'; const w=g.measureText(txt).width+14; g.fillStyle='rgba(255,250,240,.95)'; rr(g,x-w/2,y-11,w,22,6); g.fill(); g.strokeStyle=col||'#a8743f'; g.lineWidth=1.5; g.stroke(); label(txt,x,y,{size:13,bold:true,col:col||'#7a4e2d'}); };
+  const yC = st.app==='cell' ? 300 : 340;
+  if (!active){ tag(I>0?'Watch the electrodes…':'Power off', 450, st.app==='cell'?100:250); return; }
+  const cTxt = { H2:'gas bubbles', Cu:'pink-brown coating', Ag:'grey crystals' }[s.cat];
+  const aTxt = { O2:'gas bubbles', Cl2:'pale green gas', Br2:'orange-brown', I2:'brown colour' }[s.an];
+  if (st.app==='cell'){ tag(aTxt, 545, 290); tag(cTxt, 345, 290, '#3b2a1a'); }
+  else { tag(cTxt, 230, 385, '#3b2a1a'); tag(aTxt, 607, 385); }
+}
+function drawTestAnim(){
+  if (!anim) return;
+  const p = geom().testPt(anim.side), k = Math.min(1, anim.t/2.2), x=p.x, y=p.y;
+  g.save();
+  if (anim.kind==='litmus'){
+    const col = anim.res==='bleach' ? (k<0.45 ? mix([60,110,200],[200,60,60],k/0.45) : mix([200,60,60],[245,245,240],(k-0.45)/0.55)) : [60,110,200];
+    g.translate(x+26, y-30); g.rotate(-0.3);
+    g.fillStyle=`rgb(${col.join(',')})`; g.fillRect(-10,-32,20,52); g.strokeStyle='#555'; g.lineWidth=1; g.strokeRect(-10,-32,20,52);
+    g.fillStyle='#8b6b4a'; g.fillRect(-3,-62,6,32);
+  } else {
+    // splint
+    g.translate(x+10, y-10); g.rotate(-0.75);
+    g.fillStyle='#c9a26b'; g.fillRect(0,-3,90,6);
+    const lit = anim.kind==='lit';
+    let flame = lit ? 1 : 0, ember = lit ? 0 : 1;
+    if (anim.res==='relight'){ flame = Math.min(1, Math.max(0,(k-0.25)*2.2)); }
+    if (anim.res==='out'){ flame = lit ? Math.max(0,1-k*3) : 0; ember = lit ? 0 : Math.max(0,1-k*2.5); }
+    if (anim.res==='brighter'){ flame = 1+0.6*Math.min(1,k*3); }
+    if (ember>0){ g.beginPath(); g.arc(-1,0,5,0,Math.PI*2); g.fillStyle=`rgba(230,70,30,${ember})`; g.fill(); }
+    if (flame>0){ g.save(); g.scale(flame,flame); g.beginPath(); g.moveTo(-2,-6); g.quadraticCurveTo(-26,-2,-30,0); g.quadraticCurveTo(-26,2,-2,6); g.closePath(); g.fillStyle='rgba(255,170,40,.9)'; g.fill(); g.beginPath(); g.moveTo(-2,-3); g.quadraticCurveTo(-14,-1,-16,0); g.quadraticCurveTo(-14,1,-2,3); g.fillStyle='rgba(255,240,150,.95)'; g.fill(); g.restore(); }
+    if (anim.res==='out' && k>0.3){ g.fillStyle=`rgba(120,120,120,${0.5*(1-k)})`; for (let i=0;i<4;i++){ g.beginPath(); g.arc(-8-i*6, -10-i*8*k, 4+i, 0, Math.PI*2); g.fill(); } }
+  }
+  g.restore();
+  if (anim.res==='pop' && k>0.25 && k<0.85){
+    const kk=(k-0.25)/0.6, r=12+40*kk; g.save(); g.globalAlpha=1-kk; g.translate(x,y-6); g.beginPath();
+    for (let i=0;i<18;i++){ const a=i*Math.PI/9, rr2 = i%2 ? r*0.45 : r; g.lineTo(Math.cos(a)*rr2, Math.sin(a)*rr2); } g.closePath(); g.fillStyle='#ffcf3a'; g.fill(); g.restore();
+    label('POP!', x, y-62, {size:28, bold:true, col:'#c0392b'});
+  }
+  if (anim.res==='relight' && k>0.45) label('relights!', x, y-70, {size:20, bold:true, col:'#d35400'});
+}
+function mix(a,b,t){ t=Math.max(0,Math.min(1,t)); return a.map((v,i)=>Math.round(v+(b[i]-v)*t)); }
+function draw(){
+  g.fillStyle='#fffdf8'; g.fillRect(0,0,W,H);
+  const gr=g.createLinearGradient(0,490,0,H); gr.addColorStop(0,'#cfae80'); gr.addColorStop(1,'#b8925f'); g.fillStyle=gr; g.fillRect(0,490,W,H-490);
+  drawSupply();
+  if (st.app==='cell') drawCell(); else drawHof();
+  drawTestAnim();
+}
+
+/* ---------------- tests ---------------- */
+function doTest(side){
+  const s=SOL[st.sol], prod = side==='cat' ? s.cat : s.an, gasV = side==='cat' ? ch.catGas : ch.anGas;
+  const kind=st.test, el=$('res'), where = side==='cat' ? 'cathode (−)' : 'anode (+)';
+  const tname = { lit:'lighted splint', glow:'glowing splint', litmus:'damp blue litmus paper' }[kind];
+  if (!['H2','O2','Cl2'].includes(prod)){
+    el.innerHTML = `<b>No gas has collected at the ${where}.</b> Look closely at the electrode and the solution around it instead.`; return;
+  }
+  const need = st.app==='cell' ? 2 : 2;
+  if (gasV < need){ el.innerHTML = `<b>Not enough gas yet</b> at the ${where} (${gasV.toFixed(1)} cm³). Leave it running for longer, or speed it up.`; return; }
+  let res, txt;
+  if (kind==='lit'){ if (prod==='H2'){ res='pop'; txt='The gas burns with a <b>squeaky pop</b>.'; } else if (prod==='O2'){ res='brighter'; txt='The splint <b>burns more brightly</b> – no pop.'; } else { res='out'; txt='The flame <b>goes out</b> – no pop.'; } }
+  else if (kind==='glow'){ if (prod==='O2'){ res='relight'; txt='The glowing splint <b>relights</b>.'; } else { res='out'; txt='The glowing splint <b>does not relight</b>.'; } }
+  else { if (prod==='Cl2'){ res='bleach'; txt='The damp blue litmus paper turns <b>red, then white</b> – it is bleached.'; } else { res='none'; txt='The litmus paper <b>does not change colour</b>.'; } }
+  anim = { side, kind, res, t:0 };
+  el.innerHTML = `<b>${tname[0].toUpperCase()+tname.slice(1)} at the ${where}:</b> ${txt}<div class="note">The gas was used up in the test – the tube has been refilled with solution.</div>`;
+  if (side==='cat') ch.catGas = 0; else { ch.anGas = 0; }
+  bubbles = bubbles.filter(b=>b.side!==side);
+}
+$('tCat').addEventListener('click', ()=>doTest('cat'));
+$('tAn').addEventListener('click', ()=>doTest('an'));
+
+/* ---------------- controls ---------------- */
+function refill(){ freshChem(); st.t=0; newVolRun(); ui(); $('res').textContent='Switch on, watch both electrodes, then test the products.'; }
+segWire($('sApp'), v=>{ st.app=v; refill(); });
+segWire($('sConc'), v=>{ st.c=+v; refill(); });
+segWire($('sSpeed'), v=>{ st.speed=+v; });
+segWire($('sTest'), v=>{ st.test=v; });
+$('sSol').addEventListener('change', e=>{ st.sol=e.target.value; refill(); if ($('ions').innerHTML) showIons(); });
+$('sV').addEventListener('input', e=>{ st.V=+e.target.value; $('vV').textContent=st.V+' V'; });
+$('cUI').addEventListener('change', e=>{ st.ui=e.target.checked; ch.uiCat=0; ch.uiAn=0; });
+$('cHints').addEventListener('change', e=>{ st.hints=e.target.checked; });
+$('bPower').addEventListener('click', ()=>{
+  st.on=!st.on;
+  if (st.on){ ensureObsRow(st.sol); if (st.V<2) $('res').innerHTML='<b>Nothing is happening.</b> The voltage is too low for electrolysis – turn it up.'; }
+  ui();
+});
+$('bReset').addEventListener('click', ()=>{ st.on=false; refill(); $('res').textContent='Fresh solution in, electrodes cleaned. Switch on when ready.'; });
+function ui(){
+  $('bPower').textContent = st.on ? '⏻ Switch off' : '⏻ Switch on';
+  $('bPower').classList.toggle('on', st.on);
+  ['sApp','sConc'].forEach(id=>$(id).querySelectorAll('button').forEach(b=>b.disabled=st.on));
+  $('sSol').disabled = st.on;
+  $('volCard').classList.toggle('disabledbox', st.app!=='hof');
+  $('volNote').textContent = st.app==='hof' ? 'Read each scale at the bottom of the meniscus. Testing a gas empties that tube, so take readings before testing.' : 'Switch to the Hofmann voltameter to measure the volumes of gas.';
+}
+
+/* ---------------- observations table ---------------- */
+let obs = [], showAns=false;
+function ensureObsRow(k){ if (!obs.some(o=>o.k===k)){ obs.push({k, cObs:'', cProd:'', aObs:'', aProd:'', cMark:'', aMark:''}); renderObs(); } }
+function renderObs(){
+  const t=$('obsT');
+  if (!obs.length){ t.innerHTML='<tr><td class="empty">Switch on to start – a row will appear for each solution you test.</td></tr>'; return; }
+  const opts = sel => PROD_OPTS.map(p=>`<option value="${p}"${p===sel?' selected':''}>${p||'– choose –'}</option>`).join('');
+  let h='<tr><th>Solution</th><th>At the cathode (−): what I saw / test result</th><th>Product at cathode</th><th>At the anode (+): what I saw / test result</th><th>Product at anode</th><th></th></tr>';
+  obs.forEach((o,i)=>{ const s=SOL[o.k];
+    h+=`<tr><td class="l"><b>${s.name}</b><br>${s.f}</td>
+      <td><textarea data-i="${i}" data-f="cObs">${o.cObs}</textarea>${showAns?`<div class="ans">${OBS[s.cat]}</div>`:''}</td>
+      <td class="${o.cMark}"><select data-i="${i}" data-f="cProd">${opts(o.cProd)}</select>${showAns?`<div class="ans">${PROD[s.cat]}</div>`:''}</td>
+      <td><textarea data-i="${i}" data-f="aObs">${o.aObs}</textarea>${showAns?`<div class="ans">${OBS[s.an]}</div>`:''}</td>
+      <td class="${o.aMark}"><select data-i="${i}" data-f="aProd">${opts(o.aProd)}</select>${showAns?`<div class="ans">${PROD[s.an]}</div>`:''}</td>
+      <td><button class="x" data-del="${i}">✕</button></td></tr>`; });
+  t.innerHTML=h;
+  t.querySelectorAll('[data-f]').forEach(el=>el.addEventListener('change', e=>{ const o=obs[+e.target.dataset.i]; o[e.target.dataset.f]=e.target.value; if (e.target.dataset.f==='cProd') o.cMark=''; if (e.target.dataset.f==='aProd') o.aMark=''; if (e.target.tagName==='SELECT') renderObs(); }));
+  t.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>{ obs.splice(+b.dataset.del,1); renderObs(); }));
+}
+$('bCheck').addEventListener('click', ()=>{
+  let ok=0,n=0; obs.forEach(o=>{ const s=SOL[o.k];
+    if (o.cProd){ n++; o.cMark = o.cProd===PROD[s.cat]?'ok':'bad'; if (o.cMark==='ok') ok++; }
+    if (o.aProd){ n++; o.aMark = o.aProd===PROD[s.an]?'ok':'bad'; if (o.aMark==='ok') ok++; } });
+  renderObs(); $('msgO').textContent = n ? `${ok} of ${n} products correct.` : 'Choose some products first.';
+});
+$('bAnswers').addEventListener('click', ()=>{ showAns=!showAns; $('bAnswers').textContent = showAns?'Hide model answers':'Show model answers'; renderObs(); });
+$('bAll').addEventListener('click', ()=>{ KEYS.forEach(k=>{ if(!obs.some(o=>o.k===k)) obs.push({k,cObs:'',cProd:'',aObs:'',aProd:'',cMark:'',aMark:''}); }); renderObs(); });
+$('bCopyO').addEventListener('click', ()=>{
+  const L=['Solution\tCathode observations\tCathode product\tAnode observations\tAnode product'];
+  obs.forEach(o=>L.push([SOL[o.k].name, o.cObs.replace(/\s+/g,' '), o.cProd, o.aObs.replace(/\s+/g,' '), o.aProd].join('\t')));
+  copyText(L.join('\n'), $('msgO'));
+});
+
+/* ---------------- gas volume readings (Hofmann) ---------------- */
+let vrun=null, interval=60, vmode='self', vpause=true, waiting=false;
+function newVolRun(){ vrun = { sol:st.sol, c:st.c, rows:[], next:0 }; waiting=false; renderVol(); drawGraph(); }
+segWire($('sInt'), v=>{ interval=+v; });
+segWire($('sMode'), v=>{ vmode=v; });
+$('cPause').addEventListener('change', e=>{ vpause=e.target.checked; });
+function volTick(){
+  if (st.app!=='hof' || !vrun) return;
+  const due = vrun.rows.length*interval;
+  if (st.t + 1e-9 >= due && (st.on || vrun.rows.length===0)){
+    const r = { t:due, ac:+ch.catGas.toFixed(1), aa:+ch.anGas.toFixed(1), ec:null, ea:null, mc:'', ma:'' };
+    if (vmode==='auto'){ r.ec=r.ac; r.ea=r.aa; }
+    vrun.rows.push(r); renderVol(); drawGraph();
+    if (vmode==='self' && vpause && st.on){ waiting=true; markNow(); const inp=$('volT').querySelector(`input[data-i="${vrun.rows.length-1}"][data-f="ec"]`); if (inp) inp.focus({preventScroll:true}); }
+  }
+}
+function markNow(){ $('volT').querySelectorAll('tr').forEach((tr,i)=>tr.classList.toggle('now', waiting && i===vrun.rows.length)); const w=$('volT').closest('.tablewrap'); w.scrollTop=w.scrollHeight; }
+function renderVol(){
+  const t=$('volT'), s=SOL[vrun.sol];
+  let h=`<tr><th>Time (s)</th><th>Volume at cathode (cm³)<br><small>${PROD[s.cat]}</small></th><th>Volume at anode (cm³)<br><small>${PROD[s.an]}</small></th></tr>`;
+  vrun.rows.forEach((r,i)=>{ h+=`<tr><td>${r.t}</td><td class="${r.mc}"><input type="number" step="0.1" data-i="${i}" data-f="ec" value="${r.ec??''}"></td><td class="${r.ma}"><input type="number" step="0.1" data-i="${i}" data-f="ea" value="${r.ea??''}"></td></tr>`; });
+  if (!vrun.rows.length) h+=`<tr><td colspan="3" class="empty">${st.app==='hof'?'Switch on – the first reading is taken at 0 s.':'Use the Hofmann voltameter to collect and measure the gases.'}</td></tr>`;
+  t.innerHTML=h;
+  t.querySelectorAll('input').forEach(inp=>{
+    inp.addEventListener('change', e=>{ const r=vrun.rows[+e.target.dataset.i], f=e.target.dataset.f; r[f]= e.target.value===''?null:+e.target.value; r[f==='ec'?'mc':'ma']=''; e.target.parentElement.className=''; drawGraph(); });
+    inp.addEventListener('keydown', e=>{ if (e.key!=='Enter') return; e.preventDefault(); const i=+e.target.dataset.i, f=e.target.dataset.f; e.target.blur();
+      if (f==='ec'){ const nx=t.querySelector(`input[data-i="${i}"][data-f="ea"]`); if (nx) nx.focus(); }
+      else if (waiting && i===vrun.rows.length-1){ waiting=false; markNow(); } });
+  });
+  markNow();
+}
+$('bCheckV').addEventListener('click', ()=>{ let ok=0,n=0; vrun.rows.forEach(r=>{ if (r.ec!==null){ n++; r.mc=Math.abs(r.ec-r.ac)<=0.2?'okc':'badc'; if(r.mc==='okc') ok++; } if (r.ea!==null){ n++; r.ma=Math.abs(r.ea-r.aa)<=0.2?'okc':'badc'; if(r.ma==='okc') ok++; } }); renderVol(); $('msgV').textContent = n?`${ok} of ${n} readings within ±0.2 cm³.`:'No readings yet.'; });
+$('bCopyV').addEventListener('click', ()=>{ const s=SOL[vrun.sol]; const L=[`${s.name} ${vrun.c} mol/dm³`, `Time (s)\tCathode ${PROD[s.cat]} (cm³)\tAnode ${PROD[s.an]} (cm³)`]; vrun.rows.forEach(r=>L.push([r.t,r.ec??'',r.ea??''].join('\t'))); copyText(L.join('\n'), $('msgV')); });
+function drawGraph(){
+  const c=$('gr'), gg=c.getContext('2d'), w=c.width, h=c.height;
+  gg.fillStyle='#fffdf8'; gg.fillRect(0,0,w,h);
+  const L=78, T=20, Wd=w-L-24, Ht=h-T-62, s=SOL[vrun.sol];
+  const ser = [ {col:'#2f6f9f', lab:`Cathode – ${PROD[s.cat]}`, pts:vrun.rows.filter(r=>r.ec!==null).map(r=>[r.t,r.ec])},
+                {col:'#c0392b', lab:`Anode – ${PROD[s.an]}`, pts:vrun.rows.filter(r=>r.ea!==null).map(r=>[r.t,r.ea])} ];
+  let xmax=300, ymax=10; ser.forEach(q=>q.pts.forEach(p=>{ xmax=Math.max(xmax,p[0]); ymax=Math.max(ymax,p[1]); }));
+  xmax=niceMax(xmax); ymax=niceMax(ymax*1.08);
+  gg.strokeStyle='#e8dcc4'; gg.lineWidth=1; gg.font='14px Segoe UI, Arial'; gg.fillStyle='#5a4632';
+  for (let i=0;i<=5;i++){ const y=T+Ht-Ht*i/5, x=L+Wd*i/5; gg.beginPath(); gg.moveTo(L,y); gg.lineTo(L+Wd,y); gg.moveTo(x,T); gg.lineTo(x,T+Ht); gg.stroke();
+    gg.textAlign='right'; gg.textBaseline='middle'; gg.fillText(fmtN(ymax*i/5), L-8, y); gg.textAlign='center'; gg.textBaseline='top'; gg.fillText(fmtN(xmax*i/5), x, T+Ht+7); }
+  gg.strokeStyle='#3b2a1a'; gg.lineWidth=2; gg.beginPath(); gg.moveTo(L,T); gg.lineTo(L,T+Ht); gg.lineTo(L+Wd,T+Ht); gg.stroke();
+  gg.font='600 15px Segoe UI, Arial'; gg.fillStyle='#3b2a1a'; gg.textAlign='center'; gg.textBaseline='top'; gg.fillText('Time (s)', L+Wd/2, T+Ht+32);
+  gg.save(); gg.translate(L-56,T+Ht/2); gg.rotate(-Math.PI/2); gg.textBaseline='middle'; gg.fillText('Volume of gas (cm³)',0,0); gg.restore();
+  const X=v=>L+v/xmax*Wd, Y=v=>T+Ht-v/ymax*Ht;
+  ser.forEach(q=>{ if (q.pts.length>1){ gg.strokeStyle=q.col; gg.lineWidth=2.5; gg.beginPath(); q.pts.forEach((p,i)=>i?gg.lineTo(X(p[0]),Y(p[1])):gg.moveTo(X(p[0]),Y(p[1]))); gg.stroke(); }
+    gg.lineWidth=2.2; gg.strokeStyle=q.col; q.pts.forEach(p=>{ const x=X(p[0]),y=Y(p[1]); gg.beginPath(); gg.moveTo(x-5,y-5); gg.lineTo(x+5,y+5); gg.moveTo(x+5,y-5); gg.lineTo(x-5,y+5); gg.stroke(); }); });
+  gg.font='13.5px Segoe UI, Arial'; gg.textAlign='left'; gg.textBaseline='middle';
+  gg.fillStyle='rgba(255,250,240,.92)'; gg.fillRect(L+10,T+4,210,48);
+  ser.forEach((q,i)=>{ const y=T+16+i*22; gg.strokeStyle=q.col; gg.lineWidth=3; gg.beginPath(); gg.moveTo(L+18,y); gg.lineTo(L+42,y); gg.stroke(); gg.fillStyle='#3b2a1a'; gg.fillText(q.lab, L+48, y); });
+  const last=vrun.rows.filter(r=>r.ec!==null&&r.ea!==null&&r.ea>0).pop();
+  $('ratio').textContent = last ? `Latest: cathode ÷ anode = ${(last.ec/last.ea).toFixed(2)}` : '';
+}
+
+/* ---------------- ions panel ---------------- */
+function showIons(){
+  const s=SOL[st.sol];
+  const catWhy = s.cat==='H2'
+    ? (s.metal ? `${s.metal[0].toUpperCase()+s.metal.slice(1)} is <b>more reactive than hydrogen</b>, so hydrogen is produced.` : 'The only positive ions are H⁺ ions, so hydrogen is produced.')
+    : `${s.metal[0].toUpperCase()+s.metal.slice(1)} is <b>less reactive than hydrogen</b>, so ${s.metal} is produced.`;
+  const anWhy = ['Cl2','Br2','I2'].includes(s.an) ? `The solution contains <b>halide ions</b> (${s.neg}), so ${PROD[s.an]} is produced.` : `There are <b>no halide ions</b>${s.neg==='OH⁻'?'':` (${s.neg} is not discharged)`}, so OH⁻ ions are discharged and oxygen is produced.`;
+  const posIons = s.pos==='H⁺' ? 'H⁺' : `${s.pos} and H⁺ (from water)`;
+  const negIons = s.neg==='OH⁻' ? 'OH⁻' : `${s.neg} and OH⁻ (from water)`;
+  $('ions').innerHTML = `<h4>${s.name} (${s.f})</h4>
+    <div class="bottom" style="margin-top:4px">
+    <div><b>Cathode (−)</b> attracts the positive ions: ${posIons}.<br>${catWhy}<br><span class="eq">${HALF[s.cat]}</span> (reduction – gain of electrons)</div>
+    <div><b>Anode (+)</b> attracts the negative ions: ${negIons}.<br>${anWhy}<br><span class="eq">${HALF[s.an]}</span> (oxidation – loss of electrons)</div></div>
+    ${s.cat==='H2'&&s.an==='O2'?'<div class="note">Twice as many moles of hydrogen as oxygen are made, so the volume of hydrogen is about double the volume of oxygen.</div>':''}
+    ${s.an==='Cl2'?'<div class="note">Chlorine is quite soluble in water, so at first less chlorine collects than hydrogen.</div>':''}`;
+}
+$('bIons').addEventListener('click', showIons);
+
+/* ---------------- loop ---------------- */
+let last=performance.now(), nAcc=0;
+function frame(now){
+  const dt=Math.min(0.05,(now-last)/1000); last=now;
+  if (st.on && !waiting){
+    const sdt=dt*st.speed, n=Math.max(1,Math.ceil(sdt/0.5));
+    for (let i=0;i<n;i++){ step(sdt/n); if (st.app==='hof' && vrun && st.t >= vrun.rows.length*interval){ volTick(); if (waiting) break; } }
+    bubbleSpawn(dt);
+    nAcc+=dt; if (nAcc>0.4){ nAcc=0; ch.noiseI = 0.01*Math.round(gauss()*0.6); }
+  } else if (st.app==='hof' && vrun && vrun.rows.length===0 && st.on) volTick();
+  if (!waiting) for (const b of bubbles){ b.y -= b.vy*dt; b.x += Math.sin(b.y*0.1+b.ph)*0.25; }
+  bubbles = bubbles.filter(b=>b.y > b.top);
+  if (tubeFull){ tubeFull=false; ui(); $('res').innerHTML='<b>A tube is full</b> – the power has been switched off. Take your last readings, then test the gases.'; }
+  if (anim){ anim.t += dt; if (anim.t>2.6) anim=null; }
+  draw();
+  requestAnimationFrame(frame);
+}
+window.__el = { st, get ch(){return ch;}, step };
+freshChem(); newVolRun(); ui(); renderObs();
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
