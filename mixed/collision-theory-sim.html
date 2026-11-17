@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Collision Theory Simulator · GCSE Chemistry</title>
+<style>
+:root{
+  --bg:#f4ecdc; --panel:#fffaf0; --line:#d9c8a7; --ink:#3b2a1a; --brown:#7a4e2d;
+  --brown2:#a8743f; --muted:#7d6a55; --soft:#efe3cb; --ok:#2e7d4f;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;font-size:16px;line-height:1.35}
+.wrap{max-width:1420px;margin:0 auto;padding:0 16px 28px}
+header{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;padding:14px 4px 10px}
+h1{margin:0;font-size:27px;color:var(--brown);letter-spacing:.2px}
+.sub{color:var(--muted);font-size:15px}
+.top{display:grid;grid-template-columns:minmax(0,1fr) 350px;gap:14px;align-items:start}
+@media (max-width:1050px){.top{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px}
+.canvas-wrap{position:relative}
+#sim{width:100%;height:auto;display:block;border-radius:8px;border:1px solid var(--line);background:#fffdf8}
+.legend{display:flex;gap:18px;flex-wrap:wrap;margin:8px 2px 0;font-size:14px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.dot{width:13px;height:13px;border-radius:50%;display:inline-block;border:1px solid rgba(0,0,0,.25)}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:10px}
+@media (max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}}
+.tile{background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:8px 10px;text-align:center}
+.tile .lab{font-size:12.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.tile .num{font-size:26px;font-weight:700;color:var(--brown);font-variant-numeric:tabular-nums}
+.tile.key{background:#f7e6c4;border-color:var(--brown2)}
+.explain{margin-top:10px;background:#fff6e2;border-left:5px solid var(--brown2);border-radius:8px;padding:9px 12px;font-size:16px;min-height:44px}
+.explain b{color:var(--brown)}
+.controls h3{margin:12px 0 6px;font-size:13px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);border-bottom:1px solid var(--line);padding-bottom:3px}
+.controls h3:first-child{margin-top:0}
+.ctl{margin:6px 0 10px}
+.ctl label{display:flex;justify-content:space-between;font-weight:600;font-size:15px}
+.val{color:var(--brown);font-variant-numeric:tabular-nums}
+.note{font-size:13px;color:var(--muted);margin-top:2px}
+input[type=range]{width:100%;accent-color:var(--brown);height:26px}
+.seg{display:flex;border:1px solid var(--brown2);border-radius:9px;overflow:hidden}
+.seg button{flex:1;border:0;background:#fff;color:var(--ink);padding:7px 4px;font-size:14px;cursor:pointer;border-right:1px solid var(--line);font-family:inherit}
+.seg button:last-child{border-right:0}
+.seg button.on{background:var(--brown);color:#fff;font-weight:600}
+.seg button:disabled{opacity:.5;cursor:not-allowed}
+.chk{display:flex;align-items:center;gap:8px;font-size:14.5px;margin:5px 0;cursor:pointer}
+.chk input{width:17px;height:17px;accent-color:var(--brown)}
+.btnrow{display:flex;gap:8px;margin-top:8px}
+.btn{flex:1;border:1px solid var(--brown);background:#fff;color:var(--brown);border-radius:9px;padding:9px 8px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit}
+.btn.primary{background:var(--brown);color:#fff}
+.btn:hover{filter:brightness(1.05)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.timerbox{background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:10px;margin-top:6px}
+.timerbox .row{display:flex;gap:8px;align-items:center;font-size:14.5px}
+select{font-family:inherit;font-size:14.5px;padding:5px 6px;border:1px solid var(--brown2);border-radius:7px;background:#fff;color:var(--ink)}
+.overlay{position:absolute;inset:0;background:rgba(59,42,26,.45);display:flex;align-items:center;justify-content:center;border-radius:8px}
+.overlay.hidden{display:none}
+.ovbox{background:var(--panel);border:2px solid var(--brown);border-radius:14px;padding:18px 24px;max-width:520px;width:90%;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.25)}
+.ovbox h2{margin:0 0 8px;color:var(--brown);font-size:28px}
+.ovbox .big{font-size:22px;margin:8px 0}
+.ovbox input{font-size:20px;width:110px;padding:5px;text-align:center;border:1px solid var(--brown2);border-radius:8px}
+.ovbox .calc{font-size:20px;background:#fff6e2;border-radius:10px;padding:10px;margin-top:10px}
+.lower{margin-top:14px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;border-bottom:2px solid var(--line);margin-bottom:10px}
+.tabs button{border:1px solid var(--line);border-bottom:0;background:var(--soft);color:var(--ink);padding:8px 14px;border-radius:9px 9px 0 0;font-size:15px;cursor:pointer;font-family:inherit}
+.tabs button.on{background:var(--brown);color:#fff;border-color:var(--brown);font-weight:600}
+.tab{display:none}
+.tab.on{display:block}
+.tabbar{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:8px;font-size:14.5px}
+.tabbar .seg{min-width:240px}
+.gcanvas{width:100%;height:auto;display:block;background:#fffdf8;border:1px solid var(--line);border-radius:8px}
+.resgrid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:14px}
+@media (max-width:1050px){.resgrid{grid-template-columns:1fr}}
+table{border-collapse:collapse;width:100%;font-size:14px;background:#fff}
+th,td{border:1px solid var(--line);padding:5px 6px;text-align:center}
+th{background:var(--soft);color:var(--brown);font-weight:600}
+td.l{text-align:left;min-width:170px}
+td input{width:62px;font-size:14px;padding:2px;text-align:center;border:1px solid var(--line);border-radius:5px}
+.x{border:0;background:none;color:#a33;cursor:pointer;font-size:16px}
+.tablewrap{max-height:340px;overflow:auto;border-radius:8px;border:1px solid var(--line)}
+.empty{color:var(--muted);font-style:italic;padding:12px}
+.notes{font-size:15.5px;max-width:1000px}
+.notes h4{color:var(--brown);margin:14px 0 4px}
+.notes ul{margin:4px 0 4px 20px;padding:0}
+.notes li{margin:3px 0}
+.smallbtn{border:1px solid var(--brown2);background:#fff;color:var(--brown);border-radius:7px;padding:5px 10px;font-size:14px;cursor:pointer;font-family:inherit}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Collision Theory Simulator</h1>
+  <div class="sub">GCSE Chemistry · Rates of reaction · Particles only react if they collide with energy ≥ the activation energy</div>
+</header>
+
+<div class="top">
+  <!-- SIMULATION -->
+  <section class="card">
+    <div class="canvas-wrap">
+      <canvas id="sim" width="800" height="480"></canvas>
+      <div id="overlay" class="overlay hidden"><div class="ovbox" id="ovbox"></div></div>
+    </div>
+    <div class="legend" id="legend"></div>
+    <div class="stats">
+      <div class="tile"><div class="lab" id="lTime">Time</div><div class="num" id="nTime">0.0 s</div></div>
+      <div class="tile"><div class="lab">Collisions per second</div><div class="num" id="nFreq">0.0</div></div>
+      <div class="tile"><div class="lab">% successful</div><div class="num" id="nPct">0%</div></div>
+      <div class="tile key"><div class="lab">Successful collisions</div><div class="num" id="nSucc">0</div></div>
+      <div class="tile key"><div class="lab">Rate (successful / s)</div><div class="num" id="nRate">0.00</div></div>
+    </div>
+    <div class="explain" id="explain"></div>
+  </section>
+
+  <!-- CONTROLS -->
+  <aside class="card controls" id="controls">
+    <h3>Reaction</h3>
+    <div class="seg" id="segMode">
+      <button data-v="gg" class="on">Gas + gas</button>
+      <button data-v="gs">Gas + solid</button>
+    </div>
+
+    <h3>Concentration / pressure</h3>
+    <div id="ggCtl">
+      <div class="ctl"><label>Reactant A <span class="val" id="vA"></span></label><input type="range" id="sA" min="5" max="40" step="1" value="20"></div>
+      <div class="ctl"><label>Reactant B <span class="val" id="vB"></span></label><input type="range" id="sB" min="5" max="40" step="1" value="20"></div>
+    </div>
+    <div id="gsCtl" style="display:none">
+      <div class="ctl"><label>Gas reactant <span class="val" id="vG"></span></label><input type="range" id="sG" min="5" max="60" step="1" value="25"></div>
+      <h3>Solid – size of pieces</h3>
+      <div class="ctl"><label><span id="vP"></span></label><input type="range" id="sP" min="0" max="5" step="1" value="0">
+        <div class="note">Same total amount of solid each time. <b id="vExp"></b></div>
+        <label class="chk"><input type="checkbox" id="cSurf"> Highlight particles on the surface</label>
+      </div>
+    </div>
+
+    <h3>Temperature</h3>
+    <div class="ctl"><label>Temperature <span class="val" id="vT"></span></label><input type="range" id="sT" min="0" max="100" step="5" value="20"></div>
+
+    <h3>Activation energy &amp; catalyst</h3>
+    <div class="ctl"><label>Activation energy <span class="val" id="vEa"></span></label><input type="range" id="sEa" min="40" max="80" step="5" value="50"></div>
+    <div class="seg" id="segCat">
+      <button data-v="none" class="on">None</button>
+      <button data-v="weak">Weak</button>
+      <button data-v="mod">Moderate</button>
+      <button data-v="strong">Very effective</button>
+    </div>
+    <div class="note" id="vEaEff"></div>
+
+    <h3>Display</h3>
+    <label class="chk"><input type="checkbox" id="cReplace" checked> Keep concentration constant (replace used gas particles)</label>
+    <label class="chk"><input type="checkbox" id="cMiss"> Mark unsuccessful collisions</label>
+    <label class="chk"><input type="checkbox" id="cSound"> Click sound for each successful collision</label>
+    <div class="row" style="display:flex;align-items:center;gap:8px;margin-top:6px;font-size:14.5px">Speed
+      <div class="seg" id="segSpeed" style="flex:1">
+        <button data-v="0.25">¼×</button><button data-v="0.5">½×</button><button data-v="1" class="on">1×</button>
+      </div>
+    </div>
+    <div class="btnrow">
+      <button class="btn" id="bPause">⏸ Pause</button>
+      <button class="btn" id="bReset">↺ Reset</button>
+    </div>
+
+    <h3>Timed count – measure the rate</h3>
+    <div class="timerbox">
+      <div class="row">Count for
+        <select id="selDur"><option>10</option><option>20</option><option selected>30</option><option>60</option></select> seconds
+      </div>
+      <label class="chk"><input type="checkbox" id="cHide"> Hide the computer's count (class counts)</label>
+      <label class="chk"><input type="checkbox" id="cFresh" checked> Reset particles at the start</label>
+      <div class="btnrow"><button class="btn primary" id="bTimer">▶ Start timed count</button></div>
+    </div>
+  </aside>
+</div>
+
+<!-- LOWER PANEL -->
+<section class="card lower">
+  <div class="tabs" id="tabs">
+    <button data-t="prof" class="on">Reaction profile</button>
+    <button data-t="time">Product vs time graph</button>
+    <button data-t="res">Results table &amp; rate graph</button>
+    <button data-t="help">Teacher notes</button>
+  </div>
+
+  <div class="tab on" id="tab-prof">
+    <div class="tabbar">
+      <div class="seg" id="segExo"><button data-v="exo" class="on">Exothermic</button><button data-v="endo">Endothermic</button></div>
+      <label class="chk"><input type="checkbox" id="cCompare"> Compare all three catalysts</label>
+      <span class="note">Uses the activation energy and catalyst chosen above.</span>
+    </div>
+    <canvas id="prof" class="gcanvas" width="1000" height="400"></canvas>
+  </div>
+
+  <div class="tab" id="tab-time">
+    <div class="tabbar">
+      <button class="smallbtn" id="bPin">📌 Keep this line to compare</button>
+      <button class="smallbtn" id="bUnpin">Clear kept lines</button>
+      <span class="note">Each successful collision makes one product particle. Untick “Keep concentration constant” to see the reaction slow down as reactants are used up.</span>
+    </div>
+    <canvas id="tgraph" class="gcanvas" width="1000" height="400"></canvas>
+  </div>
+
+  <div class="tab" id="tab-res">
+    <div class="resgrid">
+      <div>
+        <div class="tabbar">
+          <button class="smallbtn" id="bCopy">Copy table (paste into Excel)</button>
+          <button class="smallbtn" id="bClear">Clear results</button>
+          <span class="note" id="copyMsg"></span>
+        </div>
+        <div class="tablewrap"><table id="resTable"></table></div>
+      </div>
+      <div>
+        <div class="tabbar">
+          Plot rate against
+          <select id="selX">
+            <option value="concA">Concentration of A</option>
+            <option value="concB">Concentration of B</option>
+            <option value="concG">Gas concentration (gas + solid)</option>
+            <option value="T" selected>Temperature</option>
+            <option value="ea">Activation energy used</option>
+            <option value="pieces">Number of pieces of solid</option>
+            <option value="exposed">Solid particles on surface</option>
+          </select>
+          using
+          <select id="selY"><option value="rate">computer count</option><option value="crate">class count</option></select>
+        </div>
+        <canvas id="rgraph" class="gcanvas" width="700" height="420"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab" id="tab-help">
+    <div class="notes">
+      <h4>The model</h4>
+      <ul>
+        <li>Every collision between reactant particles (A with B, or gas with the solid) is checked. Its energy is compared with the activation energy. If the energy is <b>at least the activation energy</b> the collision is successful (gold flash) and a product particle is made. Otherwise the particles just bounce off.</li>
+        <li>Each successful collision makes one product particle, so <b>successful collisions per second</b> is a measure of the rate of reaction (amount of product formed ÷ time).</li>
+        <li>Particles in the solid can only be hit if they are on the surface. Breaking the same amount of solid into smaller pieces exposes more particles, so collisions with the solid are more frequent.</li>
+        <li>Temperature makes particles move faster. This gives more frequent collisions <i>and</i> a greater proportion of collisions with enough energy – watch the “% successful” tile. Changing concentration changes the collision frequency but not the % successful.</li>
+        <li>A catalyst lowers the activation energy by providing a different reaction pathway. Weak, moderate and very effective catalysts lower it by 20%, 40% and 60%. The catalyst is not used up.</li>
+        <li>Energies and temperature effects are scaled so that the changes can be seen and counted in class. The trends are correct; the actual numbers are not meant to be real values for a particular reaction.</li>
+      </ul>
+      <h4>Suggested investigations</h4>
+      <ul>
+        <li><b>Concentration:</b> gas + gas, change reactant A from 10 to 40 with everything else fixed. Plot rate against concentration of A.</li>
+        <li><b>Surface area:</b> gas + solid, try 1 lump → powder. Plot rate against number of pieces or surface particles.</li>
+        <li><b>Temperature:</b> 0 °C to 100 °C in steps of 20 °C. Compare how the collision frequency and % successful both change.</li>
+        <li><b>Catalysts:</b> compare none, weak, moderate and very effective, then use the reaction profile tab (tick “Compare all three catalysts”) to link the rate to the height of each activation energy.</li>
+        <li><b>Class counting:</b> tick “Hide the computer's count”, set speed to ½× or ¼× for fast reactions, and have students count the gold flashes. Enter the class count when time is up and compare it with the computer's count.</li>
+        <li><b>Reactants used up:</b> untick “Keep concentration constant”, reset and watch the product vs time graph level off. Use “Keep this line” to compare a lump with a powder.</li>
+      </ul>
+      <h4>Keyboard</h4>
+      <ul><li>Space = pause/play · R = reset</li></ul>
+    </div>
+  </div>
+</section>
+</div>
+
+<script>
+(() => {
+"use strict";
+const $ = id => document.getElementById(id);
+
+/* ---------- constants ---------- */
+const cv = $('sim'), cx = cv.getContext('2d');
+const W = cv.width, H = cv.height, R = 8, D = 16, G = 32;
+const S = 366.5;                       // px^2/s^2 per energy unit (kJ/mol in the model)
+const GC = Math.ceil(W / G), GR = Math.ceil(H / G);
+const COL = { A:'#c44536', B:'#2f6f9f', solid:'#6b5b4b', solidHi:'#e09a2c', flash:'#f2b705', ink:'#3b2a1a' };
+const CAT = {
+  none:   { f:1.00, name:'None' },
+  weak:   { f:0.80, name:'Weak' },
+  mod:    { f:0.60, name:'Moderate' },
+  strong: { f:0.40, name:'Very effective' }
+};
+const PIECES = [
+  { n:1,   side:12, grid:[1,1],  name:'1 large lump' },
+  { n:4,   side:6,  grid:[2,2],  name:'4 pieces' },
+  { n:9,   side:4,  grid:[3,3],  name:'9 pieces' },
+  { n:16,  side:3,  grid:[4,4],  name:'16 pieces' },
+  { n:36,  side:2,  grid:[9,4],  name:'36 small pieces' },
+  { n:144, side:1,  grid:[16,9], name:'Powder (144 grains)' }
+];
+const TOTAL_SOLID = 144;
+
+/* ---------- state ---------- */
+const st = { mode:'gg', concA:20, concB:20, concG:25, piece:0, T:20, Ea:50, cat:'none',
+             replace:true, showMiss:false, showSurf:false, sound:false, speed:1, paused:false,
+             exo:true, compare:false };
+const kTof = T => 25 * Math.pow((T + 273) / 293, 5);
+const kT = () => kTof(st.T);
+const eaEff = () => +(st.Ea * CAT[st.cat].f).toFixed(1);
+
+let parts = [], solids = [], sgrid = [], prods = [], fx = [];
+const sim = { t:0, succ:0, series:[[0,0]], lastSample:0 };
+const stats = { t0:0, coll:0, succ:0 };
+const timer = { active:false, start:0, dur:30, count:0, coll:0, hide:false, exposed0:0 };
+let pinned = [];
+let results = [];
+let lastKey = null;
+
+/* ---------- helpers ---------- */
+function gauss(){ let u=0; while(!u) u=Math.random(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*Math.random()); }
+function thermal(){ const s=Math.sqrt(kT()*S); return [s*gauss(), s*gauss()]; }
+function cell(i,j){ return (i<0||j<0||i>=GC||j>=GR) ? null : sgrid[j*GC+i]; }
+function wall(p, r){
+  if (p.x < r){ p.x = r; p.vx = Math.abs(p.vx); } else if (p.x > W-r){ p.x = W-r; p.vx = -Math.abs(p.vx); }
+  if (p.y < r){ p.y = r; p.vy = Math.abs(p.vy); } else if (p.y > H-r){ p.y = H-r; p.vy = -Math.abs(p.vy); }
+}
+function isClear(x, y){
+  const lim = (D+3)*(D+3);
+  for (const p of parts){ if (p.dead) continue; const dx=p.x-x, dy=p.y-y; if (dx*dx+dy*dy < lim) return false; }
+  const gx=Math.floor(x/G), gy=Math.floor(y/G);
+  for (let i=gx-1;i<=gx+1;i++) for (let j=gy-1;j<=gy+1;j++){
+    const c=cell(i,j); if(!c) continue;
+    for (const s of c){ if(!s.alive) continue; const dx=s.x-x, dy=s.y-y; if (dx*dx+dy*dy < lim) return false; }
+  }
+  return true;
+}
+function spawn(type){
+  let x, y, tries=0;
+  do { x = R+2+Math.random()*(W-2*R-4); y = R+2+Math.random()*(H-2*R-4); tries++; } while(!isClear(x,y) && tries<120);
+  const [vx,vy] = thermal();
+  parts.push({ x, y, vx, vy, type });
+}
+function exposed(s){ if(!s.alive) return false; for (const n of s.nb){ if (!n || !n.alive) return true; } return false; }
+function countExposed(){ let n=0; for (const s of solids) if (exposed(s)) n++; return n; }
+function aliveSolid(){ let n=0; for (const s of solids) if (s.alive) n++; return n; }
+
+/* ---------- build ---------- */
+function buildSolids(){
+  solids = []; sgrid = Array.from({length:GC*GR}, () => []);
+  if (st.mode !== 'gs') return;
+  const P = PIECES[st.piece], [nc, nr] = P.grid, cw = W/nc, ch = H/nr, size = P.side*D;
+  let k = 0;
+  for (let r=0; r<nr; r++) for (let c=0; c<nc; c++){
+    if (k >= P.n) break;
+    const slackX = cw-size, slackY = ch-size;
+    const jx = P.side<=2 ? (Math.random()*2-1)*slackX*0.25 : 0;
+    const jy = P.side<=2 ? (Math.random()*2-1)*slackY*0.25 : 0;
+    const x0 = c*cw + slackX/2 + jx, y0 = r*ch + slackY/2 + jy;
+    const g = [];
+    for (let i=0;i<P.side;i++){ g[i]=[]; for (let j=0;j<P.side;j++){
+      const s = { x:x0+(i+0.5)*D, y:y0+(j+0.5)*D, alive:true, nb:[] };
+      g[i][j] = s; solids.push(s);
+      const ci = Math.floor(s.x/G), cj = Math.floor(s.y/G); const cc = cell(ci,cj); if (cc) cc.push(s);
+    }}
+    for (let i=0;i<P.side;i++) for (let j=0;j<P.side;j++){
+      const s=g[i][j];
+      s.nb = [ i>0?g[i-1][j]:null, i<P.side-1?g[i+1][j]:null, j>0?g[i][j-1]:null, j<P.side-1?g[i][j+1]:null ];
+    }
+    k++;
+  }
+}
+function resetSim(){
+  parts = []; prods = []; fx = [];
+  buildSolids();
+  if (st.mode === 'gg'){ for (let i=0;i<st.concA;i++) spawn('A'); for (let i=0;i<st.concB;i++) spawn('B'); }
+  else { for (let i=0;i<st.concG;i++) spawn('A'); }
+  sim.t = 0; sim.succ = 0; sim.series = [[0,0]]; sim.lastSample = 0;
+  resetStats(); updateLabels();
+}
+function resetStats(){ stats.t0 = sim.t; stats.coll = 0; stats.succ = 0; }
+
+/* ---------- events in the simulation ---------- */
+function countColl(){ stats.coll++; if (timer.active) timer.coll++; }
+let lastBeep = 0, actx = null;
+function beep(){
+  if (!st.sound) return;
+  const now = performance.now(); if (now-lastBeep < 35) return; lastBeep = now;
+  try{
+    if (!actx) actx = new (window.AudioContext||window.webkitAudioContext)();
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type='triangle'; o.frequency.value=880;
+    g.gain.setValueAtTime(0.18, actx.currentTime); g.gain.exponentialRampToValueAtTime(0.001, actx.currentTime+0.08);
+    o.connect(g); g.connect(actx.destination); o.start(); o.stop(actx.currentTime+0.09);
+  }catch(e){}
+}
+function success(x, y){
+  sim.succ++; stats.succ++; if (timer.active) timer.count++;
+  fx.push({ k:'hit', x, y, t:0 });
+  sim.series.push([sim.t, sim.succ]);
+  beep();
+}
+function reactGG(a, b){
+  const mx=(a.x+b.x)/2, my=(a.y+b.y)/2;
+  prods.push({ x:mx, y:my, vx:(a.vx+b.vx)/2, vy:(a.vy+b.vy)/2, c1:COL.A, c2:COL.B,
+               ang:Math.atan2(b.y-a.y, b.x-a.x), spin:(Math.random()-.5)*4, life:3 });
+  success(mx, my);
+}
+function reactGS(p, s, nx, ny, vn){
+  const x = p.x+nx*R, y = p.y+ny*R;
+  prods.push({ x, y, vx:(p.vx-2*vn*nx)*0.8, vy:(p.vy-2*vn*ny)*0.8, c1:COL.A, c2:COL.solid,
+               ang:Math.atan2(ny,nx), spin:(Math.random()-.5)*4, life:3 });
+  success(x, y);
+}
+
+/* ---------- physics step ---------- */
+function step(dt){
+  const ea = eaEff(), gg = st.mode === 'gg';
+  for (const p of parts){ p.x += p.vx*dt; p.y += p.vy*dt; wall(p, R); }
+
+  // particle–particle
+  const n = parts.length, D2 = D*D;
+  for (let i=0;i<n;i++){
+    const a = parts[i]; if (a.dead) continue;
+    for (let j=i+1;j<n;j++){
+      const b = parts[j]; if (b.dead) continue;
+      let dx = b.x-a.x; if (dx>=D || dx<=-D) continue;
+      let dy = b.y-a.y; if (dy>=D || dy<=-D) continue;
+      const d2 = dx*dx+dy*dy; if (d2 >= D2) continue;
+      let d = Math.sqrt(d2); if (d < 1e-6){ dx=1; dy=0; d=1; }
+      const nx=dx/d, ny=dy/d, ov=(D-d)/2;
+      a.x-=nx*ov; a.y-=ny*ov; b.x+=nx*ov; b.y+=ny*ov;
+      const vn = (a.vx-b.vx)*nx + (a.vy-b.vy)*ny;
+      if (vn <= 0) continue;
+      if (gg && a.type !== b.type){
+        countColl();
+        const E = 0.25*vn*vn/S;               // energy along line of centres (reduced mass)
+        if (E >= ea){ a.dead = b.dead = true; reactGG(a, b); break; }
+        if (st.showMiss) fx.push({ k:'miss', x:a.x+nx*R, y:a.y+ny*R, t:0 });
+      }
+      a.vx-=vn*nx; a.vy-=vn*ny; b.vx+=vn*nx; b.vy+=vn*ny;
+    }
+  }
+
+  // gas–solid
+  if (!gg){
+    for (const p of parts){
+      if (p.dead) continue;
+      const gx=Math.floor(p.x/G), gy=Math.floor(p.y/G);
+      outer:
+      for (let i=gx-1;i<=gx+1;i++) for (let j=gy-1;j<=gy+1;j++){
+        const c=cell(i,j); if(!c) continue;
+        for (const s of c){
+          if (!s.alive) continue;
+          const dx=s.x-p.x, dy=s.y-p.y, d2=dx*dx+dy*dy; if (d2 >= D2) continue;
+          const d=Math.sqrt(d2)||1e-6, nx=dx/d, ny=dy/d;
+          p.x = s.x-nx*D; p.y = s.y-ny*D;
+          const vn = p.vx*nx + p.vy*ny; if (vn <= 0) continue;
+          countColl();
+          const E = 0.5*vn*vn/S;
+          if (E >= ea){ s.alive=false; p.dead=true; reactGS(p, s, nx, ny, vn); break outer; }
+          if (st.showMiss) fx.push({ k:'miss', x:p.x+nx*R, y:p.y+ny*R, t:0 });
+          p.vx-=2*vn*nx; p.vy-=2*vn*ny;
+        }
+      }
+    }
+  }
+
+  // remove reacted, replace if constant concentration
+  let anyDead = false; for (const p of parts) if (p.dead){ anyDead = true; break; }
+  if (anyDead){
+    const types = parts.filter(p=>p.dead).map(p=>p.type);
+    parts = parts.filter(p=>!p.dead);
+    if (st.replace) for (const t of types) spawn(t);
+  }
+
+  // water bath: each particle occasionally has its speed re-drawn from the thermal
+  // distribution (direction kept). Keeps the temperature and the energy spread correct.
+  const sig = Math.sqrt(kT()*S), pr = 4*dt;
+  for (const p of parts){
+    if (Math.random() < pr){
+      const sp = Math.hypot(p.vx, p.vy) || 1, ns = sig*Math.sqrt(-2*Math.log(1-Math.random()));
+      p.vx *= ns/sp; p.vy *= ns/sp;
+    }
+  }
+
+  // products
+  for (const q of prods){
+    q.x+=q.vx*dt; q.y+=q.vy*dt; wall(q, 10); q.ang += q.spin*dt; q.life -= dt;
+    if (!gg){
+      const gx=Math.floor(q.x/G), gy=Math.floor(q.y/G);
+      for (let i=gx-1;i<=gx+1;i++) for (let j=gy-1;j<=gy+1;j++){
+        const c=cell(i,j); if(!c) continue;
+        for (const s of c){ if(!s.alive) continue;
+          const dx=s.x-q.x, dy=s.y-q.y, d2=dx*dx+dy*dy; if (d2 >= D2) continue;
+          const d=Math.sqrt(d2)||1e-6, nx=dx/d, ny=dy/d; q.x=s.x-nx*D; q.y=s.y-ny*D;
+          const vn=q.vx*nx+q.vy*ny; if (vn>0){ q.vx-=2*vn*nx; q.vy-=2*vn*ny; }
+        }
+      }
+    }
+  }
+  prods = prods.filter(q => q.life > 0);
+  for (const f of fx) f.t += dt;
+  fx = fx.filter(f => f.t < (f.k==='hit' ? 0.55 : 0.3));
+
+  sim.t += dt;
+  if (sim.t - sim.lastSample >= 0.5){ sim.series.push([sim.t, sim.succ]); sim.lastSample = sim.t; }
+}
+
+/* ---------- drawing the simulation ---------- */
+function circle(x,y,r,fill,stroke){ cx.beginPath(); cx.arc(x,y,r,0,Math.PI*2); cx.fillStyle=fill; cx.fill(); if(stroke){ cx.strokeStyle=stroke; cx.lineWidth=1.2; cx.stroke(); } }
+function draw(){
+  cx.fillStyle = '#fffdf8'; cx.fillRect(0,0,W,H);
+  // solids
+  for (const s of solids){
+    if (!s.alive) continue;
+    const hi = st.showSurf && exposed(s);
+    cx.fillStyle = hi ? COL.solidHi : COL.solid;
+    cx.fillRect(s.x-R, s.y-R, D, D);
+    cx.strokeStyle = 'rgba(255,255,255,.35)'; cx.lineWidth = 1; cx.strokeRect(s.x-R+.5, s.y-R+.5, D-1, D-1);
+  }
+  // products
+  for (const q of prods){
+    cx.globalAlpha = Math.max(0, Math.min(1, q.life/1.2))*0.85;
+    const ox=Math.cos(q.ang)*5, oy=Math.sin(q.ang)*5;
+    circle(q.x-ox, q.y-oy, 6.5, q.c1, 'rgba(0,0,0,.3)');
+    circle(q.x+ox, q.y+oy, 6.5, q.c2, 'rgba(0,0,0,.3)');
+  }
+  cx.globalAlpha = 1;
+  // reactant particles
+  for (const p of parts) circle(p.x, p.y, R, p.type==='A'?COL.A:COL.B, 'rgba(0,0,0,.35)');
+  // effects
+  for (const f of fx){
+    if (f.k === 'hit'){
+      const k = f.t/0.55, r1 = 7+16*k, a = 1-k;
+      cx.save(); cx.translate(f.x, f.y); cx.globalAlpha = a;
+      cx.beginPath();
+      for (let i=0;i<16;i++){ const ang=i*Math.PI/8, rr = i%2 ? r1*0.45 : r1; cx.lineTo(Math.cos(ang)*rr, Math.sin(ang)*rr); }
+      cx.closePath(); cx.fillStyle = COL.flash; cx.fill(); cx.strokeStyle='#b8860b'; cx.lineWidth=1.5; cx.stroke();
+      cx.restore();
+    } else {
+      const k = f.t/0.3; cx.globalAlpha = 1-k;
+      cx.beginPath(); cx.arc(f.x, f.y, 4+8*k, 0, Math.PI*2); cx.strokeStyle='#8a8a8a'; cx.lineWidth=2; cx.stroke();
+      cx.globalAlpha = 1;
+    }
+  }
+  cx.globalAlpha = 1;
+  // HUD
+  cx.font = '600 15px Segoe UI, Arial'; cx.textAlign='left'; cx.textBaseline='top';
+  const hud = `${st.T} °C   ·   Ea = ${eaEff()} kJ/mol${st.cat!=='none' ? '  ('+CAT[st.cat].name.toLowerCase()+' catalyst)' : ''}`;
+  const tw = cx.measureText(hud).width;
+  cx.fillStyle='rgba(255,250,240,.88)'; cx.fillRect(6,6,tw+16,26);
+  cx.fillStyle=COL.ink; cx.fillText(hud, 14, 11);
+  if (st.mode==='gs' && solids.length && aliveSolid()===0){
+    banner('All of the solid has reacted – press Reset');
+  }
+  if (timer.active){
+    const left = Math.max(0, timer.dur-(sim.t-timer.start));
+    const txt = '⏱ ' + left.toFixed(1) + ' s';
+    cx.font = '700 30px Segoe UI, Arial'; const w2 = cx.measureText(txt).width;
+    cx.fillStyle = 'rgba(122,78,45,.92)'; roundRect(W-w2-34, 8, w2+24, 44, 10); cx.fill();
+    cx.fillStyle = '#fff'; cx.textAlign='left'; cx.fillText(txt, W-w2-22, 14);
+  }
+  if (st.paused && $('overlay').classList.contains('hidden')) banner('Paused – press ▶ Play or Space');
+}
+function banner(t){
+  cx.font='700 22px Segoe UI, Arial'; cx.textAlign='center'; cx.textBaseline='middle';
+  const w=cx.measureText(t).width+40;
+  cx.fillStyle='rgba(59,42,26,.82)'; roundRect(W/2-w/2, H/2-26, w, 52, 12); cx.fill();
+  cx.fillStyle='#fff'; cx.fillText(t, W/2, H/2+1); cx.textAlign='left'; cx.textBaseline='top';
+}
+function roundRect(x,y,w,h,r){ cx.beginPath(); cx.moveTo(x+r,y); cx.arcTo(x+w,y,x+w,y+h,r); cx.arcTo(x+w,y+h,x,y+h,r); cx.arcTo(x,y+h,x,y,r); cx.arcTo(x,y,x+w,y,r); cx.closePath(); }
+
+/* ---------- stats & labels ---------- */
+function setNum(id, v){ const el=$(id); if (el.textContent !== v) el.textContent = v; }
+function updateStats(){
+  let t, coll, succ;
+  if (timer.active){ t = sim.t-timer.start; coll = timer.coll; succ = timer.count; setNum('lTime','Time (this count)'); }
+  else { t = sim.t-stats.t0; coll = stats.coll; succ = stats.succ; setNum('lTime','Time'); }
+  setNum('nTime', t.toFixed(1)+' s');
+  setNum('nFreq', t>0.2 ? (coll/t).toFixed(1) : '–');
+  const hide = (timer.active && timer.hide) || timer.pending;
+  setNum('nPct', hide ? '?' : (coll ? (100*succ/coll).toFixed(1)+'%' : '–'));
+  setNum('nSucc', hide ? '?' : String(succ));
+  setNum('nRate', hide ? '?' : (t>0.2 ? (succ/t).toFixed(2) : '–'));
+  if (st.mode==='gs') $('vExp').textContent = `Particles on surface: ${countExposed()} (solid left: ${aliveSolid()} of ${TOTAL_SOLID})`;
+}
+function updateLabels(){
+  $('vA').textContent = st.concA + ' particles';
+  $('vB').textContent = st.concB + ' particles';
+  $('vG').textContent = st.concG + ' particles';
+  $('vP').textContent = PIECES[st.piece].name;
+  $('vT').textContent = st.T + ' °C';
+  $('vEa').textContent = st.Ea + ' kJ/mol';
+  $('vEaEff').innerHTML = st.cat==='none'
+    ? 'No catalyst – reaction uses the full activation energy.'
+    : `With ${CAT[st.cat].name.toLowerCase()} catalyst: Ea lowered from ${st.Ea} to <b>${eaEff()} kJ/mol</b>.`;
+  $('legend').innerHTML = st.mode==='gg'
+    ? `<span><i class="dot" style="background:${COL.A}"></i>Reactant A</span><span><i class="dot" style="background:${COL.B}"></i>Reactant B</span><span><i class="dot" style="background:${COL.A}"></i><i class="dot" style="background:${COL.B};margin-left:-9px"></i>Product AB</span><span><i class="dot" style="background:${COL.flash}"></i>Successful collision</span>`
+    : `<span><i class="dot" style="background:${COL.A}"></i>Gas reactant</span><span><i class="dot" style="background:${COL.solid};border-radius:2px"></i>Solid reactant</span>${st.showSurf?`<span><i class="dot" style="background:${COL.solidHi};border-radius:2px"></i>Surface particle</span>`:''}<span><i class="dot" style="background:${COL.A}"></i><i class="dot" style="background:${COL.solid};margin-left:-9px"></i>Product</span><span><i class="dot" style="background:${COL.flash}"></i>Successful collision</span>`;
+}
+const EXPLAIN = {
+  start: 'Particles must <b>collide</b> with energy <b>greater than or equal to the activation energy</b> to react. Gold flashes are successful collisions.',
+  mode:  'Particles must <b>collide</b> with energy <b>greater than or equal to the activation energy</b> to react. Gold flashes are successful collisions.',
+  conc:  '<b>Concentration (or pressure):</b> more particles in the same volume → <b>more frequent collisions</b> → more successful collisions per second → faster rate. The % of collisions that are successful stays about the same.',
+  piece: '<b>Surface area:</b> smaller pieces → larger surface area to volume ratio → more particles exposed → <b>more frequent collisions</b> with the solid → faster rate.',
+  T:     '<b>Temperature:</b> particles move faster → <b>more frequent collisions</b> AND a <b>greater proportion of collisions</b> have energy ≥ the activation energy → faster rate. Watch the % successful.',
+  Ea:    '<b>Activation energy:</b> the minimum energy particles need to react when they collide. Higher Ea → a smaller proportion of collisions are successful → slower rate.',
+  cat:   '<b>Catalyst:</b> provides a different reaction pathway with a <b>lower activation energy</b> → a greater proportion of collisions are successful → faster rate. The catalyst is not used up.'
+};
+function explain(key){ lastKey = key; $('explain').innerHTML = EXPLAIN[key] || EXPLAIN.start; }
+
+/* ---------- controls ---------- */
+function seg(id, cb){
+  const el = $(id);
+  el.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b || b.disabled) return;
+    el.querySelectorAll('button').forEach(x => x.classList.toggle('on', x===b));
+    cb(b.dataset.v);
+  });
+}
+function changed(key, rebuild){
+  if (rebuild) resetSim(); else { resetStats(); updateLabels(); }
+  explain(key); drawProfile();
+}
+seg('segMode', v => {
+  st.mode = v;
+  $('ggCtl').style.display = v==='gg' ? '' : 'none';
+  $('gsCtl').style.display = v==='gs' ? '' : 'none';
+  changed('mode', true);
+});
+$('sA').addEventListener('input', e => { st.concA = +e.target.value; changed('conc', true); });
+$('sB').addEventListener('input', e => { st.concB = +e.target.value; changed('conc', true); });
+$('sG').addEventListener('input', e => { st.concG = +e.target.value; changed('conc', true); });
+$('sP').addEventListener('input', e => { st.piece = +e.target.value; changed('piece', true); });
+$('sT').addEventListener('input', e => {
+  const old = kT(); st.T = +e.target.value; const f = Math.sqrt(kT()/old);
+  for (const p of parts){ p.vx*=f; p.vy*=f; } for (const q of prods){ q.vx*=f; q.vy*=f; }
+  changed('T', false);
+});
+$('sEa').addEventListener('input', e => { st.Ea = +e.target.value; changed('Ea', false); });
+seg('segCat', v => { st.cat = v; changed('cat', false); });
+seg('segSpeed', v => { st.speed = +v; });
+seg('segExo', v => { st.exo = v==='exo'; drawProfile(); });
+$('cCompare').addEventListener('change', e => { st.compare = e.target.checked; drawProfile(); });
+$('cReplace').addEventListener('change', e => { st.replace = e.target.checked; });
+$('cMiss').addEventListener('change', e => { st.showMiss = e.target.checked; });
+$('cSound').addEventListener('change', e => { st.sound = e.target.checked; if (st.sound) beep(); });
+$('cSurf').addEventListener('change', e => { st.showSurf = e.target.checked; updateLabels(); });
+function setPaused(p){ st.paused = p; $('bPause').textContent = p ? '▶ Play' : '⏸ Pause'; }
+$('bPause').addEventListener('click', () => setPaused(!st.paused));
+$('bReset').addEventListener('click', () => { if (timer.active) cancelTimer(); hideOverlay(); resetSim(); setPaused(false); });
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' && e.target.type !== 'range' && e.target.type !== 'checkbox') return;
+  if (e.target.tagName === 'SELECT') return;
+  if (e.code === 'Space'){ e.preventDefault(); setPaused(!st.paused); }
+  else if (e.key === 'r' || e.key === 'R'){ $('bReset').click(); }
+});
+
+/* ---------- timed count ---------- */
+const LOCK_IDS = ['sA','sB','sG','sP','sT','sEa','cReplace','selDur','cHide','cFresh'];
+function lockControls(on){
+  LOCK_IDS.forEach(id => $(id).disabled = on);
+  ['segMode','segCat'].forEach(id => $(id).querySelectorAll('button').forEach(b => b.disabled = on));
+}
+function setupText(){
+  if (st.mode === 'gg') return `Gas + gas · A = ${st.concA}, B = ${st.concB}`;
+  return `Gas + solid · gas = ${st.concG} · ${PIECES[st.piece].name}`;
+}
+$('bTimer').addEventListener('click', () => {
+  if (timer.active){ cancelTimer(); return; }
+  hideOverlay();
+  if ($('cFresh').checked) resetSim();
+  timer.dur = +$('selDur').value; timer.hide = $('cHide').checked;
+  timer.start = sim.t; timer.count = 0; timer.coll = 0; timer.active = true; timer.pending = false;
+  timer.exposed0 = st.mode==='gs' ? countExposed() : null;
+  timer.setup = setupText();
+  lockControls(true); setPaused(false);
+  $('bTimer').textContent = '■ Stop count';
+});
+function cancelTimer(){ timer.active = false; lockControls(false); $('bTimer').textContent = '▶ Start timed count'; }
+function endTimer(){
+  const count = timer.count, dur = timer.dur;
+  cancelTimer(); setPaused(true);
+  const row = {
+    n: results.length ? results[results.length-1].n+1 : 1,
+    mode: st.mode, setup: timer.setup,
+    concA: st.mode==='gg'?st.concA:null, concB: st.mode==='gg'?st.concB:null, concG: st.mode==='gs'?st.concG:null,
+    pieces: st.mode==='gs'?PIECES[st.piece].n:null, exposed: timer.exposed0,
+    T: st.T, ea: eaEff(), cat: CAT[st.cat].name, dur, count, rate: count/dur, cls: null, coll: timer.coll
+  };
+  results.push(row);
+  timer.pending = timer.hide; renderResults();
+  showResult(row, timer.hide);
+}
+function rateCalc(c, d){ return `Rate = ${c} ÷ ${d} s = <b>${(c/d).toFixed(2)}</b> successful collisions per second`; }
+function showResult(row, hidden){
+  const box = $('ovbox');
+  const pct = row.coll ? (100*row.count/row.coll).toFixed(1) : '0';
+  const reveal = `<div class="big">Computer count: <b>${row.count}</b> successful collisions in ${row.dur} s</div>
+    <div class="note">(${row.coll} collisions between reactant particles · ${pct}% successful)</div>
+    <div class="calc">${rateCalc(row.count, row.dur)}</div>`;
+  if (hidden){
+    box.innerHTML = `<h2>Time up!</h2>
+      <div class="big">How many successful collisions did you count?</div>
+      <div><input type="number" id="ovGuess" min="0"> <button class="btn primary" id="ovReveal" style="flex:none;padding:8px 16px">Reveal</button></div>
+      <div id="ovOut"></div>
+      <div class="btnrow"><button class="btn" id="ovClose">Close</button></div>`;
+    $('ovReveal').onclick = () => {
+      const g = $('ovGuess').value;
+      if (g !== ''){ row.cls = Math.max(0, +g); renderResults(); }
+      $('ovOut').innerHTML = (g!=='' ? `<div class="calc">Your rate = ${row.cls} ÷ ${row.dur} s = <b>${(row.cls/row.dur).toFixed(2)}</b> per second</div>` : '') + reveal;
+      $('ovReveal').disabled = true; timer.pending = false; renderResults();
+    };
+  } else {
+    box.innerHTML = `<h2>Time up!</h2>${reveal}<div class="btnrow"><button class="btn" id="ovClose">Close</button></div>`;
+  }
+  $('ovClose').onclick = hideOverlay;
+  $('overlay').classList.remove('hidden');
+}
+function hideOverlay(){ $('overlay').classList.add('hidden'); if (timer.pending){ timer.pending = false; renderResults(); } }
+
+/* ---------- results table ---------- */
+function renderResults(){
+  const t = $('resTable');
+  if (!results.length){ t.innerHTML = '<tr><td class="empty">No results yet. Use “Start timed count” – each count is added here automatically.</td></tr>'; drawRates(); return; }
+  let h = '<tr><th>Run</th><th>Set-up</th><th>Temp (°C)</th><th>Ea used (kJ/mol)</th><th>Catalyst</th><th>Time (s)</th><th>Computer count</th><th>Rate (/s)</th><th>Class count</th><th>Class rate (/s)</th><th></th></tr>';
+  for (const r of results){
+    const masked = timer.pending && r === results[results.length-1];
+    const setup = r.setup + (r.exposed!=null ? ` (${r.exposed} on surface)` : '');
+    h += `<tr><td>${r.n}</td><td class="l">${setup}</td><td>${r.T}</td><td>${r.ea}</td><td>${r.cat}</td><td>${r.dur}</td><td>${masked?'?':r.count}</td><td><b>${masked?'?':r.rate.toFixed(2)}</b></td>
+      <td><input type="number" min="0" data-n="${r.n}" value="${r.cls ?? ''}"></td><td>${r.cls!=null ? (r.cls/r.dur).toFixed(2) : ''}</td>
+      <td><button class="x" data-del="${r.n}" title="Delete">✕</button></td></tr>`;
+  }
+  t.innerHTML = h;
+  t.querySelectorAll('input[data-n]').forEach(inp => inp.addEventListener('change', e => {
+    const r = results.find(x => x.n === +e.target.dataset.n); r.cls = e.target.value==='' ? null : Math.max(0, +e.target.value); renderResults();
+  }));
+  t.querySelectorAll('button[data-del]').forEach(b => b.addEventListener('click', () => {
+    results = results.filter(x => x.n !== +b.dataset.del); renderResults();
+  }));
+  drawRates();
+}
+$('bClear').addEventListener('click', () => { if (!results.length || confirmClear()) { results = []; renderResults(); } });
+let clearArmed = 0;
+function confirmClear(){ // two-click confirm without a browser dialog
+  const now = Date.now();
+  if (now - clearArmed < 2500){ clearArmed = 0; $('copyMsg').textContent=''; return true; }
+  clearArmed = now; $('copyMsg').textContent = 'Click “Clear results” again to confirm.'; return false;
+}
+$('bCopy').addEventListener('click', () => {
+  const head = ['Run','Set-up','Solid particles on surface','Temperature (°C)','Activation energy used (kJ/mol)','Catalyst','Time (s)','Computer count','Rate (/s)','Class count','Class rate (/s)'];
+  const lines = [head.join('\t')].concat(results.map(r => [r.n, r.setup, r.exposed ?? '', r.T, r.ea, r.cat, r.dur, r.count, r.rate.toFixed(2), r.cls ?? '', r.cls!=null?(r.cls/r.dur).toFixed(2):''].join('\t')));
+  const txt = lines.join('\n');
+  const done = () => { $('copyMsg').textContent = 'Copied – paste into Excel.'; setTimeout(()=>$('copyMsg').textContent='', 2500); };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(done, () => fallbackCopy(txt, done));
+  else fallbackCopy(txt, done);
+});
+function fallbackCopy(txt, done){ const ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta); ta.select(); try{ document.execCommand('copy'); done(); }catch(e){} ta.remove(); }
+$('selX').addEventListener('change', drawRates);
+$('selY').addEventListener('change', drawRates);
+
+/* ---------- graph helpers ---------- */
+function niceMax(v){ if (v<=0) return 1; const p=Math.pow(10, Math.floor(Math.log10(v))), m=v/p; return (m<=1?1:m<=2?2:m<=2.5?2.5:m<=5?5:10)*p; }
+function fmt(v){ return Math.abs(v-Math.round(v))<1e-9 ? String(Math.round(v)) : (+v.toFixed(2)).toString(); }
+function axes(g, box, xmin, xmax, ymax, xlab, ylab){
+  const {L,T,Wd,Ht} = box;
+  g.strokeStyle='#e8dcc4'; g.lineWidth=1; g.font='14px Segoe UI, Arial'; g.fillStyle='#5a4632';
+  for (let i=0;i<=5;i++){
+    const y = T+Ht-Ht*i/5; g.beginPath(); g.moveTo(L,y); g.lineTo(L+Wd,y); g.stroke();
+    g.textAlign='right'; g.textBaseline='middle'; g.fillText(fmt(ymax*i/5), L-8, y);
+    const x = L+Wd*i/5; g.beginPath(); g.moveTo(x,T); g.lineTo(x,T+Ht); g.stroke();
+    g.textAlign='center'; g.textBaseline='top'; g.fillText(fmt(xmin+(xmax-xmin)*i/5), x, T+Ht+7);
+  }
+  g.strokeStyle='#3b2a1a'; g.lineWidth=2; g.beginPath(); g.moveTo(L,T); g.lineTo(L,T+Ht); g.lineTo(L+Wd,T+Ht); g.stroke();
+  g.font='600 15px Segoe UI, Arial'; g.fillStyle='#3b2a1a'; g.textAlign='center'; g.textBaseline='top';
+  g.fillText(xlab, L+Wd/2, T+Ht+30);
+  g.save(); g.translate(L-52, T+Ht/2); g.rotate(-Math.PI/2); g.textBaseline='middle'; g.fillText(ylab, 0, 0); g.restore();
+}
+
+/* ---------- reaction profile ---------- */
+function drawProfile(){
+  const c = $('prof'), g = c.getContext('2d'), w = c.width, h = c.height;
+  g.fillStyle='#fffdf8'; g.fillRect(0,0,w,h);
+  const L=90, T=20, Wd=w-L-40, Ht=h-T-60;
+  const Er = 100, dH = st.exo ? -40 : 15, Ep = Er+dH;
+  const Emin = Math.min(Er, Ep) - 30, Emax = Er + st.Ea + 35;
+  const X = f => L + f*Wd, Y = E => T + Ht - (E-Emin)/(Emax-Emin)*Ht;
+  // axes
+  g.strokeStyle='#3b2a1a'; g.lineWidth=2.5;
+  arrowLine(g, L, T+Ht, L, T-5); arrowLine(g, L, T+Ht, L+Wd+10, T+Ht);
+  g.font='600 16px Segoe UI, Arial'; g.fillStyle='#3b2a1a'; g.textAlign='center'; g.textBaseline='top';
+  g.fillText('Progress of reaction', L+Wd/2, T+Ht+14);
+  g.save(); g.translate(L-30, T+Ht/2); g.rotate(-Math.PI/2); g.textBaseline='middle'; g.fillText('Energy', 0, 0); g.restore();
+
+  function curve(ea, color, dash, width){
+    const pk = Er+ea;
+    g.beginPath(); g.moveTo(X(0.04), Y(Er)); g.lineTo(X(0.22), Y(Er));
+    g.bezierCurveTo(X(0.36), Y(Er), X(0.42), Y(pk), X(0.5), Y(pk));
+    g.bezierCurveTo(X(0.58), Y(pk), X(0.64), Y(Ep), X(0.78), Y(Ep));
+    g.lineTo(X(0.96), Y(Ep));
+    g.strokeStyle=color; g.lineWidth=width; g.setLineDash(dash); g.stroke(); g.setLineDash([]);
+  }
+  // reactant level guide
+  g.strokeStyle='#b9a68a'; g.lineWidth=1.5; g.setLineDash([5,5]);
+  g.beginPath(); g.moveTo(X(0.22), Y(Er)); g.lineTo(X(0.92), Y(Er)); g.stroke(); g.setLineDash([]);
+
+  const uncat = st.Ea;
+  curve(uncat, '#3b2a1a', [], 3.5);
+  g.font='600 16px Segoe UI, Arial'; g.textBaseline='bottom'; g.textAlign='center'; g.fillStyle='#3b2a1a';
+  g.fillText('Reactants', X(0.12), Y(Er)-6);
+  g.textBaseline = st.exo ? 'top' : 'bottom';
+  g.fillText('Products', X(0.88), st.exo ? Y(Ep)+8 : Y(Ep)-6);
+
+  const catCols = { weak:'#2e7d4f', mod:'#2f6f9f', strong:'#c44536' };
+  if (st.compare){
+    ['weak','mod','strong'].forEach(k => {
+      const e = st.Ea*CAT[k].f; curve(e, catCols[k], [9,6], 3);
+    });
+  } else {
+    // Ea arrow – uncatalysed
+    eaArrow(g, X(0.5), Y(Er), Y(Er+uncat), '#3b2a1a', 'Ea', 'right');
+    if (st.cat !== 'none'){
+      const e = eaEff(), col = catCols[st.cat];
+      curve(e, col, [9,6], 3.2);
+      g.strokeStyle=col; g.lineWidth=1.3; g.setLineDash([3,3]);
+      g.beginPath(); g.moveTo(X(0.42), Y(Er+e)); g.lineTo(X(0.5), Y(Er+e)); g.stroke(); g.setLineDash([]);
+      eaArrow(g, X(0.42), Y(Er), Y(Er+e), col, 'Ea', 'left');
+    }
+  }
+  // overall energy change
+  const xh = X(0.9);
+  g.strokeStyle='#7a4e2d'; g.fillStyle='#7a4e2d'; g.lineWidth=2.2;
+  dblArrow(g, xh, Y(Er), xh, Y(Ep));
+  g.font='600 14px Segoe UI, Arial'; g.textAlign='right'; g.textBaseline='middle';
+  if (st.exo){
+    g.fillText('Overall energy', xh-8, (Y(Er)+Y(Ep))/2-9);
+    g.fillText('change −40 kJ/mol', xh-8, (Y(Er)+Y(Ep))/2+9);
+  } else {
+    g.fillText('Overall energy change +15 kJ/mol', xh+14, Y(Er)+16);
+  }
+  // legend
+  g.font='14px Segoe UI, Arial'; g.textAlign='left'; g.textBaseline='middle';
+  let ly = T+12;
+  const leg = (col, dash, txt) => { g.strokeStyle=col; g.lineWidth=3; g.setLineDash(dash); g.beginPath(); g.moveTo(w-370, ly); g.lineTo(w-335, ly); g.stroke(); g.setLineDash([]); g.fillStyle='#3b2a1a'; g.fillText(txt, w-328, ly); ly += 22; };
+  leg('#3b2a1a', [], `Without catalyst (Ea = ${st.Ea} kJ/mol)`);
+  if (st.compare){ ['weak','mod','strong'].forEach(k => leg(catCols[k],[9,6], `${CAT[k].name} catalyst (Ea = ${+(st.Ea*CAT[k].f).toFixed(1)} kJ/mol)`)); }
+  else if (st.cat!=='none') leg(catCols[st.cat],[9,6], `With ${CAT[st.cat].name.toLowerCase()} catalyst (Ea = ${eaEff()} kJ/mol)`);
+  g.fillStyle='#7d6a55'; g.font='italic 13px Segoe UI, Arial'; g.fillText(st.exo ? 'Exothermic: products lower in energy than reactants' : 'Endothermic: products higher in energy than reactants', w-420, h-14);
+}
+function arrowHead(g, x1,y1,x2,y2){ const a=Math.atan2(y2-y1,x2-x1), s=11; g.beginPath(); g.moveTo(x2,y2); g.lineTo(x2-s*Math.cos(a-0.4), y2-s*Math.sin(a-0.4)); g.lineTo(x2-s*Math.cos(a+0.4), y2-s*Math.sin(a+0.4)); g.closePath(); g.fill(); }
+function arrowLine(g,x1,y1,x2,y2){ g.beginPath(); g.moveTo(x1,y1); g.lineTo(x2,y2); g.stroke(); g.fillStyle=g.strokeStyle; arrowHead(g,x1,y1,x2,y2); }
+function dblArrow(g,x1,y1,x2,y2){ g.beginPath(); g.moveTo(x1,y1); g.lineTo(x2,y2); g.stroke(); g.fillStyle=g.strokeStyle; arrowHead(g,x1,y1,x2,y2); arrowHead(g,x2,y2,x1,y1); }
+function eaArrow(g, x, y0, y1, col, txt, side){
+  g.strokeStyle=col; g.fillStyle=col; g.lineWidth=2.2;
+  dblArrow(g, x, y0-2, x, y1+2);
+  g.font='700 17px Segoe UI, Arial'; g.textBaseline='middle';
+  const tw = g.measureText(txt).width, my = (y0+y1)/2;
+  const bx = side==='right' ? x+6 : x-tw-12;
+  g.fillStyle='rgba(255,253,248,.95)'; g.fillRect(bx, my-11, tw+6, 22);
+  g.fillStyle=col; g.textAlign='left'; g.fillText(txt, bx+3, my+1);
+}
+/* ---------- product vs time ---------- */
+const PIN_COLS = ['#2f6f9f','#2e7d4f','#c44536','#8e44ad','#d35400','#16a085'];
+function shortLabel(){
+  const base = st.mode==='gg' ? `A ${st.concA}, B ${st.concB}` : `${PIECES[st.piece].name}, gas ${st.concG}`;
+  return `${base} · ${st.T} °C · Ea ${eaEff()}${st.cat!=='none' ? ' ('+CAT[st.cat].name.toLowerCase()+' cat.)' : ''}${st.replace ? '' : ' · used up'}`;
+}
+$('bPin').addEventListener('click', () => {
+  if (pinned.length >= 6) pinned.shift();
+  const used = new Set(pinned.map(p=>p.col));
+  pinned.push({ data: sim.series.slice(), label: shortLabel(), col: PIN_COLS.find(c=>!used.has(c)) || PIN_COLS[0] });
+  drawTime();
+});
+$('bUnpin').addEventListener('click', () => { pinned = []; drawTime(); });
+function drawTime(){
+  const c = $('tgraph'), g = c.getContext('2d'), w = c.width, h = c.height;
+  g.fillStyle='#fffdf8'; g.fillRect(0,0,w,h);
+  const box = { L:85, T:20, Wd:w-85-30, Ht:h-20-70 };
+  const all = pinned.map(p=>p.data).concat([sim.series]);
+  let tmax = 30, ymax = 10;
+  for (const s of all){ const last = s[s.length-1]; tmax = Math.max(tmax, last[0]); ymax = Math.max(ymax, last[1]); }
+  tmax = niceMax(tmax); ymax = niceMax(ymax*1.05);
+  axes(g, box, 0, tmax, ymax, 'Time (s)', 'Product formed (successful collisions)');
+  const X = t => box.L + t/tmax*box.Wd, Y = v => box.T + box.Ht - v/ymax*box.Ht;
+  const line = (s, col, wd) => {
+    g.strokeStyle=col; g.lineWidth=wd; g.beginPath(); g.moveTo(X(s[0][0]), Y(s[0][1]));
+    for (let i=1;i<s.length;i++){ g.lineTo(X(s[i][0]), Y(s[i-1][1])); g.lineTo(X(s[i][0]), Y(s[i][1])); }
+    g.stroke();
+  };
+  pinned.forEach(p => line(p.data, p.col, 2.5));
+  line(sim.series.concat([[sim.t, sim.succ]]), '#7a4e2d', 3.5);
+  // legend
+  g.font='13.5px Segoe UI, Arial'; g.textAlign='left'; g.textBaseline='middle';
+  let ly = box.T+12;
+  const items = pinned.map(p=>[p.col,p.label]).concat([['#7a4e2d','Now: '+shortLabel()]]);
+  const lw = Math.max(...items.map(i=>g.measureText(i[1]).width)) + 50;
+  g.fillStyle='rgba(255,250,240,.9)'; g.fillRect(box.L+10, box.T+2, lw, items.length*20+10);
+  for (const [col, txt] of items){ g.strokeStyle=col; g.lineWidth=3; g.beginPath(); g.moveTo(box.L+18, ly); g.lineTo(box.L+46, ly); g.stroke(); g.fillStyle='#3b2a1a'; g.fillText(txt, box.L+52, ly); ly += 20; }
+}
+
+/* ---------- rate graph ---------- */
+const XLAB = { concA:'Concentration of A (particles)', concB:'Concentration of B (particles)', concG:'Gas concentration (particles)', T:'Temperature (°C)', ea:'Activation energy used (kJ/mol)', pieces:'Number of pieces of solid', exposed:'Solid particles on surface' };
+function drawRates(){
+  const c = $('rgraph'), g = c.getContext('2d'), w = c.width, h = c.height;
+  g.fillStyle='#fffdf8'; g.fillRect(0,0,w,h);
+  const xk = $('selX').value, yk = $('selY').value;
+  const pts = results.filter(r => !(timer.pending && r === results[results.length-1])).map(r => ({ n:r.n, x:r[xk], y: yk==='rate' ? r.rate : (r.cls!=null ? r.cls/r.dur : null) }))
+                     .filter(p => p.x!=null && p.y!=null);
+  const box = { L:85, T:20, Wd:w-85-30, Ht:h-20-70 };
+  let xmax = pts.length ? Math.max(...pts.map(p=>p.x)) : 100, ymax = pts.length ? Math.max(...pts.map(p=>p.y)) : 1;
+  xmax = niceMax(xmax*1.05); ymax = niceMax(ymax*1.1);
+  axes(g, box, 0, xmax, ymax, XLAB[xk], 'Rate (successful collisions per second)');
+  if (!pts.length){
+    g.fillStyle='#7d6a55'; g.font='italic 15px Segoe UI, Arial'; g.textAlign='center'; g.textBaseline='middle';
+    g.fillText('Do some timed counts, then choose what to plot.', box.L+box.Wd/2, box.T+box.Ht/2);
+    return;
+  }
+  const X = v => box.L + v/xmax*box.Wd, Y = v => box.T + box.Ht - v/ymax*box.Ht;
+  for (const p of pts){
+    g.strokeStyle='#7a4e2d'; g.lineWidth=2.5;
+    g.beginPath(); g.moveTo(X(p.x)-6, Y(p.y)-6); g.lineTo(X(p.x)+6, Y(p.y)+6); g.moveTo(X(p.x)+6, Y(p.y)-6); g.lineTo(X(p.x)-6, Y(p.y)+6); g.stroke();
+    g.fillStyle='#7d6a55'; g.font='12px Segoe UI, Arial'; g.textAlign='left'; g.textBaseline='bottom'; g.fillText('run '+p.n, X(p.x)+7, Y(p.y)-5);
+  }
+}
+
+/* ---------- tabs ---------- */
+let tab = 'prof';
+$('tabs').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  tab = b.dataset.t;
+  $('tabs').querySelectorAll('button').forEach(x => x.classList.toggle('on', x===b));
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.id==='tab-'+tab));
+  if (tab==='prof') drawProfile(); if (tab==='time') drawTime(); if (tab==='res') drawRates();
+});
+
+/* ---------- main loop ---------- */
+let last = performance.now(), uiAcc = 0;
+function frame(now){
+  const rdt = Math.min(0.05, (now-last)/1000); last = now;
+  if (!st.paused){
+    const sdt = rdt*st.speed, nsub = Math.max(1, Math.ceil(sdt/(1/240))), h = sdt/nsub;
+    for (let k=0;k<nsub;k++){
+      step(h);
+      if (timer.active && sim.t-timer.start >= timer.dur - 1e-9){ endTimer(); break; }
+    }
+  }
+  draw();
+  uiAcc += rdt;
+  if (uiAcc > 0.2){ uiAcc = 0; updateStats(); if (tab==='time') drawTime(); }
+  requestAnimationFrame(frame);
+}
+
+// expose a tiny hook for automated testing
+window.__cts = { st, sim, stats, step, resetSim, get parts(){return parts;}, get solids(){return solids;}, countExposed };
+
+resetSim(); explain('start'); drawProfile(); renderResults(); updateStats();
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
