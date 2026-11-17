@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rate Equations 1 – Measuring and Calculating Rate</title>
+<style>
+:root{
+  --bg:#f6efe1; --card:#fffaf0; --ink:#3b2a1a; --brown:#6b4423; --brown2:#8b5a2b;
+  --accent:#b5651d; --soft:#ead9bd; --line:#d8c4a0; --good:#2f7d4a; --bad:#b03a2e; --blue:#2c4a7a;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Arial,sans-serif;font-size:19px;line-height:1.55}
+header{background:var(--brown);color:#fff8ec;padding:14px 24px}
+header h1{margin:0;font-family:Georgia,serif;font-size:28px;font-weight:normal}
+header p{margin:2px 0 0;opacity:.85;font-size:16px}
+nav{display:flex;flex-wrap:wrap;gap:6px;padding:10px 24px;background:var(--soft);border-bottom:2px solid var(--line);position:sticky;top:0;z-index:5}
+nav button{border:2px solid var(--brown2);background:var(--card);color:var(--brown);padding:7px 14px;border-radius:20px;font-size:16px;cursor:pointer}
+nav button.on{background:var(--brown2);color:#fff}
+main{max-width:1100px;margin:0 auto;padding:20px 24px 60px}
+.page{display:none}.page.on{display:block}
+h2{font-family:Georgia,serif;color:var(--brown);font-size:30px;margin:6px 0 12px;font-weight:normal}
+h3{color:var(--brown2);font-size:22px;margin:22px 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:14px 0;box-shadow:0 2px 0 var(--line)}
+.key{border-left:6px solid var(--accent)}
+.eq{font-family:Georgia,serif;font-size:24px;text-align:center;padding:10px;background:#fff;border:1px dashed var(--line);border-radius:8px;margin:10px 0}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 6px}
+.frac span:first-child{border-bottom:2px solid var(--ink);padding:0 6px}
+.row{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+.row>*{flex:1 1 380px}
+button.b{background:var(--brown2);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:17px;cursor:pointer;margin:4px 6px 4px 0}
+button.b.alt{background:var(--card);color:var(--brown);border:2px solid var(--brown2)}
+button.b:disabled{opacity:.45;cursor:default}
+.check{background:#fdf6e6;border:2px solid var(--accent);border-radius:12px;padding:14px 18px;margin:16px 0}
+.check .tag{display:inline-block;background:var(--accent);color:#fff;font-size:14px;padding:2px 10px;border-radius:12px;margin-bottom:6px;letter-spacing:.5px}
+.check .src{font-size:14px;color:#8a7356;font-style:italic}
+input.ans{font-size:18px;padding:6px 10px;width:200px;border:2px solid var(--line);border-radius:6px}
+.fb{font-weight:600;margin-left:8px}
+.fb.ok{color:var(--good)}.fb.no{color:var(--bad)}
+.work{display:none;background:#fff;border-left:4px solid var(--brown2);padding:8px 14px;margin-top:8px;border-radius:4px}
+.work.on{display:block}
+table.t{border-collapse:collapse;margin:8px 0;background:#fff}
+table.t th,table.t td{border:1px solid var(--line);padding:6px 12px;text-align:center}
+table.t th{background:var(--soft);color:var(--brown)}
+svg text{font-family:"Segoe UI",Arial,sans-serif}
+.readout{font-family:Consolas,monospace;background:#2b1d10;color:#ffe9c4;padding:10px 14px;border-radius:8px;font-size:17px;line-height:1.6}
+.slider{width:100%}
+label.s{display:block;font-weight:600;color:var(--brown);margin-top:8px}
+.steps li{margin:6px 0}
+.reveal{display:none}.reveal.on{display:block;animation:fade .4s}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+.pager{display:flex;justify-content:space-between;margin-top:30px}
+.mcq button.opt{display:block;width:100%;text-align:left;margin:6px 0;padding:10px 14px;font-size:17px;border:2px solid var(--line);background:#fff;border-radius:8px;cursor:pointer;color:var(--ink)}
+.mcq button.opt.right{border-color:var(--good);background:#e6f4ea}
+.mcq button.opt.wrong{border-color:var(--bad);background:#fbe9e7}
+.mcq .exp{display:none;margin-top:6px;font-size:17px}
+.mcq.done .exp{display:block}
+.warn{background:#fbeee4;border-left:6px solid var(--bad);padding:10px 16px;border-radius:6px;margin:12px 0}
+.small{font-size:15px;color:#7a6448}
+canvas{background:#fff;border:1px solid var(--line);border-radius:8px;max-width:100%}
+.beakers{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
+.bk{text-align:center;font-size:16px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Rate Equations 1 – Measuring and Calculating Rate</h1>
+  <p>AQA A-level Chemistry · Kinetics walkthrough</p>
+</header>
+<nav id="nav"></nav>
+<main>
+
+<!-- ============ PAGE 1 ============ -->
+<section class="page" data-title="1. What is rate?">
+<h2>1. What is rate of reaction?</h2>
+<div class="card key">
+  <p>The <b>rate of reaction</b> is the <b>change in concentration of a reactant or product per unit time</b>.</p>
+  <div class="eq">rate = <span class="frac"><span>change in concentration</span><span>time taken</span></span> = <span class="frac"><span>Δ[A]</span><span>Δt</span></span></div>
+  <p>Square brackets mean "concentration of", so [A] is the concentration of A in mol dm⁻³.</p>
+  <p>Rate is always written as a <b>positive</b> number. A reactant's concentration goes down, so we take the size of the change and ignore the minus sign.</p>
+</div>
+
+<h3>Units of rate</h3>
+<div class="card">
+  <p>The units come straight from the calculation: the units of whatever you measured, divided by the units of time.</p>
+  <div class="eq">mol dm⁻³ ÷ s = <b>mol dm⁻³ s⁻¹</b></div>
+  <p>If you measured something other than concentration, the units change to match it. Try it:</p>
+  <div class="row">
+    <div>
+      <label class="s">Quantity measured</label>
+      <select id="uQ" style="font-size:18px;padding:5px">
+        <option value="mol dm⁻³|concentration">concentration (mol dm⁻³)</option>
+        <option value="cm³|gas volume">volume of gas (cm³)</option>
+        <option value="g|mass">mass lost (g)</option>
+        <option value="mol|amount">amount (mol)</option>
+      </select>
+      <label class="s">Time measured in</label>
+      <select id="uT" style="font-size:18px;padding:5px">
+        <option value="s">seconds (s)</option>
+        <option value="min">minutes (min)</option>
+      </select>
+    </div>
+    <div><div class="readout" id="uOut"></div></div>
+  </div>
+  <div class="warn"><b>Exam tip:</b> write units with negative indices, e.g. <b>cm³ s⁻¹</b>. AQA mark schemes have refused "cm³/s" (June 2020 Paper 2, Q1.1).</div>
+</div>
+
+<h3>Worked example</h3>
+<div class="card">
+  <p>Substance X has an initial concentration of 1.00 × 10⁻² mol dm⁻³. After 5 seconds the concentration is 0.93 × 10⁻² mol dm⁻³. Calculate the initial rate and give units.</p>
+  <button class="b alt" onclick="stepReveal('we1')">Show next step</button>
+  <ol class="steps" id="we1">
+    <li class="reveal">Change in concentration = 1.00 × 10⁻² − 0.93 × 10⁻² = 0.07 × 10⁻² = <b>7.0 × 10⁻⁴ mol dm⁻³</b></li>
+    <li class="reveal">Rate = 7.0 × 10⁻⁴ ÷ 5 = <b>1.4 × 10⁻⁴ mol dm⁻³ s⁻¹</b></li>
+    <li class="reveal">We can call this the <b>initial</b> rate because 5 s is a very short time near the start. Over that time the rate has barely changed, so the average rate is very close to the rate at t = 0.</li>
+  </ol>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 1</span>
+  <p>The initial concentration of hydrochloric acid reacting with calcium carbonate is 0.500 mol dm⁻³. After 8 seconds it has fallen to 0.421 mol dm⁻³. Calculate the initial rate of reaction in mol dm⁻³ s⁻¹.</p>
+  <input class="ans" id="c1"> <button class="b" onclick="numCheck('c1',9.875e-3,0.02)">Check</button><span class="fb" id="c1fb"></span>
+  <button class="b alt" onclick="tog('c1w')">Working</button>
+  <div class="work" id="c1w">Δ[HCl] = 0.500 − 0.421 = 0.079 mol dm⁻³<br>rate = 0.079 ÷ 8 = <b>9.88 × 10⁻³ mol dm⁻³ s⁻¹</b></div>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 2 – working backwards</span>
+  <p>The initial rate of a reaction is 0.046 mol dm⁻³ s⁻¹. The initial concentration of A is 0.600 mol dm⁻³. Assuming the rate stays the same, calculate [A] after 5 seconds.</p>
+  <input class="ans" id="c2"> <button class="b" onclick="numCheck('c2',0.37,0.01)">Check</button><span class="fb" id="c2fb"></span>
+  <button class="b alt" onclick="tog('c2w')">Working</button>
+  <div class="work" id="c2w">Concentration used up = rate × time = 0.046 × 5 = 0.23 mol dm⁻³<br>[A] = 0.600 − 0.23 = <b>0.37 mol dm⁻³</b></div>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 3</span>
+  <p>In an experiment, [sodium thiosulfate] falls from 2.00 × 10⁻² to 0.51 × 10⁻² mol dm⁻³ in the first 5.0 s. Calculate the rate.</p>
+  <input class="ans" id="c3"> <button class="b" onclick="numCheck('c3',2.98e-3,0.02)">Check</button><span class="fb" id="c3fb"></span>
+  <button class="b alt" onclick="tog('c3w')">Working</button>
+  <div class="work" id="c3w">Δ = 2.00 × 10⁻² − 0.51 × 10⁻² = 1.49 × 10⁻² mol dm⁻³<br>rate = 1.49 × 10⁻² ÷ 5.0 = <b>2.98 × 10⁻³ mol dm⁻³ s⁻¹</b></div>
+  <p class="small">Tip: you can type answers like 2.98e-3 or 2.98x10^-3</p>
+</div>
+</section>
+
+<!-- ============ PAGE 2 ============ -->
+<section class="page" data-title="2. Initial rate from a graph">
+<h2>2. Finding the initial rate from a graph</h2>
+<div class="card key">
+  <p>On a concentration–time graph, the <b>rate at any moment is the gradient of the curve</b> at that time.</p>
+  <p>The <b>initial rate</b> is the gradient of the <b>tangent drawn at t = 0</b>.</p>
+  <ol class="steps">
+    <li>Draw a straight line that just touches the curve at t = 0. It should match the curve's slope there, not cut across it.</li>
+    <li>Extend the tangent as far as you can (for example down to the time axis) to make a <b>big triangle</b>. A bigger triangle gives a more accurate gradient.</li>
+    <li>Gradient = Δy ÷ Δx. Read the values from the axes carefully.</li>
+    <li>Rate = size of the gradient. Drop the minus sign for a falling reactant curve.</li>
+  </ol>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Interactive: tangents along the curve</h3>
+  <p>Drag the slider to move the tangent point. Watch the gradient get less steep as the reaction goes on.</p>
+  <div class="row">
+    <div style="flex:2 1 520px"><svg id="tanSvg" viewBox="0 0 660 400" width="100%"></svg></div>
+    <div style="flex:1 1 260px">
+      <label class="s">Time of tangent: <span id="tVal">0</span> s</label>
+      <input type="range" class="slider" id="tSl" min="0" max="150" value="0" step="1">
+      <label><input type="checkbox" id="triBox" checked> show gradient triangle</label>
+      <div class="readout" id="tanOut" style="margin-top:10px"></div>
+      <button class="b alt" style="margin-top:10px" onclick="document.getElementById('tSl').value=0;drawTan()">Back to t = 0</button>
+    </div>
+  </div>
+</div>
+
+<div class="warn"><b>Common mistakes</b><br>
+• Drawing a <b>chord</b> (a line joining two points on the curve) instead of a tangent. This gives an average rate, not the initial rate.<br>
+• Using a tiny triangle. Small reading errors then make a big difference to the answer.<br>
+• Giving a negative rate.<br>
+• For a <b>product</b> curve (one that rises), use the same method. The gradient is positive.</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 4</span>
+  <span class="src">Exam style, as in June 2017 Paper 2 Q2</span>
+  <p>A tangent has been drawn at t = 0 on the graph of [B] against time. Use it to calculate the initial rate in mol dm⁻³ s⁻¹.</p>
+  <svg id="chkSvg" viewBox="0 0 660 400" width="100%" style="max-width:640px"></svg><br>
+  <input class="ans" id="c4"> <button class="b" onclick="numCheck('c4',8.0e-3,0.07)">Check</button><span class="fb" id="c4fb"></span>
+  <button class="b alt" onclick="tog('c4w')">Working</button>
+  <div class="work" id="c4w">The tangent goes from (0 s, 0.60 mol dm⁻³) to (75 s, 0 mol dm⁻³).<br>gradient = −0.60 ÷ 75 = −0.0080<br>initial rate = <b>8.0 × 10⁻³ mol dm⁻³ s⁻¹</b> (allow 7.5–8.5 × 10⁻³)</div>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 5 – a product curve</span>
+  <span class="src">Exam style, as in June 2020 Paper 2 Q1.1</span>
+  <p>The volume of gas produced is measured with a gas syringe. A tangent is drawn at t = 0. Calculate the initial rate <b>and choose the units</b>.</p>
+  <svg id="gasSvg" viewBox="0 0 660 400" width="100%" style="max-width:640px"></svg><br>
+  <input class="ans" id="c5"> <button class="b" onclick="numCheck('c5',6.0,0.09)">Check value</button><span class="fb" id="c5fb"></span>
+  <div style="margin-top:8px">Units:
+    <button class="b alt" onclick="unitPick(this,false)">mol dm⁻³ s⁻¹</button>
+    <button class="b alt" onclick="unitPick(this,true)">cm³ s⁻¹</button>
+    <button class="b alt" onclick="unitPick(this,false)">cm³ s</button>
+    <span class="fb" id="c5u"></span></div>
+  <button class="b alt" onclick="tog('c5w')">Working</button>
+  <div class="work" id="c5w">The tangent goes from (0, 0) to (10 s, 60 cm³).<br>gradient = 60 ÷ 10 = <b>6.0 cm³ s⁻¹</b>. The units come from the measured quantity (cm³) divided by time (s).</div>
+</div>
+</section>
+
+<!-- ============ PAGE 3 ============ -->
+<section class="page" data-title="3. How rate changes over time">
+<h2>3. How the rate changes during a reaction</h2>
+<p>For this walkthrough we look only at <b>first order</b> reactions, where rate is directly proportional to [A].</p>
+
+<div class="card">
+  <h3 style="margin-top:0">Animation: reactant particles being used up</h3>
+  <div class="row">
+    <div style="flex:1 1 420px">
+      <canvas id="pc" width="440" height="320"></canvas>
+      <div style="margin-top:6px">
+        <button class="b" id="pPlay">▶ Play</button>
+        <button class="b alt" id="pReset">Reset</button>
+        <span class="small">● reactant &nbsp; <span style="color:#c9b28a">●</span> product &nbsp; ✸ successful collision</span>
+      </div>
+    </div>
+    <div style="flex:1 1 420px">
+      <svg id="liveSvg" viewBox="0 0 660 400" width="100%"></svg>
+      <div class="readout" id="pOut"></div>
+    </div>
+  </div>
+</div>
+
+<div class="card key">
+  <h3 style="margin-top:0">Describe and explain how the rate changes over time</h3>
+  <p class="small">The kind of answer the mark scheme is looking for:</p>
+  <button class="b alt" onclick="stepReveal('expl')">Show next point</button>
+  <ol class="steps" id="expl">
+    <li class="reveal"><b>Describe:</b> the rate is fastest at the start and <b>decreases</b> over time. The curve gets less steep and levels off when the reaction finishes.</li>
+    <li class="reveal">Reactant particles are <b>used up</b>, so the <b>concentration of reactant decreases</b>. There are fewer particles in the same volume.</li>
+    <li class="reveal">So there are <b>fewer collisions per unit time</b> (collisions become less frequent).</li>
+    <li class="reveal">So there are fewer <b>successful</b> collisions per unit time, meaning collisions with energy ≥ E<sub>a</sub>. The rate decreases.</li>
+  </ol>
+  <div class="warn" style="margin-bottom:0">Don't write "fewer collisions". Write "<b>fewer collisions per unit time</b>" or "<b>less frequent collisions</b>". It's the rate of collisions that matters, not the total number.</div>
+</div>
+
+<h3>First order: rate ∝ [A]</h3>
+<div class="card">
+  <p>For a first order reaction, <b>rate = k[A]</b>. When [A] halves, the rate halves. So the curve keeps getting less steep in a very regular way.</p>
+  <p>This gives a first order reaction a <b>constant half-life</b>: it always takes the same time for [A] to halve, whatever concentration you start from.</p>
+  <div class="row">
+    <div style="flex:2 1 520px"><svg id="hlSvg" viewBox="0 0 660 400" width="100%"></svg></div>
+    <div style="flex:1 1 260px">
+      <button class="b" id="hlBtn" onclick="nextHalf()">Show next half-life</button>
+      <button class="b alt" onclick="resetHalf()">Reset</button>
+      <table class="t" id="hlTab"><tr><th>t / s</th><th>[A] / mol dm⁻³</th><th>rate / mol dm⁻³ s⁻¹</th></tr></table>
+      <p class="small">rate = k[A] with k = 0.020 s⁻¹. Each half-life ≈ 35 s.</p>
+    </div>
+  </div>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 6 – is the half-life constant?</span>
+  <span class="src">Data from June 2018 Paper 3 Q1</span>
+  <table class="t"><tr><th>Time / s</th><td>0</td><td>100</td><td>200</td><td>400</td><td>600</td><td>800</td><td>1000</td><td>1200</td></tr>
+  <tr><th>[H⁺] / mol dm⁻³</th><td>0.50</td><td>0.44</td><td>0.39</td><td>0.31</td><td>0.24</td><td>0.19</td><td>0.15</td><td>0.12</td></tr></table>
+  <svg id="hpSvg" viewBox="0 0 660 400" width="100%" style="max-width:640px"></svg>
+  <p>Use the graph to find the time taken for [H⁺] to fall:</p>
+  <p>(a) from 0.50 to 0.25 mol dm⁻³ &nbsp;<input class="ans" id="c6a" style="width:120px"> s <button class="b" onclick="numCheck('c6a',580,0.07)">Check</button><span class="fb" id="c6afb"></span></p>
+  <p>(b) from 0.25 to 0.125 mol dm⁻³ &nbsp;<input class="ans" id="c6b" style="width:120px"> s <button class="b" onclick="numCheck('c6b',590,0.07)">Check</button><span class="fb" id="c6bfb"></span></p>
+  <button class="b alt" onclick="showHpLines();tog('c6w')">Show on graph</button>
+  <div class="work" id="c6w">[H⁺] reaches 0.25 at about 570 s and 0.125 at about 1170 s.<br>First half-life ≈ 570 s and second half-life ≈ 1170 − 570 = 600 s.<br>They are about the same, so the <b>half-life is constant</b> and the reaction is <b>first order</b> with respect to H⁺.</div>
+</div>
+<p class="small">Coming up later: if successive half-lives get longer, the reaction is not first order (e.g. the butadiene question on your sheet). Orders are covered in Walkthrough 2.</p>
+</section>
+
+<!-- ============ PAGE 4 ============ -->
+<section class="page" data-title="4. Clock reactions and 1/t">
+<h2>4. Clock reactions: why rate ∝ 1/t</h2>
+<div class="card key">
+  <p>In a <b>clock reaction</b> you don't follow the whole reaction. Instead you measure the <b>time, t, taken for a fixed amount of product to form</b>. A sudden, visible change tells you when that fixed amount has been made.</p>
+  <ul>
+    <li><b>Iodine clock:</b> a small, fixed amount of thiosulfate removes iodine as fast as it forms. When the thiosulfate runs out, free iodine reacts with starch and the mixture turns <b>blue-black</b>.</li>
+    <li><b>Disappearing cross:</b> Na₂S₂O₃ + HCl forms solid sulfur. When a fixed amount of sulfur has formed, the cross under the flask can no longer be seen.</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Animation: iodine clock</h3>
+  <p class="small">H₂O₂ + 2I⁻ + 2H⁺ → I₂ + 2H₂O &nbsp;&nbsp; then &nbsp;&nbsp; I₂ + 2S₂O₃²⁻ → 2I⁻ + S₄O₆²⁻ (until the thiosulfate is gone). The thiosulfate bar shows how much is left.</p>
+  <div class="beakers" id="beakers"></div>
+  <div style="text-align:center;margin-top:8px">
+    <button class="b" id="ckGo">▶ Mix and start timing</button>
+    <button class="b alt" id="ckReset">Reset</button>
+    <span class="small">(sped up ×6)</span>
+  </div>
+  <table class="t" style="margin:12px auto" id="ckTab">
+    <tr><th>Experiment</th><th>[H₂O₂] / mol dm⁻³</th><th>Time to turn blue-black, t / s</th><th>1/t / s⁻¹</th></tr>
+  </table>
+  <p class="small" style="text-align:center">Concentrations and times from June 2025 Paper 3 Q2</p>
+</div>
+
+<div class="card key">
+  <h3 style="margin-top:0">Why does 1/t measure the rate?</h3>
+  <button class="b alt" onclick="stepReveal('why')">Show next step</button>
+  <ol class="steps" id="why">
+    <li class="reveal">Rate = <span class="frac"><span>amount of product formed</span><span>time taken</span></span></li>
+    <li class="reveal">In every experiment the <b>same fixed amount</b> of product forms before the change is seen. It's set by the amount of thiosulfate, or the amount of sulfur needed to hide the cross.</li>
+    <li class="reveal">So rate = <span class="frac"><span>constant</span><span>t</span></span>, which means <b>rate ∝ 1/t</b>. Halve the time and you double the rate.</li>
+    <li class="reveal">This only works as a measure of the <b>initial</b> rate because the fixed amount is <b>small</b>. Only a tiny fraction of the reactants is used up, so their concentrations hardly change during the timing. The <b>average</b> rate over time t is then almost exactly the <b>initial</b> rate.</li>
+  </ol>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Interactive: why the fixed amount must be small</h3>
+  <p>The orange line is the tangent at t = 0 (the true initial rate). The blue line is the chord from the start to the moment the fixed amount is reached. 1/t actually measures the chord's gradient.</p>
+  <div class="row">
+    <div style="flex:2 1 520px"><svg id="chSvg" viewBox="0 0 660 400" width="100%"></svg></div>
+    <div style="flex:1 1 260px">
+      <label class="s">Fixed amount as % of total possible product: <span id="fVal"></span></label>
+      <input type="range" class="slider" id="fSl" min="1" max="70" value="5">
+      <div class="readout" id="chOut"></div>
+    </div>
+  </div>
+</div>
+
+<h3>Worked example</h3>
+<div class="card">
+  <span class="src">June 2025 Paper 3 Q2.4 (3 marks)</span>
+  <p>In each experiment, 1.00 cm³ of 1.00 × 10⁻³ mol dm⁻³ sodium thiosulfate reacts with the iodine first produced. The total volume in experiment 3 is 40.0 cm³ and the blue-black colour appears after 20 s. Calculate the initial rate of production of iodine in mol dm⁻³ s⁻¹.</p>
+  <button class="b alt" onclick="stepReveal('we2')">Show next step</button>
+  <ol class="steps" id="we2">
+    <li class="reveal">n(S₂O₃²⁻) = 1.00 × 10⁻³ × 1.00/1000 = <b>1.00 × 10⁻⁶ mol</b></li>
+    <li class="reveal">I₂ : S₂O₃²⁻ = 1 : 2, so n(I₂) formed before the colour change = <b>5.00 × 10⁻⁷ mol</b></li>
+    <li class="reveal">[I₂] = 5.00 × 10⁻⁷ ÷ (40.0/1000) = <b>1.25 × 10⁻⁵ mol dm⁻³</b></li>
+    <li class="reveal">rate = 1.25 × 10⁻⁵ ÷ 20 = <b>6.25 × 10⁻⁷ mol dm⁻³ s⁻¹</b></li>
+  </ol>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 7</span>
+  <p>Using the same method, calculate the initial rate of production of iodine for experiment 1 (t = 60 s, same thiosulfate, total volume 40.0 cm³).</p>
+  <input class="ans" id="c7"> <button class="b" onclick="numCheck('c7',2.083e-7,0.03)">Check</button><span class="fb" id="c7fb"></span>
+  <button class="b alt" onclick="tog('c7w')">Working</button>
+  <div class="work" id="c7w">[I₂] formed = 1.25 × 10⁻⁵ mol dm⁻³ (the same fixed amount as before)<br>rate = 1.25 × 10⁻⁵ ÷ 60 = <b>2.08 × 10⁻⁷ mol dm⁻³ s⁻¹</b>. That's one-third of experiment 3's rate, because the time is three times longer.</div>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 8</span>
+  <span class="src">Based on November 2020 AS Paper 2 Q2</span>
+  <p>A student times how long the cross takes to disappear at different temperatures.</p>
+  <table class="t"><tr><th>Temperature / °C</th><td>22</td><td>31</td><td>36</td><td>42</td><td>49</td><td>54</td></tr>
+  <tr><th>t / s</th><td>87</td><td>48</td><td>36</td><td>26</td><td>44</td><td>12</td></tr>
+  <tr><th>1/t / s⁻¹</th><td>0.0115</td><td>0.0208</td><td>0.0278</td><td>0.0385</td><td>0.0227</td><td><b>?</b></td></tr></table>
+  <p>(a) Calculate 1/t at 54 °C. &nbsp;<input class="ans" id="c8" style="width:140px"> s⁻¹ <button class="b" onclick="numCheck('c8',0.0833,0.01)">Check</button><span class="fb" id="c8fb"></span></p>
+  <p>(b) Which temperature gives an anomalous result?
+    <button class="b alt" onclick="pick(this,false,'c8b')">42 °C</button>
+    <button class="b alt" onclick="pick(this,true,'c8b')">49 °C</button>
+    <button class="b alt" onclick="pick(this,false,'c8b')">54 °C</button>
+    <span class="fb" id="c8b"></span></p>
+  <button class="b alt" onclick="tog('c8w')">Working</button>
+  <div class="work" id="c8w">(a) 1/12 = <b>0.0833 s⁻¹</b><br>(b) At 49 °C the time (44 s) is <i>longer</i> than at 42 °C. The rate should keep increasing with temperature, so this result is anomalous.<br>Note: 1/t has units of s⁻¹. It is a <b>relative rate</b>, fine for comparing experiments, but not in mol dm⁻³ s⁻¹ unless you know the fixed amount.</div>
+</div>
+</section>
+
+<!-- ============ PAGE 5 ============ -->
+<section class="page" data-title="5. Quiz">
+<h2>5. End-of-walkthrough quiz</h2>
+<p>Click an answer. You get one go at each question.</p>
+<div id="quiz"></div>
+<div class="card" id="score" style="font-size:22px;text-align:center"></div>
+<button class="b alt" onclick="buildQuiz()">Reset quiz</button>
+</section>
+
+<div class="pager"><button class="b alt" id="prevB">◀ Previous</button><button class="b" id="nextB">Next ▶</button></div>
+</main>
+
+<script>
+/* ---------- navigation ---------- */
+const pages=[...document.querySelectorAll('.page')];let cur=0;
+const nav=document.getElementById('nav');
+pages.forEach((p,i)=>{const b=document.createElement('button');b.textContent=p.dataset.title;b.onclick=()=>go(i);nav.appendChild(b)});
+function go(i){cur=i;pages.forEach((p,j)=>p.classList.toggle('on',j===i));[...nav.children].forEach((b,j)=>b.classList.toggle('on',j===i));
+ document.getElementById('prevB').disabled=i===0;document.getElementById('nextB').disabled=i===pages.length-1;window.scrollTo(0,0)}
+document.getElementById('prevB').onclick=()=>go(Math.max(0,cur-1));
+document.getElementById('nextB').onclick=()=>go(Math.min(pages.length-1,cur+1));
+
+/* ---------- helpers ---------- */
+function tog(id){document.getElementById(id).classList.toggle('on')}
+function stepReveal(id){const r=[...document.querySelectorAll('#'+id+' .reveal:not(.on)')];if(r.length)r[0].classList.add('on')}
+function parseNum(s){
+ s=s.trim().replace(/\s/g,'');const sup={'⁰':'0','¹':'1','²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9','⁻':'-'};
+ s=s.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁻]/g,c=>sup[c]).replace(/[−–]/g,'-');
+ let m=s.match(/^(-?[\d.]+)[x×X*]10\^?(-?\d+)$/);if(m)return parseFloat(m[1])*Math.pow(10,parseInt(m[2]));
+ const v=Number(s);return isNaN(v)?null:v}
+function numCheck(id,target,tol){const v=parseNum(document.getElementById(id).value);const fb=document.getElementById(id+'fb');
+ if(v===null){fb.textContent='Enter a number';fb.className='fb no';return}
+ if(Math.abs(v-target)<=Math.abs(target)*tol){fb.textContent='✔ Correct';fb.className='fb ok'}
+ else{fb.textContent='✘ Not quite, check your working';fb.className='fb no'}}
+function unitPick(btn,ok){const f=document.getElementById('c5u');f.textContent=ok?'✔ Yes, cm³ s⁻¹':'✘ Try again';f.className='fb '+(ok?'ok':'no')}
+function pick(btn,ok,id){const f=document.getElementById(id);f.textContent=ok?'✔ Correct':'✘ Try again';f.className='fb '+(ok?'ok':'no')}
+
+/* units builder */
+function units(){const [u,name]=document.getElementById('uQ').value.split('|');const t=document.getElementById('uT').value;
+ document.getElementById('uOut').innerHTML=`rate = ${name} ÷ time<br>units = ${u} ÷ ${t}<br><b style="font-size:22px">= ${u} ${t}⁻¹</b>`}
+document.getElementById('uQ').onchange=units;document.getElementById('uT').onchange=units;units();
+
+/* ---------- SVG plotting ---------- */
+const NS='http://www.w3.org/2000/svg';
+function E(tag,a,p){const e=document.createElementNS(NS,tag);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e}
+function plot(svg,o){
+ svg.innerHTML='';const W=660,H=400,ml=80,mr=20,mt=18,mb=60,pw=W-ml-mr,ph=H-mt-mb;
+ const X=x=>ml+x/o.xmax*pw,Y=y=>mt+ph-y/o.ymax*ph;
+ const id='cl'+Math.random().toString(36).slice(2);
+ const d=E('defs',{},svg);const cp=E('clipPath',{id},d);E('rect',{x:ml,y:mt,width:pw,height:ph},cp);
+ E('rect',{x:ml,y:mt,width:pw,height:ph,fill:'#fff'},svg);
+ const gx=o.gx||o.xt,gy=o.gy||o.yt;
+ for(let x=0;x<=o.xmax+1e-9;x+=gx)E('line',{x1:X(x),x2:X(x),y1:mt,y2:mt+ph,stroke:'#efe3cc'},svg);
+ for(let y=0;y<=o.ymax+1e-9;y+=gy)E('line',{x1:ml,x2:ml+pw,y1:Y(y),y2:Y(y),stroke:'#efe3cc'},svg);
+ for(let x=0;x<=o.xmax+1e-9;x+=o.xt){E('line',{x1:X(x),x2:X(x),y1:mt+ph,y2:mt+ph+6,stroke:'#3b2a1a'},svg);const t=E('text',{x:X(x),y:mt+ph+24,'text-anchor':'middle','font-size':15,fill:'#3b2a1a'},svg);t.textContent=+x.toFixed(4)}
+ for(let y=0;y<=o.ymax+1e-9;y+=o.yt){E('line',{x1:ml-6,x2:ml,y1:Y(y),y2:Y(y),stroke:'#3b2a1a'},svg);const t=E('text',{x:ml-10,y:Y(y)+5,'text-anchor':'end','font-size':15,fill:'#3b2a1a'},svg);t.textContent=(o.yfmt?o.yfmt(y):+y.toFixed(3))}
+ E('line',{x1:ml,x2:ml+pw,y1:mt+ph,y2:mt+ph,stroke:'#3b2a1a','stroke-width':2},svg);
+ E('line',{x1:ml,x2:ml,y1:mt,y2:mt+ph,stroke:'#3b2a1a','stroke-width':2},svg);
+ let t=E('text',{x:ml+pw/2,y:H-12,'text-anchor':'middle','font-size':17,fill:'#6b4423'},svg);t.textContent=o.xlab;
+ t=E('text',{x:18,y:mt+ph/2,'text-anchor':'middle','font-size':17,fill:'#6b4423',transform:`rotate(-90 18 ${mt+ph/2})`},svg);t.textContent=o.ylab;
+ const g=E('g',{'clip-path':`url(#${id})`},svg);
+ return {X,Y,g,svg,curve(f,col='#6b4423',w=3,dash){let dd='';for(let i=0;i<=300;i++){const x=o.xmax*i/300;dd+=(i?'L':'M')+X(x)+' '+Y(f(x))}return E('path',{d:dd,fill:'none',stroke:col,'stroke-width':w,'stroke-dasharray':dash||''},g)}};
+}
+
+/* page 2 interactive tangent */
+const k2=0.02,A0=0.80,Af=t=>A0*Math.exp(-k2*t);
+const tp=plot(document.getElementById('tanSvg'),{xmax:200,ymax:0.9,xt:25,yt:0.1,gx:12.5,gy:0.05,xlab:'time / s',ylab:'[A] / mol dm⁻³'});
+tp.curve(Af);const tanG=E('g',{},tp.g);
+function drawTan(){const t0=+document.getElementById('tSl').value;document.getElementById('tVal').textContent=t0;tanG.innerHTML='';
+ const A=Af(t0),r=k2*A,X=tp.X,Y=tp.Y;
+ const xa=-50,xb=t0+A/r+10;E('line',{x1:X(xa),y1:Y(A-r*(xa-t0)),x2:X(xb),y2:Y(A-r*(xb-t0)),stroke:'#b5651d','stroke-width':3},tanG);
+ if(document.getElementById('triBox').checked){const xr=t0+A/r;
+  E('path',{d:`M${X(t0)} ${Y(A)} L${X(t0)} ${Y(0)} L${X(xr)} ${Y(0)} Z`,fill:'rgba(181,101,29,.15)',stroke:'#8b5a2b','stroke-dasharray':'6 4'},tanG);
+  let tx=E('text',{x:X(t0)+6,y:(Y(A)+Y(0))/2,'font-size':15,fill:'#6b4423'},tanG);tx.textContent='Δ[A] = '+A.toFixed(3);
+  tx=E('text',{x:(X(t0)+X(xr))/2,y:Y(0)-8,'font-size':15,fill:'#6b4423','text-anchor':'middle'},tanG);tx.textContent='Δt = '+(A/r).toFixed(0)+' s'}
+ E('circle',{cx:X(t0),cy:Y(A),r:7,fill:'#b5651d',stroke:'#fff','stroke-width':2},tanG);
+ document.getElementById('tanOut').innerHTML=`t = ${t0} s<br>[A] = ${A.toFixed(3)} mol dm⁻³<br>gradient = −${r.toFixed(4)}<br><b>rate = ${(r).toExponential(2).replace('e-',' × 10^-')} mol dm⁻³ s⁻¹</b>`.replace(/\^-(\d)/,(m,d)=>'⁻'+'⁰¹²³⁴⁵⁶⁷⁸⁹'[d]);}
+document.getElementById('tSl').oninput=drawTan;document.getElementById('triBox').onchange=drawTan;drawTan();
+
+/* check 4 graph */
+(function(){const p=plot(document.getElementById('chkSvg'),{xmax:200,ymax:0.7,xt:25,yt:0.1,gx:5,gy:0.02,xlab:'time / s',ylab:'[B] / mol dm⁻³'});
+ p.curve(t=>0.6*Math.exp(-t/75));E('line',{x1:p.X(-10),y1:p.Y(0.6+0.008*10),x2:p.X(90),y2:p.Y(0.6-0.008*90),stroke:'#b5651d','stroke-width':2.5},p.g)})();
+/* check 5 gas graph */
+(function(){const p=plot(document.getElementById('gasSvg'),{xmax:60,ymax:70,xt:10,yt:10,gx:2,gy:2,xlab:'time / s',ylab:'volume of gas / cm³',yfmt:y=>y});
+ p.curve(t=>60*(1-Math.exp(-0.1*t)));E('line',{x1:p.X(0),y1:p.Y(0),x2:p.X(11.5),y2:p.Y(69),stroke:'#b5651d','stroke-width':2.5},p.g)})();
+
+/* ---------- page 3 particle animation ---------- */
+const cv=document.getElementById('pc'),cx=cv.getContext('2d');const N0=80,kS=0.02,SPEED=8;let parts,simT,running=false,last,events,flashes,hist;
+const lp=plot(document.getElementById('liveSvg'),{xmax:200,ymax:0.9,xt:50,yt:0.1,gx:25,gy:0.05,xlab:'time / s',ylab:'[A] / mol dm⁻³'});
+lp.curve(t=>0.8*Math.exp(-kS*t),'#d8c4a0',2,'6 5');const livePath=E('path',{fill:'none',stroke:'#6b4423','stroke-width':3},lp.g);const liveDot=E('circle',{r:6,fill:'#b5651d'},lp.g);
+function pReset(){parts=[];for(let i=0;i<N0;i++)parts.push({x:20+Math.random()*400,y:20+Math.random()*280,vx:(Math.random()-.5)*120,vy:(Math.random()-.5)*120,A:true});
+ simT=0;events=[];flashes=[];hist=[[0,0.8]];running=false;document.getElementById('pPlay').textContent='▶ Play';drawP();updLive()}
+function step(dt){const ds=dt*SPEED;simT+=ds;
+ parts.forEach(p=>{p.x+=p.vx*dt;p.y+=p.vy*dt;if(p.x<8||p.x>432)p.vx*=-1;if(p.y<8||p.y>312)p.vy*=-1;
+  if(p.A&&Math.random()<kS*ds){p.A=false;events.push(simT);flashes.push({x:p.x,y:p.y,life:0.6})}});
+ flashes.forEach(f=>f.life-=dt);flashes=flashes.filter(f=>f.life>0);
+ const nA=parts.filter(p=>p.A).length;hist.push([simT,0.8*nA/N0]);if(simT>=200)running=false}
+function drawP(){cx.clearRect(0,0,440,320);parts.forEach(p=>{cx.beginPath();cx.arc(p.x,p.y,p.A?7:5,0,7);cx.fillStyle=p.A?'#6b4423':'#e3d3b5';cx.fill()});
+ flashes.forEach(f=>{cx.beginPath();cx.arc(f.x,f.y,10+(0.6-f.life)*30,0,7);cx.strokeStyle=`rgba(181,101,29,${f.life/0.6})`;cx.lineWidth=3;cx.stroke()})}
+function updLive(){let d='';hist.forEach((h,i)=>d+=(i?'L':'M')+lp.X(h[0])+' '+lp.Y(h[1]));livePath.setAttribute('d',d);
+ const h=hist[hist.length-1];liveDot.setAttribute('cx',lp.X(h[0]));liveDot.setAttribute('cy',lp.Y(h[1]));
+ const recent=events.filter(e=>e>simT-10).length;const nA=parts.filter(p=>p.A).length;
+ document.getElementById('pOut').innerHTML=`t = ${simT.toFixed(0)} s &nbsp; reactant particles left: ${nA}<br>successful collisions in last 10 s: ${recent} ${'█'.repeat(recent)}`}
+function loop(ts){if(!running)return;const dt=Math.min(0.05,(ts-last)/1000);last=ts;step(dt);drawP();updLive();
+ if(running)requestAnimationFrame(loop);else document.getElementById('pPlay').textContent='▶ Play'}
+document.getElementById('pPlay').onclick=function(){if(simT>=200)pReset();running=!running;this.textContent=running?'❚❚ Pause':'▶ Play';if(running){last=performance.now();requestAnimationFrame(loop)}};
+document.getElementById('pReset').onclick=pReset;pReset();
+
+/* half-life stepper */
+const hp=plot(document.getElementById('hlSvg'),{xmax:160,ymax:0.9,xt:20,yt:0.1,gx:10,gy:0.05,xlab:'time / s',ylab:'[A] / mol dm⁻³'});
+hp.curve(Af);const hlG=E('g',{},hp.g);const th=Math.log(2)/k2;let hn=0;
+function resetHalf(){hn=0;hlG.innerHTML='';const tb=document.getElementById('hlTab');while(tb.rows.length>1)tb.deleteRow(1);addRow(0)}
+function addRow(n){const r=document.getElementById('hlTab').insertRow();const c=A0/Math.pow(2,n);r.innerHTML=`<td>${(n*th).toFixed(0)}</td><td>${c.toFixed(3)}</td><td>${(k2*c).toFixed(4)}</td>`}
+function nextHalf(){if(hn>=4)return;const t1=hn*th,t2=(hn+1)*th,c1=A0/Math.pow(2,hn),c2=c1/2,X=hp.X,Y=hp.Y;
+ E('line',{x1:X(0),x2:X(t2),y1:Y(c2),y2:Y(c2),stroke:'#2c4a7a','stroke-dasharray':'5 4'},hlG);
+ E('line',{x1:X(t2),x2:X(t2),y1:Y(c2),y2:Y(0),stroke:'#2c4a7a','stroke-dasharray':'5 4'},hlG);
+ E('path',{d:`M${X(t1)} ${Y(0)+0}`,stroke:'none'},hlG);
+ const y=Y(0)-14-hn*0;E('line',{x1:X(t1),x2:X(t2),y1:y,y2:y,stroke:'#b5651d','stroke-width':3},hlG);
+ const t=E('text',{x:(X(t1)+X(t2))/2,y:y-6,'text-anchor':'middle','font-size':14,fill:'#b5651d'},hlG);t.textContent='t½';
+ E('circle',{cx:X(t2),cy:Y(c2),r:6,fill:'#2c4a7a'},hlG);hn++;addRow(hn)}
+resetHalf();
+
+/* H+ check graph */
+const hd=[[0,.5],[100,.44],[200,.39],[400,.31],[600,.24],[800,.19],[1000,.15],[1200,.12]];
+const hpp=plot(document.getElementById('hpSvg'),{xmax:1200,ymax:0.55,xt:200,yt:0.1,gx:50,gy:0.025,xlab:'time / s',ylab:'[H⁺] / mol dm⁻³'});
+hpp.curve(t=>0.5*Math.exp(-0.00119*t),'#6b4423',2.5);hd.forEach(d=>{const x=hpp.X(d[0]),y=hpp.Y(d[1]);E('path',{d:`M${x-5} ${y-5}L${x+5} ${y+5}M${x-5} ${y+5}L${x+5} ${y-5}`,stroke:'#3b2a1a','stroke-width':2},hpp.g)});
+const hpG=E('g',{},hpp.g);
+function showHpLines(){hpG.innerHTML='';[[0.25,570],[0.125,1170]].forEach(([c,t])=>{E('line',{x1:hpp.X(0),x2:hpp.X(t),y1:hpp.Y(c),y2:hpp.Y(c),stroke:'#2c4a7a','stroke-dasharray':'5 4','stroke-width':2},hpG);
+ E('line',{x1:hpp.X(t),x2:hpp.X(t),y1:hpp.Y(c),y2:hpp.Y(0),stroke:'#2c4a7a','stroke-dasharray':'5 4','stroke-width':2},hpG)})}
+
+/* ---------- page 4 iodine clock ---------- */
+const exps=[{n:1,c:'0.010',t:60},{n:2,c:'0.020',t:30},{n:3,c:'0.030',t:20}];let ck={run:false,t:0};
+const bkWrap=document.getElementById('beakers');
+exps.forEach(e=>{const d=document.createElement('div');d.className='bk';d.innerHTML=`<svg viewBox="0 0 170 230" width="170">
+ <path d="M25 30 L25 200 Q25 215 40 215 L130 215 Q145 215 145 200 L145 30" fill="none" stroke="#6b4423" stroke-width="4"/>
+ <rect id="liq${e.n}" x="28" y="80" width="114" height="132" rx="10" fill="#f3f0e6"/>
+ <rect x="150" y="80" width="12" height="132" fill="#eee" stroke="#aaa"/><rect id="thio${e.n}" x="150" y="80" width="12" height="132" fill="#8aa1c4"/>
+ <text x="85" y="20" text-anchor="middle" font-size="15" fill="#6b4423">Exp ${e.n}: [H₂O₂] = ${e.c}</text>
+ <text id="tm${e.n}" x="85" y="150" text-anchor="middle" font-size="26" fill="#3b2a1a">0 s</text></svg>`;bkWrap.appendChild(d)});
+const ckTab=document.getElementById('ckTab');
+function ckReset(){ck={run:false,t:0,done:{}};while(ckTab.rows.length>1)ckTab.deleteRow(1);exps.forEach(e=>{ckDraw(e,0);const r=ckTab.insertRow();r.id='ckr'+e.n;r.innerHTML=`<td>${e.n}</td><td>${e.c}</td><td>…</td><td>…</td>`})}
+function ckDraw(e,t){const f=Math.min(1,t/e.t);document.getElementById('thio'+e.n).setAttribute('height',132*(1-f));document.getElementById('thio'+e.n).setAttribute('y',80+132*f);
+ const liq=document.getElementById('liq'+e.n);const tm=document.getElementById('tm'+e.n);
+ if(t>=e.t){liq.setAttribute('fill','#1c2440');tm.setAttribute('fill','#fff');tm.textContent=e.t+' s'}else{liq.setAttribute('fill','#f3f0e6');tm.setAttribute('fill','#3b2a1a');tm.textContent=t.toFixed(0)+' s'}}
+function ckLoop(ts){if(!ck.run)return;const dt=(ts-ck.last)/1000;ck.last=ts;ck.t+=dt*6;
+ exps.forEach(e=>{ckDraw(e,ck.t);if(ck.t>=e.t&&!ck.done[e.n]){ck.done[e.n]=1;const r=document.getElementById('ckr'+e.n);r.innerHTML=`<td>${e.n}</td><td>${e.c}</td><td>${e.t}</td><td>${(1/e.t).toFixed(4)}</td>`}});
+ if(ck.t<62)requestAnimationFrame(ckLoop);else{ck.run=false;const r=ckTab.insertRow();r.innerHTML='<td colspan="4" style="text-align:left">Double [H₂O₂] → half the time → <b>double 1/t</b>. Triple [H₂O₂] → a third of the time → <b>triple 1/t</b>.</td>'}}
+document.getElementById('ckGo').onclick=()=>{if(ck.run)return;ckReset();ck.run=true;ck.last=performance.now();requestAnimationFrame(ckLoop)};
+document.getElementById('ckReset').onclick=ckReset;ckReset();
+
+/* chord vs tangent */
+const kc=0.05;const cp2=plot(document.getElementById('chSvg'),{xmax:60,ymax:1.1,xt:10,yt:0.2,gx:5,gy:0.1,xlab:'time / s',ylab:'product formed (fraction of maximum)'});
+cp2.curve(t=>1-Math.exp(-kc*t));const chG=E('g',{},cp2.g);
+function drawCh(){const f=document.getElementById('fSl').value/100;document.getElementById('fVal').textContent=Math.round(f*100)+'%';chG.innerHTML='';
+ const ts=-Math.log(1-f)/kc,X=cp2.X,Y=cp2.Y;
+ E('line',{x1:X(0),y1:Y(0),x2:X(30),y2:Y(kc*30),stroke:'#b5651d','stroke-width':3},chG);
+ E('line',{x1:X(0),x2:X(60),y1:Y(f),y2:Y(f),stroke:'#999','stroke-dasharray':'5 4'},chG);
+ E('line',{x1:X(ts),x2:X(ts),y1:Y(f),y2:Y(0),stroke:'#999','stroke-dasharray':'5 4'},chG);
+ E('line',{x1:X(0),y1:Y(0),x2:X(ts),y2:Y(f),stroke:'#2c4a7a','stroke-width':3},chG);
+ E('circle',{cx:X(ts),cy:Y(f),r:6,fill:'#2c4a7a'},chG);
+ const tx=E('text',{x:X(ts)+6,y:Y(0)-8,'font-size':15,fill:'#2c4a7a'},chG);tx.textContent='t = '+ts.toFixed(1)+' s';
+ const ratio=f/ts/kc*100;
+ document.getElementById('chOut').innerHTML=`time to reach fixed amount: ${ts.toFixed(1)} s<br>average rate (chord) = <b>${ratio.toFixed(1)}%</b> of the true initial rate<br>${ratio>95?'✔ Small fixed amount, so 1/t is a good measure of initial rate':'✘ Too much reactant used up. The rate has dropped during timing, so 1/t underestimates the initial rate'}`}
+document.getElementById('fSl').oninput=drawCh;drawCh();
+
+/* ---------- quiz ---------- */
+const Q=[
+ ["The concentration of a reactant is measured against time in seconds. What are the units of rate?",["mol dm⁻³","mol dm⁻³ s⁻¹","mol dm³ s⁻¹","s⁻¹"],1,"Rate = concentration ÷ time, so mol dm⁻³ ÷ s = mol dm⁻³ s⁻¹."],
+ ["How is the initial rate found from a graph of [A] against time?",["The gradient of a chord from t = 0 to the end","The concentration at t = 0 divided by the total time","The gradient of the tangent to the curve at t = 0","The area under the curve"],2,"The rate at any moment is the gradient of the tangent at that time. For the initial rate, draw it at t = 0."],
+ ["Why does the rate of reaction decrease over time?",["The activation energy increases as the reaction goes on","Reactant concentration falls, so there are fewer collisions per unit time","The particles lose kinetic energy as they react","The product slows down the reactant particles"],1,"Reactants are used up, so their concentration falls. There are fewer collisions per unit time, so fewer successful collisions per unit time (E ≥ Ea)."],
+ ["A reaction is first order with respect to A. [A] falls from 0.60 to 0.30 mol dm⁻³. What happens to the rate?",["It stays the same","It doubles","It halves","It quarters"],2,"First order: rate = k[A], so rate is proportional to [A]. Halve [A] and you halve the rate."],
+ ["Which statement about the half-life of a first order reaction is correct?",["It increases as the reaction goes on","It is constant, whatever the starting concentration","It decreases as the reaction goes on","It depends only on the volume used"],1,"First order reactions have a constant half-life. Successive half-lives on a concentration–time graph are equal."],
+ ["In a clock reaction, why is the rate proportional to 1/t?",["Because t is the time for the reaction to finish completely","Because the same fixed amount of product forms in time t in each experiment","Because the activation energy is proportional to t","Because the rate constant equals 1/t"],1,"Rate = fixed amount ÷ t. The fixed amount is the same in every experiment, so rate ∝ 1/t."],
+ ["Why is 1/t from a clock reaction a good measure of the INITIAL rate?",["Only a small fraction of the reactants has been used up, so their concentrations hardly change during the timing","The reaction stops when the colour appears","The thiosulfate acts as a catalyst","Starch keeps the concentration constant"],0,"The fixed amount is small, so the concentrations stay almost the same. The average rate over time t is then almost exactly the initial rate."],
+ ["A clock reaction takes 25 s. A second experiment takes 50 s. Which is correct?",["1/t = 0.040 s⁻¹ for the first, and the second rate is double","1/t = 0.040 s⁻¹ for the first, and the second rate is half","1/t = 25 s⁻¹ for the first, and the second rate is half","1/t = 0.040 s for the first, and the second rate is the same"],1,"1/25 = 0.040 s⁻¹. Double the time means half the rate."],
+ ["Gas volume (cm³) is measured against time in minutes. What are the units of rate?",["cm³ s⁻¹","mol dm⁻³ min⁻¹","cm³ min⁻¹","cm³/min⁻¹"],2,"Units = units of what you measured ÷ units of time = cm³ min⁻¹."],
+ ["A tangent at t = 0 on an [A]–time graph goes from (0 s, 0.50 mol dm⁻³) to (40 s, 0 mol dm⁻³). What is the initial rate?",["0.0125 mol dm⁻³ s⁻¹","20 mol dm⁻³ s⁻¹","0.0125 mol dm⁻³","80 mol dm⁻³ s⁻¹"],0,"Gradient = 0.50 ÷ 40 = 0.0125 mol dm⁻³ s⁻¹ (drop the minus sign)."]
+];
+let qs=0,qa=0;
+function buildQuiz(){const w=document.getElementById('quiz');w.innerHTML='';qs=0;qa=0;
+ Q.forEach((q,i)=>{const c=document.createElement('div');c.className='card mcq';c.innerHTML=`<b>Q${i+1}.</b> ${q[0]}`;
+  q[1].forEach((o,j)=>{const b=document.createElement('button');b.className='opt';b.textContent=o;
+   b.onclick=()=>{if(c.classList.contains('done'))return;c.classList.add('done');qa++;
+    if(j===q[2]){b.classList.add('right');qs++}else{b.classList.add('wrong');c.querySelectorAll('.opt')[q[2]].classList.add('right')}score()};c.appendChild(b)});
+  const e=document.createElement('div');e.className='exp';e.innerHTML='💡 '+q[3];c.appendChild(e);w.appendChild(c)});score()}
+function score(){document.getElementById('score').innerHTML=`Score: <b>${qs}</b> / ${Q.length}`+(qa===Q.length?(qs>=8?' – excellent!':qs>=6?' – good, review the ones you missed':' – go back through the walkthrough and try again'):'')}
+buildQuiz();
+go(0);
+</script>
+</body>
+</html>
