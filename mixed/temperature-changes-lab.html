@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Temperature Changes Virtual Lab · GCSE Chemistry Required Practical</title>
+<style>
+:root{--bg:#f4ecdc;--panel:#fffaf0;--line:#d9c8a7;--ink:#3b2a1a;--brown:#7a4e2d;--brown2:#a8743f;--muted:#7d6a55;--soft:#efe3cb;--ok:#2e7d4f;--bad:#b23a2a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;font-size:16px;line-height:1.35}
+.wrap{max-width:1420px;margin:0 auto;padding:0 16px 28px}
+header{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;padding:14px 4px 8px}
+h1{margin:0;font-size:27px;color:var(--brown)}
+.sub{color:var(--muted);font-size:15px}
+.etabs{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 12px}
+.etabs button{flex:1;min-width:260px;border:2px solid var(--brown2);background:var(--panel);color:var(--ink);border-radius:12px;padding:10px 14px;font-size:17px;font-weight:600;cursor:pointer;font-family:inherit;text-align:left}
+.etabs button small{display:block;font-weight:400;font-size:13.5px;color:var(--muted)}
+.etabs button.on{background:var(--brown);color:#fff;border-color:var(--brown)}
+.etabs button.on small{color:#f3e2c8}
+.exp{display:none}.exp.on{display:block}
+.top{display:grid;grid-template-columns:minmax(0,1fr) 350px;gap:14px;align-items:start}
+.mid{display:grid;grid-template-columns:minmax(0,0.75fr) minmax(0,1.25fr);gap:14px;margin-top:14px;align-items:start}
+@media (max-width:1050px){.top,.mid{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px}
+.full{margin-top:14px}
+canvas.app,canvas.graph{width:100%;height:auto;display:block;border-radius:8px;border:1px solid var(--line);background:#fffdf8}
+canvas.graph{cursor:crosshair}
+.controls h3{margin:12px 0 6px;font-size:13px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);border-bottom:1px solid var(--line);padding-bottom:3px}
+.controls h3:first-child{margin-top:0}
+.seg{display:flex;border:1px solid var(--brown2);border-radius:9px;overflow:hidden}
+.seg button{flex:1;border:0;background:#fff;color:var(--ink);padding:7px 4px;font-size:14px;cursor:pointer;border-right:1px solid var(--line);font-family:inherit}
+.seg button:last-child{border-right:0}
+.seg button.on{background:var(--brown);color:#fff;font-weight:600}
+.seg button:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:8px;align-items:center;font-size:14.5px;margin:6px 0}
+.row .seg{flex:1}
+.chk{display:flex;align-items:center;gap:8px;font-size:14.5px;margin:6px 0;cursor:pointer}
+.chk input{width:17px;height:17px;accent-color:var(--brown)}
+.btnrow{display:flex;gap:8px;margin-top:8px}
+.btn{flex:1;border:1px solid var(--brown);background:#fff;color:var(--brown);border-radius:9px;padding:9px 8px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit}
+.btn.primary{background:var(--brown);color:#fff}
+.btn.big{font-size:17px;padding:11px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+input[type=range]{width:100%;accent-color:var(--brown)}
+.val{color:var(--brown);font-weight:700;min-width:58px;text-align:right}
+.note{font-size:13px;color:var(--muted);margin-top:3px}
+.status{margin-top:8px;background:#fff6e2;border-left:5px solid var(--brown2);border-radius:8px;padding:8px 10px;font-size:15px;min-height:40px}
+.tabbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;font-size:14.5px}
+.smallbtn{border:1px solid var(--brown2);background:#fff;color:var(--brown);border-radius:7px;padding:5px 10px;font-size:14px;cursor:pointer;font-family:inherit}
+table{border-collapse:collapse;width:100%;font-size:14.5px;background:#fff}
+th,td{border:1px solid var(--line);padding:4px 6px;text-align:center}
+th{background:var(--soft);color:var(--brown);font-weight:600}
+td input{width:84px;font-size:15px;padding:3px;text-align:center;border:1px solid var(--line);border-radius:5px}
+td.ok input{border-color:var(--ok);background:#eaf6ee}
+td.bad input{border-color:var(--bad);background:#fbeceb}
+tr.now td{background:#fff1c9}
+.tablewrap{max-height:430px;overflow:auto;border-radius:8px;border:1px solid var(--line)}
+.empty{color:var(--muted);font-style:italic;padding:12px}
+.x{border:0;background:none;color:#a33;cursor:pointer;font-size:16px}
+.fitinfo{background:#fff6e2;border-left:5px solid var(--brown2);border-radius:8px;padding:8px 12px;margin-top:8px;font-size:15px;min-height:40px}
+.key{display:flex;gap:14px;flex-wrap:wrap;font-size:13.5px;color:var(--muted);margin-top:6px}
+.key span{display:inline-flex;align-items:center;gap:5px}
+.key i{display:inline-block;width:12px;height:12px;border-radius:50%}
+.qs{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:1050px){.qs{grid-template-columns:1fr}}
+.q{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.q .qt{font-size:15.5px}
+.q .qt b.num{color:var(--brown)}
+.q .marks{float:right;color:var(--muted);font-size:13px;font-weight:600}
+.q textarea{width:100%;min-height:58px;margin-top:6px;font-family:inherit;font-size:14.5px;border:1px solid var(--line);border-radius:6px;padding:6px;resize:vertical}
+.q .ms{display:none;margin-top:6px;background:#eef7f0;border-left:4px solid var(--ok);border-radius:6px;padding:6px 10px;font-size:14.5px}
+.q .ms.on{display:block}
+.q .ms ul{margin:4px 0 0 18px;padding:0}
+.q .dyn{font-size:14px;color:var(--brown);margin-top:4px}
+.q .tier{display:inline-block;font-size:11.5px;background:var(--soft);color:var(--brown);border-radius:6px;padding:1px 6px;margin-left:6px;font-weight:600}
+details.method summary{cursor:pointer;color:var(--brown);font-weight:600}
+details.method ol{margin:6px 0 0 18px;padding:0;font-size:15px}
+.profile{display:grid;grid-template-columns:330px 1fr;gap:14px;align-items:center;margin-bottom:12px}
+@media (max-width:800px){.profile{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Temperature Changes – Virtual Lab</h1>
+  <div class="sub">GCSE Chemistry Required Practical · Exothermic and endothermic reactions · Graphs, lines of best fit and exam-style questions</div>
+</header>
+<div class="etabs" id="etabs">
+  <button data-e="n" class="on">1 · Neutralisation – temperature rises<small>Sodium hydroxide added to hydrochloric acid (exothermic)</small></button>
+  <button data-e="e">2 · Temperature falls<small>Sodium hydrogencarbonate added to citric acid (endothermic)</small></button>
+</div>
+
+<!-- ============== EXPERIMENT 1 ============== -->
+<section class="exp on" id="exp-n">
+  <div class="top">
+    <div class="card">
+      <canvas class="app" id="cvN" width="820" height="500"></canvas>
+      <details class="method" style="margin-top:10px"><summary>Method</summary><ol>
+        <li>Measure 30 cm³ of dilute hydrochloric acid into a polystyrene cup. Stand the cup in a beaker so it does not fall over.</li>
+        <li>Record the temperature of the acid.</li>
+        <li>Add 5 cm³ of sodium hydroxide solution, put on the lid and stir. Record the highest temperature reached.</li>
+        <li>Keep adding portions until 50 cm³ has been added, recording the highest temperature each time.</li>
+        <li>Plot highest temperature against volume of sodium hydroxide. Draw two lines of best fit and find where they cross.</li>
+      </ol><div class="note">HCl(aq) + NaOH(aq) → NaCl(aq) + H₂O(l) · exothermic</div></details>
+    </div>
+    <aside class="card controls">
+      <h3>Solutions</h3>
+      <div class="row">HCl (30 cm³) <div class="seg" id="nA"><button data-v="0.5">0.5</button><button data-v="1" class="on">1.0</button></div> mol/dm³</div>
+      <div class="row">NaOH <div class="seg" id="nB"><button data-v="1">1.0</button><button data-v="2" class="on">2.0</button></div> mol/dm³</div>
+      <h3>Equipment</h3>
+      <div class="seg" id="nCup"><button data-v="lid" class="on">Cup + lid</button><button data-v="nolid">Cup, no lid</button><button data-v="glass">Glass beaker</button></div>
+      <div class="seg" id="nTh" style="margin-top:6px"><button data-v="glass" class="on">Thermometer (1 °C)</button><button data-v="dig">Digital (0.1 °C)</button></div>
+      <h3>Run the experiment</h3>
+      <div class="row">Add <div class="seg" id="nStep"><button data-v="1">1 cm³</button><button data-v="2">2 cm³</button><button data-v="5" class="on">5 cm³</button></div></div>
+      <div class="btnrow"><button class="btn primary big" id="nAdd">➕ Add NaOH &amp; stir</button></div>
+      <div class="btnrow"><button class="btn" id="nFill">Fill in highest temperature for me</button></div>
+      <div class="btnrow"><button class="btn" id="nReset">↺ Start again with fresh acid</button></div>
+      <div class="row">Speed <div class="seg" id="nSpeed"><button data-v="1" class="on">1×</button><button data-v="3">3×</button><button data-v="10">10×</button></div></div>
+      <h3>Don't want to run it?</h3>
+      <label class="chk"><input type="checkbox" id="nAnom"> Include an anomalous result</label>
+      <div class="btnrow"><button class="btn" id="nGen">Show a full set of results</button></div>
+      <div class="status" id="nStatus"></div>
+    </aside>
+  </div>
+  <div class="mid">
+    <div class="card">
+      <div class="tabbar"><b>Results</b><button class="smallbtn" id="nCheck">Check my readings</button><button class="smallbtn" id="nCopy">Copy (Excel)</button><span class="note" id="nMsg"></span></div>
+      <div class="tablewrap"><table id="nTable"></table></div>
+      <div class="note">Type the highest temperature you read after each addition.</div>
+    </div>
+    <div class="card">
+      <div class="tabbar"><b>Graph</b>
+        <button class="smallbtn" id="nAuto">Draw the lines for me</button><button class="smallbtn" id="nClearFit">Clear lines</button></div>
+      <canvas class="graph" id="gN" width="820" height="470"></canvas>
+      <div class="key"><span><b>Click a point</b> to cycle:</span><span><i style="background:#2f6f9f"></i>line 1 (rising)</span><span><i style="background:#c0392b"></i>line 2 (falling)</span><span><i style="border:2px solid #999"></i>ignored (anomalous)</span></div>
+      <div class="fitinfo" id="nFit"></div>
+    </div>
+  </div>
+  <div class="card full">
+    <div class="tabbar"><b>Explain your results – exam-style questions</b><span class="note">Answer in the boxes, then reveal the mark scheme. The numbers come from your own graph.</span></div>
+    <div class="profile"><canvas id="pN" width="330" height="210" style="width:100%;border:1px solid var(--line);border-radius:8px;background:#fffdf8"></canvas>
+      <div class="note" style="font-size:15px;color:var(--ink)"><b>Reaction profile – exothermic.</b> The products have <b>less energy</b> than the reactants. Energy is transferred <b>to the surroundings</b> (the solution and thermometer), so the temperature <b>rises</b>.</div></div>
+    <div class="qs" id="nQs"></div>
+  </div>
+</section>
+
+<!-- ============== EXPERIMENT 2 ============== -->
+<section class="exp" id="exp-e">
+  <div class="top">
+    <div class="card">
+      <canvas class="app" id="cvE" width="820" height="500"></canvas>
+      <details class="method" style="margin-top:10px"><summary>Method</summary><ol>
+        <li>Measure 25 cm³ of citric acid solution into a polystyrene cup standing in a beaker. Record the starting temperature.</li>
+        <li>Weigh out a mass of sodium hydrogencarbonate. Add it to the acid, put on the lid and stir.</li>
+        <li>Record the lowest temperature reached. Work out the decrease in temperature.</li>
+        <li>Repeat with fresh acid and different masses of sodium hydrogencarbonate.</li>
+        <li>Plot decrease in temperature against mass. Draw two lines of best fit and find where they cross.</li>
+      </ol><div class="note">C₆H₈O₇(aq) + 3NaHCO₃(s) → Na₃C₆H₅O₇(aq) + 3H₂O(l) + 3CO₂(g) · endothermic</div></details>
+    </div>
+    <aside class="card controls">
+      <h3>Solutions</h3>
+      <div class="row">Citric acid (25 cm³) <div class="seg" id="eA"><button data-v="0.5" class="on">0.5</button><button data-v="1">1.0</button></div> mol/dm³</div>
+      <h3>Mass of sodium hydrogencarbonate</h3>
+      <div class="row"><input type="range" id="eM" min="0.5" max="8" step="0.5" value="1"><span class="val" id="eMv">1.0 g</span></div>
+      <h3>Equipment</h3>
+      <div class="seg" id="eCup"><button data-v="lid" class="on">Cup + lid</button><button data-v="nolid">Cup, no lid</button><button data-v="glass">Glass beaker</button></div>
+      <div class="seg" id="eTh" style="margin-top:6px"><button data-v="glass" class="on">Thermometer (1 °C)</button><button data-v="dig">Digital (0.1 °C)</button></div>
+      <h3>Run the experiment</h3>
+      <div class="btnrow"><button class="btn primary big" id="eAdd">➕ Add solid &amp; stir</button></div>
+      <div class="btnrow"><button class="btn" id="eFill">Fill in temperatures for me</button></div>
+      <div class="btnrow"><button class="btn" id="eReset">↺ Next experiment – fresh acid</button></div>
+      <div class="row">Speed <div class="seg" id="eSpeed"><button data-v="1" class="on">1×</button><button data-v="3">3×</button><button data-v="10">10×</button></div></div>
+      <h3>Don't want to run it?</h3>
+      <label class="chk"><input type="checkbox" id="eAnom"> Include an anomalous result</label>
+      <div class="btnrow"><button class="btn" id="eGen">Show a full set of results</button></div>
+      <div class="status" id="eStatus"></div>
+    </aside>
+  </div>
+  <div class="mid">
+    <div class="card">
+      <div class="tabbar"><b>Results</b><button class="smallbtn" id="eCheck">Check my readings</button><button class="smallbtn" id="eCopy">Copy (Excel)</button><span class="note" id="eMsg"></span></div>
+      <div class="tablewrap"><table id="eTable"></table></div>
+      <div class="note">Decrease = starting temperature − lowest temperature.</div>
+    </div>
+    <div class="card">
+      <div class="tabbar"><b>Graph</b>
+        <button class="smallbtn" id="eAuto">Draw the lines for me</button><button class="smallbtn" id="eClearFit">Clear lines</button></div>
+      <canvas class="graph" id="gE" width="820" height="470"></canvas>
+      <div class="key"><span><b>Click a point</b> to cycle:</span><span><i style="background:#2f6f9f"></i>line 1 (rising)</span><span><i style="background:#c0392b"></i>line 2 (level)</span><span><i style="border:2px solid #999"></i>ignored (anomalous)</span></div>
+      <div class="fitinfo" id="eFit"></div>
+    </div>
+  </div>
+  <div class="card full">
+    <div class="tabbar"><b>Explain your results – exam-style questions</b><span class="note">Answer in the boxes, then reveal the mark scheme. The numbers come from your own graph.</span></div>
+    <div class="profile"><canvas id="pE" width="330" height="210" style="width:100%;border:1px solid var(--line);border-radius:8px;background:#fffdf8"></canvas>
+      <div class="note" style="font-size:15px;color:var(--ink)"><b>Reaction profile – endothermic.</b> The products have <b>more energy</b> than the reactants. Energy is taken in <b>from the surroundings</b> (the solution and thermometer), so the temperature <b>falls</b>.</div></div>
+    <div class="qs" id="eQs"></div>
+  </div>
+</section>
+</div>
+
+<script>
+(() => {
+"use strict";
+const $ = id => document.getElementById(id);
+function gauss(){ let u=0; while(!u) u=Math.random(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*Math.random()); }
+function rr(g,x,y,w,h,r){ g.beginPath(); g.moveTo(x+r,y); g.arcTo(x+w,y,x+w,y+h,r); g.arcTo(x+w,y+h,x,y+h,r); g.arcTo(x,y+h,x,y,r); g.arcTo(x,y,x+w,y,r); g.closePath(); }
+function segWire(el, cb){ el.addEventListener('click', e => { const b=e.target.closest('button'); if (!b||b.disabled||!el.contains(b)) return; el.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b)); cb(b.dataset.v); }); }
+function lockSeg(id, on){ $(id).querySelectorAll('button').forEach(b=>b.disabled=on); }
+function copyText(txt, el){ const done=()=>{ el.textContent='Copied – paste into Excel.'; setTimeout(()=>el.textContent='',2500); }; const fb=()=>{ const ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta); ta.select(); try{document.execCommand('copy'); done();}catch(e){} ta.remove(); }; if (navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(done,fb); else fb(); }
+function label(g,txt,x,y,o={}){ g.font=(o.bold?'600 ':'')+(o.size||14)+'px Segoe UI, Arial'; g.fillStyle=o.col||'#3b2a1a'; g.textAlign=o.align||'center'; g.textBaseline='middle'; g.fillText(txt,x,y); }
+const fmt1 = v => (Math.round(v*10)/10).toFixed(1);
+const roundTo = (v, res) => Math.round(v/res)*res;
+const CUPK = { lid:0.0007, nolid:0.003, glass:0.010 };   // heat exchange constant (per s)
+const THTAU = { glass:4, dig:1.5 };
+const RES = { glass:0.5, dig:0.1 };
+
+/* =====================================================================
+   SHARED: apparatus drawing
+   ===================================================================== */
+const CUP = { x0:245, x1:415, y0:250, bx0:265, bx1:395, by:462 };
+function cupPath(g, inset){ const i=inset||0; g.beginPath(); g.moveTo(CUP.x0+i, CUP.y0); g.lineTo(CUP.bx0+i, CUP.by-i); g.lineTo(CUP.bx1-i, CUP.by-i); g.lineTo(CUP.x1-i, CUP.y0); g.closePath(); }
+function drawVessel(g, cup, liquidH, liquidCol, extra){
+  // outer beaker
+  g.fillStyle='rgba(214,232,242,.25)'; g.fillRect(228,262,204,210);
+  g.strokeStyle='#6f8fa0'; g.lineWidth=2.5; g.beginPath(); g.moveTo(228,255); g.lineTo(228,472); g.lineTo(432,472); g.lineTo(432,255); g.stroke();
+  if (cup==='glass'){
+    g.save(); g.beginPath(); g.rect(230,262,200,208); g.clip();
+    g.fillStyle=liquidCol; g.fillRect(230, 470-liquidH, 200, liquidH); if (extra) extra(230,430,470-liquidH,470); g.restore();
+    g.strokeStyle='rgba(80,110,130,.5)'; g.lineWidth=1.5; g.beginPath(); g.moveTo(230,470-liquidH); g.lineTo(430,470-liquidH); g.stroke();
+    label(g, 'glass beaker (no cup)', 330, 488, {size:13, col:'#7d6a55'});
+    return 470-liquidH;
+  }
+  // polystyrene cup
+  cupPath(g); g.fillStyle='#fbfbf7'; g.fill(); g.strokeStyle='#c9c4b8'; g.lineWidth=2; g.stroke();
+  g.save(); cupPath(g,5); g.clip();
+  g.fillStyle='#f3f1ea'; g.fillRect(CUP.x0, CUP.y0, CUP.x1-CUP.x0, CUP.by-CUP.y0);
+  g.fillStyle=liquidCol; g.fillRect(CUP.x0, CUP.by-5-liquidH, CUP.x1-CUP.x0, liquidH+5);
+  if (extra) extra(CUP.x0, CUP.x1, CUP.by-5-liquidH, CUP.by-5);
+  g.restore();
+  // polystyrene texture
+  g.fillStyle='rgba(200,195,185,.35)'; for (let i=0;i<40;i++){ const yy=CUP.y0+8+((i*37)%200), t=(yy-CUP.y0)/(CUP.by-CUP.y0), xl=CUP.x0+(CUP.bx0-CUP.x0)*t; g.beginPath(); g.arc(xl+3+(i%3), yy, 1.6, 0, Math.PI*2); g.fill(); g.beginPath(); g.arc(CUP.x1-(CUP.x1-CUP.bx1)*t-3-(i%3), yy+5, 1.6, 0, Math.PI*2); g.fill(); }
+  if (cup==='lid'){ g.fillStyle='#b9895a'; g.fillRect(CUP.x0-8, CUP.y0-12, CUP.x1-CUP.x0+16, 12); g.strokeStyle='#8a6440'; g.lineWidth=1; g.strokeRect(CUP.x0-8, CUP.y0-12, CUP.x1-CUP.x0+16, 12); label(g, 'cardboard lid', 450, CUP.y0-6, {size:12, col:'#7d6a55', align:'left'}); }
+  label(g, 'polystyrene cup in a beaker', 330, 488, {size:13, col:'#7d6a55'});
+  return CUP.by-5-liquidH;
+}
+function drawThermo(g, th, T, Tmin, Tmax, wig, surfaceY){
+  const x = 330 + Math.sin(wig*25)*wig*6;
+  if (th==='glass'){
+    const top=40, bulb=430, y = v => (bulb-28) - (v-Tmin)/(Tmax-Tmin)*((bulb-28)-(top+20));
+    g.fillStyle='rgba(240,248,252,.95)'; rr(g, x-8, top, 16, bulb-top, 8); g.fill(); g.strokeStyle='#8fa9b6'; g.lineWidth=1.5; g.stroke();
+    g.beginPath(); g.arc(x, bulb, 11, 0, Math.PI*2); g.fillStyle='#d23a2a'; g.fill(); g.strokeStyle='#8fa9b6'; g.stroke();
+    g.fillStyle='#d23a2a'; g.fillRect(x-2.5, Math.max(top+10, y(T)), 5, bulb-Math.max(top+10,y(T)));
+    g.strokeStyle='#3b2a1a'; g.fillStyle='#3b2a1a'; g.font='10px Segoe UI, Arial'; g.textAlign='left'; g.textBaseline='middle';
+    for (let c=Math.ceil(Tmin); c<=Tmax; c++){ const yy=y(c); g.lineWidth=0.8; g.beginPath(); g.moveTo(x+3,yy); g.lineTo(x+(c%5===0?8:5),yy); g.stroke(); if (c%5===0) g.fillText(c, x+10, yy); }
+  } else {
+    g.fillStyle='#9aa3a8'; g.fillRect(x-4, 120, 8, 320); g.fillStyle='#6b7177'; g.fillRect(x-6, 112, 12, 16);
+    g.strokeStyle='#333'; g.lineWidth=2.5; g.beginPath(); g.moveTo(x, 112); g.quadraticCurveTo(x, 70, 470, 80); g.lineTo(540, 80); g.stroke();
+  }
+}
+function drawMagnifier(g, th, T, shown){
+  if (th==='glass'){
+    const x=560, y=50, w=180, h=290, zoom=46, yc=y+h/2+12, Y=c=>yc-(c-T)*zoom;
+    g.fillStyle='#fffaf0'; rr(g,x,y,w,h,12); g.fill(); g.strokeStyle='#a8743f'; g.lineWidth=2; g.stroke();
+    label(g, '🔍 Magnified thermometer', x+w/2, y+15, {size:13, bold:true, col:'#7a4e2d'});
+    g.save(); rr(g,x+4,y+30,w-8,h-34,10); g.clip();
+    const tx=x+70;
+    g.fillStyle='rgba(240,248,252,1)'; g.fillRect(tx-14, y, 28, h);
+    g.fillStyle='#d23a2a'; g.fillRect(tx-5, Y(T), 10, y+h-Y(T));
+    g.strokeStyle='#8fa9b6'; g.lineWidth=1.5; g.strokeRect(tx-14, y-5, 28, h+10);
+    g.strokeStyle='#3b2a1a'; g.fillStyle='#3b2a1a'; g.font='600 17px Segoe UI, Arial'; g.textAlign='left'; g.textBaseline='middle';
+    for (let c=Math.floor(T-4); c<=Math.ceil(T+4); c++){ const yy=Y(c); g.lineWidth=2; g.beginPath(); g.moveTo(tx+14, yy); g.lineTo(tx+(c%5===0?44:32), yy); g.stroke(); g.fillText(c, tx+48, yy); }
+    g.restore();
+    label(g, '1 °C divisions – read to the nearest 0.5 °C', x+w/2, y+h+14, {size:12, col:'#7d6a55'});
+  } else {
+    const x=540, y=50, w=200, h=100;
+    g.fillStyle='#e7dcc6'; rr(g,x,y,w,h,12); g.fill(); g.strokeStyle='#8a7d66'; g.lineWidth=2; g.stroke();
+    g.fillStyle='#1d2820'; rr(g,x+14,y+14,w-28,52,6); g.fill();
+    g.font='bold 34px Consolas, monospace'; g.fillStyle='#a6f3a6'; g.textAlign='right'; g.textBaseline='middle'; g.fillText(shown.toFixed(1), x+w-46, y+41);
+    g.font='bold 20px Segoe UI, Arial'; g.fillText('°C', x+w-18, y+42);
+    label(g, 'Digital thermometer (0.1 °C)', x+w/2, y+84, {size:12, col:'#5f5546'});
+  }
+}
+function drawClock(g, t){ g.fillStyle='#1d2820'; rr(g,540,420,240,42,8); g.fill(); g.font='bold 18px Consolas, monospace'; g.fillStyle='#a6f3a6'; g.textAlign='center'; g.textBaseline='middle'; g.fillText('⏱ '+Math.floor(t/60)+':'+String(Math.floor(t%60)).padStart(2,'0')+' since adding', 660, 441); }
+function bench(g, W, H){ g.fillStyle='#fffdf8'; g.fillRect(0,0,W,H); const gr=g.createLinearGradient(0,472,0,H); gr.addColorStop(0,'#cfae80'); gr.addColorStop(1,'#b8925f'); g.fillStyle=gr; g.fillRect(0,472,W,H-472); }
+
+/* =====================================================================
+   SHARED: graph with two lines of best fit
+   ===================================================================== */
+function ls(p){ const n=p.length; if (n<2) return null; let sx=0,sy=0,sxx=0,sxy=0; p.forEach(q=>{sx+=q.x;sy+=q.y;sxx+=q.x*q.x;sxy+=q.x*q.y;}); const d=n*sxx-sx*sx; if (Math.abs(d)<1e-12) return null; const m=(n*sxy-sx*sy)/d; return {m, c:(sy-m*sx)/n}; }
+function sse(p,l){ return p.reduce((a,q)=>a+(q.y-(l.m*q.x+l.c))**2,0); }
+class FitGraph {
+  constructor(id, cfg){
+    this.cv=$(id); this.g=this.cv.getContext('2d'); this.cfg=cfg; this.pts=[]; this.st={}; this.fit=null; this.onChange=()=>{};
+    this.cv.addEventListener('click', e=>{
+      const r=this.cv.getBoundingClientRect(), mx=(e.clientX-r.left)*this.cv.width/r.width, my=(e.clientY-r.top)*this.cv.height/r.height;
+      let best=null, bd=18; for (const p of this.pts){ const d=Math.hypot(this.X(p.x)-mx, this.Y(p.y)-my); if (d<bd){ bd=d; best=p; } }
+      if (!best) return; this.st[best.id] = ((this.st[best.id]||0)+1)%4; this.update();
+    });
+  }
+  setPoints(pts){ this.pts=pts; const ids=new Set(pts.map(p=>p.id)); Object.keys(this.st).forEach(k=>{ if(!ids.has(+k)) delete this.st[k]; }); this.update(); }
+  clear(){ this.st={}; this.update(); }
+  auto(){
+    const p=[...this.pts].sort((a,b)=>a.x-b.x); this.st={};
+    if (p.length<4){ this.update(); return; }
+    let best=null;
+    const tryFit = (pts) => { let b=null; for (let k=2;k<=pts.length-2;k++){ const A=pts.slice(0,k), B=pts.slice(k), la=ls(A), lb=ls(B); if(!la||!lb) continue; const s=sse(A,la)+sse(B,lb); if(!b||s<b.s) b={k,s,A,B}; } return b; };
+    if (this.cfg.peak) { const peakFit = (pts) => { let im=0; pts.forEach((q,i)=>{ if (q.y>pts[im].y) im=i; }); let b=null; for (const k of [im, im+1]){ if (k<2 || pts.length-k<2) continue; const A=pts.slice(0,k), B=pts.slice(k), la=ls(A), lb=ls(B); if(!la||!lb) continue; const s=sse(A,la)+sse(B,lb); if(!b||s<b.s) b={k,s,A,B}; } return b || tryFit(pts); }; this._fitFn = peakFit; } else this._fitFn = tryFit;
+    const fitFn = this._fitFn;
+    let use=p, ignored=null; best=fitFn(use);
+    if (best){ // look for one anomalous point
+      const la=ls(best.A), lb=ls(best.B); let worst=null, wr=0;
+      [...best.A.map(q=>[q,la]),...best.B.map(q=>[q,lb])].forEach(([q,l])=>{ const r=Math.abs(q.y-(l.m*q.x+l.c)); if (r>wr){ wr=r; worst=q; } });
+      const rms=Math.sqrt(best.s/p.length);
+      if (worst && wr>this.cfg.anomTol && wr>2.5*rms && p.length>5){ ignored=worst; use=p.filter(q=>q!==worst); best=fitFn(use)||best; }
+    }
+    if (best){ best.A.forEach(q=>this.st[q.id]=1); best.B.forEach(q=>this.st[q.id]=2); if (ignored) this.st[ignored.id]=3; }
+    this.update();
+  }
+  update(){
+    const A=this.pts.filter(p=>this.st[p.id]===1), B=this.pts.filter(p=>this.st[p.id]===2);
+    const l1=ls(A), l2=ls(B); let inter=null;
+    if (l1&&l2&&Math.abs(l1.m-l2.m)>1e-9){ const x=(l2.c-l1.c)/(l1.m-l2.m); inter={x, y:l1.m*x+l1.c}; }
+    this.fit={l1,l2,inter, nA:A.length, nB:B.length, ignored:this.pts.filter(p=>this.st[p.id]===3)};
+    this.draw(); this.onChange(this.fit);
+  }
+  draw(){
+    const g=this.g, w=this.cv.width, h=this.cv.height, c=this.cfg;
+    g.fillStyle='#fffdf8'; g.fillRect(0,0,w,h);
+    const L=80, T=20, Wd=w-L-24, Ht=h-T-64; this.box={L,T,Wd,Ht};
+    const ys=this.pts.map(p=>p.y);
+    let ymin=c.ymin!==undefined?c.ymin:(ys.length?Math.floor(Math.min(...ys)-1):18), ymax=ys.length?Math.ceil(Math.max(...ys)+1):30;
+    if (this.fit&&this.fit.inter&&this.fit.inter.y>ymax-0.5) ymax=Math.ceil(this.fit.inter.y+1);
+    if (c.ymin===undefined){ ymin=Math.min(ymin, ymax-5); } else ymax=Math.max(ymax, 5);
+    const yr=ymax-ymin, ystep = yr<=6?1:yr<=12?2:yr<=25?5:10; ymin=Math.floor(ymin/ystep)*ystep; ymax=Math.ceil(ymax/ystep)*ystep;
+    const xmax=c.xmax(this.pts), xstep=c.xstep(xmax);
+    this.X=v=>L+v/xmax*Wd; this.Y=v=>T+Ht-(v-ymin)/(ymax-ymin)*Ht;
+    // minor grid
+    g.strokeStyle='#f3ead9'; g.lineWidth=1;
+    for (let v=0; v<=xmax+1e-9; v+=xstep/5){ g.beginPath(); g.moveTo(this.X(v),T); g.lineTo(this.X(v),T+Ht); g.stroke(); }
+    for (let v=ymin; v<=ymax+1e-9; v+=ystep/5){ g.beginPath(); g.moveTo(L,this.Y(v)); g.lineTo(L+Wd,this.Y(v)); g.stroke(); }
+    g.strokeStyle='#e3d3b4'; g.font='14px Segoe UI, Arial'; g.fillStyle='#5a4632';
+    for (let v=0; v<=xmax+1e-9; v+=xstep){ g.beginPath(); g.moveTo(this.X(v),T); g.lineTo(this.X(v),T+Ht); g.stroke(); g.textAlign='center'; g.textBaseline='top'; g.fillText(+v.toFixed(2), this.X(v), T+Ht+7); }
+    for (let v=ymin; v<=ymax+1e-9; v+=ystep){ g.beginPath(); g.moveTo(L,this.Y(v)); g.lineTo(L+Wd,this.Y(v)); g.stroke(); g.textAlign='right'; g.textBaseline='middle'; g.fillText(+v.toFixed(2), L-8, this.Y(v)); }
+    g.strokeStyle='#3b2a1a'; g.lineWidth=2; g.beginPath(); g.moveTo(L,T); g.lineTo(L,T+Ht); g.lineTo(L+Wd,T+Ht); g.stroke();
+    g.font='600 15px Segoe UI, Arial'; g.fillStyle='#3b2a1a'; g.textAlign='center'; g.textBaseline='top'; g.fillText(c.xlabel, L+Wd/2, T+Ht+32);
+    g.save(); g.translate(L-56,T+Ht/2); g.rotate(-Math.PI/2); g.textBaseline='middle'; g.fillText(c.ylabel,0,0); g.restore();
+    // lines
+    g.save(); g.beginPath(); g.rect(L,T,Wd,Ht); g.clip();
+    const drawL=(l,col)=>{ if(!l) return; g.strokeStyle=col; g.lineWidth=2.2; g.beginPath(); g.moveTo(this.X(0), this.Y(l.c)); g.lineTo(this.X(xmax), this.Y(l.m*xmax+l.c)); g.stroke(); };
+    if (this.fit){ drawL(this.fit.l1,'#2f6f9f'); drawL(this.fit.l2,'#c0392b');
+      const I=this.fit.inter; if (I && I.x>0 && I.x<xmax){ g.setLineDash([6,5]); g.strokeStyle='#7a4e2d'; g.lineWidth=1.6; g.beginPath(); g.moveTo(this.X(I.x), this.Y(I.y)); g.lineTo(this.X(I.x), T+Ht); g.moveTo(this.X(I.x), this.Y(I.y)); g.lineTo(L, this.Y(I.y)); g.stroke(); g.setLineDash([]);
+        g.beginPath(); g.arc(this.X(I.x), this.Y(I.y), 6, 0, Math.PI*2); g.strokeStyle='#7a4e2d'; g.lineWidth=2.5; g.stroke(); } }
+    g.restore();
+    // points
+    for (const p of this.pts){ const s=this.st[p.id]||0, x=this.X(p.x), y=this.Y(p.y);
+      if (s===3){ g.beginPath(); g.arc(x,y,8,0,Math.PI*2); g.strokeStyle='#999'; g.lineWidth=2; g.stroke(); }
+      const col = s===1?'#2f6f9f':s===2?'#c0392b':s===3?'#999':'#3b2a1a';
+      g.strokeStyle=col; g.lineWidth=2.4; g.beginPath(); g.moveTo(x-5,y-5); g.lineTo(x+5,y+5); g.moveTo(x+5,y-5); g.lineTo(x-5,y+5); g.stroke(); }
+    if (!this.pts.length){ g.fillStyle='#7d6a55'; g.font='italic 15px Segoe UI, Arial'; g.textAlign='center'; g.textBaseline='middle'; g.fillText('Your readings will be plotted here', L+Wd/2, T+Ht/2); }
+  }
+}
+
+/* =====================================================================
+   SHARED: questions
+   ===================================================================== */
+function renderQs(id, qs){
+  const el=$(id);
+  el.innerHTML = qs.map((q,i)=>`<div class="q"><div class="qt"><span class="marks">[${q.marks} mark${q.marks>1?'s':''}]</span><b class="num">${i+1}.</b> ${q.q}${q.tier?`<span class="tier">${q.tier}</span>`:''}</div>
+    ${q.dyn?`<div class="dyn" data-dyn="${i}"></div>`:''}
+    <textarea placeholder="Your answer…"></textarea>
+    <div class="btnrow" style="margin-top:4px"><button class="smallbtn" data-ms="${i}">Show mark scheme</button></div>
+    <div class="ms" id="${id}ms${i}"><b>Mark scheme</b><ul>${q.ms.map(m=>`<li>${m}</li>`).join('')}</ul>${q.extra?`<div class="note" data-extra="${i}"></div>`:''}</div></div>`).join('');
+  el.querySelectorAll('[data-ms]').forEach(b=>b.addEventListener('click',()=>{ const m=$(id+'ms'+b.dataset.ms); m.classList.toggle('on'); b.textContent=m.classList.contains('on')?'Hide mark scheme':'Show mark scheme'; }));
+}
+function updateDyn(id, qs){
+  const el=$(id);
+  qs.forEach((q,i)=>{ if (q.dyn){ const d=el.querySelector(`[data-dyn="${i}"]`); if (d) d.innerHTML=q.dyn(); } if (q.extra){ const d=el.querySelector(`[data-extra="${i}"]`); if (d) d.innerHTML=q.extra(); } });
+}
+function profile(id, exo){
+  const c=$(id), g=c.getContext('2d'), w=c.width, h=c.height; g.fillStyle='#fffdf8'; g.fillRect(0,0,w,h);
+  const L=40, B=h-28, R=w-14, AX=0.95; g.strokeStyle='#3b2a1a'; g.lineWidth=2; g.beginPath(); g.moveTo(L,14); g.lineTo(L,B); g.lineTo(R,B); g.stroke();
+  g.save(); g.translate(16,h/2-10); g.rotate(-Math.PI/2); label(g,'Energy',0,0,{size:12}); g.restore();
+  label(g,'Progress of reaction', (L+R)/2, h-12, {size:12});
+  const yr = exo?95:140, yp = exo?150:80, yt=40, X=f=>L+f*(R-L);
+  g.strokeStyle='#7a4e2d'; g.lineWidth=3; g.beginPath(); g.moveTo(X(.04),yr); g.lineTo(X(.25),yr); g.bezierCurveTo(X(.38),yr,X(.42),yt,X(.5),yt); g.bezierCurveTo(X(.58),yt,X(.62),yp,X(.75),yp); g.lineTo(X(.97),yp); g.stroke();
+  label(g,'reactants', X(.14), yr-10, {size:12}); label(g,'products', X(.8), yp-10, {size:12});
+  g.strokeStyle='#c0392b'; g.lineWidth=2; g.fillStyle='#c0392b'; const ax=X(AX);
+  g.beginPath(); g.moveTo(ax,yr); g.lineTo(ax,yp); g.stroke();
+  g.beginPath(); g.moveTo(ax, yp); g.lineTo(ax-5, yp+(exo?-9:9)); g.lineTo(ax+5, yp+(exo?-9:9)); g.fill();
+  label(g,exo?'energy released':'energy taken in', ax-8, (yr+yp)/2, {size:11.5, align:'right', col:'#c0392b'});
+}
+
+/* =====================================================================
+   EXPERIMENT 1 – NEUTRALISATION
+   ===================================================================== */
+const N = { cA:1, cB:2, cup:'lid', th:'glass', step:5, speed:1, T0:20, T:20, Tth:20, V:0, nReact:0, pend:0, tSince:0, wig:0, rows:[], id:0, flick:0 };
+const NMAX=50;
+function nFresh(){ N.T0 = +(19.5+Math.random()*1.6).toFixed(2); N.T=N.T0; N.Tth=N.T0; N.V=0; N.nReact=0; N.pend=0; N.tSince=0; N.rows=[{id:++N.id, v:0, auto:N.T0, entry:null, mark:''}]; nLock(false); nRender(); }
+function nStep(dt){
+  const rel = N.pend*(1-Math.exp(-dt/2.5)); N.pend-=rel; N.T += rel/(4.18*(30+N.V));
+  N.T -= CUPK[N.cup]*(N.T-N.T0)*dt;
+  N.Tth += (N.T-N.Tth)*(1-Math.exp(-dt/THTAU[N.th]));
+  N.tSince += dt; N.wig=Math.max(0,N.wig-dt*0.4);
+  const cur=N.rows[N.rows.length-1]; if (N.rows.length>1){ cur.auto=Math.max(cur.auto, N.Tth); } else cur.auto=N.Tth;
+}
+function nAdd(){
+  if (N.V>=NMAX) return;
+  const dV=Math.min(N.step, NMAX-N.V), nA=N.cA*0.030, nB=N.cB*dV/1000, dn=Math.min(nB, Math.max(0,nA-N.nReact));
+  N.T = (N.T*(30+N.V) + N.T0*dV)/(30+N.V+dV);   // NaOH added at room temperature
+  N.V+=dV; N.nReact+=dn; N.pend += 57100*dn; N.tSince=0; N.wig=1;
+  N.rows.push({id:++N.id, v:N.V, auto:N.Tth, entry:null, mark:''});
+  nLock(true); nRender();
+}
+function nLock(on){ ['nA','nB','nCup','nTh'].forEach(id=>lockSeg(id,on)); }
+function nShown(){ return N.th==='dig' ? Math.round((N.Tth+N.flick)*10)/10 : N.Tth; }
+function nDraw(){
+  const c=$('cvN'), g=c.getContext('2d'), W=c.width, H=c.height; bench(g,W,H);
+  // NaOH cylinder
+  const cx=110, top=250, bot=466, cap=60, left=Math.max(0, 55-N.V);
+  g.fillStyle='rgba(214,232,242,.35)'; g.fillRect(cx-18,top,36,bot-top);
+  const lh=left/cap*(bot-top-10); g.fillStyle='rgba(205,228,240,.8)'; g.fillRect(cx-16, bot-lh, 32, lh);
+  g.strokeStyle='#6f8fa0'; g.lineWidth=2; g.strokeRect(cx-18,top,36,bot-top); g.fillStyle='#8a9aa5'; g.fillRect(cx-28,bot,56,6);
+  g.lineWidth=1; for (let i=1;i<10;i++){ const y=bot-i*(bot-top-10)/10; g.beginPath(); g.moveTo(cx-18,y); g.lineTo(cx-8,y); g.stroke(); }
+  label(g, `NaOH`, cx, 216, {size:14, bold:true}); label(g, `${N.cB.toFixed(1)} mol/dm³`, cx, 234, {size:13});
+  const surf = drawVessel(g, N.cup, (30+N.V)*1.55, 'rgba(205,228,240,.65)');
+  drawThermo(g, N.th, N.Tth, 10, 45, N.wig, surf);
+  drawMagnifier(g, N.th, N.Tth, nShown());
+  label(g, 'In the cup:', 120, 70, {size:13, col:'#7d6a55'});
+  label(g, `30 cm³ of ${N.cA.toFixed(1)} mol/dm³ HCl`, 120, 92, {size:14});
+  label(g, `+ ${N.V} cm³ NaOH added`, 120, 114, {size:15, bold:true, col:'#7a4e2d'});
+  drawClock(g, N.tSince);
+}
+function nStatus(){
+  const s=$('nStatus');
+  if (N.V===0) s.innerHTML = 'Record the <b>starting temperature</b> of the acid in the table (0 cm³), then add the first portion of NaOH.';
+  else if (N.tSince<12 && N.pend>1) s.innerHTML = 'Stirring… watch the thermometer rise and record the <b>highest</b> temperature.';
+  else if (N.V>=NMAX) s.innerHTML = `All ${NMAX} cm³ added. Now plot your graph and draw two lines of best fit.`;
+  else s.innerHTML = 'When you have the highest temperature, add the next portion.';
+}
+function nRender(){
+  const t=$('nTable');
+  let h='<tr><th>Volume of NaOH added (cm³)</th><th>Highest temperature (°C)</th><th></th></tr>';
+  N.rows.forEach((r,i)=>{ h+=`<tr class="${i===N.rows.length-1&&N.V<NMAX?'now':''}"><td>${r.v}</td><td class="${r.mark}"><input type="number" step="0.1" data-i="${i}" value="${r.entry??''}"></td><td><button class="x" data-del="${i}" title="Delete">✕</button></td></tr>`; });
+  t.innerHTML=h;
+  t.querySelectorAll('input').forEach(inp=>{ inp.addEventListener('change',e=>{ const r=N.rows[+e.target.dataset.i]; r.entry=e.target.value===''?null:+e.target.value; r.mark=''; e.target.parentElement.className=''; nGraph(); });
+    inp.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); e.target.blur(); } }); });
+  t.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>{ N.rows.splice(+b.dataset.del,1); nRender(); }));
+  const w=t.closest('.tablewrap'); w.scrollTop=w.scrollHeight;
+  nGraph();
+}
+const gN = new FitGraph('gN', { xlabel:'Volume of sodium hydroxide added (cm³)', ylabel:'Highest temperature (°C)', anomTol:0.8, peak:true,
+  xmax:()=>NMAX, xstep:()=>5 });
+function nGraph(){ gN.setPoints(N.rows.filter(r=>r.entry!==null).map(r=>({id:r.id, x:r.v, y:r.entry}))); }
+gN.onChange = f => {
+  const el=$('nFit');
+  if (f.inter && f.nA>=2 && f.nB>=2) el.innerHTML = `The lines cross at <b>${f.inter.x.toFixed(1)} cm³</b> of sodium hydroxide and <b>${f.inter.y.toFixed(1)} °C</b>.<br>This is the volume of NaOH needed to <b>neutralise</b> the acid, and the highest temperature the mixture would reach with no energy lost.`;
+  else el.innerHTML = gN.pts.length<4 ? 'Plot at least 4 points, then click them to put them on line 1 or line 2 – or press “Draw the lines for me”.' : 'Click the points on the <b style="color:#2f6f9f">rising</b> part (line 1) and the <b style="color:#c0392b">falling</b> part (line 2). At least two points are needed on each line.';
+  updateDyn('nQs', NQ);
+};
+$('nAuto').addEventListener('click', ()=>gN.auto());
+$('nClearFit').addEventListener('click', ()=>gN.clear());
+segWire($('nA'), v=>{ N.cA=+v; nFresh(); });
+segWire($('nB'), v=>{ N.cB=+v; nFresh(); });
+segWire($('nCup'), v=>{ N.cup=v; });
+segWire($('nTh'), v=>{ N.th=v; });
+segWire($('nStep'), v=>{ N.step=+v; });
+segWire($('nSpeed'), v=>{ N.speed=+v; });
+$('nAdd').addEventListener('click', nAdd);
+$('nReset').addEventListener('click', ()=>{ gN.clear(); nFresh(); });
+$('nFill').addEventListener('click', ()=>{ const r=N.rows[N.rows.length-1]; r.entry=+roundTo(r.auto, RES[N.th]).toFixed(1); r.mark=''; nRender(); });
+$('nCheck').addEventListener('click', ()=>{ let ok=0,n=0; const tol=RES[N.th]+0.01; N.rows.forEach(r=>{ if(r.entry===null) return; n++; r.mark=Math.abs(r.entry-r.auto)<=tol?'ok':'bad'; if(r.mark==='ok') ok++; }); nRender(); $('nMsg').textContent = n?`${ok} of ${n} readings match the thermometer (±${RES[N.th]} °C).`:'No readings yet.'; });
+$('nCopy').addEventListener('click', ()=>{ copyText(['Volume of NaOH (cm³)\tHighest temperature (°C)'].concat(N.rows.map(r=>`${r.v}\t${r.entry??''}`)).join('\n'), $('nMsg')); });
+$('nGen').addEventListener('click', ()=>{
+  nFresh();
+  const save = { th:N.th };
+  const inc = N.step;
+  const simulate = () => { for (let i=0;i<120;i++) nStep(0.25); };
+  N.rows[0].entry = +roundTo(N.T0, RES[N.th]).toFixed(1);
+  while (N.V < NMAX){ nAdd(); simulate(); const r=N.rows[N.rows.length-1]; r.entry=+roundTo(r.auto, RES[N.th]).toFixed(1); }
+  if ($('nAnom').checked){ const veq=N.cA*30/N.cB; const cand=N.rows.filter(r=>r.v>0 && r.v<=veq-2*N.step); if (cand.length){ const r=cand[Math.floor(Math.random()*cand.length)]; r.entry=+(r.entry-2.5).toFixed(1); } }
+  nRender(); N.tSince=0; nLock(false);
+});
+
+const NQ = [
+  { marks:2, q:'Describe how the highest temperature changes as the sodium hydroxide is added.', ms:['Temperature increases (at first) up to a maximum (at about the volume where the lines cross).','Then the temperature decreases (as more NaOH is added).'], dyn:()=>nInterText('The lines on your graph cross at') },
+  { marks:2, q:'Explain why the temperature increases as the first portions of sodium hydroxide are added.', ms:['The reaction is exothermic / neutralisation is exothermic.','Energy is transferred (released) to the surroundings / to the solution, and more acid reacts with each portion added.'] },
+  { marks:2, q:'Explain why the temperature decreases after the maximum.', ms:['All of the acid has reacted / been neutralised, so there is no more reaction (no more energy released).','The sodium hydroxide added is cooler (at room temperature) / energy is transferred to the surroundings, so the mixture cools.'] },
+  { marks:1, q:'Use your graph to find the volume of sodium hydroxide needed to neutralise 30 cm³ of the hydrochloric acid.', ms:['Read the volume where the two lines of best fit cross (allow ±1 cm³ of your value).'], dyn:()=>nInterText('From your graph:'), extra:()=>`From the concentrations, exactly ${(N.cA*30/N.cB).toFixed(1)} cm³ is needed. Values from the graph are usually a little lower: the rising line is not perfectly straight (the mixture gets more dilute) and some energy is lost to the surroundings.` },
+  { marks:1, q:'Use your graph to estimate the maximum temperature rise.', ms:['Temperature where the lines cross − starting temperature (allow ±0.5 °C).'], dyn:()=>{ const f=gN.fit, s=N.rows.find(r=>r.v===0&&r.entry!==null); return (f&&f.inter&&s) ? `From your graph: ${f.inter.y.toFixed(1)} − ${s.entry.toFixed(1)} = <b>${(f.inter.y-s.entry).toFixed(1)} °C</b>` : '<i>Record the starting temperature and draw both lines first.</i>'; } },
+  { marks:2, q:'Why is a polystyrene cup with a lid used, and why is it stood in a beaker?', ms:['Polystyrene is a (good thermal) insulator / the lid reduces energy transfer to the surroundings (less heat lost).','The beaker stops the cup falling over / makes it stable.'] },
+  { marks:2, q:'The real maximum temperature is higher than the highest temperature the student measured. Suggest why.', ms:['Energy is lost (transferred) to the surroundings (during the reaction).','The thermometer reading takes time to rise / the maximum may be reached between additions.'] },
+  { marks:2, q:'Suggest how the student could find the volume needed for neutralisation more accurately.', ms:['Add smaller volumes (e.g. 1 cm³ or 2 cm³) close to the maximum / around the end point.','Repeat the experiment and calculate a mean.'] },
+  { marks:2, q:'Identify any anomalous result on your graph and suggest a reason for it.', ms:['Identify the point that does not fit the pattern / is not close to the lines of best fit.','Reason, e.g. did not stir / did not wait for the highest temperature / misread the thermometer / lid left off.'], dyn:()=>{ const f=gN.fit; return f&&f.ignored&&f.ignored.length ? `You have marked as anomalous: ${f.ignored.map(p=>`${p.x} cm³ (${p.y} °C)`).join(', ')}` : '<i>Click a point until it shows a grey circle to mark it as anomalous.</i>'; } },
+  { marks:3, tier:'Higher / triple', q:'Use your volume from the graph to calculate the concentration of the sodium hydroxide solution. The hydrochloric acid concentration is shown above.', ms:['Moles of HCl = concentration × 30/1000.','Moles of NaOH = moles of HCl (1 : 1 ratio).','Concentration of NaOH = moles ÷ (your volume/1000).'], extra:()=>{ const f=gN.fit; if(!(f&&f.inter)) return 'Draw both lines to see the worked answer.'; const n=N.cA*0.030, v=f.inter.x; return `Worked answer: moles HCl = ${N.cA.toFixed(1)} × 0.030 = ${n.toFixed(4)} mol; concentration NaOH = ${n.toFixed(4)} ÷ ${(v/1000).toFixed(4)} = <b>${(n/(v/1000)).toFixed(2)} mol/dm³</b> (actual: ${N.cB.toFixed(1)} mol/dm³)`; } },
+];
+function nInterText(pre){ const f=gN.fit; return f&&f.inter ? `${pre} <b>${f.inter.x.toFixed(1)} cm³</b>, ${f.inter.y.toFixed(1)} °C` : '<i>Draw both lines of best fit on the graph first.</i>'; }
+renderQs('nQs', NQ);
+
+/* =====================================================================
+   EXPERIMENT 2 – ENDOTHERMIC
+   ===================================================================== */
+const E = { cA:0.5, m:1, cup:'lid', th:'glass', speed:1, T0:20, T:20, Tth:20, pend:0, tSince:0, wig:0, added:false, run:null, rows:[], id:0, flick:0, rate:0, bubbles:[] };
+function eFresh(){ E.T0 = +(19.5+Math.random()*1.6).toFixed(2); E.T=E.T0; E.Tth=E.T0; E.pend=0; E.tSince=0; E.added=false; E.run=null; E.bubbles=[]; eLock(false); eStatus(); }
+function eStep(dt){
+  const rel = E.pend*(1-Math.exp(-dt/5)); E.pend-=rel; E.T += rel/(4.18*25); E.rate = -rel/dt;
+  E.T += CUPK[E.cup]*(E.T0-E.T)*dt;
+  E.Tth += (E.T-E.Tth)*(1-Math.exp(-dt/THTAU[E.th]));
+  E.tSince+=dt; E.wig=Math.max(0,E.wig-dt*0.4);
+  if (E.run){ E.run.auto = Math.min(E.run.auto, E.Tth); }
+}
+function eAdd(){
+  if (E.added) return;
+  const nb=E.m/84, nc=E.cA*0.025, react=Math.min(nb, 3*nc);
+  E.pend = -20000*react; E.added=true; E.tSince=0; E.wig=1;
+  E.run = { id:++E.id, m:E.m, sauto:E.Tth, auto:E.Tth, es:null, el:null, ms:'', ml:'' };
+  E.rows.push(E.run); eLock(true); eRender();
+}
+function eLock(on){ ['eA','eCup','eTh'].forEach(id=>lockSeg(id,on)); $('eM').disabled=on; $('eAdd').disabled=on; }
+function eStatus(){
+  const s=$('eStatus');
+  if (!E.added) s.innerHTML = `Starting temperature: read the thermometer and note it down. Then add ${E.m.toFixed(1)} g of sodium hydrogencarbonate.`;
+  else if (E.tSince<25) s.innerHTML = 'Fizzing… watch the thermometer fall and record the <b>lowest</b> temperature.';
+  else s.innerHTML = 'Fill in this row, then press “Next experiment – fresh acid” and choose another mass.';
+}
+function eDraw(){
+  const c=$('cvE'), g=c.getContext('2d'), W=c.width, H=c.height; bench(g,W,H);
+  // weighing boat
+  g.fillStyle='#e9e2d4'; g.beginPath(); g.moveTo(60,462); g.lineTo(160,462); g.lineTo(150,472); g.lineTo(70,472); g.closePath(); g.fill(); g.strokeStyle='#a99c85'; g.stroke();
+  if (!E.added){ const r=8+Math.sqrt(E.m)*9; g.fillStyle='#fbfbf8'; g.beginPath(); g.ellipse(110,462,r,r*0.45,0,Math.PI,0); g.fill(); g.strokeStyle='#cfc8b8'; g.stroke(); }
+  label(g, `${E.m.toFixed(1)} g NaHCO₃`, 110, 440, {size:14, bold:true});
+  label(g, 'sodium hydrogencarbonate', 110, 488, {size:12, col:'#7d6a55'});
+  const froth = E.added ? Math.min(30, E.rate*0.02) : 0;
+  const surf = drawVessel(g, E.cup, 25*2.3, 'rgba(225,235,238,.7)', (x0,x1,ys,yb)=>{
+    if (froth>0.5){ g.fillStyle='rgba(255,255,255,.85)'; g.fillRect(x0, ys-froth, x1-x0, froth+2); }
+    for (const b of E.bubbles){ g.beginPath(); g.arc(b.x,b.y,b.r,0,Math.PI*2); g.fillStyle='rgba(255,255,255,.8)'; g.fill(); g.strokeStyle='rgba(90,120,140,.6)'; g.lineWidth=1; g.stroke(); }
+    if (E.added){ const left = Math.max(0, E.m/84 - Math.min(E.m/84, 3*E.cA*0.025)); const r = left>0.0005 ? 6+Math.sqrt(left*84)*7 : 0; if (r>0){ g.fillStyle='#f6f4ee'; g.beginPath(); g.ellipse(330, yb-2, r*1.6, r*0.5, 0, Math.PI, 0); g.fill(); } }
+  });
+  E._surf=surf;
+  drawThermo(g, E.th, E.Tth, -5, 30, E.wig, surf);
+  drawMagnifier(g, E.th, E.Tth, E.th==='dig'?Math.round((E.Tth+E.flick)*10)/10:E.Tth);
+  label(g, 'In the cup:', 120, 70, {size:13, col:'#7d6a55'});
+  label(g, `25 cm³ of ${E.cA.toFixed(1)} mol/dm³`, 120, 92, {size:14});
+  label(g, 'citric acid', 120, 112, {size:14});
+  if (E.added) drawClock(g, E.tSince);
+}
+function eRender(){
+  const t=$('eTable');
+  if (!E.rows.length){ t.innerHTML='<tr><td class="empty">Add the solid to start the first experiment – a row will appear here.</td></tr>'; eGraph(); return; }
+  let h='<tr><th>Mass of NaHCO₃ (g)</th><th>Starting temp (°C)</th><th>Lowest temp (°C)</th><th>Decrease (°C)</th><th></th></tr>';
+  E.rows.forEach((r,i)=>{ const d=(r.es!==null&&r.el!==null)?(r.es-r.el).toFixed(1):''; h+=`<tr class="${r===E.run&&E.added?'now':''}"><td>${r.m.toFixed(1)}</td><td class="${r.ms}"><input type="number" step="0.1" data-i="${i}" data-f="es" value="${r.es??''}"></td><td class="${r.ml}"><input type="number" step="0.1" data-i="${i}" data-f="el" value="${r.el??''}"></td><td>${d}</td><td><button class="x" data-del="${i}">✕</button></td></tr>`; });
+  t.innerHTML=h;
+  t.querySelectorAll('input').forEach(inp=>{ inp.addEventListener('change',e=>{ const r=E.rows[+e.target.dataset.i]; r[e.target.dataset.f]=e.target.value===''?null:+e.target.value; r[e.target.dataset.f==='es'?'ms':'ml']=''; eRender(); }); inp.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); e.target.blur(); } }); });
+  t.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>{ const r=E.rows[+b.dataset.del]; E.rows.splice(+b.dataset.del,1); if (r===E.run){ E.run=null; } eRender(); }));
+  eGraph();
+}
+const gE = new FitGraph('gE', { xlabel:'Mass of sodium hydrogencarbonate (g)', ylabel:'Decrease in temperature (°C)', anomTol:0.8, ymin:0,
+  xmax:p=>{ const m=Math.max(4, ...p.map(q=>q.x)); return m<=4?4:m<=5?5:m<=6?6:8; }, xstep:x=>x<=6?1:1 });
+function eGraph(){ gE.setPoints(E.rows.filter(r=>r.es!==null&&r.el!==null).map(r=>({id:r.id, x:r.m, y:+(r.es-r.el).toFixed(1)}))); }
+gE.onChange = f => {
+  const el=$('eFit');
+  if (f.inter && f.nA>=2 && f.nB>=2) el.innerHTML = `The lines cross at <b>${f.inter.x.toFixed(2)} g</b> and a decrease of <b>${f.inter.y.toFixed(1)} °C</b>.<br>This is the mass of sodium hydrogencarbonate that reacts with <b>all</b> of the citric acid. Above this mass the acid is used up.`;
+  else el.innerHTML = gE.pts.length<4 ? 'Do at least 4 experiments with different masses (or show a full set of results), then draw the lines.' : 'Click the points on the <b style="color:#2f6f9f">rising</b> part (line 1) and the <b style="color:#c0392b">level</b> part (line 2) – or press “Draw the lines for me”.';
+  updateDyn('eQs', EQ);
+};
+$('eAuto').addEventListener('click', ()=>gE.auto());
+$('eClearFit').addEventListener('click', ()=>gE.clear());
+segWire($('eA'), v=>{ E.cA=+v; eFresh(); });
+segWire($('eCup'), v=>{ E.cup=v; });
+segWire($('eTh'), v=>{ E.th=v; });
+segWire($('eSpeed'), v=>{ E.speed=+v; });
+$('eM').addEventListener('input', e=>{ E.m=+e.target.value; $('eMv').textContent=E.m.toFixed(1)+' g'; eStatus(); });
+$('eAdd').addEventListener('click', ()=>{ eAdd(); eStatus(); });
+$('eReset').addEventListener('click', ()=>{ eFresh(); eRender(); });
+$('eFill').addEventListener('click', ()=>{ const r=E.run; if(!r) return; r.es=+roundTo(r.sauto,RES[E.th]).toFixed(1); r.el=+roundTo(r.auto,RES[E.th]).toFixed(1); r.ms=r.ml=''; eRender(); });
+$('eCheck').addEventListener('click', ()=>{ let ok=0,n=0; const tol=RES[E.th]+0.01; E.rows.forEach(r=>{ if(r.es!==null){ n++; r.ms=Math.abs(r.es-r.sauto)<=tol?'ok':'bad'; if(r.ms==='ok') ok++; } if(r.el!==null){ n++; r.ml=Math.abs(r.el-r.auto)<=tol?'ok':'bad'; if(r.ml==='ok') ok++; } }); eRender(); $('eMsg').textContent=n?`${ok} of ${n} readings match the thermometer (±${RES[E.th]} °C).`:'No readings yet.'; });
+$('eCopy').addEventListener('click', ()=>{ copyText(['Mass (g)\tStarting temp (°C)\tLowest temp (°C)\tDecrease (°C)'].concat(E.rows.map(r=>`${r.m}\t${r.es??''}\t${r.el??''}\t${(r.es!==null&&r.el!==null)?(r.es-r.el).toFixed(1):''}`)).join('\n'), $('eMsg')); });
+$('eGen').addEventListener('click', ()=>{
+  const masses = E.cA===0.5 ? [0.5,1,1.5,2,2.5,3,3.5,4,4.5,5] : [1,2,3,4,5,6,7,8];
+  const keep=E.m; E.rows=[];
+  for (const m of masses){ eFresh(); E.m=m; eAdd(); for (let i=0;i<360;i++) eStep(0.25); const r=E.run; r.es=+roundTo(r.sauto,RES[E.th]).toFixed(1); r.el=+roundTo(r.auto,RES[E.th]).toFixed(1); }
+  if ($('eAnom').checked){ const r=E.rows[1+Math.floor(Math.random()*(E.rows.length-2))]; r.el = +(r.el + 1.5).toFixed(1); }
+  E.m=keep; eFresh(); eRender();
+});
+const EQ = [
+  { marks:2, q:'Explain why the temperature of the solution decreases.', ms:['The reaction is endothermic.','Energy is taken in (transferred) from the surroundings / from the solution.'] },
+  { marks:2, q:'Describe the pattern shown by your graph.', ms:['As the mass increases, the decrease in temperature increases (roughly in proportion) …','… up to a certain mass, then the decrease in temperature stays the same (levels off).'], dyn:()=>eInterText('Your lines cross at') },
+  { marks:2, q:'Explain why the decrease in temperature stops increasing when larger masses are used.', ms:['All of the citric acid has reacted / the citric acid is used up / is the limiting reactant.','So the extra sodium hydrogencarbonate does not react (it is in excess), so no more energy is taken in.'] },
+  { marks:1, q:'Use your graph to find the mass of sodium hydrogencarbonate that exactly reacts with 25 cm³ of the citric acid solution.', ms:['Read the mass where the two lines of best fit cross (allow ±0.2 g of your value).'], dyn:()=>eInterText('From your graph:') },
+  { marks:2, q:'Give two variables the student should keep the same.', ms:['Any two from: volume of citric acid; concentration of citric acid; starting temperature; type of container / insulation / lid; amount of stirring; size of solid particles.'] },
+  { marks:1, q:'Why is the lowest temperature recorded, rather than the temperature after a fixed time?', ms:['It shows the full (maximum) temperature change – after that the solution warms up again as energy is transferred from the surroundings.'] },
+  { marks:2, q:'The measured decrease in temperature is smaller than it should be. Suggest why, and an improvement.', ms:['Energy is transferred from the surroundings into the cold solution (the solution warms up).','Use a lid / polystyrene cup / better insulation; stir so the lowest temperature is reached quickly.'] },
+  { marks:2, q:'Identify any anomalous result and suggest a reason for it.', ms:['The point that is not close to the lines of best fit.','e.g. did not wait for the lowest temperature / did not stir / misread the thermometer / no lid.'], dyn:()=>{ const f=gE.fit; return f&&f.ignored&&f.ignored.length ? `You have marked as anomalous: ${f.ignored.map(p=>`${p.x} g (${p.y} °C)`).join(', ')}` : '<i>Click a point until it shows a grey circle to mark it as anomalous.</i>'; } },
+  { marks:3, tier:'Higher / triple', q:'Use your mass from the graph to calculate the moles of sodium hydrogencarbonate that react, and the ratio to the moles of citric acid. (Mr NaHCO₃ = 84)', ms:['Moles NaHCO₃ = your mass ÷ 84.','Moles citric acid = concentration × 25/1000.','Ratio NaHCO₃ : citric acid ≈ 3 : 1.'], extra:()=>{ const f=gE.fit; if(!(f&&f.inter)) return 'Draw both lines to see the worked answer.'; const nb=f.inter.x/84, nc=E.cA*0.025; return `Worked answer: ${f.inter.x.toFixed(2)} ÷ 84 = ${nb.toFixed(4)} mol; citric acid = ${E.cA.toFixed(1)} × 0.025 = ${nc.toFixed(4)} mol; ratio = <b>${(nb/nc).toFixed(2)} : 1</b> (equation: 3 : 1)`; } },
+];
+function eInterText(pre){ const f=gE.fit; return f&&f.inter ? `${pre} <b>${f.inter.x.toFixed(2)} g</b> (decrease ${f.inter.y.toFixed(1)} °C)` : '<i>Draw both lines of best fit on the graph first.</i>'; }
+renderQs('eQs', EQ);
+
+/* =====================================================================
+   tabs & loop
+   ===================================================================== */
+let active='n';
+$('etabs').addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b) return; active=b.dataset.e; $('etabs').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b)); document.querySelectorAll('.exp').forEach(s=>s.classList.toggle('on', s.id==='exp-'+active)); gN.draw(); gE.draw(); });
+let last=performance.now(), acc=0;
+function frame(now){
+  const dt=Math.min(0.05,(now-last)/1000); last=now;
+  const sn=dt*N.speed, kn=Math.max(1,Math.ceil(sn/0.1)); for (let i=0;i<kn;i++) nStep(sn/kn);
+  const se=dt*E.speed, ke=Math.max(1,Math.ceil(se/0.1)); for (let i=0;i<ke;i++) eStep(se/ke);
+  // bubbles for fizzing
+  if (E.added && E.rate>2){ const n=Math.min(6, E.rate*0.004*dt*60); for (let i=0;i<n;i++) if (Math.random()<n) E.bubbles.push({ x:280+Math.random()*100, y:455, r:1.5+Math.random()*2.5, vy:60+Math.random()*60 }); }
+  const top = E._surf||400; E.bubbles.forEach(b=>b.y-=b.vy*dt); E.bubbles=E.bubbles.filter(b=>b.y>top).slice(-200);
+  acc+=dt; if (acc>0.5){ acc=0; N.flick = Math.random()<0.3 ? (Math.random()<0.5?-0.1:0.1) : 0; E.flick = Math.random()<0.3 ? (Math.random()<0.5?-0.1:0.1) : 0; nStatus(); if (E.added) eStatus(); }
+  if (active==='n') nDraw(); else eDraw();
+  requestAnimationFrame(frame);
+}
+profile('pN', true); profile('pE', false);
+window.__t = { N, E, gN, gE };
+nFresh(); eFresh(); eRender();
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
