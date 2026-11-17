@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rate Equations 2 – Orders, Rate Equation and Half-life</title>
+<style>
+:root{
+  --bg:#f6efe1; --card:#fffaf0; --ink:#3b2a1a; --brown:#6b4423; --brown2:#8b5a2b;
+  --accent:#b5651d; --soft:#ead9bd; --line:#d8c4a0; --good:#2f7d4a; --bad:#b03a2e; --blue:#2c4a7a;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Arial,sans-serif;font-size:19px;line-height:1.55}
+header{background:var(--brown);color:#fff8ec;padding:14px 24px}
+header h1{margin:0;font-family:Georgia,serif;font-size:28px;font-weight:normal}
+header p{margin:2px 0 0;opacity:.85;font-size:16px}
+nav{display:flex;flex-wrap:wrap;gap:6px;padding:10px 24px;background:var(--soft);border-bottom:2px solid var(--line);position:sticky;top:0;z-index:5}
+nav button{border:2px solid var(--brown2);background:var(--card);color:var(--brown);padding:7px 14px;border-radius:20px;font-size:16px;cursor:pointer}
+nav button.on{background:var(--brown2);color:#fff}
+main{max-width:1100px;margin:0 auto;padding:20px 24px 60px}
+.page{display:none}.page.on{display:block}
+h2{font-family:Georgia,serif;color:var(--brown);font-size:30px;margin:6px 0 12px;font-weight:normal}
+h3{color:var(--brown2);font-size:22px;margin:22px 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:14px 0;box-shadow:0 2px 0 var(--line)}
+.key{border-left:6px solid var(--accent)}
+.eq{font-family:Georgia,serif;font-size:24px;text-align:center;padding:10px;background:#fff;border:1px dashed var(--line);border-radius:8px;margin:10px 0}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 6px}
+.frac span:first-child{border-bottom:2px solid var(--ink);padding:0 6px}
+.row{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+.row>*{flex:1 1 380px}
+button.b{background:var(--brown2);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:17px;cursor:pointer;margin:4px 6px 4px 0}
+button.b.alt{background:var(--card);color:var(--brown);border:2px solid var(--brown2)}
+button.b:disabled{opacity:.45;cursor:default}
+.check{background:#fdf6e6;border:2px solid var(--accent);border-radius:12px;padding:14px 18px;margin:16px 0}
+.check .tag{display:inline-block;background:var(--accent);color:#fff;font-size:14px;padding:2px 10px;border-radius:12px;margin-bottom:6px;letter-spacing:.5px}
+.check .src{font-size:14px;color:#8a7356;font-style:italic}
+input.ans{font-size:18px;padding:6px 10px;width:200px;border:2px solid var(--line);border-radius:6px}
+.fb{font-weight:600;margin-left:8px}
+.fb.ok{color:var(--good)}.fb.no{color:var(--bad)}
+.work{display:none;background:#fff;border-left:4px solid var(--brown2);padding:8px 14px;margin-top:8px;border-radius:4px}
+.work.on{display:block}
+table.t{border-collapse:collapse;margin:8px 0;background:#fff}
+table.t th,table.t td{border:1px solid var(--line);padding:6px 12px;text-align:center}
+table.t th{background:var(--soft);color:var(--brown)}
+svg text{font-family:"Segoe UI",Arial,sans-serif}
+.readout{font-family:Consolas,monospace;background:#2b1d10;color:#ffe9c4;padding:10px 14px;border-radius:8px;font-size:17px;line-height:1.6}
+.slider{width:100%}
+label.s{display:block;font-weight:600;color:var(--brown);margin-top:8px}
+.steps li{margin:6px 0}
+.reveal{display:none}.reveal.on{display:block;animation:fade .4s}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+.pager{display:flex;justify-content:space-between;margin-top:30px}
+.mcq button.opt{display:block;width:100%;text-align:left;margin:6px 0;padding:10px 14px;font-size:17px;border:2px solid var(--line);background:#fff;border-radius:8px;cursor:pointer;color:var(--ink)}
+.mcq button.opt.right{border-color:var(--good);background:#e6f4ea}
+.mcq button.opt.wrong{border-color:var(--bad);background:#fbe9e7}
+.mcq .exp{display:none;margin-top:6px;font-size:17px}
+.mcq.done .exp{display:block}
+.warn{background:#fbeee4;border-left:6px solid var(--bad);padding:10px 16px;border-radius:6px;margin:12px 0}
+.small{font-size:15px;color:#7a6448}
+canvas{background:#fff;border:1px solid var(--line);border-radius:8px;max-width:100%}
+.beakers{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
+.bk{text-align:center;font-size:16px}
+.ordbox{flex:1 1 300px;background:#fff8ec;border:1px solid var(--line);border-radius:10px;padding:10px}
+.ordbox canvas{width:100%}
+</style>
+</head>
+<body>
+<header>
+  <h1>Rate Equations 2 – Orders, the Rate Equation and Half-life</h1>
+  <p>AQA A-level Chemistry · Kinetics walkthrough</p>
+</header>
+<nav id="nav"></nav>
+<main>
+
+<!-- ============ PAGE 1 ============ -->
+<section class="page" data-title="1. What is an order?">
+<h2>1. What is an order of reaction?</h2>
+<div class="card key">
+  <p>The <b>order with respect to a reactant</b> tells you <b>how the rate depends on the concentration of that reactant</b>.</p>
+  <p>It is the <b>power</b> that the reactant's concentration is raised to in the rate equation.</p>
+  <table class="t" style="margin:10px auto">
+    <tr><th>Order w.r.t. A</th><th>rate ∝</th><th>Double [A] → rate</th><th>Triple [A] → rate</th><th>In words</th></tr>
+    <tr><td><b>0</b></td><td>[A]⁰ = 1</td><td>× 1 (no change)</td><td>× 1</td><td>[A] has no effect on the rate</td></tr>
+    <tr><td><b>1</b></td><td>[A]¹</td><td>× 2</td><td>× 3</td><td>rate is directly proportional to [A]</td></tr>
+    <tr><td><b>2</b></td><td>[A]²</td><td>× 2² = × 4</td><td>× 3² = × 9</td><td>rate is proportional to [A] squared</td></tr>
+  </table>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Animation: why would orders be different?</h3>
+  <p>Each box shows a different way that reactant A can react. Change [A] and watch what happens to the rate in each box. Look at <b>what has to happen</b> for one reaction event (✸) in each case.</p>
+  <div style="text-align:center;margin:6px 0 10px">
+    <b>[A]:</b>
+    <button class="b mult on" data-m="1">× 1</button>
+    <button class="b alt mult" data-m="2">× 2</button>
+    <button class="b alt mult" data-m="3">× 3</button>
+    <button class="b alt" id="boxPlay">❚❚ Pause</button>
+  </div>
+  <div class="row" style="gap:12px">
+    <div class="ordbox"><h3 style="margin:0 0 4px">Zero order</h3><canvas id="bx0" width="300" height="230"></canvas><div class="readout" id="bo0"></div>
+      <p class="small">A must land on one of the 3 hot surface sites (grey) to react. The sites are <b>always full</b>, so extra A just waits its turn and the rate can't go up.<br>(e.g. NH₃ decomposing on hot tungsten)</p></div>
+    <div class="ordbox"><h3 style="margin:0 0 4px">First order</h3><canvas id="bx1" width="300" height="230"></canvas><div class="readout" id="bo1"></div>
+      <p class="small">Each A particle has the same small chance per second of breaking apart <b>on its own</b>. Twice as many A particles gives twice as many reactions per second.</p></div>
+    <div class="ordbox"><h3 style="margin:0 0 4px">Second order</h3><canvas id="bx2" width="300" height="230"></canvas><div class="readout" id="bo2"></div>
+      <p class="small">A reacts only when <b>two A particles collide</b>. Double [A]: there are twice as many particles, and each one has twice as many partners to hit. 2 × 2 = <b>4× the rate</b>.</p></div>
+  </div>
+  <p class="small">[A] is held constant in each box (reacted particles are replaced) so we compare the rate at one concentration at a time. The counts are random, so they jump about. Watch the trend.</p>
+</div>
+
+<div class="card key">
+  <h3 style="margin-top:0">The big idea</h3>
+  <p>The order tells you <b>how many particles of that reactant are involved in the slowest step</b> of the reaction. You'll meet this again as the <b>rate-determining step</b>.</p>
+  <div class="warn" style="margin-bottom:0"><b>Orders can only be found by experiment.</b> You <u>cannot</u> read them from the balanced equation.<br>
+  Example: propanone + I₂ (acid-catalysed) is <b>zero order</b> with respect to I₂, even though I₂ is a reactant in the equation. It is <b>first order</b> with respect to H⁺, even though H⁺ is a catalyst and isn't used up.</div>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Interactive: concentration change → rate change</h3>
+  <div class="row">
+    <div>
+      <label class="s">Order with respect to A</label>
+      <select id="ocO" style="font-size:18px;padding:5px"><option>0</option><option selected>1</option><option>2</option></select>
+      <label class="s">Concentration of A multiplied by: <span id="ocFv"></span></label>
+      <input type="range" class="slider" id="ocF" min="0.5" max="4" step="0.5" value="2">
+    </div>
+    <div><div class="readout" id="ocOut" style="font-size:20px"></div></div>
+  </div>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 1</span>
+  <span class="src">From Rate Equations 2 Q8</span>
+  <p>For each reactant, work out the order from the change in concentration and rate.</p>
+  <table class="t">
+    <tr><th>Reactant</th><th>[ ] / mol dm⁻³</th><th>rate / mol dm⁻³ s⁻¹</th><th>Order?</th></tr>
+    <tr><td>A</td><td>0.2 → 0.3</td><td>1.90 → 2.85</td><td><span class="ob" data-a="1"></span></td></tr>
+    <tr><td>D</td><td>0.1 → 0.2</td><td>0.41 → 0.41</td><td><span class="ob" data-a="0"></span></td></tr>
+    <tr><td>B</td><td>0.2 → 0.5</td><td>0.91 → 2.28</td><td><span class="ob" data-a="1"></span></td></tr>
+    <tr><td>F</td><td>0.55 → 0.79</td><td>8.59 × 10⁻² → 0.175</td><td><span class="ob" data-a="2"></span></td></tr>
+  </table>
+  <button class="b alt" onclick="tog('c1w')">Working</button>
+  <div class="work" id="c1w">Find the factor each one changes by:<br>
+  A: conc ×1.5, rate ×1.5 → <b>1st order</b><br>
+  D: conc ×2, rate ×1 → <b>zero order</b><br>
+  B: conc ×2.5, rate ×2.5 → <b>1st order</b><br>
+  F: conc ×1.44, rate ×2.04. Since 1.44² = 2.07 ≈ 2.04 → <b>2nd order</b></div>
+</div>
+</section>
+
+<!-- ============ PAGE 2 ============ -->
+<section class="page" data-title="2. The rate equation">
+<h2>2. The rate equation</h2>
+<div class="card key">
+  <div class="eq">rate = k [A]<sup>m</sup> [B]<sup>n</sup></div>
+  <ul>
+    <li><b>m</b> and <b>n</b> are the orders with respect to A and B. They are found by experiment and are usually 0, 1 or 2.</li>
+    <li><b>Overall order</b> = m + n (add up all the orders).</li>
+    <li><b>k</b> is the <b>rate constant</b>. It is constant at a fixed temperature. <b>Only temperature</b> (or adding a catalyst) changes k. Changing concentration does <u>not</u> change k.</li>
+    <li>A reactant that is <b>zero order</b> is left out of the rate equation, because [X]⁰ = 1.</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Interactive: build a rate equation</h3>
+  <div class="row">
+    <div>
+      <label class="s">Order with respect to A</label><select id="reA" style="font-size:18px"><option>0</option><option selected>1</option><option>2</option></select>
+      <label class="s">Order with respect to B</label><select id="reB" style="font-size:18px"><option>0</option><option>1</option><option selected>2</option></select>
+      <label class="s">Order with respect to C</label><select id="reC" style="font-size:18px"><option selected>0</option><option>1</option><option>2</option></select>
+    </div>
+    <div><div class="readout" id="reOut" style="font-size:20px"></div></div>
+  </div>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 2</span>
+  <span class="src">Rate Equations 2 Q4</span>
+  <p>For A + B + C → D + E the rate equation is <b>rate = k[A]²[C]</b>.</p>
+  <p>(a) Order with respect to B?
+    <button class="b alt" onclick="pick(this,true,'c2a')">0</button><button class="b alt" onclick="pick(this,false,'c2a')">1</button><button class="b alt" onclick="pick(this,false,'c2a')">2</button><span class="fb" id="c2a"></span></p>
+  <p>(b) Overall order?
+    <button class="b alt" onclick="pick(this,false,'c2b')">2</button><button class="b alt" onclick="pick(this,true,'c2b')">3</button><button class="b alt" onclick="pick(this,false,'c2b')">4</button><span class="fb" id="c2b"></span></p>
+</div>
+
+<h3>Calculating k</h3>
+<div class="card">
+  <span class="src">June 2017 Paper 2 Q3.1 (3 marks)</span>
+  <p>rate = k[C][D]. At 25 °C the initial rate is 3.1 × 10⁻³ mol dm⁻³ s⁻¹ when [C] = 0.48 mol dm⁻³ and [D] = 0.23 mol dm⁻³. Calculate k and give its units.</p>
+  <button class="b alt" onclick="stepReveal('we1')">Show next step</button>
+  <ol class="steps" id="we1">
+    <li class="reveal">Rearrange: k = <span class="frac"><span>rate</span><span>[C][D]</span></span></li>
+    <li class="reveal">k = 3.1 × 10⁻³ ÷ (0.48 × 0.23) = 3.1 × 10⁻³ ÷ 0.1104 = <b>2.8 × 10⁻² </b></li>
+    <li class="reveal">Units: <span class="frac"><span>mol dm⁻³ s⁻¹</span><span>(mol dm⁻³)(mol dm⁻³)</span></span> = <b>mol⁻¹ dm³ s⁻¹</b> (more on units on the next page)</li>
+  </ol>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 3</span>
+  <span class="src">Rate Equations 2 Q5</span>
+  <p>The acid-catalysed reaction of propanone with iodine is <b>1st order</b> with respect to propanone, <b>1st order</b> with respect to H⁺ and <b>zero order</b> with respect to iodine. [CH₃COCH₃] = 0.10, [I₂] = 0.10 and [H⁺] = 0.50 mol dm⁻³. The rate is 1.52 × 10⁻³ mol dm⁻³ s⁻¹. Write the rate equation and calculate k.</p>
+  <input class="ans" id="c3"> <button class="b" onclick="numCheck('c3',0.0304,0.02)">Check</button><span class="fb" id="c3fb"></span>
+  <button class="b alt" onclick="tog('c3w')">Working</button>
+  <div class="work" id="c3w">rate = k[CH₃COCH₃][H⁺] (iodine is zero order, so it is left out)<br>k = 1.52 × 10⁻³ ÷ (0.10 × 0.50) = <b>3.04 × 10⁻² mol⁻¹ dm³ s⁻¹</b><br>Always build the rate equation from the orders, not from the balanced equation.</div>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 4</span>
+  <span class="src">June 2019 Paper 2 Q4.3 (3 marks)</span>
+  <p>A reaction is second order with respect to R and second order with respect to S. The initial rate is 1.20 × 10⁻³ mol dm⁻³ s⁻¹ when [R] = 1.00 × 10⁻² and [S] = 2.45 × 10⁻² mol dm⁻³. Calculate k.</p>
+  <input class="ans" id="c4"> <button class="b" onclick="numCheck('c4',2.0e4,0.02)">Check</button><span class="fb" id="c4fb"></span>
+  <button class="b alt" onclick="tog('c4w')">Working</button>
+  <div class="work" id="c4w">rate = k[R]²[S]²<br>k = 1.20 × 10⁻³ ÷ ((1.00 × 10⁻²)² × (2.45 × 10⁻²)²) = 1.20 × 10⁻³ ÷ 6.00 × 10⁻⁸ = <b>2.00 × 10⁴ mol⁻³ dm⁹ s⁻¹</b><br>Common slip: forgetting to square <i>both</i> concentrations.</div>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 5</span>
+  <span class="src">Rate Equations 2 Q6</span>
+  <p>Butadiene dimerisation is second order with respect to C₄H₆. When [C₄H₆] = 0.035 mol dm⁻³ the rate is 4.02 × 10⁻⁶ mol dm⁻³ s⁻¹. Calculate k.</p>
+  <input class="ans" id="c5"> <button class="b" onclick="numCheck('c5',3.28e-3,0.02)">Check</button><span class="fb" id="c5fb"></span>
+  <button class="b alt" onclick="tog('c5w')">Working</button>
+  <div class="work" id="c5w">k = 4.02 × 10⁻⁶ ÷ 0.035² = 4.02 × 10⁻⁶ ÷ 1.225 × 10⁻³ = <b>3.28 × 10⁻³ mol⁻¹ dm³ s⁻¹</b></div>
+</div>
+</section>
+
+<!-- ============ PAGE 3 ============ -->
+<section class="page" data-title="3. Units of k">
+<h2>3. Units of the rate constant, k</h2>
+<div class="card key">
+  <p>The units of k are <b>not fixed</b>. They depend on the <b>overall order</b>. Always work them out by substituting units into the rearranged rate equation and cancelling.</p>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Interactive: units machine</h3>
+  <label class="s">Overall order:
+    <select id="uO" style="font-size:18px"><option>0</option><option>1</option><option selected>2</option><option>3</option><option>4</option></select></label>
+  <button class="b alt" onclick="uStep()">Show next step</button><button class="b alt" onclick="uDraw(0)">Start again</button>
+  <div id="uBox" style="font-size:22px;margin-top:10px"></div>
+</div>
+
+<div class="card">
+  <table class="t" style="margin:auto">
+    <tr><th>Overall order</th><th>Units of k</th></tr>
+    <tr><td>0</td><td>mol dm⁻³ s⁻¹</td></tr>
+    <tr><td>1</td><td>s⁻¹</td></tr>
+    <tr><td>2</td><td>mol⁻¹ dm³ s⁻¹</td></tr>
+    <tr><td>3</td><td>mol⁻² dm⁶ s⁻¹</td></tr>
+    <tr><td>4</td><td>mol⁻³ dm⁹ s⁻¹</td></tr>
+  </table>
+  <p class="small" style="text-align:center">Pattern: each extra order adds another mol⁻¹ dm³. Learn the method, not the table.</p>
+</div>
+
+<div class="card key">
+  <h3 style="margin-top:0">Why the units matter</h3>
+  <ol>
+    <li><b>Marks:</b> units of k are almost always a separate mark in the exam.</li>
+    <li><b>They tell you the overall order.</b> s⁻¹ means first order overall. mol⁻² dm⁶ s⁻¹ means third order overall. So if you're given k with units, you can find a <b>missing order</b>.</li>
+    <li><b>A built-in check.</b> If your rate equation gives units that don't match the k you've been given, your rate equation is wrong.</li>
+  </ol>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 6 – units → overall order</span>
+  <div id="u2o"></div>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 7 – find the missing order</span>
+  <p>rate = k[X][Y]<sup>?</sup>. The rate constant is 4.6 × 10² mol⁻² dm⁶ s⁻¹. What is the order with respect to Y?</p>
+  <button class="b alt" onclick="pick(this,false,'c7')">0</button><button class="b alt" onclick="pick(this,false,'c7')">1</button><button class="b alt" onclick="pick(this,true,'c7')">2</button><span class="fb" id="c7"></span>
+  <button class="b alt" onclick="tog('c7w')">Working</button>
+  <div class="work" id="c7w">mol⁻² dm⁶ s⁻¹ means <b>3rd order overall</b>. X is 1st order, so Y must be 3 − 1 = <b>2nd order</b>.</div>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 8</span>
+  <span class="src">Rate Equations 2 Q7</span>
+  <p>2nd order w.r.t. A, zero order w.r.t. B, 1st order w.r.t. C. Rate = 0.930 mol dm⁻³ s⁻¹ when every concentration is 0.100 mol dm⁻³. Calculate k <b>and choose the units</b>.</p>
+  <input class="ans" id="c8"> <button class="b" onclick="numCheck('c8',930,0.01)">Check</button><span class="fb" id="c8fb"></span>
+  <div style="margin-top:8px">Units:
+    <button class="b alt" onclick="pick(this,false,'c8u')">mol⁻¹ dm³ s⁻¹</button><button class="b alt" onclick="pick(this,true,'c8u')">mol⁻² dm⁶ s⁻¹</button><button class="b alt" onclick="pick(this,false,'c8u')">mol² dm⁻⁶ s⁻¹</button><span class="fb" id="c8u"></span></div>
+  <button class="b alt" onclick="tog('c8w')">Working</button>
+  <div class="work" id="c8w">rate = k[A]²[C] → 3rd order overall<br>k = 0.930 ÷ (0.100² × 0.100) = 0.930 ÷ 1.00 × 10⁻³ = <b>930 mol⁻² dm⁶ s⁻¹</b></div>
+</div>
+
+<div class="warn"><b>Common errors:</b> getting the signs the wrong way round (mol dm⁻³ when it should be mol⁻¹ dm³); writing dm³ as dm⁻³; leaving out s⁻¹; using the stoichiometry of the equation instead of the orders.</div>
+</section>
+
+<!-- ============ PAGE 4 ============ -->
+<section class="page" data-title="4. Graphs for different orders">
+<h2>4. Graphs for different orders</h2>
+<p>There are two types of graph to recognise and sketch. Click an order to see both graphs.</p>
+<div style="margin:8px 0">
+  <button class="b gord" data-o="0">Zero order</button>
+  <button class="b alt gord" data-o="1">First order</button>
+  <button class="b alt gord" data-o="2">Second order</button>
+  <button class="b alt gord" data-o="all">Compare all three</button>
+</div>
+<div class="row">
+  <div class="card"><h3 style="margin-top:0">Concentration – time</h3><svg id="gCT" viewBox="0 0 660 400" width="100%"></svg></div>
+  <div class="card"><h3 style="margin-top:0">Rate – concentration</h3><svg id="gRC" viewBox="0 0 660 400" width="100%"></svg></div>
+</div>
+<div class="card key" id="gTxt"></div>
+<p class="small">All three curves start at the same concentration with the same initial rate, so you can see how they differ.</p>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 9</span>
+  <span class="src">June 2018 Paper 3 Q1.3 (2 marks)</span>
+  <p>A graph of [H⁺] against time is a <b>straight line</b> sloping downwards. Explain how this shows the order with respect to H⁺ is zero.</p>
+  <button class="b alt" onclick="tog('c9w')">Mark scheme</button>
+  <div class="work" id="c9w">M1: <b>constant gradient</b> (constant rate), or the decrease in concentration is proportional to time<br>M2: <b>as [H⁺] decreases</b>. The rate doesn't change even though [H⁺] falls, so [H⁺] has no effect on the rate.<br><i>"It's a straight line" on its own doesn't get the mark.</i></div>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 10</span>
+  <span class="src">June 2022 Paper 3 Q4.4–4.5</span>
+  <table class="t"><tr><th>[H₂O₂] / mol dm⁻³</th><td>0.02</td><td>0.03</td><td>0.05</td><td>0.07</td><td>0.09</td></tr>
+  <tr><th>Rate / mol dm⁻³ s⁻¹</th><td>0.00049</td><td>0.00073</td><td>0.00124</td><td>0.00168</td><td>0.00219</td></tr></table>
+  <svg id="h2o2Svg" viewBox="0 0 660 400" width="100%" style="max-width:600px"></svg>
+  <p>What is the order with respect to H₂O₂?
+    <button class="b alt" onclick="pick(this,false,'c10')">0</button><button class="b alt" onclick="pick(this,true,'c10')">1</button><button class="b alt" onclick="pick(this,false,'c10')">2</button><span class="fb" id="c10"></span></p>
+  <button class="b alt" onclick="tog('c10w');drawFit()">How the graph shows it</button>
+  <div class="work" id="c10w"><b>First order.</b> The graph is a <b>straight line through the origin</b>, so rate is directly proportional to [H₂O₂].</div>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 11</span>
+  <span class="src">June 2024 Paper 2 Q1.1</span>
+  <p>CH₃COCH₃ + Br₂ + OH⁻ → CH₃COCH₂Br + Br⁻ + H₂O &nbsp; with &nbsp; rate = k[CH₃COCH₃][OH⁻]</p>
+  <p>Which sketch shows how [Br₂] changes with time? (Assume the other reactants are in large excess.)</p>
+  <div class="row" id="sk11" style="gap:10px"></div>
+  <span class="fb" id="c11"></span>
+  <div class="small">Hint: what is the order with respect to Br₂?</div>
+</div>
+</section>
+
+<!-- ============ PAGE 5 ============ -->
+<section class="page" data-title="5. Half-life">
+<h2>5. Half-life and first order reactions</h2>
+<div class="card key">
+  <p>The <b>half-life, t½</b>, is the time taken for the concentration of a reactant to fall to <b>half</b> its value.</p>
+  <p>For a <b>first order</b> reaction the half-life is <b>constant</b>. It doesn't matter what concentration you start from.</p>
+  <p>This gives you a quick test. Measure two or more half-lives from a concentration–time graph:</p>
+  <ul><li>they're the <b>same</b> → <b>first order</b></li><li>they get <b>longer</b> as the reaction goes on → <b>second order</b></li><li>they get <b>shorter</b> → <b>zero order</b></li></ul>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Interactive: measure the half-life from anywhere</h3>
+  <div style="margin-bottom:6px">
+    <button class="b alt hord" data-o="0">Zero order</button>
+    <button class="b hord" data-o="1">First order</button>
+    <button class="b alt hord" data-o="2">Second order</button>
+  </div>
+  <div class="row">
+    <div style="flex:2 1 520px"><svg id="hSvg" viewBox="0 0 660 400" width="100%"></svg></div>
+    <div style="flex:1 1 260px">
+      <label class="s">Starting concentration: <span id="hsv"></span> mol dm⁻³</label>
+      <input type="range" class="slider" id="hs" min="0.20" max="0.80" step="0.01" value="0.80">
+      <div class="readout" id="hOut"></div>
+      <button class="b alt" style="margin-top:8px" onclick="logHalf()">Record this half-life</button>
+      <table class="t" id="hLog"><tr><th>order</th><th>start [A]</th><th>t½ / s</th></tr></table>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Why is the first order half-life constant?</h3>
+  <button class="b alt" onclick="stepReveal('whyh')">Show next step</button>
+  <ol class="steps" id="whyh">
+    <li class="reveal">First order: rate = k[A], so the rate is proportional to the concentration.</li>
+    <li class="reveal">Start at 0.80: the rate is high and there's 0.40 to lose. Start at 0.40: the rate is half as fast, but there's only half as much (0.20) to lose.</li>
+    <li class="reveal">Half the amount at half the rate takes <b>the same time</b>. So every half-life is equal.</li>
+    <li class="reveal">Second order: halve [A] and the rate drops to a <b>quarter</b>, but there is still half as much to lose. So it takes <b>twice as long</b>, and the half-lives get longer.</li>
+  </ol>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 12</span>
+  <p>Use the graph to find two successive half-lives. Is the reaction first order?</p>
+  <svg id="hcSvg" viewBox="0 0 660 400" width="100%" style="max-width:640px"></svg>
+  <p>First half-life (0.12 → 0.06): <input class="ans" id="c12a" style="width:110px"> s <button class="b" onclick="numCheck('c12a',30,0.1)">Check</button><span class="fb" id="c12afb"></span></p>
+  <p>Second half-life (0.06 → 0.03): <input class="ans" id="c12b" style="width:110px"> s <button class="b" onclick="numCheck('c12b',30,0.1)">Check</button><span class="fb" id="c12bfb"></span></p>
+  <button class="b alt" onclick="hcLines();tog('c12w')">Show on graph</button>
+  <div class="work" id="c12w">Both half-lives are about 30 s, so the half-life is constant and the reaction is <b>first order</b>.</div>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 13</span>
+  <span class="src">November 2020 Paper 3 Q4.4 (3 marks)</span>
+  <p>You have a graph of concentration against time. Describe how you could use it to confirm the reaction is first order.</p>
+  <button class="b alt" onclick="tog('c13w')">Mark scheme</button>
+  <div class="work" id="c13w">Either <b>half-life method</b>:<br>M1 plot concentration (y) against time (x)<br>M2 measure at least two half-lives<br>M3 a constant half-life means first order<br><br>Or <b>tangent method</b>:<br>M1 draw tangents at several points to find rates<br>M2 plot rate against concentration<br>M3 a straight line through the origin (directly proportional) confirms first order</div>
+</div>
+</section>
+
+<!-- ============ PAGE 6 ============ -->
+<section class="page" data-title="6. Quiz">
+<h2>6. End-of-walkthrough quiz</h2>
+<p>Click an answer. You get one go at each question.</p>
+<div id="quiz"></div>
+<div class="card" id="score" style="font-size:22px;text-align:center"></div>
+<button class="b alt" onclick="buildQuiz()">Reset quiz</button>
+<p class="small">Next: Walkthrough 3 – finding orders from rates tables.</p>
+</section>
+
+<div class="pager"><button class="b alt" id="prevB">◀ Previous</button><button class="b" id="nextB">Next ▶</button></div>
+</main>
+
+<script>
+/* ---------- navigation ---------- */
+const pages=[...document.querySelectorAll('.page')];let cur=0;
+const nav=document.getElementById('nav');
+pages.forEach((p,i)=>{const b=document.createElement('button');b.textContent=p.dataset.title;b.onclick=()=>go(i);nav.appendChild(b)});
+function go(i){cur=i;pages.forEach((p,j)=>p.classList.toggle('on',j===i));[...nav.children].forEach((b,j)=>b.classList.toggle('on',j===i));
+ document.getElementById('prevB').disabled=i===0;document.getElementById('nextB').disabled=i===pages.length-1;window.scrollTo(0,0)}
+document.getElementById('prevB').onclick=()=>go(Math.max(0,cur-1));
+document.getElementById('nextB').onclick=()=>go(Math.min(pages.length-1,cur+1));
+
+/* ---------- helpers ---------- */
+function tog(id){document.getElementById(id).classList.toggle('on')}
+function stepReveal(id){const r=[...document.querySelectorAll('#'+id+' .reveal:not(.on)')];if(r.length)r[0].classList.add('on')}
+function parseNum(s){
+ s=s.trim().replace(/\s/g,'');const sup={'⁰':'0','¹':'1','²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9','⁻':'-'};
+ s=s.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁻]/g,c=>sup[c]).replace(/[−–]/g,'-');
+ let m=s.match(/^(-?[\d.]+)[x×X*]10\^?(-?\d+)$/);if(m)return parseFloat(m[1])*Math.pow(10,parseInt(m[2]));
+ const v=Number(s);return isNaN(v)?null:v}
+function numCheck(id,target,tol){const v=parseNum(document.getElementById(id).value);const fb=document.getElementById(id+'fb');
+ if(v===null){fb.textContent='Enter a number';fb.className='fb no';return}
+ if(Math.abs(v-target)<=Math.abs(target)*tol){fb.textContent='✔ Correct';fb.className='fb ok'}
+ else{fb.textContent='✘ Not quite, check your working';fb.className='fb no'}}
+function unitPick(btn,ok){const f=document.getElementById('c5u');f.textContent=ok?'✔ Yes, cm³ s⁻¹':'✘ Try again';f.className='fb '+(ok?'ok':'no')}
+function pick(btn,ok,id){const f=document.getElementById(id);f.textContent=ok?'✔ Correct':'✘ Try again';f.className='fb '+(ok?'ok':'no')}
+
+
+/* ---------- SVG plotting ---------- */
+const NS='http://www.w3.org/2000/svg';
+function E(tag,a,p){const e=document.createElementNS(NS,tag);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e}
+function plot(svg,o){
+ svg.innerHTML='';const W=660,H=400,ml=80,mr=20,mt=18,mb=60,pw=W-ml-mr,ph=H-mt-mb;
+ const X=x=>ml+x/o.xmax*pw,Y=y=>mt+ph-y/o.ymax*ph;
+ const id='cl'+Math.random().toString(36).slice(2);
+ const d=E('defs',{},svg);const cp=E('clipPath',{id},d);E('rect',{x:ml,y:mt,width:pw,height:ph},cp);
+ E('rect',{x:ml,y:mt,width:pw,height:ph,fill:'#fff'},svg);
+ const gx=o.gx||o.xt,gy=o.gy||o.yt;
+ for(let x=0;x<=o.xmax+1e-9;x+=gx)E('line',{x1:X(x),x2:X(x),y1:mt,y2:mt+ph,stroke:'#efe3cc'},svg);
+ for(let y=0;y<=o.ymax+1e-9;y+=gy)E('line',{x1:ml,x2:ml+pw,y1:Y(y),y2:Y(y),stroke:'#efe3cc'},svg);
+ for(let x=0;x<=o.xmax+1e-9;x+=o.xt){E('line',{x1:X(x),x2:X(x),y1:mt+ph,y2:mt+ph+6,stroke:'#3b2a1a'},svg);const t=E('text',{x:X(x),y:mt+ph+24,'text-anchor':'middle','font-size':15,fill:'#3b2a1a'},svg);t.textContent=+x.toFixed(4)}
+ for(let y=0;y<=o.ymax+1e-9;y+=o.yt){E('line',{x1:ml-6,x2:ml,y1:Y(y),y2:Y(y),stroke:'#3b2a1a'},svg);const t=E('text',{x:ml-10,y:Y(y)+5,'text-anchor':'end','font-size':15,fill:'#3b2a1a'},svg);t.textContent=(o.yfmt?o.yfmt(y):+y.toFixed(3))}
+ E('line',{x1:ml,x2:ml+pw,y1:mt+ph,y2:mt+ph,stroke:'#3b2a1a','stroke-width':2},svg);
+ E('line',{x1:ml,x2:ml,y1:mt,y2:mt+ph,stroke:'#3b2a1a','stroke-width':2},svg);
+ let t=E('text',{x:ml+pw/2,y:H-12,'text-anchor':'middle','font-size':17,fill:'#6b4423'},svg);t.textContent=o.xlab;
+ t=E('text',{x:18,y:mt+ph/2,'text-anchor':'middle','font-size':17,fill:'#6b4423',transform:`rotate(-90 18 ${mt+ph/2})`},svg);t.textContent=o.ylab;
+ const g=E('g',{'clip-path':`url(#${id})`},svg);
+ return {X,Y,g,svg,curve(f,col='#6b4423',w=3,dash){let dd='';for(let i=0;i<=300;i++){const x=o.xmax*i/300;dd+=(i?'L':'M')+X(x)+' '+Y(f(x))}return E('path',{d:dd,fill:'none',stroke:col,'stroke-width':w,'stroke-dasharray':dash||''},g)}};
+}
+
+
+const sup=n=>String(n).split('').map(c=>({'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'})[c]).join('');
+
+/* ---------- page 1: order boxes ---------- */
+let mult=1,boxesRun=true;
+const boxes=[0,1,2].map(o=>({o,cv:document.getElementById('bx'+o),ev:[],fl:[],parts:[],sites:[]}));
+const W=300,H=230,R=7;
+function initBox(b){b.parts=[];const n=10*mult;for(let i=0;i<n;i++){const a=Math.random()*6.28,v=70+Math.random()*30;b.parts.push({x:R+Math.random()*(W-2*R),y:R+Math.random()*(H-40),vx:v*Math.cos(a),vy:v*Math.sin(a),stuck:0})}
+ b.ev=[];b.t=0;b.pairs=new Set();b.sites=[{x:50,p:null},{x:150,p:null},{x:250,p:null}]}
+function stepBox(b,dt){b.t+=dt;
+ b.parts.forEach(p=>{if(p.stuck>0){p.stuck-=dt;if(p.stuck<=0){b.ev.push(b.t);b.fl.push({x:p.x,y:p.y,l:.6});p.vy=-80;p.vx=(Math.random()-.5)*120;p.y-=4;p.cool=1.5;const s=b.sites.find(s=>s.p===p);if(s)s.p=null}return}
+  if(p.tg){const dx=p.tg.x-p.x,dy=(H-12-R)-p.y,d=Math.hypot(dx,dy);if(d<4){p.x=p.tg.x;p.y=H-12-R;p.stuck=3;p.tg=null}else{p.x+=dx/d*160*dt;p.y+=dy/d*160*dt}return}
+  p.x+=p.vx*dt;p.y+=p.vy*dt;
+  if(p.x<R){p.x=R;p.vx*=-1}if(p.x>W-R){p.x=W-R;p.vx*=-1}if(p.y<R){p.y=R;p.vy*=-1}
+  const floor=H-R-(b.o===0?12:0);
+  if(p.y>floor){p.y=floor;p.vy*=-1;
+}
+  if(b.o===1&&Math.random()<0.2*dt){b.ev.push(b.t);b.fl.push({x:p.x,y:p.y,l:.6})}});
+ if(b.o===0)b.sites.forEach(st=>{if(!st.p){let best=null,bd=1e9;b.parts.forEach(p=>{if(p.stuck>0||p.tg||p.cool>0)return;const d=Math.hypot(p.x-st.x,p.y-H);if(d<bd){bd=d;best=p}});if(best){st.p=best;best.tg=st}}});
+ b.parts.forEach(p=>{if(p.cool>0)p.cool-=dt});
+ if(b.o===2){const P=b.parts;for(let i=0;i<P.length;i++)for(let j=i+1;j<P.length;j++){const key=i*100+j,d=Math.hypot(P[i].x-P[j].x,P[i].y-P[j].y);
+  if(d<2*R){if(!b.pairs.has(key)){b.pairs.add(key);b.ev.push(b.t);b.fl.push({x:(P[i].x+P[j].x)/2,y:(P[i].y+P[j].y)/2,l:.6});
+   const tx=P[i].vx;P[i].vx=P[j].vx;P[j].vx=tx;const ty=P[i].vy;P[i].vy=P[j].vy;P[j].vy=ty}}else b.pairs.delete(key)}}
+ b.fl.forEach(f=>f.l-=dt);b.fl=b.fl.filter(f=>f.l>0)}
+function drawBox(b){const c=b.cv.getContext('2d');c.clearRect(0,0,W,H);
+ if(b.o===0){c.fillStyle='#c9b28a';c.fillRect(0,H-12,W,12);b.sites.forEach(s=>{c.fillStyle='#777';c.fillRect(s.x-22,H-12,44,12)})}
+ b.parts.forEach(p=>{c.beginPath();c.arc(p.x,p.y,R,0,7);c.fillStyle=(p.stuck>0||p.tg)?'#b5651d':'#6b4423';c.fill()});
+ b.fl.forEach(f=>{c.beginPath();c.arc(f.x,f.y,8+(0.6-f.l)*30,0,7);c.strokeStyle=`rgba(181,101,29,${f.l/.6})`;c.lineWidth=3;c.stroke()});
+ const rel=[1,mult,mult*mult][b.o],win=Math.min(10,b.t);const n=b.ev.filter(e=>e>b.t-10).length;
+ document.getElementById('bo'+b.o).innerHTML=`[A] × ${mult} → rate × <b>${rel}</b><br>events in last ${win.toFixed(0)} s: ${n}<br><span style="color:#e8a860">${'█'.repeat(Math.min(rel*3,30))}</span>`}
+let lastB=performance.now();
+function boxLoop(ts){const dt=Math.min(.05,(ts-lastB)/1000);lastB=ts;if(boxesRun){boxes.forEach(b=>{stepBox(b,dt);drawBox(b)})}requestAnimationFrame(boxLoop)}
+document.querySelectorAll('.mult').forEach(btn=>btn.onclick=()=>{mult=+btn.dataset.m;document.querySelectorAll('.mult').forEach(x=>x.classList.toggle('alt',x!==btn));boxes.forEach(initBox)});
+document.getElementById('boxPlay').onclick=function(){boxesRun=!boxesRun;this.textContent=boxesRun?'❚❚ Pause':'▶ Play'};
+boxes.forEach(initBox);requestAnimationFrame(boxLoop);
+
+/* conc multiplier calculator */
+function oc(){const o=+document.getElementById('ocO').value,f=+document.getElementById('ocF').value;document.getElementById('ocFv').textContent='× '+f;
+ const r=Math.pow(f,o);document.getElementById('ocOut').innerHTML=`rate ∝ [A]${sup(o)}<br>new rate = old rate × ${f}${sup(o)}<br><b>rate × ${+r.toFixed(3)}</b>`}
+['ocO','ocF'].forEach(i=>document.getElementById(i).oninput=oc);oc();
+
+/* order pickers in check 1 */
+document.querySelectorAll('.ob').forEach(sp=>{const a=sp.dataset.a;[0,1,2].forEach(v=>{const b=document.createElement('button');b.className='b alt';b.textContent=v;b.style.padding='4px 12px';
+ b.onclick=()=>{sp.querySelectorAll('button').forEach(x=>x.style.background='');b.style.background=(v==a)?'#cfe8d6':'#f6d0cb'};sp.appendChild(b)})});
+
+/* ---------- page 2: rate equation builder ---------- */
+function unitsK(n){const p=1-n;if(n===1)return 's⁻¹';const mol=p===1?'mol':'mol'+sup(p);const dm='dm'+sup(-3*p);return `${mol} ${dm} s⁻¹`}
+function re(){const o=['A','B','C'].map(x=>+document.getElementById('re'+x).value);let t='rate = k';
+ ['A','B','C'].forEach((x,i)=>{if(o[i]===1)t+=`[${x}]`;else if(o[i]>1)t+=`[${x}]${sup(o[i])}`});
+ const n=o.reduce((a,b)=>a+b,0);const zero=['A','B','C'].filter((x,i)=>o[i]===0);
+ document.getElementById('reOut').innerHTML=`<b>${t}</b><br>overall order = ${o.join(' + ')} = <b>${n}</b><br>units of k: <b>${unitsK(n)}</b>`+(zero.length?`<br><span style="color:#e8a860">${zero.join(', ')} zero order → not in the equation</span>`:'')}
+['reA','reB','reC'].forEach(i=>document.getElementById(i).onchange=re);re();
+
+/* ---------- page 3: units machine ---------- */
+let uS=0;
+function uDraw(s){uS=s;const n=+document.getElementById('uO').value;const box=document.getElementById('uBox');
+ const den=n===0?'1':Array(n).fill('(mol dm⁻³)').join(' × ');
+ const lines=[];
+ lines.push(`k = <span class="frac"><span>rate</span><span>${n===0?'1':'[conc]'+(n>1?sup(n):'')}</span></span>`);
+ lines.push(`units of k = <span class="frac"><span>mol dm⁻³ s⁻¹</span><span>${den}</span></span>`);
+ if(n===0)lines.push('Nothing to cancel → <b>mol dm⁻³ s⁻¹</b>');
+ else{const rest=n-1;
+  lines.push(`Cancel one mol dm⁻³ top and bottom: <span class="frac"><span><s style="color:#b03a2e">mol dm⁻³</s> s⁻¹</span><span><s style="color:#b03a2e">(mol dm⁻³)</s>${rest?' × '+Array(rest).fill('(mol dm⁻³)').join(' × '):''}</span></span>`);
+  if(rest===0)lines.push('Only s⁻¹ is left → <b>s⁻¹</b>');
+  else{lines.push(`Left with: <span class="frac"><span>s⁻¹</span><span>(mol dm⁻³)${rest>1?sup(rest):''}</span></span> = <span class="frac"><span>s⁻¹</span><span>mol${rest>1?sup(rest):''} dm${sup(-3*rest)}</span></span>`);
+   lines.push(`Move to the top line by changing the sign of each power → <b>${unitsK(n)}</b>`)}}
+ box.innerHTML=lines.slice(0,s+1).map((l,i)=>`<div style="margin:10px 0">${i+1}. ${l}</div>`).join('');box.dataset.max=lines.length}
+function uStep(){const m=+document.getElementById('uBox').dataset.max;if(uS<m-1)uDraw(uS+1)}
+document.getElementById('uO').onchange=()=>uDraw(0);uDraw(0);
+
+/* units → order quiz */
+(function(){const items=[['s⁻¹',1],['mol⁻¹ dm³ s⁻¹',2],['mol dm⁻³ s⁻¹',0],['mol⁻² dm⁶ s⁻¹',3]];const w=document.getElementById('u2o');
+ items.forEach(([u,a],i)=>{const p=document.createElement('p');p.innerHTML=`k has units <b>${u}</b>. Overall order: `;
+  [0,1,2,3].forEach(v=>{const b=document.createElement('button');b.className='b alt';b.textContent=v;b.onclick=()=>pick(b,v===a,'u2o'+i);p.appendChild(b)});
+  const f=document.createElement('span');f.className='fb';f.id='u2o'+i;p.appendChild(f);w.appendChild(p)})})();
+
+/* ---------- page 4: order graphs ---------- */
+const A0=0.8,k0=0.016,k1=0.02,k2=0.025;
+const conc=[t=>Math.max(0,A0-k0*t),t=>A0*Math.exp(-k1*t),t=>1/(1/A0+k2*t)];
+const rateF=[c=>c>0?k0:0,c=>k1*c,c=>k2*c*c];
+const cols=['#2c4a7a','#6b4423','#b5651d'],names=['zero order','first order','second order'];
+const gTxt=[
+ `<b>Zero order:</b> the concentration–time graph is a <b>straight line</b> with a <b>constant gradient</b>, because the rate stays the same as [A] falls. The rate–concentration graph is a <b>horizontal line</b>: rate = k. Half-lives get <b>shorter</b>.`,
+ `<b>First order:</b> the concentration–time graph is a curve with a <b>constant half-life</b>. The rate–concentration graph is a <b>straight line through the origin</b>: rate = k[A], and the gradient = k.`,
+ `<b>Second order:</b> the concentration–time graph is a curve that starts steeper and levels off more, with half-lives that get <b>longer</b>. The rate–concentration graph is a <b>curve upwards</b> (a parabola): rate = k[A]².`,
+ `<b>Compare:</b> all three start with the same rate. Second order slows down fastest because the rate falls with [A]². Zero order doesn't slow down at all until A runs out.`];
+function drawG(sel){const ct=plot(document.getElementById('gCT'),{xmax:150,ymax:0.9,xt:25,yt:0.1,gx:12.5,gy:0.05,xlab:'time / s',ylab:'[A] / mol dm⁻³'});
+ const rc=plot(document.getElementById('gRC'),{xmax:0.8,ymax:0.018,xt:0.1,yt:0.004,gx:0.05,gy:0.002,xlab:'[A] / mol dm⁻³',ylab:'rate / mol dm⁻³ s⁻¹',yfmt:y=>y.toFixed(3)});
+ const list=sel==='all'?[0,1,2]:[+sel];
+ list.forEach(o=>{ct.curve(conc[o],cols[o],3.5);rc.curve(c=>c<=0.0001&&o===0?k0:rateF[o](c),cols[o],3.5);
+  if(sel==='all'){const lx=[38,120,110][o],ly=[conc[0](38),conc[1](120),conc[2](110)][o];let t=E('text',{x:ct.X(lx)+6,y:ct.Y(ly)-8,'font-size':15,fill:cols[o]},ct.g);t.textContent=names[o];
+   const ry=[0.0168,0.0105,0.0036][o];t=E('text',{x:rc.X(0.45),y:rc.Y(ry),'font-size':15,fill:cols[o]},rc.g);t.textContent=names[o]}});
+ document.getElementById('gTxt').innerHTML=gTxt[sel==='all'?3:+sel]}
+document.querySelectorAll('.gord').forEach(b=>b.onclick=()=>{document.querySelectorAll('.gord').forEach(x=>x.classList.toggle('alt',x!==b));drawG(b.dataset.o)});
+drawG('0');
+
+/* H2O2 data */
+const hdat=[[0.02,0.00049],[0.03,0.00073],[0.05,0.00124],[0.07,0.00168],[0.09,0.00219]];
+const hp2=plot(document.getElementById('h2o2Svg'),{xmax:0.10,ymax:0.0025,xt:0.02,yt:0.0005,gx:0.01,gy:0.00025,xlab:'[H₂O₂] / mol dm⁻³',ylab:'rate / mol dm⁻³ s⁻¹',yfmt:y=>y.toFixed(4)});
+hdat.forEach(d=>{const x=hp2.X(d[0]),y=hp2.Y(d[1]);E('path',{d:`M${x-5} ${y-5}L${x+5} ${y+5}M${x-5} ${y+5}L${x+5} ${y-5}`,stroke:'#3b2a1a','stroke-width':2},hp2.g)});
+let fitDone=false;function drawFit(){if(fitDone)return;fitDone=true;hp2.curve(c=>0.0244*c,'#b5651d',2.5)}
+
+/* sketch options */
+(function(){const w=document.getElementById('sk11');const opts=[[t=>0.8-0.007*t,true],[t=>0.8*Math.exp(-0.03*t),false],[t=>0.8,false],[t=>0.8*(1-Math.exp(-0.03*t))+0.05,false]];
+ opts.forEach(([f,ok],i)=>{const d=document.createElement('div');d.style.cssText='flex:1 1 150px;text-align:center';
+  const s=document.createElementNS(NS,'svg');s.setAttribute('viewBox','0 0 660 400');s.style.width='100%';s.style.background='#fff';s.style.border='2px solid #d8c4a0';s.style.borderRadius='8px';s.style.cursor='pointer';
+  d.appendChild(s);const p=plot(s,{xmax:110,ymax:1,xt:200,yt:5,xlab:'time',ylab:'[Br₂]'});p.curve(f,'#6b4423',5);
+  const lab=document.createElement('div');lab.textContent='Option '+'ABCD'[i];d.appendChild(lab);
+  s.onclick=()=>{const fb=document.getElementById('c11');fb.className='fb '+(ok?'ok':'no');fb.innerHTML=ok?'✔ Correct. Br₂ isn\'t in the rate equation, so it\'s zero order. The rate is constant, so [Br₂] falls in a straight line.':'✘ Not quite. Br₂ is not in the rate equation, so what order is it?'};
+  w.appendChild(d)})})();
+
+/* ---------- page 5: half-life explorer ---------- */
+let hO=1;const hl=[c=>c/(2*k0),c=>Math.log(2)/k1,c=>1/(k2*c)];
+const tAt=[c=>(A0-c)/k0,c=>Math.log(A0/c)/k1,c=>(1/c-1/A0)/k2];
+let hP;
+function drawH(){hP=plot(document.getElementById('hSvg'),{xmax:200,ymax:0.9,xt:25,yt:0.1,gx:12.5,gy:0.05,xlab:'time / s',ylab:'[A] / mol dm⁻³'});
+ hP.curve(conc[hO],cols[hO],3.5);updH()}
+let hG;
+function updH(){const c=+document.getElementById('hs').value;document.getElementById('hsv').textContent=c.toFixed(2);
+ if(hG)hG.remove();hG=E('g',{},hP.g);const t1=tAt[hO](c),t2=tAt[hO](c/2),X=hP.X,Y=hP.Y;
+ [[t1,c],[t2,c/2]].forEach(([t,y])=>{E('line',{x1:X(0),x2:X(t),y1:Y(y),y2:Y(y),stroke:'#999','stroke-dasharray':'5 4'},hG);E('line',{x1:X(t),x2:X(t),y1:Y(y),y2:Y(0),stroke:'#999','stroke-dasharray':'5 4'},hG);E('circle',{cx:X(t),cy:Y(y),r:6,fill:'#b5651d'},hG)});
+ E('line',{x1:X(t1),x2:X(t2),y1:Y(0)-14,y2:Y(0)-14,stroke:'#b5651d','stroke-width':4},hG);
+ const tx=E('text',{x:(X(t1)+X(t2))/2,y:Y(0)-22,'text-anchor':'middle','font-size':16,fill:'#b5651d'},hG);tx.textContent='t½ = '+(t2-t1).toFixed(0)+' s';
+ document.getElementById('hOut').innerHTML=`${names[hO]}<br>${c.toFixed(2)} → ${(c/2).toFixed(3)} mol dm⁻³<br>from t = ${t1.toFixed(0)} s to ${t2.toFixed(0)} s<br><b>t½ = ${(t2-t1).toFixed(0)} s</b>`}
+function logHalf(){const c=+document.getElementById('hs').value;const r=document.getElementById('hLog').insertRow();r.innerHTML=`<td>${hO}</td><td>${c.toFixed(2)}</td><td>${(tAt[hO](c/2)-tAt[hO](c)).toFixed(0)}</td>`}
+document.getElementById('hs').oninput=updH;
+document.querySelectorAll('.hord').forEach(b=>b.onclick=()=>{hO=+b.dataset.o;document.querySelectorAll('.hord').forEach(x=>x.classList.toggle('alt',x!==b));drawH()});
+drawH();
+
+/* half-life check graph */
+const hcP=plot(document.getElementById('hcSvg'),{xmax:120,ymax:0.14,xt:10,yt:0.02,gx:5,gy:0.01,xlab:'time / s',ylab:'[X] / mol dm⁻³',yfmt:y=>y.toFixed(2)});
+hcP.curve(t=>0.12*Math.exp(-Math.log(2)/30*t),'#6b4423',3);const hcG=E('g',{},hcP.g);
+function hcLines(){hcG.innerHTML='';[[0.06,30],[0.03,60]].forEach(([c,t])=>{E('line',{x1:hcP.X(0),x2:hcP.X(t),y1:hcP.Y(c),y2:hcP.Y(c),stroke:'#2c4a7a','stroke-dasharray':'5 4','stroke-width':2},hcG);E('line',{x1:hcP.X(t),x2:hcP.X(t),y1:hcP.Y(c),y2:hcP.Y(0),stroke:'#2c4a7a','stroke-dasharray':'5 4','stroke-width':2},hcG)})}
+
+/* ---------- quiz ---------- */
+const Q=[
+ ["The order with respect to a reactant is…",["the number in front of it in the balanced equation","the power its concentration is raised to in the rate equation","the number of moles that react","always 1 for a reactant"],1,"Orders are the powers in the rate equation, and they can only be found by experiment."],
+ ["A reaction is second order with respect to B. [B] is tripled. The rate…",["triples","increases 6 times","increases 9 times","does not change"],2,"3² = 9."],
+ ["rate = k[P][Q]². What is the overall order?",["2","3","1","4"],1,"1 + 2 = 3."],
+ ["Which change alters the value of the rate constant, k?",["Doubling the concentration of a reactant","Increasing the temperature","Doubling the volume of the mixture","Using a larger beaker"],1,"k only changes with temperature (or with a catalyst). Concentration changes don't change k."],
+ ["What are the units of k for a reaction that is second order overall?",["mol dm⁻³ s⁻¹","s⁻¹","mol⁻¹ dm³ s⁻¹","mol⁻² dm⁶ s⁻¹"],2,"(mol dm⁻³ s⁻¹) ÷ (mol dm⁻³)² = mol⁻¹ dm³ s⁻¹."],
+ ["k has units of s⁻¹. What does this tell you?",["The reaction is zero order overall","The reaction is first order overall","The reaction is second order overall","Nothing: units of k are always s⁻¹"],1,"Only a first order overall reaction has k in s⁻¹."],
+ ["A concentration–time graph is a straight line sloping down. What is the order?",["Zero","First","Second","It can't be told"],0,"A constant gradient means a constant rate even though concentration falls, so it's zero order."],
+ ["A rate–concentration graph is a straight line through the origin. What is the order?",["Zero","First","Second","Third"],1,"Rate is directly proportional to concentration, so it's first order (and the gradient = k)."],
+ ["Successive half-lives from a concentration–time graph are 40 s, 40 s and 40 s. The reaction is…",["zero order","first order","second order","impossible to tell"],1,"A constant half-life means first order."],
+ ["Successive half-lives are 20 s, 40 s and 80 s. The reaction is…",["zero order","first order","second order","third order"],2,"Half-lives that get longer (doubling each time) mean second order."],
+ ["Why is a reactant that appears in the balanced equation sometimes zero order?",["It is a catalyst","It is not involved in the slowest (rate-determining) step","Its concentration is too low to measure","It reacts too quickly to be measured"],1,"Orders reflect what happens in the slowest step. A reactant that only reacts after that step doesn't affect the rate."]
+];
+let qs=0,qa=0;
+function buildQuiz(){const w=document.getElementById('quiz');w.innerHTML='';qs=0;qa=0;
+ Q.forEach((q,i)=>{const c=document.createElement('div');c.className='card mcq';c.innerHTML=`<b>Q${i+1}.</b> ${q[0]}`;
+  q[1].forEach((o,j)=>{const b=document.createElement('button');b.className='opt';b.textContent=o;
+   b.onclick=()=>{if(c.classList.contains('done'))return;c.classList.add('done');qa++;
+    if(j===q[2]){b.classList.add('right');qs++}else{b.classList.add('wrong');c.querySelectorAll('.opt')[q[2]].classList.add('right')}score()};c.appendChild(b)});
+  const e=document.createElement('div');e.className='exp';e.innerHTML='💡 '+q[3];c.appendChild(e);w.appendChild(c)});score()}
+function score(){document.getElementById('score').innerHTML=`Score: <b>${qs}</b> / ${Q.length}`+(qa===Q.length?(qs>=9?' – excellent!':qs>=7?' – good, review the ones you missed':' – go back through the walkthrough and try again'):'')}
+buildQuiz();
+go(0);
+
+</script>
+</body>
+</html>
