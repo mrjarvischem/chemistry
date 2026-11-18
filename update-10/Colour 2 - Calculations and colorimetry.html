@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Colour in Complexes 2 – Calculations and Colorimetry</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,750&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style>[hidden]{display:none!important}
+:root{
+  --bg:#f5efe3; --surface:#fffaf0; --sunk:#ece2cf; --ink:#2a2017; --muted:#6c5d4b; --line:#dccdb3;
+  --accent:#7a4a22; --accent-soft:#f0e0cb; --accent-ink:#fff8ee;
+  --cation:#4a4fa3; --cation-soft:#e3e3f6; --anion:#2c7743; --anion-soft:#dcefe1;
+  --oxy:#c0463a; --hyd:#f7f3ea;
+  --ok:#2b7a4b; --okbg:#e2f1e6; --bad:#b0392d; --badbg:#f8e1dc;
+  --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#1b1713; --surface:#25201a; --sunk:#2f2820; --ink:#efe6d7; --muted:#b4a590; --line:#463b2f;
+  --accent:#dba06a; --accent-soft:#3a2b1d; --accent-ink:#1b1713;
+  --cation:#9ea3f2; --cation-soft:#2c2d4a; --anion:#7fca92; --anion-soft:#1f3a28;
+  --oxy:#e0776b; --hyd:#e9e2d4;
+  --ok:#7fca92; --okbg:#1f3427; --bad:#ec8a7e; --badbg:#3d211d; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#1b1713; --surface:#25201a; --sunk:#2f2820; --ink:#efe6d7; --muted:#b4a590; --line:#463b2f;
+  --accent:#dba06a; --accent-soft:#3a2b1d; --accent-ink:#1b1713;
+  --cation:#9ea3f2; --cation-soft:#2c2d4a; --anion:#7fca92; --anion-soft:#1f3a28;
+  --oxy:#e0776b; --hyd:#e9e2d4;
+  --ok:#7fca92; --okbg:#1f3427; --bad:#ec8a7e; --badbg:#3d211d; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:820px;margin:0 auto}
+h1,h2,h3{font-family:var(--display);line-height:1.15;text-wrap:balance;margin:0}
+h1{font-size:clamp(2.2rem,6vw,3.4rem);font-weight:750;letter-spacing:-.02em}
+h2{font-size:clamp(1.5rem,3.6vw,2rem);font-weight:750;letter-spacing:-.01em}
+h3{font-size:1.15rem;font-weight:600}
+p{margin:0}
+sub,sup{font-size:.72em;line-height:0}
+.eyebrow{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.cat{color:var(--cation);font-weight:700}.an{color:var(--anion);font-weight:700}
+
+/* masthead */
+header.top{padding-block:40px 18px;display:grid;gap:14px}
+.lede{max-width:62ch;color:var(--muted);font-size:1.08rem}
+.spec{display:flex;flex-wrap:wrap;gap:8px}
+.tag{font-family:var(--mono);font-size:.78rem;padding:3px 9px;border:1px solid var(--line);border-radius:999px;color:var(--muted)}
+
+/* sticky progress */
+.progress{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding-block:10px;margin-bottom:8px}
+.progress .row{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.bar{flex:1 1 180px;height:8px;background:var(--sunk);border-radius:99px;overflow:hidden;min-width:120px}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .4s}
+.progress .stat{font-size:.88rem;color:var(--muted);font-variant-numeric:tabular-nums}
+nav.toc{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+nav.toc a{font-size:.82rem;text-decoration:none;color:var(--ink);padding:3px 10px;border-radius:999px;background:var(--surface);border:1px solid var(--line);white-space:nowrap}
+nav.toc a:hover,nav.toc a:focus-visible{border-color:var(--accent);color:var(--accent)}
+
+/* sections */
+section{padding-block:44px 8px;display:grid;gap:18px;scroll-margin-top:110px}
+.sechead{display:grid;gap:6px;border-top:2px solid var(--ink);padding-top:14px}
+.sechead .num{font-family:var(--mono);font-size:.82rem;color:var(--accent)}
+.prose{display:grid;gap:12px;max-width:66ch}
+.key{background:var(--accent-soft);border-left:4px solid var(--accent);padding:12px 16px;border-radius:0 8px 8px 0;max-width:66ch}
+.key b{color:var(--accent)}
+.warn{background:var(--badbg);border-left:4px solid var(--bad);padding:12px 16px;border-radius:0 8px 8px 0;max-width:66ch}
+.bench{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;gap:12px;min-width:0}
+.bench .lab{font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button,.btn{font:inherit;font-size:.92rem;font-weight:600;border:1px solid var(--line);background:var(--bg);color:var(--ink);padding:6px 12px;border-radius:8px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+select{font:inherit;font-size:.95rem;padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);max-width:100%}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.95rem}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.two>*{min-width:0}
+.caption{font-size:.9rem;color:var(--muted)}
+svg text{font-family:var(--body)}
+
+/* MCQ */
+.mcq{display:grid;gap:14px}
+.q{border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--surface);display:grid;gap:10px}
+.q .qh{display:flex;gap:10px;align-items:baseline}
+.q .qn{font-family:var(--mono);font-size:.78rem;color:var(--accent);white-space:nowrap}
+.q .qt{font-weight:600}
+.opts{display:grid;gap:6px}
+.opt{text-align:left;font-weight:400;display:grid;grid-template-columns:28px 1fr;gap:8px;align-items:start;padding:8px 10px;background:var(--bg)}
+.opt .l{font-family:var(--mono);font-weight:500;color:var(--muted)}
+.opt.right{background:var(--okbg);border-color:var(--ok)}
+.opt.wrong{background:var(--badbg);border-color:var(--bad);opacity:.85}
+.fb{font-size:.95rem;padding:10px 12px;border-radius:8px}
+.fb.right{background:var(--okbg);border-left:4px solid var(--ok)}
+.fb.wrong{background:var(--badbg);border-left:4px solid var(--bad)}
+.mcqhead{display:flex;align-items:center;gap:10px}
+.mcqhead h3{font-size:1rem}
+
+/* checklist */
+.check{display:grid;gap:8px;list-style:none;padding:0;margin:0}
+.check label{display:flex;gap:10px;align-items:flex-start;cursor:pointer}
+.check input{width:20px;height:20px;margin-top:3px;accent-color:var(--accent);flex:none}
+
+footer{margin-top:40px;color:var(--muted);font-size:.85rem;border-top:1px solid var(--line);padding-top:14px}
+/* additions for the redox run-throughs */
+:root{--ox:#b0392d;--oxsoft:#f8e1dc;--red:#2f5fa8;--redsoft:#dfe8f7;--elec:#d98a1a}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--ox:#ec8a7e;--oxsoft:#3d211d;--red:#8fb1ec;--redsoft:#1f2b40;--elec:#f0b45a}}
+:root[data-theme="dark"]{--ox:#ec8a7e;--oxsoft:#3d211d;--red:#8fb1ec;--redsoft:#1f2b40;--elec:#f0b45a}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{min-width:58px}
+.eq{font-family:var(--display);font-size:clamp(1.02rem,2.5vw,1.3rem);font-weight:600;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 14px;overflow-x:auto;white-space:nowrap}
+.eq small{font-family:var(--body);font-weight:400;font-size:.8rem;color:var(--muted)}
+.readout{display:grid;gap:10px;align-content:start}
+.readout h3{font-size:1.25rem}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:14px}
+.two>*{min-width:0}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.card{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--bg);display:grid;gap:6px;align-content:start}
+.card h3{font-size:1.05rem}
+.stepper{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.stepper .caption{flex:1 1 200px}
+details{border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:10px 14px}
+details summary{cursor:pointer;font-weight:700}
+details[open] summary{margin-bottom:8px}
+.up{color:var(--ox);font-weight:700}.down{color:var(--red);font-weight:700}
+.pill{display:inline-block;font-size:.78rem;font-weight:700;padding:2px 9px;border-radius:999px;background:var(--sunk);color:var(--ink)}
+.pill.ox{background:var(--oxsoft);color:var(--ox)}.pill.red{background:var(--redsoft);color:var(--red)}
+.svgbox{width:100%;height:auto;display:block}
+.svgbox text{fill:var(--ink)}
+/* equation rows */
+.eqrows{display:grid;gap:8px}
+.eqrow{display:grid;grid-template-columns:30px 1fr;gap:10px;align-items:start;animation:rise .35s ease both}
+.eqrow .n{font-family:var(--mono);font-size:.8rem;background:var(--accent);color:var(--accent-ink);border-radius:999px;width:26px;height:26px;display:grid;place-items:center;margin-top:8px}
+.eqrow .body{display:grid;gap:4px;min-width:0}
+.eqrow .cap{font-size:.95rem;color:var(--muted)}
+.eqrow .cap b{color:var(--ink)}
+.t{display:inline-block;padding:0 3px;border-radius:5px;transition:background .3s}
+.t.new{background:var(--accent-soft);box-shadow:0 0 0 2px var(--accent) inset}
+.t.e{color:var(--elec)}
+.t.x{text-decoration:line-through;text-decoration-thickness:2px;opacity:.5}
+.op{color:var(--muted);padding:0 4px;font-weight:400}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.eqrow{animation:none}}
+.tally{font-size:.9rem;width:auto}
+.tally td,.tally th{padding:4px 10px;text-align:center}
+.tally td.okc{color:var(--ok);font-weight:700}.tally td.badc{color:var(--bad);font-weight:700}
+.verdict{font-weight:700;padding:6px 10px;border-radius:8px;display:inline-block}
+.verdict.ok{background:var(--okbg);color:var(--ok)}.verdict.bad{background:var(--badbg);color:var(--bad)}
+/* oxidation-state grid */
+.osgrid{display:inline-grid;gap:4px 6px;align-items:center;font-family:var(--display);font-weight:600;font-size:1.25rem}
+.osgrid .rl{font-family:var(--body);font-size:.78rem;font-weight:600;color:var(--muted);text-align:right;padding-right:6px;letter-spacing:.04em;text-transform:uppercase}
+.osgrid .c{text-align:center;min-width:56px;padding:2px 6px;border-radius:6px}
+.osgrid .c.k{color:var(--accent)}
+.osgrid .c.u{color:var(--ox)}
+.osgrid .f{font-size:1.6rem}
+.osgrid .hide{visibility:hidden}
+.sum{font-family:var(--display);font-weight:600;font-size:1.2rem}
+.answer{font-family:var(--display);font-weight:750;font-size:1.6rem;color:var(--ok)}
+
+/* additions for the transition metal run-throughs */
+.svgbox{width:100%;height:auto;display:block}
+.svgbox text{fill:var(--ink);font-family:var(--body)}
+.eqrows{display:grid;gap:8px}
+.eqrow{display:grid;grid-template-columns:30px 1fr;gap:10px;align-items:start}
+.eqrow .n{font-family:var(--mono);font-size:.8rem;background:var(--accent);color:var(--accent-ink);border-radius:999px;width:26px;height:26px;display:grid;place-items:center;margin-top:8px}
+.eqrow .body{display:grid;gap:4px;min-width:0}
+.eqrow .cap{font-size:.95rem;color:var(--muted)}
+.eq{font-family:var(--display);font-size:clamp(1.02rem,2.5vw,1.3rem);font-weight:600;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 14px;overflow-x:auto;white-space:nowrap}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.card{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--bg);display:grid;gap:6px;align-content:start}
+.card h3{font-size:1.05rem}
+details{border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:10px 14px}
+details summary{cursor:pointer;font-weight:700}
+details[open] summary{margin-bottom:8px}
+.big{font-family:var(--display);font-weight:750;font-size:1.5rem}
+.swatch{display:inline-block;width:46px;height:46px;border-radius:10px;border:1px solid var(--line);vertical-align:middle}
+.readouts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.readouts .card b{font-family:var(--display);font-size:1.15rem}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.tube{transition:fill .9s}
+.tubesvg{max-width:110px;margin:0 auto}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <p class="eyebrow">A-level Chemistry · Transition metals · Colour 2</p>
+  <h1>Colour 2: calculations and colorimetry</h1>
+  <p class="lede">Why light is absorbed, how to predict the colour from the colour wheel, how to calculate ΔE, frequency and wavelength, and how a colorimeter finds concentration. Try every panel, then answer the questions in each section.</p>
+  <div class="spec"><span class="tag">AQA 3.2.5.4</span><span class="tag">6 sections</span><span class="tag">about 45 minutes</span></div>
+</header>
+<div class="progress" aria-label="Progress">
+  <div class="row"><div class="bar" aria-hidden="true"><i id="pbar"></i></div><span class="stat" id="pstat">0 questions answered</span></div>
+  <nav class="toc" aria-label="Sections"><a href="#s1">1 Ground & excited state</a><a href="#s2">2 Identifying by colour</a><a href="#s3">3 ΔE = hν = hc/λ</a><a href="#s4">4 Practice</a><a href="#s5">5 Colorimetry</a><a href="#s6">6 Check yourself</a></nav>
+</div>
+
+<!-- 1 -->
+<section id="s1">
+  <div class="sechead"><span class="num">Section 1</span><h2>Ground state and excited state</h2></div>
+
+  <div class="prose"><p>In a complex, the ligands <b>split the d orbitals</b> into two energy levels. The electrons sit in the lower level: this is the <b>ground state</b>. When a d electron absorbs a photon of visible light with exactly the right energy, it moves up to the higher level: an <b>excited state</b>.</p></div>
+  <div class="bench">
+    <span class="lab">Ti³⁺ (3d¹) in an octahedral complex: absorb a photon</span>
+    <svg id="es" class="svgbox" viewBox="0 0 640 300" role="img" aria-label="Energy level diagram showing a d electron moving from the ground state to an excited state"></svg>
+    <div class="controls"><button type="button" class="primary" id="esgo">Absorb a photon</button><button type="button" id="esrs">Reset</button><span class="caption" id="escap">The electron is in the ground state.</span></div>
+  </div>
+  <div class="key"><b>The four-mark answer.</b> ① Ligands split the d orbitals into two energy levels. ② A d electron absorbs a photon of visible light. ③ It moves from the ground state to an excited state; the energy absorbed is ΔE = hν. ④ The remaining wavelengths are transmitted or reflected, and this is the colour we see.</div>
+  <div class="warn"><b>Don’t write</b> that electrons <i>emit</i> light (that’s flame tests), or that the complex absorbs its own colour.</div>
+  <div class="mcq" data-set="s1"></div>
+</section>
+<!-- 2 -->
+<section id="s2">
+  <div class="sechead"><span class="num">Section 2</span><h2>Identifying ions by colour</h2></div>
+
+  <div class="prose"><p>Transition metal ions can be identified by their colour. The colour we see is the <b>complementary</b> colour of the light that is absorbed: the colour opposite it on the colour wheel.</p></div>
+  <div class="two">
+    <div class="bench"><span class="lab">Click the colour that is absorbed</span>
+      <svg id="wheel" class="svgbox" viewBox="0 0 320 320" role="img" aria-label="Colour wheel"></svg></div>
+    <div class="bench readout"><span class="lab">What we see</span><div id="wout"></div></div>
+  </div>
+  <div class="scroll"><table>
+    <thead><tr><th>Ion in water</th><th>Colour</th><th>Ion in water</th><th>Colour</th></tr></thead>
+    <tbody>
+      <tr><td>{[Cu(H2O)6]^2+}</td><td><span class="swatch" style="width:22px;height:22px;background:#4a90e2"></span> blue</td><td>{[Fe(H2O)6]^2+}</td><td><span class="swatch" style="width:22px;height:22px;background:#b5d38e"></span> pale green</td></tr>
+      <tr><td>{[Co(H2O)6]^2+}</td><td><span class="swatch" style="width:22px;height:22px;background:#f49ac1"></span> pink</td><td>{[Fe(H2O)6]^3+}</td><td><span class="swatch" style="width:22px;height:22px;background:#d9a44f"></span> yellow / brown</td></tr>
+      <tr><td>{[Cr(H2O)6]^3+}</td><td><span class="swatch" style="width:22px;height:22px;background:#7e5a9e"></span> violet (often looks green)</td><td>{[Ni(H2O)6]^2+}</td><td><span class="swatch" style="width:22px;height:22px;background:#4fa85a"></span> green</td></tr>
+    </tbody></table></div>
+  <div class="mcq" data-set="s2"></div>
+</section>
+<!-- 3 -->
+<section id="s3">
+  <div class="sechead"><span class="num">Section 3</span><h2>ΔE = hν = hc/λ</h2></div>
+
+  <div class="prose"><p>The energy gap ΔE equals the energy of the photon absorbed. A bigger gap means a higher frequency (shorter wavelength) of light is absorbed.</p></div>
+  <div class="eq" style="text-align:center;font-size:1.6rem">ΔE = hν = hc/λ</div>
+  <div class="scroll"><table>
+    <thead><tr><th>Symbol</th><th>Meaning</th><th>Units</th></tr></thead>
+    <tbody><tr><td><b>ΔE</b></td><td>energy gap = energy of one photon</td><td>J</td></tr>
+    <tr><td><b>h</b></td><td>Planck constant = 6.63 × 10<sup>−34</sup></td><td>J s</td></tr>
+    <tr><td><b>ν</b></td><td>frequency</td><td>Hz (s<sup>−1</sup>)</td></tr>
+    <tr><td><b>c</b></td><td>speed of light = 3.00 × 10<sup>8</sup></td><td>m s<sup>−1</sup></td></tr>
+    <tr><td><b>λ</b></td><td>wavelength</td><td>m (convert nm: × 10<sup>−9</sup>)</td></tr></tbody></table></div>
+  <div class="bench"><span class="lab">Drag the wavelength absorbed</span>
+    <svg id="specbar" class="svgbox" viewBox="0 0 640 60" aria-hidden="true"></svg>
+    <input type="range" id="lam" min="400" max="750" step="5" value="600" aria-label="Wavelength absorbed in nm">
+    <div class="readouts" id="lamout"></div>
+  </div>
+  <div class="bench"><span class="lab">Worked example: a complex absorbs light of wavelength 520 nm. Calculate ΔE.</span>
+    <div class="eqrows">
+      <div class="eqrow"><span class="n">1</span><div class="body"><div class="cap">Convert nm to m</div><div class="eq">λ = 520 × 10<sup>−9</sup> = 5.20 × 10<sup>−7</sup> m</div></div></div>
+      <div class="eqrow"><span class="n">2</span><div class="body"><div class="cap">Substitute into ΔE = hc/λ</div><div class="eq">ΔE = (6.63 × 10<sup>−34</sup> × 3.00 × 10<sup>8</sup>) ÷ 5.20 × 10<sup>−7</sup></div></div></div>
+      <div class="eqrow"><span class="n">3</span><div class="body"><div class="cap">Answer to 3 s.f.</div><div class="eq">ΔE = 3.83 × 10<sup>−19</sup> J</div></div></div>
+      <div class="eqrow"><span class="n">4</span><div class="body"><div class="cap">Per mole (if asked): × L, then ÷ 1000</div><div class="eq">3.83 × 10<sup>−19</sup> × 6.02 × 10<sup>23</sup> = 2.30 × 10<sup>5</sup> J mol<sup>−1</sup> = 230 kJ mol<sup>−1</sup></div></div></div>
+    </div></div>
+  <div class="mcq" data-set="s3"></div>
+</section>
+<!-- 4 -->
+<section id="s4">
+  <div class="sechead"><span class="num">Section 4</span><h2>Practice calculations</h2></div>
+
+  <div class="prose"><p>Pick a question type. Type your answer (e.g. <code>3.83e-19</code> or <code>3.83 x 10^-19</code>), check it, and show the working if you need it. New numbers every time.</p></div>
+  <div class="bench"><span class="lab">Calculation practice</span><div id="prac"></div></div>
+</section>
+<!-- 5 -->
+<section id="s5">
+  <div class="sechead"><span class="num">Section 5</span><h2>Colorimetry</h2></div>
+
+  <div class="prose"><p>The absorption of visible light is used in <b>spectroscopy</b>. A simple <b>colorimeter</b> measures how much light of one colour a solution absorbs, to find the concentration of a coloured ion.</p></div>
+  <div class="bench"><span class="lab">Choose a filter and a concentration of copper(II) solution</span>
+    <div class="chips" id="filt" role="group" aria-label="Filter colour"></div>
+    <svg id="colo" class="svgbox" viewBox="0 0 640 170" role="img" aria-label="Colorimeter: lamp, filter, sample and detector"></svg>
+    <label class="caption" for="conc">Concentration of Cu²⁺: <b id="concv"></b></label>
+    <input type="range" id="conc" min="0" max="0.10" step="0.005" value="0.05">
+    <div id="cfb" class="caption"></div>
+  </div>
+  <div class="key"><b>Choosing the filter.</b> Use the colour of light the solution <b>absorbs</b> – the complementary colour of the solution. Blue copper(II) solutions absorb orange/red, so an orange or red filter gives the largest, most sensitive reading.</div>
+  <div class="bench"><span class="lab">Calibration curve: find the unknown</span>
+    <ol class="steps" style="margin:0;padding-left:20px"><li>Make standard solutions of known concentration.</li><li>Measure the absorbance of each and plot absorbance against concentration.</li><li>Measure the absorbance of the unknown and read its concentration off the graph.</li></ol>
+    <svg id="cal" class="svgbox" viewBox="0 0 640 330" role="img" aria-label="Calibration curve of absorbance against concentration"></svg>
+    <label class="caption" for="unk">Absorbance of the unknown: <b id="unkv"></b></label>
+    <input type="range" id="unk" min="0.05" max="0.85" step="0.01" value="0.45">
+    <p id="calout" class="big"></p>
+  </div>
+  <div class="warn">Pale solutions give small readings. Adding a ligand that gives a deeper colour (e.g. NH<sub>3</sub> with Cu<sup>2+</sup>) makes the measurement more sensitive.</div>
+  <div class="mcq" data-set="s5"></div>
+</section>
+<!-- 6 -->
+<section id="s6">
+  <div class="sechead"><span class="num">Section 6</span><h2>Check yourself</h2></div>
+  <div class="mcq" data-set="final" data-title="Final questions"></div>
+  <div class="bench"><span class="lab">Can you…? Tick off each one</span><ul class="check" id="check"></ul></div>
+</section>
+<footer>mrjarvischem.co.uk · A-level Chemistry · AQA 3.2.5 Transition metals</footer>
+</div>
+<script>
+/* ===== shared engine for the transition metal run-throughs ===== */
+const $=s=>document.querySelector(s);
+const $$=s=>Array.from(document.querySelectorAll(s));
+const RM=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const MINUS='−';
+function splitCoef(t){const m=t.match(/^(\d+)(?=[A-Za-z(\[])/);return m?{n:+m[1],s:t.slice(m[1].length)}:{n:1,s:t};}
+function fmtSpecies(s){
+  if(s==='e^-')return 'e<sup>'+MINUS+'</sup>';
+  const i=s.indexOf('^');const f=i<0?s:s.slice(0,i),c=i<0?null:s.slice(i+1);
+  let h=f.replace(/(\d+)/g,'<sub>$1</sub>');
+  if(c!==null)h+='<sup>'+c.replace('-',MINUS)+'</sup>';
+  return h;
+}
+function fmtTerm(t){const {n,s}=splitCoef(t.trim());return (n>1?n:'')+fmtSpecies(s);}
+function fmt(str){str=str.trim();
+  if(/ -> | \+ /.test(str))return str.split(' -> ').map(side=>side.split(' + ').map(fmtTerm).join(' + ')).join(' → ');
+  return fmtTerm(str);}
+function fmtText(str){return String(str).replace(/\{([^{}]+)\}/g,(m,x)=>fmt(x)).replace(/([A-Za-z\)])_(\d+)/g,'$1<sub>$2</sub>').replace(/\^([−\-]?\d+[+\-−]?|[+\-−])/g,(m,x)=>'<sup>'+x.replace('-',MINUS)+'</sup>');}
+/* scientific notation: 3.62e-19 -> 3.62 × 10⁻¹⁹ (html) */
+function sci(v,sf=3){if(v===0)return '0';const e=Math.floor(Math.log10(Math.abs(v)));let m=v/Math.pow(10,e);let ms=m.toPrecision(sf);
+  if(+ms>=10){ms=(m/10).toPrecision(sf);return ms+' × 10<sup>'+String(e+1).replace('-',MINUS)+'</sup>';}
+  if(e===0)return ms;return ms+' × 10<sup>'+String(e).replace('-',MINUS)+'</sup>';}
+function sf(v,n=3){return Number(v.toPrecision(n)).toString();}
+/* parse a student answer like 3.83e-19, 3.83x10^-19, 3.83 × 10-19 */
+function parseNum(t){t=String(t).trim().replace(/\s+/g,'').replace(/−/g,'-').replace(/[×xX*]10\^?/,'e').replace(/,/g,'');const v=parseFloat(t);return isFinite(v)?v:NaN;}
+function close(a,b,tol=0.015){return isFinite(a)&&Math.abs(a-b)<=Math.abs(b)*tol;}
+
+/* ---------- MCQs + checklist (house engine) ---------- */
+function autoFmt(){$$('td,.fx,.eq,.card h3').forEach(el=>{if(/[{^]/.test(el.innerHTML))el.innerHTML=fmtText(el.innerHTML.replace(/-&gt;/g,'->'));});}
+function initMCQ(Q,CK,CKKEY){
+  autoFmt();
+  const state={answered:0,first:0,total:0};
+  Object.values(Q).forEach(a=>state.total+=a.length);
+  function upd(){$('#pbar').style.width=(100*state.answered/state.total)+'%';$('#pstat').textContent=state.answered+' of '+state.total+' questions answered · '+state.first+' right first time';}
+  let qnum=0;
+  $$('.mcq').forEach(box=>{
+    const set=Q[box.dataset.set];if(!set)return;
+    const head=document.createElement('div');head.className='mcqhead';
+    head.innerHTML='<h3>'+(box.dataset.title||(set.length<=2?'Quick check':'Questions'))+'</h3><span class="caption">'+set.length+' question'+(set.length>1?'s':'')+'</span>';
+    box.appendChild(head);
+    set.forEach(item=>{
+      qnum++;
+      const el=document.createElement('div');el.className='q';
+      el.innerHTML='<div class="qh"><span class="qn">Q'+qnum+'</span><span class="qt">'+fmtText(item.q)+'</span></div><div class="opts"></div><div class="fb" hidden></div>';
+      const opts=el.querySelector('.opts'),fb=el.querySelector('.fb');let tries=0,done=false;
+      const sh=item.o.slice();for(let i=sh.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[sh[i],sh[j]]=[sh[j],sh[i]];}
+      sh.forEach((o,oi)=>{
+        const b=document.createElement('button');b.className='opt';b.type='button';
+        b.innerHTML='<span class="l">'+'ABCDE'[oi]+'</span><span>'+fmtText(o[0])+'</span>';
+        b.addEventListener('click',()=>{
+          if(done||b.classList.contains('wrong'))return;tries++;fb.hidden=false;fb.innerHTML=fmtText(o[2]);
+          if(o[1]){b.classList.add('right');fb.className='fb right';done=true;state.answered++;if(tries===1)state.first++;upd();opts.querySelectorAll('.opt').forEach(x=>x.disabled=true);}
+          else{b.classList.add('wrong');fb.className='fb wrong';fb.innerHTML=fmtText(o[2])+' <b>Try again.</b>';}
+        });
+        opts.appendChild(b);
+      });
+      box.appendChild(el);
+    });
+  });
+  upd();
+  let saved={};try{saved=JSON.parse(localStorage.getItem(CKKEY)||'{}');}catch(e){}
+  $('#check').innerHTML=CK.map((t,i)=>'<li><label><input type="checkbox" id="ck'+i+'"'+(saved[i]?' checked':'')+'><span>'+fmtText(t)+'</span></label></li>').join('');
+  $('#check').addEventListener('change',e=>{saved[e.target.id.slice(2)]=e.target.checked;try{localStorage.setItem(CKKEY,JSON.stringify(saved));}catch(err){}});
+}
+/* ---------- numeric practice generator ---------- */
+function Practice(host,gens,label){
+  host.style.display='grid';host.style.gap='12px';
+  host.innerHTML='<div class="chips" role="group" aria-label="Question type"></div><div class="prose pq"></div>'+
+   '<div class="controls"><label>Your answer <input class="pin" type="text" inputmode="decimal" placeholder="e.g. 3.83e-19" style="font:inherit;padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);width:12em"></label>'+
+   '<span class="unit caption"></span><button type="button" class="primary chk">Check</button><button type="button" class="shw">Show working</button><button type="button" class="nxt">New question</button></div>'+
+   '<div class="pfb" aria-live="polite"></div><div class="pwork" hidden></div><p class="caption pscore"></p>';
+  const chips=host.querySelector('.chips'),pq=host.querySelector('.pq'),inp=host.querySelector('.pin'),fb=host.querySelector('.pfb'),wk=host.querySelector('.pwork'),un=host.querySelector('.unit'),sc=host.querySelector('.pscore');
+  let g=gens[0],cur=null,right=0,tried=0;
+  gens.forEach((x,i)=>{const b=document.createElement('button');b.type='button';b.textContent=x.name;b.setAttribute('aria-pressed',i===0);b.onclick=()=>{g=x;chips.querySelectorAll('button').forEach(c=>c.setAttribute('aria-pressed',c===b));next();};chips.appendChild(b);});
+  function next(){cur=g.make();pq.innerHTML='<p>'+cur.q+'</p>';un.innerHTML=cur.unit||'';inp.value='';fb.innerHTML='';wk.hidden=true;wk.innerHTML=cur.work.map((w,i)=>'<div class="eqrow"><span class="n">'+(i+1)+'</span><div class="body"><div class="cap">'+w[0]+'</div><div class="eq">'+w[1]+'</div></div></div>').join('');}
+  host.querySelector('.chk').onclick=()=>{const v=parseNum(inp.value);if(!isFinite(v)){fb.innerHTML='<div class="fb wrong">Type a number, e.g. 3.83e-19 or 0.0450</div>';return;}
+    tried++;if(close(v,cur.a)){right++;fb.innerHTML='<div class="fb right">Correct: '+cur.ans+'</div>';}
+    else{const hint=cur.hint?cur.hint(v):'';fb.innerHTML='<div class="fb wrong">Not quite. '+(hint||'Check your rearrangement and powers of ten.')+' <b>Try again</b> or show the working.</div>';}
+    sc.textContent=right+' correct out of '+tried+' tries';};
+  host.querySelector('.shw').onclick=()=>{wk.hidden=!wk.hidden;};
+  host.querySelector('.nxt').onclick=next;
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter')host.querySelector('.chk').click();});
+  next();
+}
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const rnd=(a,b,step)=>{const n=Math.round((a+Math.random()*(b-a))/step)*step;return +n.toFixed(6);};
+
+
+const h=6.63e-34,c=3.00e8,L=6.02e23;
+/* ----- section 1: excitation ----- */
+(function(){const sv=$('#es');let up=false;
+ function draw(t){const ex=Math.min(1,t);
+  const L1=210,U1=90;let s='<line x1="40" y1="270" x2="40" y2="30" stroke="currentColor" stroke-width="2"/><polygon points="40,22 34,36 46,36" fill="currentColor"/><text x="22" y="160" transform="rotate(-90 22 160)" text-anchor="middle" font-size="14">Energy</text>';
+  [0,1,2].forEach(i=>{s+=`<line x1="${200+i*80}" y1="${L1}" x2="${260+i*80}" y2="${L1}" stroke="currentColor" stroke-width="3"/>`;});
+  [0,1].forEach(i=>{s+=`<line x1="${240+i*80}" y1="${U1}" x2="${300+i*80}" y2="${U1}" stroke="currentColor" stroke-width="3"/>`;});
+  s+=`<text x="430" y="${L1+5}" font-size="15" font-weight="700" fill="var(--red)">ground state</text><text x="430" y="${U1+5}" font-size="15" font-weight="700" fill="var(--ox)">excited state</text>`;
+  s+=`<line x1="560" y1="${U1}" x2="560" y2="${L1}" stroke="var(--accent)" stroke-width="2"/><text x="570" y="${(U1+L1)/2+6}" font-size="18" font-weight="700" fill="var(--accent)">ΔE</text>`;
+  const x0=230,y0=L1-16,x1=270,y1=U1-16,x=x0+(x1-x0)*ex,y=y0+(y1-y0)*ex;
+  s+=`<line x1="${x}" y1="${y+13}" x2="${x}" y2="${y-13}" stroke="var(--elec)" stroke-width="3"/><polygon points="${x},${y-17} ${x-6},${y-5} ${x+6},${y-5}" fill="var(--elec)"/>`;
+  if(t>0&&t<1){let p='';for(let k=0;k<=60;k++){const xx=70+k*2+t*60,yy=150+9*Math.sin(k/4);p+=(k?'L':'M')+xx+','+yy;}s+=`<path d="${p}" fill="none" stroke="#f08a1c" stroke-width="3"/><text x="70" y="130" font-size="13" fill="#c96a08">photon, E = ΔE</text>`;}
+  sv.innerHTML=s;}
+ function go(){if(up)return;up=true;const t0=performance.now(),D=RM?1:1400;
+  (function f(n){const t=Math.min(1,(n-t0)/D);draw(t);if(t<1)requestAnimationFrame(f);else $('#escap').textContent='The electron is now in an excited state. Orange light (about 500 nm for Ti³⁺) was absorbed, so the solution looks violet.';})(t0);}
+ $('#esgo').onclick=go;$('#esrs').onclick=()=>{up=false;draw(0);$('#escap').textContent='The electron is in the ground state.';};draw(0);})();
+/* ----- section 2: wheel ----- */
+const WC=[['red','#e52424'],['orange','#f58a1f'],['yellow','#f2c81e'],['green','#3ca53c'],['blue','#2a5bd0'],['violet','#8a3fb5']];
+const EX={red:'{[Ni(H2O)6]^2+} absorbs red, so it looks green',orange:'{[Cu(H2O)6]^2+} absorbs orange/red, so it looks blue',yellow:'{[Cr(H2O)6]^3+} absorbs yellow, so it looks violet',green:'{[Co(H2O)6]^2+} absorbs green, so it looks pink/red',blue:'{[FeCl4]^-} absorbs blue, so it looks yellow/orange',violet:'a complex that absorbs violet looks yellow'};
+(function(){const sv=$('#wheel');let sel=1;
+ function draw(){let s='';const cx=160,cy=160,r=120;
+  WC.forEach(([n,col],i)=>{const a0=(-120+i*60)*Math.PI/180,a1=a0+Math.PI/3;const x0=cx+r*Math.cos(a0),y0=cy+r*Math.sin(a0),x1=cx+r*Math.cos(a1),y1=cy+r*Math.sin(a1);
+   const opp=(sel+3)%6;const st=i===sel?'stroke="var(--ink)" stroke-width="5"':i===opp?'stroke="var(--ink)" stroke-width="5" stroke-dasharray="8 5"':'stroke="var(--surface)" stroke-width="2"';
+   s+=`<path d="M${cx},${cy} L${x0},${y0} A${r},${r} 0 0 1 ${x1},${y1} Z" fill="${col}" ${st} style="cursor:pointer" data-i="${i}" tabindex="0" role="button" aria-label="${n} absorbed"/>`;
+   const am=(a0+a1)/2;s+=`<text x="${cx+(r-38)*Math.cos(am)}" y="${cy+(r-38)*Math.sin(am)+5}" text-anchor="middle" font-size="15" font-weight="700" style="fill:#fff;pointer-events:none">${n}</text>`;});
+  sv.innerHTML=s;sv.querySelectorAll('path').forEach(p=>{p.onclick=()=>{sel=+p.dataset.i;draw();};p.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();sel=+p.dataset.i;draw();}};});
+  const a=WC[sel],o=WC[(sel+3)%6];
+  $('#wout').innerHTML=`<p>Absorbed: <span class="swatch" style="background:${a[1]}"></span> <b>${a[0]}</b></p><p>Seen: <span class="swatch" style="background:${o[1]}"></span> <b class="big">${o[0]}</b></p><p class="caption">${fmtText(EX[a[0]])}</p>`;}
+ draw();})();
+/* ----- section 3: slider ----- */
+function wl2rgb(l){let r=0,g=0,b=0;if(l<440){r=-(l-440)/60;b=1}else if(l<490){g=(l-440)/50;b=1}else if(l<510){g=1;b=-(l-510)/20}else if(l<580){r=(l-510)/70;g=1}else if(l<645){r=1;g=-(l-645)/65}else r=1;
+ const f=l>700?.3+.7*(780-l)/80:1;return 'rgb('+[r,g,b].map(v=>Math.round(255*Math.pow(Math.max(0,v*f),.8))).join(',')+')';}
+const bandName=l=>l<435?'violet':l<490?'blue':l<560?'green':l<590?'yellow':l<630?'orange':'red';
+const COMP={violet:'yellow',blue:'orange',green:'red / pink',yellow:'violet',orange:'blue',red:'green'};
+(function(){let s='';for(let l=400;l<750;l+=5)s+=`<rect x="${(l-400)/350*640}" y="0" width="10" height="34" fill="${wl2rgb(l)}"/>`;
+ s+='<text x="0" y="54" font-size="13">400 nm · higher energy</text><text x="640" y="54" font-size="13" text-anchor="end">lower energy · 750 nm</text>';$('#specbar').innerHTML=s;
+ const up=()=>{const l=+$('#lam').value,lm=l*1e-9,E=h*c/lm,nu=c/lm,n=bandName(l);
+  $('#lamout').innerHTML=`<div class="card"><span class="caption">λ</span><b>${l} nm = ${sci(lm)} m</b></div><div class="card"><span class="caption">ν = c/λ</span><b>${sci(nu)} Hz</b></div><div class="card"><span class="caption">ΔE = hc/λ</span><b>${sci(E)} J</b></div><div class="card"><span class="caption">per mole</span><b>${Math.round(E*L/1000)} kJ mol<sup>−1</sup></b></div><div class="card"><span class="caption">absorbed</span><b><span class="swatch" style="width:22px;height:22px;background:${wl2rgb(l)}"></span> ${n}</b></div><div class="card"><span class="caption">complex looks</span><b>${COMP[n]}</b></div>`;};
+ $('#lam').oninput=up;up();})();
+/* ----- section 4: practice ----- */
+const nmHint=(v,a)=>close(v,a*1e9)||close(v,a*1e-9)||close(v,a*1e7)||close(v,a*1e-7)?'Did you convert nm to m (× 10<sup>−9</sup>)?':close(v,a*1000)||close(v,a/1000)?'Check J and kJ (÷ 1000).':'';
+Practice($('#prac'),[
+ {name:'ΔE → ν',make(){const E=rnd(2.6,4.9,0.01)*1e-19,a=E/h;return{q:`ΔE for a complex is ${sci(E)} J. Calculate the frequency of light absorbed.`,unit:'Hz',a,ans:sci(a)+' Hz',
+   work:[['Rearrange ΔE = hν','ν = ΔE / h'],['Substitute',`ν = ${sci(E)} ÷ 6.63 × 10<sup>−34</sup>`],['Answer',sci(a)+' Hz']],hint:v=>close(v,E*h)?'You multiplied – divide ΔE by h.':''};}},
+ {name:'ν → ΔE',make(){const nu=rnd(4.0,7.4,0.01)*1e14,a=h*nu;return{q:`A complex absorbs light with a frequency of ${sci(nu)} Hz. Calculate ΔE.`,unit:'J',a,ans:sci(a)+' J',
+   work:[['Use ΔE = hν',`ΔE = 6.63 × 10<sup>−34</sup> × ${sci(nu)}`],['Answer',sci(a)+' J']]};}},
+ {name:'λ → ΔE',make(){const l=rnd(410,740,5),a=h*c/(l*1e-9);return{q:`A complex absorbs light with a wavelength of ${l} nm. Calculate ΔE.`,unit:'J',a,ans:sci(a)+' J',
+   work:[['Convert nm to m',`λ = ${l} × 10<sup>−9</sup> = ${sci(l*1e-9)} m`],['Use ΔE = hc/λ',`ΔE = (6.63 × 10<sup>−34</sup> × 3.00 × 10<sup>8</sup>) ÷ ${sci(l*1e-9)}`],['Answer',sci(a)+' J']],hint:v=>nmHint(v,a)};}},
+ {name:'ΔE → λ in nm',make(){const E=rnd(2.7,4.9,0.01)*1e-19,a=h*c/E*1e9;return{q:`ΔE for a complex is ${sci(E)} J. Calculate the wavelength of light absorbed, in nm.`,unit:'nm',a,ans:sf(a)+' nm',
+   work:[['Rearrange ΔE = hc/λ','λ = hc / ΔE'],['Substitute',`λ = (6.63 × 10<sup>−34</sup> × 3.00 × 10<sup>8</sup>) ÷ ${sci(E)} = ${sci(a*1e-9)} m`],['Convert to nm (× 10<sup>9</sup>)',sf(a)+' nm']],hint:v=>close(v,a*1e-9)?'That is in metres – convert to nm.':''};}},
+ {name:'kJ mol⁻¹',make(){const l=rnd(410,740,5),E=h*c/(l*1e-9),a=E*L/1000;return{q:`Calculate ΔE in kJ mol<sup>−1</sup> for light of wavelength ${l} nm (L = 6.02 × 10<sup>23</sup> mol<sup>−1</sup>).`,unit:'kJ mol<sup>−1</sup>',a,ans:sf(a)+' kJ mol<sup>−1</sup>',
+   work:[['ΔE for one photon',`(6.63 × 10<sup>−34</sup> × 3.00 × 10<sup>8</sup>) ÷ ${sci(l*1e-9)} = ${sci(E)} J`],['× L for one mole',`${sci(E)} × 6.02 × 10<sup>23</sup> = ${sci(E*L)} J mol<sup>−1</sup>`],['÷ 1000',sf(a)+' kJ mol<sup>−1</sup>']],hint:v=>nmHint(v,a)};}}
+]);
+/* ----- section 5: colorimeter + calibration ----- */
+const FILT=[['red','#e52424',8.5],['orange','#f58a1f',9.0],['yellow','#f2c81e',3.0],['green','#3ca53c',1.2],['blue','#2a5bd0',0.4],['violet','#8a3fb5',0.6]];
+(function(){let f=1;const fc=$('#filt');
+ FILT.forEach((x,i)=>{const b=document.createElement('button');b.type='button';b.textContent=x[0];b.setAttribute('aria-pressed',i===f);b.onclick=()=>{f=i;fc.querySelectorAll('button').forEach(z=>z.setAttribute('aria-pressed',z===b));draw();};fc.appendChild(b);});
+ function draw(){const cn=+$('#conc').value,[n,col,k]=FILT[f],A=k*cn,T=Math.pow(10,-A);$('#concv').textContent=cn.toFixed(3)+' mol dm⁻³';
+  const blue=`rgba(46,110,214,${Math.min(.9,cn*9)})`;
+  let s=`<circle cx="50" cy="80" r="26" fill="#fff6b8" stroke="currentColor"/><text x="50" y="135" text-anchor="middle" font-size="13">lamp</text>`;
+  s+=`<rect x="90" y="74" width="80" height="12" fill="#f4efe4"/><rect x="170" y="45" width="16" height="70" fill="${col}" stroke="currentColor"/><text x="178" y="135" text-anchor="middle" font-size="13">filter</text>`;
+  s+=`<rect x="186" y="74" width="110" height="12" fill="${col}"/><rect x="296" y="35" width="70" height="90" fill="none" stroke="currentColor" stroke-width="2"/><rect x="299" y="55" width="64" height="68" fill="${blue}"/><text x="331" y="145" text-anchor="middle" font-size="13">sample</text>`;
+  s+=`<rect x="366" y="74" width="110" height="12" fill="${col}" opacity="${T.toFixed(2)}"/><rect x="476" y="50" width="50" height="60" rx="6" fill="#555" stroke="currentColor"/><text x="501" y="135" text-anchor="middle" font-size="13">detector</text>`;
+  s+=`<rect x="540" y="55" width="96" height="50" rx="8" fill="#1d1d1d"/><text x="588" y="88" text-anchor="middle" font-size="20" font-weight="700" style="fill:#7fe08f">A = ${A.toFixed(2)}</text>`;
+  $('#colo').innerHTML=s;
+  $('#cfb').innerHTML=(f<=1?`<b>Good choice.</b> Copper(II) solutions absorb ${n} light strongly, so the reading changes a lot with concentration.`:`<b>Poor choice.</b> Very little ${n} light is absorbed by a blue solution, so readings are small and insensitive. Try orange or red.`);}
+ $('#conc').oninput=draw;draw();
+ const X=v=>70+v/0.10*530,Y=v=>290-v/1.0*260;
+ function cal(){const u=+$('#unk').value,cu=u/9;$('#unkv').textContent=u.toFixed(2);
+  let s='';for(let i=0;i<=5;i++){const v=i*0.02;s+=`<line x1="${X(v)}" y1="30" x2="${X(v)}" y2="290" stroke="var(--line)"/><text x="${X(v)}" y="310" text-anchor="middle" font-size="13">${v.toFixed(2)}</text>`;}
+  for(let i=0;i<=5;i++){const v=i*0.2;s+=`<line x1="70" y1="${Y(v)}" x2="600" y2="${Y(v)}" stroke="var(--line)"/><text x="60" y="${Y(v)+4}" text-anchor="end" font-size="13">${v.toFixed(1)}</text>`;}
+  s+=`<text x="335" y="328" text-anchor="middle" font-size="13">concentration / mol dm⁻³</text><text x="18" y="160" transform="rotate(-90 18 160)" text-anchor="middle" font-size="13">absorbance</text>`;
+  s+=`<line x1="${X(0)}" y1="${Y(0)}" x2="${X(0.1)}" y2="${Y(0.9)}" stroke="var(--accent)" stroke-width="3"/>`;
+  [0.02,0.04,0.06,0.08,0.10].forEach(v=>s+=`<circle cx="${X(v)}" cy="${Y(9*v)}" r="6" fill="var(--accent)"/>`);
+  s+=`<line x1="70" y1="${Y(u)}" x2="${X(cu)}" y2="${Y(u)}" stroke="var(--ox)" stroke-width="2.5" stroke-dasharray="7 5"/><line x1="${X(cu)}" y1="${Y(u)}" x2="${X(cu)}" y2="290" stroke="var(--ox)" stroke-width="2.5" stroke-dasharray="7 5"/><circle cx="${X(cu)}" cy="${Y(u)}" r="7" fill="var(--ox)"/>`;
+  $('#cal').innerHTML=s;$('#calout').innerHTML='Concentration ≈ '+cu.toFixed(3)+' mol dm<sup>−3</sup>';}
+ $('#unk').oninput=cal;cal();})();
+const Q={
+ s1:[{q:'What happens to a d electron when visible light is absorbed?',o:[['It moves from the ground state to an excited state.',1,'Correct. The photon energy equals ΔE between the split d orbitals.'],['It moves from an excited state to the ground state, giving out light.',0,'That is emission (flame tests). Complexes absorb light.'],['It is lost from the ion.',0,'No electron is lost – it is promoted within the d orbitals.'],['It moves from the 3d to the 4s orbital.',0,'It moves between the two split d levels.']]},
+     {q:'Why is {[Zn(H2O)6]^2+} colourless?',o:[['Zn^2+ is 3d^10 – the d orbitals are full, so no electron can be promoted.',1,'Correct. No visible light is absorbed.'],['Zinc has no d electrons.',0,'Zn<sup>2+</sup> is 3d<sup>10</sup> – it has ten d electrons.'],['Water ligands do not split the d orbitals.',0,'They do split them – but the upper level is already full.'],['It absorbs all visible light.',0,'Then it would look black, not colourless.']]}],
+ s2:[{q:'A complex absorbs yellow light. What colour is it?',o:[['violet',1,'Correct. Yellow and violet are opposite on the colour wheel.'],['yellow',0,'We see the colours that are not absorbed.'],['blue',0,'Blue is opposite orange.'],['green',0,'Green is opposite red.']]},
+     {q:'{[Cu(H2O)6]^2+} is blue. Which colour does it mainly absorb?',o:[['orange / red',1,'Correct. Orange is complementary to blue.'],['blue',0,'Blue light is transmitted – that is why it looks blue.'],['green',0,'Green is opposite red/pink.'],['violet',0,'Violet is opposite yellow.']]}],
+ s3:[{q:'What is 650 nm in metres?',o:[['6.50 × 10^−7 m',1,'Correct. 650 × 10<sup>−9</sup> = 6.50 × 10<sup>−7</sup> m.'],['6.50 × 10^−9 m',0,'650 nm = 650 × 10<sup>−9</sup> m, which is 6.50 × 10<sup>−7</sup> m.'],['6.50 × 10^11 m',0,'Multiply by 10<sup>−9</sup>, not 10<sup>9</sup>.'],['0.650 m',0,'Nanometres are 10<sup>−9</sup> m.']]},
+     {q:'Complex X absorbs at 450 nm and Y at 650 nm. Which has the larger ΔE?',o:[['X – shorter wavelength means higher energy',1,'Correct. ΔE = hc/λ, so smaller λ gives larger ΔE.'],['Y – longer wavelength means higher energy',0,'ΔE is inversely proportional to λ.'],['They are the same',0,'Different wavelengths absorbed means different ΔE.'],['It depends on the concentration',0,'Concentration changes how much light is absorbed, not which wavelength.']]},
+     {q:'Which change does <b>not</b> change ΔE (and so the colour) of a complex?',o:[['Changing the concentration',1,'Correct. Concentration changes the intensity, not the colour absorbed.'],['Changing the ligand',0,'Different ligands split the d orbitals by different amounts.'],['Changing the oxidation state',0,'Changing the charge on the ion changes ΔE.'],['Changing the co-ordination number',0,'Changing shape and number of ligands changes ΔE.']]}],
+ s5:[{q:'Which filter should be used to measure the concentration of a blue copper(II) solution?',o:[['orange',1,'Correct – the complementary colour, which the solution absorbs.'],['blue',0,'Blue light passes through – readings would be tiny.'],['green',0,'Very little green light is absorbed by a blue solution.'],['no filter',0,'A filter selects the wavelength that is absorbed most.']]},
+     {q:'Why is ammonia sometimes added to pale copper(II) solutions before using a colorimeter?',o:[['It forms a deeper coloured complex, increasing the absorbance and sensitivity.',1,'Correct. [Cu(NH<sub>3</sub>)<sub>4</sub>(H<sub>2</sub>O)<sub>2</sub>]<sup>2+</sup> is deep blue.'],['It increases the concentration of copper.',0,'The amount of copper is unchanged – only the colour intensifies.'],['It acts as a catalyst.',0,'It is a ligand, not a catalyst here.'],['It removes the colour.',0,'It makes the colour deeper.']]}],
+ final:[{q:'ΔE for a complex is 3.31 × 10^−19 J. What wavelength is absorbed?',o:[['601 nm',1,'Correct. λ = hc/ΔE = 1.989 × 10<sup>−25</sup> ÷ 3.31 × 10<sup>−19</sup> = 6.01 × 10<sup>−7</sup> m.'],['6.01 nm',0,'Check the power of ten: 6.01 × 10<sup>−7</sup> m is 601 nm.'],['499 nm',0,'Check your rearrangement: λ = hc/ΔE.'],['5.0 × 10^14 nm',0,'That is the frequency in Hz.']]},
+     {q:'A complex absorbs 230 kJ mol^−1. What is ΔE for one ion?',o:[['3.82 × 10^−19 J',1,'Correct. 230 000 ÷ 6.02 × 10<sup>23</sup>.'],['3.82 × 10^−22 J',0,'Convert kJ to J first (× 1000).'],['1.38 × 10^29 J',0,'Divide by L, don’t multiply.'],['2.30 × 10^5 J',0,'That is per mole, in J.']]},
+     {q:'What does a colorimeter measure?',o:[['The absorbance of light of one colour by the solution',1,'Correct. Absorbance is proportional to concentration.'],['The colour of light emitted by the solution',0,'Complexes absorb light; the colorimeter measures absorbance.'],['The mass of the coloured ion',0,'It gives concentration via a calibration curve.'],['The wavelength of all light transmitted',0,'It uses one filter colour at a time.']]},
+     {q:'In a calibration curve, what is plotted?',o:[['Absorbance against concentration of standard solutions',1,'Correct. Then read off the unknown.'],['Wavelength against frequency',0,'That is not a calibration curve.'],['Concentration against time',0,'That is a rate graph.'],['Absorbance against wavelength',0,'That is an absorption spectrum.']]}]
+};
+const CK=['Explain why complexes are coloured using split d orbitals, ground state and excited state','Use complementary colours to predict the colour of a complex',
+ 'Calculate ΔE, ν or λ using ΔE = hν = hc/λ, converting nm to m','Convert ΔE per ion into kJ mol<sup>−1</sup>','Explain which filter to use in a colorimeter','Use a calibration curve to find the concentration of a coloured ion'];
+initMCQ(Q,CK,'tm-colour2-check');
+
+</script>
+</body>
+</html>
