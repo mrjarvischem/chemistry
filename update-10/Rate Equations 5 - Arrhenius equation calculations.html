@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rate Equations 5 – The Arrhenius Equation: Calculations</title>
+<style>
+:root{
+  --bg:#f6efe1; --card:#fffaf0; --ink:#3b2a1a; --brown:#6b4423; --brown2:#8b5a2b;
+  --accent:#b5651d; --soft:#ead9bd; --line:#d8c4a0; --good:#2f7d4a; --bad:#b03a2e; --blue:#2c4a7a;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Arial,sans-serif;font-size:19px;line-height:1.55}
+header{background:var(--brown);color:#fff8ec;padding:14px 24px}
+header h1{margin:0;font-family:Georgia,serif;font-size:28px;font-weight:normal}
+header p{margin:2px 0 0;opacity:.85;font-size:16px}
+nav{display:flex;flex-wrap:wrap;gap:6px;padding:10px 24px;background:var(--soft);border-bottom:2px solid var(--line);position:sticky;top:0;z-index:5}
+nav button{border:2px solid var(--brown2);background:var(--card);color:var(--brown);padding:7px 14px;border-radius:20px;font-size:16px;cursor:pointer}
+nav button.on{background:var(--brown2);color:#fff}
+main{max-width:1100px;margin:0 auto;padding:20px 24px 60px}
+.page{display:none}.page.on{display:block}
+h2{font-family:Georgia,serif;color:var(--brown);font-size:30px;margin:6px 0 12px;font-weight:normal}
+h3{color:var(--brown2);font-size:22px;margin:22px 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:14px 0;box-shadow:0 2px 0 var(--line)}
+.key{border-left:6px solid var(--accent)}
+.eq{font-family:Georgia,serif;font-size:24px;text-align:center;padding:10px;background:#fff;border:1px dashed var(--line);border-radius:8px;margin:10px 0}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 6px}
+.frac span:first-child{border-bottom:2px solid var(--ink);padding:0 6px}
+.row{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+.row>*{flex:1 1 380px}
+button.b{background:var(--brown2);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:17px;cursor:pointer;margin:4px 6px 4px 0}
+button.b.alt{background:var(--card);color:var(--brown);border:2px solid var(--brown2)}
+button.b:disabled{opacity:.45;cursor:default}
+.check{background:#fdf6e6;border:2px solid var(--accent);border-radius:12px;padding:14px 18px;margin:16px 0}
+.check .tag{display:inline-block;background:var(--accent);color:#fff;font-size:14px;padding:2px 10px;border-radius:12px;margin-bottom:6px;letter-spacing:.5px}
+.check .src{font-size:14px;color:#8a7356;font-style:italic}
+input.ans{font-size:18px;padding:6px 10px;width:200px;border:2px solid var(--line);border-radius:6px}
+.fb{font-weight:600;margin-left:8px}
+.fb.ok{color:var(--good)}.fb.no{color:var(--bad)}
+.work{display:none;background:#fff;border-left:4px solid var(--brown2);padding:8px 14px;margin-top:8px;border-radius:4px}
+.work.on{display:block}
+table.t{border-collapse:collapse;margin:8px 0;background:#fff}
+table.t th,table.t td{border:1px solid var(--line);padding:6px 12px;text-align:center}
+table.t th{background:var(--soft);color:var(--brown)}
+svg text{font-family:"Segoe UI",Arial,sans-serif}
+.readout{font-family:Consolas,monospace;background:#2b1d10;color:#ffe9c4;padding:10px 14px;border-radius:8px;font-size:17px;line-height:1.6}
+.slider{width:100%}
+label.s{display:block;font-weight:600;color:var(--brown);margin-top:8px}
+.steps li{margin:6px 0}
+.reveal{display:none}.reveal.on{display:block;animation:fade .4s}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+.pager{display:flex;justify-content:space-between;margin-top:30px}
+.mcq button.opt{display:block;width:100%;text-align:left;margin:6px 0;padding:10px 14px;font-size:17px;border:2px solid var(--line);background:#fff;border-radius:8px;cursor:pointer;color:var(--ink)}
+.mcq button.opt.right{border-color:var(--good);background:#e6f4ea}
+.mcq button.opt.wrong{border-color:var(--bad);background:#fbe9e7}
+.mcq .exp{display:none;margin-top:6px;font-size:17px}
+.mcq.done .exp{display:block}
+.warn{background:#fbeee4;border-left:6px solid var(--bad);padding:10px 16px;border-radius:6px;margin:12px 0}
+.small{font-size:15px;color:#7a6448}
+canvas{background:#fff;border:1px solid var(--line);border-radius:8px;max-width:100%}
+.beakers{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
+.bk{text-align:center;font-size:16px}
+.ordbox{flex:1 1 300px;background:#fff8ec;border:1px solid var(--line);border-radius:10px;padding:10px}
+.mech{font-family:Georgia,serif;font-size:21px;line-height:2}
+.mech .x{text-decoration:line-through;color:#b03a2e}
+.mech .im{background:#fde7c4;border-radius:4px;padding:0 4px}
+.mech .cat{background:#d9e6f7;border-radius:4px;padding:0 4px}
+.stepbox{border:2px solid var(--line);border-radius:10px;padding:8px 14px;margin:8px 0;background:#fff;cursor:pointer}
+.stepbox.sel{border-color:var(--accent);background:#fdf0dc}
+.stepbox.good{border-color:var(--good);background:#e6f4ea}
+.stepbox.badc{border-color:var(--bad);background:#fbe9e7}
+.mk{float:right;font-size:14px;color:#8a7356;font-weight:bold}
+.part{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px}
+.selfmark{font-size:15px;color:#6b4423}
+.tot{position:sticky;bottom:0;background:#6b4423;color:#fff;padding:8px 16px;border-radius:10px;text-align:center;font-size:19px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Rate Equations 5 – The Arrhenius Equation: Calculations</h1>
+  <p>AQA A-level Chemistry · Kinetics walkthrough</p>
+</header>
+<nav id="nav"></nav>
+<main>
+
+<!-- ============ PAGE 1 ============ -->
+<section class="page" data-title="1. The equation">
+<h2>1. The Arrhenius equation</h2>
+<div class="card key">
+  <p>The rate constant k changes with <b>temperature</b> and <b>activation energy</b>. The Arrhenius equation links them:</p>
+  <div class="eq" style="font-size:30px">k = A e<sup>−E<sub>a</sub> / RT</sup></div>
+  <table class="t" style="margin:auto">
+    <tr><th>Symbol</th><th>Meaning</th><th>Units</th></tr>
+    <tr><td>k</td><td>rate constant</td><td>depends on the overall order</td></tr>
+    <tr><td>A</td><td>Arrhenius constant (pre-exponential factor). Linked to how often particles collide with the right orientation</td><td><b>same units as k</b></td></tr>
+    <tr><td>E<sub>a</sub></td><td>activation energy</td><td><b>J mol⁻¹</b> in the equation (not kJ!)</td></tr>
+    <tr><td>R</td><td>gas constant = 8.31</td><td>J K⁻¹ mol⁻¹</td></tr>
+    <tr><td>T</td><td>temperature</td><td><b>K</b> (add 273 to °C)</td></tr>
+  </table>
+  <p>The part <b>e<sup>−Ea/RT</sup></b> is the <b>fraction of collisions with energy ≥ E<sub>a</sub></b>. A is the total frequency of collisions with the right orientation. So k ≈ how often collisions happen × the fraction that succeed.</p>
+  <p class="small">The equation is given on the exam paper. You don't need to remember it, but you do need to be able to rearrange it.</p>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Interactive: what controls k?</h3>
+  <div class="row">
+    <div style="flex:2 1 520px"><svg id="mbSvg" viewBox="0 0 660 400" width="100%"></svg></div>
+    <div style="flex:1 1 260px">
+      <label class="s">Temperature: <span id="tV"></span></label><input type="range" class="slider" id="tS" min="273" max="573" value="298">
+      <label class="s">Activation energy: <span id="eV"></span></label><input type="range" class="slider" id="eS" min="20" max="120" value="50">
+      <div class="readout" id="mbOut" style="margin-top:10px"></div>
+    </div>
+  </div>
+  <p class="small">The graph shows how k changes with temperature, compared with its value at 298 K, for the Ea you choose. Try a 10 K rise with Ea ≈ 50 kJ mol⁻¹: the rate roughly doubles. Then try a bigger Ea.</p>
+</div>
+
+<div class="card key">
+  <h3 style="margin-top:0">What the equation shows</h3>
+  <ul>
+    <li><b>Increase T</b> → −Ea/RT becomes less negative → e<sup>−Ea/RT</sup> gets bigger → <b>k increases</b>. The increase is <b>exponential</b>, not proportional.</li>
+    <li><b>Lower Ea</b> (a catalyst) → e<sup>−Ea/RT</sup> gets bigger → <b>k increases</b>.</li>
+    <li>Changing <b>concentration</b> doesn't appear anywhere in the equation, so it doesn't change k.</li>
+  </ul>
+</div>
+</section>
+
+<!-- ============ PAGE 2 ============ -->
+<section class="page" data-title="2. Rearranging">
+<h2>2. Rearranging the equation</h2>
+<div class="card key">
+  <p>Take natural logs (ln) of both sides. This is the form most questions use:</p>
+  <div class="eq">ln k = ln A − <span class="frac"><span>E<sub>a</sub></span><span>RT</span></span></div>
+  <table class="t" style="margin:auto">
+    <tr><th>To find…</th><th>Use</th></tr>
+    <tr><td>k</td><td>k = A × e<sup>−Ea/RT</sup></td></tr>
+    <tr><td>E<sub>a</sub></td><td>E<sub>a</sub> = RT (ln A − ln k) = RT ln(A/k)</td></tr>
+    <tr><td>A</td><td>A = k ÷ e<sup>−Ea/RT</sup> = k × e<sup>Ea/RT</sup></td></tr>
+    <tr><td>T</td><td>T = E<sub>a</sub> ÷ (R × ln(A/k))</td></tr>
+  </table>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Interactive: Arrhenius solver with working</h3>
+  <p>Pick what you want to find, enter the other values and it shows every step. Use it to check your own working.</p>
+  <label class="s">Find: <select id="sv" style="font-size:18px"><option value="k">k</option><option value="Ea" selected>Ea</option><option value="A">A</option><option value="T">T</option></select></label>
+  <div class="row" style="margin-top:8px">
+    <div>
+      <p id="pk">k = <input class="ans" id="ik" value="8.92e-3" style="width:150px"></p>
+      <p id="pA">A = <input class="ans" id="iA" value="3.62e7" style="width:150px"></p>
+      <p id="pE">E<sub>a</sub> = <input class="ans" id="iE" value="54.8" style="width:110px"> kJ mol⁻¹</p>
+      <p id="pT">T = <input class="ans" id="iT" value="298" style="width:110px"> K</p>
+      <button class="b" onclick="solve()">Solve</button>
+    </div>
+    <div><div class="readout" id="svOut" style="min-height:160px"></div></div>
+  </div>
+</div>
+
+<h3>Worked example</h3>
+<div class="card">
+  <span class="src">Rate Equations 4 Q1</span>
+  <p>A = 3.62 × 10⁷ s⁻¹ and k = 8.92 × 10⁻³ s⁻¹ at 298 K. Calculate Ea.</p>
+  <button class="b alt" onclick="stepReveal('we1')">Show next step</button>
+  <ol class="steps" id="we1">
+    <li class="reveal">E<sub>a</sub> = RT ln(A/k)</li>
+    <li class="reveal">A/k = 3.62 × 10⁷ ÷ 8.92 × 10⁻³ = 4.058 × 10⁹ → ln = 22.12</li>
+    <li class="reveal">E<sub>a</sub> = 8.31 × 298 × 22.12 = 54 788 J mol⁻¹</li>
+    <li class="reveal">÷ 1000 → <b>54.8 kJ mol⁻¹</b></li>
+  </ol>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 1</span>
+  <span class="src">June 2017 Paper 2 Q3.2 (4 marks)</span>
+  <p>ln k = −Ea/RT + ln A. At 25 °C k = 2.8 × 10⁻² mol⁻¹ dm³ s⁻¹ and ln A = 16.9. Calculate Ea in kJ mol⁻¹.</p>
+  <input class="ans" id="c1"> <button class="b" onclick="numCheck('c1',50.7,0.02)">Check</button><span class="fb" id="c1fb"></span>
+  <button class="b alt" onclick="tog('c1w')">Mark scheme</button>
+  <div class="work" id="c1w">M1 ln k = ln(2.8 × 10⁻²) = −3.58<br>M2 Ea = RT(ln A − ln k)<br>M3 Ea = 8.31 × 298 × (16.9 + 3.58) = 50 716 J mol⁻¹<br>M4 <b>51 kJ mol⁻¹</b><br><i>Trap: ln A is given, so don't take ln(16.9). Using T = 25 instead of 298 caps you at 2 marks.</i></div>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 2</span>
+  <span class="src">Rate Equations 4 Q3</span>
+  <p>A = 5.25 × 10⁵ mol⁻¹ dm³ s⁻¹ and k = 3.36 × 10⁻⁴ mol⁻¹ dm³ s⁻¹ at 298 K. Calculate Ea in kJ mol⁻¹.</p>
+  <input class="ans" id="c2"> <button class="b" onclick="numCheck('c2',52.4,0.01)">Check</button><span class="fb" id="c2fb"></span>
+  <button class="b alt" onclick="tog('c2w')">Working</button>
+  <div class="work" id="c2w">Ea = 8.31 × 298 × ln(5.25 × 10⁵ ÷ 3.36 × 10⁻⁴) = 8.31 × 298 × 21.17 = 52 424 J mol⁻¹ = <b>52.4 kJ mol⁻¹</b></div>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 3 – find A</span>
+  <span class="src">June 2019 Paper 2 Q5 (4 marks)</span>
+  <p>At 25 °C, k = 3.46 × 10⁻⁸ s⁻¹ and Ea = 96.2 kJ mol⁻¹. Calculate A and give its units.</p>
+  <input class="ans" id="c3"> <button class="b" onclick="numCheck('c3',2.57e9,0.02)">Check</button><span class="fb" id="c3fb"></span>
+  &nbsp; units: <span class="ob" data-opts="s⁻¹|mol dm⁻³ s⁻¹|no units|J mol⁻¹" data-a="0" data-id="c3u"></span><span class="fb" id="c3u"></span>
+  <button class="b alt" onclick="tog('c3w')">Working</button>
+  <div class="work" id="c3w">Ea/RT = 96 200 ÷ (8.31 × 298) = 38.85<br>A = k × e<sup>38.85</sup> = 3.46 × 10⁻⁸ × 7.43 × 10¹⁶ = <b>2.57 × 10⁹ s⁻¹</b> (same units as k)</div>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 4 – find T</span>
+  <span class="src">June 2023 Paper 2 Q9.3 (3 marks)</span>
+  <p>Ea = 34.5 kJ mol⁻¹, A = 1.00 × 10¹² s⁻¹, k = 2.48 × 10⁸ s⁻¹. Calculate T₁.</p>
+  <input class="ans" id="c4"> K <button class="b" onclick="numCheck('c4',500,0.01)">Check</button><span class="fb" id="c4fb"></span>
+  <button class="b alt" onclick="tog('c4w')">Working</button>
+  <div class="work" id="c4w">ln(A/k) = ln(1.00 × 10¹² ÷ 2.48 × 10⁸) = ln(4032) = 8.302<br>T = Ea ÷ (R ln(A/k)) = 34 500 ÷ (8.31 × 8.302) = <b>500 K</b></div>
+</div>
+</section>
+
+<!-- ============ PAGE 3 ============ -->
+<section class="page" data-title="3. Temperature and catalysts">
+<h2>3. Comparing rates: temperature and catalysts</h2>
+<div class="card key">
+  <p>"How many times faster?" questions: work out k for both conditions, then divide. A cancels, so you can also go straight to the ratio:</p>
+  <div class="eq"><span class="frac"><span>k₂</span><span>k₁</span></span> = e<sup>−Ea/RT₂</sup> ÷ e<sup>−Ea/RT₁</sup></div>
+  <p>With all concentrations the same, the ratio of rates = the ratio of rate constants.</p>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Interactive: rate multiplier</h3>
+  <div class="row">
+    <div>
+      <label class="s">Mode</label><select id="rmM" style="font-size:18px"><option value="T">Raise the temperature</option><option value="E">Add a catalyst (lower Ea)</option></select>
+      <div id="rmT"><label class="s">T₁ / K <input class="ans" id="rT1" value="293" style="width:90px"></label><label class="s">T₂ / K <input class="ans" id="rT2" value="303" style="width:90px"></label><label class="s">Ea / kJ mol⁻¹ <input class="ans" id="rE" value="50" style="width:90px"></label></div>
+      <div id="rmE" style="display:none"><label class="s">Ea without catalyst / kJ mol⁻¹ <input class="ans" id="rE1" value="100" style="width:90px"></label><label class="s">Ea with catalyst / kJ mol⁻¹ <input class="ans" id="rE2" value="80" style="width:90px"></label><label class="s">T / K <input class="ans" id="rTc" value="298" style="width:90px"></label></div>
+    </div>
+    <div><div class="readout" id="rmOut" style="font-size:19px"></div></div>
+  </div>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 5</span>
+  <span class="src">Rate Equations 4 Q6–7</span>
+  <p>A = 2.5 × 10⁶ s⁻¹ and Ea = 50 kJ mol⁻¹. Calculate k at 20 °C and at 30 °C.</p>
+  <p>k at 20 °C: <input class="ans" id="c5a" style="width:150px"> <button class="b" onclick="numCheck('c5a',3.02e-3,0.02)">Check</button><span class="fb" id="c5afb"></span></p>
+  <p>k at 30 °C: <input class="ans" id="c5b" style="width:150px"> <button class="b" onclick="numCheck('c5b',5.94e-3,0.02)">Check</button><span class="fb" id="c5bfb"></span></p>
+  <button class="b alt" onclick="tog('c5w')">Working</button>
+  <div class="work" id="c5w">293 K: k = 2.5 × 10⁶ × e<sup>−50000/(8.31 × 293)</sup> = <b>3.02 × 10⁻³ s⁻¹</b><br>303 K: k = <b>5.94 × 10⁻³ s⁻¹</b><br>Ratio = 1.97, so the rate is roughly twice as fast. This is where the "10 °C rise doubles the rate" rule of thumb comes from.</div>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 6</span>
+  <span class="src">Rate Equations 4 Q8–9</span>
+  <p>A = 5.18 × 10⁵ mol⁻¹ dm³ s⁻¹, Ea = 75 kJ mol⁻¹. How many times faster is the reaction at 40 °C than at 20 °C?</p>
+  <input class="ans" id="c6"> <button class="b" onclick="numCheck('c6',7.16,0.02)">Check</button><span class="fb" id="c6fb"></span>
+  <button class="b alt" onclick="tog('c6w')">Working</button>
+  <div class="work" id="c6w">k(293 K) = 2.17 × 10⁻⁸ and k(313 K) = 1.55 × 10⁻⁷ mol⁻¹ dm³ s⁻¹<br>Ratio = 1.55 × 10⁻⁷ ÷ 2.17 × 10⁻⁸ = <b>7.2 times faster</b>. A bigger Ea means temperature has a bigger effect.</div>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 7 – catalyst</span>
+  <span class="src">Based on Rate Equations 4 Q4–5</span>
+  <p>A = 5.00 × 10⁷ mol⁻¹ dm³ s⁻¹ at 298 K. Ea = 100 kJ mol⁻¹ <b>without</b> a catalyst and 80 kJ mol⁻¹ <b>with</b> a catalyst. How many times faster is the catalysed reaction?</p>
+  <input class="ans" id="c7"> <button class="b" onclick="numCheck('c7',3217,0.02)">Check</button><span class="fb" id="c7fb"></span>
+  <button class="b alt" onclick="tog('c7w')">Working</button>
+  <div class="work" id="c7w">k (no catalyst) = 5.00 × 10⁷ × e<sup>−100000/(8.31 × 298)</sup> = 1.45 × 10⁻¹⁰<br>k (catalyst) = 5.00 × 10⁷ × e<sup>−80000/(8.31 × 298)</sup> = 4.67 × 10⁻⁷<br>Ratio = <b>about 3.2 × 10³ times faster</b>. Lowering Ea by just 20 kJ mol⁻¹ makes a huge difference.</div>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 8</span>
+  <span class="src">Rate Equations 4 Q10</span>
+  <p>A = 6.92 × 10⁶ s⁻¹ at 298 K. Calculate k with Ea = 150 kJ mol⁻¹ (no catalyst) and with Ea = 50 kJ mol⁻¹ (catalyst).</p>
+  <p>no catalyst: <input class="ans" id="c8a" style="width:150px"> <button class="b" onclick="numCheck('c8a',3.42e-20,0.03)">Check</button><span class="fb" id="c8afb"></span></p>
+  <p>catalyst: <input class="ans" id="c8b" style="width:150px"> <button class="b" onclick="numCheck('c8b',1.18e-2,0.02)">Check</button><span class="fb" id="c8bfb"></span></p>
+  <button class="b alt" onclick="tog('c8w')">Working</button>
+  <div class="work" id="c8w">k = 6.92 × 10⁶ × e<sup>−150000/(8.31 × 298)</sup> = <b>3.42 × 10⁻²⁰ s⁻¹</b><br>k = 6.92 × 10⁶ × e<sup>−50000/(8.31 × 298)</sup> = <b>1.18 × 10⁻² s⁻¹</b></div>
+</div>
+</section>
+
+<!-- ============ PAGE 4 ============ -->
+<section class="page" data-title="4. Two temperatures and errors">
+<h2>4. Two temperatures, and avoiding common errors</h2>
+<div class="card key">
+  <p>If you know k at two temperatures, you can find Ea without knowing A. Subtracting the two ln forms gives:</p>
+  <div class="eq">ln<span class="frac"><span>k₁</span><span>k₂</span></span> = <span class="frac"><span>E<sub>a</sub></span><span>R</span></span>(<span class="frac"><span>1</span><span>T₂</span></span> − <span class="frac"><span>1</span><span>T₁</span></span>)</div>
+  <p class="small">The exam gives you this equation when it's needed.</p>
+</div>
+
+<div class="card">
+  <span class="src">June 2022 Paper 2 Q1.7 (5 marks)</span>
+  <p>T₁ = 303 K with k₁ = 1.55 × 10⁻⁵ s⁻¹, and T₂ = 333 K with k₂ = 1.70 × 10⁻⁴ s⁻¹. Calculate Ea in kJ mol⁻¹.</p>
+  <button class="b alt" onclick="stepReveal('we2')">Show next step</button>
+  <ol class="steps" id="we2">
+    <li class="reveal">ln(k₁/k₂) = ln(1.55 × 10⁻⁵ ÷ 1.70 × 10⁻⁴) = ln(0.0912) = −2.395</li>
+    <li class="reveal">1/T₂ − 1/T₁ = 1/333 − 1/303 = −2.973 × 10⁻⁴</li>
+    <li class="reveal">Ea/R = −2.395 ÷ −2.973 × 10⁻⁴ = 8055</li>
+    <li class="reveal">Ea = 8055 × 8.31 = 66 940 J mol⁻¹ = <b>66.9 kJ mol⁻¹</b></li>
+  </ol>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Spot the error</h3>
+  <p>Each "student answer" below has one mistake. Click to reveal it.</p>
+  <div class="stepbox" onclick="this.querySelector('.reveal').classList.add('on')">Ea = 8.31 × 25 × ln(A/k) … <span class="reveal" style="color:#b03a2e"><b>Temperature in °C.</b> It must be in kelvin (298 K).</span></div>
+  <div class="stepbox" onclick="this.querySelector('.reveal').classList.add('on')">k = A e<sup>−54.8/(8.31 × 298)</sup> … <span class="reveal" style="color:#b03a2e"><b>Ea in kJ.</b> It must be 54 800 J mol⁻¹ to match R in J.</span></div>
+  <div class="stepbox" onclick="this.querySelector('.reveal').classList.add('on')">Ea = −52.4 kJ mol⁻¹ … <span class="reveal" style="color:#b03a2e"><b>Negative Ea.</b> Activation energy is always positive. Check the order of the ln terms.</span></div>
+  <div class="stepbox" onclick="this.querySelector('.reveal').classList.add('on')">ln A = 16.9, so I used ln(16.9) = 2.83 … <span class="reveal" style="color:#b03a2e"><b>Already a log.</b> 16.9 is ln A, so use it directly.</span></div>
+  <div class="stepbox" onclick="this.querySelector('.reveal').classList.add('on')">Units of A: J mol⁻¹ … <span class="reveal" style="color:#b03a2e"><b>Wrong units.</b> A has the same units as k.</span></div>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Calculator tips</h3>
+  <ul>
+    <li><b>e<sup>x</sup></b> is usually SHIFT + ln. Put the whole power in brackets: e^(−54800 ÷ (8.31 × 298)).</li>
+    <li>Work out −Ea/RT first and write it down. It's usually worth a method mark.</li>
+    <li>Don't round in the middle of a calculation. Keep the full calculator value until the end.</li>
+  </ul>
+</div>
+</section>
+
+<!-- ============ PAGE 5 ============ -->
+<section class="page" data-title="5. Quiz">
+<h2>5. End-of-walkthrough quiz</h2>
+<p>Click an answer. You get one go at each question.</p>
+<div id="quiz"></div>
+<div class="card" id="score" style="font-size:22px;text-align:center"></div>
+<button class="b alt" onclick="buildQuiz()">Reset quiz</button>
+</section>
+
+<div class="pager"><button class="b alt" id="prevB">◀ Previous</button><button class="b" id="nextB">Next ▶</button></div>
+</main>
+
+<script>
+/* ---------- navigation ---------- */
+const pages=[...document.querySelectorAll('.page')];let cur=0;
+const nav=document.getElementById('nav');
+pages.forEach((p,i)=>{const b=document.createElement('button');b.textContent=p.dataset.title;b.onclick=()=>go(i);nav.appendChild(b)});
+function go(i){cur=i;pages.forEach((p,j)=>p.classList.toggle('on',j===i));[...nav.children].forEach((b,j)=>b.classList.toggle('on',j===i));
+ document.getElementById('prevB').disabled=i===0;document.getElementById('nextB').disabled=i===pages.length-1;window.scrollTo(0,0)}
+document.getElementById('prevB').onclick=()=>go(Math.max(0,cur-1));
+document.getElementById('nextB').onclick=()=>go(Math.min(pages.length-1,cur+1));
+
+/* ---------- helpers ---------- */
+function tog(id){document.getElementById(id).classList.toggle('on')}
+function stepReveal(id){const r=[...document.querySelectorAll('#'+id+' .reveal:not(.on)')];if(r.length)r[0].classList.add('on')}
+function parseNum(s){
+ s=s.trim().replace(/\s/g,'');const sup={'⁰':'0','¹':'1','²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9','⁻':'-'};
+ s=s.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁻]/g,c=>sup[c]).replace(/[−–]/g,'-');
+ let m=s.match(/^(-?[\d.]+)[x×X*]10\^?(-?\d+)$/);if(m)return parseFloat(m[1])*Math.pow(10,parseInt(m[2]));
+ const v=Number(s);return isNaN(v)?null:v}
+function numCheck(id,target,tol){const v=parseNum(document.getElementById(id).value);const fb=document.getElementById(id+'fb');
+ if(v===null){fb.textContent='Enter a number';fb.className='fb no';return}
+ if(Math.abs(v-target)<=Math.abs(target)*tol){fb.textContent='✔ Correct';fb.className='fb ok'}
+ else{fb.textContent='✘ Not quite, check your working';fb.className='fb no'}}
+function unitPick(btn,ok){const f=document.getElementById('c5u');f.textContent=ok?'✔ Yes, cm³ s⁻¹':'✘ Try again';f.className='fb '+(ok?'ok':'no')}
+function pick(btn,ok,id){const f=document.getElementById(id);f.textContent=ok?'✔ Correct':'✘ Try again';f.className='fb '+(ok?'ok':'no')}
+
+
+/* ---------- SVG plotting ---------- */
+const NS='http://www.w3.org/2000/svg';
+function E(tag,a,p){const e=document.createElementNS(NS,tag);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e}
+function plot(svg,o){
+ svg.innerHTML='';const W=660,H=400,ml=80,mr=20,mt=18,mb=60,pw=W-ml-mr,ph=H-mt-mb;
+ const x0=o.xmin||0,y0=o.ymin||0;const X=x=>ml+(x-x0)/(o.xmax-x0)*pw,Y=y=>mt+ph-(y-y0)/(o.ymax-y0)*ph;
+ const id='cl'+Math.random().toString(36).slice(2);
+ const d=E('defs',{},svg);const cp=E('clipPath',{id},d);E('rect',{x:ml,y:mt,width:pw,height:ph},cp);
+ E('rect',{x:ml,y:mt,width:pw,height:ph,fill:'#fff'},svg);
+ const gx=o.gx||o.xt,gy=o.gy||o.yt;
+ for(let x=x0;x<=o.xmax+1e-9;x+=gx)E('line',{x1:X(x),x2:X(x),y1:mt,y2:mt+ph,stroke:'#efe3cc'},svg);
+ for(let y=y0;y<=o.ymax+1e-9;y+=gy)E('line',{x1:ml,x2:ml+pw,y1:Y(y),y2:Y(y),stroke:'#efe3cc'},svg);
+ for(let x=x0;x<=o.xmax+1e-9;x+=o.xt){E('line',{x1:X(x),x2:X(x),y1:mt+ph,y2:mt+ph+6,stroke:'#3b2a1a'},svg);const t=E('text',{x:X(x),y:mt+ph+24,'text-anchor':'middle','font-size':15,fill:'#3b2a1a'},svg);t.textContent=o.xfmt?o.xfmt(x):+x.toFixed(4)}
+ for(let y=y0;y<=o.ymax+1e-9;y+=o.yt){E('line',{x1:ml-6,x2:ml,y1:Y(y),y2:Y(y),stroke:'#3b2a1a'},svg);const t=E('text',{x:ml-10,y:Y(y)+5,'text-anchor':'end','font-size':15,fill:'#3b2a1a'},svg);t.textContent=(o.yfmt?o.yfmt(y):+y.toFixed(3))}
+ E('line',{x1:ml,x2:ml+pw,y1:mt+ph,y2:mt+ph,stroke:'#3b2a1a','stroke-width':2},svg);
+ E('line',{x1:ml,x2:ml,y1:mt,y2:mt+ph,stroke:'#3b2a1a','stroke-width':2},svg);
+ let t=E('text',{x:ml+pw/2,y:H-12,'text-anchor':'middle','font-size':17,fill:'#6b4423'},svg);t.textContent=o.xlab;
+ t=E('text',{x:18,y:mt+ph/2,'text-anchor':'middle','font-size':17,fill:'#6b4423',transform:`rotate(-90 18 ${mt+ph/2})`},svg);t.textContent=o.ylab;
+ const g=E('g',{'clip-path':`url(#${id})`},svg);
+ return {X,Y,g,svg,curve(f,col='#6b4423',w=3,dash){let dd='';for(let i=0;i<=300;i++){const x=x0+(o.xmax-x0)*i/300;dd+=(i?'L':'M')+X(x)+' '+Y(f(x))}return E('path',{d:dd,fill:'none',stroke:col,'stroke-width':w,'stroke-dasharray':dash||''},g)}};
+}
+
+
+/* ---------- shared helpers for walkthroughs 4-8 ---------- */
+const sup=n=>String(n).split('').map(c=>({'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'})[c]).join('');
+function unitsK(n){const p=1-n;if(n===1)return 's⁻¹';const mol=p===1?'mol':'mol'+sup(p);return `${mol} dm${sup(-3*p)} s⁻¹`}
+function fmt(x,sf=3){if(x===0)return '0';const e=Math.floor(Math.log10(Math.abs(x)));if(e>=-1&&e<4)return String(+x.toPrecision(sf));
+ const m=(x/Math.pow(10,e)).toFixed(sf-1);return `${m} × 10${sup(e)}`}
+/* option pickers: <span class="ob" data-opts="a|b|c" data-a="1" data-id="fbid"> ; data-a is index of correct option */
+function makePickers(root){root.querySelectorAll('.ob').forEach(sp=>{if(sp.dataset.done)return;sp.dataset.done=1;
+ const opts=(sp.dataset.opts||'0|1|2').split('|'),a=+sp.dataset.a,id=sp.dataset.id;
+ opts.forEach((v,i)=>{const b=document.createElement('button');b.className='b alt';b.innerHTML=v;b.style.padding='4px 12px';
+  b.onclick=()=>{sp.querySelectorAll('button').forEach(x=>x.style.background='');b.style.background=i===a?'#cfe8d6':'#f6d0cb';
+   if(id){const f=document.getElementById(id);if(f){f.textContent=i===a?'✔':'✘';f.className='fb '+(i===a?'ok':'no')}}};sp.appendChild(b)})})}
+let QZ=[],qs=0,qa=0;
+function buildQuiz(){const w=document.getElementById('quiz');w.innerHTML='';qs=0;qa=0;
+ QZ.forEach((q,i)=>{const c=document.createElement('div');c.className='card mcq';c.innerHTML=`<b>Q${i+1}.</b> ${q[0]}`;
+  q[1].forEach((o,j)=>{const b=document.createElement('button');b.className='opt';b.innerHTML=o;
+   b.onclick=()=>{if(c.classList.contains('done'))return;c.classList.add('done');qa++;
+    if(j===q[2]){b.classList.add('right');qs++}else{b.classList.add('wrong');c.querySelectorAll('.opt')[q[2]].classList.add('right')}score()};c.appendChild(b)});
+  const e=document.createElement('div');e.className='exp';e.innerHTML='💡 '+q[3];c.appendChild(e);w.appendChild(c)});score()}
+function score(){const n=QZ.length;document.getElementById('score').innerHTML=`Score: <b>${qs}</b> / ${n}`+(qa===n?(qs>=n*0.85?' – excellent!':qs>=n*0.65?' – good, review the ones you missed':' – go back through the walkthrough and try again'):'')}
+function cross(p,x,y,c='#3b2a1a'){const X=p.X(x),Y=p.Y(y);E('path',{d:`M${X-5} ${Y-5}L${X+5} ${Y+5}M${X-5} ${Y+5}L${X+5} ${Y-5}`,stroke:c,'stroke-width':2.2},p.g)}
+function lineP(p,x1,y1,x2,y2,c='#b5651d',w=2.5,dash){return E('line',{x1:p.X(x1),y1:p.Y(y1),x2:p.X(x2),y2:p.Y(y2),stroke:c,'stroke-width':w,'stroke-dasharray':dash||''},p.g)}
+function textP(p,x,y,t,c='#6b4423',sz=15,anchor='start'){const e=E('text',{x:p.X(x),y:p.Y(y),'font-size':sz,fill:c,'text-anchor':anchor},p.g);e.textContent=t;return e}
+makePickers(document);
+const R=8.31;
+/* page 1: k vs T */
+function mb(){const T=+document.getElementById('tS').value,Ea=+document.getElementById('eS').value*1000;
+ document.getElementById('tV').textContent=`${T} K (${T-273} °C)`;document.getElementById('eV').textContent=`${Ea/1000} kJ mol⁻¹`;
+ const rel=t=>Math.exp(-Ea/(R*t))/Math.exp(-Ea/(R*298));const ymax=Math.max(4,rel(373)*1.1);
+ const nice=v=>{const p=Math.pow(10,Math.floor(Math.log10(v)));const m=v/p;return (m<=2?2:m<=5?5:10)*p};const yM=nice(ymax);
+ const p=plot(document.getElementById('mbSvg'),{xmin:273,xmax:373,ymax:yM,xt:10,yt:yM/5,gx:5,gy:yM/10,xlab:'temperature / K',ylab:'k relative to k at 298 K',yfmt:y=>+y.toPrecision(3)});
+ p.curve(rel,'#6b4423',3.5);const tc=Math.min(T,373);E('circle',{cx:p.X(tc),cy:p.Y(Math.min(rel(tc),yM)),r:8,fill:'#b5651d',stroke:'#fff','stroke-width':2},p.g);
+ const f=Math.exp(-Ea/(R*T)),up=Math.exp(-Ea/(R*(T+10)))/f;
+ document.getElementById('mbOut').innerHTML=`−Ea/RT = ${(-Ea/(R*T)).toFixed(2)}<br>fraction with E ≥ Ea:<br>e<sup>−Ea/RT</sup> = ${fmt(f,3)}<br>≈ 1 in ${fmt(1/f,2)} collisions<br>k vs 298 K: × ${fmt(rel(T),3)}<br>+10 K would multiply k by <b>${up.toFixed(2)}</b>`}
+['tS','eS'].forEach(i=>document.getElementById(i).oninput=mb);mb();
+
+/* page 2 solver */
+const ids={k:'pk',A:'pA',Ea:'pE',T:'pT'};
+function svShow(){const v=document.getElementById('sv').value;Object.entries(ids).forEach(([k,id])=>document.getElementById(id).style.display=k===v?'none':'block');document.getElementById('svOut').innerHTML='Enter values and press Solve.'}
+document.getElementById('sv').onchange=svShow;svShow();
+function solve(){const v=document.getElementById('sv').value,g=id=>parseNum(document.getElementById(id).value);
+ const k=g('ik'),A=g('iA'),Ea=g('iE')*1000,T=g('iT');let h='';
+ try{
+ if(v==='k'){const x=-Ea/(R*T);h=`−Ea/RT = −${Ea} ÷ (8.31 × ${T}) = ${x.toFixed(3)}<br>e<sup>${x.toFixed(3)}</sup> = ${fmt(Math.exp(x),4)}<br>k = A × that = ${fmt(A,3)} × ${fmt(Math.exp(x),4)}<br><b>k = ${fmt(A*Math.exp(x),3)}</b>`}
+ if(v==='Ea'){const L=Math.log(A/k),e=R*T*L;h=`A/k = ${fmt(A/k,4)}<br>ln(A/k) = ${L.toFixed(3)}<br>Ea = RT ln(A/k) = 8.31 × ${T} × ${L.toFixed(3)}<br>= ${e.toFixed(0)} J mol⁻¹<br><b>Ea = ${(e/1000).toFixed(1)} kJ mol⁻¹</b>`}
+ if(v==='A'){const x=Ea/(R*T);h=`Ea/RT = ${Ea} ÷ (8.31 × ${T}) = ${x.toFixed(3)}<br>e<sup>${x.toFixed(3)}</sup> = ${fmt(Math.exp(x),4)}<br>A = k × e<sup>Ea/RT</sup> = ${fmt(k,3)} × ${fmt(Math.exp(x),4)}<br><b>A = ${fmt(k*Math.exp(x),3)}</b> (same units as k)`}
+ if(v==='T'){const L=Math.log(A/k),t=Ea/(R*L);h=`ln(A/k) = ln(${fmt(A/k,4)}) = ${L.toFixed(3)}<br>T = Ea ÷ (R ln(A/k)) = ${Ea} ÷ (8.31 × ${L.toFixed(3)})<br><b>T = ${t.toFixed(0)} K</b> (${(t-273).toFixed(0)} °C)`}
+ }catch(e){h='Check your inputs'}
+ if(h.includes('NaN'))h='Check your inputs';document.getElementById('svOut').innerHTML=h}
+
+/* page 3 multiplier */
+function rm(){const m=document.getElementById('rmM').value;document.getElementById('rmT').style.display=m==='T'?'block':'none';document.getElementById('rmE').style.display=m==='E'?'block':'none';
+ const g=id=>parseNum(document.getElementById(id).value);let h;
+ if(m==='T'){const T1=g('rT1'),T2=g('rT2'),Ea=g('rE')*1000;const r=Math.exp(-Ea/(R*T2))/Math.exp(-Ea/(R*T1));
+  h=`k₂/k₁ = e<sup>−Ea/RT₂</sup> ÷ e<sup>−Ea/RT₁</sup><br>= ${fmt(Math.exp(-Ea/(R*T2)),3)} ÷ ${fmt(Math.exp(-Ea/(R*T1)),3)}<br><b>rate × ${fmt(r,3)}</b>`}
+ else{const E1=g('rE1')*1000,E2=g('rE2')*1000,T=g('rTc');const r=Math.exp(-E2/(R*T))/Math.exp(-E1/(R*T));
+  h=`k(cat)/k(no cat) = e<sup>−Ea(cat)/RT</sup> ÷ e<sup>−Ea/RT</sup><br>= e<sup>(${(E1-E2)/1000} × 1000)/(8.31 × ${T})</sup><br><b>rate × ${fmt(r,3)}</b>`}
+ document.getElementById('rmOut').innerHTML=h.includes('NaN')?'Check your inputs':h}
+['rmM','rT1','rT2','rE','rE1','rE2','rTc'].forEach(i=>document.getElementById(i).oninput=rm);rm();
+
+QZ=[
+ ["In k = Ae<sup>−Ea/RT</sup>, Ea must be in…",["kJ mol⁻¹","J mol⁻¹","kJ","J K⁻¹ mol⁻¹"],1,"R is in J K⁻¹ mol⁻¹, so Ea must be in J mol⁻¹."],
+ ["The units of A are…",["always s⁻¹","the same as the units of k","J mol⁻¹","there are no units"],1,"A has the same units as k."],
+ ["What does e<sup>−Ea/RT</sup> represent?",["the total number of collisions","the fraction of collisions with energy ≥ Ea","the activation energy","the rate of reaction"],1,"It is the fraction of particles with enough energy to react."],
+ ["Increasing the temperature increases k because…",["Ea decreases","a larger fraction of collisions have energy ≥ Ea","A decreases","the concentration increases"],1,"−Ea/RT becomes less negative, so e<sup>−Ea/RT</sup> increases."],
+ ["Which rearrangement gives Ea?",["Ea = RT ln(A/k)","Ea = RT ln(k/A)","Ea = ln(A/k) ÷ RT","Ea = A ÷ (k × RT)"],0,"ln k = ln A − Ea/RT, so Ea = RT(ln A − ln k)."],
+ ["A student uses T = 25 in the equation. What should it be?",["25","−248","298","0.025"],2,"Temperature must be in kelvin: 25 + 273 = 298 K."],
+ ["A catalyst lowers Ea from 90 to 70 kJ mol⁻¹ at 298 K. The rate increases by a factor of about…",["1.3","20","3200","20 000"],2,"e<sup>20000/(8.31 × 298)</sup> ≈ 3.2 × 10³."],
+ ["Which reaction's rate is MORE sensitive to a temperature rise?",["one with a small Ea","one with a large Ea","both the same","it depends on concentration"],1,"The larger Ea is, the bigger the change in e<sup>−Ea/RT</sup> for a given temperature change."],
+ ["Changing the concentration of a reactant changes…",["k","A","Ea","none of these"],3,"Concentration doesn't appear in the Arrhenius equation, so k, A and Ea are unchanged."],
+ ["ln A = 20.0, k = 1.00 × 10⁻³ s⁻¹ at 300 K. Ea ≈ …",["49.9 kJ mol⁻¹","67.1 kJ mol⁻¹","32.7 kJ mol⁻¹","6.71 kJ mol⁻¹"],1,"Ea = 8.31 × 300 × (20.0 − ln 0.001) = 8.31 × 300 × 26.9 = 67.1 kJ mol⁻¹."]
+];
+buildQuiz();go(0);
+
+</script>
+</body>
+</html>

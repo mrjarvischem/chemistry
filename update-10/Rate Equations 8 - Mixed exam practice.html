@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rate Equations 8 – Mixed Exam Practice</title>
+<style>
+:root{
+  --bg:#f6efe1; --card:#fffaf0; --ink:#3b2a1a; --brown:#6b4423; --brown2:#8b5a2b;
+  --accent:#b5651d; --soft:#ead9bd; --line:#d8c4a0; --good:#2f7d4a; --bad:#b03a2e; --blue:#2c4a7a;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Arial,sans-serif;font-size:19px;line-height:1.55}
+header{background:var(--brown);color:#fff8ec;padding:14px 24px}
+header h1{margin:0;font-family:Georgia,serif;font-size:28px;font-weight:normal}
+header p{margin:2px 0 0;opacity:.85;font-size:16px}
+nav{display:flex;flex-wrap:wrap;gap:6px;padding:10px 24px;background:var(--soft);border-bottom:2px solid var(--line);position:sticky;top:0;z-index:5}
+nav button{border:2px solid var(--brown2);background:var(--card);color:var(--brown);padding:7px 14px;border-radius:20px;font-size:16px;cursor:pointer}
+nav button.on{background:var(--brown2);color:#fff}
+main{max-width:1100px;margin:0 auto;padding:20px 24px 60px}
+.page{display:none}.page.on{display:block}
+h2{font-family:Georgia,serif;color:var(--brown);font-size:30px;margin:6px 0 12px;font-weight:normal}
+h3{color:var(--brown2);font-size:22px;margin:22px 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:14px 0;box-shadow:0 2px 0 var(--line)}
+.key{border-left:6px solid var(--accent)}
+.eq{font-family:Georgia,serif;font-size:24px;text-align:center;padding:10px;background:#fff;border:1px dashed var(--line);border-radius:8px;margin:10px 0}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 6px}
+.frac span:first-child{border-bottom:2px solid var(--ink);padding:0 6px}
+.row{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+.row>*{flex:1 1 380px}
+button.b{background:var(--brown2);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:17px;cursor:pointer;margin:4px 6px 4px 0}
+button.b.alt{background:var(--card);color:var(--brown);border:2px solid var(--brown2)}
+button.b:disabled{opacity:.45;cursor:default}
+.check{background:#fdf6e6;border:2px solid var(--accent);border-radius:12px;padding:14px 18px;margin:16px 0}
+.check .tag{display:inline-block;background:var(--accent);color:#fff;font-size:14px;padding:2px 10px;border-radius:12px;margin-bottom:6px;letter-spacing:.5px}
+.check .src{font-size:14px;color:#8a7356;font-style:italic}
+input.ans{font-size:18px;padding:6px 10px;width:200px;border:2px solid var(--line);border-radius:6px}
+.fb{font-weight:600;margin-left:8px}
+.fb.ok{color:var(--good)}.fb.no{color:var(--bad)}
+.work{display:none;background:#fff;border-left:4px solid var(--brown2);padding:8px 14px;margin-top:8px;border-radius:4px}
+.work.on{display:block}
+table.t{border-collapse:collapse;margin:8px 0;background:#fff}
+table.t th,table.t td{border:1px solid var(--line);padding:6px 12px;text-align:center}
+table.t th{background:var(--soft);color:var(--brown)}
+svg text{font-family:"Segoe UI",Arial,sans-serif}
+.readout{font-family:Consolas,monospace;background:#2b1d10;color:#ffe9c4;padding:10px 14px;border-radius:8px;font-size:17px;line-height:1.6}
+.slider{width:100%}
+label.s{display:block;font-weight:600;color:var(--brown);margin-top:8px}
+.steps li{margin:6px 0}
+.reveal{display:none}.reveal.on{display:block;animation:fade .4s}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+.pager{display:flex;justify-content:space-between;margin-top:30px}
+.mcq button.opt{display:block;width:100%;text-align:left;margin:6px 0;padding:10px 14px;font-size:17px;border:2px solid var(--line);background:#fff;border-radius:8px;cursor:pointer;color:var(--ink)}
+.mcq button.opt.right{border-color:var(--good);background:#e6f4ea}
+.mcq button.opt.wrong{border-color:var(--bad);background:#fbe9e7}
+.mcq .exp{display:none;margin-top:6px;font-size:17px}
+.mcq.done .exp{display:block}
+.warn{background:#fbeee4;border-left:6px solid var(--bad);padding:10px 16px;border-radius:6px;margin:12px 0}
+.small{font-size:15px;color:#7a6448}
+canvas{background:#fff;border:1px solid var(--line);border-radius:8px;max-width:100%}
+.beakers{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
+.bk{text-align:center;font-size:16px}
+.ordbox{flex:1 1 300px;background:#fff8ec;border:1px solid var(--line);border-radius:10px;padding:10px}
+.mech{font-family:Georgia,serif;font-size:21px;line-height:2}
+.mech .x{text-decoration:line-through;color:#b03a2e}
+.mech .im{background:#fde7c4;border-radius:4px;padding:0 4px}
+.mech .cat{background:#d9e6f7;border-radius:4px;padding:0 4px}
+.stepbox{border:2px solid var(--line);border-radius:10px;padding:8px 14px;margin:8px 0;background:#fff;cursor:pointer}
+.stepbox.sel{border-color:var(--accent);background:#fdf0dc}
+.stepbox.good{border-color:var(--good);background:#e6f4ea}
+.stepbox.badc{border-color:var(--bad);background:#fbe9e7}
+.mk{float:right;font-size:14px;color:#8a7356;font-weight:bold}
+.part{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px}
+.selfmark{font-size:15px;color:#6b4423}
+.tot{position:sticky;bottom:0;background:#6b4423;color:#fff;padding:8px 16px;border-radius:10px;text-align:center;font-size:19px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Rate Equations 8 – Mixed Exam Practice</h1>
+  <p>AQA A-level Chemistry · Kinetics walkthrough</p>
+</header>
+<nav id="nav"></nav>
+<main>
+<section class="page" data-title="Start here">
+<h2>Mixed exam practice: rate equations</h2>
+<div class="card key">
+  <p>These are full multi-part questions from AQA past papers, covering everything in Walkthroughs 1–7.</p>
+  <ol class="steps">
+    <li>Do each part on paper first, as you would in the exam.</li>
+    <li>Use the <b>Check</b> buttons for numerical answers and pick from the options where there are buttons.</li>
+    <li>Open the <b>mark scheme</b> and give yourself a mark for each part honestly. Your running total is shown at the bottom.</li>
+    <li>The <b>Summary</b> page shows which topics to go back to.</li>
+  </ol>
+  <p class="small">Mark allocations follow the original papers. Graph-plotting marks can't be checked on screen, so mark those against the mark scheme.</p>
+</div>
+</section>
+<div id="exams"></div>
+<div class="pager"><button class="b alt" id="prevB">◀ Previous</button><button class="b" id="nextB">Next ▶</button></div>
+<div class="tot" id="tot"></div>
+</main>
+
+<script>
+/* ---------- navigation ---------- */
+const pages=[...document.querySelectorAll('.page')];let cur=0;
+const nav=document.getElementById('nav');
+pages.forEach((p,i)=>{const b=document.createElement('button');b.textContent=p.dataset.title;b.onclick=()=>go(i);nav.appendChild(b)});
+function go(i){cur=i;pages.forEach((p,j)=>p.classList.toggle('on',j===i));[...nav.children].forEach((b,j)=>b.classList.toggle('on',j===i));
+ document.getElementById('prevB').disabled=i===0;document.getElementById('nextB').disabled=i===pages.length-1;window.scrollTo(0,0)}
+document.getElementById('prevB').onclick=()=>go(Math.max(0,cur-1));
+document.getElementById('nextB').onclick=()=>go(Math.min(pages.length-1,cur+1));
+
+/* ---------- helpers ---------- */
+function tog(id){document.getElementById(id).classList.toggle('on')}
+function stepReveal(id){const r=[...document.querySelectorAll('#'+id+' .reveal:not(.on)')];if(r.length)r[0].classList.add('on')}
+function parseNum(s){
+ s=s.trim().replace(/\s/g,'');const sup={'⁰':'0','¹':'1','²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9','⁻':'-'};
+ s=s.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁻]/g,c=>sup[c]).replace(/[−–]/g,'-');
+ let m=s.match(/^(-?[\d.]+)[x×X*]10\^?(-?\d+)$/);if(m)return parseFloat(m[1])*Math.pow(10,parseInt(m[2]));
+ const v=Number(s);return isNaN(v)?null:v}
+function numCheck(id,target,tol){const v=parseNum(document.getElementById(id).value);const fb=document.getElementById(id+'fb');
+ if(v===null){fb.textContent='Enter a number';fb.className='fb no';return}
+ if(Math.abs(v-target)<=Math.abs(target)*tol){fb.textContent='✔ Correct';fb.className='fb ok'}
+ else{fb.textContent='✘ Not quite, check your working';fb.className='fb no'}}
+function unitPick(btn,ok){const f=document.getElementById('c5u');f.textContent=ok?'✔ Yes, cm³ s⁻¹':'✘ Try again';f.className='fb '+(ok?'ok':'no')}
+function pick(btn,ok,id){const f=document.getElementById(id);f.textContent=ok?'✔ Correct':'✘ Try again';f.className='fb '+(ok?'ok':'no')}
+
+
+/* ---------- SVG plotting ---------- */
+const NS='http://www.w3.org/2000/svg';
+function E(tag,a,p){const e=document.createElementNS(NS,tag);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e}
+function plot(svg,o){
+ svg.innerHTML='';const W=660,H=400,ml=80,mr=20,mt=18,mb=60,pw=W-ml-mr,ph=H-mt-mb;
+ const x0=o.xmin||0,y0=o.ymin||0;const X=x=>ml+(x-x0)/(o.xmax-x0)*pw,Y=y=>mt+ph-(y-y0)/(o.ymax-y0)*ph;
+ const id='cl'+Math.random().toString(36).slice(2);
+ const d=E('defs',{},svg);const cp=E('clipPath',{id},d);E('rect',{x:ml,y:mt,width:pw,height:ph},cp);
+ E('rect',{x:ml,y:mt,width:pw,height:ph,fill:'#fff'},svg);
+ const gx=o.gx||o.xt,gy=o.gy||o.yt;
+ for(let x=x0;x<=o.xmax+1e-9;x+=gx)E('line',{x1:X(x),x2:X(x),y1:mt,y2:mt+ph,stroke:'#efe3cc'},svg);
+ for(let y=y0;y<=o.ymax+1e-9;y+=gy)E('line',{x1:ml,x2:ml+pw,y1:Y(y),y2:Y(y),stroke:'#efe3cc'},svg);
+ for(let x=x0;x<=o.xmax+1e-9;x+=o.xt){E('line',{x1:X(x),x2:X(x),y1:mt+ph,y2:mt+ph+6,stroke:'#3b2a1a'},svg);const t=E('text',{x:X(x),y:mt+ph+24,'text-anchor':'middle','font-size':15,fill:'#3b2a1a'},svg);t.textContent=o.xfmt?o.xfmt(x):+x.toFixed(4)}
+ for(let y=y0;y<=o.ymax+1e-9;y+=o.yt){E('line',{x1:ml-6,x2:ml,y1:Y(y),y2:Y(y),stroke:'#3b2a1a'},svg);const t=E('text',{x:ml-10,y:Y(y)+5,'text-anchor':'end','font-size':15,fill:'#3b2a1a'},svg);t.textContent=(o.yfmt?o.yfmt(y):+y.toFixed(3))}
+ E('line',{x1:ml,x2:ml+pw,y1:mt+ph,y2:mt+ph,stroke:'#3b2a1a','stroke-width':2},svg);
+ E('line',{x1:ml,x2:ml,y1:mt,y2:mt+ph,stroke:'#3b2a1a','stroke-width':2},svg);
+ let t=E('text',{x:ml+pw/2,y:H-12,'text-anchor':'middle','font-size':17,fill:'#6b4423'},svg);t.textContent=o.xlab;
+ t=E('text',{x:18,y:mt+ph/2,'text-anchor':'middle','font-size':17,fill:'#6b4423',transform:`rotate(-90 18 ${mt+ph/2})`},svg);t.textContent=o.ylab;
+ const g=E('g',{'clip-path':`url(#${id})`},svg);
+ return {X,Y,g,svg,curve(f,col='#6b4423',w=3,dash){let dd='';for(let i=0;i<=300;i++){const x=x0+(o.xmax-x0)*i/300;dd+=(i?'L':'M')+X(x)+' '+Y(f(x))}return E('path',{d:dd,fill:'none',stroke:col,'stroke-width':w,'stroke-dasharray':dash||''},g)}};
+}
+
+
+/* ---------- shared helpers for walkthroughs 4-8 ---------- */
+const sup=n=>String(n).split('').map(c=>({'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'})[c]).join('');
+function unitsK(n){const p=1-n;if(n===1)return 's⁻¹';const mol=p===1?'mol':'mol'+sup(p);return `${mol} dm${sup(-3*p)} s⁻¹`}
+function fmt(x,sf=3){if(x===0)return '0';const e=Math.floor(Math.log10(Math.abs(x)));if(e>=-1&&e<4)return String(+x.toPrecision(sf));
+ const m=(x/Math.pow(10,e)).toFixed(sf-1);return `${m} × 10${sup(e)}`}
+/* option pickers: <span class="ob" data-opts="a|b|c" data-a="1" data-id="fbid"> ; data-a is index of correct option */
+function makePickers(root){root.querySelectorAll('.ob').forEach(sp=>{if(sp.dataset.done)return;sp.dataset.done=1;
+ const opts=(sp.dataset.opts||'0|1|2').split('|'),a=+sp.dataset.a,id=sp.dataset.id;
+ opts.forEach((v,i)=>{const b=document.createElement('button');b.className='b alt';b.innerHTML=v;b.style.padding='4px 12px';
+  b.onclick=()=>{sp.querySelectorAll('button').forEach(x=>x.style.background='');b.style.background=i===a?'#cfe8d6':'#f6d0cb';
+   if(id){const f=document.getElementById(id);if(f){f.textContent=i===a?'✔':'✘';f.className='fb '+(i===a?'ok':'no')}}};sp.appendChild(b)})})}
+let QZ=[],qs=0,qa=0;
+function buildQuiz(){const w=document.getElementById('quiz');w.innerHTML='';qs=0;qa=0;
+ QZ.forEach((q,i)=>{const c=document.createElement('div');c.className='card mcq';c.innerHTML=`<b>Q${i+1}.</b> ${q[0]}`;
+  q[1].forEach((o,j)=>{const b=document.createElement('button');b.className='opt';b.innerHTML=o;
+   b.onclick=()=>{if(c.classList.contains('done'))return;c.classList.add('done');qa++;
+    if(j===q[2]){b.classList.add('right');qs++}else{b.classList.add('wrong');c.querySelectorAll('.opt')[q[2]].classList.add('right')}score()};c.appendChild(b)});
+  const e=document.createElement('div');e.className='exp';e.innerHTML='💡 '+q[3];c.appendChild(e);w.appendChild(c)});score()}
+function score(){const n=QZ.length;document.getElementById('score').innerHTML=`Score: <b>${qs}</b> / ${n}`+(qa===n?(qs>=n*0.85?' – excellent!':qs>=n*0.65?' – good, review the ones you missed':' – go back through the walkthrough and try again'):'')}
+function cross(p,x,y,c='#3b2a1a'){const X=p.X(x),Y=p.Y(y);E('path',{d:`M${X-5} ${Y-5}L${X+5} ${Y+5}M${X-5} ${Y+5}L${X+5} ${Y-5}`,stroke:c,'stroke-width':2.2},p.g)}
+function lineP(p,x1,y1,x2,y2,c='#b5651d',w=2.5,dash){return E('line',{x1:p.X(x1),y1:p.Y(y1),x2:p.X(x2),y2:p.Y(y2),stroke:c,'stroke-width':w,'stroke-dasharray':dash||''},p.g)}
+function textP(p,x,y,t,c='#6b4423',sz=15,anchor='start'){const e=E('text',{x:p.X(x),y:p.Y(y),'font-size':sz,fill:c,'text-anchor':anchor},p.g);e.textContent=t;return e}
+
+/* ---------- exam question data ---------- */
+const T=(head,rows)=>`<table class="t"><tr>${head.map(h=>`<th>${h}</th>`).join('')}</tr>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</table>`;
+const EXQ=[
+{title:'Propanone and bromine',src:'June 2024 Paper 2 Q1',stem:`CH₃COCH₃ + Br₂ + OH⁻ → CH₃COCH₂Br + Br⁻ + H₂O<br>rate = k[CH₃COCH₃][OH⁻]`,
+ parts:[
+ {n:'1.1',m:1,q:'Which sketch describes how [Br₂] changes with time at constant temperature?',type:'mcq',opts:['a straight line sloping down (constant gradient)','a curve with a constant half-life','a horizontal line','a curve that rises then levels off'],a:0,ms:'Straight line with a constant negative gradient. Br₂ is zero order, so the rate stays constant as [Br₂] falls.'},
+ {n:'1.2',m:5,q:'Complete the table and use experiment 1 to calculate k. Give its units.'+T(['Exp','[CH₃COCH₃]','[Br₂]','[OH⁻]','Initial rate / mol dm⁻³ s⁻¹'],[['1','1.50 × 10⁻²','2.50 × 10⁻²','2.50 × 10⁻²','2.75 × 10⁻¹¹'],['2','1.50 × 10⁻²','2.50 × 10⁻²','<b>(a)</b>','8.25 × 10⁻¹¹'],['3','3.75 × 10⁻³','5.00 × 10⁻²','1.00 × 10⁻¹','<b>(b)</b>']]),
+  type:'nums',fields:[['(a) [OH⁻]',0.075,0.02],['(b) rate',2.75e-11,0.02],['k',7.33e-8,0.02]],units:['s⁻¹','mol⁻¹ dm³ s⁻¹','mol⁻² dm⁶ s⁻¹','mol dm⁻³ s⁻¹'],ua:1,
+  ms:'(a) rate × 3 with only [OH⁻] able to change it → 7.50 × 10⁻²<br>(b) [CH₃COCH₃] × ¼ and [OH⁻] × 4 → rate × 1 → 2.75 × 10⁻¹¹ (Br₂ is zero order)<br>k = 2.75 × 10⁻¹¹ ÷ (1.50 × 10⁻² × 2.50 × 10⁻²) = 7.33 × 10⁻⁸ mol⁻¹ dm³ s⁻¹'},
+ {n:'1.4',m:1,q:'Step 1 of the mechanism is CH₃COCH₃ + OH⁻ → CH₃COCH₂⁻ + H₂O. Use evidence from the rate equation to explain why step 1 is the rate-determining step.',type:'ms',ms:'Step 1 contains CH₃COCH₃ and OH⁻, which are all (and only) the species in the rate equation. Br₂ is not in step 1 and not in the rate equation.'}]},
+{title:'P and Q, then the Arrhenius constant',src:'June 2019 Paper 2 Q4–5',stem:'Initial rates were found from the change in [P] over the first 5.0 s.'+T(['Exp','[P] at 0 s','[P] at 5.0 s','[Q]'],[['1','1.00 × 10⁻²','0.92 × 10⁻²','1.25 × 10⁻²'],['2','2.00 × 10⁻²','1.84 × 10⁻²','1.25 × 10⁻²'],['3','0.50 × 10⁻²','0.34 × 10⁻²','2.50 × 10⁻²']])+'Initial rate in exp 1 = 1.6 × 10⁻⁴ mol dm⁻³ s⁻¹.',
+ parts:[
+ {n:'4.1',m:1,q:'Calculate the initial rates for experiments 2 and 3.',type:'nums',fields:[['exp 2',3.2e-4,0.02],['exp 3',3.2e-4,0.02]],ms:'Exp 2: 0.16 × 10⁻² ÷ 5.0 = 3.2 × 10⁻⁴. Exp 3: 0.16 × 10⁻² ÷ 5.0 = 3.2 × 10⁻⁴'},
+ {n:'4.2',m:2,q:'Determine the orders with respect to P and Q.',type:'picks',picks:[['P','0|1|2',1],['Q','0|1|2',2]],ms:'P: [P] × 2 → rate × 2 → <b>1</b>. Q: exp 1 → 3 has [P] × ½ (rate × ½) but the rate actually × 2, so Q contributes × 4 for [Q] × 2 → <b>2</b>.'},
+ {n:'4.3',m:3,q:'A different reaction is 2nd order in R and 2nd order in S. Rate = 1.20 × 10⁻³ mol dm⁻³ s⁻¹ when [R] = 1.00 × 10⁻² and [S] = 2.45 × 10⁻² mol dm⁻³. Calculate k and give its units.',type:'nums',fields:[['k',2.0e4,0.02]],units:['mol⁻² dm⁶ s⁻¹','mol⁻³ dm⁹ s⁻¹','mol³ dm⁻⁹ s⁻¹','mol⁻⁴ dm¹² s⁻¹'],ua:1,ms:'k = 1.20 × 10⁻³ ÷ ((1.00 × 10⁻²)² × (2.45 × 10⁻²)²) = 2.00 × 10⁴ mol⁻³ dm⁹ s⁻¹'},
+ {n:'5',m:4,q:'For another reaction, at 25 °C k = 3.46 × 10⁻⁸ s⁻¹ and Ea = 96.2 kJ mol⁻¹. Calculate A and give its units. (R = 8.31 J K⁻¹ mol⁻¹)',type:'nums',fields:[['A',2.57e9,0.02]],units:['s⁻¹','mol dm⁻³ s⁻¹','J mol⁻¹','no units'],ua:0,ms:'Ea/RT = 96 200 ÷ (8.31 × 298) = 38.85. A = k × e<sup>38.85</sup> = 2.57 × 10⁹ s⁻¹'}]},
+{title:'Bromate(V) and bromide',src:'June 2018 Paper 2 Q5',stem:'BrO₃⁻ + 5Br⁻ + 6H⁺ → 3Br₂ + 3H₂O &nbsp; rate = k[BrO₃⁻][Br⁻][H⁺]²'+T(['Exp','[BrO₃⁻]','[Br⁻]','[H⁺]','Initial rate / mol dm⁻³ s⁻¹'],[['1','0.10','0.20','0.30','2.4 × 10⁻²'],['2','<b>(a)</b>','0.20','0.30','3.6 × 10⁻²'],['3','0.20','0.40','0.50','<b>(b)</b>'],['4','0.10','0.10','<b>(c)</b>','2.7 × 10⁻²']]),
+ parts:[
+ {n:'5.1',m:3,q:'Use experiment 1 to calculate k (to 2 s.f.) and give its units.',type:'nums',fields:[['k',13.3,0.03]],units:['mol⁻² dm⁶ s⁻¹','mol⁻³ dm⁹ s⁻¹','mol³ dm⁻⁹ s⁻¹','s⁻¹'],ua:1,ms:'k = 2.4 × 10⁻² ÷ (0.10 × 0.20 × 0.30²) = 13 mol⁻³ dm⁹ s⁻¹ (must be 2 s.f.)'},
+ {n:'5.2',m:3,q:'Complete the table.',type:'nums',fields:[['(a)',0.15,0.02],['(b)',0.265,0.03],['(c)',0.455,0.015]],ms:'(a) 0.15 &nbsp; (b) 0.26 or 0.27 &nbsp; (c) 0.45 or 0.46'},
+ {n:'5.3',m:2,q:'Times for a fixed amount of Br₂ to form: at 302 K, find 1/T. At 295 K, t = 27 s: find ln(1/t).',type:'nums',fields:[['1/T',0.003311,0.003],['ln(1/t)',-3.297,0.003]],ms:'1/T = 3.31 × 10⁻³ K⁻¹. ln(1/t) = −3.30 (3 s.f. or more, not −3.29)'},
+ {n:'5.4',m:6,q:'Points: (3.50 × 10⁻³, −3.99), (3.39 × 10⁻³, −3.30), (3.31 × 10⁻³, −2.71), (3.21 × 10⁻³, −2.08). Plot ln(1/t) against 1/T and use the gradient to find Ea in kJ mol⁻¹.',type:'nums',fields:[['Ea',55.2,0.025]],ms:'Gradient ≈ −6640 K (range −6500 to −6800). Ea = 6640 × 8.31 = 55.2 kJ mol⁻¹ (range 54.0–56.5). Marks are for axes, plotting, the line, the gradient, × 8.31, and the answer in kJ.'}]},
+{title:'Iodine clock',src:'June 2025 Paper 3 Q2',stem:'H₂O₂ + 2I⁻ + 2H⁺ → I₂ + 2H₂O, with a fixed amount of thiosulfate and starch. The time to turn blue-black is recorded.'+T(['Exp','[H₂O₂]','[I⁻]','[H⁺]','Time / s'],[['1','0.010','0.010','0.10','60'],['2','0.020','0.010','0.10','30'],['3','0.030','0.010','0.10','20'],['4','0.030','0.020','0.10','10'],['5','0.030','0.020','0.20','10']]),
+ parts:[
+ {n:'2.1',m:3,q:'Identify three other control variables.',type:'ms',ms:'Any 3: temperature; volume/amount of starch; total volume of the mixture; stirring; same shade of colour when the timer is stopped. (Ignore: same stopwatch, same apparatus, reactant concentrations.)'},
+ {n:'2.2',m:3,q:'Deduce the order with respect to each reactant and explain the order for I⁻.',type:'picks',picks:[['H₂O₂','0|1|2',1],['I⁻','0|1|2',1],['H⁺','0|1|2',0]],ms:'M1 1st, 1st, 0<br>M2 doubling [I⁻] halves the time (doubles the rate)<br>M3 using experiments 3 and 4, where only [I⁻] changes'},
+ {n:'2.3',m:2,q:'Give the rate equation and the units of k.',type:'picks',picks:[['rate equation','k[H₂O₂][I⁻]|k[H₂O₂][I⁻]²[H⁺]²|k[H₂O₂][I⁻][H⁺]|k[I⁻]',0],['units','s⁻¹|mol⁻¹ dm³ s⁻¹|mol⁻² dm⁶ s⁻¹',1]],ms:'rate = k[H₂O₂][I⁻]; mol⁻¹ dm³ s⁻¹'},
+ {n:'2.4',m:3,q:'1.00 cm³ of 1.00 × 10⁻³ mol dm⁻³ thiosulfate is used. The total volume in experiment 3 is 40.0 cm³. Calculate the initial rate of production of iodine (mol dm⁻³ s⁻¹).',type:'nums',fields:[['rate',6.25e-7,0.02]],ms:'n(S₂O₃²⁻) = 1.00 × 10⁻⁶ → n(I₂) = 5.00 × 10⁻⁷ → [I₂] = 5.00 × 10⁻⁷ ÷ 0.0400 = 1.25 × 10⁻⁵ → ÷ 20 s = 6.25 × 10⁻⁷'},
+ {n:'2.5',m:1,q:'The uncertainty in each time is ±0.5 s but the stopwatch reads to ±0.01 s. Suggest why.',type:'ms',ms:'Reaction time of the observer, or the colour change being hard to judge or not instantaneous. ("Human error" alone gets no credit.)'},
+ {n:'2.6',m:1,q:'Calculate the percentage uncertainty in the time for experiment 3.',type:'nums',fields:[['%',2.5,0.01]],ms:'0.5 ÷ 20 × 100 = 2.5%'},
+ {n:'2.7',m:2,q:'Suggest how the percentage uncertainty could be reduced.',type:'ms',ms:'M1 increase the time recorded. M2 by using a greater amount/concentration of thiosulfate (or a lower temperature). Not changing the total volume or the reactant concentrations.'}]},
+{title:'Cisplatin and activation energy',src:'November 2020 Paper 3 Q4',stem:'A reaction of cisplatin is first order. The concentration of cisplatin is measured at one-minute intervals.'+T(['T / K','1/T / K⁻¹','k / s⁻¹','ln k'],[['293','0.00341','1.97 × 10⁻⁸','−17.7'],['303','0.00330','8.61 × 10⁻⁸','−16.3'],['313','0.00319','3.43 × 10⁻⁷','−14.9'],['318','<b>(a)</b>','6.63 × 10⁻⁷','<b>(b)</b>'],['323','0.00310','1.26 × 10⁻⁶','−13.6']]),
+ parts:[
+ {n:'4.4',m:3,q:'Explain how graphical methods can be used to confirm that the reaction is first order.',type:'ms',ms:'M1 plot concentration against time<br>M2 measure two or more half-lives (or draw tangents to get rates, then plot rate against concentration)<br>M3 a constant half-life (or a straight line through the origin) confirms first order'},
+ {n:'4.5',m:2,q:'Complete the table.',type:'nums',fields:[['(a) 1/T',0.003145,0.005],['(b) ln k',-14.2,0.005]],ms:'0.00314 &nbsp; −14.2'},
+ {n:'4.6',m:5,q:'Plot ln k against 1/T and calculate Ea in kJ mol⁻¹.',type:'nums',fields:[['Ea',109,0.035]],ms:'Gradient ≈ −13 125 (range −12 876 to −13 598). Ea = 13 125 × 8.31 = 109 kJ mol⁻¹ (range 107–114). Not negative.'}]},
+{title:'Relative rates, RDS and temperature',src:'June 2023 Paper 2 Q2 and Q9.3',stem:'A + 2B → C + D (acid catalyst) &nbsp; rate = k[B]²[H⁺]'+T(['Exp','[A]','[B]','[H⁺]','Relative rate'],[['1','0.40','0.20','0.10','1.00'],['2','0.50','0.20','0.10','<b>(a)</b>'],['3','0.40','<b>(b)</b>','0.10','0.64'],['4','0.50','0.30','0.06','<b>(c)</b>']]),
+ parts:[
+ {n:'2.1',m:3,q:'Complete the table.',type:'nums',fields:[['(a)',1.00,0.01],['(b) [B]',0.16,0.01],['(c)',1.35,0.01]],ms:'(a) 1.00 (A is not in the rate equation)<br>(b) rate × 0.64 = (factor)² → factor 0.8 → [B] = 0.16<br>(c) 1.5² × 0.6 = 1.35'},
+ {n:'2.2',m:2,q:'Mechanism: Step 1 B + H⁺ → BH⁺; Step 2 BH⁺ + B → B₂H⁺; Step 3 B₂H⁺ + A → C + D + H⁺. Deduce the RDS and give a reason.',type:'picks',picks:[['RDS','Step 1|Step 2|Step 3',1]],ms:'M1 Step 2. M2 by the end of step 2, 1 × H⁺ and 2 × B have been used.'},
+ {n:'9.3',m:3,q:'For another reaction, Ea = 34.5 kJ mol⁻¹, A = 1.00 × 10¹² s⁻¹ and k = 2.48 × 10⁸ s⁻¹ at T₁. Calculate T₁ in K.',type:'nums',fields:[['T₁',500,0.01]],ms:'T = Ea ÷ (R ln(A/k)) = 34 500 ÷ (8.31 × ln 4032) = 500 K'}]},
+{title:'Mixed short questions',src:'Rate Equations 5 and June 2017 Paper 3 Q27',stem:'Phosphinate + OH⁻ (excess) → H₂. Time to collect 15 cm³ of H₂:'+T(['[H₂PO₂⁻] / mol dm⁻³','0.25','0.35','0.50','1.00'],[['t / s','64','32','16','4']]),
+ parts:[
+ {n:'a',m:2,q:'Deduce the order with respect to phosphinate.',type:'picks',picks:[['order','0|1|2',2]],ms:'Doubling the concentration (0.25 → 0.50) cuts the time to a quarter (64 → 16 s), so the rate × 4 → 2nd order. Equivalently, conc² × t is constant.'},
+ {n:'b',m:1,q:'rate = k[L][M]². Both [L] and [M] are halved. The rate…',type:'picks',picks:[['','halves|falls to ¼|falls to ⅛|falls to 1/16',2]],ms:'½ × (½)² = ⅛'},
+ {n:'c',m:2,q:'Same reaction: rate = 0.0250 mol dm⁻³ s⁻¹, [L] = 0.0155 mol dm⁻³ and k = 21.3 mol⁻² dm⁶ s⁻¹. Calculate [M].',type:'nums',fields:[['[M]',0.275,0.01]],ms:'[M]² = 0.0250 ÷ (21.3 × 0.0155) = 0.0757 → [M] = 0.275 mol dm⁻³'},
+ {n:'d',m:1,q:'rate = k[H⁺][C₃H₆O]. The rate is measured at pH 0.70. With only the acid concentration changed, the new rate is a quarter of the original. What is the new pH?',type:'picks',picks:[['pH','1.00|1.30|1.40|2.80',1]],ms:'Rate ÷ 4 → [H⁺] ÷ 4 → pH rises by log 4 = 0.60 → 1.30'}]}
+];
+
+/* ---------- render ---------- */
+const main=document.getElementById('exams');let total=0;const got={};
+EXQ.forEach((Q,qi)=>{const sec=document.createElement('section');sec.className='page';sec.dataset.title=`${qi+1}. ${Q.title}`;
+ const qm=Q.parts.reduce((s,p)=>s+p.m,0);total+=qm;
+ let h=`<h2>Question ${qi+1}: ${Q.title}</h2><div class="card"><span class="src">${Q.src} · ${qm} marks</span><div style="margin-top:8px">${Q.stem}</div>`;
+ Q.parts.forEach((p,pi)=>{const id=`q${qi}p${pi}`;
+  h+=`<div class="part"><span class="mk">[${p.m} mark${p.m>1?'s':''}]</span><b>${p.n}</b> ${p.q}<div style="margin:8px 0">`;
+  if(p.type==='mcq')h+=`<span class="ob" data-opts="${p.opts.join('|')}" data-a="${p.a}" data-id="${id}f"></span><span class="fb" id="${id}f"></span>`;
+  if(p.type==='picks')p.picks.forEach(([l,o,a],k)=>h+=`<div>${l?l+': ':''}<span class="ob" data-opts="${o}" data-a="${a}" data-id="${id}k${k}"></span><span class="fb" id="${id}k${k}"></span></div>`);
+  if(p.type==='nums'){p.fields.forEach(([l,v,t],k)=>h+=`<div style="margin:4px 0">${l} = <input class="ans" id="${id}n${k}" style="width:150px"> <button class="b" onclick="numCheck('${id}n${k}',${v},${t})">Check</button><span class="fb" id="${id}n${k}fb"></span></div>`);
+   if(p.units)h+=`<div>units: <span class="ob" data-opts="${p.units.join('|')}" data-a="${p.ua}" data-id="${id}u"></span><span class="fb" id="${id}u"></span></div>`}
+  h+=`</div><button class="b alt" onclick="tog('${id}ms')">Mark scheme</button><div class="work" id="${id}ms">${p.ms}</div>
+  <div class="selfmark" style="margin-top:6px">My mark: <select data-k="${id}" onchange="selfMark(this)">${Array.from({length:p.m+1},(_,i)=>`<option>${i}</option>`).join('')}</select> / ${p.m}</div></div>`});
+ h+='</div>';sec.innerHTML=h;main.appendChild(sec)});
+const fin=document.createElement('section');fin.className='page';fin.dataset.title='Summary';
+fin.innerHTML=`<h2>Summary</h2><div class="card" id="sumBox"></div><div class="card key"><h3 style="margin-top:0">Where to go back to</h3><ul>
+<li>Orders, tables, missing values → <b>Walkthroughs 2 and 3</b></li><li>Rate-determining step → <b>Walkthrough 4</b></li><li>Arrhenius calculations → <b>Walkthrough 5</b></li><li>Arrhenius graphs → <b>Walkthrough 6</b></li><li>Methods, control variables, uncertainty → <b>Walkthrough 7</b></li></ul></div>`;
+main.appendChild(fin);
+function selfMark(s){got[s.dataset.k]=+s.value;upd()}
+function upd(){const g=Object.values(got).reduce((a,b)=>a+b,0);document.getElementById('tot').innerHTML=`Self-marked total: <b>${g}</b> / ${total} (${Math.round(g/total*100)}%)`;
+ const by=EXQ.map((Q,qi)=>{const m=Q.parts.reduce((s,p)=>s+p.m,0);const s=Q.parts.reduce((a,p,pi)=>a+(got[`q${qi}p${pi}`]||0),0);return `<tr><td>${qi+1}</td><td>${Q.title}</td><td>${s} / ${m}</td></tr>`}).join('');
+ document.getElementById('sumBox').innerHTML=`<table class="t"><tr><th>Q</th><th>Topic</th><th>Your marks</th></tr>${by}<tr><th colspan="2">Total</th><th>${g} / ${total}</th></tr></table>`}
+/* rebuild nav now that pages exist */
+pages.length=0;document.querySelectorAll('.page').forEach(p=>pages.push(p));nav.innerHTML='';
+pages.forEach((p,i)=>{const b=document.createElement('button');b.textContent=p.dataset.title;b.onclick=()=>go(i);nav.appendChild(b)});
+makePickers(document);upd();go(0);
+
+</script>
+</body>
+</html>

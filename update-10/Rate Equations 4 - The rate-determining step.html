@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rate Equations 4 – The Rate-Determining Step</title>
+<style>
+:root{
+  --bg:#f6efe1; --card:#fffaf0; --ink:#3b2a1a; --brown:#6b4423; --brown2:#8b5a2b;
+  --accent:#b5651d; --soft:#ead9bd; --line:#d8c4a0; --good:#2f7d4a; --bad:#b03a2e; --blue:#2c4a7a;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Arial,sans-serif;font-size:19px;line-height:1.55}
+header{background:var(--brown);color:#fff8ec;padding:14px 24px}
+header h1{margin:0;font-family:Georgia,serif;font-size:28px;font-weight:normal}
+header p{margin:2px 0 0;opacity:.85;font-size:16px}
+nav{display:flex;flex-wrap:wrap;gap:6px;padding:10px 24px;background:var(--soft);border-bottom:2px solid var(--line);position:sticky;top:0;z-index:5}
+nav button{border:2px solid var(--brown2);background:var(--card);color:var(--brown);padding:7px 14px;border-radius:20px;font-size:16px;cursor:pointer}
+nav button.on{background:var(--brown2);color:#fff}
+main{max-width:1100px;margin:0 auto;padding:20px 24px 60px}
+.page{display:none}.page.on{display:block}
+h2{font-family:Georgia,serif;color:var(--brown);font-size:30px;margin:6px 0 12px;font-weight:normal}
+h3{color:var(--brown2);font-size:22px;margin:22px 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:14px 0;box-shadow:0 2px 0 var(--line)}
+.key{border-left:6px solid var(--accent)}
+.eq{font-family:Georgia,serif;font-size:24px;text-align:center;padding:10px;background:#fff;border:1px dashed var(--line);border-radius:8px;margin:10px 0}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 6px}
+.frac span:first-child{border-bottom:2px solid var(--ink);padding:0 6px}
+.row{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+.row>*{flex:1 1 380px}
+button.b{background:var(--brown2);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:17px;cursor:pointer;margin:4px 6px 4px 0}
+button.b.alt{background:var(--card);color:var(--brown);border:2px solid var(--brown2)}
+button.b:disabled{opacity:.45;cursor:default}
+.check{background:#fdf6e6;border:2px solid var(--accent);border-radius:12px;padding:14px 18px;margin:16px 0}
+.check .tag{display:inline-block;background:var(--accent);color:#fff;font-size:14px;padding:2px 10px;border-radius:12px;margin-bottom:6px;letter-spacing:.5px}
+.check .src{font-size:14px;color:#8a7356;font-style:italic}
+input.ans{font-size:18px;padding:6px 10px;width:200px;border:2px solid var(--line);border-radius:6px}
+.fb{font-weight:600;margin-left:8px}
+.fb.ok{color:var(--good)}.fb.no{color:var(--bad)}
+.work{display:none;background:#fff;border-left:4px solid var(--brown2);padding:8px 14px;margin-top:8px;border-radius:4px}
+.work.on{display:block}
+table.t{border-collapse:collapse;margin:8px 0;background:#fff}
+table.t th,table.t td{border:1px solid var(--line);padding:6px 12px;text-align:center}
+table.t th{background:var(--soft);color:var(--brown)}
+svg text{font-family:"Segoe UI",Arial,sans-serif}
+.readout{font-family:Consolas,monospace;background:#2b1d10;color:#ffe9c4;padding:10px 14px;border-radius:8px;font-size:17px;line-height:1.6}
+.slider{width:100%}
+label.s{display:block;font-weight:600;color:var(--brown);margin-top:8px}
+.steps li{margin:6px 0}
+.reveal{display:none}.reveal.on{display:block;animation:fade .4s}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+.pager{display:flex;justify-content:space-between;margin-top:30px}
+.mcq button.opt{display:block;width:100%;text-align:left;margin:6px 0;padding:10px 14px;font-size:17px;border:2px solid var(--line);background:#fff;border-radius:8px;cursor:pointer;color:var(--ink)}
+.mcq button.opt.right{border-color:var(--good);background:#e6f4ea}
+.mcq button.opt.wrong{border-color:var(--bad);background:#fbe9e7}
+.mcq .exp{display:none;margin-top:6px;font-size:17px}
+.mcq.done .exp{display:block}
+.warn{background:#fbeee4;border-left:6px solid var(--bad);padding:10px 16px;border-radius:6px;margin:12px 0}
+.small{font-size:15px;color:#7a6448}
+canvas{background:#fff;border:1px solid var(--line);border-radius:8px;max-width:100%}
+.beakers{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
+.bk{text-align:center;font-size:16px}
+.ordbox{flex:1 1 300px;background:#fff8ec;border:1px solid var(--line);border-radius:10px;padding:10px}
+.mech{font-family:Georgia,serif;font-size:21px;line-height:2}
+.mech .x{text-decoration:line-through;color:#b03a2e}
+.mech .im{background:#fde7c4;border-radius:4px;padding:0 4px}
+.mech .cat{background:#d9e6f7;border-radius:4px;padding:0 4px}
+.stepbox{border:2px solid var(--line);border-radius:10px;padding:8px 14px;margin:8px 0;background:#fff;cursor:pointer}
+.stepbox.sel{border-color:var(--accent);background:#fdf0dc}
+.stepbox.good{border-color:var(--good);background:#e6f4ea}
+.stepbox.badc{border-color:var(--bad);background:#fbe9e7}
+.mk{float:right;font-size:14px;color:#8a7356;font-weight:bold}
+.part{border-top:1px dashed var(--line);padding-top:10px;margin-top:10px}
+.selfmark{font-size:15px;color:#6b4423}
+.tot{position:sticky;bottom:0;background:#6b4423;color:#fff;padding:8px 16px;border-radius:10px;text-align:center;font-size:19px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Rate Equations 4 – The Rate-Determining Step</h1>
+  <p>AQA A-level Chemistry · Kinetics walkthrough</p>
+</header>
+<nav id="nav"></nav>
+<main>
+
+<!-- ============ PAGE 1 ============ -->
+<section class="page" data-title="1. Slow step controls rate">
+<h2>1. The slowest step controls the rate</h2>
+<div class="card key">
+  <p>Most reactions don't happen in one go. They happen in a series of <b>steps</b> called the <b>mechanism</b>.</p>
+  <p>The <b>rate-determining step (RDS)</b> is the <b>slowest step</b> in the mechanism. The overall reaction can't go faster than this step.</p>
+  <p>Think of a queue at a single checkout. It doesn't matter how fast people pack their bags afterwards. The till sets the pace.</p>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Animation: a two-step mechanism</h3>
+  <p class="mech" style="font-size:19px">(CH₃)₃CBr + OH⁻ → (CH₃)₃COH + Br⁻ &nbsp;&nbsp; <span class="small">(2-bromo-2-methylpropane)</span><br>
+  Step 1 (<b>slow</b>): (CH₃)₃CBr → <span class="im">(CH₃)₃C⁺</span> + Br⁻<br>
+  Step 2 (<b>fast</b>): <span class="im">(CH₃)₃C⁺</span> + OH⁻ → (CH₃)₃COH</p>
+  <div style="text-align:center;margin:6px 0">
+    <b>[RBr]:</b> <button class="b rbx on" data-m="1">× 1</button><button class="b alt rbx" data-m="2">× 2</button>
+    &nbsp;&nbsp;<b>[OH⁻]:</b> <button class="b ohx on" data-m="1">× 1</button><button class="b alt ohx" data-m="2">× 2</button>
+  </div>
+  <div class="row">
+    <div style="flex:2 1 520px"><canvas id="rds" width="620" height="300" style="width:100%"></canvas></div>
+    <div style="flex:1 1 240px"><div class="readout" id="rdsOut"></div>
+      <p class="small"><span style="color:#6b4423">●</span> RBr &nbsp; <span style="color:#d98b2b">●</span> carbocation &nbsp; <span style="color:#2c4a7a">●</span> OH⁻ &nbsp; <span style="color:#aaa">●</span> product</p></div>
+  </div>
+  <p>Double [RBr] and the rate doubles. Double [OH⁻] and <b>nothing changes</b>: the OH⁻ ions just wait for carbocations to appear. So the rate equation is:</p>
+  <div class="eq">rate = k[(CH₃)₃CBr]</div>
+  <p class="small">The concentrations are held constant (reacted particles are replaced). The counts are random, so watch the trend over 10–20 s.</p>
+</div>
+
+<div class="card key">
+  <h3 style="margin-top:0">The key rule</h3>
+  <p>The rate equation tells you <b>which species, and how many of each</b>, are involved <b>up to and including</b> the rate-determining step.</p>
+  <ul>
+    <li>A reactant that is <b>zero order</b> only reacts <b>after</b> the RDS.</li>
+    <li>An order of 2 means <b>two</b> of that species take part up to and including the RDS.</li>
+    <li>A <b>catalyst</b> can appear in the rate equation even though it isn't in the overall equation.</li>
+  </ul>
+</div>
+</section>
+
+<!-- ============ PAGE 2 ============ -->
+<section class="page" data-title="2. Mechanisms, intermediates, catalysts">
+<h2>2. Mechanisms, intermediates and catalysts</h2>
+<div class="card key">
+  <p><b>Adding the steps</b> gives the overall equation. Anything that appears on <b>both sides</b> cancels out.</p>
+  <ul>
+    <li><span class="mech" style="font-size:18px"><span class="im">Intermediate</span></span>: <b>made</b> in one step and <b>used up</b> in a later step. It is not in the overall equation.</li>
+    <li><span class="mech" style="font-size:18px"><span class="cat">Catalyst</span></span>: <b>used up</b> in an early step and <b>made again</b> in a later step. It is not in the overall equation, but it can be in the rate equation.</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Interactive: add up the steps</h3>
+  <label class="s">Choose a mechanism:
+    <select id="mSel" style="font-size:18px"></select></label>
+  <div id="mBox" class="mech" style="margin-top:10px"></div>
+  <button class="b" onclick="mCancel()">Cancel species on both sides</button>
+  <div id="mOut" class="readout" style="margin-top:10px;display:none"></div>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 1</span>
+  <span class="src">Rate Equations 6 Q2</span>
+  <p>Step 1: X + Y → W &nbsp;&nbsp; Step 2: Y + W → Z</p>
+  <p>(a) Overall equation: <span class="ob" data-opts="X + Y → Z|X + 2Y → Z|X + 2Y + W → Z + W|2X + Y → Z" data-a="1" data-id="q1a"></span><span class="fb" id="q1a"></span></p>
+  <p>(b) The intermediate is: <span class="ob" data-opts="X|Y|W|Z" data-a="2" data-id="q1b"></span><span class="fb" id="q1b"></span></p>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 2 – spot the catalyst</span>
+  <span class="src">Rate Equations 6 Q7</span>
+  <p>CH₃COCH₃ + I₂ → CH₃COCH₂I + HI &nbsp;&nbsp; rate = k[CH₃COCH₃][H⁺]</p>
+  <p>(a) The role of H⁺ is: <span class="ob" data-opts="reactant|intermediate|catalyst|product" data-a="2" data-id="q2a"></span><span class="fb" id="q2a"></span></p>
+  <p>(b) Order with respect to I₂: <span class="ob" data-a="0" data-id="q2b"></span><span class="fb" id="q2b"></span></p>
+  <button class="b alt" onclick="tog('q2w')">Explanation</button>
+  <div class="work" id="q2w">H⁺ appears in the rate equation but not in the overall equation, so it must be a <b>catalyst</b>. It is used in a step up to the RDS and regenerated later.<br>I₂ is in the overall equation but not the rate equation, so it is <b>zero order</b>. It reacts after the RDS.</div>
+</div>
+</section>
+
+<!-- ============ PAGE 3 ============ -->
+<section class="page" data-title="3. Finding the RDS">
+<h2>3. Which step is rate-determining?</h2>
+<div class="card key">
+  <ol class="steps">
+    <li>Look at the rate equation. Note <b>which species</b> appear and <b>how many</b> of each (the order).</li>
+    <li>Go through the mechanism step by step and keep a running tally of what has been used up.</li>
+    <li>The RDS is the step where the tally <b>first exactly matches</b> the rate equation. Nothing extra, nothing missing.</li>
+  </ol>
+  <p class="small">This is how AQA phrases it. In June 2023 the mark was for "by the end of step 2, 1 × H⁺ and 2 × B have been used".</p>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Interactive: click the rate-determining step</h3>
+  <div id="rdsQ"></div>
+  <button class="b" onclick="nextRQ()">Next mechanism ▶</button>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 3</span>
+  <span class="src">June 2024 Paper 2 Q1.4 (1 mark)</span>
+  <p>CH₃COCH₃ + Br₂ + OH⁻ → CH₃COCH₂Br + Br⁻ + H₂O &nbsp; rate = k[CH₃COCH₃][OH⁻]</p>
+  <p>Use evidence from the rate equation to explain why Step 1 (CH₃COCH₃ + OH⁻ → CH₃COCH₂⁻ + H₂O) is the rate-determining step.</p>
+  <button class="b alt" onclick="tog('q3w')">Mark scheme</button>
+  <div class="work" id="q3w">Step 1 contains CH₃COCH₃ and OH⁻, which are <b>all the species in the rate equation</b>. (Br₂ is not in step 1 and not in the rate equation.)</div>
+</div>
+</section>
+
+<!-- ============ PAGE 4 ============ -->
+<section class="page" data-title="4. Rate equation from a mechanism">
+<h2>4. Writing the rate equation from a mechanism</h2>
+<div class="card key">
+  <p>If you're told which step is rate-determining, the rate equation contains everything used up to and including that step.</p>
+  <div class="warn" style="margin-bottom:0"><b>Intermediates never appear in the rate equation.</b> If the RDS uses an intermediate, replace it with the species that made it in the earlier step.</div>
+</div>
+
+<div class="card">
+  <span class="src">Rate Equations 6 Q5</span>
+  <p class="mech">2NO + O₂ → 2NO₂<br>Step 1 (fast): NO + NO → <span class="im">N₂O₂</span><br>Step 2 (slow, RDS): <span class="im">N₂O₂</span> + O₂ → 2NO₂</p>
+  <button class="b alt" onclick="stepReveal('we1')">Show next step</button>
+  <ol class="steps" id="we1">
+    <li class="reveal">The RDS uses <b>N₂O₂</b> and <b>O₂</b>.</li>
+    <li class="reveal">N₂O₂ is an intermediate. It was made from <b>NO + NO</b> in step 1, so replace it with 2 × NO.</li>
+    <li class="reveal">Up to and including the RDS: 2 × NO and 1 × O₂ are used, so <b>rate = k[NO]²[O₂]</b>.</li>
+  </ol>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 4</span>
+  <span class="src">Rate Equations 6 Q6</span>
+  <p>NO₂ + CO → NO + CO₂. The slow step is 2NO₂ → NO + NO₃.</p>
+  <p>(a) Rate equation: <span class="ob" data-opts="rate = k[NO₂][CO]|rate = k[NO₂]²|rate = k[NO₂]²[CO]|rate = k[NO₃][CO]" data-a="1" data-id="q4a"></span><span class="fb" id="q4a"></span></p>
+  <p>(b) A suitable fast second step: <span class="ob" data-opts="NO₃ + CO → NO₂ + CO₂|NO + CO → NO₂ + C|NO₃ → NO + O₂|NO₂ + CO → NO + CO₂" data-a="0" data-id="q4b"></span><span class="fb" id="q4b"></span></p>
+  <button class="b alt" onclick="tog('q4w')">Explanation</button>
+  <div class="work" id="q4w">(a) The slow step uses 2 × NO₂ and no CO → <b>rate = k[NO₂]²</b>. CO is zero order.<br>(b) Step 2 must use up NO₃ and CO and give back the second NO₂, so that the steps add up to the overall equation: <b>NO₃ + CO → NO₂ + CO₂</b>.</div>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 5</span>
+  <span class="src">Rate Equations 6 Q1</span>
+  <p>A + B → C is first order in A and zero order in B. Explain how this shows the reaction must happen in more than one step.</p>
+  <button class="b alt" onclick="tog('q5w')">Answer</button>
+  <div class="work" id="q5w">If it were one step, A and B would collide in that step and both would be in the rate equation. B is zero order, so it isn't in the RDS. There must be a slow step involving only A, followed by a later step where B reacts.</div>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 6</span>
+  <span class="src">Rate Equations 6 Q8</span>
+  <p>2C₆H₅CHO → C₆H₅CH(OH)COC₆H₅ &nbsp; rate = k[C₆H₅CHO][CN⁻]. What is the role of CN⁻ and why?</p>
+  <button class="b alt" onclick="tog('q6w')">Answer</button>
+  <div class="work" id="q6w"><b>Catalyst.</b> CN⁻ is in the rate equation but not in the overall equation, so it is used up and then regenerated.</div>
+</div>
+</section>
+
+<!-- ============ PAGE 5 ============ -->
+<section class="page" data-title="5. Quiz">
+<h2>5. End-of-walkthrough quiz</h2>
+<p>Click an answer. You get one go at each question.</p>
+<div id="quiz"></div>
+<div class="card" id="score" style="font-size:22px;text-align:center"></div>
+<button class="b alt" onclick="buildQuiz()">Reset quiz</button>
+</section>
+
+<div class="pager"><button class="b alt" id="prevB">◀ Previous</button><button class="b" id="nextB">Next ▶</button></div>
+</main>
+
+<script>
+/* ---------- navigation ---------- */
+const pages=[...document.querySelectorAll('.page')];let cur=0;
+const nav=document.getElementById('nav');
+pages.forEach((p,i)=>{const b=document.createElement('button');b.textContent=p.dataset.title;b.onclick=()=>go(i);nav.appendChild(b)});
+function go(i){cur=i;pages.forEach((p,j)=>p.classList.toggle('on',j===i));[...nav.children].forEach((b,j)=>b.classList.toggle('on',j===i));
+ document.getElementById('prevB').disabled=i===0;document.getElementById('nextB').disabled=i===pages.length-1;window.scrollTo(0,0)}
+document.getElementById('prevB').onclick=()=>go(Math.max(0,cur-1));
+document.getElementById('nextB').onclick=()=>go(Math.min(pages.length-1,cur+1));
+
+/* ---------- helpers ---------- */
+function tog(id){document.getElementById(id).classList.toggle('on')}
+function stepReveal(id){const r=[...document.querySelectorAll('#'+id+' .reveal:not(.on)')];if(r.length)r[0].classList.add('on')}
+function parseNum(s){
+ s=s.trim().replace(/\s/g,'');const sup={'⁰':'0','¹':'1','²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9','⁻':'-'};
+ s=s.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁻]/g,c=>sup[c]).replace(/[−–]/g,'-');
+ let m=s.match(/^(-?[\d.]+)[x×X*]10\^?(-?\d+)$/);if(m)return parseFloat(m[1])*Math.pow(10,parseInt(m[2]));
+ const v=Number(s);return isNaN(v)?null:v}
+function numCheck(id,target,tol){const v=parseNum(document.getElementById(id).value);const fb=document.getElementById(id+'fb');
+ if(v===null){fb.textContent='Enter a number';fb.className='fb no';return}
+ if(Math.abs(v-target)<=Math.abs(target)*tol){fb.textContent='✔ Correct';fb.className='fb ok'}
+ else{fb.textContent='✘ Not quite, check your working';fb.className='fb no'}}
+function unitPick(btn,ok){const f=document.getElementById('c5u');f.textContent=ok?'✔ Yes, cm³ s⁻¹':'✘ Try again';f.className='fb '+(ok?'ok':'no')}
+function pick(btn,ok,id){const f=document.getElementById(id);f.textContent=ok?'✔ Correct':'✘ Try again';f.className='fb '+(ok?'ok':'no')}
+
+
+/* ---------- SVG plotting ---------- */
+const NS='http://www.w3.org/2000/svg';
+function E(tag,a,p){const e=document.createElementNS(NS,tag);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e}
+function plot(svg,o){
+ svg.innerHTML='';const W=660,H=400,ml=80,mr=20,mt=18,mb=60,pw=W-ml-mr,ph=H-mt-mb;
+ const x0=o.xmin||0,y0=o.ymin||0;const X=x=>ml+(x-x0)/(o.xmax-x0)*pw,Y=y=>mt+ph-(y-y0)/(o.ymax-y0)*ph;
+ const id='cl'+Math.random().toString(36).slice(2);
+ const d=E('defs',{},svg);const cp=E('clipPath',{id},d);E('rect',{x:ml,y:mt,width:pw,height:ph},cp);
+ E('rect',{x:ml,y:mt,width:pw,height:ph,fill:'#fff'},svg);
+ const gx=o.gx||o.xt,gy=o.gy||o.yt;
+ for(let x=x0;x<=o.xmax+1e-9;x+=gx)E('line',{x1:X(x),x2:X(x),y1:mt,y2:mt+ph,stroke:'#efe3cc'},svg);
+ for(let y=y0;y<=o.ymax+1e-9;y+=gy)E('line',{x1:ml,x2:ml+pw,y1:Y(y),y2:Y(y),stroke:'#efe3cc'},svg);
+ for(let x=x0;x<=o.xmax+1e-9;x+=o.xt){E('line',{x1:X(x),x2:X(x),y1:mt+ph,y2:mt+ph+6,stroke:'#3b2a1a'},svg);const t=E('text',{x:X(x),y:mt+ph+24,'text-anchor':'middle','font-size':15,fill:'#3b2a1a'},svg);t.textContent=o.xfmt?o.xfmt(x):+x.toFixed(4)}
+ for(let y=y0;y<=o.ymax+1e-9;y+=o.yt){E('line',{x1:ml-6,x2:ml,y1:Y(y),y2:Y(y),stroke:'#3b2a1a'},svg);const t=E('text',{x:ml-10,y:Y(y)+5,'text-anchor':'end','font-size':15,fill:'#3b2a1a'},svg);t.textContent=(o.yfmt?o.yfmt(y):+y.toFixed(3))}
+ E('line',{x1:ml,x2:ml+pw,y1:mt+ph,y2:mt+ph,stroke:'#3b2a1a','stroke-width':2},svg);
+ E('line',{x1:ml,x2:ml,y1:mt,y2:mt+ph,stroke:'#3b2a1a','stroke-width':2},svg);
+ let t=E('text',{x:ml+pw/2,y:H-12,'text-anchor':'middle','font-size':17,fill:'#6b4423'},svg);t.textContent=o.xlab;
+ t=E('text',{x:18,y:mt+ph/2,'text-anchor':'middle','font-size':17,fill:'#6b4423',transform:`rotate(-90 18 ${mt+ph/2})`},svg);t.textContent=o.ylab;
+ const g=E('g',{'clip-path':`url(#${id})`},svg);
+ return {X,Y,g,svg,curve(f,col='#6b4423',w=3,dash){let dd='';for(let i=0;i<=300;i++){const x=x0+(o.xmax-x0)*i/300;dd+=(i?'L':'M')+X(x)+' '+Y(f(x))}return E('path',{d:dd,fill:'none',stroke:col,'stroke-width':w,'stroke-dasharray':dash||''},g)}};
+}
+
+
+/* ---------- shared helpers for walkthroughs 4-8 ---------- */
+const sup=n=>String(n).split('').map(c=>({'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'})[c]).join('');
+function unitsK(n){const p=1-n;if(n===1)return 's⁻¹';const mol=p===1?'mol':'mol'+sup(p);return `${mol} dm${sup(-3*p)} s⁻¹`}
+function fmt(x,sf=3){if(x===0)return '0';const e=Math.floor(Math.log10(Math.abs(x)));if(e>=-1&&e<4)return String(+x.toPrecision(sf));
+ const m=(x/Math.pow(10,e)).toFixed(sf-1);return `${m} × 10${sup(e)}`}
+/* option pickers: <span class="ob" data-opts="a|b|c" data-a="1" data-id="fbid"> ; data-a is index of correct option */
+function makePickers(root){root.querySelectorAll('.ob').forEach(sp=>{if(sp.dataset.done)return;sp.dataset.done=1;
+ const opts=(sp.dataset.opts||'0|1|2').split('|'),a=+sp.dataset.a,id=sp.dataset.id;
+ opts.forEach((v,i)=>{const b=document.createElement('button');b.className='b alt';b.innerHTML=v;b.style.padding='4px 12px';
+  b.onclick=()=>{sp.querySelectorAll('button').forEach(x=>x.style.background='');b.style.background=i===a?'#cfe8d6':'#f6d0cb';
+   if(id){const f=document.getElementById(id);if(f){f.textContent=i===a?'✔':'✘';f.className='fb '+(i===a?'ok':'no')}}};sp.appendChild(b)})})}
+let QZ=[],qs=0,qa=0;
+function buildQuiz(){const w=document.getElementById('quiz');w.innerHTML='';qs=0;qa=0;
+ QZ.forEach((q,i)=>{const c=document.createElement('div');c.className='card mcq';c.innerHTML=`<b>Q${i+1}.</b> ${q[0]}`;
+  q[1].forEach((o,j)=>{const b=document.createElement('button');b.className='opt';b.innerHTML=o;
+   b.onclick=()=>{if(c.classList.contains('done'))return;c.classList.add('done');qa++;
+    if(j===q[2]){b.classList.add('right');qs++}else{b.classList.add('wrong');c.querySelectorAll('.opt')[q[2]].classList.add('right')}score()};c.appendChild(b)});
+  const e=document.createElement('div');e.className='exp';e.innerHTML='💡 '+q[3];c.appendChild(e);w.appendChild(c)});score()}
+function score(){const n=QZ.length;document.getElementById('score').innerHTML=`Score: <b>${qs}</b> / ${n}`+(qa===n?(qs>=n*0.85?' – excellent!':qs>=n*0.65?' – good, review the ones you missed':' – go back through the walkthrough and try again'):'')}
+function cross(p,x,y,c='#3b2a1a'){const X=p.X(x),Y=p.Y(y);E('path',{d:`M${X-5} ${Y-5}L${X+5} ${Y+5}M${X-5} ${Y+5}L${X+5} ${Y-5}`,stroke:c,'stroke-width':2.2},p.g)}
+function lineP(p,x1,y1,x2,y2,c='#b5651d',w=2.5,dash){return E('line',{x1:p.X(x1),y1:p.Y(y1),x2:p.X(x2),y2:p.Y(y2),stroke:c,'stroke-width':w,'stroke-dasharray':dash||''},p.g)}
+function textP(p,x,y,t,c='#6b4423',sz=15,anchor='start'){const e=E('text',{x:p.X(x),y:p.Y(y),'font-size':sz,fill:c,'text-anchor':anchor},p.g);e.textContent=t;return e}
+
+makePickers(document);
+/* ---------- RDS animation ---------- */
+const cv=document.getElementById('rds'),cx=cv.getContext('2d'),CW=620,CH=300;let mR=1,mO=1,P=[],ev=[],T=0,last=performance.now();
+function rnd(a,b){return a+Math.random()*(b-a)}
+function mk(type){const a=rnd(0,6.28),v=rnd(50,80);return {t:type,x:rnd(15,CW-15),y:rnd(15,CH-15),vx:v*Math.cos(a),vy:v*Math.sin(a),life:0}}
+function initR(){P=[];for(let i=0;i<8*mR;i++)P.push(mk('R'));for(let i=0;i<6*mO;i++)P.push(mk('O'));ev=[];T=0}
+function stepR(dt){T+=dt;
+ P.forEach(p=>{
+  if(p.t==='O'&&p.tg){const dx=p.tg.x-p.x,dy=p.tg.y-p.y,d=Math.hypot(dx,dy);if(d<6){p.tg.t='P';p.tg.life=1.6;p.tg.vx=rnd(-30,30);p.tg.vy=rnd(-30,30);p.t='dead';ev.push(T)}else{p.x+=dx/d*320*dt;p.y+=dy/d*320*dt}return}
+  p.x+=p.vx*dt;p.y+=p.vy*dt;if(p.x<10||p.x>CW-10)p.vx*=-1;if(p.y<10||p.y>CH-10)p.vy*=-1;p.x=Math.min(CW-10,Math.max(10,p.x));p.y=Math.min(CH-10,Math.max(10,p.y));
+  if(p.t==='R'&&Math.random()<0.12*dt){p.t='C';p.br={x:p.x,y:p.y,l:1}; P.push(mk('R'));}
+  if(p.t==='P'){p.life-=dt;if(p.life<=0)p.t='dead'}
+  if(p.br){p.br.l-=dt;p.br.y-=20*dt;if(p.br.l<=0)p.br=null}});
+ P.filter(p=>p.t==='C'&&!p.claimed).forEach(c=>{let best=null,bd=1e9;P.forEach(o=>{if(o.t==='O'&&!o.tg){const d=Math.hypot(o.x-c.x,o.y-c.y);if(d<bd){bd=d;best=o}}});if(best){best.tg=c;c.claimed=1}});
+ const nO=P.filter(p=>p.t==='O').length;for(let i=nO;i<6*mO;i++){const o=mk('O');o.x=CW-12;P.push(o)}
+ P=P.filter(p=>p.t!=='dead'||p.br)}
+function drawR(){cx.clearRect(0,0,CW,CH);cx.fillStyle='#fff';cx.fillRect(0,0,CW,CH);
+ P.forEach(p=>{if(p.br){cx.globalAlpha=Math.max(0,p.br.l);cx.fillStyle='#4a9a5a';cx.font='13px sans-serif';cx.fillText('Br⁻',p.br.x+8,p.br.y);cx.globalAlpha=1}
+  if(p.t==='dead')return;const col={R:'#6b4423',C:'#d98b2b',O:'#2c4a7a',P:'#bbb'}[p.t];cx.globalAlpha=p.t==='P'?Math.max(0,p.life/1.6):1;
+  cx.beginPath();cx.arc(p.x,p.y,p.t==='O'?6:9,0,7);cx.fillStyle=col;cx.fill();if(p.t==='R'){cx.beginPath();cx.arc(p.x+9,p.y,5,0,7);cx.fillStyle='#4a9a5a';cx.fill()}
+  if(p.t==='C'){cx.fillStyle='#fff';cx.font='bold 13px sans-serif';cx.fillText('+',p.x-4,p.y+5)}cx.globalAlpha=1});
+ const n=ev.filter(e=>e>T-10).length;const rel=mR;
+ document.getElementById('rdsOut').innerHTML=`[RBr] × ${mR} &nbsp; [OH⁻] × ${mO}<br>products in last ${Math.min(10,T).toFixed(0)} s: <b>${n}</b><br>expected rate × <b>${rel}</b><br><span style="color:#e8a860">${'█'.repeat(rel*6)}</span>`}
+function loopR(ts){const dt=Math.min(.05,(ts-last)/1000);last=ts;stepR(dt);drawR();requestAnimationFrame(loopR)}
+document.querySelectorAll('.rbx').forEach(b=>b.onclick=()=>{mR=+b.dataset.m;document.querySelectorAll('.rbx').forEach(x=>x.classList.toggle('alt',x!==b));initR()});
+document.querySelectorAll('.ohx').forEach(b=>b.onclick=()=>{mO=+b.dataset.m;document.querySelectorAll('.ohx').forEach(x=>x.classList.toggle('alt',x!==b));initR()});
+initR();requestAnimationFrame(loopR);
+
+/* ---------- mechanism cancel ---------- */
+const MECH=[
+ {name:'Rate Equations 6 Q2',steps:[[{X:1,Y:1},{W:1}],[{Y:1,W:1},{Z:1}]]},
+ {name:'Rate Equations 6 Q4 (NO₂ + F₂)',steps:[[{'NO₂':1,'F₂':1},{'NO₂F':1,F:1}],[{'NO₂':1,F:1},{'NO₂F':1}]]},
+ {name:'Rate Equations 6 Q6 (NO₂ + CO)',steps:[[{'NO₂':2},{NO:1,'NO₃':1}],[{'NO₃':1,CO:1},{'NO₂':1,'CO₂':1}]]},
+ {name:'Ozone breakdown by Cl atoms',steps:[[{Cl:1,'O₃':1},{ClO:1,'O₂':1}],[{ClO:1,O:1},{Cl:1,'O₂':1}]]},
+ {name:'June 2023 Paper 2 Q2 (acid catalyst)',steps:[[{B:1,'H⁺':1},{'BH⁺':1}],[{'BH⁺':1,B:1},{'B₂H⁺':1}],[{'B₂H⁺':1,A:1},{C:1,D:1,'H⁺':1}]]}
+];
+const mSel=document.getElementById('mSel');MECH.forEach((m,i)=>{const o=document.createElement('option');o.value=i;o.textContent=m.name;mSel.appendChild(o)});
+function side(o,cls){return Object.entries(o).map(([s,n])=>`<span data-s="${s}">${n>1?n:''}${s}</span>`).join(' + ')}
+function mShow(){const m=MECH[mSel.value];document.getElementById('mBox').innerHTML=m.steps.map((st,i)=>`Step ${i+1}: ${side(st[0])} → ${side(st[1])}`).join('<br>');document.getElementById('mOut').style.display='none'}
+function mCancel(){const m=MECH[mSel.value];const L={},R={},first={};
+ m.steps.forEach((st,i)=>{for(const[s,n]of Object.entries(st[0])){L[s]=(L[s]||0)+n;if(!(s in first))first[s]='L'}for(const[s,n]of Object.entries(st[1])){R[s]=(R[s]||0)+n;if(!(s in first))first[s]='R'}});
+ const both=Object.keys(L).filter(s=>s in R);
+ document.querySelectorAll('#mBox span[data-s]').forEach(sp=>{const s=sp.dataset.s;if(both.includes(s)&&L[s]===R[s]){sp.classList.add(first[s]==='R'?'im':'cat');sp.classList.add('x')}});
+ const net=(A,B)=>Object.keys(A).filter(s=>A[s]-(B[s]||0)>0).map(s=>{const n=A[s]-(B[s]||0);return (n>1?n:'')+s}).join(' + ');
+ const inter=both.filter(s=>first[s]==='R'&&L[s]===R[s]),cat=both.filter(s=>first[s]==='L'&&L[s]===R[s]),part=both.filter(s=>L[s]!==R[s]);
+ const o=document.getElementById('mOut');o.style.display='block';
+ o.innerHTML=`Overall: <b>${net(L,R)} → ${net(R,L)}</b><br>Intermediate(s): ${inter.join(', ')||'none'}<br>Catalyst(s): ${cat.join(', ')||'none'}`+(part.length?`<br>${part.join(', ')} only partly cancels (${L[part[0]]} used, ${R[part[0]]} made)`:'')}
+mSel.onchange=mShow;mShow();
+
+/* ---------- RDS click activity ---------- */
+const RQ=[
+ {src:'June 2023 Paper 2 Q2.2',eq:'rate = k[B]²[H⁺]',steps:['B + H⁺ → BH⁺','BH⁺ + B → B₂H⁺','B₂H⁺ + A → C + D + H⁺'],a:1,tally:['1 × B, 1 × H⁺: not enough B yet','2 × B, 1 × H⁺: matches the rate equation','2 × B, 1 × H⁺ and 1 × A: too much, A is not in the rate equation'],why:'By the end of step 2, 1 × H⁺ and 2 × B have been used.'},
+ {src:'Rate Equations 6 Q2',eq:'rate = k[X][Y]',steps:['X + Y → W','Y + W → Z'],a:0,tally:['1 × X, 1 × Y: matches','1 × X, 2 × Y: too many Y'],why:'Step 1 uses exactly one X and one Y.'},
+ {src:'Rate Equations 6 Q4',eq:'rate = k[NO₂][F₂]',steps:['NO₂ + F₂ → NO₂F + F','NO₂ + F → NO₂F'],a:0,tally:['1 × NO₂, 1 × F₂: matches','2 × NO₂, 1 × F₂: too many NO₂'],why:'Step 1 contains the same species as the rate equation.'},
+ {src:'Rate Equations 6 Q5',eq:'rate = k[NO]²[O₂]',steps:['NO + NO → N₂O₂','N₂O₂ + O₂ → 2NO₂'],a:1,tally:['2 × NO but no O₂ yet','2 × NO (via N₂O₂) and 1 × O₂: matches'],why:'O₂ is in the rate equation, and it isn\'t used until step 2.'},
+ {src:'Iodine monochloride + hydrogen',eq:'rate = k[H₂][ICl]',steps:['H₂ + ICl → HI + HCl','HI + ICl → HCl + I₂'],a:0,tally:['1 × H₂, 1 × ICl: matches','1 × H₂, 2 × ICl: too many ICl'],why:'Only one ICl appears in the rate equation, so the second ICl reacts after the RDS.'}
+];
+let rqi=0;
+function showRQ(){const q=RQ[rqi];const w=document.getElementById('rdsQ');
+ w.innerHTML=`<p class="src">${q.src}</p><div class="eq">${q.eq}</div>`+q.steps.map((s,i)=>`<div class="stepbox mech" data-i="${i}">Step ${i+1}: ${s}</div>`).join('')+'<div class="readout" id="rqOut" style="display:none"></div>';
+ w.querySelectorAll('.stepbox').forEach(b=>b.onclick=()=>{const i=+b.dataset.i,o=document.getElementById('rqOut');o.style.display='block';
+  w.querySelectorAll('.stepbox').forEach(x=>x.classList.remove('good','badc'));b.classList.add(i===q.a?'good':'badc');
+  o.innerHTML=(i===q.a?'✔ Correct. ':'✘ Not this one. ')+`Used up to and including step ${i+1}: ${q.tally[i]}`+(i===q.a?`<br>${q.why}`:'')})}
+function nextRQ(){rqi=(rqi+1)%RQ.length;showRQ()}
+showRQ();
+
+/* ---------- quiz ---------- */
+QZ=[
+ ["The rate-determining step is…",["the first step of the mechanism","the slowest step of the mechanism","the step with the most reactants","the last step of the mechanism"],1,"The slowest step limits the overall rate."],
+ ["A reactant is zero order. What does this tell you?",["It is a catalyst","It is not involved up to and including the RDS","It is involved in the RDS","It reacts in the first step"],1,"Zero order species react only after the rate-determining step."],
+ ["rate = k[P]². What happens in (or before) the RDS?",["One P particle reacts","Two P particles are involved","P is a catalyst","P reacts after the RDS"],1,"An order of 2 means two particles of P are used up to and including the RDS."],
+ ["An intermediate is…",["used up in an early step and regenerated later","made in one step and used up in a later step","present in the overall equation","always in the rate equation"],1,"Intermediates are made and then used up. They don't appear in the overall equation or the rate equation."],
+ ["A species appears in the rate equation but not in the overall equation. It must be…",["an intermediate","a catalyst","a product","zero order"],1,"Catalysts can be in the rate equation (they take part up to the RDS) but are regenerated, so they aren't in the overall equation."],
+ ["Step 1: A + B → C (slow). Step 2: C + B → D (fast). What is the rate equation?",["rate = k[A][B]²","rate = k[A][B]","rate = k[C][B]","rate = k[A]"],1,"Only step 1 counts: one A and one B."],
+ ["Step 1: 2X → X₂ (fast). Step 2: X₂ + Y → Z (slow). What is the rate equation?",["rate = k[X₂][Y]","rate = k[X]²[Y]","rate = k[X][Y]","rate = k[Y]"],1,"X₂ is an intermediate. Replace it with 2X: rate = k[X]²[Y]."],
+ ["Overall: 2A + B → C. Rate = k[A]. How do you know there must be more than one step?",["The rate equation doesn't match the stoichiometry of the overall equation","A is first order","k is constant","B is a catalyst"],0,"If it were a single step, all the reactants (2A and B) would be in the rate equation."],
+ ["rate = k[CH₃COCH₃][H⁺] for CH₃COCH₃ + I₂ → CH₃COCH₂I + HI. Doubling [I₂] will…",["double the rate","halve the rate","not change the rate","quadruple the rate"],2,"I₂ is zero order."],
+ ["Step 1: NO₂ + NO₂ → NO + NO₃ (slow). Step 2: NO₃ + CO → NO₂ + CO₂ (fast). What is the intermediate?",["NO₂","NO₃","CO","NO"],1,"NO₃ is made in step 1 and used in step 2."]
+];
+buildQuiz();go(0);
+
+</script>
+</body>
+</html>
