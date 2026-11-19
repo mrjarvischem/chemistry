@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>5 · Potential dividers — A-level Physics 3.5</title>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="core.css">
+</head>
+<body data-lesson="5" data-set="p35" data-next="L6.html">
+<header class="top"><a class="home" href="index.html">← All electricity lessons</a>
+<h1>Lesson 5 · Potential dividers</h1>
+<p>AQA A-level Physics 3.5.1.5 · about 25 minutes</p></header>
+<main>
+
+<section id="e1" data-title="The potential divider" data-mins="8">
+<h2>The potential divider</h2>
+<div class="key" style="font-size:1.1rem">Two resistors in series share the supply p.d. in the ratio of their resistances: <b>V<sub>out</sub> = V<sub>in</sub> × R<sub>2</sub>/(R<sub>1</sub> + R<sub>2</sub>)</b> &nbsp;(V<sub>out</sub> across R<sub>2</sub>)</div>
+<div class="card"><div class="grid2" style="margin:0"><svg id="pd" viewBox="0 0 320 260" width="100%"></svg><div>
+<div>V<sub>in</sub>: <b id="Vv"></b> V<input type="range" id="V" min="1" max="12" step="0.5" value="9"></div><div>R₁: <b id="R1v"></b> kΩ<input type="range" id="R1" min="0.5" max="20" step="0.5" value="4"></div><div id="r2box">R₂: <b id="R2v"></b> kΩ<input type="range" id="R2" min="0.5" max="20" step="0.5" value="2"></div>
+<div class="row"><button class="btn on" data-s="r">resistor</button><button class="btn" data-s="t">thermistor</button><button class="btn" data-s="l">LDR</button></div><div id="sens"></div><div class="read" id="pR"></div></div></div></div>
+<div class="tip">Swap R₂ for a <b>thermistor</b> or <b>LDR</b> to make a sensor: as the temperature or light level changes, its resistance changes, so V<sub>out</sub> changes. An LDR’s resistance <b>falls as light intensity increases</b>.</div>
+<div id="q1a"></div><div id="q1b"></div><div id="q1c"></div>
+</section>
+
+<section id="e2" data-title="Variable resistor as divider" data-mins="5">
+<h2>A potentiometer</h2>
+<p>A variable resistor used as a potential divider (a <b>potentiometer</b>) can give any output from 0 V up to V<sub>in</sub>. Used as a simple variable resistor in series, it cannot reduce the output to zero. That’s why potential dividers are used for volume controls and to vary the p.d. across a component from zero (e.g. when plotting I–V characteristics).</p>
+<div id="q2a"></div>
+</section>
+
+<section id="e3" data-title="Exam practice" data-mins="8">
+<h2>Exam practice</h2>
+<div id="ex1"></div><div id="ex2"></div><div id="ex3"></div>
+<div class="summary"><h3>Lesson summary</h3><ul><li>V<sub>out</sub> = V<sub>in</sub> R₂/(R₁ + R₂); the bigger resistor gets the bigger share.</li><li>Thermistor/LDR in a divider → temperature or light sensor.</li><li>A potentiometer can vary the output from 0 to V<sub>in</sub>.</li></ul></div>
+</section>
+</main>
+<script src="core.js"></script>
+<script>
+let sen='r';document.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{sen=b.dataset.s;document.querySelectorAll('[data-s]').forEach(x=>x.classList.toggle('on',x===b));
+ $('r2box').style.display=sen==='r'?'':'none';$('sens').innerHTML=sen==='t'?'Temperature: <b id="xv"></b> °C<input type="range" id="x" min="0" max="80" step="1" value="20">':sen==='l'?'Light level: <b id="xv"></b> lux<input type="range" id="x" min="1" max="1000" step="1" value="100">':'';if($('x'))$('x').oninput=draw;draw()});
+function draw(){const V=+$('V').value,R1=+$('R1').value;let R2=+$('R2').value,lab='R₂';$('Vv').textContent=V;$('R1v').textContent=R1;$('R2v').textContent=R2;
+ if(sen==='t'){const T=+$('x').value;$('xv').textContent=T;R2=10*Math.exp(3500*(1/(T+273)-1/293));lab='thermistor'}if(sen==='l'){const L=+$('x').value;$('xv').textContent=L;R2=50*Math.pow(L,-0.7)*5;lab='LDR'}
+ const Vo=V*R2/(R1+R2);
+ $('pd').innerHTML=`<line x1="80" y1="20" x2="80" y2="240" stroke="#1d2433" stroke-width="2"/><text x="60" y="30" text-anchor="end">${V} V</text><text x="60" y="244" text-anchor="end">0 V</text><rect x="68" y="50" width="24" height="60" fill="#fff" stroke="#2e86de" stroke-width="3"/><text x="104" y="84" fill="#2e86de" font-weight="700">R₁ ${R1} kΩ</text><rect x="68" y="150" width="24" height="60" fill="#fff" stroke="#e4572e" stroke-width="3"/><text x="104" y="184" fill="#e4572e" font-weight="700">${lab} ${R2.toFixed(2)} kΩ</text><line x1="80" y1="130" x2="230" y2="130" stroke="#1d2433" stroke-width="2"/><line x1="80" y1="240" x2="230" y2="240" stroke="#1d2433" stroke-width="2"/><circle cx="230" cy="130" r="4"/><circle cx="230" cy="240" r="4"/><line x1="230" y1="135" x2="230" y2="235" stroke="#5b3fd0" stroke-dasharray="4 3"/><text x="238" y="190" fill="#5b3fd0" font-weight="700">V<tspan font-size="10" dy="3">out</tspan></text><text x="238" y="210" fill="#5b3fd0">${Vo.toFixed(2)} V</text>`;
+ $('pR').innerHTML=`V<sub>out</sub> = ${V} × ${R2.toFixed(2)}/(${R1} + ${R2.toFixed(2)}) = <b>${Vo.toFixed(2)} V</b>`}
+['V','R1','R2'].forEach(i=>$(i).oninput=draw);draw();
+NumQ('q1a',{q:'A 12 V supply is across a 3.0 kΩ resistor in series with a 1.0 kΩ resistor. Calculate the p.d. across the 1.0 kΩ resistor.',ans:3,unit:'V',steps:['V = 12 × 1.0/(3.0 + 1.0) = 3.0 V']});
+MCQ('q1b',{q:'A thermistor is R₂ (the bottom resistor) in a potential divider. The temperature rises. What happens to V<sub>out</sub> across the thermistor?',opts:['increases','decreases','stays the same','becomes equal to V<sub>in</sub>'],a:1,why:'Thermistor resistance falls, so it takes a smaller share of the p.d.'});
+MCQ('q1c',{q:'An LDR is in the <b>top</b> position (R₁). It gets darker. What happens to V<sub>out</sub> across the fixed bottom resistor?',opts:['increases','decreases','unchanged','zero'],a:1,why:'Darker → LDR resistance rises → it takes more of the p.d. → less across the fixed resistor.'});
+MCQ('q2a',{q:'Why is a potential divider used (rather than a variable series resistor) to vary the p.d. across a lamp when plotting its I–V graph?',opts:['it is cheaper','it allows the p.d. to be varied all the way down to zero','it increases the current','it protects the ammeter'],a:1});
+ExamQ('ex1',{title:'Question 1',stem:'<p>A potential divider consists of a 2.2 kΩ fixed resistor and an NTC thermistor across a 6.0 V supply. The output is taken across the thermistor. At 20 °C the thermistor’s resistance is 4.7 kΩ.</p>',parts:[
+ {label:'01.1',q:'Calculate the output p.d. at 20 °C.',marks:2,ms:['V = 6.0 × 4.7/(4.7 + 2.2)','V = 4.1 V']},
+ {label:'01.2',q:'Explain what happens to the output p.d. as the temperature increases.',marks:2,ms:['Resistance of the thermistor decreases (as temperature rises)','It has a smaller share of the total resistance, so its p.d. (V<sub>out</sub>) decreases']}]});
+ExamQ('ex2',{title:'Question 2',parts:[
+ {label:'02',q:'A voltmeter of resistance 10 kΩ is connected across one of two 10 kΩ resistors in series with a 6.0 V supply. Calculate the voltmeter reading.',marks:3,ms:['voltmeter ∥ 10 kΩ = 5.0 kΩ','V = 6.0 × 5.0/(10 + 5.0)','= 2.0 V (not 3.0 V — a non-ideal voltmeter changes the circuit)']}]});
+ExamQ('ex3',{title:'Question 3 · multiple choice',parts:[
+ {label:'03',q:'How does the resistance of an LDR change as light intensity increases?',opts:['increases','decreases','stays constant','becomes infinite'],a:1,marks:1,ms:['<b>B</b>']}]});
+</script>
+</body>
+</html>

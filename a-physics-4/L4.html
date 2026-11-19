@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>4 · Circuits and electrical power — A-level Physics 3.5</title>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="core.css">
+</head>
+<body data-lesson="4" data-set="p35" data-next="L5.html">
+<header class="top"><a class="home" href="index.html">← All electricity lessons</a>
+<h1>Lesson 4 · Series and parallel circuits, and power</h1>
+<p>AQA A-level Physics 3.5.1.4 · about 25 minutes</p></header>
+<main>
+
+<section id="d1" data-title="Series & parallel" data-mins="9">
+<h2>Resistors in series and parallel</h2>
+<div class="key">Series: <b>R<sub>T</sub> = R<sub>1</sub> + R<sub>2</sub> + …</b> — same current; p.d. shared.<br>Parallel: <b>1/R<sub>T</sub> = 1/R<sub>1</sub> + 1/R<sub>2</sub> + …</b> — same p.d.; current shared. R<sub>T</sub> is less than the smallest resistor.</div>
+<div class="card"><div class="row"><button class="btn on" data-m="s">series</button><button class="btn" data-m="p">parallel</button></div>
+<div class="grid2" style="margin:10px 0 0"><svg id="ck" viewBox="0 0 320 240" width="100%"></svg><div>
+<div>Supply: <b id="Vv"></b> V<input type="range" id="V" min="1" max="12" step="0.5" value="12"></div><div>R₁: <b id="R1v"></b> Ω<input type="range" id="R1" min="1" max="60" step="1" value="20"></div><div>R₂: <b id="R2v"></b> Ω<input type="range" id="R2" min="1" max="60" step="1" value="30"></div><div class="read" id="cR"></div></div></div></div>
+<div class="key"><b>Kirchhoff’s first law</b> (conservation of charge): total current into a junction = total current out.<br><b>Kirchhoff’s second law</b> (conservation of energy): in any closed loop, the sum of the emfs = the sum of the p.d.s.</div>
+<div id="q1a"></div><div id="q1b"></div><div id="q1c"></div>
+</section>
+
+<section id="d2" data-title="Power and energy" data-mins="6">
+<h2>Electrical power and energy</h2>
+<div class="key" style="font-size:1.1rem"><b>P = IV = I²R = V²/R</b> · energy <b>E = IVt</b></div>
+<div class="tip">Choose the version of P that uses the quantities you know. When comparing resistors in <b>series</b> (same I) use I²R; in <b>parallel</b> (same V) use V²/R.</div>
+<div id="q2a"></div><div id="q2b"></div><div id="q2c"></div>
+</section>
+
+<section id="d3" data-title="Exam practice" data-mins="8">
+<h2>Exam practice</h2>
+<div id="ex1"></div><div id="ex2"></div><div id="ex3"></div>
+<div class="summary"><h3>Lesson summary</h3><ul>
+<li>Series R add; parallel 1/R add.</li><li>Series: same I, V shared. Parallel: same V, I shared.</li><li>Kirchhoff 1: charge conserved at junctions; Kirchhoff 2: energy conserved round loops.</li><li>P = IV = I²R = V²/R; E = IVt.</li></ul></div>
+</section>
+</main>
+<script src="core.js"></script>
+<script>
+let md='s';document.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{md=b.dataset.m;document.querySelectorAll('[data-m]').forEach(x=>x.classList.toggle('on',x===b));draw()});
+const res=(x,y,lab,c)=>`<rect x="${x-28}" y="${y-11}" width="56" height="22" fill="#fff" stroke="${c}" stroke-width="3"/><text x="${x}" y="${y+5}" text-anchor="middle" font-size="12" fill="${c}" font-weight="700">${lab}</text>`;
+function draw(){const V=+$('V').value,R1=+$('R1').value,R2=+$('R2').value;$('Vv').textContent=V;$('R1v').textContent=R1;$('R2v').textContent=R2;let g=`<line x1="150" y1="210" x2="150" y2="230" stroke="#1d2433" stroke-width="2"/><line x1="166" y1="204" x2="166" y2="236" stroke="#1d2433" stroke-width="5"/><text x="158" y="200" font-size="12" text-anchor="middle">${V} V</text>`,t;
+ if(md==='s'){const RT=R1+R2,I=V/RT,V1=I*R1,V2=I*R2;g+=`<polyline points="150,220 30,220 30,40 290,40 290,220 166,220" fill="none" stroke="#1d2433" stroke-width="2"/>`+res(110,40,'R₁','#2e86de')+res(210,40,'R₂','#e4572e');
+  t=`R<sub>T</sub> = ${R1} + ${R2} = <b>${RT} Ω</b><br>I = ${V}/${RT} = <b>${I.toFixed(3)} A</b> through both<br>V₁ = IR₁ = ${V1.toFixed(2)} V · V₂ = ${V2.toFixed(2)} V · total ${(V1+V2).toFixed(2)} V ✓ (Kirchhoff 2)<br>P₁ = ${(I*I*R1).toFixed(2)} W · P₂ = ${(I*I*R2).toFixed(2)} W`}
+ else{const RT=1/(1/R1+1/R2),I1=V/R1,I2=V/R2;g+=`<polyline points="150,220 30,220 30,40 290,40 290,220 166,220" fill="none" stroke="#1d2433" stroke-width="2"/><polyline points="90,40 90,110 230,110 230,40" fill="none" stroke="#1d2433" stroke-width="2"/>`+res(160,40,'R₁','#2e86de')+res(160,110,'R₂','#e4572e');
+  t=`1/R<sub>T</sub> = 1/${R1} + 1/${R2} → R<sub>T</sub> = <b>${RT.toFixed(2)} Ω</b><br>same p.d. ${V} V across each<br>I₁ = ${I1.toFixed(3)} A · I₂ = ${I2.toFixed(3)} A · total ${(I1+I2).toFixed(3)} A ✓ (Kirchhoff 1)<br>P₁ = ${(V*V/R1).toFixed(2)} W · P₂ = ${(V*V/R2).toFixed(2)} W`}
+ $('ck').innerHTML=g;$('cR').innerHTML=t}
+['V','R1','R2'].forEach(i=>$(i).oninput=draw);draw();
+NumQ('q1a',{q:'Calculate the total resistance of 6.0 Ω and 3.0 Ω resistors in parallel.',ans:2,unit:'Ω',steps:['1/R = 1/6 + 1/3 = 1/6 + 2/6 = 3/6','R = 2.0 Ω']});
+NumQ('q1b',{q:'A 4.0 Ω resistor is in series with a parallel pair of 12 Ω and 12 Ω across a 10 V supply. Calculate the current from the supply.',ans:1,unit:'A',steps:['parallel pair: 1/R = 1/12 + 1/12 → R = 6.0 Ω','total = 4.0 + 6.0 = 10 Ω','I = 10/10 = 1.0 A']});
+MCQ('q1c',{q:'Kirchhoff’s first law is a consequence of the conservation of…',opts:['energy','charge','momentum','mass'],a:1});
+NumQ('q2a',{q:'A 2.0 kW kettle runs from 230 V. Calculate the current it draws.',ans:2000/230,unit:'A',steps:['I = P/V = 2000 ÷ 230 = 8.7 A']});
+NumQ('q2b',{q:'A current of 0.50 A flows through a 24 Ω resistor. Calculate the power dissipated.',ans:6,unit:'W',steps:['P = I²R = 0.50² × 24 = 6.0 W']});
+NumQ('q2c',{q:'How much energy does a 60 W lamp transfer in 2.0 hours?',ans:60*7200,unit:'J',steps:['t = 2.0 × 3600 = 7200 s','E = Pt = 60 × 7200 = 4.3 × 10⁵ J']});
+ExamQ('ex1',{title:'Question 1',stem:'<p>Resistors of 10 Ω and 15 Ω are connected in parallel. This combination is connected in series with a 4.0 Ω resistor to a 12 V supply of negligible internal resistance.</p>',parts:[
+ {label:'01.1',q:'Calculate the total resistance.',marks:2,ms:['parallel: 1/R = 1/10 + 1/15 → R = 6.0 Ω','total = 10 Ω']},
+ {label:'01.2',q:'Calculate the current in the 15 Ω resistor.',marks:3,ms:['supply current = 12/10 = 1.2 A','p.d. across parallel pair = 1.2 × 6.0 = 7.2 V','I = 7.2/15 = 0.48 A']}]});
+ExamQ('ex2',{title:'Question 2',parts:[
+ {label:'02',q:'State Kirchhoff’s second law and the conservation law it is based on.',marks:2,ms:['In any closed loop, the sum of the emfs equals the sum of the p.d.s (IR)','Conservation of energy']}]});
+ExamQ('ex3',{title:'Question 3 · multiple choice',parts:[
+ {label:'03',q:'Two identical lamps are connected first in series, then in parallel, to the same supply. In parallel, the power of each lamp is (assume constant resistance)…',opts:['¼ of the series value','½ of the series value','2× the series value','4× the series value'],a:3,marks:1,ms:['<b>D</b> — series: each gets V/2, P = (V/2)²/R; parallel: each gets V, P = V²/R → 4×.']}]});
+</script>
+</body>
+</html>

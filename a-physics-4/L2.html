@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2 · Current–voltage characteristics — A-level Physics 3.5</title>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="core.css">
+</head>
+<body data-lesson="2" data-set="p35" data-next="L3.html">
+<header class="top"><a class="home" href="index.html">← All electricity lessons</a>
+<h1>Lesson 2 · Current–voltage characteristics</h1>
+<p>AQA A-level Physics 3.5.1.2 · about 25 minutes</p></header>
+<main>
+
+<section id="b1" data-title="I–V characteristics" data-mins="10">
+<h2>I–V characteristics</h2>
+<p class="lead">Choose a component and drag the voltage (it can be reversed). The point traces out the component’s characteristic.</p>
+<div class="card"><div class="row" id="cmp"></div><div class="grid2" style="margin:10px 0 0"><svg id="iv" viewBox="0 0 320 300" width="100%"></svg><div>
+<div>p.d.: <b id="Vv"></b> V<input type="range" id="V" min="-6" max="6" step="0.05" value="2"></div><div class="read" id="ivR"></div><div class="cap" id="ivCap"></div></div></div></div>
+<div class="key"><b>Ohm’s law</b>: for an ohmic conductor at constant temperature, I is directly proportional to V (straight line through the origin, constant R).<br>Resistance at a point = <b>V/I</b> — <b>not</b> the gradient of the graph.</div>
+<div id="q1a"></div><div id="q1b"></div><div id="q1c"></div>
+</section>
+
+<section id="b2" data-title="Why the shapes?" data-mins="6">
+<h2>Explaining the shapes</h2>
+<div class="grid3">
+ <div class="card"><h3>Filament lamp</h3><p style="margin:0">More current → filament gets hotter → metal ions vibrate more → electrons collide more often → <b>resistance increases</b>. The graph curves (gets less steep).</p></div>
+ <div class="card"><h3>Semiconductor diode</h3><p style="margin:0">Current flows in one direction only (forward bias), once the p.d. is above about 0.6 V for silicon. In reverse bias the resistance is very high.</p></div>
+ <div class="card"><h3>Ohmic resistor</h3><p style="margin:0">Constant temperature → constant resistance → straight line through the origin.</p></div>
+</div>
+<div id="q2a"></div>
+</section>
+
+<section id="b3" data-title="Exam practice" data-mins="7">
+<h2>Exam practice</h2>
+<div id="ex1"></div><div id="ex2"></div><div id="ex3"></div>
+<div class="summary"><h3>Lesson summary</h3><ul>
+<li>Ohmic conductor: I ∝ V at constant temperature.</li><li>Filament lamp: R increases with current (temperature).</li><li>Diode: conducts above ~0.6 V forward; very high resistance in reverse.</li><li>R = V/I at a point, not the gradient.</li></ul></div>
+</section>
+</main>
+<script src="core.js"></script>
+<script>
+const C={resistor:{f:V=>V/12,cap:'Straight line through the origin: constant resistance (12 Ω).'},lamp:{f:V=>Math.sign(V)*0.5*Math.pow(Math.abs(V)/6,0.55),cap:'Curve flattens: resistance rises as the filament heats up. Same shape in both directions.'},diode:{f:V=>V>0?Math.max(0,(Math.exp((V-0.6)*8)-1)*0.002):-1e-6,cap:'Almost no current until ~0.6 V, then current rises steeply. Reverse: tiny current — very high resistance.'}};
+let ck='resistor';$('cmp').innerHTML=Object.keys(C).map(k=>`<button class="btn ${k===ck?'on':''}" data-k="${k}">${k==='lamp'?'filament lamp':k==='diode'?'semiconductor diode':'ohmic resistor'}</button>`).join('');
+$('cmp').onclick=e=>{const b=e.target.closest('button');if(b){ck=b.dataset.k;$('cmp').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));draw()}};
+function draw(){const V=+$('V').value,f=C[ck].f,I=Math.min(0.6,f(V));$('Vv').textContent=V.toFixed(2);const X=v=>160+v/6*140,Y=i=>150-i/0.6*130;
+ let p='';for(let v=-6;v<=6;v+=0.05){const i=Math.min(0.6,f(v));p+=(p?' L':'M')+X(v)+' '+Y(i)}
+ $('iv').innerHTML=`<line x1="10" y1="150" x2="310" y2="150" stroke="#556"/><line x1="160" y1="10" x2="160" y2="290" stroke="#556"/><text x="305" y="166" font-size="11" text-anchor="end">V</text><text x="166" y="20" font-size="11">I</text><path d="${p}" stroke="#5b3fd0" stroke-width="3" fill="none"/><line x1="160" y1="150" x2="${X(V)}" y2="${Y(I)}" stroke="#e4572e" stroke-dasharray="4 3"/><circle cx="${X(V)}" cy="${Y(I)}" r="7" fill="#f1c40f" stroke="#1d2433" stroke-width="2"/>`;
+ const R=Math.abs(I)>1e-5?V/I:Infinity;$('ivR').innerHTML=`I = ${(I*1000).toFixed(1)} mA<br>R = V/I = <b>${isFinite(R)?R.toFixed(1)+' Ω':'very large'}</b>`;$('ivCap').innerHTML=C[ck].cap}
+$('V').oninput=draw;draw();
+MCQ('q1a',{q:'How should you find the resistance of a filament lamp at a particular point on its I–V graph?',opts:['the gradient of the graph at that point','1 ÷ gradient at that point','V ÷ I at that point','the area under the graph'],a:2});
+MCQ('q1b',{q:'Which component has an I–V graph that is a straight line through the origin?',opts:['filament lamp','diode','ohmic resistor at constant temperature','thermistor'],a:2});
+NumQ('q1c',{q:'A diode has a current of 25 mA when the p.d. across it is 0.70 V. Calculate its resistance at this point.',ans:28,unit:'Ω',steps:['R = V/I = 0.70 ÷ 0.025 = 28 Ω']});
+MCQ('q2a',{q:'Why does the resistance of a filament lamp increase as the current increases?',opts:['the filament gets longer','more electrons are released','the filament gets hotter, so the ions vibrate more and electrons collide with them more often','the voltage decreases'],a:2});
+ExamQ('ex1',{title:'Question 1',parts:[
+ {label:'01',q:'Sketch and describe the I–V characteristic of a filament lamp for both positive and negative p.d., and explain its shape.',marks:3,ms:['Curve through the origin with decreasing gradient, symmetrical in the negative quadrant','As current increases, the temperature of the filament increases','Ions vibrate more, more collisions with electrons → resistance increases']}]});
+ExamQ('ex2',{title:'Question 2',parts:[
+ {label:'02',q:'State Ohm’s law.',marks:2,ms:['Current is (directly) proportional to the potential difference','provided physical conditions/temperature remain constant']}]});
+ExamQ('ex3',{title:'Question 3 · multiple choice',parts:[
+ {label:'03',q:'A silicon diode is connected in reverse bias to a 3 V supply. What is the current?',opts:['very small (almost zero)','the same as in forward bias','large','it depends on the diode colour'],a:0,marks:1,ms:['<b>A</b> — reverse-biased diode has a very high resistance.']}]});
+</script>
+</body>
+</html>
