@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atomic Structure 2 – Mass Spectra of Molecules</title>
+<style>
+:root{
+  --bg:#f6efe1; --card:#fffaf0; --ink:#3b2a1a; --brown:#6b4423; --brown2:#8b5a2b;
+  --accent:#b5651d; --soft:#ead9bd; --line:#d8c4a0; --good:#2f7d4a; --bad:#b03a2e; --blue:#2c4a7a;
+  --i1:#2c6e8f; --i2:#b5651d; --i3:#6a4c93; --i4:#2f7d4a;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Arial,sans-serif;font-size:19px;line-height:1.55}
+header{background:var(--brown);color:#fff8ec;padding:14px 24px}
+header h1{margin:0;font-family:Georgia,serif;font-size:28px;font-weight:normal}
+header p{margin:2px 0 0;opacity:.85;font-size:16px}
+nav{display:flex;flex-wrap:wrap;gap:6px;padding:10px 24px;background:var(--soft);border-bottom:2px solid var(--line);position:sticky;top:0;z-index:5}
+nav button{border:2px solid var(--brown2);background:var(--card);color:var(--brown);padding:7px 14px;border-radius:20px;font-size:16px;cursor:pointer}
+nav button.on{background:var(--brown2);color:#fff}
+main{max-width:1100px;margin:0 auto;padding:20px 24px 60px}
+.page{display:none}.page.on{display:block}
+h2{font-family:Georgia,serif;color:var(--brown);font-size:30px;margin:6px 0 12px;font-weight:normal}
+h3{color:var(--brown2);font-size:22px;margin:22px 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:14px 0;box-shadow:0 2px 0 var(--line)}
+.key{border-left:6px solid var(--accent)}
+.eq{font-family:Georgia,serif;font-size:23px;text-align:center;padding:10px;background:#fff;border:1px dashed var(--line);border-radius:8px;margin:10px 0}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 6px}
+.frac span:first-child{border-bottom:2px solid var(--ink);padding:0 6px}
+.row{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+.row>*{flex:1 1 380px}
+button.b{background:var(--brown2);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:17px;cursor:pointer;margin:4px 6px 4px 0}
+button.b.alt{background:var(--card);color:var(--brown);border:2px solid var(--brown2)}
+button.b.on,button.b.alt.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+button.b:disabled{opacity:.45;cursor:default}
+.check{background:#fdf6e6;border:2px solid var(--accent);border-radius:12px;padding:14px 18px;margin:18px 0}
+.check .tag{display:inline-block;background:var(--accent);color:#fff;font-size:14px;padding:2px 10px;border-radius:12px;margin-bottom:6px;letter-spacing:.5px}
+.check .src{font-size:14px;color:#8a7356;font-style:italic;margin-left:6px}
+input.ans{font-size:18px;padding:6px 10px;width:130px;border:2px solid var(--line);border-radius:6px}
+.fb{font-weight:600;margin-left:8px}
+.fb.ok{color:var(--good)}.fb.no{color:var(--bad)}
+.work{display:none;background:#fff;border-left:4px solid var(--brown2);padding:8px 14px;margin-top:8px;border-radius:4px}
+.work.on{display:block;animation:fade .4s}
+table.t{border-collapse:collapse;margin:8px 0;background:#fff}
+table.t th,table.t td{border:1px solid var(--line);padding:6px 14px;text-align:center}
+table.t th{background:var(--soft);color:var(--brown)}
+svg text{font-family:"Segoe UI",Arial,sans-serif}
+.readout{font-family:Consolas,monospace;background:#2b1d10;color:#ffe9c4;padding:10px 14px;border-radius:8px;font-size:17px;line-height:1.6;overflow-x:auto}
+label.s{display:block;font-weight:600;color:var(--brown);margin-top:8px}
+input[type=range]{width:100%}
+.stepper .st{display:none;margin:6px 0;padding:8px 14px;background:#fff;border-left:4px solid var(--accent);border-radius:4px}
+.stepper .st.on{display:block;animation:fade .45s}
+.stepper .st .why{font-size:15px;color:#7a6448;display:block}
+.alg{font-family:Georgia,serif;font-size:21px}
+.hl{background:#ffe2b8;border-radius:4px;padding:0 3px}
+.hx{color:var(--i3);font-weight:bold}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+.pager{display:flex;justify-content:space-between;margin-top:30px}
+.mcq button.opt{display:block;width:100%;text-align:left;margin:6px 0;padding:10px 14px;font-size:17px;border:2px solid var(--line);background:#fff;border-radius:8px;cursor:pointer;color:var(--ink)}
+.mcq button.opt.right{border-color:var(--good);background:#e6f4ea}
+.mcq button.opt.wrong{border-color:var(--bad);background:#fbe9e7}
+.mcq .exp{display:none;margin-top:6px;font-size:17px}
+.mcq.done .exp{display:block}
+.warn{background:#fbeee4;border-left:6px solid var(--bad);padding:10px 16px;border-radius:6px;margin:12px 0}
+.tip{background:#eef3f8;border-left:6px solid var(--blue);padding:10px 16px;border-radius:6px;margin:12px 0}
+.small{font-size:15px;color:#7a6448}
+.svgbox{background:#fff;border:1px solid var(--line);border-radius:10px;padding:6px}
+.svgbox svg{width:100%;height:auto;display:block}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+#score{font-size:20px;margin-top:14px}
+sup,sub{line-height:0}
+</style>
+</head>
+<body>
+<header>
+  <h1>Atomic Structure 2 – Mass Spectra of Molecules</h1>
+  <p>AQA A-level Chemistry · 3.1.1 Atomic structure walkthrough · Cl₂, Br₂ and molecules containing Cl or Br</p>
+</header>
+<nav id="nav"></nav>
+<main>
+
+<!-- ============ PAGE 1 ============ -->
+<section class="page" data-title="1. TOF recap">
+<h2>1. Quick recap – what a TOF spectrometer measures</h2>
+<div class="card key">
+  <ol>
+    <li><b>Ionisation.</b> With electron impact, a high-energy electron knocks an electron off each particle. A molecule loses one electron to form a <b>molecular ion</b>, M⁺:
+      <div class="eq">Cl₂(g) + e⁻ → Cl₂⁺(g) + 2e⁻</div></li>
+    <li><b>Acceleration.</b> All the ions are accelerated by an electric field so they have the <b>same kinetic energy</b>.</li>
+    <li><b>Ion drift.</b> KE = ½mv², so <b>lighter ions move faster</b> and reach the detector first. Heavier ions have a longer time of flight.</li>
+    <li><b>Detection.</b> Ions hit the detector and <b>gain an electron</b>, which makes a current. The <b>size of the current is proportional to the abundance</b> of that ion.</li>
+  </ol>
+  <p>The spectrum plots <b>abundance</b> (y-axis) against <b>m/z</b> (x-axis). For a 1+ ion, m/z is just the mass of the ion.</p>
+</div>
+
+<h3>Watch the ions fly</h3>
+<div class="card">
+  <p>Each pulse fires a mixture of molecular ions down the flight tube. Watch the order they arrive in, and how the spectrum builds up. <span class="small">(The speed differences are exaggerated so you can see them.)</span></p>
+  <div class="chips"><button class="b alt tofEl on" data-el="Cl">Cl₂ sample</button><button class="b alt tofEl" data-el="Br">Br₂ sample</button></div>
+  <canvas id="tof" width="1000" height="450" style="width:100%"></canvas>
+  <p><button class="b" id="tofFire">Fire a pulse ▶</button><button class="b alt" id="tofAuto">Auto-fire</button><button class="b alt" id="tofReset">Reset spectrum</button></p>
+  <div class="readout" id="tofOut"></div>
+</div>
+
+<div class="check"><span class="tag">CHECK 1</span><span class="src">AQA A-level Paper 1, June 2018, Q04.7</span>
+  <p>A TOF mass spectrum was obtained for a sample of barium that contains <sup>136</sup>Ba, <sup>137</sup>Ba and <sup>138</sup>Ba. The sample was ionised by electron impact. Identify the ion with the longest time of flight. <b>[1 mark]</b></p>
+  <button class="b alt sw" data-l="Show answer">Show answer</button>
+  <div class="work"><b><sup>138</sup>Ba⁺</b> – the heaviest ion moves slowest. You must give the <b>ion</b> with its charge, not just the atom.</div>
+</div>
+
+<div class="check"><span class="tag">CHECK 2</span><span class="src">AQA A-level Paper 1, June 2023, Q09.3</span>
+  <p>Explain how the ions are detected in the TOF mass spectrometer. State how the relative abundance of the ions is determined. <b>[2 marks]</b></p>
+  <button class="b alt sw" data-l="Show answer">Show answer</button>
+  <div class="work">Ions <b>hit the detector and gain an electron</b> (this makes a current).<br>The relative abundance is proportional to the <b>size of the current</b>.</div>
+</div>
+</section>
+
+<!-- ============ PAGE 2 ============ -->
+<section class="page" data-title="2. Why three peaks?">
+<h2>2. Why does Cl₂ give three molecular ion peaks?</h2>
+<div class="card key">
+  <p>Chlorine has two isotopes: <b><sup>35</sup>Cl and <sup>37</sup>Cl in a 3 : 1 ratio</b> (75% and 25%).</p>
+  <p>A Cl₂ molecule is made of <b>two</b> chlorine atoms, and each one can be either isotope. So there are three possible molecules:</p>
+  <table class="t">
+    <tr><th>Molecule</th><th>Mass of Cl₂⁺ (m/z)</th></tr>
+    <tr><td><sup>35</sup>Cl–<sup>35</sup>Cl</td><td>35 + 35 = <b>70</b></td></tr>
+    <tr><td><sup>35</sup>Cl–<sup>37</sup>Cl &nbsp;(or <sup>37</sup>Cl–<sup>35</sup>Cl)</td><td>35 + 37 = <b>72</b></td></tr>
+    <tr><td><sup>37</sup>Cl–<sup>37</sup>Cl</td><td>37 + 37 = <b>74</b></td></tr>
+  </table>
+  <p>The question is: <b>how tall is each peak?</b></p>
+</div>
+
+<h3>The 4 × 4 grid</h3>
+<div class="card">
+  <p>Imagine a bag of 4 chlorine atoms that matches the 3 : 1 ratio: three <sup>35</sup>Cl and one <sup>37</sup>Cl. Pick the first atom (row) and the second atom (column). Every square is one equally likely molecule. Hover over or tap a square, or click a peak button to count its squares.</p>
+  <div class="row">
+    <div style="flex:1 1 420px"><div class="svgbox"><svg id="grid" viewBox="0 0 460 460"></svg></div></div>
+    <div style="flex:1 1 300px">
+      <div class="chips"><button class="b alt gpk" data-m="70">m/z 70</button><button class="b alt gpk" data-m="72">m/z 72</button><button class="b alt gpk" data-m="74">m/z 74</button></div>
+      <div class="readout" id="gridOut">Pick a peak…</div>
+      <div class="tip" style="margin-top:12px"><b>The key idea:</b> the m/z 72 molecule can be made <b>two ways</b> – 35 then 37, or 37 then 35. That's why it gets 6 squares, not 3.</div>
+    </div>
+  </div>
+</div>
+
+<h3>Build molecules at random</h3>
+<div class="card">
+  <p>Now let the computer pick pairs of atoms at random from a huge sample of 75% <sup>35</sup>Cl and 25% <sup>37</sup>Cl. The more molecules you make, the closer the result gets to 9 : 6 : 1.</p>
+  <p><button class="b simB" data-n="10">+10 molecules</button><button class="b simB" data-n="100">+100</button><button class="b simB" data-n="1000">+1000</button><button class="b alt" id="simR">Reset</button></p>
+  <div class="svgbox"><svg id="sim" viewBox="0 0 900 300"></svg></div>
+  <div class="readout" id="simOut"></div>
+</div>
+</section>
+
+<!-- ============ PAGE 3 ============ -->
+<section class="page" data-title="3. Calculating the ratio">
+<h2>3. Calculating the peak ratio</h2>
+<div class="card key">
+  <p>The quick way is to multiply the <b>ratio numbers</b> (or fractions) of each isotope. For an element with two isotopes in the ratio <b>a : b</b>:</p>
+  <div class="eq">X₂ peaks: &nbsp; a × a &nbsp;:&nbsp; 2 × a × b &nbsp;:&nbsp; b × b</div>
+  <p>The middle peak is <b>doubled</b> because the mixed molecule can be made two ways.</p>
+</div>
+
+<div class="row">
+<div class="card stepper">
+  <h3 style="margin-top:0">Chlorine, 3 : 1</h3>
+  <div class="st"><span class="alg">m/z 70: &nbsp;3 × 3 = <b>9</b></span><span class="why">³⁵Cl–³⁵Cl</span></div>
+  <div class="st"><span class="alg">m/z 72: &nbsp;2 × 3 × 1 = <b>6</b></span><span class="why">³⁵Cl–³⁷Cl two ways</span></div>
+  <div class="st"><span class="alg">m/z 74: &nbsp;1 × 1 = <b>1</b></span><span class="why">³⁷Cl–³⁷Cl</span></div>
+  <div class="st"><span class="alg">Ratio 70 : 72 : 74 = <b>9 : 6 : 1</b></span><span class="why">Check: 9 + 6 + 1 = 16 = 4 × 4 squares in the grid.</span></div>
+  <button class="b nextst">Next step ▶</button><button class="b alt allst">Show all</button><button class="b alt resetst">Reset</button>
+</div>
+<div class="card stepper">
+  <h3 style="margin-top:0">Bromine, 1 : 1</h3>
+  <p class="small"><sup>79</sup>Br and <sup>81</sup>Br are in (almost exactly) equal abundance.</p>
+  <div class="st"><span class="alg">m/z 158: &nbsp;1 × 1 = <b>1</b></span><span class="why">⁷⁹Br–⁷⁹Br</span></div>
+  <div class="st"><span class="alg">m/z 160: &nbsp;2 × 1 × 1 = <b>2</b></span><span class="why">⁷⁹Br–⁸¹Br two ways</span></div>
+  <div class="st"><span class="alg">m/z 162: &nbsp;1 × 1 = <b>1</b></span><span class="why">⁸¹Br–⁸¹Br</span></div>
+  <div class="st"><span class="alg">Ratio 158 : 160 : 162 = <b>1 : 2 : 1</b></span></div>
+  <button class="b nextst">Next step ▶</button><button class="b alt allst">Show all</button><button class="b alt resetst">Reset</button>
+</div>
+</div>
+
+<h3>Peak predictor</h3>
+<div class="card">
+  <p>Set the isotope ratio for any element X with two isotopes. The X₂ molecular ion peaks are worked out for you.</p>
+  <div class="chips"><button class="b alt ppSet" data-a="3" data-b="1" data-m="35">Chlorine 3 : 1</button><button class="b alt ppSet" data-a="1" data-b="1" data-m="79">Bromine 1 : 1</button><button class="b alt ppSet" data-a="2" data-b="1" data-m="50">X 2 : 1</button></div>
+  <div class="row">
+    <div><label class="s">Lighter isotope mass: <span id="ppMv">35</span> (heavier is +2)</label><input type="range" id="ppM" min="10" max="127" value="35"></div>
+    <div><label class="s">Ratio <span id="ppAv">3</span> : <span id="ppBv">1</span></label><span class="small">lighter</span><input type="range" id="ppA" min="1" max="9" value="3"><span class="small">heavier</span><input type="range" id="ppB" min="1" max="9" value="1"></div>
+  </div>
+  <div class="svgbox"><svg id="pp" viewBox="0 0 900 280"></svg></div>
+  <div class="readout" id="ppOut"></div>
+</div>
+<div class="tip">In a real spectrum of Cl₂ you will also see small peaks at m/z 35 and 37 (in a 3 : 1 ratio) from Cl⁺ ions, because some molecules break apart. The <b>molecular ion</b> peaks are the ones at 70, 72 and 74.</div>
+
+<div class="check"><span class="tag">CHECK 3</span><span class="src">AQA AS Paper 1, June 2017, Q13</span>
+  <p>Chlorine exists as two isotopes <sup>35</sup>Cl and <sup>37</sup>Cl in the ratio 3 : 1. Which statement about peaks in the mass spectrum of Cl₂ is correct? <b>[1 mark]</b></p>
+  <div class="mcq" id="mc3"></div>
+</div>
+
+<div class="check"><span class="tag">CHECK 4</span><span class="src">AQA AS Paper 1, June 2024, Q06.3</span>
+  <p>Bromine exists as two isotopes, <sup>79</sup>Br and <sup>81</sup>Br, which exist in equal abundance. The spectrum already shows a peak at m/z 158. Complete the spectrum: label each axis and add any further peaks. <b>[3 marks]</b></p>
+  <div class="row">
+    <div style="flex:1 1 520px"><div class="svgbox"><svg id="drw" viewBox="0 0 620 330"></svg></div></div>
+    <div style="flex:1 1 280px">
+      <label class="s">y-axis label</label><select id="drY" style="font-size:17px;padding:4px"><option value="">— choose —</option><option value="t">time of flight / μs</option><option value="a">relative abundance / %</option><option value="m">mass / g</option></select>
+      <label class="s">x-axis label</label><select id="drX" style="font-size:17px;padding:4px"><option value="">— choose —</option><option value="n">number of neutrons</option><option value="ke">kinetic energy</option><option value="mz">m/z</option></select>
+      <p class="small">Click or tap on the grid to set the height of a peak at 158–162. Click the same height again to remove it.</p>
+      <button class="b" id="drChk">Mark my spectrum</button><button class="b alt" id="drClr">Clear</button>
+      <div id="drOut" style="margin-top:8px"></div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ============ PAGE 4 ============ -->
+<section class="page" data-title="4. Other molecules">
+<h2>4. Molecules containing Cl or Br atoms</h2>
+<div class="card key">
+  <p>The same idea works for any molecule. Assume the other atoms are their main isotopes (<sup>12</sup>C, <sup>1</sup>H, <sup>16</sup>O). Then only the halogen atoms give different masses.</p>
+  <table class="t" style="width:100%">
+    <tr><th>Halogen atoms in the molecule</th><th>Molecular ion peaks</th><th>Ratio</th><th>Example</th></tr>
+    <tr><td>one Cl</td><td>M and M+2</td><td><b>3 : 1</b></td><td>CH₃Cl: 50 and 52</td></tr>
+    <tr><td>one Br</td><td>M and M+2</td><td><b>1 : 1</b></td><td>CH₃Br: 94 and 96</td></tr>
+    <tr><td>two Cl</td><td>M, M+2 and M+4</td><td><b>9 : 6 : 1</b></td><td>CH₂Cl₂: 84, 86 and 88</td></tr>
+    <tr><td>two Br</td><td>M, M+2 and M+4</td><td><b>1 : 2 : 1</b></td><td>CH₂Br₂: 172, 174 and 176</td></tr>
+  </table>
+  <p>"M" here means the molecular ion containing only the lighter halogen isotope.</p>
+</div>
+
+<h3>Worked example – one chlorine atom</h3>
+<div class="card stepper">
+  <p class="small">AQA AS Paper 2, June 2018, Q06.2</p>
+  <p>Compound A (3-chloro-2,4-dimethylpentane, C₇H₁₅Cl) has M<sub>r</sub> = 134.5. The main isotopes of hydrogen and carbon are <sup>1</sup>H and <sup>12</sup>C. Chlorine is 75% <sup>35</sup>Cl and 25% <sup>37</sup>Cl. Draw the peaks for the main molecular ions. <b>[2 marks]</b></p>
+  <div class="st"><span class="alg">C₇H₁₅ part = (7 × 12) + (15 × 1) = 99</span><span class="why">Use whole-number masses of the main isotopes.</span></div>
+  <div class="st"><span class="alg">with <sup>35</sup>Cl: 99 + 35 = <b>134</b> &nbsp;·&nbsp; with <sup>37</sup>Cl: 99 + 37 = <b>136</b></span><span class="why">134.5 is the M<sub>r</sub> using A<sub>r</sub>(Cl) = 35.5. No ion actually has a mass of 134.5!</span></div>
+  <div class="st"><span class="alg">Only one Cl atom → peak heights 134 : 136 = <b>3 : 1</b></span><span class="why">Mark scheme: lines at 134 and 136 (M1), and the line at 134 three times as high as the one at 136 (M2).</span></div>
+  <div class="st"><div class="svgbox" style="max-width:520px"><svg id="exA" viewBox="0 0 520 230"></svg></div></div>
+  <button class="b nextst">Next step ▶</button><button class="b alt allst">Show all</button><button class="b alt resetst">Reset</button>
+</div>
+<div class="warn">With <b>one</b> halogen atom there are only <b>two</b> peaks. Students often draw the Cl₂ pattern (three peaks, 9 : 6 : 1) by mistake. Count the halogen atoms first.</div>
+
+<h3>Working backwards</h3>
+<div class="card stepper">
+  <p>A Cl₂ spectrum from a different sample has peaks at 70, 72 and 74. The peaks at 70 and 74 are in the ratio 16 : 1. Find the ratio of <sup>35</sup>Cl : <sup>37</sup>Cl, and the relative height of the 72 peak.</p>
+  <div class="st"><span class="alg">70 peak = a × a = 16 → a = 4 &nbsp;·&nbsp; 74 peak = b × b = 1 → b = 1</span><span class="why">The outside peaks are squares, so take the square root.</span></div>
+  <div class="st"><span class="alg"><sup>35</sup>Cl : <sup>37</sup>Cl = <b>4 : 1</b></span></div>
+  <div class="st"><span class="alg">72 peak = 2 × 4 × 1 = 8 &nbsp;→&nbsp; ratio 70 : 72 : 74 = <b>16 : 8 : 1</b></span></div>
+  <button class="b nextst">Next step ▶</button><button class="b alt allst">Show all</button><button class="b alt resetst">Reset</button>
+</div>
+
+<div class="check"><span class="tag">CHECK 5</span><span class="src">Practice</span>
+  <p>Element X has two isotopes, <sup>10</sup>X and <sup>11</sup>X, in the ratio 2 : 1. Predict the m/z values and the ratio of the X₂⁺ peaks.</p>
+  <p>Ratio = 4 : <input class="ans" style="width:70px" id="c5"> : 1 <button class="b" data-chk="c5" data-v="4" data-t="0">Check</button><span class="fb" id="c5f"></span></p>
+  <button class="b alt sw">Show working</button>
+  <div class="work">m/z 20, 21 and 22.<br>20: 2 × 2 = 4 &nbsp;·&nbsp; 21: 2 × 2 × 1 = 4 &nbsp;·&nbsp; 22: 1 × 1 = 1 &nbsp;→&nbsp; <b>4 : 4 : 1</b></div>
+</div>
+
+<div class="check"><span class="tag">CHECK 6</span><span class="src">Practice</span>
+  <p>Dichloromethane, CH₂Cl₂, is analysed (<sup>12</sup>C, <sup>1</sup>H; Cl is 3 : 1 <sup>35</sup>Cl : <sup>37</sup>Cl).</p>
+  <p>(a) m/z of the <b>heaviest</b> molecular ion: <input class="ans" style="width:90px" id="c6a"> <button class="b" data-chk="c6a" data-v="88" data-t="0">Check</button><span class="fb" id="c6af"></span></p>
+  <p>(b) Height of the m/z 86 peak if the m/z 84 peak has a height of 90: <input class="ans" style="width:90px" id="c6b"> <button class="b" data-chk="c6b" data-v="60" data-t="0">Check</button><span class="fb" id="c6bf"></span></p>
+  <button class="b alt sw">Show working</button>
+  <div class="work">(a) 12 + 2 + 37 + 37 = <b>88</b><br>(b) Two Cl atoms → 84 : 86 : 88 = 9 : 6 : 1. If 9 → 90, then 1 part = 10, so 86 = 6 × 10 = <b>60</b></div>
+</div>
+
+<div class="check"><span class="tag">CHECK 7</span><span class="src">Practice</span>
+  <p>Bromomethane, CH₃Br, has <sup>79</sup>Br and <sup>81</sup>Br in a 1 : 1 ratio. How many molecular ion peaks are there, and what is the m/z of the lighter one?</p>
+  <p>Number of peaks: <input class="ans" style="width:70px" id="c7a"> <button class="b" data-chk="c7a" data-v="2" data-t="0">Check</button><span class="fb" id="c7af"></span>
+  &nbsp; Lighter m/z: <input class="ans" style="width:80px" id="c7b"> <button class="b" data-chk="c7b" data-v="94" data-t="0">Check</button><span class="fb" id="c7bf"></span></p>
+  <button class="b alt sw">Show working</button>
+  <div class="work">One Br atom → <b>2</b> peaks (M and M+2) in a 1 : 1 ratio.<br>12 + 3 + 79 = <b>94</b> and 12 + 3 + 81 = 96</div>
+</div>
+</section>
+
+<!-- ============ PAGE 5 ============ -->
+<section class="page" data-title="5. Quiz">
+<h2>5. Quick quiz</h2>
+<p>Ten questions on everything in this walkthrough.</p>
+<div id="quiz"></div>
+<div id="score"></div>
+<button class="b alt" onclick="buildQuiz(Q)">Reset quiz</button>
+</section>
+
+<div class="pager"><button class="b alt" id="prevB">◀ Previous</button><button class="b" id="nextB">Next ▶</button></div>
+</main>
+
+<script>
+/* ---------- navigation ---------- */
+const pages=[...document.querySelectorAll('.page')];
+const nav=document.getElementById('nav');
+pages.forEach((p,i)=>{const b=document.createElement('button');b.textContent=p.dataset.title;b.onclick=()=>go(i);nav.appendChild(b)});
+let cur=0;
+function go(i){cur=Math.max(0,Math.min(pages.length-1,i));
+ pages.forEach((p,j)=>p.classList.toggle('on',j===cur));
+ [...nav.children].forEach((b,j)=>b.classList.toggle('on',j===cur));
+ document.getElementById('prevB').disabled=cur===0;
+ document.getElementById('nextB').disabled=cur===pages.length-1;
+ window.scrollTo(0,0);
+ if(window.onPage)window.onPage(cur);}
+document.getElementById('prevB').onclick=()=>go(cur-1);
+document.getElementById('nextB').onclick=()=>go(cur+1);
+
+/* ---------- numeric checks, working, steppers ---------- */
+document.addEventListener('click',e=>{
+ const t=e.target;
+ if(t.dataset.chk){const inp=document.getElementById(t.dataset.chk),fb=document.getElementById(t.dataset.chk+'f');
+  const v=parseFloat(inp.value.replace(',','.').replace('%',''));const ans=parseFloat(t.dataset.v),tol=parseFloat(t.dataset.t||0.05);
+  if(isNaN(v)){fb.textContent='Enter a number';fb.className='fb no';return}
+  if(Math.abs(v-ans)<=tol+1e-9){fb.textContent='✓ Correct';fb.className='fb ok';inp.style.borderColor='var(--good)'}
+  else{fb.textContent='✗ Not quite – try again, or show the working';fb.className='fb no';inp.style.borderColor='var(--bad)'}}
+ if(t.classList.contains('sw')){const ns=t.nextElementSibling,w=ns&&ns.classList.contains('work')?ns:t.parentElement.querySelector('.work');w.classList.toggle('on');t.textContent=w.classList.contains('on')?'Hide working':(t.dataset.l||'Show working')}
+ if(t.classList.contains('nextst')){const s=t.closest('.stepper');const hid=[...s.querySelectorAll('.st:not(.on)')];if(hid.length){hid[0].classList.add('on')}
+  if(hid.length<=1){t.disabled=true}}
+ if(t.classList.contains('allst')){const s=t.closest('.stepper');s.querySelectorAll('.st').forEach(x=>x.classList.add('on'));s.querySelector('.nextst').disabled=true}
+ if(t.classList.contains('resetst')){const s=t.closest('.stepper');s.querySelectorAll('.st').forEach(x=>x.classList.remove('on'));s.querySelector('.nextst').disabled=false}
+});
+
+/* ---------- quiz ---------- */
+let qs=0,qa=0;
+function buildQuiz(Q){const w=document.getElementById('quiz');w.innerHTML='';qs=0;qa=0;
+ Q.forEach((q,i)=>{const c=document.createElement('div');c.className='card mcq';c.innerHTML=`<b>Q${i+1}.</b> ${q[0]}`;
+  q[1].forEach((o,j)=>{const b=document.createElement('button');b.className='opt';b.innerHTML=o;
+   b.onclick=()=>{if(c.classList.contains('done'))return;c.classList.add('done');qa++;
+    if(j===q[2]){b.classList.add('right');qs++}else{b.classList.add('wrong');c.querySelectorAll('.opt')[q[2]].classList.add('right')}score(Q)};c.appendChild(b)});
+  const e=document.createElement('div');e.className='exp';e.innerHTML='💡 '+q[3];c.appendChild(e);w.appendChild(c)});score(Q)}
+function score(Q){document.getElementById('score').innerHTML=`Score: <b>${qs}</b> / ${Q.length}`+(qa===Q.length?(qs>=Q.length-1?' – excellent!':qs>=Q.length-3?' – good, review the ones you missed':' – go back through the walkthrough and try again'):'')}
+const NS='http://www.w3.org/2000/svg';
+function E(tag,attrs,parent){const el=document.createElementNS(NS,tag);for(const k in attrs)el.setAttribute(k,attrs[k]);if(parent)parent.appendChild(el);return el}
+const COL={70:'#2c6e8f',72:'#6a4c93',74:'#b5651d',158:'#2c6e8f',160:'#6a4c93',162:'#b5651d'};
+const TOFSETS={Cl:{lo:35,p:0.75,k:6,name:'Cl₂',exp:'9 : 6 : 1'},Br:{lo:79,p:0.5,k:14,name:'Br₂',exp:'1 : 2 : 1'}};
+/* ---------- page 1: TOF animation ---------- */
+const cv=document.getElementById('tof'),cx=cv.getContext('2d');
+let tofEl='Cl',ions=[],counts={},auto=null,arrivals=[],pulses=0;
+function tofReset(){const s=TOFSETS[tofEl];counts={};[0,2,4].forEach(d=>counts[2*s.lo+d]=0);ions=[];arrivals=[];pulses=0;tofText()}
+function pickMol(s){return s.lo*2+(Math.random()<s.p?0:2)+(Math.random()<s.p?0:2)}
+function fire(){const s=TOFSETS[tofEl];pulses++;const lightest=2*s.lo;
+ for(let i=0;i<16;i++){const m=pickMol(s);ions.push({m,x:95+Math.random()*12,y:58+Math.random()*80,v:3.2*Math.pow(lightest/m,s.k),acc:true,p:pulses})}}
+function tofText(){const s=TOFSETS[tofEl],ks=Object.keys(counts).map(Number).sort((a,b)=>a-b),mn=Math.min(...ks.map(k=>counts[k]).filter(v=>v>0));
+ let t=`Ions detected: `+ks.map(k=>`m/z ${k}: ${counts[k]}`).join(' · ');
+ if(isFinite(mn))t+=`<br>Ratio so far ≈ `+ks.map(k=>(counts[k]/mn).toFixed(1)).join(' : ')+` &nbsp;(expected ${s.exp})`;
+ if(arrivals.length)t+=`<br>Arrival order in the first pulse: `+[...new Set(arrivals)].map(m=>'m/z '+m).join(' → ')+' – lightest first.';
+ document.getElementById('tofOut').innerHTML=t}
+function tofLoop(){const W=1000,s=TOFSETS[tofEl];cx.clearRect(0,0,W,450);
+ // tube
+ cx.fillStyle='#fff8ec';cx.fillRect(40,45,880,105);cx.strokeStyle='#8b5a2b';cx.lineWidth=2;cx.strokeRect(40,45,880,105);
+ cx.fillStyle='#ead9bd';cx.fillRect(40,45,50,105);cx.fillStyle='#f3e3c8';cx.fillRect(90,45,70,105);
+ cx.fillStyle='#6b4423';cx.fillRect(900,45,20,105);
+ cx.font='14px Segoe UI, Arial';cx.fillStyle='#6b4423';cx.textAlign='center';
+ cx.fillText('ionisation',65,38);cx.fillText('acceleration',125,168);cx.fillText('flight tube (drift region)',530,38);cx.fillText('detector',910,38);
+ // ions
+ ions.forEach(o=>{o.x+=o.v;if(o.x>=900&&!o.done){o.done=true;counts[o.m]++;if(o.p===1)arrivals.push(o.m);tofText()}});
+ ions=ions.filter(o=>!o.done);
+ ions.forEach(o=>{cx.beginPath();cx.arc(o.x,o.y,7,0,7);cx.fillStyle=COL[o.m];cx.fill();cx.fillStyle='#3b2a1a';cx.font='11px Segoe UI';cx.fillText(o.m,o.x,o.y-10)});
+ // spectrum
+ const X0=110,X1=900,Y0=400,Y1=200,lo=2*s.lo-4,hi=2*s.lo+8,X=m=>X0+(m-lo)/(hi-lo)*(X1-X0);
+ cx.strokeStyle='#3b2a1a';cx.lineWidth=1.5;cx.beginPath();cx.moveTo(X0,Y1-10);cx.lineTo(X0,Y0);cx.lineTo(X1,Y0);cx.stroke();
+ cx.fillStyle='#3b2a1a';cx.font='13px Segoe UI';cx.textAlign='center';
+ for(let m=lo;m<=hi;m+=2){cx.fillText(m,X(m),Y0+18)}
+ cx.fillText('m/z',X1-10,Y0+38);cx.save();cx.translate(X0-50,(Y0+Y1)/2);cx.rotate(-Math.PI/2);cx.fillText('relative abundance',0,0);cx.restore();
+ const mx=Math.max(1,...Object.values(counts));
+ Object.keys(counts).forEach(k=>{const h=counts[k]/mx*(Y0-Y1);cx.fillStyle=COL[k];cx.fillRect(X(+k)-6,Y0-h,12,h);
+  if(counts[k]){cx.fillStyle='#3b2a1a';cx.fillText(counts[k],X(+k),Y0-h-6)}});
+ requestAnimationFrame(tofLoop)}
+document.getElementById('tofFire').onclick=fire;
+document.getElementById('tofReset').onclick=tofReset;
+document.getElementById('tofAuto').onclick=e=>{if(auto){clearInterval(auto);auto=null;e.target.textContent='Auto-fire'}else{fire();auto=setInterval(fire,1400);e.target.textContent='Stop'}};
+document.querySelectorAll('.tofEl').forEach(b=>b.onclick=()=>{tofEl=b.dataset.el;document.querySelectorAll('.tofEl').forEach(x=>x.classList.toggle('on',x===b));tofReset()});
+tofReset();tofLoop();
+
+/* ---------- page 2: grid ---------- */
+const g=document.getElementById('grid'),atoms=[35,35,35,37],cells=[];
+const sz=95,o0=70;
+atoms.forEach((a,i)=>{const t1=E('text',{x:o0+i*sz+sz/2,y:50,'text-anchor':'middle','font-size':18,fill:a===35?'#2f7d4a':'#b03a2e','font-weight':'bold'},g);t1.innerHTML=`<tspan font-size='12' dy='-7'>${a}</tspan><tspan dy='7'>Cl</tspan>`;
+ const t2=E('text',{x:35,y:o0+i*sz+sz/2+6,'text-anchor':'middle','font-size':18,fill:a===35?'#2f7d4a':'#b03a2e','font-weight':'bold'},g);t2.innerHTML=`<tspan font-size='12' dy='-7'>${a}</tspan><tspan dy='7'>Cl</tspan>`});
+E('text',{x:o0+2*sz,y:20,'text-anchor':'middle','font-size':14,fill:'#7a6448'},g).textContent='second atom →';
+atoms.forEach((a,i)=>atoms.forEach((b,j)=>{const m=a+b,r=E('rect',{x:o0+j*sz+3,y:o0+i*sz+3,width:sz-6,height:sz-6,rx:8,fill:COL[m],opacity:.85,style:'cursor:pointer;transition:opacity .2s'},g);
+ const t=E('text',{x:o0+j*sz+sz/2,y:o0+i*sz+sz/2+7,'text-anchor':'middle','font-size':20,fill:'#fff','font-weight':'bold','pointer-events':'none'},g);t.textContent=m;
+ cells.push({r,m});r.onmouseenter=()=>gridHi(m);r.onclick=()=>gridHi(m)}));
+const GTXT={70:'³⁵Cl–³⁵Cl',72:'³⁵Cl–³⁷Cl or ³⁷Cl–³⁵Cl',74:'³⁷Cl–³⁷Cl'};
+function gridHi(m){cells.forEach(c=>c.r.setAttribute('opacity',c.m===m?1:.18));const n=cells.filter(c=>c.m===m).length;
+ document.querySelectorAll('.gpk').forEach(b=>b.classList.toggle('on',+b.dataset.m===m));
+ document.getElementById('gridOut').innerHTML=`m/z ${m}: ${GTXT[m]}<br>${n} of 16 squares → ${n}/16 = ${(n/16*100).toFixed(2)}%<br>Whole grid: 9 : 6 : 1`}
+g.onmouseleave=()=>cells.forEach(c=>c.r.setAttribute('opacity',.85));
+document.querySelectorAll('.gpk').forEach(b=>b.onclick=()=>gridHi(+b.dataset.m));
+
+/* ---------- page 2: random sim ---------- */
+let sim={70:0,72:0,74:0};
+function simDraw(){const svg=document.getElementById('sim');svg.innerHTML='';const tot=sim[70]+sim[72]+sim[74];
+ const Y=p=>250-p/70*220;E('line',{x1:90,y1:250,x2:860,y2:250,stroke:'#3b2a1a'},svg);E('line',{x1:90,y1:250,x2:90,y2:20,stroke:'#3b2a1a'},svg);
+ [0,20,40,60].forEach(p=>{E('text',{x:80,y:Y(p)+5,'text-anchor':'end','font-size':13,fill:'#3b2a1a'},svg).textContent=p+'%';E('line',{x1:90,y1:Y(p),x2:860,y2:Y(p),stroke:'#eee'},svg)});
+ const pred={70:56.25,72:37.5,74:6.25};
+ [70,72,74].forEach((m,i)=>{const x=200+i*240,p=tot?sim[m]/tot*100:0;
+  E('rect',{x:x-45,y:Y(p),width:90,height:250-Y(p),fill:COL[m],rx:3},svg);
+  E('line',{x1:x-60,x2:x+60,y1:Y(pred[m]),y2:Y(pred[m]),stroke:'#b03a2e','stroke-width':3,'stroke-dasharray':'8 5'},svg);
+  E('text',{x,y:275,'text-anchor':'middle','font-size':16,fill:'#3b2a1a'},svg).textContent='m/z '+m;
+  E('text',{x,y:Y(p)-8,'text-anchor':'middle','font-size':15,fill:COL[m],'font-weight':'bold'},svg).textContent=p.toFixed(1)+'%'});
+ E('text',{x:860,y:30,'text-anchor':'end','font-size':14,fill:'#b03a2e'},svg).textContent='- - - predicted 9 : 6 : 1';
+ document.getElementById('simOut').innerHTML=tot?`${tot} molecules: 70 → ${sim[70]}, 72 → ${sim[72]}, 74 → ${sim[74]}<br>Divide by the m/z 74 count: ${sim[74]?(sim[70]/sim[74]).toFixed(1)+' : '+(sim[72]/sim[74]).toFixed(1)+' : 1':'(no 74 yet)'} &nbsp; (predicted 9 : 6 : 1)`:'Click a button to start making molecules.'}
+document.querySelectorAll('.simB').forEach(b=>b.onclick=()=>{for(let i=0;i<+b.dataset.n;i++)sim[pickMol(TOFSETS.Cl)]++;simDraw()});
+document.getElementById('simR').onclick=()=>{sim={70:0,72:0,74:0};simDraw()};simDraw();
+
+/* ---------- page 3: predictor ---------- */
+const ppM=document.getElementById('ppM'),ppA=document.getElementById('ppA'),ppB=document.getElementById('ppB');
+function ppDraw(){const M=+ppM.value,a=+ppA.value,b=+ppB.value;ppMv.textContent=M;ppAv.textContent=a;ppBv.textContent=b;
+ const hs=[a*a,2*a*b,b*b],mx=Math.max(...hs),ms=[2*M,2*M+2,2*M+4],svg=document.getElementById('pp');svg.innerHTML='';
+ const X=m=>100+(m-(2*M-4))/12*740,Y=v=>230-v*190;
+ E('line',{x1:90,y1:230,x2:860,y2:230,stroke:'#3b2a1a'},svg);E('line',{x1:90,y1:230,x2:90,y2:25,stroke:'#3b2a1a'},svg);
+ for(let m=2*M-4;m<=2*M+8;m+=2)E('text',{x:X(m),y:250,'text-anchor':'middle','font-size':14,fill:'#3b2a1a'},svg).textContent=m;
+ E('text',{x:860,y:270,'text-anchor':'end','font-size':14,fill:'#7a6448'},svg).textContent='m/z';
+ const cs=['#2c6e8f','#6a4c93','#b5651d'];
+ hs.forEach((h,i)=>{E('rect',{x:X(ms[i])-7,y:Y(h/mx),width:14,height:230-Y(h/mx),fill:cs[i],style:'transition:all .4s'},svg);
+  E('text',{x:X(ms[i]),y:Y(h/mx)-8,'text-anchor':'middle','font-size':16,'font-weight':'bold',fill:cs[i]},svg).textContent=h});
+ document.getElementById('ppOut').innerHTML=`Isotopes ${M} : ${M+2} = ${a} : ${b}<br>m/z ${ms[0]}: ${a} × ${a} = ${hs[0]} &nbsp;·&nbsp; m/z ${ms[1]}: 2 × ${a} × ${b} = ${hs[1]} &nbsp;·&nbsp; m/z ${ms[2]}: ${b} × ${b} = ${hs[2]}<br>Peak ratio = <b>${hs.join(' : ')}</b>`}
+[ppM,ppA,ppB].forEach(s=>s.oninput=()=>{document.querySelectorAll('.ppSet').forEach(x=>x.classList.remove('on'));ppDraw()});
+document.querySelectorAll('.ppSet').forEach(b=>b.onclick=()=>{ppA.value=b.dataset.a;ppB.value=b.dataset.b;ppM.value=b.dataset.m;document.querySelectorAll('.ppSet').forEach(x=>x.classList.toggle('on',x===b));ppDraw()});
+document.querySelector('.ppSet').click();
+
+/* ---------- MCQ in check 3 ---------- */
+function mkMCQ(id,q){const c=document.getElementById(id);c.innerHTML='';
+ q[1].forEach((o,j)=>{const b=document.createElement('button');b.className='opt';b.innerHTML=o;b.onclick=()=>{if(c.classList.contains('done'))return;c.classList.add('done');
+  b.classList.add(j===q[2]?'right':'wrong');c.querySelectorAll('.opt')[q[2]].classList.add('right')};c.appendChild(b)});
+ const e=document.createElement('div');e.className='exp';e.innerHTML='💡 '+q[3];c.appendChild(e)}
+mkMCQ('mc3',['',['<b>A</b> Peaks at m/z = 70 and 74 in the ratio 3 : 1','<b>B</b> Peaks at m/z = 70, 72 and 74 in the ratio 9 : 6 : 1','<b>C</b> Peaks at m/z = 70, 72 and 74 in the ratio 9 : 3 : 1','<b>D</b> Peaks at m/z = 70 and 72 in the ratio 3 : 1'],1,'Answer <b>B</b>. C is the trap: it forgets that ³⁵Cl–³⁷Cl can be formed two ways (2 × 3 × 1 = 6).']);
+
+/* ---------- check 4: draw Br2 spectrum ---------- */
+const drw=document.getElementById('drw');let drPk={};
+const DX=m=>70+(m-148)/26*520,DY=v=>280-v/100*250;
+function drDraw(){drw.innerHTML='';
+ for(let m=148;m<=174;m++)E('line',{x1:DX(m),y1:30,x2:DX(m),y2:280,stroke:m%2?'#f1eadf':'#e2d6c2'},drw);
+ for(let v=0;v<=100;v+=5)E('line',{x1:70,y1:DY(v),x2:590,y2:DY(v),stroke:v%25?'#f1eadf':'#d8c4a0'},drw);
+ E('line',{x1:70,y1:280,x2:590,y2:280,stroke:'#3b2a1a','stroke-width':1.5},drw);E('line',{x1:70,y1:280,x2:70,y2:30,stroke:'#3b2a1a','stroke-width':1.5},drw);
+ for(let m=148;m<=174;m+=2)E('text',{x:DX(m),y:298,'text-anchor':'middle','font-size':12,fill:'#3b2a1a'},drw).textContent=m;
+ [0,25,50,75,100].forEach(v=>E('text',{x:62,y:DY(v)+4,'text-anchor':'end','font-size':12,fill:'#3b2a1a'},drw).textContent=v);
+ const yl={t:'time of flight / μs',a:'relative abundance / %',m:'mass / g'}[drY.value],xl={n:'number of neutrons',ke:'kinetic energy',mz:'m/z'}[drX.value];
+ const ty=E('text',{x:18,y:155,'text-anchor':'middle','font-size':14,fill:'#b5651d',transform:'rotate(-90 18 155)'},drw);ty.textContent=yl||'(y-axis label?)';
+ E('text',{x:330,y:322,'text-anchor':'middle','font-size':14,fill:'#b5651d'},drw).textContent=xl||'(x-axis label?)';
+ E('rect',{x:DX(158)-3,y:DY(25),width:6,height:280-DY(25),fill:'#3b2a1a'},drw);
+ Object.entries(drPk).forEach(([m,v])=>E('rect',{x:DX(+m)-3,y:DY(v),width:6,height:280-DY(v),fill:'#b5651d'},drw));
+ const hit=E('rect',{x:70,y:30,width:520,height:250,fill:'transparent',style:'cursor:crosshair'},drw);
+ hit.onclick=ev=>{const pt=drw.createSVGPoint();pt.x=ev.clientX;pt.y=ev.clientY;const p=pt.matrixTransform(drw.getScreenCTM().inverse());
+  const m=Math.round(148+(p.x-70)/520*26),v=Math.max(0,Math.min(100,Math.round((280-p.y)/250*100/5)*5));if(m===158)return;
+  if(drPk[m]===v||v===0)delete drPk[m];else drPk[m]=v;drDraw()}}
+const drY=document.getElementById('drY'),drX=document.getElementById('drX');drY.onchange=drDraw;drX.onchange=drDraw;
+document.getElementById('drClr').onclick=()=>{drPk={};drY.value='';drX.value='';document.getElementById('drOut').innerHTML='';drDraw()};
+document.getElementById('drChk').onclick=()=>{let s=0,f=[];
+ if(drY.value==='a'&&drX.value==='mz'){s++;f.push('✓ M1 axes labelled correctly')}else f.push('✗ M1: y-axis is (relative) abundance, x-axis is m/z');
+ const ks=Object.keys(drPk).map(Number).sort((a,b)=>a-b);
+ if(ks.length===2&&ks[0]===160&&ks[1]===162){s++;f.push('✓ M2 extra peaks at 160 and 162')}else f.push('✗ M2: you need exactly two more peaks, at m/z 160 and 162');
+ if(drPk[160]===50&&drPk[162]===25){s++;f.push('✓ M3 heights in the ratio 1 : 2 : 1')}else f.push('✗ M3: heights should be 158 : 160 : 162 = 1 : 2 : 1 (25, 50, 25)');
+ document.getElementById('drOut').innerHTML=`<b>${s} / 3</b><br>`+f.join('<br>')};
+drDraw();
+
+/* ---------- page 4: example A spectrum ---------- */
+(function(){const s=document.getElementById('exA'),X=m=>60+(m-128)/14*430,Y=v=>190-v/100*165;
+ E('line',{x1:55,y1:190,x2:500,y2:190,stroke:'#3b2a1a'},s);E('line',{x1:55,y1:190,x2:55,y2:15,stroke:'#3b2a1a'},s);
+ for(let m=128;m<=142;m+=2)E('text',{x:X(m),y:208,'text-anchor':'middle','font-size':13,fill:'#3b2a1a'},s).textContent=m;
+ E('text',{x:500,y:224,'text-anchor':'end','font-size':13,fill:'#7a6448'},s).textContent='m/z';
+ const ty=E('text',{x:20,y:105,'text-anchor':'middle','font-size':13,fill:'#7a6448',transform:'rotate(-90 20 105)'},s);ty.textContent='relative abundance';
+ [[134,75,'#2c6e8f'],[136,25,'#b5651d']].forEach(([m,v,c])=>{E('rect',{x:X(m)-4,y:Y(v),width:8,height:190-Y(v),fill:c},s);E('text',{x:X(m),y:Y(v)-6,'text-anchor':'middle','font-size':14,fill:c,'font-weight':'bold'},s).textContent=v===75?'3':'1'})})();
+
+/* ---------- quiz ---------- */
+const Q=[
+ ["Which molecular ion from a sample of Cl₂ reaches the detector first?",["³⁷Cl–³⁷Cl⁺","³⁵Cl–³⁷Cl⁺","³⁵Cl–³⁵Cl⁺","They all arrive together"],2,"All ions have the same kinetic energy, so the lightest (m/z 70) moves fastest and arrives first."],
+ ["Why do lighter ions travel faster in the flight tube?",["They have a bigger charge","All ions have the same kinetic energy, so a smaller mass means a bigger speed","They are accelerated by a magnetic field","They gain more electrons"],1,"KE = ½mv². Same KE and smaller m → larger v."],
+ ["Chlorine is 3 : 1 ³⁵Cl : ³⁷Cl. What is the ratio of the Cl₂⁺ peaks at m/z 70 : 72 : 74?",["3 : 2 : 1","9 : 3 : 1","9 : 6 : 1","3 : 1 : 1"],2,"3 × 3 : 2 × 3 × 1 : 1 × 1 = 9 : 6 : 1"],
+ ["Why is the m/z 72 peak for Cl₂ given 2 × 3 × 1 and not just 3 × 1?",["Because there are two chlorine atoms","Because ³⁵Cl–³⁷Cl can be made in two ways (35 then 37, or 37 then 35)","Because ³⁷Cl is twice as heavy","Because the ion has a 2+ charge"],1,"The mixed molecule can be formed two ways, so its probability is doubled."],
+ ["⁷⁹Br and ⁸¹Br are in equal abundance. Which describes the molecular ion peaks for Br₂?",["158 and 162 in a 1 : 1 ratio","158, 160 and 162 in a 1 : 1 : 1 ratio","158, 160 and 162 in a 1 : 2 : 1 ratio","160 only"],2,"1 × 1 : 2 × 1 × 1 : 1 × 1 = 1 : 2 : 1 (AQA AS June 2024)."],
+ ["Bromoethane, C₂H₅Br, is analysed. Which molecular ion peaks are seen? (¹²C, ¹H; ⁷⁹Br : ⁸¹Br = 1 : 1)",["108 and 110 in a 1 : 1 ratio","108, 110 and 112 in a 1 : 2 : 1 ratio","109 only","108 and 110 in a 3 : 1 ratio"],0,"One Br atom → two peaks, M and M+2, 1 : 1. 24 + 5 + 79 = 108; 24 + 5 + 81 = 110."],
+ ["1-chloropropane, C₃H₇Cl, has M<sub>r</sub> 78.5. Which molecular ion peaks are seen?",["78.5 only","78 and 80 in a 3 : 1 ratio","78, 80 and 82 in a 9 : 6 : 1 ratio","78 and 80 in a 1 : 1 ratio"],1,"One Cl atom → M and M+2 in 3 : 1. 36 + 7 + 35 = 78; with ³⁷Cl = 80. No ion has a mass of 78.5."],
+ ["Stretch: CH₂BrCl contains one Cl (3 : 1) and one Br (1 : 1). What is the ratio of the peaks at m/z 128 : 130 : 132?",["3 : 1 : 1","9 : 6 : 1","3 : 4 : 1","1 : 2 : 1"],2,"128 = ³⁵Cl + ⁷⁹Br: 3 × 1 = 3. 130 = ³⁷Cl + ⁷⁹Br (1 × 1) or ³⁵Cl + ⁸¹Br (3 × 1) → 1 + 3 = 4. 132 = ³⁷Cl + ⁸¹Br: 1 × 1 = 1."],
+ ["Element Y has two isotopes in a 1 : 2 ratio (lighter : heavier). What is the ratio of the Y₂⁺ peaks, lightest first?",["1 : 2 : 4","1 : 4 : 4","1 : 2 : 1","4 : 4 : 1"],1,"1 × 1 : 2 × 1 × 2 : 2 × 2 = 1 : 4 : 4"],
+ ["How is the relative abundance of each ion found in a TOF spectrometer?",["From the time of flight","From the size of the current at the detector, made when ions gain an electron","From the strength of the electric field","From the number of neutrons"],1,"Ions gain an electron at the detector. The current is proportional to the abundance."]
+];
+buildQuiz(Q);
+go(0);
+
+</script>
+</body>
+</html>
