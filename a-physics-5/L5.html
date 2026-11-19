@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>5 · Electric potential — A-level Physics 3.7</title>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="core.css">
+</head>
+<body data-lesson="5" data-set="p37" data-next="L6.html">
+<header class="top"><a class="home" href="index.html">← All fields lessons</a>
+<h1>Lesson 5 · Electric potential and comparing fields</h1>
+<p>AQA A-level Physics 3.7.3.3, 3.7.1 · about 25 minutes</p></header>
+<main>
+
+<section id="b1" data-title="Electric potential" data-mins="8">
+<h2>Absolute electric potential</h2>
+<div class="key">V = work done per unit <b>positive</b> charge moving it from infinity to the point. <b>V = Q/4πε₀r</b>. Positive near a + charge, negative near a − charge; zero at infinity. ΔW = QΔV; <b>E = ΔV/Δr</b> (magnitude = gradient of V–r graph).</div>
+<div class="card"><div class="grid2" style="margin:0"><svg id="vg" viewBox="0 0 320 240" width="100%"></svg><div>
+<div>source charge: <select id="sg"><option value="1">positive</option><option value="-1">negative</option></select></div>
+<div>r: <b id="rv"></b> m<input type="range" id="r" min="0.05" max="0.5" step="0.005" value="0.12"></div><div class="read" id="vR"></div><p style="margin:0">Q = 5.0 nC. Area under E–r graph = ΔV.</p></div></div></div>
+<div id="q1a"></div><div id="q1b"></div>
+</section>
+
+<section id="b2" data-title="Gravity vs electric" data-mins="8">
+<h2>Comparing gravitational and electric fields</h2>
+<div class="card tablewrap"><table class="t"><tr><th></th><th>Gravitational</th><th>Electric</th></tr>
+<tr><td>Force</td><td>F = GMm/r²</td><td>F = Q₁Q₂/4πε₀r²</td></tr>
+<tr><td>Field strength</td><td>g = F/m = GM/r²</td><td>E = F/Q = Q/4πε₀r²</td></tr>
+<tr><td>Potential</td><td>V = −GM/r</td><td>V = Q/4πε₀r</td></tr>
+<tr><td>Nature</td><td>attractive only</td><td>attractive or repulsive</td></tr></table></div>
+<p>Both are inverse-square laws, and both have potential ∝ 1/r.</p>
+<div id="q2a"></div><div id="q2b"></div>
+</section>
+
+<section id="b3" data-title="Exam practice" data-mins="9">
+<h2>Exam practice</h2>
+<p class="lead">ε₀ = 8.85 × 10<sup>−12</sup> F m<sup>−1</sup>; e = 1.60 × 10<sup>−19</sup> C.</p>
+<div id="ex1"></div><div id="ex2"></div>
+<div class="summary"><h3>Lesson summary</h3><ul><li>V = Q/4πε₀r; ΔW = QΔV.</li><li>E = gradient of V–r graph; ΔV = area under E–r graph.</li><li>Equipotentials ⟂ field lines.</li><li>Gravity always attractive; electric forces can be either.</li></ul></div>
+</section>
+</main>
+<script src="core.js"></script>
+<script>
+const e0=8.85e-12,k=1/(4*Math.PI*e0),Q=5e-9;
+function dr(){const s=+$('sg').value,r=+$('r').value,V=s*k*Q/r;$('rv').textContent=r.toFixed(3);
+ const X=x=>40+(x-0.05)/0.45*270,Y=v=>125-v/900*100;let p='';for(let x=0.05;x<=0.5;x+=0.004)p+=(p?' L':'M')+X(x)+' '+Y(s*k*Q/x);
+ $('vg').innerHTML=`<line x1="40" y1="125" x2="315" y2="125" stroke="#556"/><line x1="40" y1="10" x2="40" y2="235" stroke="#556"/><text x="310" y="140" font-size="11" text-anchor="end">r / m</text><text x="44" y="18" font-size="11">V / V</text><path d="${p}" stroke="${s>0?'#e4572e':'#2e86de'}" stroke-width="3" fill="none"/><circle cx="${X(r)}" cy="${Y(V)}" r="6" fill="#f1c40f" stroke="#1d2433"/>`;
+ $('vR').innerHTML=`V = Q/4πε₀r = <b>${V.toFixed(0)} V</b><br>E = Q/4πε₀r² = ${(k*Q/r/r).toFixed(0)} V m⁻¹`}
+$('r').oninput=dr;$('sg').onchange=dr;dr();
+NumQ('q1a',{q:'Calculate the potential 0.20 m from a +8.0 nC point charge.',ans:k*8e-9/0.2,unit:'V',steps:['V = Q/4πε₀r = 8.0×10⁻⁹ ÷ (4π × 8.85×10⁻¹² × 0.20)','V = 360 V']});
+NumQ('q1b',{q:'How much work is done moving a +2.0 μC charge from V = 120 V to V = 480 V?',ans:2e-6*360,unit:'J',steps:['ΔW = QΔV = 2.0×10⁻⁶ × 360','ΔW = 7.2 × 10⁻⁴ J']});
+Sort('q2a',{q:'Gravitational only, electric only, or both?',bins:['Gravitational only','Electric only','Both'],items:[{t:'can repel',b:1},{t:'inverse-square force law',b:2},{t:'potential always negative',b:0},{t:'potential ∝ 1/r',b:2},{t:'acts on mass',b:0},{t:'depends on permittivity',b:1}]});
+MCQ('q2b',{q:'Why is gravitational potential negative but potential near a + charge positive?',opts:['gravity is stronger','gravity attracts so work is done by the field as mass comes in; a + charge repels a + test charge so work is done against it','charges have no mass','ε₀ is negative'],a:1});
+ExamQ('ex1',{title:'Question 1',parts:[{label:'01.1',q:'Define <b>electric potential</b> at a point.',marks:2,ms:['Work done per unit positive charge','moving charge from infinity to the point']},
+ {label:'01.2',q:'A proton is fired directly at a gold nucleus (Q = 79e). Calculate the potential 3.0 × 10<sup>−14</sup> m from the nucleus and hence the minimum kinetic energy the proton needs to get that close.',marks:3,ms:['V = 79 × 1.6×10⁻¹⁹ ÷ (4π ε₀ × 3.0×10⁻¹⁴) = 3.79 × 10⁶ V','KE = eV','= 6.1 × 10⁻¹³ J']}]});
+ExamQ('ex2',{title:'Question 2',parts:[{label:'02',q:'State <b>two</b> similarities and <b>one</b> difference between gravitational and electric fields of point sources.',marks:3,ms:['Both inverse-square force laws','Both have potential ∝ 1/r / both zero potential at infinity','Gravity only attractive; electric can attract or repel']}]});
+</script>
+</body>
+</html>

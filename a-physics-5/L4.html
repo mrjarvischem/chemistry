@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>4 · Coulomb’s law and electric field strength — A-level Physics 3.7</title>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="core.css">
+</head>
+<body data-lesson="4" data-set="p37" data-next="L5.html">
+<header class="top"><a class="home" href="index.html">← All fields lessons</a>
+<h1>Lesson 4 · Coulomb’s law and electric field strength</h1>
+<p>AQA A-level Physics 3.7.3.1–3.7.3.2 · about 25 minutes</p></header>
+<main>
+
+<section id="b1" data-title="Coulomb’s law" data-mins="7">
+<h2>Coulomb’s law</h2>
+<div class="key"><b>F = Q₁Q₂ / 4πε₀r²</b> for point charges (ε₀ = 8.85 × 10⁻¹² F m⁻¹). Like charges repel, unlike attract. In air, use ε₀ (air ≈ vacuum).</div>
+<div class="tip">Compare with gravity: for two protons, F<sub>e</sub>/F<sub>g</sub> ≈ 10³⁶ — gravity is negligible for subatomic particles.</div>
+<div id="q1a"></div><div id="q1b"></div>
+</section>
+
+<section id="b2" data-title="Field strength" data-mins="9">
+<h2>Electric field strength</h2>
+<div class="key"><b>E = F/Q</b> (N C⁻¹) — force per unit positive charge. Radial: <b>E = Q/4πε₀r²</b>. Uniform (parallel plates): <b>E = V/d</b> (V m⁻¹).</div>
+<div class="card"><div class="grid2" style="margin:0"><svg id="pl" class="stage" viewBox="0 0 320 220" width="100%"></svg><div>
+<div>plate p.d. V: <b id="vv"></b> V<input type="range" id="V" min="50" max="1000" step="25" value="200"></div>
+<div>electron speed: <b id="uv"></b> × 10⁷ m s⁻¹<input type="range" id="u" min="1" max="4" step="0.1" value="3.5"></div>
+<div class="read" id="pR"></div><p style="margin:0">Plates 2.0 cm apart, 8.0 cm long. The electron follows a <b>parabola</b> — constant horizontal velocity, constant vertical acceleration (like a projectile).</p></div></div></div>
+<div id="q2a"></div><div id="q2b"></div>
+</section>
+
+<section id="b3" data-title="Exam practice" data-mins="9">
+<h2>Exam practice</h2>
+<p class="lead">ε₀ = 8.85 × 10<sup>−12</sup> F m<sup>−1</sup>; e = 1.60 × 10<sup>−19</sup> C; m<sub>e</sub> = 9.11 × 10<sup>−31</sup> kg.</p>
+<div id="ex1"></div><div id="ex2"></div><div id="ex3"></div>
+<div class="summary"><h3>Lesson summary</h3><ul><li>F = Q₁Q₂/4πε₀r² (inverse square).</li><li>E = F/Q; radial E = Q/4πε₀r²; uniform E = V/d.</li><li>Charge in uniform field: constant force → parabolic path.</li><li>Work done accelerating through p.d. V: W = QV.</li></ul></div>
+</section>
+</main>
+<script src="core.js"></script>
+<script>
+const e0=8.85e-12,e=1.6e-19,me=9.11e-31,k=1/(4*Math.PI*e0);
+function dr(){const V=+$('V').value,u=+$('u').value*1e7,d=0.02,L=0.08,E=V/d,a=e*E/me,t=L/u,y=0.5*a*t*t;
+ $('vv').textContent=V;$('uv').textContent=(u/1e7).toFixed(1);
+ const X=x=>40+x/L*240,Y=s=>110+s/0.01*80;let p='M10 110 L40 110',hit=null;
+ for(let x=0;x<=L;x+=L/80){const tt=x/u,s=-0.5*a*tt*tt;if(-s>0.01){hit=x;break}p+=` L${X(x)} ${Y(s)}`}
+ if(!hit){const vy=a*t;p+=` L${X(L)+40} ${Y(-y)-40*(vy/u)*(8000/(240/L))}`}
+ $('pl').innerHTML=`<rect x="40" y="22" width="240" height="8" fill="#e4572e"/><text x="290" y="30" fill="#fff" font-size="12">+</text><rect x="40" y="190" width="240" height="8" fill="#2e86de"/><text x="290" y="198" fill="#fff" font-size="12">−</text>${[60,110,160,210,260].map(x=>`<line x1="${x}" y1="34" x2="${x}" y2="184" stroke="#889" stroke-width="1" marker-end="url(#ar)"/>`).join('')}<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#889"/></marker></defs><path d="${p}" stroke="#f1c40f" stroke-width="2.5" fill="none"/>`;
+ $('pR').innerHTML=`E = V/d = <b>${sci(E)} V m⁻¹</b><br>${hit?'<b style="color:#e4572e">electron hits the + plate</b>':'deflection on leaving = <b>'+(y*1000).toFixed(2)+' mm</b>'}`}
+$('V').oninput=dr;$('u').oninput=dr;dr();
+NumQ('q1a',{q:'Calculate the force between two charges of +2.0 μC and −3.0 μC, 5.0 cm apart.',ans:k*2e-6*3e-6/0.05**2,unit:'N',steps:['F = Q₁Q₂/4πε₀r² = (2.0×10⁻⁶ × 3.0×10⁻⁶) ÷ (4π × 8.85×10⁻¹² × 0.050²)','F = 21.6 N (attractive)']});
+MCQ('q1b',{q:'The separation of two point charges is tripled. The force becomes',opts:['F/3','F/6','F/9','3F'],a:2});
+NumQ('q2a',{q:'Two parallel plates 4.0 mm apart have a p.d. of 600 V. Calculate the field strength.',ans:600/0.004,unit:'V m<sup>−1</sup>',steps:['E = V/d = 600 ÷ 4.0×10⁻³','E = 1.5 × 10⁵ V m⁻¹'],hint:'Convert mm to m.'});
+NumQ('q2b',{q:'Calculate the field strength 0.10 nm from a proton.',ans:k*e/1e-10**2,unit:'N C<sup>−1</sup>',steps:['E = Q/4πε₀r² = 1.6×10⁻¹⁹ ÷ (4π × 8.85×10⁻¹² × (1.0×10⁻¹⁰)²)','E = 1.44 × 10¹¹ N C⁻¹']});
+ExamQ('ex1',{title:'Question 1',parts:[{label:'01',q:'Define <b>electric field strength</b>.',marks:1,ms:['Force per unit (positive) charge (on a small test charge)']},
+ {label:'01.2',q:'Draw/describe the field between two oppositely charged parallel plates.',marks:2,ms:['Parallel, equally spaced lines between plates (uniform field)','Arrows from + to −; (curving/fringing at edges)']}]});
+ExamQ('ex2',{title:'Question 2',parts:[{label:'02',q:'An electron enters the uniform field between plates 2.0 cm apart with p.d. 500 V, moving parallel to the plates at 3.0 × 10<sup>7</sup> m s<sup>−1</sup>. The plates are 6.0 cm long. Calculate its vertical deflection when it leaves.',marks:4,ms:['E = 2.5 × 10⁴ V m⁻¹; a = eE/m = 4.39 × 10¹⁵ m s⁻²','t = 0.060 ÷ 3.0×10⁷ = 2.0 × 10⁻⁹ s','s = ½at²','s = 8.8 × 10⁻³ m (8.8 mm)']}]});
+ExamQ('ex3',{title:'Question 3 · multiple choice',parts:[{label:'03',q:'The p.d. across parallel plates is doubled and their separation is halved. The field strength',opts:['halves','is unchanged','doubles','quadruples'],a:3,marks:1,ms:['<b>D</b> — E = V/d.']}]});
+</script>
+</body>
+</html>

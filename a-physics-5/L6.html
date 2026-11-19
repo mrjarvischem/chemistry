@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>6 · Capacitance — A-level Physics 3.7</title>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="core.css">
+</head>
+<body data-lesson="6" data-set="p37" data-next="L7.html">
+<header class="top"><a class="home" href="index.html">← All fields lessons</a>
+<h1>Lesson 6 · Capacitance, dielectrics and stored energy</h1>
+<p>AQA A-level Physics 3.7.4.1–3.7.4.3 · about 25 minutes</p></header>
+<main>
+
+<section id="b1" data-title="Capacitance" data-mins="8">
+<h2>Capacitance</h2>
+<div class="key"><b>C = Q/V</b> — charge stored per unit p.d. (farad, F = C V⁻¹). Parallel plates: <b>C = Aε₀ε<sub>r</sub>/d</b>.</div>
+<div class="card"><div class="grid2" style="margin:0"><svg id="cp" class="stage" viewBox="0 0 300 220" width="100%"></svg><div>
+<div>plate area A: <b id="av"></b> cm²<input type="range" id="A" min="50" max="500" step="10" value="200"></div>
+<div>separation d: <b id="dv"></b> mm<input type="range" id="d" min="0.5" max="5" step="0.1" value="2"></div>
+<div>dielectric ε<sub>r</sub>: <select id="er"><option value="1">air (1.0)</option><option value="2.3">polythene (2.3)</option><option value="7">glass (7)</option></select></div>
+<div class="read" id="cR"></div></div></div></div>
+<div id="q1a"></div><div id="q1b"></div>
+</section>
+
+<section id="b2" data-title="Dielectric action" data-mins="7">
+<h2>How a dielectric increases C</h2>
+<p>Polar molecules in the dielectric <b>rotate to align</b> with the field. Their own field opposes the applied field, so the net field (and p.d.) between the plates is reduced for the same charge. Since C = Q/V, <b>C increases</b>. ε<sub>r</sub> = C (with dielectric) ÷ C (vacuum).</p>
+<svg id="dl" class="stage" viewBox="0 0 320 150" width="100%" style="max-height:240px"></svg><button class="btn" id="on">Switch field on</button>
+<div id="q2a"></div>
+</section>
+
+<section id="b3" data-title="Energy stored" data-mins="5">
+<h2>Energy stored</h2>
+<div class="key">E = area under Q–V graph = <b>½QV = ½CV² = ½Q²/C</b>. Charging from a battery, the battery supplies QV — half is stored, half dissipated in the resistance.</div>
+<div id="q3a"></div><div id="q3b"></div>
+</section>
+
+<section id="b4" data-title="Exam practice" data-mins="5">
+<h2>Exam practice</h2>
+<div id="ex1"></div><div id="ex2"></div>
+<div class="summary"><h3>Lesson summary</h3><ul><li>C = Q/V; C = Aε₀ε<sub>r</sub>/d.</li><li>Dielectric molecules align, opposing the field → C increases.</li><li>E = ½QV = ½CV² = ½Q²/C.</li></ul></div>
+</section>
+</main>
+<script src="core.js"></script>
+<script>
+const e0=8.85e-12;
+function dr(){const A=+$('A').value*1e-4,d=+$('d').value*1e-3,er=+$('er').value,C=A*e0*er/d;$('av').textContent=$('A').value;$('dv').textContent=(+$('d').value).toFixed(1);
+ const h=40+A*1e4/500*120,gap=10+d*1e3*18;
+ $('cp').innerHTML=`<rect x="${150-gap/2-8}" y="${110-h/2}" width="8" height="${h}" fill="#e4572e"/><rect x="${150+gap/2}" y="${110-h/2}" width="8" height="${h}" fill="#2e86de"/>${er>1?`<rect x="${150-gap/2}" y="${110-h/2}" width="${gap}" height="${h}" fill="#f1c40f" opacity=".35"/>`:''}`;
+ $('cR').innerHTML=`C = Aε₀ε<sub>r</sub>/d = <b>${(C*1e12).toFixed(1)} pF</b><br>charge at 12 V: ${(C*12*1e9).toFixed(2)} nC`}
+['A','d'].forEach(i=>$(i).oninput=dr);$('er').onchange=dr;dr();
+let on=0;const mols=[...Array(18)].map((_,i)=>({x:60+(i%6)*40,y:35+Math.floor(i/6)*40,a:Math.random()*6.28}));
+function dd(){$('dl').innerHTML=`<rect x="20" y="10" width="10" height="130" fill="#e4572e"/><rect x="290" y="10" width="10" height="130" fill="#2e86de"/>`+mols.map(m=>`<g transform="translate(${m.x},${m.y}) rotate(${m.a*57.3})"><ellipse rx="14" ry="7" fill="#556"/><circle cx="-7" r="5" fill="#2e86de"/><circle cx="7" r="5" fill="#e4572e"/></g>`).join('')}
+dd();$('on').onclick=()=>{on=1;const st=mols.map(m=>m.a);animate(1500,t=>{mols.forEach((m,i)=>m.a=st[i]*(1-t));dd()})};
+NumQ('q1a',{q:'A 470 μF capacitor is charged to 9.0 V. Calculate the charge stored.',ans:470e-6*9,unit:'C',steps:['Q = CV = 470×10⁻⁶ × 9.0','Q = 4.2 × 10⁻³ C']});
+NumQ('q1b',{q:'Plates of area 0.020 m² are 0.50 mm apart in air. Calculate C.',ans:0.02*e0/0.0005,unit:'F',steps:['C = Aε₀/d = 0.020 × 8.85×10⁻¹² ÷ 5.0×10⁻⁴','C = 3.5 × 10⁻¹⁰ F']});
+MCQ('q2a',{q:'A dielectric is inserted while the capacitor stays connected to the battery. The charge on the plates',opts:['decreases','stays the same','increases','becomes zero'],a:2,why:'V is fixed by the battery, C increases, so Q = CV increases.'});
+NumQ('q3a',{q:'Calculate the energy stored in a 2200 μF capacitor at 12 V.',ans:0.5*2200e-6*144,unit:'J',steps:['E = ½CV² = 0.5 × 2200×10⁻⁶ × 12²','E = 0.16 J']});
+MCQ('q3b',{q:'The p.d. across a capacitor is doubled. The energy stored is multiplied by',opts:['½','2','4','8'],a:2});
+ExamQ('ex1',{title:'Question 1',parts:[{label:'01',q:'Explain how inserting a dielectric between the plates of an isolated charged capacitor changes its capacitance.',marks:3,ms:['Polar molecules (dipoles) rotate/align with the field','producing a field opposing the applied field → net field/p.d. decreases','Q constant so C = Q/V increases']}]});
+ExamQ('ex2',{title:'Question 2',parts:[{label:'02',q:'A 100 μF capacitor is charged to 20 V by a battery. Calculate the energy stored and the energy dissipated in the circuit resistance.',marks:3,ms:['Q = 2.0 × 10⁻³ C; stored E = ½QV = 0.020 J','Battery supplies QV = 0.040 J','Dissipated = 0.020 J']}]});
+</script>
+</body>
+</html>

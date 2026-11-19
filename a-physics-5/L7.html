@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>7 · Charging and discharging (RP9) — A-level Physics 3.7</title>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="core.css">
+</head>
+<body data-lesson="7" data-set="p37" data-next="L8.html">
+<header class="top"><a class="home" href="index.html">← All fields lessons</a>
+<h1>Lesson 7 · Capacitor charging and discharging (RP9)</h1>
+<p>AQA A-level Physics 3.7.4.4 · about 25 minutes</p></header>
+<main>
+
+<section id="b1" data-title="Discharge" data-mins="8">
+<h2>Exponential discharge</h2>
+<div class="key">Discharging through R: <b>Q = Q₀e<sup>−t/RC</sup></b> (same form for V and I). <b>Time constant τ = RC</b> — time to fall to 1/e ≈ 37%. Half-life: <b>T½ = 0.69RC</b>.</div>
+<div class="card"><div class="grid2" style="margin:0"><svg id="dg" viewBox="0 0 320 230" width="100%"></svg><div>
+<div>R: <b id="rv"></b> kΩ<input type="range" id="R" min="10" max="100" step="5" value="47"></div>
+<div>C: <b id="cv"></b> μF<input type="range" id="C" min="100" max="1000" step="10" value="470"></div>
+<div>mode: <select id="md"><option value="d">discharge</option><option value="c">charge</option></select></div>
+<button class="btn" id="go">▶ Run</button><div class="read" id="dR"></div></div></div></div>
+<div class="note">Charging: Q = Q₀(1 − e<sup>−t/RC</sup>) and V likewise, but current <b>decays</b>: I = I₀e<sup>−t/RC</sup>.</div>
+<div id="q1a"></div><div id="q1b"></div><div id="q1c"></div>
+</section>
+
+<section id="b2" data-title="RP9 — log graph" data-mins="8">
+<h2>Required practical 9: finding RC</h2>
+<p>Charge C to V₀, then discharge through R, recording V every 10 s (or use a data logger). Take logs: <b>ln V = ln V₀ − t/RC</b>. A graph of ln V against t is a straight line of gradient <b>−1/RC</b>.</p>
+<div class="card"><svg id="lg" viewBox="0 0 320 200" width="100%"></svg><div class="read" id="lR"></div></div>
+<div id="q2a"></div><div id="q2b"></div>
+</section>
+
+<section id="b3" data-title="Exam practice" data-mins="9">
+<h2>Exam practice</h2>
+<div id="ex1"></div><div id="ex2"></div><div id="ex3"></div>
+<div class="summary"><h3>Lesson summary</h3><ul><li>Discharge: Q, V, I ∝ e<sup>−t/RC</sup>.</li><li>Charge: Q, V = max × (1 − e<sup>−t/RC</sup>); I decays.</li><li>τ = RC (37%); T½ = 0.69RC.</li><li>ln V vs t: gradient −1/RC.</li></ul></div>
+</section>
+</main>
+<script src="core.js"></script>
+<script>
+const V0=12;let tNow=0;
+function par(){const R=+$('R').value*1e3,C=+$('C').value*1e-6;$('rv').textContent=$('R').value;$('cv').textContent=$('C').value;return {R,C,tau:R*C}}
+function dr(){const {tau}=par(),md=$('md').value,tm=5*tau,X=t=>40+t/tm*270,Y=v=>200-v/V0*180,f=t=>md=='d'?V0*Math.exp(-t/tau):V0*(1-Math.exp(-t/tau));
+ let p='';for(let t=0;t<=Math.min(tNow,tm);t+=tm/200)p+=(p?' L':'M')+X(t)+' '+Y(f(t));
+ $('dg').innerHTML=`<line x1="40" y1="200" x2="315" y2="200" stroke="#556"/><line x1="40" y1="15" x2="40" y2="200" stroke="#556"/><text x="310" y="215" font-size="11" text-anchor="end">t</text><text x="44" y="14" font-size="11">V / V</text>${[1,2,3,4].map(n=>`<line x1="${X(n*tau)}" y1="200" x2="${X(n*tau)}" y2="196" stroke="#556"/><text x="${X(n*tau)}" y="212" font-size="10" text-anchor="middle">${n}RC</text>`).join('')}<line x1="40" y1="${Y(md=='d'?V0*0.368:V0*0.632)}" x2="${X(tau)}" y2="${Y(md=='d'?V0*0.368:V0*0.632)}" stroke="#e4572e" stroke-dasharray="4 3"/><path d="${p}" stroke="#5b3fd0" stroke-width="3" fill="none"/>`;
+ $('dR').innerHTML=`τ = RC = <b>${tau.toFixed(1)} s</b><br>T½ = 0.69RC = ${(0.693*tau).toFixed(1)} s<br>t = ${Math.min(tNow,tm).toFixed(1)} s, V = ${f(Math.min(tNow,tm)).toFixed(2)} V`;
+ let lp='',pts='';const LX=t=>40+t/tm*270,LY=l=>20+(Math.log(V0)-l)/5*160;for(let t=0;t<=tm;t+=tm/10){const l=Math.log(V0*Math.exp(-t/tau));pts+=`<circle cx="${LX(t)}" cy="${LY(l)}" r="3.5" fill="#f1c40f" stroke="#1d2433"/>`}
+ $('lg').innerHTML=`<line x1="40" y1="180" x2="315" y2="180" stroke="#556"/><line x1="40" y1="10" x2="40" y2="180" stroke="#556"/><text x="310" y="195" font-size="11" text-anchor="end">t / s</text><text x="44" y="12" font-size="11">ln(V/V)</text><line x1="${LX(0)}" y1="${LY(Math.log(V0))}" x2="${LX(tm)}" y2="${LY(Math.log(V0)-5)}" stroke="#5b3fd0" stroke-width="2"/>${pts}`;
+ $('lR').innerHTML=`gradient = −1/RC = <b>${(-1/tau).toFixed(4)} s⁻¹</b>; intercept ln V₀ = ${Math.log(V0).toFixed(2)}`}
+['R','C'].forEach(i=>$(i).oninput=()=>{tNow=1e9;dr()});$('md').onchange=()=>{tNow=1e9;dr()};tNow=1e9;dr();
+$('go').onclick=()=>{const {tau}=par();animate(4000,t=>{tNow=t*5*tau;dr()})};
+NumQ('q1a',{q:'Calculate the time constant of a 220 μF capacitor discharging through 33 kΩ.',ans:220e-6*33e3,unit:'s',steps:['τ = RC = 33×10³ × 220×10⁻⁶','τ = 7.3 s']});
+NumQ('q1b',{q:'A capacitor at 10 V discharges with RC = 5.0 s. Calculate V after 8.0 s.',ans:10*Math.exp(-8/5),unit:'V',steps:['V = V₀e^(−t/RC) = 10 × e^(−1.6)','V = 2.0 V']});
+MCQ('q1c',{q:'During charging, which quantity decreases exponentially?',opts:['charge','p.d. across C','current','energy stored'],a:2});
+NumQ('q2a',{q:'A ln V against t graph has gradient −0.025 s<sup>−1</sup>. R = 100 kΩ. Calculate C.',ans:1/(0.025*1e5),unit:'F',steps:['RC = 1/0.025 = 40 s','C = 40 ÷ 1.0×10⁵ = 4.0 × 10⁻⁴ F (400 μF)']});
+MCQ('q2b',{q:'Why plot ln V against t rather than V against t?',opts:['ln V is easier to measure','it gives a straight line, so RC is found from the gradient','it removes random error','V is negative'],a:1});
+ExamQ('ex1',{title:'Question 1',parts:[{label:'01',q:'Describe how you would determine the capacitance of a capacitor by discharging it through a known resistor.',marks:4,ms:['Charge capacitor (switch to battery), then switch to discharge through R','Record V (voltmeter/data logger) at regular time intervals','Plot ln V against t','C = −1/(gradient × R)']}]});
+ExamQ('ex2',{title:'Question 2',parts:[{label:'02',q:'A 1000 μF capacitor charged to 6.0 V discharges through 2.2 kΩ. Calculate the time for the p.d. to fall to 1.5 V.',marks:3,ms:['RC = 2.2 s','1.5 = 6.0 e^(−t/2.2) → t = 2.2 ln 4','t = 3.0 s']}]});
+ExamQ('ex3',{title:'Question 3 · multiple choice',parts:[{label:'03',q:'After 3 time constants a discharging capacitor retains approximately what fraction of its initial charge?',opts:['5%','14%','37%','50%'],a:0,marks:1,ms:['<b>A</b> — e⁻³ = 0.050.']}]});
+</script>
+</body>
+</html>

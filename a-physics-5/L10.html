@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>10 · Alternating currents and transformers — A-level Physics 3.7</title>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="core.css">
+</head>
+<body data-lesson="10" data-set="p37">
+<header class="top"><a class="home" href="index.html">← All fields lessons</a>
+<h1>Lesson 10 · Alternating currents and transformers</h1>
+<p>AQA A-level Physics 3.7.5.5–3.7.5.6 · about 25 minutes</p></header>
+<main>
+
+<section id="b1" data-title="AC & rms" data-mins="8">
+<h2>Alternating current and the oscilloscope</h2>
+<div class="key"><b>V<sub>rms</sub> = V₀/√2</b>, <b>I<sub>rms</sub> = I₀/√2</b>. The rms value is the DC value that gives the same mean power. Mains (UK): 230 V rms, 50 Hz → peak 325 V.</div>
+<div class="card"><div class="grid2" style="margin:0"><svg id="osc" viewBox="0 0 300 240" width="100%"></svg><div>
+<div>Y-gain: <select id="yg"><option>1</option><option selected>2</option><option>5</option></select> V div⁻¹</div>
+<div>time-base: <select id="tb"><option>1</option><option selected>2</option><option>5</option></select> ms div⁻¹</div>
+<p style="margin:.4rem 0">Read the peak and period from the screen (8 × 10 grid). Unknown signal.</p><div id="q1a"></div></div></div></div>
+<div id="q1b"></div>
+</section>
+
+<section id="b2" data-title="Transformers" data-mins="8">
+<h2>Transformers</h2>
+<div class="key"><b>N<sub>s</sub>/N<sub>p</sub> = V<sub>s</sub>/V<sub>p</sub></b>. Ideal: V<sub>s</sub>I<sub>s</sub> = V<sub>p</sub>I<sub>p</sub>. Efficiency = I<sub>s</sub>V<sub>s</sub> / I<sub>p</sub>V<sub>p</sub>.</div>
+<p>Alternating current in the primary gives a changing flux in the iron core, which links the secondary and induces an alternating emf (Faraday).</p>
+<div class="grid2"><div class="card"><b>Causes of energy loss</b><ul><li><b>Eddy currents</b> in the core → laminated core</li><li><b>Resistance</b> of windings (I²R) → thick, low-resistance copper</li><li><b>Hysteresis</b> → soft iron core</li><li>Flux leakage → good core design</li></ul></div>
+<div class="card"><b>Transmission</b><br>Step up to high V → low I → power loss I²R in cables much smaller. Step down for safe use.</div></div>
+<div id="q2a"></div><div id="q2b"></div><div id="q2c"></div>
+</section>
+
+<section id="b3" data-title="Exam practice" data-mins="9">
+<h2>Exam practice</h2>
+<div id="ex1"></div><div id="ex2"></div><div id="ex3"></div>
+<div class="summary"><h3>Lesson summary</h3><ul><li>V<sub>rms</sub> = V₀/√2; read peak and period from oscilloscope settings.</li><li>N<sub>s</sub>/N<sub>p</sub> = V<sub>s</sub>/V<sub>p</sub>; efficiency = I<sub>s</sub>V<sub>s</sub>/I<sub>p</sub>V<sub>p</sub>.</li><li>Losses: eddy currents (laminate), I²R (thick wire), hysteresis (soft iron).</li><li>High-voltage transmission cuts I²R losses.</li></ul></div>
+</section>
+</main>
+<script src="core.js"></script>
+<script>
+const VP=6,F=125;
+function dr(){const yg=+$('yg').value,tb=+$('tb').value*1e-3,W=300,H=240,dx=W/10,dy=H/8;let g='';for(let i=1;i<10;i++)g+=`<line x1="${i*dx}" y1="0" x2="${i*dx}" y2="${H}" stroke="#2a4"/>`;for(let j=1;j<8;j++)g+=`<line x1="0" y1="${j*dy}" x2="${W}" y2="${j*dy}" stroke="#2a4"/>`;
+ let p='';for(let x=0;x<=W;x+=2){const t=x/dx*tb,v=VP*Math.sin(2*Math.PI*F*t),y=H/2-v/yg*dy;p+=(p?' L':'M')+x+' '+Math.max(-5,Math.min(H+5,y))}
+ $('osc').innerHTML=`<rect width="${W}" height="${H}" fill="#08140c" rx="8"/>${g}<line x1="0" y1="${H/2}" x2="${W}" y2="${H/2}" stroke="#3c6"/><path d="${p}" stroke="#7fff7f" stroke-width="2.5" fill="none"/>`}
+$('yg').onchange=dr;$('tb').onchange=dr;dr();
+NumQ('q1a',{q:'Use the trace to find the rms voltage of the signal.',ans:VP/Math.SQRT2,tol:0.05,unit:'V',steps:['Peak = 3 div × 2 V div⁻¹ = 6.0 V (at the default settings)','V_rms = 6.0/√2 = 4.2 V']});
+NumQ('q1b',{q:'Use the trace to find the frequency of the signal. (At 2 ms div⁻¹, one cycle spans 4 divisions.)',ans:F,unit:'Hz',steps:['T = 4 × 2 ms = 8.0 ms','f = 1/T = 125 Hz']});
+NumQ('q2a',{q:'A transformer steps 230 V down to 12 V. The primary has 4600 turns. How many turns on the secondary?',ans:240,unit:'turns',steps:['N_s = N_p × V_s/V_p = 4600 × 12/230','N_s = 240']});
+NumQ('q2b',{q:'The transformer supplies 3.0 A at 12 V while drawing 0.18 A from the 230 V mains. Calculate its efficiency (as a percentage).',ans:100*36/(0.18*230),tol:0.02,unit:'%',steps:['output = 12 × 3.0 = 36 W; input = 230 × 0.18 = 41.4 W','efficiency = 36/41.4 = 87%']});
+Sort('q2c',{q:'Match each energy loss to how it is reduced.',bins:['Laminated core','Thick copper wire','Soft iron core'],items:[{t:'eddy currents',b:0},{t:'heating of windings',b:1},{t:'hysteresis (repeated magnetisation)',b:2}]});
+ExamQ('ex1',{title:'Question 1',parts:[{label:'01',q:'Explain how a transformer produces an alternating p.d. across its secondary coil.',marks:3,ms:['Alternating current in primary produces changing/alternating magnetic flux','Core links (concentrates) flux through secondary','Changing flux linkage induces emf (Faraday)']}]});
+ExamQ('ex2',{title:'Question 2',parts:[{label:'02',q:'500 kW is transmitted through cables of total resistance 8.0 Ω. Compare the power lost at 25 kV and at 400 kV.',marks:4,ms:['I = P/V: 20 A at 25 kV; 1.25 A at 400 kV','P = I²R','3.2 kW lost at 25 kV','12.5 W at 400 kV — far smaller']}]});
+ExamQ('ex3',{title:'Question 3 · multiple choice',parts:[{label:'03',q:'An oscilloscope trace has a peak-to-peak height of 6.0 divisions at 5 V div⁻¹. The rms voltage is',opts:['10.6 V','15 V','21 V','30 V'],a:0,marks:1,ms:['<b>A</b> — peak = 15 V; 15/√2 = 10.6 V.']}]});
+</script>
+</body>
+</html>

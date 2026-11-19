@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2 · Gravitational potential — A-level Physics 3.7</title>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="core.css">
+</head>
+<body data-lesson="2" data-set="p37" data-next="L3.html">
+<header class="top"><a class="home" href="index.html">← All fields lessons</a>
+<h1>Lesson 2 · Gravitational potential</h1>
+<p>AQA A-level Physics 3.7.2.3 · about 25 minutes</p></header>
+<main>
+
+<section id="b1" data-title="Potential" data-mins="8">
+<h2>Gravitational potential</h2>
+<div class="key" style="font-size:1.05rem">Gravitational potential V at a point = <b>work done per unit mass</b> to move a small mass from <b>infinity</b> to that point. <b>V = −GM/r</b> (J kg⁻¹). V = 0 at infinity, and is negative everywhere else.</div>
+<div class="card"><div class="grid2" style="margin:0"><svg id="vg" viewBox="0 0 320 240" width="100%"></svg><div><div>r: <b id="rv"></b> R<sub>E</sub><input type="range" id="r" min="1" max="6" step="0.05" value="1.5"></div><div class="read" id="vR"></div><p style="margin:0">The <b>gradient</b> of the V–r graph gives the field strength: <b>g = −ΔV/Δr</b>.</p></div></div></div>
+<div class="key">Work done moving mass m between two points: <b>ΔW = mΔV</b>. <b>Equipotentials</b> are surfaces of equal potential — no work is done moving along them; they are perpendicular to field lines.</div>
+<div id="q1a"></div><div id="q1b"></div><div id="q1c"></div>
+</section>
+
+<section id="b2" data-title="Escape velocity" data-mins="6">
+<h2>Escape velocity</h2>
+<p>To escape completely, an object needs enough kinetic energy to reach V = 0: ½mv² = GMm/r, so <b>v<sub>esc</sub> = √(2GM/r)</b> — independent of the object’s mass.</p>
+<div id="q2a"></div><div id="q2b"></div>
+</section>
+
+<section id="b3" data-title="Exam practice" data-mins="8">
+<h2>Exam practice</h2>
+<p class="lead">G = 6.67 × 10<sup>−11</sup> N m² kg<sup>−2</sup>; M<sub>E</sub> = 5.97 × 10<sup>24</sup> kg; R<sub>E</sub> = 6.37 × 10<sup>6</sup> m.</p>
+<div id="ex1"></div><div id="ex2"></div><div id="ex3"></div>
+<div class="summary"><h3>Lesson summary</h3><ul><li>V = −GM/r; zero at infinity, negative elsewhere.</li><li>ΔW = mΔV; g = −ΔV/Δr (gradient of V–r graph).</li><li>Equipotentials ⟂ field lines; no work done along them.</li><li>Escape velocity √(2GM/r).</li></ul></div>
+</section>
+</main>
+<script src="core.js"></script>
+<script>
+const G=6.67e-11,ME=5.97e24,RE=6.37e6;
+function draw(){const r=+$('r').value,V=-G*ME/(r*RE);$('rv').textContent=r.toFixed(2);const X=x=>40+(x-1)/5*270,Y=v=>20-v/6.5e7*190;let p='';for(let x=1;x<=6;x+=0.02)p+=(p?' L':'M')+X(x)+' '+Y(-G*ME/(x*RE));
+ const g=G*ME/(r*RE)**2,dx=0.6,x1=X(r-dx),x2=X(r+dx),y1=Y(V-(-g*RE*dx)),y2=Y(V+(-g*RE*dx));
+ $('vg').innerHTML=`<line x1="40" y1="20" x2="315" y2="20" stroke="#556"/><line x1="40" y1="20" x2="40" y2="230" stroke="#556"/><text x="310" y="14" font-size="11" text-anchor="end">r / Earth radii</text><text x="44" y="228" font-size="11">V (negative)</text><path d="${p}" stroke="#5b3fd0" stroke-width="3" fill="none"/><line x1="${X(r-dx)}" y1="${Y(V+g*RE*dx)}" x2="${X(r+dx)}" y2="${Y(V-g*RE*dx)}" stroke="#e4572e" stroke-width="2"/><circle cx="${X(r)}" cy="${Y(V)}" r="6" fill="#f1c40f" stroke="#1d2433"/>`;
+ $('vR').innerHTML=`V = −GM/r = <b>${sci(V)} J kg⁻¹</b><br>gradient (tangent, red) = g = ${g.toFixed(2)} N kg⁻¹`}
+$('r').oninput=draw;draw();
+NumQ('q1a',{q:'Calculate the gravitational potential at Earth’s surface.',ans:-G*ME/RE,unit:'J kg<sup>−1</sup>',steps:['V = −GM/r = −6.67×10⁻¹¹ × 5.97×10²⁴ ÷ 6.37×10⁶','V = −6.25 × 10⁷ J kg⁻¹']});
+NumQ('q1b',{q:'How much work is needed to lift a 1000 kg satellite from Earth’s surface (V = −6.25 × 10<sup>7</sup> J kg<sup>−1</sup>) to an orbit where V = −5.3 × 10<sup>7</sup> J kg<sup>−1</sup>?',ans:1000*0.95e7,unit:'J',steps:['ΔV = −5.3×10⁷ − (−6.25×10⁷) = 0.95 × 10⁷ J kg⁻¹','ΔW = mΔV = 1000 × 9.5×10⁶ = 9.5 × 10⁹ J']});
+MCQ('q1c',{q:'Why is gravitational potential always negative?',opts:['mass is negative','V is defined as zero at infinity and work must be done on a mass to move it out to infinity','gravity is repulsive','it is a vector'],a:1});
+NumQ('q2a',{q:'Calculate the escape velocity from Earth’s surface.',ans:Math.sqrt(2*G*ME/RE),unit:'m s<sup>−1</sup>',steps:['v = √(2GM/R) = √(2 × 6.67×10⁻¹¹ × 5.97×10²⁴ ÷ 6.37×10⁶)','v = 1.12 × 10⁴ m s⁻¹ (11.2 km s⁻¹)']});
+MCQ('q2b',{q:'A heavier rocket must reach … escape velocity compared with a lighter one.',opts:['a higher','a lower','the same','double the'],a:2,why:'v_esc = √(2GM/r) — the mass of the rocket cancels.'});
+ExamQ('ex1',{title:'Question 1',parts:[{label:'01',q:'Define <b>gravitational potential</b> at a point.',marks:2,ms:['Work done per unit mass','to move a (small) mass from infinity to that point']},
+ {label:'01.2',q:'Explain why no work is done when a satellite moves along an equipotential.',marks:1,ms:['ΔV = 0 so ΔW = mΔV = 0 / the force (field) is perpendicular to the motion']}]});
+ExamQ('ex2',{title:'Question 2',parts:[{label:'02',q:'Calculate the minimum energy needed to move a 500 kg probe from Earth’s surface to infinity.',marks:2,ms:['ΔV = 0 − (−6.25 × 10⁷) = 6.25 × 10⁷ J kg⁻¹','ΔW = 500 × 6.25×10⁷ = 3.1 × 10¹⁰ J']}]});
+ExamQ('ex3',{title:'Question 3 · multiple choice',parts:[{label:'03',q:'The gravitational potential at distance r from a planet is −V. What is it at distance 2r?',opts:['−V/4','−V/2','−2V','−4V'],a:1,marks:1,ms:['<b>B</b> — V ∝ 1/r.']}]});
+</script>
+</body>
+</html>

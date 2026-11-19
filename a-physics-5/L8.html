@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>8 · Magnetic force on currents and charges (RP10) — A-level Physics 3.7</title>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="core.css">
+</head>
+<body data-lesson="8" data-set="p37" data-next="L9.html">
+<header class="top"><a class="home" href="index.html">← All fields lessons</a>
+<h1>Lesson 8 · Magnetic force on currents and moving charges</h1>
+<p>AQA A-level Physics 3.7.5.1–3.7.5.2 · about 25 minutes</p></header>
+<main>
+
+<section id="b1" data-title="F = BIl" data-mins="8">
+<h2>Force on a current-carrying wire</h2>
+<div class="key"><b>F = BIl</b> when the wire is perpendicular to B. <b>Magnetic flux density B</b> (tesla, T): force per unit current per unit length on a wire at right angles to the field. Direction: <b>Fleming’s left-hand rule</b> (First finger Field, seCond finger Current, thuMb Motion).</div>
+<div class="tip">RP10: wire clamped across a magnet on a top-pan balance. Change in reading × g = F. Plot F against I: gradient = Bl.</div>
+<div id="q1a"></div><div id="q1b"></div>
+</section>
+
+<section id="b2" data-title="Charges in B" data-mins="9">
+<h2>Charged particles in a magnetic field</h2>
+<div class="key"><b>F = BQv</b>, always perpendicular to velocity → no work done, speed constant → <b>circular path</b>. BQv = mv²/r → <b>r = mv/BQ</b>.</div>
+<div class="card"><div class="grid2" style="margin:0"><svg id="cy" class="stage" viewBox="0 0 300 260" width="100%"></svg><div>
+<div>B: <b id="bv"></b> mT<input type="range" id="B" min="1" max="10" step="0.5" value="4"></div>
+<div>speed: <b id="vv"></b> × 10⁶ m s⁻¹<input type="range" id="v" min="1" max="8" step="0.5" value="4"></div>
+<div>particle: <select id="pt"><option value="e">electron</option><option value="p">proton</option></select></div>
+<div class="read" id="cR"></div><p style="margin:0">Field into page (×). The cyclotron uses this: period T = 2πm/BQ is independent of speed.</p></div></div></div>
+<div id="q2a"></div><div id="q2b"></div>
+</section>
+
+<section id="b3" data-title="Exam practice" data-mins="8">
+<h2>Exam practice</h2>
+<p class="lead">e = 1.60 × 10<sup>−19</sup> C; m<sub>e</sub> = 9.11 × 10<sup>−31</sup> kg; m<sub>p</sub> = 1.67 × 10<sup>−27</sup> kg.</p>
+<div id="ex1"></div><div id="ex2"></div>
+<div class="summary"><h3>Lesson summary</h3><ul><li>F = BIl (⟂), Fleming’s LHR.</li><li>F = BQv; circular motion, r = mv/BQ.</li><li>Magnetic force does no work on a moving charge.</li><li>RP10: F vs I on a balance gives B.</li></ul></div>
+</section>
+</main>
+<script src="core.js"></script>
+<script>
+const e=1.6e-19,mq={e:9.11e-31,p:1.67e-27};let th=0;
+function rad(){const B=+$('B').value*1e-3,v=+$('v').value*1e6,k=$('pt').value,m=mq[k],r=m*v/(B*e);$('bv').textContent=$('B').value;$('vv').textContent=$('v').value;
+ $('cR').innerHTML=`r = mv/BQ = <b>${r<1?(r*100).toFixed(2)+' cm':r.toFixed(2)+' m'}</b><br>T = 2πm/BQ = ${sci(2*Math.PI*m/(B*e))} s`;return {r,k}}
+['B','v'].forEach(i=>$(i).oninput=rad);$('pt').onchange=rad;
+(function loop(){const {r,k}=rad(),R=12+98*r/(mq[k]*8e6/(1e-3*e)),s=k=='e'?-1:1;th+=0.04;
+ const cx=150,cy=130+s*R,x=cx+R*Math.sin(th),y=cy-s*R*Math.cos(th);let crosses='';for(let i=0;i<6;i++)for(let j=0;j<5;j++)crosses+=`<text x="${25+i*50}" y="${30+j*52}" fill="#445" font-size="14">×</text>`;
+ $('cy').innerHTML=crosses+`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="#556" stroke-dasharray="4 4"/><circle cx="${x}" cy="${y}" r="7" fill="${k=='e'?'#2e86de':'#e4572e'}"/><text x="${x}" y="${y+4}" fill="#fff" font-size="10" text-anchor="middle">${k=='e'?'−':'+'}</text><line x1="${x}" y1="${y}" x2="${x+(cx-x)*30/R}" y2="${y+(cy-y)*30/R}" stroke="#f1c40f" stroke-width="2"/>`;requestAnimationFrame(loop)})();
+NumQ('q1a',{q:'A 5.0 cm wire carries 3.0 A at right angles to a 0.20 T field. Calculate the force.',ans:0.2*3*0.05,unit:'N',steps:['F = BIl = 0.20 × 3.0 × 0.050','F = 0.030 N']});
+NumQ('q1b',{q:'In RP10, the balance reading changes by 1.8 g when I = 4.0 A. The wire in the field is 6.0 cm long. Calculate B.',ans:1.8e-3*9.81/(4*0.06),unit:'T',steps:['F = 1.8×10⁻³ × 9.81 = 0.0177 N','B = F/Il = 0.0177 ÷ (4.0 × 0.060) = 0.074 T']});
+NumQ('q2a',{q:'Calculate the radius of the path of a proton at 2.0 × 10<sup>6</sup> m s<sup>−1</sup> in a 0.50 T field.',ans:1.67e-27*2e6/(0.5*e),unit:'m',steps:['r = mv/BQ = 1.67×10⁻²⁷ × 2.0×10⁶ ÷ (0.50 × 1.6×10⁻¹⁹)','r = 0.042 m']});
+MCQ('q2b',{q:'Why does a magnetic field not change the speed of a charged particle?',opts:['the force is parallel to v','the force is perpendicular to v so no work is done','B is too weak','the charge is constant'],a:1});
+ExamQ('ex1',{title:'Question 1',parts:[{label:'01.1',q:'Explain why a charged particle moving perpendicular to a uniform magnetic field travels in a circle.',marks:2,ms:['Force BQv always perpendicular to velocity','constant magnitude (speed constant) → provides centripetal force']},
+ {label:'01.2',q:'Show that the time for one orbit is independent of the particle’s speed.',marks:2,ms:['r = mv/BQ and T = 2πr/v','T = 2πm/BQ — no v']}]});
+ExamQ('ex2',{title:'Question 2',parts:[{label:'02',q:'An electron accelerated through 2.0 kV enters a 3.0 mT field at right angles. Calculate the radius of its path.',marks:3,ms:['½mv² = eV → v = 2.65 × 10⁷ m s⁻¹','r = mv/Be','r = 0.050 m']}]});
+</script>
+</body>
+</html>
