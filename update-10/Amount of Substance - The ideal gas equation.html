@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Ideal Gas Equation – pV = nRT</title>
+<style>
+:root{
+  --bg:#f6efe1; --card:#fffaf0; --ink:#3b2a1a; --brown:#6b4423; --brown2:#8b5a2b;
+  --accent:#b5651d; --soft:#ead9bd; --line:#d8c4a0; --good:#2f7d4a; --bad:#b03a2e; --blue:#2c4a7a;
+  --i1:#2c6e8f; --i2:#b5651d; --i3:#6a4c93; --i4:#2f7d4a;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Arial,sans-serif;font-size:19px;line-height:1.55}
+header{background:var(--brown);color:#fff8ec;padding:14px 24px}
+header h1{margin:0;font-family:Georgia,serif;font-size:28px;font-weight:normal}
+header p{margin:2px 0 0;opacity:.85;font-size:16px}
+nav{display:flex;flex-wrap:wrap;gap:6px;padding:10px 24px;background:var(--soft);border-bottom:2px solid var(--line);position:sticky;top:0;z-index:5}
+nav button{border:2px solid var(--brown2);background:var(--card);color:var(--brown);padding:7px 14px;border-radius:20px;font-size:16px;cursor:pointer}
+nav button.on{background:var(--brown2);color:#fff}
+main{max-width:1100px;margin:0 auto;padding:20px 24px 60px}
+.page{display:none}.page.on{display:block}
+h2{font-family:Georgia,serif;color:var(--brown);font-size:30px;margin:6px 0 12px;font-weight:normal}
+h3{color:var(--brown2);font-size:22px;margin:22px 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:14px 0;box-shadow:0 2px 0 var(--line)}
+.key{border-left:6px solid var(--accent)}
+.eq{font-family:Georgia,serif;font-size:23px;text-align:center;padding:10px;background:#fff;border:1px dashed var(--line);border-radius:8px;margin:10px 0}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 6px}
+.frac span:first-child{border-bottom:2px solid var(--ink);padding:0 6px}
+.row{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+.row>*{flex:1 1 380px}
+button.b{background:var(--brown2);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:17px;cursor:pointer;margin:4px 6px 4px 0}
+button.b.alt{background:var(--card);color:var(--brown);border:2px solid var(--brown2)}
+button.b.on,button.b.alt.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+button.b:disabled{opacity:.45;cursor:default}
+.check{background:#fdf6e6;border:2px solid var(--accent);border-radius:12px;padding:14px 18px;margin:18px 0}
+.check .tag{display:inline-block;background:var(--accent);color:#fff;font-size:14px;padding:2px 10px;border-radius:12px;margin-bottom:6px;letter-spacing:.5px}
+.check .src{font-size:14px;color:#8a7356;font-style:italic;margin-left:6px}
+input.ans{font-size:18px;padding:6px 10px;width:130px;border:2px solid var(--line);border-radius:6px}
+.fb{font-weight:600;margin-left:8px}
+.fb.ok{color:var(--good)}.fb.no{color:var(--bad)}
+.work{display:none;background:#fff;border-left:4px solid var(--brown2);padding:8px 14px;margin-top:8px;border-radius:4px}
+.work.on{display:block;animation:fade .4s}
+table.t{border-collapse:collapse;margin:8px 0;background:#fff}
+table.t th,table.t td{border:1px solid var(--line);padding:6px 14px;text-align:center}
+table.t th{background:var(--soft);color:var(--brown)}
+svg text{font-family:"Segoe UI",Arial,sans-serif}
+.readout{font-family:Consolas,monospace;background:#2b1d10;color:#ffe9c4;padding:10px 14px;border-radius:8px;font-size:17px;line-height:1.6;overflow-x:auto}
+label.s{display:block;font-weight:600;color:var(--brown);margin-top:8px}
+input[type=range]{width:100%}
+.stepper .st{display:none;margin:6px 0;padding:8px 14px;background:#fff;border-left:4px solid var(--accent);border-radius:4px}
+.stepper .st.on{display:block;animation:fade .45s}
+.stepper .st .why{font-size:15px;color:#7a6448;display:block}
+.alg{font-family:Georgia,serif;font-size:21px}
+.hl{background:#ffe2b8;border-radius:4px;padding:0 3px}
+.hx{color:var(--i3);font-weight:bold}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+.pager{display:flex;justify-content:space-between;margin-top:30px}
+.mcq button.opt{display:block;width:100%;text-align:left;margin:6px 0;padding:10px 14px;font-size:17px;border:2px solid var(--line);background:#fff;border-radius:8px;cursor:pointer;color:var(--ink)}
+.mcq button.opt.right{border-color:var(--good);background:#e6f4ea}
+.mcq button.opt.wrong{border-color:var(--bad);background:#fbe9e7}
+.mcq .exp{display:none;margin-top:6px;font-size:17px}
+.mcq.done .exp{display:block}
+.warn{background:#fbeee4;border-left:6px solid var(--bad);padding:10px 16px;border-radius:6px;margin:12px 0}
+.tip{background:#eef3f8;border-left:6px solid var(--blue);padding:10px 16px;border-radius:6px;margin:12px 0}
+.small{font-size:15px;color:#7a6448}
+.svgbox{background:#fff;border:1px solid var(--line);border-radius:10px;padding:6px}
+.svgbox svg{width:100%;height:auto;display:block}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+#score{font-size:20px;margin-top:14px}
+sup,sub{line-height:0}
+</style>
+</head>
+<body>
+<header>
+  <h1>The Ideal Gas Equation – pV = nRT</h1>
+  <p>AQA A-level Chemistry · 3.1.2 Amount of substance walkthrough · R = 8.31 J K⁻¹ mol⁻¹</p>
+</header>
+<nav id="nav"></nav>
+<main>
+
+<!-- ============ PAGE 1 ============ -->
+<section class="page" data-title="1. pV = nRT">
+<h2>1. The ideal gas equation</h2>
+<div class="card key">
+  <div class="eq" style="font-size:34px">pV = nRT</div>
+  <table class="t" style="width:100%">
+    <tr><th>Symbol</th><th>Quantity</th><th>Unit you MUST use</th></tr>
+    <tr><td><b>p</b></td><td>pressure</td><td><b>Pa</b> (pascal)</td></tr>
+    <tr><td><b>V</b></td><td>volume</td><td><b>m³</b></td></tr>
+    <tr><td><b>n</b></td><td>amount of substance</td><td><b>mol</b></td></tr>
+    <tr><td><b>R</b></td><td>gas constant = 8.31</td><td>J K⁻¹ mol⁻¹</td></tr>
+    <tr><td><b>T</b></td><td>temperature</td><td><b>K</b> (kelvin)</td></tr>
+  </table>
+  <p>R is a constant, so it only works if every other quantity is in these <b>SI units</b>. Getting the units wrong is the most common way to lose marks.</p>
+</div>
+
+<h3>See the equation in action</h3>
+<div class="card">
+  <p>The particles of gas hit the walls of the container. Those collisions cause the pressure. Change the amount, temperature or volume and watch what happens to the pressure.</p>
+  <div class="row">
+    <div style="flex:1 1 560px"><canvas id="box" width="620" height="340" style="width:100%"></canvas></div>
+    <div style="flex:1 1 300px">
+      <label class="s">n = <span id="nV">0.040</span> mol</label><input type="range" id="nS" min="0.010" max="0.100" step="0.005" value="0.040">
+      <label class="s">T = <span id="tV">300</span> K <span class="small" id="tC">(27 °C)</span></label><input type="range" id="tS" min="150" max="750" step="5" value="300">
+      <label class="s">V = <span id="vV">2.00</span> dm³</label><input type="range" id="vS" min="1.00" max="4.00" step="0.05" value="2.00">
+      <div class="svgbox" style="margin-top:10px"><svg id="gauge" viewBox="0 0 300 170"></svg></div>
+      <button class="b alt" id="boxReset">Reset</button>
+    </div>
+  </div>
+  <div class="readout" id="boxOut"></div>
+</div>
+<div class="tip">
+  <b>What the simulation shows:</b>
+  <ul style="margin:4px 0">
+    <li><b>More moles</b> → more particles hitting the walls → higher pressure (p ∝ n)</li>
+    <li><b>Higher temperature</b> → particles move faster and hit harder and more often → higher pressure (p ∝ T)</li>
+    <li><b>Bigger volume</b> → particles hit the walls less often → lower pressure (p ∝ 1/V)</li>
+  </ul>
+</div>
+
+<div class="check"><span class="tag">CHECK 1</span><span class="src">Quick check</span>
+  <p>A sealed container of gas is heated from 300 K to 600 K. The volume doesn't change. What happens to the pressure?</p>
+  <div class="mcq" id="mc1"></div>
+</div>
+</section>
+
+<!-- ============ PAGE 2 ============ -->
+<section class="page" data-title="2. Rearranging">
+<h2>2. Rearranging pV = nRT</h2>
+<div class="card key">
+  <p>You are usually asked to find one quantity. Rearrange <b>before</b> you put the numbers in. To move a term that is multiplying, <b>divide both sides</b> by it.</p>
+  <table class="t" style="width:100%">
+    <tr><th>To find…</th><th>Use</th></tr>
+    <tr><td>p</td><td class="alg">p = <span class="frac"><span>nRT</span><span>V</span></span></td></tr>
+    <tr><td>V</td><td class="alg">V = <span class="frac"><span>nRT</span><span>p</span></span></td></tr>
+    <tr><td>n</td><td class="alg">n = <span class="frac"><span>pV</span><span>RT</span></span></td></tr>
+    <tr><td>T</td><td class="alg">T = <span class="frac"><span>pV</span><span>nR</span></span></td></tr>
+  </table>
+</div>
+
+<h3>Watch it rearrange</h3>
+<div class="card">
+  <p>Pick the quantity you want to find.</p>
+  <div class="chips"><button class="b alt rr" data-s="n">n</button><button class="b alt rr" data-s="V">V</button><button class="b alt rr" data-s="T">T</button><button class="b alt rr" data-s="p">p</button></div>
+  <div id="rrBox" style="min-height:220px"></div>
+</div>
+<div class="tip"><b>Memory trick:</b> the top of the fraction is always the other side of the equation from the quantity you want. pV is on the left, nRT is on the right. If you want something from the right (n or T), pV goes on top. If you want something from the left (p or V), nRT goes on top.</div>
+
+<div class="check"><span class="tag">CHECK 2</span><span class="src">Quick check</span>
+  <p>Which is the correct expression for the temperature of a gas?</p>
+  <div class="mcq" id="mc2"></div>
+</div>
+
+<h3>Why kelvin matters</h3>
+<div class="card">
+  <p>If you forget to convert °C into K, your answer can be wrong by a factor of more than 10. Compare the right and wrong answers for n = pV / RT.</p>
+  <label class="s">Temperature: <span id="fkV">20</span> °C</label><input type="range" id="fkS" min="5" max="200" step="1" value="20">
+  <div class="readout" id="fkOut"></div>
+</div>
+</section>
+
+<!-- ============ PAGE 3 ============ -->
+<section class="page" data-title="3. Unit conversions">
+<h2>3. Unit conversions</h2>
+
+<h3>Temperature: °C → K</h3>
+<div class="card key">
+  <div class="eq">T (K) = T (°C) + 273</div>
+  <p>The kelvin scale starts at <b>absolute zero</b> (0 K = −273 °C), the coldest possible temperature. A change of 1 K is the same size as a change of 1 °C.</p>
+  <div class="row">
+    <div style="flex:0 1 260px"><div class="svgbox"><svg id="thermo" viewBox="0 0 260 360"></svg></div></div>
+    <div><label class="s">Drag the temperature: <span id="thV"></span></label><input type="range" id="thS" min="-273" max="500" step="1" value="25">
+      <div class="chips"><button class="b alt thP" data-c="-273">absolute zero</button><button class="b alt thP" data-c="0">water freezes</button><button class="b alt thP" data-c="25">room temp</button><button class="b alt thP" data-c="100">water boils</button></div>
+      <div class="readout" id="thOut"></div></div>
+  </div>
+</div>
+
+<h3>Volume: cm³ → dm³ → m³</h3>
+<div class="card key">
+  <div class="eq">1 m³ = 1000 dm³ = 1 000 000 cm³</div>
+  <p>Each step on the ladder is <b>× 1000</b> or <b>÷ 1000</b>. Going to a <b>bigger</b> unit (cm³ → m³), the number gets <b>smaller</b>, so divide.</p>
+  <div class="svgbox"><svg id="ladder" viewBox="0 0 900 200"></svg></div>
+  <p>Type a volume: <input class="ans" id="ldIn" value="250"> <select id="ldU" style="font-size:18px;padding:5px"><option value="cm">cm³</option><option value="dm">dm³</option><option value="m">m³</option></select></p>
+  <div class="readout" id="ldOut"></div>
+  <p class="small">Shortcuts: cm³ → m³ is × 10⁻⁶ &nbsp;·&nbsp; dm³ → m³ is × 10⁻³</p>
+</div>
+
+<h3>Pressure: kPa → Pa</h3>
+<div class="card key">
+  <div class="eq">1 kPa = 1000 Pa &nbsp;&nbsp;·&nbsp;&nbsp; 1 MPa = 10⁶ Pa</div>
+  <p>So 101 kPa = 101 000 Pa = 1.01 × 10⁵ Pa.</p>
+</div>
+
+<h3>Conversion drill</h3>
+<div class="card">
+  <p>Practise until it's automatic. You get a new question each time. Use standard form if you like (type 2.5e-4 for 2.5 × 10⁻⁴).</p>
+  <div class="eq" id="drQ" style="font-size:22px"></div>
+  <p><input class="ans" id="drA" style="width:200px"> <button class="b" id="drC">Check</button><button class="b alt" id="drN">New question</button><span class="fb" id="drF"></span></p>
+  <p id="drS" class="small"></p>
+</div>
+</section>
+
+<!-- ============ PAGE 4 ============ -->
+<section class="page" data-title="4. Using pV = nRT">
+<h2>4. Using pV = nRT</h2>
+<div class="card key">
+  <p><b>The method – the same every time:</b></p>
+  <ol>
+    <li>Write down the values you are given.</li>
+    <li><b>Convert</b> them to Pa, m³ and K.</li>
+    <li><b>Rearrange</b> pV = nRT for the quantity you want.</li>
+    <li><b>Substitute</b> and calculate.</li>
+    <li>Convert the answer to the unit the question asks for, and give it to <b>3 significant figures</b>.</li>
+  </ol>
+  <p class="small">AQA mark schemes usually give separate marks for the rearranged equation, for the unit conversions and for the final answer.</p>
+</div>
+
+<h3>Worked example 1 – finding n</h3>
+<div class="card stepper">
+  <p>Calculate the amount, in moles, of gas in 1.50 dm³ at 98.0 kPa and 20 °C.</p>
+  <div class="st"><span class="alg">p = 98.0 kPa = <b>98 000 Pa</b> &nbsp;·&nbsp; V = 1.50 dm³ = <b>1.50 × 10⁻³ m³</b> &nbsp;·&nbsp; T = 20 + 273 = <b>293 K</b></span><span class="why">Convert everything first.</span></div>
+  <div class="st"><span class="alg">n = <span class="frac"><span>pV</span><span>RT</span></span></span><span class="why">Rearrange.</span></div>
+  <div class="st"><span class="alg">n = <span class="frac"><span>98 000 × 1.50 × 10⁻³</span><span>8.31 × 293</span></span> = <span class="frac"><span>147</span><span>2434.8</span></span></span><span class="why">Substitute. Work out the top and bottom separately to avoid calculator errors.</span></div>
+  <div class="st"><span class="alg">n = 0.06037… = <b>0.0604 mol</b></span><span class="why">3 significant figures.</span></div>
+  <button class="b nextst">Next step ▶</button><button class="b alt allst">Show all</button><button class="b alt resetst">Reset</button>
+</div>
+
+<h3>Worked example 2 – finding V in cm³</h3>
+<div class="card stepper">
+  <p>Calculate the volume, in cm³, of 0.0200 mol of gas at 100 kPa and 300 K.</p>
+  <div class="st"><span class="alg">p = <b>100 000 Pa</b> &nbsp;·&nbsp; T = <b>300 K</b> &nbsp;·&nbsp; n = 0.0200 mol</span></div>
+  <div class="st"><span class="alg">V = <span class="frac"><span>nRT</span><span>p</span></span> = <span class="frac"><span>0.0200 × 8.31 × 300</span><span>100 000</span></span> = 4.986 × 10⁻⁴ <b>m³</b></span><span class="why">The equation always gives V in m³.</span></div>
+  <div class="st"><span class="alg">4.986 × 10⁻⁴ × 10⁶ = <b>499 cm³</b></span><span class="why">m³ → cm³: multiply by 10⁶. Check it's sensible: a small amount of gas, a few hundred cm³ ✓</span></div>
+  <button class="b nextst">Next step ▶</button><button class="b alt allst">Show all</button><button class="b alt resetst">Reset</button>
+</div>
+
+<h3>Worked example 3 – finding T</h3>
+<div class="card stepper">
+  <p class="small">AQA AS Paper 1, June 2021 (sat November 2021), Q10.3</p>
+  <p>A mixture contains 0.025 mol of SO₂, 0.049 mol of O₂ and 0.034 mol of SO₃. The total pressure of the mixture in a 3500 cm³ vessel is 255 kPa. Calculate the temperature, in °C, of the mixture. <b>[5 marks]</b></p>
+  <div class="st"><span class="alg">T = <span class="frac"><span>pV</span><span>nR</span></span></span><span class="why">M1: rearranged expression.</span></div>
+  <div class="st"><span class="alg">n = 0.025 + 0.049 + 0.034 = <b>0.108 mol</b></span><span class="why">M2: the pressure is caused by ALL the gas particles, so use the total amount.</span></div>
+  <div class="st"><span class="alg">p = <b>255 000 Pa</b> &nbsp;·&nbsp; V = 3500 cm³ = <b>0.0035 m³</b></span><span class="why">M3: unit conversions.</span></div>
+  <div class="st"><span class="alg">T = <span class="frac"><span>255 000 × 0.0035</span><span>8.31 × 0.108</span></span> = <b>994.5 K</b></span><span class="why">M4: temperature in K.</span></div>
+  <div class="st"><span class="alg">994.5 − 273 = <b>721 °C</b></span><span class="why">M5: the question asked for °C.</span></div>
+  <button class="b nextst">Next step ▶</button><button class="b alt allst">Show all</button><button class="b alt resetst">Reset</button>
+</div>
+
+<h3>Your turn</h3>
+<div class="check"><span class="tag">CHECK 3</span><span class="src">Practice</span>
+  <p>Calculate the pressure, in kPa, of 0.150 mol of gas in a 2.50 dm³ container at 27 °C.</p>
+  <p>p = <input class="ans" id="c3"> kPa <button class="b" data-chk="c3" data-v="150" data-t="0.6">Check</button><span class="fb" id="c3f"></span></p>
+  <button class="b alt sw">Show working</button>
+  <div class="work">V = 2.50 × 10⁻³ m³, T = 300 K<br>p = nRT / V = (0.150 × 8.31 × 300) ÷ 2.50 × 10⁻³ = 149 580 Pa = <b>150 kPa</b></div>
+</div>
+<div class="check"><span class="tag">CHECK 4</span><span class="src">Practice</span>
+  <p>Calculate the volume, in cm³, occupied by 0.0350 mol of gas at 101 kPa and 25 °C.</p>
+  <p>V = <input class="ans" id="c4"> cm³ <button class="b" data-chk="c4" data-v="858" data-t="1.5">Check</button><span class="fb" id="c4f"></span></p>
+  <button class="b alt sw">Show working</button>
+  <div class="work">p = 101 000 Pa, T = 298 K<br>V = nRT / p = (0.0350 × 8.31 × 298) ÷ 101 000 = 8.58 × 10⁻⁴ m³<br>× 10⁶ → <b>858 cm³</b></div>
+</div>
+<div class="check"><span class="tag">CHECK 5</span><span class="src">Practice</span>
+  <p>0.0500 mol of a gas occupies 1.80 dm³ at 110 kPa. Calculate the temperature of the gas in °C.</p>
+  <p>T = <input class="ans" id="c5"> °C <button class="b" data-chk="c5" data-v="204" data-t="1.5">Check</button><span class="fb" id="c5f"></span></p>
+  <button class="b alt sw">Show working</button>
+  <div class="work">p = 110 000 Pa, V = 1.80 × 10⁻³ m³<br>T = pV / nR = (110 000 × 1.80 × 10⁻³) ÷ (0.0500 × 8.31) = 198 ÷ 0.4155 = 476.5 K<br>476.5 − 273 = 203.5 = <b>204 °C</b> (3 s.f.)</div>
+</div>
+</section>
+
+<!-- ============ PAGE 5 ============ -->
+<section class="page" data-title="5. Mass and Mr">
+<h2>5. Mass and relative molecular mass</h2>
+<div class="card key">
+  <p>pV = nRT gives you <b>moles</b>. Combine it with the mole equation to link it to mass:</p>
+  <div class="eq">n = <span class="frac"><span>m</span><span>M<sub>r</sub></span></span> &nbsp;&nbsp;so&nbsp;&nbsp; mass = n × M<sub>r</sub> &nbsp;&nbsp;and&nbsp;&nbsp; M<sub>r</sub> = <span class="frac"><span>mass</span><span>n</span></span></div>
+  <p>The two-step method is safest: <b>(1) find n using pV = nRT, (2) use n with the mass.</b> You can also combine them into one equation:</p>
+  <div class="eq">M<sub>r</sub> = <span class="frac"><span>mRT</span><span>pV</span></span></div>
+</div>
+
+<h3>Type 1 – find the mass of a gas</h3>
+<div class="card stepper">
+  <p>Calculate the mass, in g, of 750 cm³ of oxygen gas, O₂, at 100 kPa and 300 K.</p>
+  <div class="st"><span class="alg">n = <span class="frac"><span>pV</span><span>RT</span></span> = <span class="frac"><span>100 000 × 7.50 × 10⁻⁴</span><span>8.31 × 300</span></span> = 0.03008 mol</span><span class="why">750 cm³ = 7.50 × 10⁻⁴ m³</span></div>
+  <div class="st"><span class="alg">M<sub>r</sub>(O₂) = 2 × 16.0 = 32.0</span></div>
+  <div class="st"><span class="alg">mass = n × M<sub>r</sub> = 0.03008 × 32.0 = <b>0.963 g</b></span></div>
+  <button class="b nextst">Next step ▶</button><button class="b alt allst">Show all</button><button class="b alt resetst">Reset</button>
+</div>
+
+<h3>Type 2 – find M<sub>r</sub> of a volatile liquid</h3>
+<div class="card">
+  <p>This is a very common exam experiment. A small mass of a volatile liquid is injected into a gas syringe inside an oven. The liquid turns into a gas, and the plunger moves out. The mass comes from weighing the small syringe <b>before and after</b> injecting.</p>
+  <div class="svgbox"><svg id="syr" viewBox="0 0 900 300"></svg></div>
+  <p><button class="b" id="syrGo">Inject the liquid ▶</button><button class="b alt" id="syrR">Reset</button></p>
+  <div class="readout" id="syrOut"></div>
+</div>
+
+<div class="card stepper">
+  <p class="small">AQA AS Paper 2, June 2025, Q05.2</p>
+  <p>Liquid X is vaporised in a gas syringe. The data are: mass of syringe + X before = 106.633 g, after = 105.872 g; volume of vapour = 272 cm³; temperature = 373 K; pressure = 102 kPa. Calculate the M<sub>r</sub> of X. <b>[5 marks]</b></p>
+  <div class="st"><span class="alg">n = <span class="frac"><span>pV</span><span>RT</span></span></span><span class="why">M1</span></div>
+  <div class="st"><span class="alg">V = 272 × 10⁻⁶ m³ &nbsp;·&nbsp; p = 102 000 Pa &nbsp;·&nbsp; T = 373 K</span><span class="why">M2: unit conversions.</span></div>
+  <div class="st"><span class="alg">n = <span class="frac"><span>102 000 × 272 × 10⁻⁶</span><span>8.31 × 373</span></span> = 0.00895 mol</span><span class="why">M3</span></div>
+  <div class="st"><span class="alg">mass of X = 106.633 − 105.872 = 0.761 g</span><span class="why">M4: mass by difference.</span></div>
+  <div class="st"><span class="alg">M<sub>r</sub> = <span class="frac"><span>0.761</span><span>0.00895</span></span> = <b>85.0</b></span><span class="why">M5. M<sub>r</sub> has no units.</span></div>
+  <button class="b nextst">Next step ▶</button><button class="b alt allst">Show all</button><button class="b alt resetst">Reset</button>
+</div>
+
+<h3>Type 3 – identify the compound</h3>
+<div class="card key">
+  <p>Once you have M<sub>r</sub>, compare it with the possible compounds. For an <b>alkane</b>, C<sub>n</sub>H<sub>2n+2</sub>:</p>
+  <div class="eq">M<sub>r</sub> = 12n + 1(2n + 2) = 14n + 2</div>
+  <p>e.g. M<sub>r</sub> = 72.0 → 14n + 2 = 72 → n = 5 → C₅H₁₂ (pentane)</p>
+</div>
+
+<div class="check"><span class="tag">CHECK 6</span><span class="src">AQA AS Paper 1, June 2018, Q06.1</span>
+  <p>A student injected liquid Y into a gas syringe in an oven.</p>
+  <table class="t"><tr><td>Mass of hypodermic syringe and Y before injection</td><td>10.91 g</td></tr><tr><td>Mass after injection</td><td>10.70 g</td></tr><tr><td>Oven temperature</td><td>98.1 °C</td></tr><tr><td>Atmospheric pressure</td><td>102 kPa</td></tr><tr><td>Increase in volume in gas syringe</td><td>85.0 cm³</td></tr></table>
+  <p>Determine the M<sub>r</sub> of Y. <b>[4 marks]</b></p>
+  <p>M<sub>r</sub> = <input class="ans" id="c6"> <button class="b" data-chk="c6" data-v="74.7" data-t="0.35">Check</button><span class="fb" id="c6f"></span></p>
+  <button class="b alt sw">Show working</button>
+  <div class="work">mass = 10.91 − 10.70 = 0.21 g &nbsp;·&nbsp; T = 371.1 K &nbsp;·&nbsp; p = 102 000 Pa &nbsp;·&nbsp; V = 85.0 × 10⁻⁶ m³<br>
+  n = (102 000 × 85.0 × 10⁻⁶) ÷ (8.31 × 371.1) = 2.81 × 10⁻³ mol<br>M<sub>r</sub> = 0.21 ÷ 2.81 × 10⁻³ = <b>74.7</b> (allow 75)</div>
+</div>
+
+<div class="check"><span class="tag">CHECK 7</span><span class="src">AQA AS Paper 1, June 2018, Q06.2</span>
+  <p>Some of the liquid injected did not evaporate because it dripped into the gas syringe nozzle outside the oven. Explain how this would affect the calculated M<sub>r</sub>. <b>[2 marks]</b></p>
+  <button class="b alt sw" data-l="Show answer">Show answer</button>
+  <div class="work">The <b>volume recorded is lower</b> (less vapour formed than expected from the mass used), so n is too small.<br>M<sub>r</sub> = mass ÷ n, so the calculated M<sub>r</sub> would be <b>greater</b> than the real value.</div>
+</div>
+
+<div class="check"><span class="tag">CHECK 8</span><span class="src">AQA AS Paper 2, June 2017, Q02.1</span>
+  <p>Hydrocarbon X: mass 194 mg, temperature 373 K, pressure 102 kPa, volume 72 cm³. Calculate the M<sub>r</sub> of X. Give your answer to the appropriate number of significant figures. <b>[5 marks]</b></p>
+  <p>M<sub>r</sub> = <input class="ans" id="c8"> <button class="b" data-chk="c8" data-v="82" data-t="0.01">Check</button><span class="fb" id="c8f"></span></p>
+  <button class="b alt sw" data-l="Hint">Hint</button>
+  <div class="work">mg → g: divide by 1000. The volume (72 cm³) is only given to 2 significant figures, so your answer should be too.</div>
+  <button class="b alt sw">Show working</button>
+  <div class="work">m = 0.194 g &nbsp;·&nbsp; V = 72 × 10⁻⁶ m³ &nbsp;·&nbsp; p = 102 000 Pa<br>n = (102 000 × 72 × 10⁻⁶) ÷ (8.31 × 373) = 2.37 × 10⁻³ mol<br>M<sub>r</sub> = 0.194 ÷ 2.37 × 10⁻³ = 81.9 = <b>82</b> (2 s.f.)</div>
+</div>
+
+<div class="check"><span class="tag">CHECK 9</span><span class="src">AQA past paper (Amount of Substance question bank), part (b) added</span>
+  <p>Liquid Y is injected into a sealed 482 cm³ flask under vacuum and vaporises. Mass of Y = 717 mg, temperature = 297 K, pressure = 51.0 kPa.</p>
+  <p>(a) Calculate the M<sub>r</sub> of Y. &nbsp; M<sub>r</sub> = <input class="ans" id="c9a"> <button class="b" data-chk="c9a" data-v="72.0" data-t="0.15">Check</button><span class="fb" id="c9af"></span></p>
+  <p>(b) Y is an alkane. Give the value of n in C<sub>n</sub>H<sub>2n+2</sub>. &nbsp; n = <input class="ans" style="width:70px" id="c9b"> <button class="b" data-chk="c9b" data-v="5" data-t="0">Check</button><span class="fb" id="c9bf"></span></p>
+  <button class="b alt sw">Show working</button>
+  <div class="work">(a) n = (51 000 × 482 × 10⁻⁶) ÷ (8.31 × 297) = 9.96 × 10⁻³ mol; M<sub>r</sub> = 0.717 ÷ 9.96 × 10⁻³ = <b>72.0</b><br>(b) 14n + 2 = 72 → n = <b>5</b> → C₅H₁₂, pentane</div>
+</div>
+
+<div class="check"><span class="tag">CHECK 10</span><span class="src">Practice</span>
+  <p>Calculate the mass, in g, of 2.00 dm³ of nitrogen gas, N₂, at 101 kPa and 0 °C.</p>
+  <p>mass = <input class="ans" id="c10"> g <button class="b" data-chk="c10" data-v="2.49" data-t="0.01">Check</button><span class="fb" id="c10f"></span></p>
+  <button class="b alt sw">Show working</button>
+  <div class="work">n = (101 000 × 2.00 × 10⁻³) ÷ (8.31 × 273) = 0.0890 mol<br>mass = 0.0890 × 28.0 = <b>2.49 g</b></div>
+</div>
+</section>
+
+<!-- ============ PAGE 6 ============ -->
+<section class="page" data-title="6. Quiz">
+<h2>6. Quick quiz</h2>
+<p>Ten questions on everything in this walkthrough.</p>
+<div id="quiz"></div>
+<div id="score"></div>
+<button class="b alt" onclick="buildQuiz(Q)">Reset quiz</button>
+</section>
+
+<div class="pager"><button class="b alt" id="prevB">◀ Previous</button><button class="b" id="nextB">Next ▶</button></div>
+</main>
+
+<script>
+/* ---------- navigation ---------- */
+const pages=[...document.querySelectorAll('.page')];
+const nav=document.getElementById('nav');
+pages.forEach((p,i)=>{const b=document.createElement('button');b.textContent=p.dataset.title;b.onclick=()=>go(i);nav.appendChild(b)});
+let cur=0;
+function go(i){cur=Math.max(0,Math.min(pages.length-1,i));
+ pages.forEach((p,j)=>p.classList.toggle('on',j===cur));
+ [...nav.children].forEach((b,j)=>b.classList.toggle('on',j===cur));
+ document.getElementById('prevB').disabled=cur===0;
+ document.getElementById('nextB').disabled=cur===pages.length-1;
+ window.scrollTo(0,0);
+ if(window.onPage)window.onPage(cur);}
+document.getElementById('prevB').onclick=()=>go(cur-1);
+document.getElementById('nextB').onclick=()=>go(cur+1);
+
+/* ---------- numeric checks, working, steppers ---------- */
+document.addEventListener('click',e=>{
+ const t=e.target;
+ if(t.dataset.chk){const inp=document.getElementById(t.dataset.chk),fb=document.getElementById(t.dataset.chk+'f');
+  const v=parseFloat(inp.value.replace(',','.').replace('%',''));const ans=parseFloat(t.dataset.v),tol=parseFloat(t.dataset.t||0.05);
+  if(isNaN(v)){fb.textContent='Enter a number';fb.className='fb no';return}
+  if(Math.abs(v-ans)<=tol+1e-9){fb.textContent='✓ Correct';fb.className='fb ok';inp.style.borderColor='var(--good)'}
+  else{fb.textContent='✗ Not quite – try again, or show the working';fb.className='fb no';inp.style.borderColor='var(--bad)'}}
+ if(t.classList.contains('sw')){const ns=t.nextElementSibling,w=ns&&ns.classList.contains('work')?ns:t.parentElement.querySelector('.work');w.classList.toggle('on');t.textContent=w.classList.contains('on')?'Hide working':(t.dataset.l||'Show working')}
+ if(t.classList.contains('nextst')){const s=t.closest('.stepper');const hid=[...s.querySelectorAll('.st:not(.on)')];if(hid.length){hid[0].classList.add('on')}
+  if(hid.length<=1){t.disabled=true}}
+ if(t.classList.contains('allst')){const s=t.closest('.stepper');s.querySelectorAll('.st').forEach(x=>x.classList.add('on'));s.querySelector('.nextst').disabled=true}
+ if(t.classList.contains('resetst')){const s=t.closest('.stepper');s.querySelectorAll('.st').forEach(x=>x.classList.remove('on'));s.querySelector('.nextst').disabled=false}
+});
+
+/* ---------- quiz ---------- */
+let qs=0,qa=0;
+function buildQuiz(Q){const w=document.getElementById('quiz');w.innerHTML='';qs=0;qa=0;
+ Q.forEach((q,i)=>{const c=document.createElement('div');c.className='card mcq';c.innerHTML=`<b>Q${i+1}.</b> ${q[0]}`;
+  q[1].forEach((o,j)=>{const b=document.createElement('button');b.className='opt';b.innerHTML=o;
+   b.onclick=()=>{if(c.classList.contains('done'))return;c.classList.add('done');qa++;
+    if(j===q[2]){b.classList.add('right');qs++}else{b.classList.add('wrong');c.querySelectorAll('.opt')[q[2]].classList.add('right')}score(Q)};c.appendChild(b)});
+  const e=document.createElement('div');e.className='exp';e.innerHTML='💡 '+q[3];c.appendChild(e);w.appendChild(c)});score(Q)}
+function score(Q){document.getElementById('score').innerHTML=`Score: <b>${qs}</b> / ${Q.length}`+(qa===Q.length?(qs>=Q.length-1?' – excellent!':qs>=Q.length-3?' – good, review the ones you missed':' – go back through the walkthrough and try again'):'')}
+const NS='http://www.w3.org/2000/svg';
+function E(tag,attrs,parent){const el=document.createElementNS(NS,tag);for(const k in attrs)el.setAttribute(k,attrs[k]);if(parent)parent.appendChild(el);return el}
+const R=8.31;
+function sf(v,d=3){if(v===0)return '0';const a=Math.abs(v);if(a>=1e5||a<1e-2){const e=Math.floor(Math.log10(a));let m=(v/10**e).toPrecision(d);if(+m>=10){m=(+m/10).toPrecision(d);return m+' × 10'+sup(e+1)}return m+' × 10'+sup(e)}return (+v.toPrecision(d)).toLocaleString('en-GB',{maximumSignificantDigits:d}).replace(/,/g,' ')}
+function sup(e){const m={'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};return String(e).split('').map(c=>m[c]).join('')}
+function mkMCQ(id,q){const c=document.getElementById(id);c.innerHTML='';
+ q[0].forEach((o,j)=>{const b=document.createElement('button');b.className='opt';b.innerHTML=o;b.onclick=()=>{if(c.classList.contains('done'))return;c.classList.add('done');
+  b.classList.add(j===q[1]?'right':'wrong');c.querySelectorAll('.opt')[q[1]].classList.add('right')};c.appendChild(b)});
+ const e=document.createElement('div');e.className='exp';e.innerHTML='💡 '+q[2];c.appendChild(e)}
+
+/* ---------- page 1: particle box ---------- */
+const bc=document.getElementById('box'),bx=bc.getContext('2d');
+const nS=document.getElementById('nS'),tS=document.getElementById('tS'),vS=document.getElementById('vS');
+let parts=[],hits=[],flash=0;
+function wallX(){return 30+(+vS.value)/4*560}
+function syncParts(){const N=Math.round(+nS.value*600);while(parts.length<N){const a=Math.random()*6.283;parts.push({x:40+Math.random()*(wallX()-60),y:40+Math.random()*260,dx:Math.cos(a),dy:Math.sin(a)})}parts.length=N}
+function boxUpdate(){const n=+nS.value,T=+tS.value,V=+vS.value;
+ document.getElementById('nV').textContent=n.toFixed(3);document.getElementById('tV').textContent=T;document.getElementById('tC').textContent=`(${T-273} °C)`;document.getElementById('vV').textContent=V.toFixed(2);
+ syncParts();const p=n*R*T/(V*1e-3);
+ document.getElementById('boxOut').innerHTML=`p = nRT / V = (${n.toFixed(3)} × 8.31 × ${T}) ÷ ${sf(V*1e-3)} m³ = ${sf(p)} Pa = <b>${sf(p/1000)} kPa</b>`;
+ drawGauge(p/1000)}
+function drawGauge(kp){const g=document.getElementById('gauge');g.innerHTML='';const cx=150,cy=140,r=110,max=700;
+ E('path',{d:`M ${cx-r} ${cy} A ${r} ${r} 0 0 1 ${cx+r} ${cy}`,fill:'none',stroke:'#ead9bd','stroke-width':18},g);
+ const f=Math.min(kp/max,1),a=Math.PI*(1-f);
+ E('path',{d:`M ${cx-r} ${cy} A ${r} ${r} 0 0 1 ${cx+r*Math.cos(a)} ${cy-r*Math.sin(a)}`,fill:'none',stroke:'#b5651d','stroke-width':18},g);
+ for(let v=0;v<=max;v+=100){const b=Math.PI*(1-v/max);E('text',{x:cx+(r-28)*Math.cos(b),y:cy-(r-28)*Math.sin(b)+4,'text-anchor':'middle','font-size':11,fill:'#7a6448'},g).textContent=v}
+ E('line',{x1:cx,y1:cy,x2:cx+(r-10)*Math.cos(a),y2:cy-(r-10)*Math.sin(a),stroke:'#3b2a1a','stroke-width':3,style:'transition:all .3s'},g);
+ E('circle',{cx,cy,r:6,fill:'#3b2a1a'},g);
+ E('text',{x:cx,y:cy+24,'text-anchor':'middle','font-size':17,'font-weight':'bold',fill:'#b03a2e'},g).textContent=sf(kp)+' kPa'}
+function boxLoop(){const W=wallX(),sp=0.16*Math.sqrt(+tS.value);bx.clearRect(0,0,620,340);
+ bx.fillStyle='#fff';bx.fillRect(30,30,W-30,280);bx.strokeStyle='#6b4423';bx.lineWidth=4;bx.beginPath();bx.moveTo(W,30);bx.lineTo(30,30);bx.lineTo(30,310);bx.lineTo(W,310);bx.stroke();
+ bx.fillStyle='#8b5a2b';bx.fillRect(W,22,12,296);bx.fillRect(W+12,160,620-W,16);
+ const now=performance.now();
+ parts.forEach(q=>{q.x+=q.dx*sp;q.y+=q.dy*sp;
+  if(q.x<36){q.x=36;q.dx*=-1;hits.push({x:30,y:q.y,t:now})}if(q.x>W-6){q.x=W-6;q.dx=-Math.abs(q.dx);hits.push({x:W,y:q.y,t:now})}
+  if(q.y<36){q.y=36;q.dy*=-1;hits.push({x:q.x,y:30,t:now})}if(q.y>304){q.y=304;q.dy*=-1;hits.push({x:q.x,y:310,t:now})}
+  bx.beginPath();bx.arc(q.x,q.y,5,0,7);bx.fillStyle='#2c6e8f';bx.fill()});
+ hits=hits.filter(h=>now-h.t<250);hits.forEach(h=>{bx.beginPath();bx.arc(h.x,h.y,9*(1-(now-h.t)/250)+2,0,7);bx.fillStyle='rgba(181,101,29,.6)';bx.fill()});
+ bx.fillStyle='#6b4423';bx.font='14px Segoe UI';bx.fillText('piston',Math.min(W+16,570),150);
+ bx.fillText(`collisions with walls: ${hits.length} in the last 0.25 s`,36,330);
+ requestAnimationFrame(boxLoop)}
+[nS,tS,vS].forEach(s=>s.oninput=boxUpdate);
+document.getElementById('boxReset').onclick=()=>{nS.value=0.04;tS.value=300;vS.value=2;boxUpdate()};
+boxUpdate();boxLoop();
+mkMCQ('mc1',[['It halves','It stays the same','It doubles','It increases by 300 times'],2,'p = nRT / V. n and V are fixed, so p ∝ T. Doubling T (in kelvin!) doubles p.']);
+
+/* ---------- page 2: rearranging ---------- */
+const RR={
+ n:[['pV = nRT',''],['<span class="frac"><span>pV</span><span>RT</span></span> = <span class="frac"><span>n<s style="color:#b03a2e">RT</s></span><span><s style="color:#b03a2e">RT</s></span></span>','Divide both sides by RT. The RTs on the right cancel.'],['n = <span class="frac"><span>pV</span><span>RT</span></span>','']],
+ T:[['pV = nRT',''],['<span class="frac"><span>pV</span><span>nR</span></span> = <span class="frac"><span><s style="color:#b03a2e">nR</s>T</span><span><s style="color:#b03a2e">nR</s></span></span>','Divide both sides by nR.'],['T = <span class="frac"><span>pV</span><span>nR</span></span>','']],
+ V:[['pV = nRT',''],['<span class="frac"><span><s style="color:#b03a2e">p</s>V</span><span><s style="color:#b03a2e">p</s></span></span> = <span class="frac"><span>nRT</span><span>p</span></span>','Divide both sides by p.'],['V = <span class="frac"><span>nRT</span><span>p</span></span>','']],
+ p:[['pV = nRT',''],['<span class="frac"><span>p<s style="color:#b03a2e">V</s></span><span><s style="color:#b03a2e">V</s></span></span> = <span class="frac"><span>nRT</span><span>V</span></span>','Divide both sides by V.'],['p = <span class="frac"><span>nRT</span><span>V</span></span>','']]};
+let rrT=[];
+document.querySelectorAll('.rr').forEach(b=>b.onclick=()=>{rrT.forEach(clearTimeout);rrT=[];document.querySelectorAll('.rr').forEach(x=>x.classList.toggle('on',x===b));
+ const box=document.getElementById('rrBox');box.innerHTML='';
+ RR[b.dataset.s].forEach((s,i)=>rrT.push(setTimeout(()=>{const d=document.createElement('div');d.className='eq';d.style.animation='fade .6s';d.innerHTML=s[0]+(s[1]?`<div class="small" style="font-family:Segoe UI">${s[1]}</div>`:'');if(i===2)d.style.borderColor='var(--good)',d.style.borderStyle='solid';box.appendChild(d)},i*1100)))});
+document.querySelector('.rr').click();
+mkMCQ('mc2',[['T = <span class="frac"><span>nR</span><span>pV</span></span>','T = <span class="frac"><span>pVR</span><span>n</span></span>','T = <span class="frac"><span>pV</span><span>nR</span></span>','T = <span class="frac"><span>nRp</span><span>V</span></span>'],2,'Divide both sides of pV = nRT by nR.']);
+const fkS=document.getElementById('fkS');
+function fk(){const c=+fkS.value,K=c+273;document.getElementById('fkV').textContent=c;
+ const p=100000,V=1e-3,nr=p*V/(R*K),nw=p*V/(R*c);
+ document.getElementById('fkOut').innerHTML=`p = 100 kPa, V = 1.00 dm³<br>✓ correct, T = ${K} K: &nbsp;n = ${sf(nr)} mol<br><span style="color:#ffb3a7">✗ wrong, T = ${c}: &nbsp;&nbsp;&nbsp;&nbsp;n = ${sf(nw)} mol</span><br>The wrong answer is <b>${(K/c).toFixed(1)} times too big</b> (${K} ÷ ${c})`}
+fkS.oninput=fk;fk();
+
+/* ---------- page 3: thermometer ---------- */
+const thS=document.getElementById('thS');
+function th(){const c=+thS.value,K=c+273,g=document.getElementById('thermo');g.innerHTML='';const Y=cc=>320-(cc+273)/773*290;
+ E('rect',{x:112,y:20,width:36,height:310,rx:18,fill:'#fff',stroke:'#8b5a2b','stroke-width':2},g);
+ E('rect',{x:120,y:Y(c),width:20,height:325-Y(c),rx:8,fill:'#b03a2e',style:'transition:all .3s'},g);
+ E('circle',{cx:130,cy:330,r:20,fill:'#b03a2e'},g);
+ for(let cc=-273;cc<=500;cc+=(cc===-273?73:100)){E('line',{x1:100,x2:112,y1:Y(cc),y2:Y(cc),stroke:'#3b2a1a'},g);E('line',{x1:148,x2:160,y1:Y(cc),y2:Y(cc),stroke:'#3b2a1a'},g);
+  E('text',{x:95,y:Y(cc)+4,'text-anchor':'end','font-size':13,fill:'#2c6e8f'},g).textContent=cc;E('text',{x:165,y:Y(cc)+4,'font-size':13,fill:'#b5651d'},g).textContent=cc+273}
+ E('text',{x:60,y:14,'font-size':14,'font-weight':'bold',fill:'#2c6e8f','text-anchor':'middle'},g).textContent='°C';E('text',{x:195,y:14,'font-size':14,'font-weight':'bold',fill:'#b5651d','text-anchor':'middle'},g).textContent='K';
+ document.getElementById('thV').textContent=c+' °C';
+ document.getElementById('thOut').innerHTML=`${c} °C + 273 = <b>${K} K</b>`+(c===-273?'<br>Absolute zero: particles have the least possible energy. Nothing can be colder.':'')}
+thS.oninput=th;document.querySelectorAll('.thP').forEach(b=>b.onclick=()=>{thS.value=b.dataset.c;th()});th();
+
+/* ---------- page 3: volume ladder ---------- */
+function ladder(hl){const g=document.getElementById('ladder');g.innerHTML='';const xs=[140,450,760],lab=['cm³','dm³','m³'];
+ const ld=document.getElementById('ldOut'),v=parseSF(document.getElementById('ldIn').value),u=document.getElementById('ldU').value;
+ let cm=u==='cm'?v:u==='dm'?v*1000:v*1e6;const vals=[cm,cm/1000,cm/1e6];
+ xs.forEach((x,i)=>{E('rect',{x:x-110,y:60,width:220,height:80,rx:12,fill:['cm','dm','m'][i]===u?'#fdf6e6':'#fff',stroke:'#8b5a2b','stroke-width':2},g);
+  E('text',{x,y:90,'text-anchor':'middle','font-size':18,fill:'#6b4423','font-weight':'bold'},g).textContent=lab[i];
+  E('text',{x,y:122,'text-anchor':'middle','font-size':18,fill:'#3b2a1a'},g).textContent=isNaN(v)?'?':sf(vals[i])});
+ [0,1].forEach(i=>{const x1=xs[i]+112,x2=xs[i+1]-112;
+  E('line',{x1,x2,y1:75,y2:75,stroke:'#b03a2e','stroke-width':3,'marker-end':'url(#ah)',class:'flow'},g);E('text',{x:(x1+x2)/2,y:62,'text-anchor':'middle','font-size':15,fill:'#b03a2e'},g).textContent='÷ 1000';
+  E('line',{x1:x2,x2:x1,y1:125,y2:125,stroke:'#2f7d4a','stroke-width':3,'marker-end':'url(#ag)'},g);E('text',{x:(x1+x2)/2,y:150,'text-anchor':'middle','font-size':15,fill:'#2f7d4a'},g).textContent='× 1000'});
+ const d=E('defs',{},g);const m1=E('marker',{id:'ah',markerWidth:10,markerHeight:10,refX:8,refY:5,orient:'auto'},d);E('path',{d:'M0,0 L10,5 L0,10 z',fill:'#b03a2e'},m1);
+ const m2=E('marker',{id:'ag',markerWidth:10,markerHeight:10,refX:8,refY:5,orient:'auto'},d);E('path',{d:'M0,0 L10,5 L0,10 z',fill:'#2f7d4a'},m2);
+ E('text',{x:450,y:190,'text-anchor':'middle','font-size':14,fill:'#7a6448'},g).textContent='bigger unit → smaller number';
+ ld.innerHTML=isNaN(v)?'Enter a number':`${sf(vals[0])} cm³ = ${sf(vals[1])} dm³ = <b>${sf(vals[2])} m³</b> ← use this in pV = nRT`}
+function parseSF(s){s=String(s).trim().replace(/−/g,'-').replace(/\s/g,'').replace(/,/g,'');s=s.replace(/(?:×|x|\*)10\^?(-?\d+)/i,'e$1');s=s.replace(/10([⁻⁰¹²³⁴⁵⁶⁷⁸⁹]+)$/,'');return parseFloat(s)}
+document.getElementById('ldIn').oninput=()=>ladder();document.getElementById('ldU').onchange=()=>ladder();ladder();
+
+/* ---------- page 3: drill ---------- */
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const GEN=[
+ ()=>{const c=pick([-40,-10,0,18,20,25,37,60,95,100,150,250,450,527,1000]);return[`${c} °C = ? K`,c+273,'K','°C + 273']},
+ ()=>{const k=pick([200,250,273,298,310,350,373,423,573,723,1273]);return[`${k} K = ? °C`,k-273,'°C','K − 273']},
+ ()=>{const v=pick([25,48,72,85,100,150,250,272,350,482,500,750]);return[`${v} cm³ = ? m³`,v*1e-6,'m³','÷ 10⁶ (or × 10⁻⁶)']},
+ ()=>{const v=pick([0.25,0.5,1.5,2,2.5,3.5,5,9.4,24]);return[`${v} dm³ = ? m³`,v*1e-3,'m³','÷ 1000']},
+ ()=>{const v=pick([51,98.5,100,101,102,105,110,255,300]);return[`${v} kPa = ? Pa`,v*1000,'Pa','× 1000']},
+ ()=>{const v=pick([1.21e-3,4.99e-4,8.58e-4,2.5e-4,6.0e-5]);return[`${sf(v)} m³ = ? cm³`,v*1e6,'cm³','× 10⁶']},
+ ()=>{const v=pick([1.34e5,1.5e5,98500,2.5e5,101000]);return[`${sf(v)} Pa = ? kPa`,v/1000,'kPa','÷ 1000']}];
+let dq=null,ds=0,dn=0;
+function drNew(){dq=pick(GEN)();document.getElementById('drQ').textContent=dq[0];const a=document.getElementById('drA');a.value='';a.style.borderColor='';document.getElementById('drF').textContent='';a.focus&&0}
+document.getElementById('drN').onclick=drNew;
+document.getElementById('drC').onclick=()=>{const v=parseSF(document.getElementById('drA').value),f=document.getElementById('drF');if(isNaN(v)){f.textContent='Enter a number';f.className='fb no';return}
+ dn++;const ok=Math.abs(v-dq[1])<=Math.abs(dq[1])*0.005+1e-12;if(ok){ds++;f.textContent='✓ Correct';f.className='fb ok'}else{f.innerHTML=`✗ It's ${sf(dq[1])} ${dq[2]} (${dq[3]})`;f.className='fb no'}
+ document.getElementById('drS').textContent=`Score: ${ds} / ${dn}`;if(ok)setTimeout(drNew,900)};
+document.getElementById('drA').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('drC').click()});
+drNew();
+
+/* ---------- page 5: gas syringe ---------- */
+const sy=document.getElementById('syr');let syS={t:0,run:false,parts:[]};const Vfin=85.0;
+const BX0=230,BX1=790,BY0=150,BY1=210,VX=v=>BX0+v/100*(BX1-BX0);
+function syDraw(){sy.innerHTML='';const t=syS.t;
+ E('rect',{x:20,y:20,width:860,height:260,rx:14,fill:'#fff4e6',stroke:'#b5651d','stroke-width':3},sy);
+ E('text',{x:860,y:48,'text-anchor':'end','font-size':16,fill:'#b5651d','font-weight':'bold'},sy).textContent='OVEN 98.1 °C (371.1 K)';
+ // glow
+ for(let i=0;i<6;i++)E('path',{d:`M ${120+i*130} 270 q 10 -12 0 -24 q -10 -12 0 -24`,fill:'none',stroke:'#f2b880','stroke-width':2},sy);
+ // barrel
+ E('rect',{x:BX0,y:BY0,width:BX1-BX0,height:BY1-BY0,fill:'#f4fbff',stroke:'#6b8ca3','stroke-width':2},sy);
+ E('rect',{x:BX0-40,y:BY0+22,width:40,height:16,fill:'#dfe9ef',stroke:'#6b8ca3'},sy);
+ E('rect',{x:BX0-50,y:BY0+17,width:12,height:26,fill:'#555'},sy);
+ E('text',{x:BX0-44,y:BY0+60,'font-size':12,fill:'#555','text-anchor':'middle'},sy).textContent='seal';
+ for(let v=0;v<=100;v+=10){E('line',{x1:VX(v),x2:VX(v),y1:BY0,y2:BY0+(v%50?8:14),stroke:'#6b8ca3'},sy);E('text',{x:VX(v),y:BY0-6,'font-size':11,'text-anchor':'middle',fill:'#6b8ca3'},sy).textContent=v}
+ E('text',{x:VX(50),y:BY0-24,'font-size':13,'text-anchor':'middle',fill:'#6b8ca3'},sy).textContent='gas syringe volume / cm³';
+ const vNow=t<1.6?0:Math.min(Vfin,(t-1.6)/2.2*Vfin),px=VX(vNow);
+ E('rect',{x:px,y:BY0+3,width:10,height:BY1-BY0-6,fill:'#3b2a1a'},sy);E('rect',{x:px+10,y:BY0+24,width:BX1-px+60,height:12,fill:'#8b5a2b'},sy);
+ // vapour
+ syS.parts.forEach(q=>{if(vNow>0){const L=px-BX0;q.x=Math.max(2,Math.min(L-4,q.x+q.dx));if(q.x<=2||q.x>=L-4)q.dx*=-1;q.y+=q.dy;if(q.y<6||q.y>BY1-BY0-6)q.dy*=-1;
+  E('circle',{cx:BX0+q.x,cy:BY0+q.y,r:4,fill:'#6a4c93'},sy)}});
+ // hypodermic
+ const hy=t<0.8?65+t/0.8*40:t<1.6?105:105-Math.min(1,(t-1.6))*25;
+ E('rect',{x:BX0-60,y:hy-40,width:24,height:70,fill:'#e8f1f5',stroke:'#6b8ca3'},sy);
+ const liq=t<1.2?50:Math.max(8,50-(t-1.2)/0.4*42);E('rect',{x:BX0-57,y:hy+27-liq*0.9,width:18,height:liq*0.9,fill:'#6a4c93',opacity:.7},sy);
+ E('line',{x1:BX0-48,x2:BX0-48,y1:hy+30,y2:hy+60,stroke:'#555','stroke-width':2},sy);
+ E('text',{x:BX0-48,y:hy-46,'font-size':12,'text-anchor':'middle',fill:'#555'},sy).textContent='hypodermic syringe';
+ if(t>1.2&&t<1.8)E('circle',{cx:BX0-20,cy:BY0+30,r:6,fill:'#6a4c93'},sy);
+ const o=document.getElementById('syrOut');
+ if(t===0)o.innerHTML='Mass of hypodermic syringe + liquid Y before injection: <b>10.91 g</b><br>Press "Inject" to start.';
+ else if(t<1.6)o.innerHTML='Injecting liquid Y through the seal…';
+ else if(vNow<Vfin)o.innerHTML=`Y vaporises in the hot oven. The vapour pushes the plunger out… ${vNow.toFixed(1)} cm³`;
+ else o.innerHTML=`Volume of vapour = <b>85.0 cm³</b><br>Mass after injection = <b>10.70 g</b> → mass of Y = 10.91 − 10.70 = <b>0.21 g</b><br>n = pV / RT = (102 000 × 85.0 × 10⁻⁶) ÷ (8.31 × 371.1) = 2.81 × 10⁻³ mol &nbsp;→&nbsp; M<sub>r</sub> = 0.21 ÷ 2.81 × 10⁻³ = <b>74.7</b><br><span style="color:#cfe8ff">(This is the June 2018 data – Check 6 below.)</span>`}
+function syLoop(){if(!syS.run)return;syS.t+=1/60;if(syS.t>1.6&&syS.parts.length<40)syS.parts.push({x:Math.random()*Math.max(8,VX(Math.min(Vfin,(syS.t-1.6)/2.2*Vfin))-BX0-8),y:10+Math.random()*40,dx:1+Math.random()*2,dy:(Math.random()-.5)*2});syDraw();if(syS.t<4.5||true)requestAnimationFrame(syLoop)}
+document.getElementById('syrGo').onclick=()=>{if(syS.run)return;syS={t:0.01,run:true,parts:[]};syLoop()};
+document.getElementById('syrR').onclick=()=>{syS={t:0,run:false,parts:[]};syDraw()};syDraw();
+
+/* ---------- quiz ---------- */
+const Q=[
+ ["In pV = nRT, which unit must the volume be in?",["cm³","dm³","m³","litres"],2,"R = 8.31 J K⁻¹ mol⁻¹ only works with SI units: Pa, m³, K."],
+ ["What is 25 °C in kelvin?",["248 K","298 K","25 K","273 K"],1,"25 + 273 = 298 K"],
+ ["What is 350 cm³ in m³?",["0.350 m³","3.50 × 10⁻⁴ m³","3.50 × 10⁻³ m³","3.50 × 10⁵ m³"],1,"cm³ → m³: divide by 10⁶. 350 ÷ 1 000 000 = 3.50 × 10⁻⁴"],
+ ["What is 98.5 kPa in Pa?",["0.0985 Pa","9850 Pa","98 500 Pa","985 000 Pa"],2,"kPa → Pa: × 1000"],
+ ["Which expression gives the volume of a gas?",["V = pnRT","V = nR / pT","V = nRT / p","V = p / nRT"],2,"Divide both sides of pV = nRT by p."],
+ ["How many moles of gas are in 1.00 dm³ at 100 kPa and 300 K?",["0.0401 mol","40.1 mol","0.401 mol","4.01 × 10⁻⁵ mol"],0,"n = (100 000 × 1.00 × 10⁻³) ÷ (8.31 × 300) = 100 ÷ 2493 = 0.0401 mol"],
+ ["A vessel contains 0.020 mol N₂ and 0.030 mol H₂. Which value of n should you use to find the total pressure?",["0.020 mol","0.030 mol","0.050 mol","0.010 mol"],2,"Pressure comes from all the gas particles, so use the total: 0.020 + 0.030 = 0.050 mol."],
+ ["Which equation gives M<sub>r</sub> directly from the experimental data?",["M<sub>r</sub> = pV / mRT","M<sub>r</sub> = mRT / pV","M<sub>r</sub> = mpV / RT","M<sub>r</sub> = RT / mpV"],1,"n = pV / RT and M<sub>r</sub> = m / n, so M<sub>r</sub> = m ÷ (pV / RT) = mRT / pV"],
+ ["A gaseous alkane has M<sub>r</sub> = 58.0. What is it?",["propane, C₃H₈","butane, C₄H₁₀","pentane, C₅H₁₂","ethane, C₂H₆"],1,"14n + 2 = 58 → n = 4 → C₄H₁₀"],
+ ["A student calculating M<sub>r</sub> = mRT / pV uses T = 100 instead of 373 K. How is their answer affected?",["It is too big","It is too small","It is unchanged","It has the wrong units"],1,"M<sub>r</sub> ∝ T, so using 100 instead of 373 makes M<sub>r</sub> about 3.7 times too small."]
+];
+buildQuiz(Q);
+go(0);
+
+</script>
+</body>
+</html>
