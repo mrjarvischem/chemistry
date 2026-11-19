@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>6 · Momentum — A-level Physics 3.4</title>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="core.css">
+</head>
+<body data-lesson="6" data-set="p34" data-next="L7.html">
+<header class="top"><a class="home" href="index.html">← All mechanics lessons</a>
+<h1>Lesson 6 · Momentum and impulse</h1>
+<p>AQA A-level Physics 3.4.1.6 · about 25 minutes</p></header>
+<main>
+
+<section id="f1" data-title="Conservation of momentum" data-mins="8">
+<h2>Conservation of momentum</h2>
+<div class="key">momentum <b>p = mv</b> (kg m s⁻¹, a vector) · In a closed system (no external forces), <b>total momentum before = total momentum after</b>.</div>
+<div class="card"><svg id="col" class="stage" viewBox="0 0 640 150"></svg>
+<div class="grid3" style="margin:10px 0 0"><div>Mass A: <b id="mAv"></b> kg<input type="range" id="mA" min="0.5" max="5" step="0.1" value="2"></div><div>Velocity A: <b id="uAv"></b> m s⁻¹<input type="range" id="uA" min="0" max="6" step="0.1" value="4"></div><div>Mass B (at rest): <b id="mBv"></b> kg<input type="range" id="mB" min="0.5" max="5" step="0.1" value="2"></div></div>
+<div class="row"><button class="btn on" data-k="e">elastic</button><button class="btn" data-k="i">totally inelastic (stick)</button><button class="btn pri" id="go">▶ Collide</button></div><div class="read" id="cR"></div></div>
+<div class="key"><b>Elastic</b> collision: total kinetic energy is conserved. <b>Inelastic</b>: some KE is transferred to other forms (heat, sound, deformation). Momentum is conserved in <b>both</b>.</div>
+<div id="q1a"></div><div id="q1b"></div>
+</section>
+
+<section id="f2" data-title="Impulse & force–time graphs" data-mins="7">
+<h2>Force, impulse and force–time graphs</h2>
+<div class="key" style="font-size:1.1rem">F = Δ(mv)/Δt &nbsp;·&nbsp; impulse = FΔt = Δ(mv) &nbsp;·&nbsp; impulse = <b>area under a force–time graph</b> (N s)</div>
+<div class="card"><div class="grid2" style="margin:0"><svg id="ft" viewBox="0 0 320 220" width="100%"></svg><div>
+<div>Contact time: <b id="tcv"></b> ms<input type="range" id="tc" min="5" max="200" step="1" value="20"></div><p style="margin:0">A 0.50 kg ball hits a wall at 10 m s⁻¹ and stops. The change in momentum is fixed (5.0 N s); spreading it over a longer time reduces the peak force.</p><div class="read" id="ftR"></div></div></div></div>
+<div class="tip">Safety features — crumple zones, airbags, seat belts, cycle helmets, crash mats — all work the same way: they <b>increase the time</b> over which the momentum changes, so the force is smaller.</div>
+<div id="q2a"></div><div id="q2b"></div>
+</section>
+
+<section id="f3" data-title="Explosions" data-mins="4">
+<h2>Explosions and recoil</h2>
+<p>Before an explosion the total momentum is zero, so afterwards the pieces have equal and opposite momenta: m<sub>1</sub>v<sub>1</sub> = −m<sub>2</sub>v<sub>2</sub>. Kinetic energy is not conserved — it increases, coming from chemical (or elastic) energy.</p>
+<div id="q3a"></div>
+</section>
+
+<section id="f4" data-title="Exam practice" data-mins="6">
+<h2>Exam practice</h2>
+<div id="ex1"></div><div id="ex2"></div><div id="ex3"></div>
+<div class="summary"><h3>Lesson summary</h3><ul>
+<li>p = mv; momentum is conserved in a closed system.</li>
+<li>Elastic: KE conserved. Inelastic: KE not conserved. Momentum always conserved.</li>
+<li>F = Δ(mv)/Δt; impulse FΔt = Δ(mv) = area under F–t graph.</li>
+<li>Longer impact time → smaller force (safety features). Explosions: total momentum stays zero.</li></ul></div>
+</section>
+</main>
+<script src="core.js"></script>
+<script>
+let kind='e',stop=null;document.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{kind=b.dataset.k;document.querySelectorAll('[data-k]').forEach(x=>x.classList.toggle('on',x===b));drawC(0)});
+function res(){const mA=+$('mA').value,uA=+$('uA').value,mB=+$('mB').value;['mA','uA','mB'].forEach(k=>$(k+'v').textContent=(+$(k).value).toFixed(1));
+ let vA,vB;if(kind==='e'){vA=(mA-mB)/(mA+mB)*uA;vB=2*mA/(mA+mB)*uA}else{vA=vB=mA*uA/(mA+mB)}return{mA,uA,mB,vA,vB}}
+function drawC(t){const r=res(),tc=0.45;let xA,xB;const wA=20+r.mA*8,wB=20+r.mB*8,x0=60,xb0=360;
+ if(t<tc){xA=x0+(xb0-wA/2-wB/2-x0)*t/tc;xB=xb0}else{const dt=(t-tc)*6;xA=xb0-wA/2-wB/2+r.vA*dt*12;xB=xb0+r.vB*dt*12}
+ $('col').innerHTML=`<line x1="0" y1="120" x2="640" y2="120" stroke="#556"/><rect x="${xA-wA/2}" y="${120-wA}" width="${wA}" height="${wA}" fill="#2e86de"/><text x="${xA}" y="${115-wA/2}" text-anchor="middle" fill="#fff" font-weight="700">A</text><rect x="${xB-wB/2}" y="${120-wB}" width="${wB}" height="${wB}" fill="#e4572e"/><text x="${xB}" y="${115-wB/2}" text-anchor="middle" fill="#fff" font-weight="700">B</text>`;
+ const pb=r.mA*r.uA,pa=r.mA*r.vA+r.mB*r.vB,kb=0.5*r.mA*r.uA**2,ka=0.5*r.mA*r.vA**2+0.5*r.mB*r.vB**2;
+ $('cR').innerHTML=`after: v<sub>A</sub> = ${r.vA.toFixed(2)} m s⁻¹, v<sub>B</sub> = ${r.vB.toFixed(2)} m s⁻¹<br>momentum: before ${pb.toFixed(2)} → after ${pa.toFixed(2)} kg m s⁻¹ ✓ conserved<br>kinetic energy: before ${kb.toFixed(2)} J → after ${ka.toFixed(2)} J ${Math.abs(kb-ka)<0.01?'✓ conserved (elastic)':`✗ ${(kb-ka).toFixed(2)} J transferred to other forms (inelastic)`}`}
+['mA','uA','mB'].forEach(i=>$(i).oninput=()=>drawC(0));$('go').onclick=()=>{if(stop)stop();stop=animate(3500,drawC)};drawC(0);
+NumQ('q1a',{q:'A 1500 kg car at 12 m s<sup>−1</sup> hits a stationary 1000 kg car and they stick together. Calculate their speed just after the collision.',ans:1500*12/2500,unit:'m s<sup>−1</sup>',steps:['momentum before = 1500 × 12 = 18 000 kg m s⁻¹','v = 18 000 ÷ 2500 = 7.2 m s⁻¹']});
+MCQ('q1b',{q:'In the collision above, what is conserved?',opts:['momentum and kinetic energy','momentum only','kinetic energy only','neither'],a:1,why:'They stick together → inelastic, so KE is not conserved.'});
+function drawFT(){const tc=+$('tc').value/1000,J=5,Fpk=2*J/tc;$('tcv').textContent=Math.round(tc*1000);const X=t=>40+t/0.2*270,Y=F=>200-Math.min(1,F/1000)*180;
+ $('ft').innerHTML=`<line x1="40" y1="200" x2="315" y2="200" stroke="#556"/><line x1="40" y1="10" x2="40" y2="200" stroke="#556"/><text x="310" y="216" font-size="11" text-anchor="end" fill="#334">t / s</text><text x="44" y="18" font-size="11" fill="#334">F / N</text><polygon points="${X(0)},200 ${X(tc/2)},${Y(Fpk)} ${X(tc)},200" fill="#5b3fd0" opacity=".35" stroke="#5b3fd0" stroke-width="2"/>${[0,0.1,0.2].map(t=>`<text x="${X(t)}" y="214" font-size="10" text-anchor="middle" fill="#667">${t}</text>`).join('')}<text x="34" y="${Y(1000)+4}" font-size="10" text-anchor="end" fill="#667">1000</text>${Fpk>1000?`<text x="${X(tc/2)+8}" y="18" font-size="11" fill="#c0392b">peak ${Fpk.toFixed(0)} N (off scale)</text>`:''}`;
+ $('ftR').innerHTML=`impulse = area = ½ × F<sub>peak</sub> × t = 5.0 N s (always)<br>peak force = <b>${Fpk.toFixed(0)} N</b>; average force = Δp/Δt = <b>${(J/tc).toFixed(0)} N</b>`}
+$('tc').oninput=drawFT;drawFT();
+NumQ('q2a',{q:'A 0.15 kg cricket ball moving at 30 m s<sup>−1</sup> is caught and brought to rest in 0.12 s. Calculate the average force on the ball.',ans:0.15*30/0.12,unit:'N',steps:['Δp = 0.15 × 30 = 4.5 kg m s⁻¹','F = Δp/Δt = 4.5 ÷ 0.12 = 37.5 N']});
+NumQ('q2b',{q:'A 0.060 kg tennis ball hits a wall at 20 m s<sup>−1</sup> and rebounds at 15 m s<sup>−1</sup>. Calculate the magnitude of its change in momentum.',ans:0.06*35,unit:'kg m s<sup>−1</sup>',steps:['Take towards the wall as +: before = +0.060 × 20 = +1.2; after = −0.060 × 15 = −0.90','Δp = −0.90 − 1.2 = −2.1 → magnitude 2.1 kg m s⁻¹'],hint:'Direction matters — the velocity reverses.'});
+NumQ('q3a',{q:'A 2.0 kg rifle fires a 0.010 kg bullet at 400 m s<sup>−1</sup>. Calculate the recoil speed of the rifle.',ans:0.01*400/2,unit:'m s<sup>−1</sup>',steps:['total momentum before = 0, so 2.0 × v = 0.010 × 400','v = 2.0 m s⁻¹ (backwards)']});
+ExamQ('ex1',{title:'Question 1',parts:[
+ {label:'01.1',q:'State the principle of conservation of momentum.',marks:2,ms:['Total momentum (of a system) remains constant / total momentum before = total momentum after','provided no external (resultant) force acts / closed system']},
+ {label:'01.2',q:'Explain the difference between an elastic and an inelastic collision.',marks:1,ms:['Elastic: total kinetic energy conserved; inelastic: kinetic energy not conserved (momentum conserved in both)']}]});
+ExamQ('ex2',{title:'Question 2',parts:[
+ {label:'02',q:'Explain, in terms of momentum, why a car’s crumple zone reduces injuries in a collision.',marks:3,ms:['The change in momentum of the passengers/car is the same (fixed by mass and initial velocity)','The crumple zone increases the time taken for the car to stop','F = Δ(mv)/Δt, so the (average) force is smaller']}]});
+ExamQ('ex3',{title:'Question 3 · multiple choice',parts:[
+ {label:'03',q:'What does the area under a force–time graph represent?',opts:['work done','power','change in momentum','acceleration'],a:2,marks:1,ms:['<b>C</b> — area = FΔt = impulse = change in momentum.']}]});
+</script>
+</body>
+</html>

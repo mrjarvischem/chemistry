@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>8 · Bulk properties of solids — A-level Physics 3.4</title>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="core.css">
+</head>
+<body data-lesson="8" data-set="p34" data-next="L9.html">
+<header class="top"><a class="home" href="index.html">← All mechanics lessons</a>
+<h1>Lesson 8 · Bulk properties of solids</h1>
+<p>AQA A-level Physics 3.4.2.1 · about 25 minutes</p></header>
+<main>
+
+<section id="h1" data-title="Density & Hooke’s law" data-mins="7">
+<h2>Density and Hooke’s law</h2>
+<div class="key">density <b>ρ = m/V</b> (kg m⁻³) · Hooke’s law: <b>F = kΔL</b>, up to the <b>limit of proportionality</b> (k = stiffness, N m⁻¹)</div>
+<div class="card"><div class="grid2" style="margin:0"><svg id="sp" class="stage" viewBox="0 0 220 300"></svg><svg id="fx" viewBox="0 0 320 240" width="100%"></svg></div>
+<div>Load: <b id="Lv"></b> N<input type="range" id="L" min="0" max="12" step="0.1" value="3"></div><div class="row"><button class="btn" id="unl">Remove load</button></div><div class="read" id="spR"></div></div>
+<div class="grid2">
+ <div class="card"><h3>Key points on the graph</h3><p style="margin:0"><b>Limit of proportionality</b>: beyond it, F is no longer proportional to ΔL.<br><b>Elastic limit</b>: beyond it, the material is permanently deformed — it won’t return to its original length.<br><b>Elastic</b> deformation: returns to original shape. <b>Plastic</b>: permanently stretched.</p></div>
+ <div class="card"><h3>Springs combined</h3><p style="margin:0">Series: 1/k = 1/k₁ + 1/k₂ (less stiff).<br>Parallel: k = k₁ + k₂ (stiffer).</p></div>
+</div>
+<div id="q1a"></div><div id="q1b"></div>
+</section>
+
+<section id="h2" data-title="Stress, strain & energy" data-mins="8">
+<h2>Stress, strain and elastic strain energy</h2>
+<div class="key" style="font-size:1.05rem">tensile <b>stress = F/A</b> (Pa) · tensile <b>strain = ΔL/L</b> (no unit) · <b>breaking stress</b> = the stress at which it breaks<br>elastic strain energy <b>E = ½FΔL</b> = area under the F–ΔL graph (for the elastic region)</div>
+<div class="card"><h3>Energy stored = area under the force–extension graph</h3><svg id="area" viewBox="0 0 640 230" width="100%"></svg><div class="read" id="arR"></div></div>
+<div class="card"><h3>Loading and unloading</h3><p style="margin-top:0">If a wire is stretched beyond its elastic limit, the unloading line is parallel to the loading line but doesn’t return to zero. The area between the lines is energy dissipated (work done to permanently deform it); the area under the unloading line is the elastic energy recovered.</p>
+<div class="row"><button class="btn on" data-m="ductile">ductile (copper)</button><button class="btn" data-m="brittle">brittle (glass)</button><button class="btn" data-m="poly">polymer (rubber)</button></div><svg id="mat" viewBox="0 0 640 220" width="100%"></svg><div class="cap" id="matCap"></div></div>
+<div class="tip">Energy in vehicle crumple zones: work is done plastically deforming the metal, so less kinetic energy reaches the passengers. Spring energy can be transferred to kinetic energy: ½kΔL² = ½mv².</div>
+<div id="q2a"></div><div id="q2b"></div>
+</section>
+
+<section id="h3" data-title="Exam practice" data-mins="8">
+<h2>Exam practice</h2>
+<div id="ex1"></div><div id="ex2"></div><div id="ex3"></div>
+<div class="summary"><h3>Lesson summary</h3><ul>
+<li>ρ = m/V. Hooke’s law F = kΔL up to the limit of proportionality.</li>
+<li>Elastic vs plastic deformation; elastic limit.</li>
+<li>Stress = F/A; strain = ΔL/L; breaking stress.</li>
+<li>Elastic strain energy = ½FΔL = area under F–ΔL graph (= ½kΔL²).</li>
+<li>Ductile, brittle and polymeric materials behave differently.</li></ul></div>
+</section>
+</main>
+<script src="core.js"></script>
+<script>
+const k=50,LP=8,ELIM=9.5;let perm=0,maxL=0;
+const ext=F=>F<=LP?F/k:LP/k+(F-LP)/k*3.5;
+function drawSp(){const F=+$('L').value;$('Lv').textContent=F.toFixed(1);maxL=Math.max(maxL,F);if(maxL>ELIM)perm=ext(maxL)-maxL/k*1;const x=ext(F)+(F<maxL&&maxL>ELIM?perm*(1-F/maxL):0);
+ let coil='M110 30';const len=60+x*420,n=14;for(let i=1;i<=n;i++)coil+=` L${110+(i%2?18:-18)} ${30+len*i/n}`;
+ $('sp').innerHTML=`<rect x="60" y="15" width="100" height="15" fill="#7f8c8d"/><path d="${coil}" stroke="#ccd" stroke-width="3" fill="none"/><rect x="85" y="${30+len}" width="50" height="${10+F*4}" fill="#c9a227"/><text x="110" y="${45+len+F*2}" font-size="11" text-anchor="middle">${F.toFixed(1)} N</text>`;
+ const X=e=>40+e/0.5*270,Y=f=>210-f/12*190;let p='';for(let f=0;f<=12;f+=0.1)p+=(p?' L':'M')+X(ext(f))+' '+Y(f);
+ $('fx').innerHTML=`<line x1="40" y1="210" x2="315" y2="210" stroke="#556"/><line x1="40" y1="10" x2="40" y2="210" stroke="#556"/><text x="310" y="228" font-size="11" text-anchor="end" fill="#334">extension / m</text><text x="44" y="18" font-size="11" fill="#334">F / N</text><path d="${p}" stroke="#5b3fd0" stroke-width="3" fill="none"/><circle cx="${X(ext(LP))}" cy="${Y(LP)}" r="5" fill="#e4572e"/><text x="${X(ext(LP))-6}" y="${Y(LP)-8}" font-size="10" text-anchor="end" fill="#c0392b">limit of proportionality</text><circle cx="${X(ext(ELIM))}" cy="${Y(ELIM)}" r="5" fill="#b9770e"/><text x="${X(ext(ELIM))+6}" y="${Y(ELIM)+12}" font-size="10" fill="#b9770e">elastic limit</text><circle cx="${X(x)}" cy="${Y(F)}" r="6" fill="#f1c40f" stroke="#1d2433"/>`;
+ $('spR').innerHTML=`extension = ${(x*100).toFixed(1)} cm · k = ${k} N m⁻¹ in the linear region<br>${F<=LP?'Hooke’s law region: F = kΔL':F<=ELIM?'beyond the limit of proportionality but still elastic':'<b>beyond the elastic limit — permanently stretched</b>'}${maxL>ELIM?`<br>permanent extension after unloading: ${(perm*100).toFixed(1)} cm`:''}`}
+$('L').oninput=drawSp;$('unl').onclick=()=>{$('L').value=0;drawSp()};drawSp();
+NumQ('q1a',{q:'A spring extends by 4.0 cm when a 6.0 N load is added. Calculate its spring constant.',ans:150,unit:'N m<sup>−1</sup>',steps:['ΔL = 0.040 m','k = F/ΔL = 6.0 ÷ 0.040 = 150 N m⁻¹']});
+MCQ('q1b',{q:'Two identical springs of spring constant k are connected in parallel. What is the spring constant of the combination?',opts:['k/2','k','2k','4k'],a:2});
+function drawArea(){const X=e=>60+e*5000,Y=f=>200-f*1.6;const F=100,e=0.05;
+ $('area').innerHTML=`<line x1="60" y1="200" x2="400" y2="200" stroke="#556"/><line x1="60" y1="20" x2="60" y2="200" stroke="#556"/><polygon points="${X(0)},${Y(0)} ${X(e)},${Y(F)} ${X(e)},${Y(0)}" fill="#5b3fd0" opacity=".3"/><line x1="${X(0)}" y1="${Y(0)}" x2="${X(e)}" y2="${Y(F)}" stroke="#5b3fd0" stroke-width="3"/><text x="${X(e)+6}" y="${Y(F)}" font-size="12">(0.050 m, 100 N)</text><text x="400" y="216" font-size="11" text-anchor="end">ΔL / m</text><text x="64" y="28" font-size="11">F / N</text><text x="${X(e*0.66)}" y="${Y(F*0.25)}" font-size="13" fill="#5b3fd0" font-weight="700">area = energy</text>`;
+ $('arR').innerHTML=`E = ½FΔL = ½ × 100 × 0.050 = <b>2.5 J</b>`}drawArea();
+const MAT={ductile:{cap:'<b>Ductile</b> (e.g. copper): long plastic region — it can be drawn into wires. After the elastic limit it stretches a lot before breaking.',f:e=>e<0.1?e*8:0.8+Math.min(0.35,(e-0.1)*0.9)-(e>0.75?(e-0.75)*3:0),max:0.85},brittle:{cap:'<b>Brittle</b> (e.g. glass, cast iron): obeys Hooke’s law up to breaking, with no plastic region — it snaps suddenly.',f:e=>e*8,max:0.12},poly:{cap:'<b>Polymeric</b> (rubber): non-linear; the unloading curve lies below the loading curve (hysteresis) — the area between them is energy dissipated as heat.',f:e=>0.9*Math.pow(e/0.85,0.4)*(0.6+0.4*(e/0.85)**3),max:0.85}};
+let mk='ductile';document.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{mk=b.dataset.m;document.querySelectorAll('[data-m]').forEach(x=>x.classList.toggle('on',x===b));drawMat()});
+function drawMat(){const m=MAT[mk],X=e=>60+e*600,Y=s=>200-s*160;let p='';for(let e=0;e<=m.max;e+=0.005)p+=(p?' L':'M')+X(e)+' '+Y(m.f(e));
+ let g=`<line x1="60" y1="200" x2="620" y2="200" stroke="#556"/><line x1="60" y1="20" x2="60" y2="200" stroke="#556"/><text x="620" y="216" font-size="11" text-anchor="end">strain</text><text x="64" y="28" font-size="11">stress</text><path d="${p}" stroke="#5b3fd0" stroke-width="3" fill="none"/><text x="${X(m.max)}" y="${Y(m.f(m.max))-8}" font-size="12" fill="#c0392b">✕ breaks</text>`;
+ if(mk==='poly'){let q='';for(let e=m.max;e>=0;e-=0.005)q+=(q?' L':'M')+X(e)+' '+Y(m.f(e)*Math.pow(e/m.max,1.8));g+=`<path d="${q}" stroke="#e4572e" stroke-width="3" fill="none" stroke-dasharray="6 4"/><text x="300" y="60" font-size="12" fill="#e4572e">unloading</text>`}
+ if(mk==='ductile'){const e1=0.5,s1=m.f(e1);g+=`<line x1="${X(e1)}" y1="${Y(s1)}" x2="${X(e1-s1/8)}" y2="${Y(0)}" stroke="#e4572e" stroke-width="2" stroke-dasharray="6 4"/><text x="${X(e1-s1/8)}" y="214" font-size="10" fill="#e4572e" text-anchor="middle">permanent strain</text>`}
+ $('mat').innerHTML=g;$('matCap').innerHTML=m.cap}drawMat();
+NumQ('q2a',{q:'A steel wire of cross-sectional area 1.2 × 10<sup>−7</sup> m² supports a 60 N load. Calculate the tensile stress.',ans:60/1.2e-7,unit:'Pa',steps:['stress = F/A = 60 ÷ 1.2×10<sup>−7</sup>','= 5.0 × 10<sup>8</sup> Pa']});
+NumQ('q2b',{q:'A spring with k = 200 N m<sup>−1</sup> is compressed by 0.10 m. How much elastic strain energy does it store?',ans:1,unit:'J',steps:['E = ½kΔL² (or ½FΔL with F = kΔL = 20 N)','E = ½ × 200 × 0.10² = 1.0 J']});
+ExamQ('ex1',{title:'Question 1',parts:[
+ {label:'01.1',q:'State Hooke’s law.',marks:1,ms:['Extension is (directly) proportional to the force/load, up to the limit of proportionality']},
+ {label:'01.2',q:'Explain the difference between the limit of proportionality and the elastic limit.',marks:2,ms:['Limit of proportionality: point beyond which force is no longer proportional to extension','Elastic limit: point beyond which the material does not return to its original length when the load is removed (permanent deformation)']}]});
+ExamQ('ex2',{title:'Question 2',stem:'<p>A spring of spring constant 80 N m<sup>−1</sup> in a toy launcher is compressed by 6.0 cm and used to fire a 20 g ball horizontally.</p>',parts:[
+ {label:'02',q:'Calculate the maximum speed of the ball. State one assumption.',marks:3,ms:['E = ½kΔL² = ½ × 80 × 0.060² = 0.144 J','½mv² = 0.144 → v = √(2 × 0.144 ÷ 0.020) = 3.8 m s⁻¹','Assumption: all elastic energy transferred to KE / no friction or air resistance']}]});
+ExamQ('ex3',{title:'Question 3 · multiple choice',parts:[
+ {label:'03',q:'Which property describes a material that can be drawn into wires?',opts:['brittle','ductile','stiff','elastic'],a:1,marks:1,ms:['<b>B</b> — ductile materials have a large plastic region.']}]});
+</script>
+</body>
+</html>

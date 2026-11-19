@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>7 · Work, energy and power — A-level Physics 3.4</title>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="core.css">
+</head>
+<body data-lesson="7" data-set="p34" data-next="L8.html">
+<header class="top"><a class="home" href="index.html">← All mechanics lessons</a>
+<h1>Lesson 7 · Work, energy, power and conservation of energy</h1>
+<p>AQA A-level Physics 3.4.1.7 – 3.4.1.8 · about 25 minutes</p></header>
+<main>
+
+<section id="g1" data-title="Work and power" data-mins="7">
+<h2>Work done and power</h2>
+<div class="key" style="font-size:1.05rem"><b>W = Fs cos θ</b> (θ = angle between force and displacement) · <b>P = ΔW/Δt</b> · <b>P = Fv</b> · efficiency = useful output power ÷ input power</div>
+<div class="card"><div class="grid2" style="margin:0"><svg id="wk" viewBox="0 0 360 200" width="100%"></svg>
+<div><div>Force: <b id="Fv"></b> N<input type="range" id="F" min="10" max="200" step="1" value="100"></div><div>Angle to horizontal: <b id="av"></b>°<input type="range" id="a" min="0" max="85" step="1" value="30"></div><div>Distance: <b id="sv"></b> m<input type="range" id="s" min="1" max="20" step="0.5" value="8"></div><div class="read" id="wR"></div></div></div></div>
+<div class="tip">The area under a <b>force–displacement</b> graph is the work done. A force perpendicular to the motion (e.g. weight for horizontal motion) does <b>no work</b>.</div>
+<div id="q1a"></div><div id="q1b"></div>
+</section>
+
+<section id="g2" data-title="Energy conservation" data-mins="8">
+<h2>Conservation of energy</h2>
+<div class="key" style="font-size:1.05rem">E<sub>k</sub> = ½mv² · ΔE<sub>p</sub> = mgΔh · Energy cannot be created or destroyed, only transferred.</div>
+<div class="card"><svg id="rc" class="stage" viewBox="0 0 640 260"></svg>
+<div class="grid2" style="margin:10px 0 0"><div>Start height: <b id="hv"></b> m<input type="range" id="h" min="2" max="20" step="0.5" value="12"></div><div>Friction (work done against resistance): <b id="frv"></b>%<input type="range" id="fr" min="0" max="40" step="1" value="0"></div></div>
+<div class="row"><button class="btn pri" id="go">▶ Release</button></div><div class="read" id="rcR"></div></div>
+<div class="warn">With no losses, mgh = ½mv² → <b>v = √(2gh)</b> — independent of mass. If there is friction, E<sub>p</sub> lost = E<sub>k</sub> gained + work done against friction.</div>
+<div id="q2a"></div><div id="q2b"></div>
+</section>
+
+<section id="g3" data-title="Exam practice" data-mins="8">
+<h2>Exam practice</h2>
+<div id="ex1"></div><div id="ex2"></div><div id="ex3"></div>
+<div class="summary"><h3>Lesson summary</h3><ul>
+<li>W = Fs cos θ (J); area under F–s graph = work.</li>
+<li>P = W/t = Fv; efficiency = useful output ÷ input.</li>
+<li>Eₖ = ½mv², ΔEₚ = mgΔh; energy is conserved — losses are work done against resistive forces.</li></ul></div>
+</section>
+</main>
+<script src="core.js"></script>
+<script>
+const rad=d=>d*Math.PI/180;
+function drawW(){const F=+$('F').value,a=+$('a').value,s=+$('s').value;$('Fv').textContent=F;$('av').textContent=a;$('sv').textContent=s;
+ const W=F*s*Math.cos(rad(a));$('wk').innerHTML=`<line x1="10" y1="160" x2="350" y2="160" stroke="#556"/><rect x="60" y="120" width="60" height="40" fill="#c9a227"/><line x1="120" y1="140" x2="${120+F*0.8*Math.cos(rad(a))}" y2="${140-F*0.8*Math.sin(rad(a))}" stroke="#e4572e" stroke-width="5"/><text x="${130+F*0.8*Math.cos(rad(a))}" y="${140-F*0.8*Math.sin(rad(a))}" font-size="13" fill="#e4572e" font-weight="700">F</text><line x1="120" y1="140" x2="${120+F*0.8*Math.cos(rad(a))}" y2="140" stroke="#2e86de" stroke-width="3" stroke-dasharray="5 3"/><text x="${120+F*0.4*Math.cos(rad(a))}" y="156" font-size="12" fill="#2e86de">F cos θ</text><line x1="60" y1="185" x2="${60+s*14}" y2="185" stroke="#1d2433" stroke-width="2"/><text x="${60+s*7}" y="198" font-size="12" text-anchor="middle">s = ${s} m</text>`;
+ $('wR').innerHTML=`W = Fs cos θ = ${F} × ${s} × cos ${a}° = <b>${W.toFixed(0)} J</b><br>if done in 10 s: P = ${(W/10).toFixed(1)} W`}
+['F','a','s'].forEach(i=>$(i).oninput=drawW);drawW();
+NumQ('q1a',{q:'A motor lifts a 50 kg load through 12 m in 20 s. Calculate its useful output power.',ans:50*9.81*12/20,unit:'W',steps:['work = mgh = 50 × 9.81 × 12 = 5886 J','P = 5886 ÷ 20 = 294 W']});
+NumQ('q1b',{q:'A car travels at a constant 30 m s<sup>−1</sup> against total resistive forces of 900 N. What power must the engine provide?',ans:27000,unit:'W',steps:['constant speed → driving force = resistive force = 900 N','P = Fv = 900 × 30 = 2.7 × 10⁴ W']});
+let stop=null;
+function track(x){return 0.5+0.5*Math.cos(Math.PI*x)} // x 0..2, height fraction
+function drawRC(t){const H=+$('h').value,fr=+$('fr').value/100;$('hv').textContent=H;$('frv').textContent=Math.round(fr*100);
+ const X=x=>20+x/2*600,Y=y=>230-y*190;let p='';for(let x=0;x<=2;x+=0.01)p+=(p?' L':'M')+X(x)+' '+Y(track(x)*H/20);
+ const x=Math.min(2,t*2),hf=track(x)*H,lost=fr*9.81*(H-0)*x/2*0.5,m=1,Ek=Math.max(0,m*9.81*(H-hf)-lost),Ep=m*9.81*hf,v=Math.sqrt(2*Ek/m);
+ const tot=9.81*H;let g=`<path d="${p}" stroke="#ccd" stroke-width="4" fill="none"/><circle cx="${X(x)}" cy="${Y(hf/20)-10}" r="10" fill="#e4572e"/>`;
+ const bar=(i,val,col,lab)=>`<rect x="${500+i*40}" y="${230-val/tot*150}" width="30" height="${val/tot*150}" fill="${col}"/><text x="${515+i*40}" y="248" font-size="10" text-anchor="middle" fill="#ccd">${lab}</text>`;
+ g+=bar(0,Ep,'#2e86de','Eₚ')+bar(1,Ek,'#e4572e','Eₖ')+bar(2,Math.max(0,tot-Ep-Ek),'#7f8c8d','lost');
+ $('rc').innerHTML=g;$('rcR').innerHTML=`per kg: Eₚ = ${Ep.toFixed(1)} J · Eₖ = ${Ek.toFixed(1)} J · lost = ${Math.max(0,tot-Ep-Ek).toFixed(1)} J<br>speed = ${v.toFixed(2)} m s⁻¹${fr===0&&x>0.99&&x<1.01?' (= √(2gh) at the bottom)':''}${fr===0?`<br>at the bottom: v = √(2 × 9.81 × ${H}) = <b>${Math.sqrt(2*9.81*H).toFixed(2)} m s⁻¹</b>`:''}`}
+['h','fr'].forEach(i=>$(i).oninput=()=>drawRC(0.5));$('go').onclick=()=>{if(stop)stop();stop=animate(5000,drawRC)};drawRC(0);
+NumQ('q2a',{q:'A ball is dropped from 5.0 m. Ignoring air resistance, calculate its speed just before hitting the ground.',ans:Math.sqrt(2*9.81*5),unit:'m s<sup>−1</sup>',steps:['mgh = ½mv² → v = √(2gh)','v = √(2 × 9.81 × 5.0) = 9.9 m s⁻¹']});
+NumQ('q2b',{q:'A 70 kg cyclist freewheels down a hill of height 15 m, starting at rest, and reaches 14 m s<sup>−1</sup>. How much energy is transferred to work against resistive forces?',ans:70*9.81*15-0.5*70*196,unit:'J',steps:['Eₚ lost = 70 × 9.81 × 15 = 10 300 J','Eₖ gained = ½ × 70 × 14² = 6860 J','work against resistance = 10 300 − 6860 = 3440 J']});
+ExamQ('ex1',{title:'Question 1',stem:'<p>A crane lifts a 1200 kg load vertically at a constant speed of 0.50 m s<sup>−1</sup>. The electrical input power to the motor is 9.0 kW.</p>',parts:[
+ {label:'01.1',q:'Calculate the useful output power.',marks:2,ms:['F = mg = 1200 × 9.81 = 11 800 N','P = Fv = 11 800 × 0.50 = 5.9 × 10³ W']},
+ {label:'01.2',q:'Calculate the efficiency of the crane.',marks:1,ms:['5.9 ÷ 9.0 = 0.65 (65%) (ecf)']}]});
+ExamQ('ex2',{title:'Question 2',parts:[
+ {label:'02',q:'A pendulum bob is released from a height of 0.20 m above its lowest point. Calculate its maximum speed and state one assumption you made.',marks:3,ms:['mgh = ½mv²','v = √(2 × 9.81 × 0.20) = 1.98 m s⁻¹','Assumption: no air resistance/friction (all Eₚ → Eₖ)']}]});
+ExamQ('ex3',{title:'Question 3 · multiple choice',parts:[
+ {label:'03',q:'A box is pushed 5.0 m along the floor by a 40 N force at 60° to the horizontal. How much work is done by the force?',opts:['100 J','173 J','200 J','400 J'],a:0,marks:1,ms:['<b>A</b> — W = 40 × 5.0 × cos 60° = 100 J']}]});
+</script>
+</body>
+</html>

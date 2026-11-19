@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>5 · Newton’s laws and terminal speed — A-level Physics 3.4</title>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="core.css">
+</head>
+<body data-lesson="5" data-set="p34" data-next="L6.html">
+<header class="top"><a class="home" href="index.html">← All mechanics lessons</a>
+<h1>Lesson 5 · Newton’s laws of motion and terminal speed</h1>
+<p>AQA A-level Physics 3.4.1.4 – 3.4.1.5 · about 25 minutes</p></header>
+<main>
+
+<section id="e1" data-title="Newton’s three laws" data-mins="7">
+<h2>Newton’s three laws</h2>
+<div class="card tablewrap"><table class="t">
+<tr><td><b>First law</b></td><td>An object stays at rest or moves with constant velocity unless a <b>resultant</b> force acts on it.</td></tr>
+<tr><td><b>Second law</b></td><td>Resultant force = rate of change of momentum. For constant mass: <b>F = ma</b>.</td></tr>
+<tr><td><b>Third law</b></td><td>If body A exerts a force on body B, then B exerts an <b>equal and opposite</b> force on A. The forces are the <b>same type</b> and act on <b>different</b> bodies.</td></tr></table></div>
+<div class="card"><h3>Free-body diagram: a lift</h3><div class="grid2" style="margin:0"><svg id="lift" viewBox="0 0 300 300" width="100%"></svg>
+<div><div>Lift mass: 800 kg</div><div>Cable tension: <b id="Tv"></b> N<input type="range" id="T" min="5000" max="11000" step="50" value="7848"></div><div class="read" id="liR"></div></div></div></div>
+<div class="warn">A book resting on a table: its weight and the normal reaction are equal and opposite — but they are <b>not</b> a Newton’s third law pair (they act on the same object and are different types of force). The third-law partner of the book’s weight is the book’s gravitational pull on the <b>Earth</b>.</div>
+<div id="q1a"></div><div id="q1b"></div>
+</section>
+
+<section id="e2" data-title="Terminal speed" data-mins="8">
+<h2>Drag, lift and terminal speed</h2>
+<p class="lead">Drag (air resistance) increases with speed. A falling object accelerates until drag equals weight, then falls at constant <b>terminal speed</b>.</p>
+<div class="card"><div class="grid2" style="margin:0"><svg id="sky" class="stage" viewBox="0 0 220 300"></svg><svg id="vt" viewBox="0 0 320 240" width="100%"></svg></div>
+<div class="row" style="margin-top:8px"><button class="btn pri" id="jump">▶ Jump</button><label><input type="checkbox" id="chute"> Open parachute at 12 s</label></div><div class="cap" id="skCap"></div></div>
+<div class="grid2">
+ <div class="card"><h3>What affects drag?</h3><p style="margin:0">Speed, cross-sectional area and shape, and the fluid’s viscosity/density. <b>Lift</b> is the upward force on a wing, perpendicular to the flow of the fluid.</p></div>
+ <div class="card"><h3>Factors on vehicle top speed</h3><p style="margin:0">Maximum speed is reached when the driving force equals the total resistive forces (drag + friction). More powerful engines and streamlined shapes raise the top speed.</p></div>
+</div>
+<div id="q2a"></div><div id="q2b"></div>
+</section>
+
+<section id="e3" data-title="Exam practice" data-mins="8">
+<h2>Exam practice</h2>
+<div id="ex1"></div><div id="ex2"></div><div id="ex3"></div>
+<div class="summary"><h3>Lesson summary</h3><ul>
+<li>N1: no resultant force → constant velocity. N2: F = ma (F = Δ(mv)/Δt). N3: equal, opposite, same type, different bodies.</li>
+<li>Draw free-body diagrams; resultant force = mass × acceleration.</li>
+<li>Terminal speed: drag = weight, resultant force zero. Parachute → bigger drag → lower terminal speed.</li></ul></div>
+</section>
+</main>
+<script src="core.js"></script>
+<script>
+const arrow=(x1,y1,x2,y2,c,w=5,lab='')=>{const a=Math.atan2(y2-y1,x2-x1),h=14;return `<line x1="${x1}" y1="${y1}" x2="${x2-h*0.6*Math.cos(a)}" y2="${y2-h*0.6*Math.sin(a)}" stroke="${c}" stroke-width="${w}"/><polygon points="${x2},${y2} ${x2-h*Math.cos(a-0.4)},${y2-h*Math.sin(a-0.4)} ${x2-h*Math.cos(a+0.4)},${y2-h*Math.sin(a+0.4)}" fill="${c}"/>`+(lab?`<text x="${x2+8}" y="${y2+4}" font-size="13" font-weight="700" fill="${c}">${lab}</text>`:'')};
+function drawLift(){const T=+$('T').value,m=800,W=m*9.81,F=T-W,a=F/m;$('Tv').textContent=T;
+ $('lift').innerHTML=`<rect x="100" y="100" width="100" height="110" rx="6" fill="#efeaff" stroke="#5b3fd0" stroke-width="2"/><line x1="150" y1="0" x2="150" y2="100" stroke="#556" stroke-width="2"/>`+arrow(150,100,150,100-T/90,'#2e86de',5,`T = ${T} N`)+arrow(150,210,150,210+W/90,'#e4572e',5,`W = ${W.toFixed(0)} N`);
+ $('liR').innerHTML=`resultant force = T − W = ${T} − ${W.toFixed(0)} = <b>${F.toFixed(0)} N</b><br>a = F/m = <b>${a.toFixed(2)} m s⁻²</b> ${Math.abs(a)<0.02?'→ at rest or <b>constant velocity</b> (N1)':a>0?'upwards (speeding up going up, or slowing going down)':'downwards'}`}
+$('T').oninput=drawLift;drawLift();
+NumQ('q1a',{q:'A 1200 kg car has a driving force of 3000 N and total resistive forces of 1200 N. Calculate its acceleration.',ans:1.5,unit:'m s<sup>−2</sup>',steps:['resultant = 3000 − 1200 = 1800 N','a = 1800 ÷ 1200 = 1.5 m s⁻²']});
+MCQ('q1b',{q:'Which pair of forces is a Newton’s third law pair?',opts:['the weight of a book and the normal force from the table on the book','the Earth pulling a book down and the book pulling the Earth up','the thrust of a car engine and the drag on the car','the tension in a rope and the weight of the bucket hanging from it'],a:1,why:'Same type (gravitational), equal and opposite, acting on different bodies.'});
+let stopS=null;
+function sim(){const m=80,g=9.81,dt=0.05,pts=[];let v=0,t=0;while(t<=30){const k=$('chute').checked&&t>=12?30:0.25;const D=k*v*v;v+=(g-D/m)*dt;t+=dt;pts.push([t,v,D])}return pts}
+let PTS=sim();
+function drawSky(f){const i=Math.min(PTS.length-1,Math.floor(f*(PTS.length-1))),[t,v,D]=PTS[i],W=80*9.81;
+ const open=$('chute').checked&&t>=12;let g=`<circle cx="110" cy="150" r="12" fill="#e4572e"/><rect x="100" y="162" width="20" height="30" fill="#e4572e"/>`;if(open)g+=`<path d="M60 90 Q110 40 160 90 Z" fill="#f1c40f"/><line x1="60" y1="90" x2="105" y2="150" stroke="#ccd"/><line x1="160" y1="90" x2="115" y2="150" stroke="#ccd"/>`;
+ g+=arrow(110,195,110,195+W/12,'#ff9b8b',4,'W')+arrow(110,138,110,138-Math.min(130,D/12),'#5dade2',4,'D');$('sky').innerHTML=g;
+ const X=tt=>40+tt/30*270,Y=vv=>210-vv/60*190;let p='';PTS.slice(0,i+1).forEach(([tt,vv])=>p+=(p?' L':'M')+X(tt)+' '+Y(vv));
+ $('vt').innerHTML=`<line x1="40" y1="210" x2="315" y2="210" stroke="#556"/><line x1="40" y1="10" x2="40" y2="210" stroke="#556"/><text x="310" y="228" font-size="11" text-anchor="end" fill="#334">t / s</text><text x="44" y="18" font-size="11" fill="#334">v / m s⁻¹</text><path d="${p}" stroke="#5b3fd0" stroke-width="3" fill="none"/>${[0,10,20,30].map(tt=>`<text x="${X(tt)}" y="224" font-size="10" text-anchor="middle" fill="#667">${tt}</text>`).join('')}${[0,20,40,60].map(vv=>`<text x="34" y="${Y(vv)+4}" font-size="10" text-anchor="end" fill="#667">${vv}</text>`).join('')}`;
+ $('skCap').innerHTML=`t = ${t.toFixed(1)} s · v = ${v.toFixed(1)} m s⁻¹ · drag = ${D.toFixed(0)} N, weight = ${W.toFixed(0)} N<br>`+(Math.abs(D-W)<15?'<b>drag = weight → resultant force zero → terminal speed</b>':D<W?'weight > drag → accelerates downwards (acceleration decreasing as drag grows)':'drag > weight → decelerates until a new, lower terminal speed')}
+$('jump').onclick=()=>{PTS=sim();if(stopS)stopS();stopS=animate(7000,drawSky)};$('chute').onchange=()=>{PTS=sim();drawSky(1)};drawSky(1);
+MCQ('q2a',{q:'A skydiver is falling at terminal speed. Which is true?',opts:['the resultant force is downwards','drag is greater than weight','drag equals weight','there is no drag'],a:2});
+MCQ('q2b',{q:'Why does a skydiver slow down when the parachute opens?',opts:['weight decreases','drag increases above the weight due to the larger area, giving an upward resultant force','gravity stops acting','momentum is lost to the parachute'],a:1});
+ExamQ('ex1',{title:'Question 1',parts:[
+ {label:'01',q:'State Newton’s third law of motion.',marks:2,ms:['If body A exerts a force on body B, B exerts an equal and opposite force on A','The forces are of the same type (and act on different bodies)']}]});
+ExamQ('ex2',{title:'Question 2',parts:[
+ {label:'02',q:'Describe and explain the motion of a skydiver from leaving the aircraft until reaching terminal speed.',marks:4,ms:['Initially only weight acts / drag zero, so acceleration = g','As speed increases, drag increases','Resultant force (W − D) decreases, so acceleration decreases','When drag = weight the resultant force is zero, acceleration zero → constant (terminal) speed']}]});
+ExamQ('ex3',{title:'Question 3 · multiple choice',parts:[
+ {label:'03',q:'A 600 kg lift accelerates upwards at 1.5 m s⁻². What is the tension in the cable? (g = 9.81 m s⁻²)',opts:['900 N','5000 N','5890 N','6790 N'],a:3,marks:1,ms:['<b>D</b> — T − mg = ma → T = 600(9.81 + 1.5) = 6790 N']}]});
+</script>
+</body>
+</html>

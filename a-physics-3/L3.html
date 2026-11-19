@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3 · Motion along a straight line — A-level Physics 3.4</title>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="core.css">
+</head>
+<body data-lesson="3" data-set="p34" data-next="L4.html">
+<header class="top"><a class="home" href="index.html">← All mechanics lessons</a>
+<h1>Lesson 3 · Motion along a straight line</h1>
+<p>AQA A-level Physics 3.4.1.3 · including Required Practical 3 · about 30 minutes</p></header>
+<main>
+
+<section id="c1" data-title="Motion graphs" data-mins="8">
+<h2>Displacement, velocity and acceleration graphs</h2>
+<div class="key">velocity = rate of change of displacement, v = Δs/Δt &nbsp;·&nbsp; acceleration = rate of change of velocity, a = Δv/Δt<br><b>Gradient</b> of s–t = velocity · <b>gradient</b> of v–t = acceleration · <b>area</b> under v–t = displacement · <b>area</b> under a–t = change in velocity</div>
+<div class="card"><div class="row" id="scn"></div><div class="grid3" style="margin:10px 0 0"><svg id="gs" viewBox="0 0 220 170" width="100%"></svg><svg id="gv" viewBox="0 0 220 170" width="100%"></svg><svg id="ga" viewBox="0 0 220 170" width="100%"></svg></div>
+<svg id="car" class="stage" viewBox="0 0 640 70"></svg><div class="row" style="margin-top:6px"><button class="btn pri" id="go">▶ Play</button><span class="cap" id="scCap" style="min-height:0"></span></div></div>
+<div class="warn">Instantaneous velocity on a curved s–t graph = gradient of the <b>tangent</b> at that point. Average velocity = total displacement ÷ total time.</div>
+<div id="q1a"></div><div id="q1b"></div>
+</section>
+
+<section id="c2" data-title="SUVAT" data-mins="8">
+<h2>Equations for uniform acceleration</h2>
+<div class="card tablewrap"><table class="t" style="font-size:1.05rem">
+<tr><td><b>v = u + at</b></td><td>no s</td></tr><tr><td><b>s = ½(u + v)t</b></td><td>no a</td></tr><tr><td><b>s = ut + ½at²</b></td><td>no v</td></tr><tr><td><b>v² = u² + 2as</b></td><td>no t</td></tr></table>
+<p style="margin:8px 0 0;font-size:.9rem;color:var(--mute)">Only valid for <b>constant</b> acceleration. Choose a positive direction and stick to it (e.g. up = +, so g = −9.81 m s⁻²).</p></div>
+<div class="card"><h3>SUVAT solver: tick the three you know</h3><div id="sv"></div><div class="read" id="svR"></div></div>
+<div id="q2a"></div><div id="q2b"></div><div id="q2c"></div>
+</section>
+
+<section id="c3" data-title="RP3: measuring g" data-mins="7">
+<h2>Required practical 3: determining g by free fall</h2>
+<p class="lead">A steel ball is released from an electromagnet and falls a height h through a light gate (or onto a trapdoor) connected to a timer. From rest, h = ½gt², so a graph of <b>h against t²</b> is a straight line with <b>gradient g/2</b>.</p>
+<div class="grid2">
+ <div class="card"><svg id="ff" class="stage" viewBox="0 0 220 300"></svg></div>
+ <div class="card"><div>Drop height: <b id="hv"></b> m<input type="range" id="h" min="0.20" max="1.40" step="0.05" value="0.60"></div><div class="row"><button class="btn pri" id="drop">Drop and time</button><button class="btn" id="clr">Clear</button></div>
+ <div class="read" id="ffR"></div><svg id="hg" viewBox="0 0 300 200" width="100%"></svg></div>
+</div>
+<div class="tip">Repeat each height and average; use at least 5 heights. An electromagnet that releases slowly adds a <b>systematic</b> delay — it shifts the line but doesn’t change the gradient, so g from the gradient is still accurate.</div>
+<div id="q3a"></div>
+</section>
+
+<section id="c4" data-title="Exam practice" data-mins="7">
+<h2>Exam practice</h2>
+<div id="ex1"></div><div id="ex2"></div><div id="ex3"></div>
+<div class="summary"><h3>Lesson summary</h3><ul>
+<li>s–t gradient = v; v–t gradient = a; v–t area = displacement; a–t area = Δv.</li>
+<li>SUVAT (constant a): v = u + at; s = ½(u+v)t; s = ut + ½at²; v² = u² + 2as.</li>
+<li>RP3: h = ½gt², gradient of h–t² graph = g/2.</li></ul></div>
+</section>
+</main>
+<script src="core.js"></script>
+<script>
+const SC={'constant velocity':{v:t=>4,cap:'Constant velocity: s–t straight line, v–t horizontal, a = 0.'},'speeding up':{v:t=>t*1.6,cap:'Uniform acceleration: s–t curve gets steeper, v–t straight sloping line, a constant.'},'slowing down':{v:t=>8-t*1.6,cap:'Uniform deceleration: s–t curve flattens, v–t slopes down, a negative.'},'thrown upwards':{v:t=>8-t*3.2,cap:'Thrown up (up = +): v decreases through zero at the top and becomes negative; a = −g throughout.'}};
+let sk='speeding up',stop=null;$('scn').innerHTML=Object.keys(SC).map(k=>`<button class="btn ${k===sk?'on':''}" data-k="${k}">${k}</button>`).join('');
+$('scn').onclick=e=>{const b=e.target.closest('button');if(b){sk=b.dataset.k;$('scn').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));drawM(1)}};
+function plot(id,f,lab,tm,mn,mx){const X=t=>30+t/5*180,Y=v=>140-(v-mn)/(mx-mn)*120;let d='';for(let t=0;t<=5;t+=0.05)d+=(d?' L':'M')+X(t)+' '+Y(f(t));const z=Y(0);
+ $(id).innerHTML=`<line x1="30" y1="${z}" x2="215" y2="${z}" stroke="#556"/><line x1="30" y1="10" x2="30" y2="150" stroke="#556"/><text x="34" y="16" font-size="11" fill="#334">${lab}</text><text x="212" y="${z+14}" font-size="10" text-anchor="end" fill="#334">t</text><path d="${d}" stroke="#5b3fd0" stroke-width="3" fill="none"/><line x1="${X(tm*5)}" y1="10" x2="${X(tm*5)}" y2="150" stroke="#f1c40f" stroke-width="2"/>`}
+function drawM(tm){const V=SC[sk].v,s=t=>{let a=0;for(let x=0;x<t;x+=0.01)a+=V(x)*0.01;return a},A=t=>(V(t+0.01)-V(t))/0.01;
+ const smax=Math.max(...[0,1,2,3,4,5].map(s)),smin=Math.min(0,...[1,2,3,4,5].map(s));plot('gs',s,'s',tm,smin,Math.max(smax,1));plot('gv',V,'v',tm,Math.min(0,V(5),V(0))-0.5,Math.max(V(0),V(5),1)+0.5);plot('ga',A,'a',tm,-4,4);
+ const x=40+(s(tm*5)-smin)/(Math.max(smax,1)-smin)*540;$('car').innerHTML=`<line x1="20" y1="55" x2="620" y2="55" stroke="#556"/><rect x="${x-20}" y="25" width="40" height="22" rx="6" fill="#e4572e"/><circle cx="${x-12}" cy="50" r="5" fill="#ccd"/><circle cx="${x+12}" cy="50" r="5" fill="#ccd"/>`;$('scCap').textContent=SC[sk].cap}
+$('go').onclick=()=>{if(stop)stop();stop=animate(4000,drawM)};drawM(1);
+MCQ('q1a',{q:'What does the area under a velocity–time graph represent?',opts:['acceleration','displacement','speed','force'],a:1});
+NumQ('q1b',{q:'A car accelerates uniformly from 4.0 m s<sup>−1</sup> to 16 m s<sup>−1</sup> in 6.0 s. Use the area under the v–t graph to find the distance travelled.',ans:60,unit:'m',steps:['Area of trapezium = ½(4.0 + 16) × 6.0','= 60 m']});
+const VARS=['s','u','v','a','t'],NAMES={s:'displacement s / m',u:'initial velocity u / m s⁻¹',v:'final velocity v / m s⁻¹',a:'acceleration a / m s⁻²',t:'time t / s'};
+$('sv').innerHTML=VARS.map(k=>`<div class="row" style="margin:4px 0"><label style="width:240px"><input type="checkbox" data-k="${k}" ${['u','a','t'].includes(k)?'checked':''}> ${NAMES[k]}</label><input data-v="${k}" style="font:inherit;padding:6px;border-radius:8px;border:2px solid var(--line);width:110px" value="${{u:0,a:9.81,t:2,s:'',v:''}[k]}"></div>`).join('');
+function solve(){const known={};document.querySelectorAll('#sv input[type=checkbox]').forEach(c=>{if(c.checked){const v=parseNum(document.querySelector(`[data-v="${c.dataset.k}"]`).value);if(!isNaN(v))known[c.dataset.k]=v}});
+ const ks=Object.keys(known);if(ks.length!==3){$('svR').innerHTML='Tick exactly three known quantities.';return}let {s,u,v,a,t}=known,steps=[];
+ const has=k=>k in known;
+ try{if(has('u')&&has('a')&&has('t')){v=u+a*t;s=u*t+0.5*a*t*t;steps=[`v = u + at = ${u} + ${a}×${t} = ${v.toFixed(3)}`,`s = ut + ½at² = ${s.toFixed(3)}`]}
+ else if(has('u')&&has('v')&&has('t')){a=(v-u)/t;s=0.5*(u+v)*t;steps=[`a = (v − u)/t = ${a.toFixed(3)}`,`s = ½(u + v)t = ${s.toFixed(3)}`]}
+ else if(has('u')&&has('v')&&has('a')){t=(v-u)/a;s=(v*v-u*u)/(2*a);steps=[`t = (v − u)/a = ${t.toFixed(3)}`,`s = (v² − u²)/2a = ${s.toFixed(3)}`]}
+ else if(has('u')&&has('a')&&has('s')){const v2=u*u+2*a*s;if(v2<0)throw 0;v=Math.sqrt(v2);t=(v-u)/a;steps=[`v² = u² + 2as → v = ${v.toFixed(3)}`,`t = (v − u)/a = ${t.toFixed(3)}`]}
+ else if(has('s')&&has('t')&&has('u')){a=2*(s-u*t)/(t*t);v=u+a*t;steps=[`s = ut + ½at² → a = ${a.toFixed(3)}`,`v = u + at = ${v.toFixed(3)}`]}
+ else if(has('s')&&has('t')&&has('v')){u=2*s/t-v;a=(v-u)/t;steps=[`s = ½(u + v)t → u = ${u.toFixed(3)}`,`a = ${a.toFixed(3)}`]}
+ else if(has('s')&&has('v')&&has('a')){const u2=v*v-2*a*s;if(u2<0)throw 0;u=Math.sqrt(u2);t=(v-u)/a;steps=[`u = √(v² − 2as) = ${u.toFixed(3)}`,`t = ${t.toFixed(3)}`]}
+ else if(has('s')&&has('t')&&has('a')){u=(s-0.5*a*t*t)/t;v=u+a*t;steps=[`u = (s − ½at²)/t = ${u.toFixed(3)}`,`v = ${v.toFixed(3)}`]}
+ else{steps=['That combination needs a quadratic — choose another']}
+ $('svR').innerHTML=steps.join('<br>')}catch(e){$('svR').innerHTML='No real solution for those values.'}}
+$('sv').addEventListener('input',solve);solve();
+NumQ('q2a',{q:'A stone is dropped from rest down a well and hits the water after 2.4 s. How deep is the well? (g = 9.81 m s<sup>−2</sup>)',ans:0.5*9.81*2.4*2.4,unit:'m',steps:['u = 0, a = 9.81, t = 2.4: use s = ut + ½at²','s = ½ × 9.81 × 2.4² = 28 m']});
+NumQ('q2b',{q:'A car travelling at 25 m s<sup>−1</sup> brakes with a uniform deceleration of 5.0 m s<sup>−2</sup>. Calculate its stopping distance.',ans:62.5,unit:'m',steps:['v = 0, u = 25, a = −5.0: use v² = u² + 2as','0 = 625 − 10s → s = 62.5 m']});
+NumQ('q2c',{q:'A ball is thrown vertically upwards at 12 m s<sup>−1</sup>. How long does it take to reach its highest point?',ans:12/9.81,unit:'s',steps:['At the top v = 0; up = +, a = −9.81','0 = 12 − 9.81t → t = 1.22 s']});
+let data=[];
+function drawFF(t){const h=+$('h').value,y=40+Math.min(1,t)*h/1.4*220;$('ff').innerHTML=`<rect x="85" y="20" width="50" height="14" fill="#7f8c8d"/><text x="110" y="15" font-size="10" fill="#ccd" text-anchor="middle">electromagnet</text><circle cx="110" cy="${y}" r="8" fill="#ccd"/><rect x="70" y="${40+h/1.4*220+8}" width="80" height="6" fill="#c0392b"/><text x="110" y="${40+h/1.4*220+28}" font-size="10" fill="#ccd" text-anchor="middle">trapdoor / light gate</text>`}
+$('h').oninput=()=>{$('hv').textContent=(+$('h').value).toFixed(2);drawFF(0)};$('h').oninput();
+$('drop').onclick=()=>{const h=+$('h').value,t=Math.sqrt(2*h/9.81)+0.012*(Math.random()-0.5);animate(600,drawFF,()=>{data.push([h,t]);drawData()})};
+$('clr').onclick=()=>{data=[];drawData()};
+function drawData(){const X=t2=>40+t2/0.3*240,Y=h=>180-h/1.5*160;let g=`<line x1="40" y1="180" x2="290" y2="180" stroke="#556"/><line x1="40" y1="10" x2="40" y2="180" stroke="#556"/><text x="285" y="196" font-size="11" text-anchor="end" fill="#334">t² / s²</text><text x="44" y="18" font-size="11" fill="#334">h / m</text>`;
+ data.forEach(([h,t])=>g+=`<circle cx="${X(t*t)}" cy="${Y(h)}" r="4" fill="#5b3fd0"/>`);
+ let txt=data.length?`last: h = ${data[data.length-1][0].toFixed(2)} m, t = ${data[data.length-1][1].toFixed(3)} s`:'Drop the ball from several heights.';
+ if(data.length>=3){const n=data.length,xs=data.map(d=>d[1]**2),ys=data.map(d=>d[0]),mx=xs.reduce((a,b)=>a+b)/n,my=ys.reduce((a,b)=>a+b)/n,m=xs.reduce((a,x,i)=>a+(x-mx)*(ys[i]-my),0)/xs.reduce((a,x)=>a+(x-mx)**2,0),c=my-m*mx;
+  g+=`<line x1="${X(0)}" y1="${Y(c)}" x2="${X(0.3)}" y2="${Y(c+m*0.3)}" stroke="#e4572e" stroke-width="2"/>`;txt+=`<br>best-fit gradient = ${m.toFixed(2)} m s⁻² → <b>g = 2 × gradient = ${(2*m).toFixed(2)} m s⁻²</b>`}
+ $('hg').innerHTML=g;$('ffR').innerHTML=txt}
+drawData();
+MCQ('q3a',{q:'In RP3, a graph of h against t² has a gradient of 4.88 m s⁻². What is the value of g?',opts:['2.44 m s⁻²','4.88 m s⁻²','9.76 m s⁻²','19.5 m s⁻²'],a:2,why:'h = ½gt², so gradient = g/2 and g = 2 × 4.88.'});
+ExamQ('ex1',{title:'Question 1',stem:'<p>A ball is thrown vertically upwards from the edge of a cliff at 15 m s<sup>−1</sup>. It lands in the sea 30 m below the point of release. Ignore air resistance.</p>',parts:[
+ {label:'01.1',q:'Calculate the maximum height above the point of release.',marks:2,ms:['v² = u² + 2as with v = 0, u = 15, a = −9.81','s = 225/19.62 = 11.5 m']},
+ {label:'01.2',q:'Calculate the speed at which it hits the sea.',marks:2,ms:['v² = 15² + 2 × (−9.81) × (−30) = 225 + 589 = 814','v = 28.5 m s⁻¹']}]});
+ExamQ('ex2',{title:'Question 2',parts:[
+ {label:'02',q:'Explain how you would use a velocity–time graph to find (a) the acceleration and (b) the displacement of an object.',marks:2,ms:['Acceleration = gradient of the graph (tangent if curved)','Displacement = area under the graph']}]});
+ExamQ('ex3',{title:'Question 3 · multiple choice',parts:[
+ {label:'03',q:'An object accelerates uniformly from rest at 2.0 m s⁻². How far does it travel in the third second (from t = 2 s to t = 3 s)?',opts:['2.0 m','4.0 m','5.0 m','9.0 m'],a:2,marks:1,ms:['<b>C</b> — s(3) − s(2) = ½×2×9 − ½×2×4 = 9 − 4 = 5.0 m']}]});
+</script>
+</body>
+</html>

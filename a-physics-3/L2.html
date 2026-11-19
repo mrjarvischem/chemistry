@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2 · Moments — A-level Physics 3.4</title>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="core.css">
+</head>
+<body data-lesson="2" data-set="p34" data-next="L3.html">
+<header class="top"><a class="home" href="index.html">← All mechanics lessons</a>
+<h1>Lesson 2 · Moments, couples and centre of mass</h1>
+<p>AQA A-level Physics 3.4.1.2 · about 25 minutes</p></header>
+<main>
+
+<section id="b1" data-title="Moments" data-mins="6">
+<h2>The moment of a force</h2>
+<div class="key" style="font-size:1.1rem">moment = force × <b>perpendicular</b> distance from the pivot to the line of action of the force &nbsp; (N m)</div>
+<div class="grid2">
+ <div class="card" style="padding:10px"><svg id="sp" viewBox="0 0 400 260" width="100%"></svg></div>
+ <div class="card"><div>Force: <b id="Fv"></b> N<input type="range" id="F" min="10" max="100" step="1" value="40"></div><div>Distance along spanner: <b id="dv"></b> m<input type="range" id="d" min="0.05" max="0.30" step="0.01" value="0.25"></div><div>Angle to spanner: <b id="av"></b>°<input type="range" id="a" min="10" max="90" step="1" value="90"></div><div class="read" id="spR"></div></div>
+</div>
+<div id="q1a"></div>
+</section>
+
+<section id="b2" data-title="Principle of moments" data-mins="8">
+<h2>The principle of moments</h2>
+<div class="key">For an object in equilibrium, the <b>sum of clockwise moments</b> about any point = the <b>sum of anticlockwise moments</b> about that point. (And the resultant force is zero.)</div>
+<div class="card"><svg id="bm" viewBox="0 0 640 230" width="100%"></svg>
+<div class="grid2" style="margin:10px 0 0"><div>Left mass: <b id="m1v"></b> kg at <b id="x1v"></b> m<input type="range" id="m1" min="0.5" max="5" step="0.1" value="2"><input type="range" id="x1" min="0.1" max="1.0" step="0.05" value="0.6"></div>
+<div>Right mass: <b id="m2v"></b> kg at <b id="x2v"></b> m<input type="range" id="m2" min="0.5" max="5" step="0.1" value="3"><input type="range" id="x2" min="0.1" max="1.0" step="0.05" value="0.3"></div></div>
+<div class="read" id="bmR"></div></div>
+<div class="tip">Take moments about the point where an unknown force acts — that force then has zero moment, so it drops out of the equation.</div>
+<div id="q2a"></div><div id="q2b"></div>
+</section>
+
+<section id="b3" data-title="Couples & centre of mass" data-mins="5">
+<h2>Couples and centre of mass</h2>
+<div class="grid2">
+ <div class="card"><h3>Couple</h3><p style="margin:0">A pair of <b>equal and opposite</b> forces that do not act along the same line. It causes rotation without translation.<br><b>moment of a couple = one force × perpendicular distance between the lines of action of the forces</b>.<br>e.g. turning a steering wheel or a tap.</p></div>
+ <div class="card"><h3>Centre of mass</h3><p style="margin:0">The single point through which the whole weight of an object can be taken to act. For a <b>uniform</b> object it is at the geometric centre. An object topples when its centre of mass moves beyond its base, so the weight’s moment is no longer restoring.</p>
+ <svg id="tp" viewBox="0 0 300 170" width="100%" style="margin-top:8px"></svg><div>Tilt: <b id="tiv"></b>°<input type="range" id="ti" min="0" max="45" step="1" value="10"></div></div>
+</div>
+<div id="q3a"></div><div id="q3b"></div>
+</section>
+
+<section id="b4" data-title="Exam practice" data-mins="6">
+<h2>Exam practice</h2>
+<div id="ex1"></div><div id="ex2"></div><div id="ex3"></div>
+<div class="summary"><h3>Lesson summary</h3><ul>
+<li>Moment = force × perpendicular distance from pivot (N m).</li>
+<li>Principle of moments: Σ clockwise = Σ anticlockwise (about any point) in equilibrium.</li>
+<li>Couple: equal, opposite, non-collinear forces; moment = F × perpendicular separation.</li>
+<li>Centre of mass: point where the weight acts; uniform object → centre.</li></ul></div>
+</section>
+</main>
+<script src="core.js"></script>
+<script>
+const rad=d=>d*Math.PI/180;
+const arrow=(x1,y1,x2,y2,c,w=4,lab='')=>{const a=Math.atan2(y2-y1,x2-x1),h=12;return `<line x1="${x1}" y1="${y1}" x2="${x2-h*0.6*Math.cos(a)}" y2="${y2-h*0.6*Math.sin(a)}" stroke="${c}" stroke-width="${w}"/><polygon points="${x2},${y2} ${x2-h*Math.cos(a-0.4)},${y2-h*Math.sin(a-0.4)} ${x2-h*Math.cos(a+0.4)},${y2-h*Math.sin(a+0.4)}" fill="${c}"/>`+(lab?`<text x="${x2+6}" y="${y2}" font-size="14" font-weight="700" fill="${c}">${lab}</text>`:'')};
+function drawSp(){const F=+$('F').value,d=+$('d').value,a=+$('a').value;$('Fv').textContent=F;$('dv').textContent=d.toFixed(2);$('av').textContent=a;
+ const px=60,py=150,L=d*1100,ex=px+L,ey=py;const fx=ex+F*1.2*Math.cos(rad(-a)),fy=ey+F*1.2*Math.sin(rad(a));
+ const perp=d*Math.sin(rad(a));
+ let g=`<circle cx="${px}" cy="${py}" r="16" fill="#9aa4b8"/><rect x="${px}" y="${py-8}" width="${L}" height="16" rx="6" fill="#556"/><circle cx="${px}" cy="${py}" r="4" fill="#1d2433"/><text x="${px}" y="${py+34}" font-size="12" text-anchor="middle" fill="#334">pivot (nut)</text>`;
+ g+=arrow(ex,ey,ex+F*1.2*Math.cos(rad(a)),ey+F*1.2*Math.sin(rad(a)),'#e4572e',4,'F');
+ // perpendicular line from pivot to line of action
+ const dx=Math.cos(rad(a)),dy=Math.sin(rad(a)),t=(px-ex)*dx+(py-ey)*dy,qx=ex+t*dx,qy=ey+t*dy;
+ g+=`<line x1="${ex-200*dx}" y1="${ey-200*dy}" x2="${ex+200*dx}" y2="${ey+200*dy}" stroke="#e4572e" stroke-dasharray="4 4" opacity=".5"/><line x1="${px}" y1="${py}" x2="${qx}" y2="${qy}" stroke="#5b3fd0" stroke-width="3"/><text x="${(px+qx)/2-10}" y="${(py+qy)/2-8}" font-size="13" fill="#5b3fd0" font-weight="700">d⊥</text>`;
+ $('sp').innerHTML=g;$('spR').innerHTML=`perpendicular distance = ${d.toFixed(2)} × sin ${a}° = ${perp.toFixed(3)} m<br>moment = ${F} × ${perp.toFixed(3)} = <b>${(F*perp).toFixed(1)} N m</b>${a===90?' (maximum: force at 90°)':''}`;}
+['F','d','a'].forEach(i=>$(i).oninput=drawSp);drawSp();
+MCQ('q1a',{q:'Why is it easier to undo a tight nut with a longer spanner?',opts:['the force is larger','the perpendicular distance is larger, so the same force gives a larger moment','the nut is looser','a longer spanner weighs more'],a:1});
+function drawBm(){const m1=+$('m1').value,x1=+$('x1').value,m2=+$('m2').value,x2=+$('x2').value;['m1','x1','m2','x2'].forEach(k=>$(k+'v').textContent=(+$(k).value).toFixed(k[0]==='x'?2:1));
+ const ac=m1*9.81*x1,cw=m2*9.81*x2,net=cw-ac,tilt=Math.max(-12,Math.min(12,net*2));
+ let g=`<polygon points="320,200 300,230 340,230" fill="#556"/><g transform="rotate(${tilt} 320 200)"><rect x="60" y="192" width="520" height="12" fill="#c9a227"/>`;
+ const X=x=>320+x*250;g+=`<rect x="${X(-x1)-14}" y="${192-m1*12}" width="28" height="${m1*12}" fill="#2e86de"/><rect x="${X(x2)-14}" y="${192-m2*12}" width="28" height="${m2*12}" fill="#e4572e"/></g>`;
+ g+=`<text x="${X(-x1)}" y="30" font-size="12" text-anchor="middle" fill="#2e86de">${(m1*9.81).toFixed(1)} N</text><text x="${X(x2)}" y="30" font-size="12" text-anchor="middle" fill="#e4572e">${(m2*9.81).toFixed(1)} N</text>`;
+ $('bm').innerHTML=g;$('bmR').innerHTML=`anticlockwise moment = ${(m1*9.81).toFixed(1)} × ${x1.toFixed(2)} = <b>${ac.toFixed(2)} N m</b><br>clockwise moment = ${(m2*9.81).toFixed(1)} × ${x2.toFixed(2)} = <b>${cw.toFixed(2)} N m</b><br>${Math.abs(net)<0.05?'<b style="color:#1e8e5a">Balanced — equilibrium!</b>':net>0?'resultant moment clockwise — tips right':'resultant moment anticlockwise — tips left'}`;}
+['m1','x1','m2','x2'].forEach(i=>$(i).oninput=drawBm);drawBm();
+NumQ('q2a',{q:'A uniform 2.0 m beam of weight 120 N is pivoted at its centre. A 300 N child sits 0.60 m to the left of the pivot. How far to the right must a 200 N child sit to balance?',ans:0.9,unit:'m',steps:['The beam’s weight acts at the pivot, so it has no moment','300 × 0.60 = 200 × d','d = 0.90 m']});
+NumQ('q2b',{q:'A uniform plank of weight 80 N and length 4.0 m rests on supports at each end. A 600 N person stands 1.0 m from the left end. Calculate the force from the <b>right</b>-hand support.',ans:(80*2+600*1)/4,unit:'N',steps:['Take moments about the left support (removes that unknown force)','R × 4.0 = 80 × 2.0 + 600 × 1.0 = 760','R = 190 N']});
+function drawTp(){const ti=+$('ti').value;$('tiv').textContent=ti;const w=60,h=110,c=Math.cos(rad(ti)),s=Math.sin(rad(ti));const px=170,py=150;
+ const R=([x,y])=>[px+(x*c-y*s),py+(x*s+y*c)];const P=[[0,0],[-w,0],[-w,-h],[0,-h]].map(R);const cm=R([-w/2,-h/2]);
+ const crit=Math.atan(w/h)*180/Math.PI,falls=cm[0]>px;
+ $('tp').innerHTML=`<line x1="10" y1="150" x2="290" y2="150" stroke="#556" stroke-width="2"/><polygon points="${P.map(p=>p.join(',')).join(' ')}" fill="${falls?'#fdecea':'#efeaff'}" stroke="#5b3fd0" stroke-width="2"/><circle cx="${cm[0]}" cy="${cm[1]}" r="5" fill="#1d2433"/><line x1="${cm[0]}" y1="${cm[1]}" x2="${cm[0]}" y2="150" stroke="#1d2433" stroke-dasharray="4 3"/><circle cx="${px}" cy="150" r="4" fill="#e4572e"/><text x="10" y="20" font-size="12" fill="${falls?'#c0392b':'#1e8e5a'}">${falls?'weight acts outside the base → topples':'weight acts inside the base → falls back'} (tipping angle ${crit.toFixed(0)}°)</text>`;}
+$('ti').oninput=drawTp;drawTp();
+NumQ('q3a',{q:'A steering wheel of diameter 0.40 m is turned by two equal and opposite 15 N forces applied at opposite ends of a diameter. Calculate the moment of the couple.',ans:6,unit:'N m',steps:['moment of couple = F × perpendicular separation','= 15 × 0.40 = 6.0 N m']});
+MCQ('q3b',{q:'Where is the centre of mass of a uniform metre rule?',opts:['at the 0 cm end','at the 50 cm mark','at the 100 cm end','it depends on how it is held'],a:1});
+ExamQ('ex1',{title:'Question 1',parts:[
+ {label:'01.1',q:'State the principle of moments.',marks:2,ms:['For an object in equilibrium, the sum of clockwise moments about a point = the sum of anticlockwise moments','about the same point']},
+ {label:'01.2',q:'Define the moment of a force.',marks:1,ms:['Force × perpendicular distance from the pivot/point to the line of action of the force']}]});
+ExamQ('ex2',{title:'Question 2',stem:'<p>A uniform horizontal shelf of length 0.80 m and weight 15 N is hinged to a wall at one end. It is held horizontal by a vertical string attached 0.60 m from the hinge. A 25 N book is placed at the far end of the shelf.</p>',parts:[
+ {label:'02.1',q:'Calculate the tension in the string.',marks:3,ms:['Moments about the hinge: T × 0.60 = 15 × 0.40 + 25 × 0.80','= 6.0 + 20 = 26 N m','T = 43 N (43.3 N)']},
+ {label:'02.2',q:'Calculate the force at the hinge.',marks:1,ms:['Vertical equilibrium: 43.3 − 15 − 25 = 3.3 N downwards (ecf)']}]});
+ExamQ('ex3',{title:'Question 3 · multiple choice',parts:[
+ {label:'03',q:'Which statement about a couple is correct?',opts:['It produces a resultant force but no rotation','It consists of two equal forces in the same direction','It produces rotation with no resultant force','Its moment depends on the position of the pivot'],a:2,marks:1,ms:['<b>C</b> — equal and opposite forces: no resultant force, but a turning effect (the same about any point).']}]});
+</script>
+</body>
+</html>

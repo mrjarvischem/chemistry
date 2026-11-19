@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>4 · Projectile motion — A-level Physics 3.4</title>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="core.css">
+</head>
+<body data-lesson="4" data-set="p34" data-next="L5.html">
+<header class="top"><a class="home" href="index.html">← All mechanics lessons</a>
+<h1>Lesson 4 · Projectile motion</h1>
+<p>AQA A-level Physics 3.4.1.4 · about 25 minutes</p></header>
+<main>
+
+<section id="d1" data-title="Independence of motion" data-mins="6">
+<h2>Horizontal and vertical motion are independent</h2>
+<p class="lead">Two balls: one dropped, one fired horizontally at the same moment. Which lands first?</p>
+<div class="card"><svg id="two" class="stage" viewBox="0 0 640 300"></svg><div class="row" style="margin-top:8px"><button class="btn pri" id="go2">▶ Release both</button><span id="c2" style="color:var(--mute)"></span></div></div>
+<div class="key">Ignoring air resistance: <b>horizontal velocity is constant</b> (no horizontal force); <b>vertical motion has acceleration g downwards</b>. Treat them separately — time is the link between them.</div>
+<div id="q1a"></div>
+</section>
+
+<section id="d2" data-title="Projectile launcher" data-mins="9">
+<h2>Projectiles launched at an angle</h2>
+<div class="card"><svg id="pl" class="stage" viewBox="0 0 640 300"></svg>
+<div class="grid3" style="margin:10px 0 0"><div>Speed: <b id="uv"></b> m s⁻¹<input type="range" id="u" min="5" max="30" step="0.5" value="20"></div><div>Angle: <b id="av"></b>°<input type="range" id="a" min="0" max="85" step="1" value="40"></div><div>Launch height: <b id="hv"></b> m<input type="range" id="h" min="0" max="20" step="0.5" value="0"></div></div>
+<label class="row"><input type="checkbox" id="air"> Add air resistance (qualitative)</label><div class="row"><button class="btn pri" id="fire">▶ Launch</button></div><div class="read" id="plR"></div></div>
+<div class="card"><h3>Method</h3><ol style="margin:0;padding-left:20px;line-height:1.7"><li>Resolve the launch velocity: u<sub>x</sub> = u cos θ, u<sub>y</sub> = u sin θ.</li><li>Vertical: use SUVAT with a = −g to find the time of flight (or max height).</li><li>Horizontal: range = u<sub>x</sub> × time.</li></ol></div>
+<div class="warn">With <b>air resistance</b> the range and maximum height are both smaller, and the path is no longer symmetrical — it comes down more steeply. (Only a qualitative treatment is needed.)</div>
+<div id="q2a"></div><div id="q2b"></div>
+</section>
+
+<section id="d3" data-title="Exam practice" data-mins="8">
+<h2>Exam practice</h2>
+<div id="ex1"></div><div id="ex2"></div><div id="ex3"></div>
+<div class="summary"><h3>Lesson summary</h3><ul>
+<li>Horizontal and vertical motion are independent; horizontal velocity constant (no air resistance), vertical acceleration g.</li>
+<li>Resolve: u cos θ and u sin θ. Use vertical motion to find time; range = horizontal velocity × time.</li>
+<li>Air resistance reduces range and height and makes the path asymmetric.</li></ul></div>
+</section>
+</main>
+<script src="core.js"></script>
+<script>
+const g=9.81,rad=d=>d*Math.PI/180;let stop2=null,stopP=null;
+function draw2(t){const T=Math.sqrt(2*20/g),tt=t*T,sc=12;let G=`<rect x="0" y="270" width="640" height="30" fill="#2b3550"/><rect x="40" y="20" width="30" height="20" fill="#7f8c8d"/>`;
+ for(let k=0;k<=8;k++){const tk=k/8*tt;G+=`<circle cx="70" cy="${30+0.5*g*tk*tk*sc}" r="4" fill="#5dade2" opacity=".35"/><circle cx="${70+6*tk*sc*2}" cy="${30+0.5*g*tk*tk*sc}" r="4" fill="#e4572e" opacity=".35"/><line x1="40" y1="${30+0.5*g*tk*tk*sc}" x2="620" y2="${30+0.5*g*tk*tk*sc}" stroke="#fff" opacity=".06"/>`}
+ G+=`<circle cx="70" cy="${30+0.5*g*tt*tt*sc}" r="9" fill="#5dade2"/><circle cx="${70+6*tt*sc*2}" cy="${30+0.5*g*tt*tt*sc}" r="9" fill="#e4572e"/>`;$('two').innerHTML=G;$('c2').textContent=t<1?'Both fall the same vertical distance in each time interval…':'They land at the same time — the horizontal motion makes no difference to the vertical motion.'}
+$('go2').onclick=()=>{if(stop2)stop2();stop2=animate(2200,draw2)};draw2(0);
+MCQ('q1a',{q:'A ball rolls off a table horizontally at 3.0 m s⁻¹. Ignoring air resistance, what is its horizontal velocity just before it hits the floor?',opts:['0','3.0 m s⁻¹','greater than 3.0 m s⁻¹','it depends on the table height'],a:1,why:'There is no horizontal force, so horizontal velocity stays constant.'});
+function plState(){const u=+$('u').value,a=+$('a').value,h=+$('h').value;$('uv').textContent=u;$('av').textContent=a;$('hv').textContent=h;const ux=u*Math.cos(rad(a)),uy=u*Math.sin(rad(a));const T=(uy+Math.sqrt(uy*uy+2*g*h))/g;return{u,a,h,ux,uy,T,R:ux*T,H:h+uy*uy/(2*g)}}
+function drawPl(t){const s=plState(),sc=Math.min(560/Math.max(s.R,10),230/Math.max(s.H,5)),X=x=>40+x*sc,Y=y=>270-y*sc;let G=`<rect x="0" y="270" width="640" height="30" fill="#2b3550"/>${s.h>0?`<rect x="20" y="${Y(s.h)}" width="20" height="${s.h*sc}" fill="#556"/>`:''}`;
+ let p='',pa='';for(let k=0;k<=60;k++){const tk=k/60*s.T,x=s.ux*tk,y=s.h+s.uy*tk-0.5*g*tk*tk;p+=(p?' L':'M')+X(x)+' '+Y(y)}
+ G+=`<path d="${p}" stroke="#5dade2" stroke-width="2" fill="none" stroke-dasharray="5 4"/>`;
+ if($('air').checked){let x=0,y=s.h,vx=s.ux,vy=s.uy,k=0.04,first=true;while(y>=0&&x<1e3){const v=Math.hypot(vx,vy);vx-=k*v*vx*0.01;vy-=(g+k*v*vy)*0.01;x+=vx*0.01;y+=vy*0.01;pa+=(first?'M':' L')+X(x)+' '+Y(Math.max(0,y));first=false}G+=`<path d="${pa}" stroke="#f1c40f" stroke-width="2" fill="none"/>`}
+ const tk=t*s.T,bx=s.ux*tk,by=s.h+s.uy*tk-0.5*g*tk*tk,vy=s.uy-g*tk;G+=`<circle cx="${X(bx)}" cy="${Y(by)}" r="8" fill="#e4572e"/><line x1="${X(bx)}" y1="${Y(by)}" x2="${X(bx)+s.ux*3}" y2="${Y(by)}" stroke="#58d68d" stroke-width="3"/><line x1="${X(bx)}" y1="${Y(by)}" x2="${X(bx)}" y2="${Y(by)-vy*3}" stroke="#ff9b8b" stroke-width="3"/>`;
+ G+=`<text x="630" y="290" font-size="11" fill="#ccd" text-anchor="end">green: vₓ (constant) · pink: vᵧ (changes)${$('air').checked?' · yellow: with air resistance':''}</text>`;
+ $('pl').innerHTML=G;$('plR').innerHTML=`uₓ = ${s.u} cos ${s.a}° = ${s.ux.toFixed(2)} m s⁻¹ · uᵧ = ${s.u} sin ${s.a}° = ${s.uy.toFixed(2)} m s⁻¹<br>time of flight = <b>${s.T.toFixed(2)} s</b> · max height = <b>${s.H.toFixed(2)} m</b> · range = <b>${s.R.toFixed(1)} m</b>`}
+['u','a','h','air'].forEach(i=>$(i).oninput=()=>drawPl(1));$('fire').onclick=()=>{if(stopP)stopP();stopP=animate(2500,drawPl)};drawPl(1);
+NumQ('q2a',{q:'A ball is kicked at 18 m s<sup>−1</sup> at 35° above the horizontal from flat ground. Calculate its time of flight.',ans:2*18*Math.sin(rad(35))/g,unit:'s',steps:['uᵧ = 18 sin 35° = 10.3 m s⁻¹','It returns to the ground: s = 0 = uᵧt − ½gt² → t = 2uᵧ/g','t = 2 × 10.3 ÷ 9.81 = 2.10 s']});
+NumQ('q2b',{q:'A stone is thrown horizontally at 8.0 m s<sup>−1</sup> from a cliff 45 m high. How far from the base of the cliff does it land?',ans:8*Math.sqrt(2*45/g),unit:'m',steps:['Vertical: 45 = ½ × 9.81 × t² → t = 3.03 s','Horizontal: 8.0 × 3.03 = 24.2 m']});
+ExamQ('ex1',{title:'Question 1',stem:'<p>A golf ball is hit from level ground at 32 m s<sup>−1</sup> at 25° to the horizontal. Ignore air resistance.</p>',parts:[
+ {label:'01.1',q:'Calculate the maximum height reached.',marks:2,ms:['uᵧ = 32 sin 25° = 13.5 m s⁻¹','H = uᵧ²/2g = 9.32 m']},
+ {label:'01.2',q:'Calculate the horizontal range.',marks:3,ms:['time of flight = 2uᵧ/g = 2.76 s','uₓ = 32 cos 25° = 29.0 m s⁻¹','range = 29.0 × 2.76 = 80 m']},
+ {label:'01.3',q:'Describe how air resistance would change the path.',marks:2,ms:['Lower maximum height and shorter range','Path not symmetrical — descends more steeply / at a steeper angle']}]});
+ExamQ('ex2',{title:'Question 2',parts:[
+ {label:'02',q:'Explain why the horizontal component of a projectile’s velocity stays constant when air resistance is negligible.',marks:2,ms:['The only force acting is weight, which acts vertically','No horizontal force → no horizontal acceleration (Newton’s first law)']}]});
+ExamQ('ex3',{title:'Question 3 · multiple choice',parts:[
+ {label:'03',q:'A projectile is at the top of its path. Ignoring air resistance, which statement is correct?',opts:['its velocity is zero','its acceleration is zero','its vertical velocity is zero and its acceleration is g downwards','its horizontal velocity is zero'],a:2,marks:1,ms:['<b>C</b> — only the vertical component is zero; g still acts.']}]});
+</script>
+</body>
+</html>
