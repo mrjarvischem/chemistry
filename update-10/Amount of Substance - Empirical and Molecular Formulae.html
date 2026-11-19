@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Empirical and Molecular Formulae</title>
+<style>
+:root{
+  --bg:#f6efe1; --card:#fffaf0; --ink:#3b2a1a; --brown:#6b4423; --brown2:#8b5a2b;
+  --accent:#b5651d; --soft:#ead9bd; --line:#d8c4a0; --good:#2f7d4a; --bad:#b03a2e; --blue:#2c4a7a;
+  --i1:#2c6e8f; --i2:#b5651d; --i3:#6a4c93; --i4:#2f7d4a;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Arial,sans-serif;font-size:19px;line-height:1.55}
+header{background:var(--brown);color:#fff8ec;padding:14px 24px}
+header h1{margin:0;font-family:Georgia,serif;font-size:28px;font-weight:normal}
+header p{margin:2px 0 0;opacity:.85;font-size:16px}
+nav{display:flex;flex-wrap:wrap;gap:6px;padding:10px 24px;background:var(--soft);border-bottom:2px solid var(--line);position:sticky;top:0;z-index:5}
+nav button{border:2px solid var(--brown2);background:var(--card);color:var(--brown);padding:7px 14px;border-radius:20px;font-size:16px;cursor:pointer}
+nav button.on{background:var(--brown2);color:#fff}
+main{max-width:1100px;margin:0 auto;padding:20px 24px 60px}
+.page{display:none}.page.on{display:block}
+h2{font-family:Georgia,serif;color:var(--brown);font-size:30px;margin:6px 0 12px;font-weight:normal}
+h3{color:var(--brown2);font-size:22px;margin:22px 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:14px 0;box-shadow:0 2px 0 var(--line)}
+.key{border-left:6px solid var(--accent)}
+.eq{font-family:Georgia,serif;font-size:23px;text-align:center;padding:10px;background:#fff;border:1px dashed var(--line);border-radius:8px;margin:10px 0}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 6px}
+.frac span:first-child{border-bottom:2px solid var(--ink);padding:0 6px}
+.row{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+.row>*{flex:1 1 380px}
+button.b{background:var(--brown2);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:17px;cursor:pointer;margin:4px 6px 4px 0}
+button.b.alt{background:var(--card);color:var(--brown);border:2px solid var(--brown2)}
+button.b.on,button.b.alt.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+button.b:disabled{opacity:.45;cursor:default}
+.check{background:#fdf6e6;border:2px solid var(--accent);border-radius:12px;padding:14px 18px;margin:18px 0}
+.check .tag{display:inline-block;background:var(--accent);color:#fff;font-size:14px;padding:2px 10px;border-radius:12px;margin-bottom:6px;letter-spacing:.5px}
+.check .src{font-size:14px;color:#8a7356;font-style:italic;margin-left:6px}
+input.ans{font-size:18px;padding:6px 10px;width:130px;border:2px solid var(--line);border-radius:6px}
+.fb{font-weight:600;margin-left:8px}
+.fb.ok{color:var(--good)}.fb.no{color:var(--bad)}
+.work{display:none;background:#fff;border-left:4px solid var(--brown2);padding:8px 14px;margin-top:8px;border-radius:4px}
+.work.on{display:block;animation:fade .4s}
+table.t{border-collapse:collapse;margin:8px 0;background:#fff}
+table.t th,table.t td{border:1px solid var(--line);padding:6px 14px;text-align:center}
+table.t th{background:var(--soft);color:var(--brown)}
+svg text{font-family:"Segoe UI",Arial,sans-serif}
+.readout{font-family:Consolas,monospace;background:#2b1d10;color:#ffe9c4;padding:10px 14px;border-radius:8px;font-size:17px;line-height:1.6;overflow-x:auto}
+label.s{display:block;font-weight:600;color:var(--brown);margin-top:8px}
+input[type=range]{width:100%}
+.stepper .st{display:none;margin:6px 0;padding:8px 14px;background:#fff;border-left:4px solid var(--accent);border-radius:4px}
+.stepper .st.on{display:block;animation:fade .45s}
+.stepper .st .why{font-size:15px;color:#7a6448;display:block}
+.alg{font-family:Georgia,serif;font-size:21px}
+.hl{background:#ffe2b8;border-radius:4px;padding:0 3px}
+.hx{color:var(--i3);font-weight:bold}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+.pager{display:flex;justify-content:space-between;margin-top:30px}
+.mcq button.opt{display:block;width:100%;text-align:left;margin:6px 0;padding:10px 14px;font-size:17px;border:2px solid var(--line);background:#fff;border-radius:8px;cursor:pointer;color:var(--ink)}
+.mcq button.opt.right{border-color:var(--good);background:#e6f4ea}
+.mcq button.opt.wrong{border-color:var(--bad);background:#fbe9e7}
+.mcq .exp{display:none;margin-top:6px;font-size:17px}
+.mcq.done .exp{display:block}
+.warn{background:#fbeee4;border-left:6px solid var(--bad);padding:10px 16px;border-radius:6px;margin:12px 0}
+.tip{background:#eef3f8;border-left:6px solid var(--blue);padding:10px 16px;border-radius:6px;margin:12px 0}
+.small{font-size:15px;color:#7a6448}
+.svgbox{background:#fff;border:1px solid var(--line);border-radius:10px;padding:6px}
+.svgbox svg{width:100%;height:auto;display:block}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+#score{font-size:20px;margin-top:14px}
+sup,sub{line-height:0}
+.stepper tr.st{display:none;padding:0;border:none}.stepper tr.st.on{display:table-row;animation:fade .45s}
+.stepper tr.st{background:#fff}
+</style>
+</head>
+<body>
+<header>
+  <h1>Empirical and Molecular Formulae</h1>
+  <p>AQA A-level Chemistry · 3.1.2 Amount of substance walkthrough</p>
+</header>
+<nav id="nav"></nav>
+<main>
+
+<!-- ============ PAGE 1 ============ -->
+<section class="page" data-title="1. What they mean">
+<h2>1. Empirical and molecular formulae</h2>
+<div class="card key">
+  <p><b>Empirical formula</b> – the <b>simplest whole-number ratio</b> of atoms of each element in a compound.</p>
+  <p><b>Molecular formula</b> – the <b>actual number</b> of atoms of each element in one molecule of a compound.</p>
+  <p>The molecular formula is always a whole-number multiple of the empirical formula. Sometimes the multiple is 1, so they are the same.</p>
+</div>
+
+<h3>Find the repeating unit</h3>
+<div class="card">
+  <p>Pick a molecule. Its atoms are split into the biggest number of identical groups possible. One group is the empirical formula.</p>
+  <div class="chips" id="sMols"></div>
+  <div class="svgbox"><svg id="sSvg" viewBox="0 0 960 250"></svg></div>
+  <div class="readout" id="sOut"></div>
+</div>
+
+<div class="check"><span class="tag">CHECK 1</span><span class="src">AQA multiple-choice question</span>
+  <p>Which compound has the empirical formula C₂H₄O?</p>
+  <div class="mcq" id="mc1"></div>
+</div>
+</section>
+
+<!-- ============ PAGE 2 ============ -->
+<section class="page" data-title="2. From % and masses">
+<h2>2. Empirical formula from percentages or masses</h2>
+<div class="card key">
+  <p>Use a table, one column per element:</p>
+  <ol>
+    <li>Write the <b>% or mass</b> of each element. If you have percentages, imagine 100 g, so % = grams.</li>
+    <li>Divide each by its <b>A<sub>r</sub></b> to get <b>moles</b>.</li>
+    <li><b>Divide by the smallest</b> number of moles.</li>
+    <li>Write the whole-number ratio as a formula.</li>
+  </ol>
+  <p>If one element isn't given, it's the rest: % = 100 − (the others), or mass = total − (the others).</p>
+</div>
+
+<h3>Worked example 1 – percentages</h3>
+<div class="card stepper">
+  <p>A compound contains 40.00% carbon, 6.67% hydrogen and 53.33% oxygen. Calculate its empirical formula.</p>
+  <table class="t" style="width:100%"><tr><th>Element</th><th>C</th><th>H</th><th>O</th></tr>
+   <tr><th>% or mass</th><td>40.00</td><td>6.67</td><td>53.33</td></tr>
+   <tr class="st"><th>÷ A<sub>r</sub></th><td>40.00 ÷ 12.0</td><td>6.67 ÷ 1.0</td><td>53.33 ÷ 16.0</td></tr>
+   <tr class="st"><th>moles</th><td>3.33</td><td>6.67</td><td>3.33</td></tr>
+   <tr class="st"><th>÷ smallest (3.33)</th><td>1</td><td>2</td><td>1</td></tr></table>
+  <div class="st"><span class="alg">Empirical formula = <b>CH₂O</b></span></div>
+  <button class="b nextst">Next step ▶</button><button class="b alt allst">Show all</button><button class="b alt resetst">Reset</button>
+</div>
+
+<h3>Worked example 2 – masses from a practical</h3>
+<div class="card stepper">
+  <p>Copper oxide is reduced to copper by heating it in hydrogen (from your C2.3 lesson practical).</p>
+  <table class="t"><tr><th>Item</th><th>Mass / g</th></tr><tr><td>Tube</td><td>2.30</td></tr><tr><td>Tube + copper oxide</td><td>3.10</td></tr><tr><td>Tube + copper (after reduction)</td><td>2.94</td></tr></table>
+  <div class="st"><span class="alg">mass Cu = 2.94 − 2.30 = <b>0.64 g</b> &nbsp;·&nbsp; mass O = 3.10 − 2.94 = <b>0.16 g</b></span><span class="why">The oxygen is the mass lost when the oxide is reduced.</span></div>
+  <div class="st"><span class="alg">Cu: 0.64 ÷ 63.5 = 0.0101 mol &nbsp;·&nbsp; O: 0.16 ÷ 16.0 = 0.0100 mol</span></div>
+  <div class="st"><span class="alg">÷ smallest: 1.01 : 1 → <b>CuO</b></span></div>
+  <button class="b nextst">Next step ▶</button><button class="b alt allst">Show all</button><button class="b alt resetst">Reset</button>
+</div>
+
+<h3>Table builder</h3>
+<div class="card">
+  <p>Type in the data, then build the table one row at a time. Use it to check your own working.</p>
+  <div class="chips"><button class="b alt tbP" data-p="0">40.0% C, 6.7% H, 53.3% O</button><button class="b alt tbP" data-p="1">Na 43.4%, C 11.3%, O 45.3%</button><button class="b alt tbP" data-p="2">Mo oxide (masses)</button><button class="b alt tbP" data-p="3">C 88.2%, H 11.8%</button></div>
+  <div id="tbIn"></div>
+  <p><button class="b alt" id="tbAdd">+ element</button><button class="b" id="tbStep">Next row ▶</button><button class="b alt" id="tbAll">Show all</button></p>
+  <div id="tbOut"></div>
+</div>
+
+<div class="check"><span class="tag">CHECK 2</span><span class="src">Practice</span>
+  <p>A compound contains 43.4% sodium, 11.3% carbon and 45.3% oxygen by mass. Find its empirical formula.</p>
+  <p>Formula: <input class="ans" id="c2"> <button class="b" data-fchk="c2" data-f="Na2CO3">Check</button><span class="fb" id="c2f"></span></p>
+  <button class="b alt sw">Show working</button>
+  <div class="work">Na 43.4 ÷ 23.0 = 1.887 · C 11.3 ÷ 12.0 = 0.942 · O 45.3 ÷ 16.0 = 2.831<br>÷ 0.942 → 2.00 : 1 : 3.01 → <b>Na₂CO₃</b></div>
+</div>
+<div class="check"><span class="tag">CHECK 3</span><span class="src">Practice</span>
+  <p>1.12 g of iron reacts with chlorine to form 3.25 g of an iron chloride. Find its empirical formula.</p>
+  <p>Formula: <input class="ans" id="c3"> <button class="b" data-fchk="c3" data-f="FeCl3">Check</button><span class="fb" id="c3f"></span></p>
+  <button class="b alt sw">Show working</button>
+  <div class="work">mass Cl = 3.25 − 1.12 = 2.13 g<br>Fe 1.12 ÷ 55.8 = 0.0201 · Cl 2.13 ÷ 35.5 = 0.0600<br>÷ 0.0201 → 1 : 2.99 → <b>FeCl₃</b></div>
+</div>
+</section>
+
+<!-- ============ PAGE 3 ============ -->
+<section class="page" data-title="3. Awkward ratios">
+<h2>3. When the ratio isn't a whole number</h2>
+<div class="card key">
+  <p>After dividing by the smallest, you might get numbers like 1.5 or 1.33. <b>Don't round these!</b> Multiply <b>every</b> number by the same factor until they are all whole numbers.</p>
+  <table class="t"><tr><th>Decimal ends in…</th><th>Multiply by</th><th>Example</th></tr>
+   <tr><td>.5</td><td>× 2</td><td>1 : 1.5 → 2 : 3</td></tr>
+   <tr><td>.33 or .67</td><td>× 3</td><td>1 : 1.33 → 3 : 4</td></tr>
+   <tr><td>.25 or .75</td><td>× 4</td><td>1 : 2.25 → 4 : 9</td></tr>
+   <tr><td>.2, .4, .6 or .8</td><td>× 5</td><td>1 : 1.6 → 5 : 8</td></tr></table>
+  <p class="small">Only round when a value is within about 0.1 of a whole number (e.g. 2.98 → 3 or 1.03 → 1). That small difference comes from rounding in the data.</p>
+</div>
+
+<h3>Multiplier tool</h3>
+<div class="card">
+  <p>Enter a ratio and try multiplying it. Green means a number is close enough to a whole number.</p>
+  <p>Ratio: <input class="ans" id="mtA" value="1" style="width:90px"> : <input class="ans" id="mtB" value="1.33" style="width:90px"> : <input class="ans" id="mtC" value="" placeholder="(optional)" style="width:110px"></p>
+  <div class="chips"><button class="b alt mtX" data-x="1">× 1</button><button class="b alt mtX" data-x="2">× 2</button><button class="b alt mtX" data-x="3">× 3</button><button class="b alt mtX" data-x="4">× 4</button><button class="b alt mtX" data-x="5">× 5</button><button class="b alt mtX" data-x="6">× 6</button></div>
+  <div class="svgbox"><svg id="mt" viewBox="0 0 900 150"></svg></div>
+  <div class="readout" id="mtOut"></div>
+</div>
+
+<h3>Worked example</h3>
+<div class="card stepper">
+  <p>5.0 g of an oxide contains 4.0 g of molybdenum. Calculate the empirical formula of the oxide.</p>
+  <div class="st"><span class="alg">mass O = 5.0 − 4.0 = 1.0 g</span></div>
+  <div class="st"><span class="alg">Mo: 4.0 ÷ 96.0 = 0.0417 &nbsp;·&nbsp; O: 1.0 ÷ 16.0 = 0.0625</span></div>
+  <div class="st"><span class="alg">÷ smallest: 1 : 1.5</span><span class="why">1.5 is NOT close to a whole number – don't round it to 1 or 2.</span></div>
+  <div class="st"><span class="alg">× 2 → 2 : 3 → <b>Mo₂O₃</b></span></div>
+  <button class="b nextst">Next step ▶</button><button class="b alt allst">Show all</button><button class="b alt resetst">Reset</button>
+</div>
+<div class="warn">A common mistake is rounding 1.33 down to 1, or 2.5 up to 3. The mark scheme gives no credit for the wrong formula that this produces.</div>
+
+<div class="check"><span class="tag">CHECK 4</span><span class="src">AQA A-level Paper 2, June 2019, Q03.1</span>
+  <p>A hydrocarbon contains 88.2% carbon and 11.8% hydrogen by mass. Its empirical formula is the same as its molecular formula. Deduce the formula.</p>
+  <p>Formula: <input class="ans" id="c4"> <button class="b" data-fchk="c4" data-f="C5H8">Check</button><span class="fb" id="c4f"></span></p>
+  <button class="b alt sw">Show working</button>
+  <div class="work">C 88.2 ÷ 12 = 7.35 · H 11.8 ÷ 1 = 11.8<br>÷ 7.35 → 1 : 1.61 → × 5 → 5 : 8 → <b>C₅H₈</b></div>
+</div>
+<div class="check"><span class="tag">CHECK 5</span><span class="src">AQA AS Paper 2, June 2022, Q03.5</span>
+  <p>A compound contains 17.8% C, 3.0% H and 79.2% Br by mass. Calculate its empirical formula.</p>
+  <p>Formula: <input class="ans" id="c5"> <button class="b" data-fchk="c5" data-f="C3H6Br2">Check</button><span class="fb" id="c5f"></span></p>
+  <button class="b alt sw">Show working</button>
+  <div class="work">C 17.8 ÷ 12.0 = 1.48 · H 3.0 ÷ 1.0 = 3.00 · Br 79.2 ÷ 79.9 = 0.99<br>÷ 0.99 → 1.5 : 3.03 : 1 → × 2 → 3 : 6 : 2 → <b>C₃H₆Br₂</b></div>
+</div>
+<div class="check"><span class="tag">CHECK 6</span><span class="src">AQA A-level Paper 2, June 2023, Q08.4</span>
+  <p>A biofuel made from sewage sludge contains 37.08% carbon, 5.15% hydrogen and 24.72% oxygen by mass. The rest is sulfur. Calculate its empirical formula. <b>[3 marks]</b></p>
+  <p>Formula: <input class="ans" id="c6"> <button class="b" data-fchk="c6" data-f="C6H10O3S2">Check</button><span class="fb" id="c6f"></span></p>
+  <button class="b alt sw" data-l="Hint">Hint</button>
+  <div class="work">First find the % of sulfur: 100 − (37.08 + 5.15 + 24.72). Write the elements in the order C, H, O, S.</div>
+  <button class="b alt sw">Show working</button>
+  <div class="work">S = 33.05% (M1)<br>C 3.09 · H 5.15 · O 1.55 · S 1.030 (M2)<br>÷ 1.030 → 3 : 5 : 1.5 : 1 → × 2 → 6 : 10 : 3 : 2 → <b>C₆H₁₀O₃S₂</b> (M3)</div>
+</div>
+</section>
+
+<!-- ============ PAGE 4 ============ -->
+<section class="page" data-title="4. Molecular formula">
+<h2>4. Using M<sub>r</sub> to find the molecular formula</h2>
+<div class="card key">
+  <div class="eq">n = <span class="frac"><span>M<sub>r</sub> of compound</span><span>M<sub>r</sub> of empirical formula</span></span> &nbsp;&nbsp;→&nbsp;&nbsp; molecular formula = (empirical formula) × n</div>
+  <p>The M<sub>r</sub> is usually given, or comes from the molecular ion peak (the peak with the largest m/z) in a mass spectrum.</p>
+</div>
+
+<h3>Stack the empirical units</h3>
+<div class="card">
+  <p>Keep adding empirical formula units until their total mass matches the M<sub>r</sub>.</p>
+  <div class="chips" id="stSets"></div>
+  <div class="svgbox"><svg id="stSvg" viewBox="0 0 900 200"></svg></div>
+  <p><button class="b" id="stAdd">Add one unit ▶</button><button class="b alt" id="stR">Reset</button></p>
+  <div class="readout" id="stOut"></div>
+</div>
+
+<h3>Worked example</h3>
+<div class="card stepper">
+  <p>Compound R contains 61.0% carbon and 11.9% hydrogen by mass. The rest is oxygen. The mass spectrum of R has a molecular ion peak at m/z = 118. Find the empirical and molecular formulae.</p>
+  <div class="st"><span class="alg">O = 100 − 61.0 − 11.9 = 27.1%</span></div>
+  <div class="st"><span class="alg">C 61.0 ÷ 12.0 = 5.08 · H 11.9 ÷ 1.0 = 11.9 · O 27.1 ÷ 16.0 = 1.69</span></div>
+  <div class="st"><span class="alg">÷ 1.69 → 3.00 : 7.03 : 1 → empirical formula <b>C₃H₇O</b></span></div>
+  <div class="st"><span class="alg">M<sub>r</sub>(C₃H₇O) = 36 + 7 + 16 = 59.0 &nbsp;·&nbsp; n = 118 ÷ 59.0 = 2</span></div>
+  <div class="st"><span class="alg">molecular formula = (C₃H₇O) × 2 = <b>C₆H₁₄O₂</b></span><span class="why">Multiply every subscript by 2.</span></div>
+  <button class="b nextst">Next step ▶</button><button class="b alt allst">Show all</button><button class="b alt resetst">Reset</button>
+</div>
+
+<div class="check"><span class="tag">CHECK 7</span><span class="src">AQA AS Paper 2, June 2017, Q02.2</span>
+  <p>Hydrocarbon Y contains 83.7% carbon by mass. Calculate the empirical formula of Y, then use M<sub>r</sub> = 86.0 to find the molecular formula. <b>[4 marks]</b></p>
+  <p>Empirical: <input class="ans" id="c7a"> <button class="b" data-fchk="c7a" data-f="C3H7">Check</button><span class="fb" id="c7af"></span></p>
+  <p>Molecular: <input class="ans" id="c7b"> <button class="b" data-fchk="c7b" data-f="C6H14">Check</button><span class="fb" id="c7bf"></span></p>
+  <button class="b alt sw">Show working</button>
+  <div class="work">H = 16.3% (it's a hydrocarbon)<br>C 83.7 ÷ 12.0 = 6.975 · H 16.3 ÷ 1.0 = 16.3 → 1 : 2.34 → × 3 → 3 : 7 → <b>C₃H₇</b><br>M<sub>r</sub>(C₃H₇) = 43.0 → 86.0 ÷ 43.0 = 2 → <b>C₆H₁₄</b></div>
+</div>
+<div class="check"><span class="tag">CHECK 8</span><span class="src">AQA past paper (Amount of Substance question bank)</span>
+  <p>A carboxylic acid (M<sub>r</sub> = 88.0) contains 40.9% carbon and 4.5% hydrogen by mass. The rest is oxygen. Deduce its empirical and molecular formulae. <b>[4 marks]</b></p>
+  <p>Molecular formula: <input class="ans" id="c8"> <button class="b" data-fchk="c8" data-f="C3H4O3">Check</button><span class="fb" id="c8f"></span></p>
+  <button class="b alt sw">Show working</button>
+  <div class="work">O = 54.6%<br>C 3.41 · H 4.5 · O 3.41 → 1 : 1.32 : 1 → × 3 → 3 : 4 : 3 → empirical formula <b>C₃H₄O₃</b><br>M<sub>r</sub>(C₃H₄O₃) = 88.0 → n = 1 → molecular formula <b>C₃H₄O₃</b></div>
+</div>
+<div class="check"><span class="tag">CHECK 9</span><span class="src">Practice</span>
+  <p>A compound has the empirical formula CH₂ and M<sub>r</sub> = 70.0. What is its molecular formula?</p>
+  <p>Formula: <input class="ans" id="c9"> <button class="b" data-fchk="c9" data-f="C5H10">Check</button><span class="fb" id="c9f"></span></p>
+  <button class="b alt sw">Show working</button>
+  <div class="work">M<sub>r</sub>(CH₂) = 14.0 → 70.0 ÷ 14.0 = 5 → <b>C₅H₁₀</b></div>
+</div>
+</section>
+
+<!-- ============ PAGE 5 ============ -->
+<section class="page" data-title="5. Quiz">
+<h2>5. Quick quiz</h2>
+<div id="quiz"></div>
+<div id="score"></div>
+<button class="b alt" onclick="buildQuiz(Q)">Reset quiz</button>
+</section>
+
+<div class="pager"><button class="b alt" id="prevB">◀ Previous</button><button class="b" id="nextB">Next ▶</button></div>
+</main>
+
+<script>
+/* ---------- navigation ---------- */
+const pages=[...document.querySelectorAll('.page')];
+const nav=document.getElementById('nav');
+pages.forEach((p,i)=>{const b=document.createElement('button');b.textContent=p.dataset.title;b.onclick=()=>go(i);nav.appendChild(b)});
+let cur=0;
+function go(i){cur=Math.max(0,Math.min(pages.length-1,i));
+ pages.forEach((p,j)=>p.classList.toggle('on',j===cur));
+ [...nav.children].forEach((b,j)=>b.classList.toggle('on',j===cur));
+ document.getElementById('prevB').disabled=cur===0;
+ document.getElementById('nextB').disabled=cur===pages.length-1;
+ window.scrollTo(0,0);
+ if(window.onPage)window.onPage(cur);}
+document.getElementById('prevB').onclick=()=>go(cur-1);
+document.getElementById('nextB').onclick=()=>go(cur+1);
+
+/* ---------- numeric checks, working, steppers ---------- */
+document.addEventListener('click',e=>{
+ const t=e.target;
+ if(t.dataset.chk){const inp=document.getElementById(t.dataset.chk),fb=document.getElementById(t.dataset.chk+'f');
+  const v=parseFloat(inp.value.replace(',','.').replace('%',''));const ans=parseFloat(t.dataset.v),tol=parseFloat(t.dataset.t||0.05);
+  if(isNaN(v)){fb.textContent='Enter a number';fb.className='fb no';return}
+  if(Math.abs(v-ans)<=tol+1e-9){fb.textContent='✓ Correct';fb.className='fb ok';inp.style.borderColor='var(--good)'}
+  else{fb.textContent='✗ Not quite – try again, or show the working';fb.className='fb no';inp.style.borderColor='var(--bad)'}}
+ if(t.classList.contains('sw')){const ns=t.nextElementSibling,w=ns&&ns.classList.contains('work')?ns:t.parentElement.querySelector('.work');w.classList.toggle('on');t.textContent=w.classList.contains('on')?'Hide working':(t.dataset.l||'Show working')}
+ if(t.classList.contains('nextst')){const s=t.closest('.stepper');const hid=[...s.querySelectorAll('.st:not(.on)')];if(hid.length){hid[0].classList.add('on')}
+  if(hid.length<=1){t.disabled=true}}
+ if(t.classList.contains('allst')){const s=t.closest('.stepper');s.querySelectorAll('.st').forEach(x=>x.classList.add('on'));s.querySelector('.nextst').disabled=true}
+ if(t.classList.contains('resetst')){const s=t.closest('.stepper');s.querySelectorAll('.st').forEach(x=>x.classList.remove('on'));s.querySelector('.nextst').disabled=false}
+});
+
+/* ---------- quiz ---------- */
+let qs=0,qa=0;
+function buildQuiz(Q){const w=document.getElementById('quiz');w.innerHTML='';qs=0;qa=0;
+ Q.forEach((q,i)=>{const c=document.createElement('div');c.className='card mcq';c.innerHTML=`<b>Q${i+1}.</b> ${q[0]}`;
+  q[1].forEach((o,j)=>{const b=document.createElement('button');b.className='opt';b.innerHTML=o;
+   b.onclick=()=>{if(c.classList.contains('done'))return;c.classList.add('done');qa++;
+    if(j===q[2]){b.classList.add('right');qs++}else{b.classList.add('wrong');c.querySelectorAll('.opt')[q[2]].classList.add('right')}score(Q)};c.appendChild(b)});
+  const e=document.createElement('div');e.className='exp';e.innerHTML='💡 '+q[3];c.appendChild(e);w.appendChild(c)});score(Q)}
+function score(Q){document.getElementById('score').innerHTML=`Score: <b>${qs}</b> / ${Q.length}`+(qa===Q.length?(qs>=Q.length-1?' – excellent!':qs>=Q.length-3?' – good, review the ones you missed':' – go back through the walkthrough and try again'):'')}
+const NS='http://www.w3.org/2000/svg';
+function E(tag,attrs,parent){const el=document.createElementNS(NS,tag);for(const k in attrs)el.setAttribute(k,attrs[k]);if(parent)parent.appendChild(el);return el}
+function sf(v,d=3){if(v===0)return '0';const a=Math.abs(v);if(a>=1e5||a<1e-2){const e=Math.floor(Math.log10(a));let m=(v/10**e).toPrecision(d);if(+m>=10){m=(+m/10).toPrecision(d);return m+' × 10'+sup(e+1)}return m+' × 10'+sup(e)}return (+v.toPrecision(d)).toLocaleString('en-GB',{maximumSignificantDigits:d}).replace(/,/g,' ')}
+function sup(e){const m={'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};return String(e).split('').map(c=>m[c]).join('')}
+function subs(f){return f.replace(/(\d+)/g,'<sub>$1</sub>')}
+function mkMCQ(id,q){const c=document.getElementById(id);c.innerHTML='';
+ q[0].forEach((o,j)=>{const b=document.createElement('button');b.className='opt';b.innerHTML=o;b.onclick=()=>{if(c.classList.contains('done'))return;c.classList.add('done');
+  b.classList.add(j===q[1]?'right':'wrong');c.querySelectorAll('.opt')[q[1]].classList.add('right')};c.appendChild(b)});
+ const e=document.createElement('div');e.className='exp';e.innerHTML='💡 '+q[2];c.appendChild(e)}
+function normF(s){const m={'₀':'0','₁':'1','₂':'2','₃':'3','₄':'4','₅':'5','₆':'6','₇':'7','₈':'8','₉':'9'};return s.replace(/[₀-₉]/g,c=>m[c]).replace(/\s/g,'')}
+document.addEventListener('click',e=>{const t=e.target;if(!t.dataset.fchk)return;const i=document.getElementById(t.dataset.fchk),f=document.getElementById(t.dataset.fchk+'f');
+ const ok=t.dataset.f.split('|').some(a=>normF(i.value)===a);f.textContent=ok?'✓ Correct':'✗ Not quite – check your ratio (or show the working)';f.className='fb '+(ok?'ok':'no');i.style.borderColor=ok?'var(--good)':'var(--bad)'});
+const AR={C:12.0,H:1.0,O:16.0,N:14.0,S:32.1,Cl:35.5,Br:79.9,Fe:55.8,Cu:63.5,Mo:96.0,Na:23.0,Mg:24.3,Ca:40.1,Al:27.0,K:39.1,Cr:52.0,P:31.0};
+const ECOL={C:'#3b3b3b',H:'#d9d9d9',O:'#b03a2e',N:'#2c4a7a',Cl:'#2f7d4a',Br:'#8b3a1a',S:'#c9a227'};
+const ssub=f=>f.replace(/(\d+)/g,'<tspan baseline-shift="sub" font-size="70%">$1</tspan>');
+const gcd=(a,b)=>b?gcd(b,a%b):a;
+function fstr(el){return el.map(([e,n])=>e+(n>1?n:'')).join('')}
+/* ---------- page 1: simplifier ---------- */
+const MOLS=[[['C',6],['H',12],['O',6]],[['C',4],['H',10]],[['C',2],['H',4],['O',2]],[['C',6],['H',6]],[['N',2],['O',4]],[['H',2],['O',2]],[['C',3],['H',8]]];
+let sT=null;
+function sPick(i){clearTimeout(sT);document.querySelectorAll('#sMols button').forEach((b,j)=>b.classList.toggle('on',j===i));
+ const el=MOLS[i],g=el.reduce((a,[,n])=>gcd(a,n),0),svg=document.getElementById('sSvg');
+ const draw=(groups)=>{svg.innerHTML='';const W=920/groups,cols0=Math.max(1,Math.floor((W-20)/26)),tot0=el.reduce((q,[,n])=>q+n,0)/groups,H=Math.max(90,40+Math.ceil(tot0/cols0)*26+40);svg.setAttribute('viewBox',`0 0 960 ${H+30}`);
+  for(let k=0;k<groups;k++){const x0=20+k*W;E('rect',{x:x0+4,y:20,width:W-8,height:H,rx:12,fill:groups>1?'#fdf6e6':'#fff',stroke:'#8b5a2b','stroke-width':2,style:'animation:fade .5s'},svg);
+   let idx=0;const per=el.map(([e,n])=>[e,n/groups]),tot=per.reduce((s,[,n])=>s+n,0),cols=Math.max(1,Math.floor((W-20)/26));
+   per.forEach(([e,n])=>{for(let a=0;a<n;a++){const cx=x0+20+(idx%cols)*26,cy=45+Math.floor(idx/cols)*26;
+    E('circle',{cx,cy,r:10,fill:ECOL[e],stroke:'#555','stroke-width':0.8},svg);const t=E('text',{x:cx,y:cy+4,'text-anchor':'middle','font-size':10,fill:e==='H'?'#333':'#fff'},svg);t.textContent=e;idx++}});
+   if(groups>1||g===1){const t=E('text',{x:x0+W/2,y:H+8,'text-anchor':'middle','font-size':16,'font-weight':'bold',fill:'#b5651d'},svg);t.innerHTML=ssub(fstr(el.map(([e,n])=>[e,n/groups])))}}
+ };
+ draw(1);const mf=subs(fstr(el)),ef=subs(fstr(el.map(([e,n])=>[e,n/g])));
+ document.getElementById('sOut').innerHTML=`Molecular formula: <b>${mf}</b> &nbsp;·&nbsp; splitting it up…`;
+ sT=setTimeout(()=>{draw(g);document.getElementById('sOut').innerHTML=g>1?`Molecular formula <b>${mf}</b> = ${g} × <b>${ef}</b> &nbsp;→&nbsp; empirical formula = <b>${ef}</b><br>(Every subscript divided by ${g}, the highest common factor.)`:`${mf} can't be split into identical smaller groups, so the empirical formula = molecular formula = <b>${mf}</b>`},900)}
+const sm=document.getElementById('sMols');MOLS.forEach((m,i)=>{const b=document.createElement('button');b.className='b alt';b.innerHTML=subs(fstr(m));b.onclick=()=>sPick(i);sm.appendChild(b)});sPick(0);
+mkMCQ('mc1',[['butanal, C₄H₈O','ethanoic acid, C₂H₄O₂','ethanol, C₂H₆O','methylpropanoic acid, C₄H₈O₂'],3,'C₄H₈O₂ ÷ 2 = C₂H₄O. Ethanoic acid simplifies to CH₂O, and butanal can\'t be simplified.']);
+
+/* ---------- page 2: table builder ---------- */
+const PRE=[{m:'%',r:[['C',40.0],['H',6.7],['O',53.3]]},{m:'%',r:[['Na',43.4],['C',11.3],['O',45.3]]},{m:'g',r:[['Mo',4.0],['O',1.0]]},{m:'%',r:[['C',88.2],['H',11.8]]}];
+let tb={m:'%',r:[]},tbS=0;
+function tbIn(){const box=document.getElementById('tbIn');box.innerHTML=`<p>Data are: <select id="tbM" style="font-size:17px"><option value="%">percentages</option><option value="g">masses in g</option></select></p>`;
+ const sel=box.querySelector('#tbM');sel.value=tb.m;sel.onchange=()=>{tb.m=sel.value;tbS=0;tbOut()};
+ tb.r.forEach((r,i)=>{const d=document.createElement('p');d.innerHTML=`<select style="font-size:17px">${Object.keys(AR).map(e=>`<option ${e===r[0]?'selected':''}>${e}</option>`).join('')}</select> <input class="ans" value="${r[1]}"> ${tb.m==='%'?'%':'g'} <button class="b alt">✕</button>`;
+  d.querySelector('select').onchange=e=>{r[0]=e.target.value;tbS=0;tbOut()};d.querySelector('input').oninput=e=>{r[1]=parseFloat(e.target.value);tbS=0;tbOut()};d.querySelector('button').onclick=()=>{tb.r.splice(i,1);tbIn();tbS=0;tbOut()};box.appendChild(d)})}
+function mult(rat){for(let k=1;k<=6;k++)if(rat.every(x=>Math.abs(x*k-Math.round(x*k))<0.1))return k;return null}
+function tbOut(){const o=document.getElementById('tbOut'),r=tb.r.filter(x=>!isNaN(x[1])&&x[1]>0);if(!r.length){o.innerHTML='';return}
+ const mol=r.map(([e,v])=>v/AR[e]),mn=Math.min(...mol),rat=mol.map(x=>x/mn),k=mult(rat);
+ const rows=[['% or mass',r.map(x=>x[1])],['÷ A<sub>r</sub>',r.map(([e,v])=>`${v} ÷ ${AR[e].toFixed(1)}`)],['moles',mol.map(x=>sf(x))],[`÷ smallest (${sf(mn)})`,rat.map(x=>x.toFixed(2))]];
+ if(k&&k>1)rows.push([`× ${k}`,rat.map(x=>(x*k).toFixed(2))]);
+ rows.push(['whole-number ratio',k?rat.map(x=>Math.round(x*k)):rat.map(()=>'?')]);
+ let h=`<table class="t" style="width:100%"><tr><th>Element</th>${r.map(x=>`<th>${x[0]}</th>`).join('')}</tr>`;
+ rows.slice(0,tbS+1).forEach(([l,v])=>h+=`<tr style="animation:fade .4s"><th>${l}</th>${v.map(x=>`<td>${x}</td>`).join('')}</tr>`);h+='</table>';
+ if(tbS>=rows.length-1)h+=k?`<div class="readout">Empirical formula = <b>${subs(fstr(r.map(([e],i)=>[e,Math.round(rat[i]*k)])))}</b>${k>1?` &nbsp;(the ratio wasn't whole, so everything was multiplied by ${k})`:''}</div>`:`<div class="readout">No simple multiplier up to 6 works – check the data.</div>`;
+ const tot=r.reduce((s,x)=>s+x[1],0);if(tb.m==='%'&&Math.abs(tot-100)>0.6)h+=`<p class="small">Your percentages add up to ${tot.toFixed(1)}%. Is an element missing (found by difference)?</p>`;
+ o.innerHTML=h;document.getElementById('tbStep').disabled=tbS>=rows.length-1;tbN=rows.length}
+let tbN=0;
+document.getElementById('tbStep').onclick=()=>{tbS++;tbOut()};document.getElementById('tbAll').onclick=()=>{tbS=99;tbOut()};
+document.getElementById('tbAdd').onclick=()=>{tb.r.push(['O',0]);tbIn();tbS=0;tbOut()};
+document.querySelectorAll('.tbP').forEach(b=>b.onclick=()=>{const p=PRE[+b.dataset.p];tb={m:p.m,r:p.r.map(x=>[...x])};tbS=0;document.querySelectorAll('.tbP').forEach(x=>x.classList.toggle('on',x===b));tbIn();tbOut()});
+document.querySelector('.tbP').click();
+
+/* ---------- page 3: multiplier ---------- */
+let mtK=1;
+function mt(){const vals=['mtA','mtB','mtC'].map(id=>parseFloat(document.getElementById(id).value)).filter(v=>!isNaN(v)),g=document.getElementById('mt');g.innerHTML='';
+ document.querySelectorAll('.mtX').forEach(b=>b.classList.toggle('on',+b.dataset.x===mtK));
+ const W=880/Math.max(vals.length,1);let all=true;
+ vals.forEach((v,i)=>{const p=v*mtK,d=Math.abs(p-Math.round(p)),ok=d<0.1;all=all&&ok;const x=10+i*W;
+  E('rect',{x:x+10,y:15,width:W-20,height:110,rx:12,fill:ok?'#e6f4ea':'#fbe9e7',stroke:ok?'#2f7d4a':'#b03a2e','stroke-width':2,style:'transition:all .3s'},g);
+  E('text',{x:x+W/2,y:50,'text-anchor':'middle','font-size':16,fill:'#7a6448'},g).textContent=`${v} × ${mtK}`;
+  E('text',{x:x+W/2,y:90,'text-anchor':'middle','font-size':30,'font-weight':'bold',fill:ok?'#2f7d4a':'#b03a2e'},g).textContent=(+p.toFixed(2));
+  E('text',{x:x+W/2,y:115,'text-anchor':'middle','font-size':13,fill:'#7a6448'},g).textContent=ok?`≈ ${Math.round(p)} ✓`:`${d.toFixed(2)} away from a whole number`});
+ document.getElementById('mtOut').innerHTML=all?`× ${mtK} works: ratio = <b>${vals.map(v=>Math.round(v*mtK)).join(' : ')}</b>`:`× ${mtK} doesn't give whole numbers yet – try another multiplier.`}
+['mtA','mtB','mtC'].forEach(id=>document.getElementById(id).oninput=mt);document.querySelectorAll('.mtX').forEach(b=>b.onclick=()=>{mtK=+b.dataset.x;mt()});mt();
+
+/* ---------- page 4: stacking ---------- */
+const STS=[{ef:'CH2',m:14.0,M:70.0},{ef:'C3H7O',m:59.0,M:118},{ef:'CH2O',m:30.0,M:180.0},{ef:'C3H7',m:43.0,M:86.0}];
+let st=STS[0],stN=0;
+function stDraw(){const g=document.getElementById('stSvg');g.innerHTML='';const X=v=>40+v/200*820;
+ E('line',{x1:X(st.M),x2:X(st.M),y1:20,y2:170,stroke:'#b03a2e','stroke-width':3,'stroke-dasharray':'8 5'},g);
+ E('text',{x:X(st.M),y:16,'text-anchor':'middle','font-size':15,fill:'#b03a2e','font-weight':'bold'},g).textContent=`Mᵣ = ${st.M}`;
+ for(let i=0;i<stN;i++){E('rect',{x:X(i*st.m),y:60,width:X(st.m)-40-2,height:70,rx:6,fill:i%2?'#b5651d':'#8b5a2b',style:'animation:fade .4s'},g);
+  const t=E('text',{x:X(i*st.m+st.m/2),y:100,'text-anchor':'middle','font-size':Math.min(15,(X(st.m)-40)/4),fill:'#fff'},g);t.innerHTML=ssub(st.ef)}
+ E('line',{x1:40,x2:860,y1:140,y2:140,stroke:'#3b2a1a'},g);for(let v=0;v<=200;v+=20)E('text',{x:X(v),y:160,'text-anchor':'middle','font-size':12,fill:'#3b2a1a'},g).textContent=v;
+ const tot=stN*st.m,o=document.getElementById('stOut'),n=Math.round(st.M/st.m);
+ const mf=st.ef.replace(/([A-Z][a-z]?)(\d*)/g,(a,e,d)=>e+((+d||1)*n>1?(+d||1)*n:''));
+ o.innerHTML=`Mᵣ of ${subs(st.ef)} = ${st.m} &nbsp;·&nbsp; ${stN} unit${stN===1?'':'s'} = ${(+tot.toFixed(1))}`+(Math.abs(tot-st.M)<0.5?`<br>✓ Matches! n = ${st.M} ÷ ${st.m} = ${n} → molecular formula = (${subs(st.ef)}) × ${n} = <b>${subs(mf)}</b>`:tot>st.M?'<br>Too many – that\'s more than the Mᵣ.':'');
+ document.getElementById('stAdd').disabled=tot>=st.M-0.5}
+document.getElementById('stAdd').onclick=()=>{stN++;stDraw()};document.getElementById('stR').onclick=()=>{stN=0;stDraw()};
+const ss=document.getElementById('stSets');STS.forEach((s,i)=>{const b=document.createElement('button');b.className='b alt';b.innerHTML=`${subs(s.ef)}, Mᵣ = ${s.M}`;b.onclick=()=>{st=s;stN=0;ss.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));stDraw()};ss.appendChild(b)});ss.querySelector('button').click();
+
+/* ---------- quiz ---------- */
+const Q=[
+ ["What is the empirical formula of C₆H₁₂O₆?",["C₆H₁₂O₆","CH₂O","C₂H₄O₂","CHO"],1,"Divide every subscript by 6."],
+ ["Which statement about empirical formulae is correct?",["It is the actual number of atoms in a molecule","It is the simplest whole-number ratio of atoms of each element","It is always different from the molecular formula","It shows how the atoms are bonded"],1,"Simplest whole-number ratio. It can be the same as the molecular formula (e.g. H₂O)."],
+ ["A compound is 75.0% C and 25.0% H by mass. What is its empirical formula?",["CH₄","CH₃","C₃H","CH₂"],0,"C 75.0 ÷ 12.0 = 6.25 · H 25.0 ÷ 1.0 = 25 → 1 : 4 → CH₄"],
+ ["After dividing by the smallest, a student gets Fe 1 : O 1.33. What is the formula?",["FeO","Fe₃O₄","Fe₂O₃","FeO₂"],1,"1.33 → × 3 → 3 : 4 → Fe₃O₄"],
+ ["The ratio is C 1 : H 2.5. What should you do?",["Round to 1 : 3","Round to 1 : 2","Multiply by 2 to get 2 : 5","Multiply by 3"],2,"x.5 → × 2. Never round 2.5."],
+ ["2.4 g of magnesium reacts with oxygen to give 4.0 g of oxide. What mass of oxygen reacted?",["4.0 g","2.4 g","1.6 g","6.4 g"],2,"4.0 − 2.4 = 1.6 g. (Mg 0.0988 : O 0.100 → MgO)"],
+ ["The empirical formula is C₂H₅ and M<sub>r</sub> = 58.0. What is the molecular formula?",["C₂H₅","C₄H₁₀","C₆H₁₅","C₃H₈"],1,"Mᵣ(C₂H₅) = 29.0 → 58.0 ÷ 29.0 = 2 → C₄H₁₀"],
+ ["Where can the M<sub>r</sub> of an organic compound be found?",["The tallest peak in the mass spectrum","The molecular ion peak (largest m/z) in the mass spectrum","The smallest peak in the mass spectrum","The IR spectrum"],1,"The molecular ion M⁺ has the largest m/z (ignoring tiny M+1 peaks)."],
+ ["The ratio is C 1 : H 1.6. What is the empirical formula?",["CH₂","C₃H₅","C₅H₈","C₂H₃"],2,"1.6 = 1⅗ → × 5 → 5 : 8"],
+ ["A compound is C 38.7%, H 9.7%, O 51.6%. Which step comes first?",["Divide each % by its A<sub>r</sub>","Divide each % by the smallest %","Multiply each % by its A<sub>r</sub>","Round the percentages"],0,"% (or mass) ÷ Aᵣ gives moles. Only then divide by the smallest number of moles."]
+];
+buildQuiz(Q);
+go(0);
+
+</script>
+</body>
+</html>

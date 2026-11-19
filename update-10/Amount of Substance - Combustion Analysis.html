@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Combustion Analysis</title>
+<style>
+:root{
+  --bg:#f6efe1; --card:#fffaf0; --ink:#3b2a1a; --brown:#6b4423; --brown2:#8b5a2b;
+  --accent:#b5651d; --soft:#ead9bd; --line:#d8c4a0; --good:#2f7d4a; --bad:#b03a2e; --blue:#2c4a7a;
+  --i1:#2c6e8f; --i2:#b5651d; --i3:#6a4c93; --i4:#2f7d4a;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Arial,sans-serif;font-size:19px;line-height:1.55}
+header{background:var(--brown);color:#fff8ec;padding:14px 24px}
+header h1{margin:0;font-family:Georgia,serif;font-size:28px;font-weight:normal}
+header p{margin:2px 0 0;opacity:.85;font-size:16px}
+nav{display:flex;flex-wrap:wrap;gap:6px;padding:10px 24px;background:var(--soft);border-bottom:2px solid var(--line);position:sticky;top:0;z-index:5}
+nav button{border:2px solid var(--brown2);background:var(--card);color:var(--brown);padding:7px 14px;border-radius:20px;font-size:16px;cursor:pointer}
+nav button.on{background:var(--brown2);color:#fff}
+main{max-width:1100px;margin:0 auto;padding:20px 24px 60px}
+.page{display:none}.page.on{display:block}
+h2{font-family:Georgia,serif;color:var(--brown);font-size:30px;margin:6px 0 12px;font-weight:normal}
+h3{color:var(--brown2);font-size:22px;margin:22px 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:14px 0;box-shadow:0 2px 0 var(--line)}
+.key{border-left:6px solid var(--accent)}
+.eq{font-family:Georgia,serif;font-size:23px;text-align:center;padding:10px;background:#fff;border:1px dashed var(--line);border-radius:8px;margin:10px 0}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 6px}
+.frac span:first-child{border-bottom:2px solid var(--ink);padding:0 6px}
+.row{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+.row>*{flex:1 1 380px}
+button.b{background:var(--brown2);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:17px;cursor:pointer;margin:4px 6px 4px 0}
+button.b.alt{background:var(--card);color:var(--brown);border:2px solid var(--brown2)}
+button.b.on,button.b.alt.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+button.b:disabled{opacity:.45;cursor:default}
+.check{background:#fdf6e6;border:2px solid var(--accent);border-radius:12px;padding:14px 18px;margin:18px 0}
+.check .tag{display:inline-block;background:var(--accent);color:#fff;font-size:14px;padding:2px 10px;border-radius:12px;margin-bottom:6px;letter-spacing:.5px}
+.check .src{font-size:14px;color:#8a7356;font-style:italic;margin-left:6px}
+input.ans{font-size:18px;padding:6px 10px;width:130px;border:2px solid var(--line);border-radius:6px}
+.fb{font-weight:600;margin-left:8px}
+.fb.ok{color:var(--good)}.fb.no{color:var(--bad)}
+.work{display:none;background:#fff;border-left:4px solid var(--brown2);padding:8px 14px;margin-top:8px;border-radius:4px}
+.work.on{display:block;animation:fade .4s}
+table.t{border-collapse:collapse;margin:8px 0;background:#fff}
+table.t th,table.t td{border:1px solid var(--line);padding:6px 14px;text-align:center}
+table.t th{background:var(--soft);color:var(--brown)}
+svg text{font-family:"Segoe UI",Arial,sans-serif}
+.readout{font-family:Consolas,monospace;background:#2b1d10;color:#ffe9c4;padding:10px 14px;border-radius:8px;font-size:17px;line-height:1.6;overflow-x:auto}
+label.s{display:block;font-weight:600;color:var(--brown);margin-top:8px}
+input[type=range]{width:100%}
+.stepper .st{display:none;margin:6px 0;padding:8px 14px;background:#fff;border-left:4px solid var(--accent);border-radius:4px}
+.stepper .st.on{display:block;animation:fade .45s}
+.stepper .st .why{font-size:15px;color:#7a6448;display:block}
+.alg{font-family:Georgia,serif;font-size:21px}
+.hl{background:#ffe2b8;border-radius:4px;padding:0 3px}
+.hx{color:var(--i3);font-weight:bold}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+.pager{display:flex;justify-content:space-between;margin-top:30px}
+.mcq button.opt{display:block;width:100%;text-align:left;margin:6px 0;padding:10px 14px;font-size:17px;border:2px solid var(--line);background:#fff;border-radius:8px;cursor:pointer;color:var(--ink)}
+.mcq button.opt.right{border-color:var(--good);background:#e6f4ea}
+.mcq button.opt.wrong{border-color:var(--bad);background:#fbe9e7}
+.mcq .exp{display:none;margin-top:6px;font-size:17px}
+.mcq.done .exp{display:block}
+.warn{background:#fbeee4;border-left:6px solid var(--bad);padding:10px 16px;border-radius:6px;margin:12px 0}
+.tip{background:#eef3f8;border-left:6px solid var(--blue);padding:10px 16px;border-radius:6px;margin:12px 0}
+.small{font-size:15px;color:#7a6448}
+.svgbox{background:#fff;border:1px solid var(--line);border-radius:10px;padding:6px}
+.svgbox svg{width:100%;height:auto;display:block}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+#score{font-size:20px;margin-top:14px}
+sup,sub{line-height:0}
+.stepper tr.st{display:none;padding:0;border:none}.stepper tr.st.on{display:table-row;animation:fade .45s}
+.stepper tr.st{background:#fff}
+</style>
+</head>
+<body>
+<header>
+  <h1>Combustion Analysis</h1>
+  <p>AQA A-level Chemistry · 3.1.2 Amount of substance walkthrough · M<sub>r</sub>(CO₂) = 44.0, M<sub>r</sub>(H₂O) = 18.0</p>
+</header>
+<nav id="nav"></nav>
+<main>
+
+<!-- ============ PAGE 1 ============ -->
+<section class="page" data-title="1. Where the atoms go">
+<h2>1. Where do the atoms go?</h2>
+<div class="card key">
+  <p>When an organic compound burns <b>completely</b> in excess oxygen:</p>
+  <ul>
+    <li><b>every C atom</b> ends up in a molecule of <b>CO₂</b> → n(C) = n(CO₂)</li>
+    <li><b>every 2 H atoms</b> end up in a molecule of <b>H₂O</b> → n(H) = <b>2 ×</b> n(H₂O)</li>
+    <li>the <b>O</b> in the products comes from the compound <b>and</b> from the O₂, so you can't use it directly. Find it by difference: <b>mass of O = mass of sample − mass of C − mass of H</b></li>
+  </ul>
+</div>
+
+<h3>Watch a molecule burn</h3>
+<div class="card">
+  <div class="chips" id="bSets"></div>
+  <canvas id="bCv" width="960" height="330" style="width:100%"></canvas>
+  <p><button class="b" id="bGo">Burn it ▶</button><button class="b alt" id="bR">Reset</button></p>
+  <div class="readout" id="bOut"></div>
+</div>
+
+<div class="check"><span class="tag">CHECK 1</span><span class="src">Quick check</span>
+  <p>Combustion of a sample produces 0.0300 mol of H₂O. How many moles of H atoms were in the sample?</p>
+  <div class="mcq" id="mc1"></div>
+</div>
+</section>
+
+<!-- ============ PAGE 2 ============ -->
+<section class="page" data-title="2. Hydrocarbons">
+<h2>2. Hydrocarbons (C and H only)</h2>
+<div class="card key">
+  <div class="eq">n(C) = <span class="frac"><span>mass CO₂</span><span>44.0</span></span> &nbsp;&nbsp;&nbsp; n(H) = 2 × <span class="frac"><span>mass H₂O</span><span>18.0</span></span></div>
+  <p>Then divide by the smallest, as in any empirical formula question.</p>
+</div>
+
+<div class="card stepper">
+  <p>A compound containing carbon and hydrogen only is burned. 2.64 g of CO₂ and 1.08 g of H₂O are produced. Find its empirical formula. (From your C2.3 lesson.)</p>
+  <div class="st"><span class="alg">n(CO₂) = 2.64 ÷ 44.0 = 0.0600 mol → <b>n(C) = 0.0600</b></span></div>
+  <div class="st"><span class="alg">n(H₂O) = 1.08 ÷ 18.0 = 0.0600 mol → <b>n(H) = 2 × 0.0600 = 0.120</b></span><span class="why">Don't forget the × 2!</span></div>
+  <div class="st"><span class="alg">C : H = 0.0600 : 0.120 = 1 : 2 → <b>CH₂</b></span></div>
+  <button class="b nextst">Next step ▶</button><button class="b alt allst">Show all</button><button class="b alt resetst">Reset</button>
+</div>
+<div class="warn">If you forget the × 2, this example gives CH instead of CH₂. That's the most common mistake in combustion questions.</div>
+
+<div class="check"><span class="tag">CHECK 2</span><span class="src">Practice</span>
+  <p>A hydrocarbon burns completely to give 3.08 g of CO₂ and 1.26 g of H₂O. Its M<sub>r</sub> is 70.0. Find its molecular formula.</p>
+  <p>Formula: <input class="ans" id="c2"> <button class="b" data-fchk="c2" data-f="C5H10">Check</button><span class="fb" id="c2f"></span></p>
+  <button class="b alt sw">Show working</button>
+  <div class="work">n(C) = 3.08 ÷ 44.0 = 0.0700 · n(H) = 2 × (1.26 ÷ 18.0) = 0.140 → 1 : 2 → CH₂ (14.0)<br>70.0 ÷ 14.0 = 5 → <b>C₅H₁₀</b></div>
+</div>
+<div class="check"><span class="tag">CHECK 3</span><span class="src">Practice</span>
+  <p>A hydrocarbon burns completely to give 1.32 g of CO₂ and 0.675 g of H₂O. Its M<sub>r</sub> is 58.0. Find its molecular formula.</p>
+  <p>Formula: <input class="ans" id="c3"> <button class="b" data-fchk="c3" data-f="C4H10">Check</button><span class="fb" id="c3f"></span></p>
+  <button class="b alt sw">Show working</button>
+  <div class="work">n(C) = 0.0300 · n(H) = 2 × 0.0375 = 0.0750 → 1 : 2.5 → × 2 → C₂H₅ (29.0)<br>58.0 ÷ 29.0 = 2 → <b>C₄H₁₀</b></div>
+</div>
+</section>
+
+<!-- ============ PAGE 3 ============ -->
+<section class="page" data-title="3. Compounds with oxygen">
+<h2>3. Compounds containing oxygen</h2>
+<div class="card key">
+  <p>Work out the <b>masses</b> of C and H, then find the oxygen by difference:</p>
+  <div class="eq">mass C = n(C) × 12.0 &nbsp;·&nbsp; mass H = n(H) × 1.0 &nbsp;·&nbsp; mass O = sample − C − H</div>
+</div>
+
+<h3>Split up the sample</h3>
+<div class="card">
+  <p>The bar is the sample. Step through to see how much of it is C, H and O.</p>
+  <div class="svgbox"><svg id="split" viewBox="0 0 900 140"></svg></div>
+  <div class="stepper" id="spStep">
+    <p>0.360 g of a compound containing C, H and O burns completely to form 0.880 g of CO₂ and 0.360 g of H₂O. Its M<sub>r</sub> is 72.0. Find its molecular formula.</p>
+    <div class="st"><span class="alg">n(C) = 0.880 ÷ 44.0 = 0.0200 mol → mass C = 0.0200 × 12.0 = <b>0.240 g</b></span></div>
+    <div class="st"><span class="alg">n(H) = 2 × (0.360 ÷ 18.0) = 0.0400 mol → mass H = <b>0.0400 g</b></span></div>
+    <div class="st"><span class="alg">mass O = 0.360 − 0.240 − 0.0400 = <b>0.0800 g</b> → n(O) = 0.0800 ÷ 16.0 = 0.00500 mol</span></div>
+    <div class="st"><span class="alg">C : H : O = 0.0200 : 0.0400 : 0.00500 = 4 : 8 : 1 → <b>C₄H₈O</b></span></div>
+    <div class="st"><span class="alg">M<sub>r</sub>(C₄H₈O) = 72.0 = M<sub>r</sub> → molecular formula <b>C₄H₈O</b> (butanone)</span></div>
+    <button class="b nextst">Next step ▶</button><button class="b alt allst">Show all</button><button class="b alt resetst">Reset</button>
+  </div>
+</div>
+
+<div class="check"><span class="tag">CHECK 4</span><span class="src">AQA past paper (Empirical Formula question bank)</span>
+  <p>A 1.50 g sample of citric acid crystals contains 0.913 g of oxygen by mass. The sample burns completely in air to form 1.89 g of CO₂ and 0.643 g of H₂O. Show that the empirical formula of citric acid is C₃H₅O₄. <b>[5 marks]</b></p>
+  <p class="small">Here the mass of oxygen is given, so you don't need to find it by difference.</p>
+  <p>Ratio C : H : O after dividing by the smallest = 1 : <input class="ans" style="width:80px" id="c4a"> : <input class="ans" style="width:80px" id="c4b">
+  <button class="b" data-chk="c4a" data-v="1.66" data-t="0.03">Check H</button><span class="fb" id="c4af"></span><button class="b" data-chk="c4b" data-v="1.33" data-t="0.03">Check O</button><span class="fb" id="c4bf"></span></p>
+  <button class="b alt sw">Show working</button>
+  <div class="work">n(C) = 1.89 ÷ 44.0 = 0.0430 · n(H) = 2 × (0.643 ÷ 18.0) = 0.0714 · n(O) = 0.913 ÷ 16.0 = 0.0571<br>÷ 0.0430 → 1 : 1.66 : 1.33 → × 3 → 3 : 4.99 : 3.99 → <b>C₃H₅O₄</b></div>
+</div>
+<div class="check"><span class="tag">CHECK 5</span><span class="src">Practice</span>
+  <p>0.444 g of a compound containing C, H and O burns completely to give 0.792 g of CO₂ and 0.324 g of H₂O. Its M<sub>r</sub> is 74.0. Find its molecular formula.</p>
+  <p>Formula: <input class="ans" id="c5"> <button class="b" data-fchk="c5" data-f="C3H6O2">Check</button><span class="fb" id="c5f"></span></p>
+  <button class="b alt sw">Show working</button>
+  <div class="work">n(C) = 0.0180 (0.216 g) · n(H) = 0.0360 (0.0360 g) · O = 0.444 − 0.252 = 0.192 g → 0.0120 mol<br>÷ 0.0120 → 1.5 : 3 : 1 → × 2 → C₃H₆O₂ (74.0) → <b>C₃H₆O₂</b></div>
+</div>
+</section>
+
+<!-- ============ PAGE 4 ============ -->
+<section class="page" data-title="4. Using moles and Mr">
+<h2>4. When you know the moles of compound</h2>
+<div class="card key">
+  <p>If you know the <b>moles of compound</b> that burned, you can find the number of atoms in <b>one molecule</b> directly – no empirical formula needed:</p>
+  <div class="eq">C atoms per molecule = <span class="frac"><span>n(CO₂)</span><span>n(compound)</span></span> &nbsp;&nbsp; H atoms per molecule = <span class="frac"><span>2 × n(H₂O)</span><span>n(compound)</span></span></div>
+  <p>Then use M<sub>r</sub> to find how many O atoms make up the rest. If you're given the mass and the moles, M<sub>r</sub> = mass ÷ moles.</p>
+</div>
+
+<div class="card stepper">
+  <p class="small">AQA A-level Paper 2, June 2024, Q07</p>
+  <p>Compound L (M<sub>r</sub> = 88.0) contains C, H and O only. A 6.56 × 10⁻⁴ mol sample of L burns completely in air to form 2.62 × 10⁻³ mol of water and 2.62 × 10⁻³ mol of carbon dioxide. Deduce the formula of L. <b>[4 marks]</b></p>
+  <div class="st"><span class="alg"><span class="frac"><span>2.62 × 10⁻³</span><span>6.56 × 10⁻⁴</span></span> = 4</span><span class="why">M1: each molecule of L makes 4 CO₂ and 4 H₂O.</span></div>
+  <div class="st"><span class="alg">so 1 L → 4CO₂ + 4H₂O</span><span class="why">M2</span></div>
+  <div class="st"><span class="alg">so L contains <b>4 C</b> and <b>8 H</b></span><span class="why">M3. 4 H₂O contain 8 H atoms.</span></div>
+  <div class="st"><span class="alg">C₄H₈ = 48 + 8 = 56 &nbsp;→&nbsp; 88.0 − 56 = 32 = 2 O &nbsp;→&nbsp; <b>C₄H₈O₂</b></span><span class="why">M4</span></div>
+  <button class="b nextst">Next step ▶</button><button class="b alt allst">Show all</button><button class="b alt resetst">Reset</button>
+</div>
+<div class="warn">The mark scheme gives only 1 mark for C₃H₄O₃ – the answer you get if you forget that 4 H₂O means 8 H atoms.</div>
+
+<div class="check"><span class="tag">CHECK 6</span><span class="src">Practice</span>
+  <p>0.0100 mol of a hydrocarbon burns completely to give 1.76 g of CO₂ and 0.900 g of H₂O. Deduce its molecular formula directly.</p>
+  <p>Formula: <input class="ans" id="c6"> <button class="b" data-fchk="c6" data-f="C4H10">Check</button><span class="fb" id="c6f"></span></p>
+  <button class="b alt sw">Show working</button>
+  <div class="work">n(CO₂) = 0.0400 → 0.0400 ÷ 0.0100 = 4 C<br>n(H₂O) = 0.0500 → 0.100 mol H → 0.100 ÷ 0.0100 = 10 H → <b>C₄H₁₀</b></div>
+</div>
+<div class="check"><span class="tag">CHECK 7</span><span class="src">Practice</span>
+  <p>A 0.370 g sample of a compound (C, H and O only) contains 5.00 × 10⁻³ mol. It burns completely to give 0.880 g of CO₂ and 0.450 g of H₂O.</p>
+  <p>(a) M<sub>r</sub> = <input class="ans" id="c7a"> <button class="b" data-chk="c7a" data-v="74" data-t="0.1">Check</button><span class="fb" id="c7af"></span></p>
+  <p>(b) Molecular formula: <input class="ans" id="c7b"> <button class="b" data-fchk="c7b" data-f="C4H10O">Check</button><span class="fb" id="c7bf"></span></p>
+  <button class="b alt sw">Show working</button>
+  <div class="work">(a) M<sub>r</sub> = 0.370 ÷ 5.00 × 10⁻³ = <b>74.0</b><br>(b) n(CO₂) = 0.0200 → 4 C · n(H₂O) = 0.0250 → 0.0500 H → 10 H<br>C₄H₁₀ = 58.0 → 74.0 − 58.0 = 16.0 → 1 O → <b>C₄H₁₀O</b></div>
+</div>
+</section>
+
+<!-- ============ PAGE 5 ============ -->
+<section class="page" data-title="5. In the lab">
+<h2>5. How it's done in the lab</h2>
+<div class="card key">
+  <p>The sample is burned in a stream of excess oxygen. The gases pass through two tubes, and each tube is weighed before and after:</p>
+  <ol>
+    <li><b>Anhydrous calcium chloride</b> absorbs the <b>water</b>.</li>
+    <li><b>Soda lime</b> absorbs the <b>carbon dioxide</b>.</li>
+  </ol>
+  <p>The increase in mass of each tube is the mass of H₂O or CO₂ formed.</p>
+</div>
+
+<h3>Run the analysis</h3>
+<div class="card">
+  <p>0.230 g of a compound (C, H and O only) is burned.</p>
+  <div class="chips"><button class="b alt lbO on" data-o="0">Correct order (CaCl₂ first)</button><button class="b alt lbO" data-o="1">Wrong order (soda lime first)</button><button class="b alt lbO" data-o="2">Not enough oxygen (CO forms)</button></div>
+  <canvas id="lab" width="960" height="300" style="width:100%"></canvas>
+  <p><button class="b" id="lbGo">Burn the sample ▶</button><button class="b alt" id="lbR">Reset</button></p>
+  <div class="readout" id="lbOut"></div>
+</div>
+
+<div class="check"><span class="tag">CHECK 8</span><span class="src">Practice</span>
+  <p>Using the correct-order results (CaCl₂ tube 40.000 g → 40.270 g; soda lime tube 50.000 g → 50.440 g; sample 0.230 g; M<sub>r</sub> = 46.0), find the molecular formula of the compound.</p>
+  <p>Formula: <input class="ans" id="c8"> <button class="b" data-fchk="c8" data-f="C2H6O">Check</button><span class="fb" id="c8f"></span></p>
+  <button class="b alt sw">Show working</button>
+  <div class="work">H₂O = 0.270 g → 0.0150 mol → 0.0300 mol H (0.0300 g)<br>CO₂ = 0.440 g → 0.0100 mol C (0.120 g)<br>O = 0.230 − 0.150 = 0.0800 g → 0.00500 mol<br>2 : 6 : 1 → C₂H₆O (46.0) → <b>C₂H₆O</b></div>
+</div>
+<div class="check"><span class="tag">CHECK 9</span><span class="src">Quick check</span>
+  <p>Why must the calcium chloride tube come <b>before</b> the soda lime tube?</p>
+  <div class="mcq" id="mc9"></div>
+</div>
+</section>
+
+<!-- ============ PAGE 6 ============ -->
+<section class="page" data-title="6. Quiz">
+<h2>6. Quick quiz</h2>
+<div id="quiz"></div>
+<div id="score"></div>
+<button class="b alt" onclick="buildQuiz(Q)">Reset quiz</button>
+</section>
+
+<div class="pager"><button class="b alt" id="prevB">◀ Previous</button><button class="b" id="nextB">Next ▶</button></div>
+</main>
+
+<script>
+/* ---------- navigation ---------- */
+const pages=[...document.querySelectorAll('.page')];
+const nav=document.getElementById('nav');
+pages.forEach((p,i)=>{const b=document.createElement('button');b.textContent=p.dataset.title;b.onclick=()=>go(i);nav.appendChild(b)});
+let cur=0;
+function go(i){cur=Math.max(0,Math.min(pages.length-1,i));
+ pages.forEach((p,j)=>p.classList.toggle('on',j===cur));
+ [...nav.children].forEach((b,j)=>b.classList.toggle('on',j===cur));
+ document.getElementById('prevB').disabled=cur===0;
+ document.getElementById('nextB').disabled=cur===pages.length-1;
+ window.scrollTo(0,0);
+ if(window.onPage)window.onPage(cur);}
+document.getElementById('prevB').onclick=()=>go(cur-1);
+document.getElementById('nextB').onclick=()=>go(cur+1);
+
+/* ---------- numeric checks, working, steppers ---------- */
+document.addEventListener('click',e=>{
+ const t=e.target;
+ if(t.dataset.chk){const inp=document.getElementById(t.dataset.chk),fb=document.getElementById(t.dataset.chk+'f');
+  const v=parseFloat(inp.value.replace(',','.').replace('%',''));const ans=parseFloat(t.dataset.v),tol=parseFloat(t.dataset.t||0.05);
+  if(isNaN(v)){fb.textContent='Enter a number';fb.className='fb no';return}
+  if(Math.abs(v-ans)<=tol+1e-9){fb.textContent='✓ Correct';fb.className='fb ok';inp.style.borderColor='var(--good)'}
+  else{fb.textContent='✗ Not quite – try again, or show the working';fb.className='fb no';inp.style.borderColor='var(--bad)'}}
+ if(t.classList.contains('sw')){const ns=t.nextElementSibling,w=ns&&ns.classList.contains('work')?ns:t.parentElement.querySelector('.work');w.classList.toggle('on');t.textContent=w.classList.contains('on')?'Hide working':(t.dataset.l||'Show working')}
+ if(t.classList.contains('nextst')){const s=t.closest('.stepper');const hid=[...s.querySelectorAll('.st:not(.on)')];if(hid.length){hid[0].classList.add('on')}
+  if(hid.length<=1){t.disabled=true}}
+ if(t.classList.contains('allst')){const s=t.closest('.stepper');s.querySelectorAll('.st').forEach(x=>x.classList.add('on'));s.querySelector('.nextst').disabled=true}
+ if(t.classList.contains('resetst')){const s=t.closest('.stepper');s.querySelectorAll('.st').forEach(x=>x.classList.remove('on'));s.querySelector('.nextst').disabled=false}
+});
+
+/* ---------- quiz ---------- */
+let qs=0,qa=0;
+function buildQuiz(Q){const w=document.getElementById('quiz');w.innerHTML='';qs=0;qa=0;
+ Q.forEach((q,i)=>{const c=document.createElement('div');c.className='card mcq';c.innerHTML=`<b>Q${i+1}.</b> ${q[0]}`;
+  q[1].forEach((o,j)=>{const b=document.createElement('button');b.className='opt';b.innerHTML=o;
+   b.onclick=()=>{if(c.classList.contains('done'))return;c.classList.add('done');qa++;
+    if(j===q[2]){b.classList.add('right');qs++}else{b.classList.add('wrong');c.querySelectorAll('.opt')[q[2]].classList.add('right')}score(Q)};c.appendChild(b)});
+  const e=document.createElement('div');e.className='exp';e.innerHTML='💡 '+q[3];c.appendChild(e);w.appendChild(c)});score(Q)}
+function score(Q){document.getElementById('score').innerHTML=`Score: <b>${qs}</b> / ${Q.length}`+(qa===Q.length?(qs>=Q.length-1?' – excellent!':qs>=Q.length-3?' – good, review the ones you missed':' – go back through the walkthrough and try again'):'')}
+const NS='http://www.w3.org/2000/svg';
+function E(tag,attrs,parent){const el=document.createElementNS(NS,tag);for(const k in attrs)el.setAttribute(k,attrs[k]);if(parent)parent.appendChild(el);return el}
+function sf(v,d=3){if(v===0)return '0';const a=Math.abs(v);if(a>=1e5||a<1e-2){const e=Math.floor(Math.log10(a));let m=(v/10**e).toPrecision(d);if(+m>=10){m=(+m/10).toPrecision(d);return m+' × 10'+sup(e+1)}return m+' × 10'+sup(e)}return (+v.toPrecision(d)).toLocaleString('en-GB',{maximumSignificantDigits:d}).replace(/,/g,' ')}
+function sup(e){const m={'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};return String(e).split('').map(c=>m[c]).join('')}
+function subs(f){return f.replace(/(\d+)/g,'<sub>$1</sub>')}
+function mkMCQ(id,q){const c=document.getElementById(id);c.innerHTML='';
+ q[0].forEach((o,j)=>{const b=document.createElement('button');b.className='opt';b.innerHTML=o;b.onclick=()=>{if(c.classList.contains('done'))return;c.classList.add('done');
+  b.classList.add(j===q[1]?'right':'wrong');c.querySelectorAll('.opt')[q[1]].classList.add('right')};c.appendChild(b)});
+ const e=document.createElement('div');e.className='exp';e.innerHTML='💡 '+q[2];c.appendChild(e)}
+function normF(s){const m={'₀':'0','₁':'1','₂':'2','₃':'3','₄':'4','₅':'5','₆':'6','₇':'7','₈':'8','₉':'9'};return s.replace(/[₀-₉]/g,c=>m[c]).replace(/\s/g,'')}
+document.addEventListener('click',e=>{const t=e.target;if(!t.dataset.fchk)return;const i=document.getElementById(t.dataset.fchk),f=document.getElementById(t.dataset.fchk+'f');
+ const ok=t.dataset.f.split('|').some(a=>normF(i.value)===a);f.textContent=ok?'✓ Correct':'✗ Not quite – check your ratio (or show the working)';f.className='fb '+(ok?'ok':'no');i.style.borderColor=ok?'var(--good)':'var(--bad)'});
+const AR={C:12.0,H:1.0,O:16.0,N:14.0,S:32.1,Cl:35.5,Br:79.9,Fe:55.8,Cu:63.5,Mo:96.0,Na:23.0,Mg:24.3,Ca:40.1,Al:27.0,K:39.1,Cr:52.0,P:31.0};
+/* ---------- page 1: burning animation ---------- */
+const BS=[{n:'propane, C₃H₈',C:3,H:8,O:0,O2:10,co2:3,h2o:4},{n:'ethanol, C₂H₆O',C:2,H:6,O:1,O2:6,co2:2,h2o:3},{n:'butanone, C₄H₈O',C:4,H:8,O:1,O2:11,co2:4,h2o:4}];
+const bc=document.getElementById('bCv'),bx=bc.getContext('2d');let bs=BS[0],atoms=[],bt=0,brun=false;
+function bSetup(){atoms=[];const s=bs;let k=0;
+ const place=(el,src)=>{const i=k++;atoms.push({el,src,x0:0,y0:0,x1:0,y1:0})};
+ for(let i=0;i<s.C;i++)place('C','c');for(let i=0;i<s.H;i++)place('H','c');for(let i=0;i<s.O;i++)place('O','c');for(let i=0;i<s.O2;i++)place('O','o2');
+ // start positions
+ const comp=atoms.filter(a=>a.src==='c');comp.forEach((a,i)=>{a.x0=80+(i%4)*30;a.y0=90+Math.floor(i/4)*30});
+ atoms.filter(a=>a.src==='o2').forEach((a,i)=>{a.x0=60+Math.floor(i/2)*50+(i%2)*20;a.y0=270});
+ // targets: CO2 row and H2O row
+ const Cs=atoms.filter(a=>a.el==='C'),Hs=atoms.filter(a=>a.el==='H'),Os=[...atoms.filter(a=>a.el==='O'&&a.src==='c'),...atoms.filter(a=>a.el==='O'&&a.src==='o2')];let oi=0;
+ Cs.forEach((a,i)=>{const cx=520+i*100,cy=80;a.x1=cx;a.y1=cy;const o1=Os[oi++],o2=Os[oi++];o1.x1=cx-24;o1.y1=cy;o2.x1=cx+24;o2.y1=cy});
+ for(let i=0;i<s.h2o;i++){const cx=520+i*100,cy=220,o=Os[oi++];o.x1=cx;o.y1=cy;Hs[2*i].x1=cx-20;Hs[2*i].y1=cy+18;Hs[2*i+1].x1=cx+20;Hs[2*i+1].y1=cy+18}
+ bt=0;bDraw()}
+function bDraw(){const e=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2,f=e(Math.min(1,bt));bx.clearRect(0,0,960,330);bx.fillStyle='#fff';bx.fillRect(0,0,960,330);
+ bx.font='15px Segoe UI';bx.fillStyle='#6b4423';bx.textAlign='left';bx.fillText('compound',60,40);bx.fillText('O₂ from the air',60,245);
+ bx.fillText(`${bs.co2} × CO₂`,860,85);bx.fillText(`${bs.h2o} × H₂O`,860,225);
+ bx.strokeStyle='#d8c4a0';bx.beginPath();bx.moveTo(420,30);bx.lineTo(420,310);bx.stroke();bx.fillText('→ burns →',380,170);
+ atoms.forEach(a=>{const x=a.x0+(a.x1-a.x0)*f,y=a.y0+(a.y1-a.y0)*f,r=a.el==='H'?9:13;bx.beginPath();bx.arc(x,y,r,0,7);
+  bx.fillStyle=a.el==='C'?'#3b3b3b':a.el==='H'?'#e5e5e5':(a.src==='c'?'#b03a2e':'#f2a093');bx.fill();bx.strokeStyle='#555';bx.lineWidth=1;bx.stroke();
+  bx.fillStyle=a.el==='H'?'#333':'#fff';bx.font='bold 11px Segoe UI';bx.textAlign='center';bx.fillText(a.el,x,y+4)});
+ bx.textAlign='left';bx.font='13px Segoe UI';bx.fillStyle='#b03a2e';bx.fillText('● O from the compound',600,310);bx.fillStyle='#e07b6a';bx.fillText('● O from O₂',790,310);
+ const o=document.getElementById('bOut');
+ o.innerHTML=bt>=1?`${bs.n}: ${bs.C} C → <b>${bs.co2} CO₂</b> (n(C) = n(CO₂)) &nbsp;·&nbsp; ${bs.H} H → <b>${bs.h2o} H₂O</b> (n(H) = 2 × n(H₂O))<br>The products contain ${2*bs.co2+bs.h2o} O atoms, but only ${bs.O} came from the compound. That's why O must be found by difference.`:'Press "Burn it" to watch where each atom ends up.'}
+function bLoop(){if(!brun)return;bt+=1/150;bDraw();if(bt<1)requestAnimationFrame(bLoop);else brun=false}
+document.getElementById('bGo').onclick=()=>{if(brun)return;bt=0;brun=true;bLoop()};document.getElementById('bR').onclick=()=>{brun=false;bSetup()};
+const bsd=document.getElementById('bSets');BS.forEach((s,i)=>{const b=document.createElement('button');b.className='b alt';b.textContent=s.n;b.onclick=()=>{bs=s;brun=false;bsd.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));bSetup()};bsd.appendChild(b)});bsd.querySelector('button').click();
+mkMCQ('mc1',[['0.0150 mol','0.0300 mol','0.0600 mol','0.0900 mol'],2,'Each H₂O contains 2 H atoms: 2 × 0.0300 = 0.0600 mol.']);
+
+/* ---------- page 3: split bar ---------- */
+function split(){const n=document.querySelectorAll('#spStep .st.on').length,g=document.getElementById('split');g.innerHTML='';const W=820,tot=0.360,X0=40;
+ const segs=[];if(n>=1)segs.push(['C',0.240,'#3b3b3b']);if(n>=2)segs.push(['H',0.040,'#9a9a9a']);if(n>=3)segs.push(['O',0.080,'#b03a2e']);
+ E('rect',{x:X0,y:30,width:W,height:60,rx:8,fill:'#ead9bd',stroke:'#8b5a2b'},g);let x=X0;
+ segs.forEach(([e,m,c])=>{const w=m/tot*W;E('rect',{x,y:30,width:w,height:60,fill:c,style:'animation:fade .5s'},g);E('text',{x:x+w/2,y:66,'text-anchor':'middle','font-size':16,'font-weight':'bold',fill:'#fff'},g).textContent=`${e} ${m.toFixed(3)} g`;x+=w});
+ if(n<3)E('text',{x:(x+X0+W)/2,y:66,'text-anchor':'middle','font-size':15,fill:'#6b4423'},g).textContent=n===0?'sample 0.360 g':'?';
+ E('text',{x:X0,y:118,'font-size':13,fill:'#7a6448'},g).textContent='0 g';E('text',{x:X0+W,y:118,'font-size':13,fill:'#7a6448','text-anchor':'end'},g).textContent='0.360 g';
+ if(n>=3)E('text',{x:X0+W/2,y:118,'font-size':14,fill:'#b03a2e','text-anchor':'middle'},g).textContent='O = sample − C − H'}
+document.addEventListener('click',e=>{if(e.target.closest('#spStep'))split()});split();
+
+/* ---------- page 5: lab ---------- */
+const lc=document.getElementById('lab'),lx=lc.getContext('2d');let lo=0,lt=0,lrun=false,lp=[];
+const T1=[380,560],T2=[640,820];
+function lReset(){lt=0;lp=[];for(let i=0;i<60;i++){const isW=i<27,co=lo===2&&!isW&&i%5===0;lp.push({k:isW?'w':co?'co':'c',x:150-Math.random()*120,y:140+Math.random()*30,d:Math.random()*0.6})}lDraw()}
+function lDraw(){lx.clearRect(0,0,960,300);lx.fillStyle='#fff';lx.fillRect(0,0,960,300);
+ // furnace
+ lx.fillStyle='#fde0c2';lx.fillRect(40,110,200,90);lx.strokeStyle='#b5651d';lx.lineWidth=2;lx.strokeRect(40,110,200,90);
+ lx.fillStyle='#6b4423';lx.font='14px Segoe UI';lx.textAlign='center';lx.fillText('furnace + sample',140,225);lx.fillText('excess O₂ →',80,100);
+ lx.fillStyle='#e8f1f5';lx.fillRect(240,145,700,20);
+ const tubes=lo===1?[['soda lime','#cfe8cf'],['CaCl₂','#f2f2f2']]:[['CaCl₂','#f2f2f2'],['soda lime','#cfe8cf']];
+ [T1,T2].forEach((t,i)=>{lx.fillStyle=tubes[i][1];lx.fillRect(t[0],125,t[1]-t[0],60);lx.strokeStyle='#6b8ca3';lx.strokeRect(t[0],125,t[1]-t[0],60);lx.fillStyle='#3b2a1a';lx.fillText(tubes[i][0],(t[0]+t[1])/2,118)});
+ lx.fillText('→ out',920,140);
+ // particles
+ const f=Math.min(1,lt);lp.forEach(q=>{let stop;
+  if(q.k==='w')stop=lo===1?T1:T1;else if(q.k==='c')stop=lo===1?T1:T2;else stop=null;
+  const target=stop?stop[0]+20+((q.d*1000)%1)*(stop[1]-stop[0]-40):960;const pr=Math.max(0,Math.min(1,(lt-q.d*0.4)/0.8));q.cx=q.x+(target-q.x)*pr;
+  lx.beginPath();lx.arc(q.cx,q.y,5,0,7);lx.fillStyle=q.k==='w'?'#2c6e8f':q.k==='c'?'#555':'#c9a227';lx.fill()});
+ lx.font='13px Segoe UI';lx.textAlign='left';lx.fillStyle='#2c6e8f';lx.fillText('● H₂O',40,270);lx.fillStyle='#555';lx.fillText('● CO₂',110,270);if(lo===2){lx.fillStyle='#c9a227';lx.fillText('● CO (not absorbed)',180,270)}
+ // masses
+ const fm=Math.min(1,Math.max(0,(lt-0.3)/0.9));let m1,m2;
+ const W=0.270,C=lo===2?0.352:0.440;
+ if(lo===1){m1=0.270+0.440;m2=0}else{m1=W;m2=C}
+ lx.fillStyle='#3b2a1a';lx.font='bold 15px Consolas, monospace';lx.textAlign='center';
+ lx.fillText(`${(lo===1?50:40)+m1*fm>0?((lo===1?50:40)+m1*fm).toFixed(3):''} g`,(T1[0]+T1[1])/2,215);lx.fillText(`${((lo===1?40:50)+m2*fm).toFixed(3)} g`,(T2[0]+T2[1])/2,215);
+ const o=document.getElementById('lbOut');
+ if(lt<1.25){o.innerHTML='Tube masses before: CaCl₂ 40.000 g · soda lime 50.000 g';return}
+ if(lo===0)o.innerHTML='CaCl₂ gained <b>0.270 g</b> (H₂O) · soda lime gained <b>0.440 g</b> (CO₂)<br>→ C 0.0100 mol · H 0.0300 mol · O by difference 0.00500 mol → <b>C₂H₆O</b> ✓';
+ else if(lo===1)o.innerHTML='Soda lime absorbed <b>both</b> H₂O and CO₂ (+0.710 g). The CaCl₂ tube gained nothing.<br>The student would think there was no hydrogen and too much CO₂ – a nonsense result. <b>CaCl₂ must come first.</b>';
+ else o.innerHTML='Some carbon formed CO, which soda lime doesn\'t absorb. Soda lime only gained <b>0.352 g</b>.<br>→ calculated mass of C is too low, so %C is too low (and the O found by difference is too high). <b>Use excess oxygen</b> so combustion is complete.'}
+function lLoop(){if(!lrun)return;lt+=1/120;lDraw();if(lt<1.3)requestAnimationFrame(lLoop);else lrun=false}
+document.getElementById('lbGo').onclick=()=>{lReset();lrun=true;lLoop()};document.getElementById('lbR').onclick=()=>{lrun=false;lReset()};
+document.querySelectorAll('.lbO').forEach(b=>b.onclick=()=>{lo=+b.dataset.o;document.querySelectorAll('.lbO').forEach(x=>x.classList.toggle('on',x===b));lrun=false;lReset()});lReset();
+mkMCQ('mc9',[['Soda lime absorbs water as well as CO₂, so the water must be removed first','Calcium chloride absorbs CO₂','Soda lime reacts with oxygen','It doesn\'t matter which comes first'],0,'If soda lime came first, it would absorb both gases. Its mass increase would be too big, and the CaCl₂ tube would gain nothing.']);
+
+/* ---------- quiz ---------- */
+const Q=[
+ ["Which statement about complete combustion analysis is correct?",["n(C) = 2 × n(CO₂)","n(H) = n(H₂O)","n(H) = 2 × n(H₂O)","n(O) = n(CO₂) + n(H₂O)"],2,"Each H₂O contains 2 H atoms. Each CO₂ contains 1 C atom."],
+ ["Why can't the oxygen in the compound be found from the masses of CO₂ and H₂O?",["Oxygen isn't in organic compounds","Some of the O in the products came from the O₂ used for burning","CO₂ doesn't contain oxygen","The water evaporates"],1,"Find it by difference: mass O = sample − C − H."],
+ ["4.40 g of CO₂ is formed. What mass of carbon was in the sample?",["4.40 g","1.20 g","0.100 g","3.20 g"],1,"n(CO₂) = 0.100 mol → 0.100 mol C → 1.20 g"],
+ ["1.80 g of H₂O is formed. What mass of hydrogen was in the sample?",["0.100 g","0.200 g","1.80 g","0.0500 g"],1,"n(H₂O) = 0.100 → n(H) = 0.200 mol → 0.200 g"],
+ ["A hydrocarbon gives 0.0400 mol CO₂ and 0.0400 mol H₂O. What is its empirical formula?",["CH","CH₂","C₂H","CH₄"],1,"C 0.0400 : H 0.0800 = 1 : 2"],
+ ["0.0050 mol of a compound gives 0.0150 mol CO₂. How many C atoms are in one molecule?",["1","2","3","5"],2,"0.0150 ÷ 0.0050 = 3"],
+ ["Which substance absorbs water in a combustion analysis?",["Soda lime","Anhydrous calcium chloride","Limewater","Copper(II) oxide"],1,"CaCl₂ absorbs H₂O. Soda lime absorbs CO₂ (and water too, which is why it goes second)."],
+ ["Some CO forms instead of CO₂. What happens to the calculated % of carbon?",["It is too high","It is too low","It is unchanged","It doubles"],1,"CO isn't absorbed by soda lime, so the CO₂ mass is too low."],
+ ["0.290 g of a C, H, O compound contains 0.180 g C and 0.0300 g H. What mass of O does it contain?",["0.0800 g","0.210 g","0.110 g","0.290 g"],0,"0.290 − 0.180 − 0.0300 = 0.0800 g"],
+ ["The ratio of C : H from combustion is 1 : 2.5. What is the empirical formula?",["CH₂","CH₃","C₂H₅","C₂H₄"],2,"× 2 → 2 : 5"]
+];
+buildQuiz(Q);
+go(0);
+
+</script>
+</body>
+</html>
