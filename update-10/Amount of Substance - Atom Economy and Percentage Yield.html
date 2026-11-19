@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atom Economy and Percentage Yield</title>
+<style>
+:root{
+  --bg:#f6efe1; --card:#fffaf0; --ink:#3b2a1a; --brown:#6b4423; --brown2:#8b5a2b;
+  --accent:#b5651d; --soft:#ead9bd; --line:#d8c4a0; --good:#2f7d4a; --bad:#b03a2e; --blue:#2c4a7a;
+  --i1:#2c6e8f; --i2:#b5651d; --i3:#6a4c93; --i4:#2f7d4a;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Arial,sans-serif;font-size:19px;line-height:1.55}
+header{background:var(--brown);color:#fff8ec;padding:14px 24px}
+header h1{margin:0;font-family:Georgia,serif;font-size:28px;font-weight:normal}
+header p{margin:2px 0 0;opacity:.85;font-size:16px}
+nav{display:flex;flex-wrap:wrap;gap:6px;padding:10px 24px;background:var(--soft);border-bottom:2px solid var(--line);position:sticky;top:0;z-index:5}
+nav button{border:2px solid var(--brown2);background:var(--card);color:var(--brown);padding:7px 14px;border-radius:20px;font-size:16px;cursor:pointer}
+nav button.on{background:var(--brown2);color:#fff}
+main{max-width:1100px;margin:0 auto;padding:20px 24px 60px}
+.page{display:none}.page.on{display:block}
+h2{font-family:Georgia,serif;color:var(--brown);font-size:30px;margin:6px 0 12px;font-weight:normal}
+h3{color:var(--brown2);font-size:22px;margin:22px 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:14px 0;box-shadow:0 2px 0 var(--line)}
+.key{border-left:6px solid var(--accent)}
+.eq{font-family:Georgia,serif;font-size:23px;text-align:center;padding:10px;background:#fff;border:1px dashed var(--line);border-radius:8px;margin:10px 0}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 6px}
+.frac span:first-child{border-bottom:2px solid var(--ink);padding:0 6px}
+.row{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+.row>*{flex:1 1 380px}
+button.b{background:var(--brown2);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:17px;cursor:pointer;margin:4px 6px 4px 0}
+button.b.alt{background:var(--card);color:var(--brown);border:2px solid var(--brown2)}
+button.b.on,button.b.alt.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+button.b:disabled{opacity:.45;cursor:default}
+.check{background:#fdf6e6;border:2px solid var(--accent);border-radius:12px;padding:14px 18px;margin:18px 0}
+.check .tag{display:inline-block;background:var(--accent);color:#fff;font-size:14px;padding:2px 10px;border-radius:12px;margin-bottom:6px;letter-spacing:.5px}
+.check .src{font-size:14px;color:#8a7356;font-style:italic;margin-left:6px}
+input.ans{font-size:18px;padding:6px 10px;width:130px;border:2px solid var(--line);border-radius:6px}
+.fb{font-weight:600;margin-left:8px}
+.fb.ok{color:var(--good)}.fb.no{color:var(--bad)}
+.work{display:none;background:#fff;border-left:4px solid var(--brown2);padding:8px 14px;margin-top:8px;border-radius:4px}
+.work.on{display:block;animation:fade .4s}
+table.t{border-collapse:collapse;margin:8px 0;background:#fff}
+table.t th,table.t td{border:1px solid var(--line);padding:6px 14px;text-align:center}
+table.t th{background:var(--soft);color:var(--brown)}
+svg text{font-family:"Segoe UI",Arial,sans-serif}
+.readout{font-family:Consolas,monospace;background:#2b1d10;color:#ffe9c4;padding:10px 14px;border-radius:8px;font-size:17px;line-height:1.6;overflow-x:auto}
+label.s{display:block;font-weight:600;color:var(--brown);margin-top:8px}
+input[type=range]{width:100%}
+.stepper .st{display:none;margin:6px 0;padding:8px 14px;background:#fff;border-left:4px solid var(--accent);border-radius:4px}
+.stepper .st.on{display:block;animation:fade .45s}
+.stepper .st .why{font-size:15px;color:#7a6448;display:block}
+.alg{font-family:Georgia,serif;font-size:21px}
+.hl{background:#ffe2b8;border-radius:4px;padding:0 3px}
+.hx{color:var(--i3);font-weight:bold}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+.pager{display:flex;justify-content:space-between;margin-top:30px}
+.mcq button.opt{display:block;width:100%;text-align:left;margin:6px 0;padding:10px 14px;font-size:17px;border:2px solid var(--line);background:#fff;border-radius:8px;cursor:pointer;color:var(--ink)}
+.mcq button.opt.right{border-color:var(--good);background:#e6f4ea}
+.mcq button.opt.wrong{border-color:var(--bad);background:#fbe9e7}
+.mcq .exp{display:none;margin-top:6px;font-size:17px}
+.mcq.done .exp{display:block}
+.warn{background:#fbeee4;border-left:6px solid var(--bad);padding:10px 16px;border-radius:6px;margin:12px 0}
+.tip{background:#eef3f8;border-left:6px solid var(--blue);padding:10px 16px;border-radius:6px;margin:12px 0}
+.small{font-size:15px;color:#7a6448}
+.svgbox{background:#fff;border:1px solid var(--line);border-radius:10px;padding:6px}
+.svgbox svg{width:100%;height:auto;display:block}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+#score{font-size:20px;margin-top:14px}
+sup,sub{line-height:0}
+.stepper tr.st{display:none;padding:0;border:none}.stepper tr.st.on{display:table-row;animation:fade .45s}
+.stepper tr.st{background:#fff}
+</style>
+</head>
+<body>
+<header>
+  <h1>Atom Economy and Percentage Yield</h1>
+  <p>AQA A-level Chemistry · 3.1.2 Amount of substance walkthrough</p>
+</header>
+<nav id="nav"></nav>
+<main>
+
+<!-- ============ PAGE 1 ============ -->
+<section class="page" data-title="1. Two different measures">
+<h2>1. Two ways to judge a reaction</h2>
+<div class="row">
+  <div class="card key"><h3 style="margin-top:0">Percentage yield</h3><p>How much product you <b>actually got</b>, compared with the <b>maximum possible</b>.</p><p>Found by <b>experiment</b>. It depends on how well the reaction was carried out.</p></div>
+  <div class="card key"><h3 style="margin-top:0">Atom economy</h3><p>How much of the <b>mass of the reactants</b> ends up in the <b>desired product</b>.</p><p>Found from the <b>balanced equation only</b>. It measures the waste built into the reaction.</p></div>
+</div>
+
+<h3>See the difference</h3>
+<div class="card">
+  <p>Titanium is extracted from TiCl₄ using sodium: <b>TiCl₄ + 4Na → Ti + 4NaCl</b>. Change the yield and watch what does (and doesn't) change.</p>
+  <label class="s">Percentage yield: <span id="dyV">100</span>%</label><input type="range" id="dyS" min="10" max="100" value="100">
+  <div class="svgbox"><svg id="dy" viewBox="0 0 900 270"></svg></div>
+  <div class="tip" style="margin-top:10px">Even at 100% yield, 83% of the mass of the reactants becomes NaCl. Only the <b>equation</b> can change the atom economy. A better technique only improves the <b>yield</b>.</div>
+</div>
+</section>
+
+<!-- ============ PAGE 2 ============ -->
+<section class="page" data-title="2. Atom economy">
+<h2>2. Percentage atom economy</h2>
+<div class="card key">
+  <div class="eq">% atom economy = <span class="frac"><span>M<sub>r</sub> of desired product</span><span>sum of M<sub>r</sub> of all reactants</span></span> × 100</div>
+  <ul>
+    <li>Multiply each M<sub>r</sub> by its <b>coefficient</b> in the balanced equation.</li>
+    <li><b>Addition reactions</b> have an atom economy of <b>100%</b> – there is only one product.</li>
+    <li>Atom economy does <b>not</b> depend on the masses used or on the yield.</li>
+  </ul>
+</div>
+
+<div class="card stepper">
+  <p>Calculate the percentage atom economy for the formation of titanium: TiCl₄ + 4Na → Ti + 4NaCl (from your C2.10 lesson).</p>
+  <div class="st"><span class="alg">reactants: TiCl₄ = 47.9 + (4 × 35.5) = 189.9 &nbsp;·&nbsp; 4Na = 4 × 23.0 = 92.0 &nbsp;·&nbsp; total = <b>281.9</b></span><span class="why">Remember the coefficient: 4Na means 4 × 23.0.</span></div>
+  <div class="st"><span class="alg">desired product: Ti = <b>47.9</b></span></div>
+  <div class="st"><span class="alg">% atom economy = <span class="frac"><span>47.9</span><span>281.9</span></span> × 100 = <b>17.0%</b></span></div>
+  <div class="st"><span class="alg">check: products = 47.9 + (4 × 58.5) = 281.9 ✓</span><span class="why">Mass is conserved, so the products must add up to the same total as the reactants.</span></div>
+  <button class="b nextst">Next step ▶</button><button class="b alt allst">Show all</button><button class="b alt resetst">Reset</button>
+</div>
+
+<h3>Atom economy calculator</h3>
+<div class="card">
+  <p>Pick a reaction, then click the product you want.</p>
+  <div class="chips" id="aeSets"></div>
+  <div class="eq" id="aeEq"></div>
+  <div class="svgbox"><svg id="aeSvg" viewBox="0 0 900 120"></svg></div>
+  <div class="readout" id="aeOut"></div>
+</div>
+
+<div class="check"><span class="tag">CHECK 1</span><span class="src">AQA AS Paper 1, June 2025, Q01.1–01.2</span>
+  <p>The first stage in the extraction of titanium: TiO₂(s) + 2C(s) + 2Cl₂(g) → TiCl₄(l) + 2CO(g)</p>
+  <p>(a) Calculate the percentage atom economy to form TiCl₄. <b>[2 marks]</b> &nbsp; <input class="ans" id="c1"> % <button class="b" data-chk="c1" data-v="77.2" data-t="0.15">Check</button><span class="fb" id="c1f"></span></p>
+  <button class="b alt sw">Show working</button>
+  <div class="work">reactants = 79.9 + (2 × 12.0) + (2 × 71.0) = 245.9 · TiCl₄ = 189.9<br>(189.9 ÷ 245.9) × 100 = <b>77.2%</b></div>
+  <p>(b) Suggest one economic advantage of using a process with a high atom economy. <b>[1 mark]</b></p>
+  <button class="b alt sw" data-l="Show answer">Show answer</button>
+  <div class="work">More of the mass of the reactants ends up in the useful product / less waste (by-product) to dispose of. <span class="small">Just saying "it costs less" doesn't get the mark unless you say why.</span></div>
+</div>
+<div class="check"><span class="tag">CHECK 2</span><span class="src">AQA AS Paper 1, June 2017, Q06.4</span>
+  <p>Copper can be produced by: 2CuO + C → 2Cu + CO₂. Calculate the percentage atom economy for the production of copper. Give your answer to the appropriate number of significant figures. <b>[2 marks]</b></p>
+  <p><input class="ans" id="c2"> % <button class="b" data-chk="c2" data-v="74.3" data-t="0.05">Check</button><span class="fb" id="c2f"></span></p>
+  <button class="b alt sw">Show working</button>
+  <div class="work">(2 × 63.5) ÷ (2 × 79.5 + 12.0) × 100 = 127 ÷ 171 × 100 = <b>74.3%</b> (3 s.f.)</div>
+</div>
+</section>
+
+<!-- ============ PAGE 3 ============ -->
+<section class="page" data-title="3. Percentage yield">
+<h2>3. Percentage yield</h2>
+<div class="card key">
+  <div class="eq">% yield = <span class="frac"><span>actual mass of product</span><span>theoretical mass of product</span></span> × 100 &nbsp;&nbsp;or&nbsp;&nbsp; <span class="frac"><span>actual moles of product</span><span>theoretical moles of product</span></span> × 100</div>
+  <p>The <b>theoretical</b> (maximum) amount is calculated from the equation, using the <b>limiting</b> reactant.</p>
+</div>
+
+<h3>Where does the product go?</h3>
+<div class="card">
+  <p>Step through the reasons why you never get 100%.</p>
+  <div class="svgbox"><svg id="loss" viewBox="0 0 900 180"></svg></div>
+  <p><button class="b" id="lsN">Next reason ▶</button><button class="b alt" id="lsR">Reset</button></p>
+  <div class="readout" id="lsOut"></div>
+</div>
+
+<div class="card stepper">
+  <p>In a laboratory simulation of the blast furnace, 40.0 g of iron(III) oxide produced 21.5 g of iron. Calculate the percentage yield. Fe₂O₃ + 3CO → 2Fe + 3CO₂ (from your C2.10 lesson)</p>
+  <div class="st"><span class="alg">n(Fe₂O₃) = 40.0 ÷ 159.6 = 0.2506 mol</span></div>
+  <div class="st"><span class="alg">Fe₂O₃ : Fe = 1 : 2 → n(Fe) = 0.5013 mol</span></div>
+  <div class="st"><span class="alg">theoretical mass = 0.5013 × 55.8 = 27.97 g</span></div>
+  <div class="st"><span class="alg">% yield = <span class="frac"><span>21.5</span><span>27.97</span></span> × 100 = <b>76.9%</b></span></div>
+  <button class="b nextst">Next step ▶</button><button class="b alt allst">Show all</button><button class="b alt resetst">Reset</button>
+</div>
+
+<div class="check"><span class="tag">CHECK 3</span><span class="src">AQA AS Paper 2, June 2020 (sat November 2020), Q03</span>
+  <p>A student makes methylpropanal (M<sub>r</sub> = 72.0) by two methods, each starting from 1.00 g of organic starting material.</p>
+  <p>Method 1: (CH₃)₂CHCOCOOH (M<sub>r</sub> = 116.0) → (CH₃)₂CHCHO + CO₂ &nbsp;·&nbsp; yield of methylpropanal = 552 mg<br>
+  Method 2: (CH₃)₂CHCH₂OH (M<sub>r</sub> = 74.0) + H₂O₂ → (CH₃)₂CHCHO + 2H₂O</p>
+  <p>(a) Calculate the percentage yield for Method 1. &nbsp; <input class="ans" id="c3a"> % <button class="b" data-chk="c3a" data-v="88.9" data-t="0.15">Check</button><span class="fb" id="c3af"></span></p>
+  <p>(b) Calculate the percentage atom economy for Method 2. &nbsp; <input class="ans" id="c3b"> % <button class="b" data-chk="c3b" data-v="66.7" data-t="0.1">Check</button><span class="fb" id="c3bf"></span></p>
+  <button class="b alt sw">Show working</button>
+  <div class="work">(a) reactant = 1.00 ÷ 116.0 = 0.00862 mol · product = 0.552 ÷ 72.0 = 0.00767 mol · 1 : 1 → (0.00767 ÷ 0.00862) × 100 = <b>88.9%</b><br>
+  (b) 72.0 ÷ (74.0 + 34.0) × 100 = 72.0 ÷ 108.0 × 100 = <b>66.7%</b></div>
+  <p>(c) State the importance of each when choosing a method.</p>
+  <button class="b alt sw" data-l="Show answer">Show answer</button>
+  <div class="work"><b>% yield:</b> you want to get as much product as possible – efficient conversion of reactants into products.<br><b>% atom economy:</b> you want as much of the mass of the reactants as possible to end up in the desired product – fewer by-products.</div>
+</div>
+</section>
+
+<!-- ============ PAGE 4 ============ -->
+<section class="page" data-title="4. Liquids and using yields">
+<h2>4. Liquids, and using a yield</h2>
+<div class="card key">
+  <p><b>Liquids:</b> mass (g) = volume (cm³) × density (g cm⁻³)</p>
+  <p><b>Using a yield forwards:</b> actual mass = theoretical mass × <span class="frac"><span>% yield</span><span>100</span></span></p>
+  <p><b>Working backwards</b> to find how much reactant you need: <b>divide</b> by the yield (you need <i>more</i> reactant).</p>
+</div>
+
+<div class="card stepper">
+  <p>20.0 cm³ of cyclohexanol (M<sub>r</sub> = 100.0, density 0.962 g cm⁻³) produced 9.85 g of cyclohexene (M<sub>r</sub> = 82.0). C₆H₁₁OH → C₆H₁₀ + H₂O. Calculate the percentage yield. (From your C2.10 lesson.)</p>
+  <div class="st"><span class="alg">mass = 20.0 × 0.962 = 19.24 g → n = 19.24 ÷ 100.0 = 0.1924 mol</span></div>
+  <div class="st"><span class="alg">n(cyclohexene) = 9.85 ÷ 82.0 = 0.1201 mol</span></div>
+  <div class="st"><span class="alg">1 : 1 → % yield = <span class="frac"><span>0.1201</span><span>0.1924</span></span> × 100 = <b>62.4%</b></span><span class="why">For a 1 : 1 reaction you can compare moles directly.</span></div>
+  <button class="b nextst">Next step ▶</button><button class="b alt allst">Show all</button><button class="b alt resetst">Reset</button>
+</div>
+
+<div class="check"><span class="tag">CHECK 4</span><span class="src">AQA A-level Paper 2, June 2019, Q02.4</span>
+  <p>A student added an excess of concentrated phosphoric acid to 14.4 g of cyclohexanol (M<sub>r</sub> = 100.0) and obtained 4.15 cm³ of cyclohexene (M<sub>r</sub> = 82.0, density = 0.810 g cm⁻³). Calculate the percentage yield. Give your answer to the appropriate number of significant figures. <b>[5 marks]</b></p>
+  <p><input class="ans" id="c4"> % <button class="b" data-chk="c4" data-v="28.5" data-t="0.05">Check</button><span class="fb" id="c4f"></span></p>
+  <button class="b alt sw">Show working</button>
+  <div class="work">n(cyclohexanol) = 14.4 ÷ 100.0 = 0.144 mol<br>mass cyclohexene = 4.15 × 0.810 = 3.36 g → n = 3.36 ÷ 82.0 = 0.0410 mol<br>(0.0410 ÷ 0.144) × 100 = <b>28.5%</b> (must be 3 s.f.)</div>
+</div>
+
+<h3>Using a yield</h3>
+<div class="card stepper">
+  <p>TiCl₄ + 4Na → Ti + 4NaCl. The percentage yield is 85.0%. Calculate the mass of titanium produced from 1.00 kg of sodium. (From your C2.10 lesson.)</p>
+  <div class="st"><span class="alg">n(Na) = 1000 ÷ 23.0 = 43.48 mol</span></div>
+  <div class="st"><span class="alg">Na : Ti = 4 : 1 → n(Ti) = 10.87 mol → theoretical mass = 10.87 × 47.9 = 520.7 g</span></div>
+  <div class="st"><span class="alg">actual = 520.7 × 0.850 = <b>443 g</b></span></div>
+  <button class="b nextst">Next step ▶</button><button class="b alt allst">Show all</button><button class="b alt resetst">Reset</button>
+</div>
+
+<div class="check"><span class="tag">CHECK 5</span><span class="src">Practice</span>
+  <p>Nitration of 2.00 g of methyl benzoate (M<sub>r</sub> = 136.0) produces methyl 3-nitrobenzoate (M<sub>r</sub> = 181.0) in a 1 : 1 reaction. The percentage yield is 65.0%. What mass of product is obtained?</p>
+  <p><input class="ans" id="c5"> g <button class="b" data-chk="c5" data-v="1.73" data-t="0.01">Check</button><span class="fb" id="c5f"></span></p>
+  <button class="b alt sw">Show working</button>
+  <div class="work">2.00 ÷ 136.0 = 0.01471 mol → theoretical 0.01471 × 181.0 = 2.662 g → × 0.650 = <b>1.73 g</b></div>
+</div>
+
+<h3>Multi-step syntheses</h3>
+<div class="card">
+  <p>When a product is made in several steps, the overall yield is the yields multiplied together. It drops fast!</p>
+  <div class="row"><div><label class="s">Step 1: <span id="m1v">80</span>%</label><input type="range" id="m1" min="10" max="100" value="80"></div>
+  <div><label class="s">Step 2: <span id="m2v">70</span>%</label><input type="range" id="m2" min="10" max="100" value="70"></div>
+  <div><label class="s">Step 3: <span id="m3v">90</span>%</label><input type="range" id="m3" min="10" max="100" value="90"></div></div>
+  <div class="svgbox"><svg id="ms" viewBox="0 0 900 160"></svg></div>
+  <div class="readout" id="msOut"></div>
+</div>
+</section>
+
+<!-- ============ PAGE 5 ============ -->
+<section class="page" data-title="5. Quiz">
+<h2>5. Quick quiz</h2>
+<div id="quiz"></div>
+<div id="score"></div>
+<button class="b alt" onclick="buildQuiz(Q)">Reset quiz</button>
+</section>
+
+<div class="pager"><button class="b alt" id="prevB">◀ Previous</button><button class="b" id="nextB">Next ▶</button></div>
+</main>
+
+<script>
+/* ---------- navigation ---------- */
+const pages=[...document.querySelectorAll('.page')];
+const nav=document.getElementById('nav');
+pages.forEach((p,i)=>{const b=document.createElement('button');b.textContent=p.dataset.title;b.onclick=()=>go(i);nav.appendChild(b)});
+let cur=0;
+function go(i){cur=Math.max(0,Math.min(pages.length-1,i));
+ pages.forEach((p,j)=>p.classList.toggle('on',j===cur));
+ [...nav.children].forEach((b,j)=>b.classList.toggle('on',j===cur));
+ document.getElementById('prevB').disabled=cur===0;
+ document.getElementById('nextB').disabled=cur===pages.length-1;
+ window.scrollTo(0,0);
+ if(window.onPage)window.onPage(cur);}
+document.getElementById('prevB').onclick=()=>go(cur-1);
+document.getElementById('nextB').onclick=()=>go(cur+1);
+
+/* ---------- numeric checks, working, steppers ---------- */
+document.addEventListener('click',e=>{
+ const t=e.target;
+ if(t.dataset.chk){const inp=document.getElementById(t.dataset.chk),fb=document.getElementById(t.dataset.chk+'f');
+  const v=parseFloat(inp.value.replace(',','.').replace('%',''));const ans=parseFloat(t.dataset.v),tol=parseFloat(t.dataset.t||0.05);
+  if(isNaN(v)){fb.textContent='Enter a number';fb.className='fb no';return}
+  if(Math.abs(v-ans)<=tol+1e-9){fb.textContent='✓ Correct';fb.className='fb ok';inp.style.borderColor='var(--good)'}
+  else{fb.textContent='✗ Not quite – try again, or show the working';fb.className='fb no';inp.style.borderColor='var(--bad)'}}
+ if(t.classList.contains('sw')){const ns=t.nextElementSibling,w=ns&&ns.classList.contains('work')?ns:t.parentElement.querySelector('.work');w.classList.toggle('on');t.textContent=w.classList.contains('on')?'Hide working':(t.dataset.l||'Show working')}
+ if(t.classList.contains('nextst')){const s=t.closest('.stepper');const hid=[...s.querySelectorAll('.st:not(.on)')];if(hid.length){hid[0].classList.add('on')}
+  if(hid.length<=1){t.disabled=true}}
+ if(t.classList.contains('allst')){const s=t.closest('.stepper');s.querySelectorAll('.st').forEach(x=>x.classList.add('on'));s.querySelector('.nextst').disabled=true}
+ if(t.classList.contains('resetst')){const s=t.closest('.stepper');s.querySelectorAll('.st').forEach(x=>x.classList.remove('on'));s.querySelector('.nextst').disabled=false}
+});
+
+/* ---------- quiz ---------- */
+let qs=0,qa=0;
+function buildQuiz(Q){const w=document.getElementById('quiz');w.innerHTML='';qs=0;qa=0;
+ Q.forEach((q,i)=>{const c=document.createElement('div');c.className='card mcq';c.innerHTML=`<b>Q${i+1}.</b> ${q[0]}`;
+  q[1].forEach((o,j)=>{const b=document.createElement('button');b.className='opt';b.innerHTML=o;
+   b.onclick=()=>{if(c.classList.contains('done'))return;c.classList.add('done');qa++;
+    if(j===q[2]){b.classList.add('right');qs++}else{b.classList.add('wrong');c.querySelectorAll('.opt')[q[2]].classList.add('right')}score(Q)};c.appendChild(b)});
+  const e=document.createElement('div');e.className='exp';e.innerHTML='💡 '+q[3];c.appendChild(e);w.appendChild(c)});score(Q)}
+function score(Q){document.getElementById('score').innerHTML=`Score: <b>${qs}</b> / ${Q.length}`+(qa===Q.length?(qs>=Q.length-1?' – excellent!':qs>=Q.length-3?' – good, review the ones you missed':' – go back through the walkthrough and try again'):'')}
+const NS='http://www.w3.org/2000/svg';
+function E(tag,attrs,parent){const el=document.createElementNS(NS,tag);for(const k in attrs)el.setAttribute(k,attrs[k]);if(parent)parent.appendChild(el);return el}
+function sf(v,d=3){if(v===0)return '0';const a=Math.abs(v);if(a>=1e5||a<1e-2){const e=Math.floor(Math.log10(a));let m=(v/10**e).toPrecision(d);if(+m>=10){m=(+m/10).toPrecision(d);return m+' × 10'+sup(e+1)}return m+' × 10'+sup(e)}return (+v.toPrecision(d)).toLocaleString('en-GB',{maximumSignificantDigits:d}).replace(/,/g,' ')}
+function sup(e){const m={'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};return String(e).split('').map(c=>m[c]).join('')}
+function subs(f){return f.replace(/(\d+)/g,'<sub>$1</sub>')}
+function mkMCQ(id,q){const c=document.getElementById(id);c.innerHTML='';
+ q[0].forEach((o,j)=>{const b=document.createElement('button');b.className='opt';b.innerHTML=o;b.onclick=()=>{if(c.classList.contains('done'))return;c.classList.add('done');
+  b.classList.add(j===q[1]?'right':'wrong');c.querySelectorAll('.opt')[q[1]].classList.add('right')};c.appendChild(b)});
+ const e=document.createElement('div');e.className='exp';e.innerHTML='💡 '+q[2];c.appendChild(e)}
+function normF(s){const m={'₀':'0','₁':'1','₂':'2','₃':'3','₄':'4','₅':'5','₆':'6','₇':'7','₈':'8','₉':'9'};return s.replace(/[₀-₉]/g,c=>m[c]).replace(/\s/g,'')}
+document.addEventListener('click',e=>{const t=e.target;if(!t.dataset.fchk)return;const i=document.getElementById(t.dataset.fchk),f=document.getElementById(t.dataset.fchk+'f');
+ const ok=t.dataset.f.split('|').some(a=>normF(i.value)===a);f.textContent=ok?'✓ Correct':'✗ Not quite – check your ratio (or show the working)';f.className='fb '+(ok?'ok':'no');i.style.borderColor=ok?'var(--good)':'var(--bad)'});
+const AR={C:12.0,H:1.0,O:16.0,N:14.0,S:32.1,Cl:35.5,Br:79.9,Fe:55.8,Cu:63.5,Mo:96.0,Na:23.0,Mg:24.3,Ca:40.1,Al:27.0,K:39.1,Cr:52.0,P:31.0};
+/* ---------- page 1: yield vs AE ---------- */
+const dyS=document.getElementById('dyS');
+function dy(){const y=+dyS.value,g=document.getElementById('dy');g.innerHTML='';document.getElementById('dyV').textContent=y;const W=700,X0=180;
+ const row=(yy,lab,segs)=>{E('text',{x:X0-10,y:yy+28,'text-anchor':'end','font-size':15,fill:'#3b2a1a'},g).textContent=lab;let x=X0;
+  segs.forEach(([v,c,t,tc])=>{const w=v/100*W;if(w>0){E('rect',{x,y:yy,width:w,height:44,fill:c,stroke:'#fff','stroke-width':1,style:'transition:all .3s'},g);if(w>40)E('text',{x:x+w/2,y:yy+28,'text-anchor':'middle','font-size':14,fill:tc||'#fff','font-weight':'bold'},g).textContent=t}x+=w})};
+ const ae=47.9/281.9*100;
+ row(20,'reactants (281.9 g)',[[100,'#8b5a2b','TiCl₄ + 4Na']]);
+ row(100,'products at 100%',[[ae,'#2f7d4a','Ti 17.0%'],[100-ae,'#bfae93','NaCl (waste) 83.0%','#3b2a1a']]);
+ row(180,`Ti collected at ${y}%`,[[ae*y/100,'#2f7d4a',''],[ae*(1-y/100),'#f4c7c0','']]);
+ E('text',{x:X0+ae/100*W+10,y:208,'font-size':14,fill:'#3b2a1a'},g).textContent=`${(ae*y/100).toFixed(1)}% of the reactant mass ends up as collected Ti`;
+ E('text',{x:X0,y:262,'font-size':14,fill:'#7a6448'},g).textContent=`Atom economy = 17.0% (fixed by the equation) · Yield = ${y}% (depends on the experiment)`}
+dyS.oninput=dy;dy();
+
+/* ---------- page 2: AE calculator ---------- */
+const RXA=[
+ {n:'Hydration of ethene',r:[['C₂H₄',1,28.0],['H₂O',1,18.0]],p:[['C₂H₅OH',1,46.0]]},
+ {n:'Decomposing CaCO₃',r:[['CaCO₃',1,100.1]],p:[['CaO',1,56.1],['CO₂',1,44.0]]},
+ {n:'Bromoethane + NaOH',r:[['CH₃CH₂Br',1,108.9],['NaOH',1,40.0]],p:[['CH₃CH₂OH',1,46.0],['NaBr',1,102.9]]},
+ {n:'Haber process',r:[['N₂',1,28.0],['H₂',3,2.0]],p:[['NH₃',2,17.0]]},
+ {n:'Heating KClO₃',r:[['KClO₃',2,122.6]],p:[['KCl',2,74.6],['O₂',3,32.0]]}];
+let ae=0,aeP=0;
+function aeDraw(){const R=RXA[ae],tot=R.r.reduce((s,[,c,m])=>s+c*m,0),[pn,pc,pm]=R.p[aeP],des=pc*pm,pct=des/tot*100;
+ document.getElementById('aeEq').innerHTML=R.r.map(([n,c])=>(c>1?c:'')+n).join(' + ')+' → '+R.p.map(([n,c],i)=>`<button class="b alt aeB ${i===aeP?'on':''}" data-i="${i}" style="font-family:Georgia,serif;font-size:20px">${c>1?c:''}${n}</button>`).join(' + ');
+ document.querySelectorAll('.aeB').forEach(b=>b.onclick=()=>{aeP=+b.dataset.i;aeDraw()});
+ const g=document.getElementById('aeSvg');g.innerHTML='';const W=820,X0=40;
+ E('rect',{x:X0,y:25,width:W,height:50,fill:'#bfae93',rx:6},g);E('rect',{x:X0,y:25,width:pct/100*W,height:50,fill:'#2f7d4a',rx:6,style:'transition:all .4s'},g);
+ E('text',{x:X0+Math.max(pct/100*W/2,60),y:56,'text-anchor':'middle','font-size':16,'font-weight':'bold',fill:'#fff'},g).textContent=`${pn} ${pct.toFixed(1)}%`;
+ E('text',{x:X0,y:100,'font-size':13,fill:'#7a6448'},g).textContent=`total mass of reactants = ${tot.toFixed(1)}`;
+ document.getElementById('aeOut').innerHTML=`sum of reactants = ${R.r.map(([n,c,m])=>c>1?`${c} × ${m.toFixed(1)}`:m.toFixed(1)).join(' + ')} = ${tot.toFixed(1)}<br>desired product = ${pc>1?pc+' × '+pm.toFixed(1)+' = ':''}${des.toFixed(1)}<br>% atom economy = ${des.toFixed(1)} ÷ ${tot.toFixed(1)} × 100 = <b>${pct.toFixed(1)}%</b>`+(R.p.length===1?' (addition reaction – only one product)':'')}
+const aes=document.getElementById('aeSets');RXA.forEach((r,i)=>{const b=document.createElement('button');b.className='b alt';b.textContent=r.n;b.onclick=()=>{ae=i;aeP=0;aes.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));aeDraw()};aes.appendChild(b)});aes.querySelector('button').click();
+
+/* ---------- page 3: losses ---------- */
+const LS=[['The reaction is reversible / doesn\'t go to completion',14],['Side reactions make other products',10],['Product is lost when transferring between containers',6],['Product is lost during filtration or purification (e.g. distillation, recrystallisation)',8],['The reactants were impure',4]];
+let lsN=0;
+function ls(){const g=document.getElementById('loss');g.innerHTML='';const W=820,X0=40;let rem=100;
+ for(let i=0;i<lsN;i++)rem-=LS[i][1];
+ E('rect',{x:X0,y:30,width:W,height:50,fill:'#f4c7c0',rx:6},g);E('rect',{x:X0,y:30,width:rem/100*W,height:50,fill:'#2f7d4a',rx:6,style:'transition:all .5s'},g);
+ E('text',{x:X0+rem/100*W/2,y:61,'text-anchor':'middle','font-size':16,'font-weight':'bold',fill:'#fff'},g).textContent=`${rem}% collected`;
+ E('text',{x:X0,y:20,'font-size':13,fill:'#7a6448'},g).textContent='theoretical yield = 100%';
+ for(let i=0;i<lsN;i++)E('text',{x:X0,y:105+i*15,'font-size':13,fill:'#b03a2e'},g).textContent=`− ${LS[i][1]}%  ${LS[i][0]}`;
+ document.getElementById('lsOut').innerHTML=lsN?`${LS[lsN-1][0]}.<br>Actual yield is now <b>${rem}%</b>.`:'Press "Next reason" to see where product is lost.';document.getElementById('lsN').disabled=lsN>=LS.length}
+document.getElementById('lsN').onclick=()=>{lsN++;ls()};document.getElementById('lsR').onclick=()=>{lsN=0;ls()};ls();
+
+/* ---------- page 4: multi-step ---------- */
+const ms=['m1','m2','m3'].map(id=>document.getElementById(id));
+function msDraw(){const v=ms.map(s=>+s.value);ms.forEach((s,i)=>document.getElementById(`m${i+1}v`).textContent=v[i]);
+ const g=document.getElementById('ms');g.innerHTML='';let cur=100;const vals=[100];v.forEach(y=>{cur=cur*y/100;vals.push(cur)});
+ vals.forEach((x,i)=>{const X=60+i*210,h=x/100*110;E('rect',{x:X,y:130-h,width:120,height:h,fill:i===3?'#b5651d':'#2c6e8f',rx:4,style:'transition:all .3s'},g);
+  E('text',{x:X+60,y:124-h,'text-anchor':'middle','font-size':15,'font-weight':'bold',fill:'#3b2a1a'},g).textContent=x.toFixed(1)+'%';
+  E('text',{x:X+60,y:150,'text-anchor':'middle','font-size':13,fill:'#7a6448'},g).textContent=i===0?'start':i===3?'overall':`after step ${i}`});
+ document.getElementById('msOut').innerHTML=`overall = ${v.map(y=>(y/100).toFixed(2)).join(' × ')} × 100 = <b>${cur.toFixed(1)}%</b>`}
+ms.forEach(s=>s.oninput=msDraw);msDraw();
+
+/* ---------- quiz ---------- */
+const Q=[
+ ["What is the atom economy of any addition reaction?",["50%","It depends on the yield","100%","It depends on the masses used"],2,"There is only one product, so all of the reactant mass ends up in it."],
+ ["What goes on the bottom of the atom economy expression?",["Mᵣ of the desired product","Sum of Mᵣ of all the products except the desired one","Sum of Mᵣ of all the reactants (× coefficients)","Mass of product obtained"],2,"% AE = Mᵣ desired product ÷ sum of Mᵣ of all reactants × 100"],
+ ["A + B → C + D. Mᵣ: A = 40, B = 60, C = 70. What is the atom economy for C?",["70.0%","58.3%","30.0%","42.9%"],0,"70 ÷ (40 + 60) × 100 = 70.0%"],
+ ["CH₄ + H₂O → CO + 3H₂. What is the atom economy for hydrogen?",["5.9%","17.6%","11.8%","100%"],1,"3 × 2.0 = 6.0 ÷ (16.0 + 18.0) × 100 = 17.6%. Don't forget the 3!"],
+ ["The theoretical yield is 5.00 g and 4.00 g is obtained. What is the % yield?",["125%","80.0%","20.0%","1.25%"],1,"4.00 ÷ 5.00 × 100 = 80.0%"],
+ ["Which is NOT a reason why the yield is less than 100%?",["The reaction is reversible","Side reactions occur","Product is lost during purification","The reaction has a low atom economy"],3,"Atom economy is a separate measure. It doesn't affect the yield."],
+ ["What mass of a liquid is in 25.0 cm³ if its density is 0.800 g cm⁻³?",["31.3 g","20.0 g","0.0320 g","25.8 g"],1,"mass = 25.0 × 0.800 = 20.0 g"],
+ ["A synthesis has two steps with yields of 80% and 50%. What is the overall yield?",["65%","130%","40%","30%"],2,"0.80 × 0.50 = 0.40 → 40%"],
+ ["The theoretical mass of product is 12.0 g and the yield is 75.0%. What mass is obtained?",["16.0 g","9.00 g","3.00 g","12.0 g"],1,"12.0 × 0.750 = 9.00 g"],
+ ["A reaction has a 100% yield but an atom economy of 40%. How is this possible?",["It isn't possible","The yield compares actual with theoretical product, but by-products are always made according to the equation","The atom economy was measured wrongly","The reaction must be an addition reaction"],1,"Yield and atom economy measure different things. A perfect yield still makes the by-product."]
+];
+buildQuiz(Q);
+go(0);
+
+</script>
+</body>
+</html>
