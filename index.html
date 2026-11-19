@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Mr Jarvis' Chemistry Page</title>
-<meta name="description" content="GCSE and A-level chemistry: required practicals, virtual labs, revision quizzes and topic walkthroughs.">
+<title>Mr Jarvis' Chemistry & Physics Page</title>
+<meta name="description" content="GCSE and A-level chemistry and physics: required practicals, virtual labs, revision quizzes and interactive topic walkthroughs.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -59,6 +59,9 @@
   .level-btn[data-level="alevel"] .dot{ background:#a07ce0; }
   a.level-btn{ text-decoration:none; display:inline-block; }
   .level-btn.physics .dot{ background:#f08a4b; }
+  .level-btn .subj{ display:block; font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.12em; opacity:.6; margin-bottom:2px; }
+  .level-btn[aria-selected="true"] .subj{ opacity:.55; }
+  .switch-gap{ width:1px; margin:10px 10px 0; background:rgba(255,255,255,.25); }
   [hidden]{ display:none !important; }
 
   /* ---------- Main ---------- */
@@ -186,6 +189,11 @@
   @media (max-width:560px){ .cat-nav{ grid-template-columns:1fr; } }
   @media (max-width:520px){
     header.hero{ padding-top:40px; }
+    .switch-gap{ margin:10px 2px 0; }
+    .level-btn{ padding:10px 4px; font-size:.92rem; white-space:nowrap; text-align:center; min-width:0; }
+    .level-btn .subj{ font-size:.58rem; letter-spacing:.06em; }
+    .level-btn .dot{ width:8px; height:8px; margin-right:5px; }
+    .level-switch{ gap:4px; }
     .level-btn{ flex:1; padding:12px 10px; }
     .cat-blurb{ margin-left:0; }
     .topics{ grid-template-columns:1fr; }
@@ -196,13 +204,15 @@
 
 <header class="hero">
   <div class="wrap">
-    <p class="eyebrow">AQA Chemistry</p>
-    <h1>Mr Jarvis' Chemistry Page</h1>
-    <p class="tagline">Required practicals, virtual labs, revision quizzes and topic walkthroughs for GCSE and A-level chemistry.</p>
+    <p class="eyebrow">AQA Chemistry · Physics</p>
+    <h1>Mr Jarvis' Chemistry &amp; Physics Page</h1>
+    <p class="tagline">Required practicals, virtual labs, revision quizzes and interactive topic walkthroughs for GCSE and A-level chemistry and physics.</p>
     <div class="level-switch" role="tablist">
-      <button class="level-btn" role="tab" data-level="gcse"><span class="dot"></span>GCSE</button>
-      <button class="level-btn" role="tab" data-level="alevel"><span class="dot"></span>A-level</button>
-      <a class="level-btn physics" id="physicsLink" href="a-level-physics.html" hidden><span class="dot"></span>A-level Physics</a>
+      <button class="level-btn" role="tab" data-level="gcse"><span class="subj">Chemistry</span><span class="dot"></span>GCSE</button>
+      <button class="level-btn" role="tab" data-level="alevel"><span class="subj">Chemistry</span><span class="dot"></span>A-level</button>
+      <span class="switch-gap" aria-hidden="true"></span>
+      <a class="level-btn physics" href="gcse-physics.html"><span class="subj">Physics</span><span class="dot"></span>GCSE</a>
+      <a class="level-btn physics" href="a-level-physics.html"><span class="subj">Physics</span><span class="dot"></span>A-level</a>
     </div>
   </div>
 </header>
@@ -213,7 +223,7 @@
 
 <footer>
   <div class="wrap">
-    <span>Mr Jarvis · Chemistry</span>
+    <span>Mr Jarvis · Chemistry &amp; Physics</span>
     <span>Resources are free to use in lessons and for revision.</span>
   </div>
 </footer>
@@ -242,11 +252,8 @@
      points at "revisionrecord/File name" – type the name exactly as it
      appears in GitHub, including the .pdf or .xlsx on the end.
    ===================================================================== */
-/* A-level Physics has its own page: a-level-physics.html
-   Set SHOW_PHYSICS to true to add an "A-level Physics" tab to this page.
-   While it is false the physics page is unlisted – only people you send
-   the link to can find it. */
-const SHOW_PHYSICS = false;
+/* Physics has its own pages: gcse-physics.html and a-level-physics.html.
+   They are linked from the Physics tabs in the header. */
 
 const RR_FOLDER = "revisionrecord/";
 const rr = file => RR_FOLDER + encodeURIComponent(file);
@@ -929,7 +936,7 @@ function render() {
   const { level, cat } = parseHash();
   const L = SITE[level];
   document.body.dataset.level = level;
-  document.querySelectorAll(".level-btn").forEach(b => b.setAttribute("aria-selected", b.dataset.level === level));
+  document.querySelectorAll("button.level-btn").forEach(b => b.setAttribute("aria-selected", b.dataset.level === level));
   document.title = cat ? `${cat.title} · ${L.name} · Mr Jarvis' Chemistry` : "Mr Jarvis' Chemistry Page";
 
   const content = document.getElementById("content");
@@ -944,11 +951,10 @@ function render() {
   });
 }
 
-document.querySelectorAll(".level-btn").forEach(b => b.addEventListener("click", () => {
+document.querySelectorAll("button.level-btn").forEach(b => b.addEventListener("click", () => {
   const { cat } = parseHash();
   location.hash = SLUG[b.dataset.level] + (cat ? "/" + cat.key : "");   // stay on the same resource type when switching level
 }));
-if (SHOW_PHYSICS) document.getElementById("physicsLink").hidden = false;
 window.addEventListener("hashchange", () => {
   render();
   document.querySelector("main").scrollIntoView({ behavior: "instant", block: "start" });
