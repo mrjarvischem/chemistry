@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Iron and copper ions – reaction maps</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,750&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style>[hidden]{display:none!important}
+
+/* Layout: one reading column (~760px) with wider interactive "bench" panels; sticky progress strip; positive ions blue-violet, negative ions green throughout */
+:root{
+  --bg:#f5efe3; --surface:#fffaf0; --sunk:#ece2cf; --ink:#2a2017; --muted:#6c5d4b; --line:#dccdb3;
+  --accent:#7a4a22; --accent-soft:#f0e0cb; --accent-ink:#fff8ee;
+  --cation:#4a4fa3; --cation-soft:#e3e3f6; --anion:#2c7743; --anion-soft:#dcefe1;
+  --oxy:#c0463a; --hyd:#f7f3ea;
+  --ok:#2b7a4b; --okbg:#e2f1e6; --bad:#b0392d; --badbg:#f8e1dc;
+  --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#1b1713; --surface:#25201a; --sunk:#2f2820; --ink:#efe6d7; --muted:#b4a590; --line:#463b2f;
+  --accent:#dba06a; --accent-soft:#3a2b1d; --accent-ink:#1b1713;
+  --cation:#9ea3f2; --cation-soft:#2c2d4a; --anion:#7fca92; --anion-soft:#1f3a28;
+  --oxy:#e0776b; --hyd:#e9e2d4;
+  --ok:#7fca92; --okbg:#1f3427; --bad:#ec8a7e; --badbg:#3d211d; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#1b1713; --surface:#25201a; --sunk:#2f2820; --ink:#efe6d7; --muted:#b4a590; --line:#463b2f;
+  --accent:#dba06a; --accent-soft:#3a2b1d; --accent-ink:#1b1713;
+  --cation:#9ea3f2; --cation-soft:#2c2d4a; --anion:#7fca92; --anion-soft:#1f3a28;
+  --oxy:#e0776b; --hyd:#e9e2d4;
+  --ok:#7fca92; --okbg:#1f3427; --bad:#ec8a7e; --badbg:#3d211d; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:820px;margin:0 auto}
+h1,h2,h3{font-family:var(--display);line-height:1.15;text-wrap:balance;margin:0}
+h1{font-size:clamp(2.2rem,6vw,3.4rem);font-weight:750;letter-spacing:-.02em}
+h2{font-size:clamp(1.5rem,3.6vw,2rem);font-weight:750;letter-spacing:-.01em}
+h3{font-size:1.15rem;font-weight:600}
+p{margin:0}
+sub,sup{font-size:.72em;line-height:0}
+.eyebrow{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.cat{color:var(--cation);font-weight:700}.an{color:var(--anion);font-weight:700}
+
+/* masthead */
+header.top{padding-block:40px 18px;display:grid;gap:14px}
+.lede{max-width:62ch;color:var(--muted);font-size:1.08rem}
+.spec{display:flex;flex-wrap:wrap;gap:8px}
+.tag{font-family:var(--mono);font-size:.78rem;padding:3px 9px;border:1px solid var(--line);border-radius:999px;color:var(--muted)}
+
+/* sticky progress */
+.progress{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding-block:10px;margin-bottom:8px}
+.progress .row{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.bar{flex:1 1 180px;height:8px;background:var(--sunk);border-radius:99px;overflow:hidden;min-width:120px}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .4s}
+.progress .stat{font-size:.88rem;color:var(--muted);font-variant-numeric:tabular-nums}
+nav.toc{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+nav.toc a{font-size:.82rem;text-decoration:none;color:var(--ink);padding:3px 10px;border-radius:999px;background:var(--surface);border:1px solid var(--line);white-space:nowrap}
+nav.toc a:hover,nav.toc a:focus-visible{border-color:var(--accent);color:var(--accent)}
+
+/* sections */
+section{padding-block:44px 8px;display:grid;gap:18px;scroll-margin-top:110px}
+.sechead{display:grid;gap:6px;border-top:2px solid var(--ink);padding-top:14px}
+.sechead .num{font-family:var(--mono);font-size:.82rem;color:var(--accent)}
+.prose{display:grid;gap:12px;max-width:66ch}
+.key{background:var(--accent-soft);border-left:4px solid var(--accent);padding:12px 16px;border-radius:0 8px 8px 0;max-width:66ch}
+.key b{color:var(--accent)}
+.warn{background:var(--badbg);border-left:4px solid var(--bad);padding:12px 16px;border-radius:0 8px 8px 0;max-width:66ch}
+.bench{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;gap:12px;min-width:0}
+.bench .lab{font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button,.btn{font:inherit;font-size:.92rem;font-weight:600;border:1px solid var(--line);background:var(--bg);color:var(--ink);padding:6px 12px;border-radius:8px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+select{font:inherit;font-size:.95rem;padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);max-width:100%}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.95rem}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.two>*{min-width:0}
+.caption{font-size:.9rem;color:var(--muted)}
+svg text{font-family:var(--body)}
+
+/* MCQ */
+.mcq{display:grid;gap:14px}
+.q{border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--surface);display:grid;gap:10px}
+.q .qh{display:flex;gap:10px;align-items:baseline}
+.q .qn{font-family:var(--mono);font-size:.78rem;color:var(--accent);white-space:nowrap}
+.q .qt{font-weight:600}
+.opts{display:grid;gap:6px}
+.opt{text-align:left;font-weight:400;display:grid;grid-template-columns:28px 1fr;gap:8px;align-items:start;padding:8px 10px;background:var(--bg)}
+.opt .l{font-family:var(--mono);font-weight:500;color:var(--muted)}
+.opt.right{background:var(--okbg);border-color:var(--ok)}
+.opt.wrong{background:var(--badbg);border-color:var(--bad);opacity:.85}
+.fb{font-size:.95rem;padding:10px 12px;border-radius:8px}
+.fb.right{background:var(--okbg);border-left:4px solid var(--ok)}
+.fb.wrong{background:var(--badbg);border-left:4px solid var(--bad)}
+.mcqhead{display:flex;align-items:center;gap:10px}
+.mcqhead h3{font-size:1rem}
+
+/* checklist */
+.check{display:grid;gap:8px;list-style:none;padding:0;margin:0}
+.check label{display:flex;gap:10px;align-items:flex-start;cursor:pointer}
+.check input{width:20px;height:20px;margin-top:3px;accent-color:var(--accent);flex:none}
+
+footer{margin-top:40px;color:var(--muted);font-size:.85rem;border-top:1px solid var(--line);padding-top:14px}
+/* additions for the Group 2 / RP4 run-throughs: cations blue-violet, anions green (as Period 3 series) */
+:root{--liq:#e2edf2;--pptw:#fbfaf6;--pptc:#efe0ae;--ppty:#f2d23c;--glow:#fff6c8}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--liq:#2a3a44;--pptw:#f3f1ea;--pptc:#e8d79c;--ppty:#efcd34}}
+:root[data-theme="dark"]{--liq:#2a3a44;--pptw:#f3f1ea;--pptc:#e8d79c;--ppty:#efcd34}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{min-width:58px}
+.eq{font-family:var(--display);font-size:clamp(1.02rem,2.5vw,1.3rem);font-weight:600;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 14px;overflow-x:auto;white-space:nowrap}
+.eq small{font-family:var(--body);font-weight:400;font-size:.8rem;color:var(--muted)}
+.eqs{display:grid;gap:8px}
+.readout{display:grid;gap:10px;align-content:start}
+.readout h3{font-size:1.3rem}
+.big{font-family:var(--display);font-size:1.9rem;font-weight:750;font-variant-numeric:tabular-nums}
+.card{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--bg);display:grid;gap:6px;align-content:start}
+.card h3{font-size:1.05rem}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr));gap:12px}
+.two{grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr))}
+.two>*{min-width:0}
+.fig svg{display:block;width:100%;height:auto}
+details{border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:10px 14px}
+details summary{cursor:pointer;font-weight:700}
+details[open] summary{margin-bottom:8px}
+.obs{margin:0;padding-left:20px;display:grid;gap:4px}
+.pill{display:inline-block;font-size:.78rem;font-weight:700;padding:2px 9px;border-radius:999px;background:var(--sunk);color:var(--ink);margin-right:4px}
+.pill.cat{background:var(--cation-soft);color:var(--cation)}.pill.an{background:var(--anion-soft);color:var(--anion)}
+.ok{color:var(--ok);font-weight:700}.bad{color:var(--bad);font-weight:700}
+/* trend bars */
+.trend{display:grid;gap:8px}
+.trow{display:grid;grid-template-columns:44px minmax(0,1fr) 110px;gap:10px;align-items:center}
+.trow b{font-family:var(--display);font-size:1.15rem}
+.tbar{height:26px;background:var(--sunk);border-radius:6px;overflow:hidden}
+.tbar i{display:block;height:100%;width:0;background:var(--cation);border-radius:6px;transition:width .8s cubic-bezier(.2,.8,.2,1)}
+.tbar i.odd{background:var(--oxy)}
+.trow span{font-variant-numeric:tabular-nums;font-weight:600;text-align:right}
+/* tubes */
+.tubes svg{display:block;width:100%;height:auto;max-height:340px}
+.glass{fill:none;stroke:var(--muted);stroke-width:2.2}
+.liq{fill:var(--liq)}
+.cloud{animation:cloudin 1.4s ease both}
+@keyframes cloudin{from{opacity:0}}
+.settle{animation:settle 1.6s ease .7s both;transform-box:fill-box;transform-origin:50% 100%}
+@keyframes settle{from{transform:scaleY(0);opacity:0}}
+.bub{animation:rise 1.3s linear infinite;fill:none;stroke:var(--muted);stroke-width:1.2}
+@keyframes rise{from{transform:translateY(0);opacity:.9}to{transform:translateY(-78px);opacity:0}}
+.drop{animation:drop .7s ease-in both;fill:var(--liq);stroke:var(--muted)}
+@keyframes drop{from{transform:translateY(-40px);opacity:1}to{transform:translateY(40px);opacity:0}}
+.tl{fill:var(--ink);font-weight:700;font-size:15px;font-family:var(--display)}
+.ts{fill:var(--muted);font-size:12.5px}
+.litmus{transition:fill 1.2s}
+/* predict grid */
+.pgrid{display:grid;gap:4px;font-size:.92rem}
+.pgrid .h{font-weight:700;display:grid;place-items:center;text-align:center;padding:4px;font-size:.88rem}
+.pgrid .r{font-weight:700;display:flex;align-items:center;padding-right:6px}
+.pgrid button{padding:8px 4px;font-size:.84rem;min-height:44px}
+.pgrid button.shown{background:var(--surface);cursor:default}
+/* atoms and lattices */
+.shell{fill:none;stroke:var(--line);stroke-width:1.5}
+.shield{fill:var(--sunk);opacity:.7}
+.nuc{fill:var(--cation)}
+.e{fill:var(--muted)}.eo{fill:var(--accent)}
+.rad{stroke:var(--accent);stroke-width:2;stroke-dasharray:6 5}
+.away{animation:away 1.4s ease-in both}
+@keyframes away{to{transform:translate(170px,-130px);opacity:0}}
+.ion2{fill:var(--cation-soft);stroke:var(--cation);stroke-width:2;transition:r .6s}
+.dl{fill:var(--accent);animation:jig 2.4s ease-in-out infinite alternate}
+@keyframes jig{to{transform:translate(9px,-7px)}}
+@media (prefers-reduced-motion: reduce){.cloud,.settle,.bub,.drop,.away,.dl{animation:none}.tbar i{transition:none}}
+.readout .eq{font-size:1.02rem;white-space:normal}
+.card svg{display:block;width:100%;height:auto;max-height:170px}
+.kind{display:inline-block;font-size:.82rem;font-weight:700;padding:2px 9px;border-radius:999px;margin:2px 4px 2px 0;color:#fff}
+.kind.ls{background:var(--cation)}.kind.pr{background:var(--muted)}.kind.ox{background:var(--oxy)}.kind.rd{background:var(--anion)}
+.info{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr));gap:14px;border-top:1px solid var(--line);padding-top:12px;min-height:220px}
+.info table td:first-child{color:var(--muted);width:40%}
+#map svg{display:block;width:100%;height:auto}
+.node{cursor:pointer}.node rect{transition:stroke-width .2s}.node:hover rect,.node.sel rect{stroke-width:4}
+.edge{cursor:pointer}.edge .hit{stroke:transparent;stroke-width:22}.edge:hover .ln,.edge.sel .ln{stroke-width:5}
+.elab{font-size:13.5px;font-weight:700;paint-order:stroke;stroke:var(--surface);stroke-width:5px;stroke-linejoin:round}
+.slider{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.slider input[type=range]{flex:1 1 220px;accent-color:var(--accent)}
+.cx text{font-family:var(--body)}
+.sw{display:inline-block;width:18px;height:18px;border-radius:5px;vertical-align:-4px;margin-right:8px;border:1px solid var(--line)}
+#colTable tr.hid td.c *{visibility:hidden}#colTable tr{cursor:pointer}
+.card .eq{font-size:.98rem;white-space:normal;padding:8px 10px}
+.readout .kind{justify-self:start}
+.elab{font-size:15px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <p class="eyebrow">A-level Chemistry · Inorganic · Transition metals · C23.2</p>
+  <h1>Iron and copper ions: the reaction maps</h1>
+  <p class="lede">Everything from the ligand substitution practical on one page. Click any complex on a map to see its shape and how to draw it. Click any arrow to see the equation, what you observe and why it happens. Then work through each idea in turn.</p>
+  <div class="spec"><span class="tag">AQA 3.2.5</span><span class="tag">AQA 3.2.6</span><span class="tag">7 sections</span><span class="tag">about 50 minutes</span></div>
+</header>
+
+<div class="progress" aria-label="Progress">
+  <div class="row"><div class="bar" aria-hidden="true"><i id="pbar"></i></div><span class="stat" id="pstat">0 questions answered</span></div>
+  <nav class="toc" aria-label="Sections">
+    <a href="#s1">1 The maps</a><a href="#s2">2 Chloride ligands</a><a href="#s3">3 Ammonia's two jobs</a><a href="#s4">4 Fe²⁺ ⇌ Fe³⁺</a><a href="#s5">5 Drawing complexes</a><a href="#s6">6 Colours</a><a href="#s7">7 Check yourself</a>
+  </nav>
+</div>
+
+<!-- 1 -->
+<section id="s1">
+  <div class="sechead"><span class="num">Section 1</span><h2>The reaction maps</h2></div>
+  <div class="prose"><p>Every box is a complex, coloured like the real solution or precipitate. Every arrow is a reaction. Start from the aqua ion in the middle and work outwards.</p></div>
+  <div class="bench">
+    <div class="controls"><div class="chips" id="mapPick" role="group" aria-label="Choose a map"></div><span class="caption">Click a box or an arrow</span></div>
+    <div class="fig" id="map"></div>
+    <div class="info" id="info" aria-live="polite"></div>
+  </div>
+  <div class="key"><b>Four kinds of arrow to recognise:</b> <span class="kind ls">ligand substitution</span> <span class="kind pr">precipitation (NH₃ acting as a base)</span> <span class="kind ox">oxidation</span> <span class="kind rd">reduction</span></div>
+  <div class="mcq" data-set="s1"></div>
+</section>
+
+<!-- 2 -->
+<section id="s2">
+  <div class="sechead"><span class="num">Section 2</span><h2>Chloride ligands: the shape changes</h2></div>
+  <div class="prose">
+    <p>Adding concentrated HCl swaps the six water ligands for <b>four</b> chloride ligands. The co-ordination number falls from 6 to 4 and the shape changes from <b>octahedral (90°)</b> to <b>tetrahedral (109.5°)</b>.</p>
+  </div>
+  <div class="bench">
+    <span class="lab">Choose a metal ion, then slide from water to concentrated HCl and back</span>
+    <div class="chips" id="clPick" role="group" aria-label="Choose an ion"></div>
+    <div class="slider"><span>add water</span><input type="range" id="clR" min="0" max="100" value="0" aria-label="Amount of concentrated HCl"><span>conc. HCl</span></div>
+    <div class="two">
+      <div class="fig" id="clFig"></div>
+      <div class="readout" id="clOut" aria-live="polite"></div>
+    </div>
+  </div>
+  <div class="grid3">
+    <div class="card"><h3>Why only four?</h3><p>Cl⁻ ions are <b>larger</b> than H₂O molecules, so only four fit around the metal ion. As negative ions they also repel each other.</p></div>
+    <div class="card"><h3>Why is it reversible?</h3><p>Adding water lowers [Cl⁻] and raises [H₂O], so the position of equilibrium shifts to the left and the aqua ion forms again.</p></div>
+    <div class="card"><h3>Working out the charge</h3><p>Add up the metal ion and the ligands: Fe³⁺ + 4Cl⁻ = (+3) + (−4) = <b>−1</b>, so [FeCl₄]⁻. With Cu²⁺ or Fe²⁺ the complex is 2−.</p></div>
+  </div>
+  <div class="mcq" data-set="s2"></div>
+</section>
+
+<!-- 3 -->
+<section id="s3">
+  <div class="sechead"><span class="num">Section 3</span><h2>Ammonia has two jobs</h2></div>
+  <div class="prose">
+    <p>Ammonia can act as a <b>base</b> (it removes H⁺ from water ligands) or as a <b>ligand</b> (it replaces water ligands). Add it drop by drop and watch which job it is doing.</p>
+  </div>
+  <div class="bench">
+    <span class="lab">Choose a metal ion, then add NH₃(aq)</span>
+    <div class="controls"><div class="chips" id="nhPick" role="group" aria-label="Choose an ion"></div><button class="primary" id="nhGo">Add a few drops</button><button id="nhEx">Add excess</button><button id="nhReset">Reset</button></div>
+    <div class="two">
+      <div class="tubes" id="nhFig"></div>
+      <div class="readout" id="nhOut" aria-live="polite"></div>
+    </div>
+  </div>
+  <div class="eqs">
+    <div class="eq">[Cu(H<sub>2</sub>O)<sub>6</sub>]<sup>2+</sup> + 2NH<sub>3</sub> → [Cu(H<sub>2</sub>O)<sub>4</sub>(OH)<sub>2</sub>] + 2NH<sub>4</sub><sup>+</sup> <small>&nbsp;NH₃ as a base</small></div>
+    <div class="eq">[Cu(H<sub>2</sub>O)<sub>4</sub>(OH)<sub>2</sub>] + 4NH<sub>3</sub> → [Cu(NH<sub>3</sub>)<sub>4</sub>(H<sub>2</sub>O)<sub>2</sub>]<sup>2+</sup> + 2H<sub>2</sub>O + 2OH<sup>−</sup> <small>&nbsp;NH₃ as a ligand</small></div>
+    <div class="eq">[Cu(H<sub>2</sub>O)<sub>6</sub>]<sup>2+</sup> + 4NH<sub>3</sub> → [Cu(NH<sub>3</sub>)<sub>4</sub>(H<sub>2</sub>O)<sub>2</sub>]<sup>2+</sup> + 4H<sub>2</sub>O <small>&nbsp;overall, in excess</small></div>
+  </div>
+  <div class="key"><b>Why doesn't the shape change this time?</b> NH₃ and H₂O are a similar size and are both uncharged, so the co-ordination number stays at 6. Substitution with copper is <b>incomplete</b>: only four of the six water ligands are replaced.</div>
+  <div class="warn"><b>Iron precipitates don't dissolve in excess ammonia.</b> NH₃ only acts as a base with iron, so no soluble ammine complex forms. Only the copper precipitate dissolves.</div>
+  <div class="mcq" data-set="s3"></div>
+</section>
+
+<!-- 4 -->
+<section id="s4">
+  <div class="sechead"><span class="num">Section 4</span><h2>Switching between Fe²⁺ and Fe³⁺</h2></div>
+  <div class="grid3">
+    <div class="card"><h3>Oxidation with acidified KMnO₄</h3>
+      <div class="eq">Fe<sup>2+</sup> → Fe<sup>3+</sup> + e<sup>−</sup></div>
+      <div class="eq">MnO<sub>4</sub><sup>−</sup> + 8H<sup>+</sup> + 5e<sup>−</sup> → Mn<sup>2+</sup> + 4H<sub>2</sub>O</div>
+      <div class="eq">MnO<sub>4</sub><sup>−</sup> + 8H<sup>+</sup> + 5Fe<sup>2+</sup> → Mn<sup>2+</sup> + 4H<sub>2</sub>O + 5Fe<sup>3+</sup></div>
+      <p>The purple colour disappears while Fe²⁺ remains. The solution must be acidified because H⁺ is a reactant; without enough acid, brown MnO₂ forms instead.</p></div>
+    <div class="card"><h3>Reduction with zinc and acid</h3>
+      <div class="eq">2Fe<sup>3+</sup> + Zn → 2Fe<sup>2+</sup> + Zn<sup>2+</sup></div>
+      <p>E°(Zn²⁺/Zn) = −0.76 V is more negative than E°(Fe³⁺/Fe²⁺) = +0.77 V, so zinc is the stronger reducing agent. e.m.f. = 0.77 − (−0.76) = <b>+1.53 V</b>, which is positive, so the reaction is feasible.</p>
+      <p>It fizzes because zinc also reacts with the acid: Zn + 2H⁺ → Zn²⁺ + H₂</p></div>
+    <div class="card"><h3>Oxidation by air</h3>
+      <p>The green Fe(II) hydroxide precipitate slowly turns <b>brown at the surface</b> as oxygen in the air oxidises it to the Fe(III) hydroxide.</p>
+      <div class="eq" style="white-space:normal">4[Fe(H<sub>2</sub>O)<sub>4</sub>(OH)<sub>2</sub>] + O<sub>2</sub> → 4[Fe(H<sub>2</sub>O)<sub>3</sub>(OH)<sub>3</sub>] + 2H<sub>2</sub>O</div>
+      <p class="caption">You need the observation and the reason. The balanced equation is an extension.</p></div>
+  </div>
+  <div class="bench">
+    <span class="lab">Check you've made the change: test a sample of each solution</span>
+    <div class="controls"><div class="chips" id="fePick" role="group" aria-label="Choose a solution"></div></div>
+    <div class="controls"><button class="primary" data-t="0">Add acidified KMnO₄</button><button class="primary" data-t="1">Add NH₃(aq)</button></div>
+    <div class="two"><div class="tubes" id="feFig"></div><div class="readout" id="feOut" aria-live="polite"></div></div>
+  </div>
+  <div class="mcq" data-set="s4"></div>
+</section>
+
+<!-- 5 -->
+<section id="s5">
+  <div class="sechead"><span class="num">Section 5</span><h2>Drawing complexes</h2></div>
+  <div class="prose">
+    <p>Use <b>wedges</b> for bonds coming towards you and <b>dashed lines</b> for bonds going away. Put the whole complex in square brackets with the overall charge outside, and make sure each bond goes to the atom with the lone pair: the O in H₂O, the N in NH₃.</p>
+  </div>
+  <div class="bench">
+    <span class="lab">Choose a complex</span>
+    <div class="chips" id="drPick" role="group" aria-label="Choose a complex"></div>
+    <div class="two"><div class="fig" id="drFig"></div><div class="readout" id="drOut" aria-live="polite"></div></div>
+  </div>
+  <div class="warn">Write <b>OH₂</b> on the right-hand side (or H₂O on the left) so the bond clearly goes to the oxygen. A bond drawn to the H atoms loses the mark.</div>
+  <div class="mcq" data-set="s5"></div>
+</section>
+
+<!-- 6 -->
+<section id="s6">
+  <div class="sechead"><span class="num">Section 6</span><h2>All the colours in one place</h2></div>
+  <div class="prose"><p>Cover the colour column and test yourself, or click a row to hide and reveal it.</p></div>
+  <div class="scroll"><table id="colTable"></table></div>
+  <div class="key"><b>Why does [Fe(H₂O)₆]³⁺ look yellow-brown?</b> The ion itself is pale violet, but in solution some of it loses H⁺ to form [Fe(H₂O)₅(OH)]²⁺, which gives the yellow-brown colour. <b>Why does [CuCl₄]²⁻ often look green?</b> It is yellow, but the solution is usually a mixture with some blue [Cu(H₂O)₆]²⁺ left.</div>
+  <div class="mcq" data-set="s6"></div>
+</section>
+
+<!-- 7 -->
+<section id="s7">
+  <div class="sechead"><span class="num">Section 7</span><h2>Check yourself</h2></div>
+  <div class="mcq" data-set="s7" data-title="End-of-topic quiz"></div>
+  <div class="bench">
+    <span class="lab">Tick off what you can now do</span>
+    <ul class="check" id="check"></ul>
+  </div>
+</section>
+<footer>Transition metals · C23.2 Ligand substitution practical: iron and copper reaction maps.</footer>
+</div>
+
+<script>
+/* shared: helpers, MCQ engine, checklist. Expects globals Q (question sets) and CK (checklist), CKKEY */
+const $=s=>document.querySelector(s);
+const $$=s=>Array.from(document.querySelectorAll(s));
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const RM=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function fit(cv){const r=cv.getBoundingClientRect(),d=window.devicePixelRatio||1;cv.width=Math.max(1,Math.round(r.width*d));cv.height=Math.max(1,Math.round(r.height*d));const c=cv.getContext('2d');c.setTransform(d,0,0,d,0,0);return {c,W:r.width,H:r.height};}
+function lerp(a,b,t){return a+(b-a)*t}
+function hex2rgb(h){h=h.replace('#','');if(h.length===3)h=h.split('').map(x=>x+x).join('');const n=parseInt(h,16);return [n>>16&255,n>>8&255,n&255];}
+function mix(a,b,t){const A=hex2rgb(a),B=hex2rgb(b);return 'rgb('+A.map((v,i)=>Math.round(lerp(v,B[i],t))).join(',')+')';}
+/* universal indicator colour for a pH */
+const UI=[[0,'#c8231b'],[2,'#e0401f'],[3,'#ee7420'],[4,'#f2a022'],[5,'#e8c92c'],[6,'#b8c534'],[7,'#4fa83b'],[8,'#2e9a77'],[9,'#2b86a3'],[10,'#2c5fb3'],[11,'#3e44a8'],[12,'#53338f'],[14,'#4b1f75']];
+function uiColour(pH){for(let i=0;i<UI.length-1;i++){if(pH<=UI[i+1][0]){const t=(pH-UI[i][0])/(UI[i+1][0]-UI[i][0]);return mix(UI[i][1],UI[i+1][1],Math.max(0,Math.min(1,t)));}}return UI[UI.length-1][1];}
+
+function initMCQ(){
+  const state={answered:0,first:0,total:0};
+  Object.values(Q).forEach(a=>state.total+=a.length);
+  function upd(){$('#pbar').style.width=(100*state.answered/state.total)+'%';$('#pstat').textContent=state.answered+' of '+state.total+' questions answered · '+state.first+' right first time';}
+  let qnum=0;
+  $$('.mcq').forEach(box=>{
+    const set=Q[box.dataset.set];if(!set)return;
+    const head=document.createElement('div');head.className='mcqhead';
+    head.innerHTML='<h3>'+(box.dataset.title||(set.length<=2?'Quick check':'Questions'))+'</h3><span class="caption">'+set.length+' question'+(set.length>1?'s':'')+'</span>';
+    box.appendChild(head);
+    set.forEach(item=>{
+      qnum++;
+      const el=document.createElement('div');el.className='q';
+      el.innerHTML='<div class="qh"><span class="qn">Q'+qnum+'</span><span class="qt">'+item.q+'</span></div><div class="opts"></div><div class="fb" hidden></div>';
+      const opts=el.querySelector('.opts'),fb=el.querySelector('.fb');let tries=0,done=false;
+      const sh=item.o.slice();for(let i=sh.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[sh[i],sh[j]]=[sh[j],sh[i]];}
+      sh.forEach((o,oi)=>{
+        const b=document.createElement('button');b.className='opt';b.type='button';
+        b.innerHTML='<span class="l">'+'ABCDE'[oi]+'</span><span>'+o[0]+'</span>';
+        b.addEventListener('click',()=>{
+          if(done||b.classList.contains('wrong'))return;tries++;fb.hidden=false;fb.innerHTML=o[2];
+          if(o[1]){b.classList.add('right');fb.className='fb right';done=true;state.answered++;if(tries===1)state.first++;upd();opts.querySelectorAll('.opt').forEach(x=>x.disabled=true);}
+          else{b.classList.add('wrong');fb.className='fb wrong';fb.innerHTML=o[2]+' <b>Try again.</b>';}
+        });
+        opts.appendChild(b);
+      });
+      box.appendChild(el);
+    });
+  });
+  upd();
+  let saved={};try{saved=JSON.parse(localStorage.getItem(CKKEY)||'{}');}catch(e){}
+  $('#check').innerHTML=CK.map((t,i)=>'<li><label><input type="checkbox" id="ck'+i+'"'+(saved[i]?' checked':'')+'><span>'+t+'</span></label></li>').join('');
+  $('#check').addEventListener('change',e=>{saved[e.target.id.slice(2)]=e.target.checked;try{localStorage.setItem(CKKEY,JSON.stringify(saved));}catch(err){}});
+}
+
+/* test tube renderer. o: {ppt:0-1, pc:'w'|'c'|'y', bub:n, label, sub, fresh, liq} */
+const PC={w:'var(--pptw)',c:'var(--pptc)',y:'var(--ppty)'};
+function tube(x,o){
+  o=o||{};const top=o.level||78,col=o.pcol||PC[o.pc||'w'];let s='';
+  s+='<path class="liq" d="M'+(x-18)+' '+top+' V170 a18 18 0 0 0 36 0 V'+top+'Z"'+(o.liq?' style="fill:'+o.liq+'"':'')+'/>';
+  if(o.ppt>0){
+    s+='<path class="'+(o.fresh?'cloud':'')+'" fill="'+col+'" opacity="'+(0.25+0.45*o.ppt).toFixed(2)+'" d="M'+(x-18)+' '+(top+4)+' V170 a18 18 0 0 0 36 0 V'+(top+4)+'Z"/>';
+    const h=4+30*o.ppt;
+    s+='<path class="'+(o.fresh?'settle':'')+'" fill="'+col+'" stroke="var(--muted)" stroke-width=".8" d="M'+(x-18)+' '+(170-h)+' V170 a18 18 0 0 0 36 0 V'+(170-h)+'Z"/>';
+  }
+  for(let i=0;i<(o.bub||0);i++){const bx=x-12+((i*37)%24),r=1.8+(i%3)*.8;s+='<circle class="bub" cx="'+bx+'" cy="182" r="'+r+'" style="animation-delay:'+(i*0.17).toFixed(2)+'s"/>';}
+  if(o.fresh&&o.drop)s+='<circle class="drop" cx="'+x+'" cy="30" r="4"/>';
+  s+='<path class="glass" d="M'+(x-20)+' 14 V170 a20 20 0 0 0 40 0 V14"/><line class="glass" x1="'+(x-24)+'" y1="14" x2="'+(x+24)+'" y2="14"/>';
+  if(o.label)s+='<text class="tl" x="'+x+'" y="216" text-anchor="middle">'+o.label+'</text>';
+  if(o.sub)s+='<text class="ts" x="'+x+'" y="234" text-anchor="middle">'+o.sub+'</text>';
+  return s;
+}
+function rack(n,fn,h){const W=Math.max(320,n*110);let s='<svg viewBox="0 0 '+W+' '+(h||244)+'" role="img" aria-label="Test tubes">';for(let i=0;i<n;i++)s+=fn(W/n*(i+.5),i);return s+'</svg>';}
+
+const CKKEY='fecu-check';
+function chips(id,list,cb,start){const box=$(id);box.innerHTML=list.map((t,i)=>'<button aria-pressed="'+(i===(start||0))+'" data-i="'+i+'">'+t+'</button>').join('');
+ box.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;box.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));cb(+b.dataset.i);});cb(start||0);}
+
+/* ---------- complexes ---------- */
+const W='H2O',A='NH3',O='OH',C='Cl';
+const CX={
+ cuaq:{f:'[Cu(H₂O)₆]²⁺',M:'Cu',ox:'+2',g:'oct',L:[W,W,W,W,W,W],q:'2+',col:'#7cc0ef',cn:'blue',st:'solution',cw:'Cu²⁺ with six neutral H₂O ligands: +2'},
+ cucl:{f:'[CuCl₄]²⁻',M:'Cu',ox:'+2',g:'tet',L:[C,C,C,C],q:'2−',col:'#c9d34a',cn:'yellow (often looks green)',st:'solution',cw:'(+2) + 4 × (−1) = −2'},
+ cuoh:{f:'[Cu(H₂O)₄(OH)₂]',M:'Cu',ox:'+2',g:'oct',L:[O,O,W,W,W,W],q:'',col:'#bfe1f6',cn:'pale blue',st:'precipitate',cw:'(+2) + 2 × (−1) = 0, so it is neutral and insoluble'},
+ cunh:{f:'[Cu(NH₃)₄(H₂O)₂]²⁺',M:'Cu',ox:'+2',g:'oct',L:[W,W,A,A,A,A],q:'2+',col:'#1f3fae',light:1,cn:'deep blue',st:'solution',cw:'Cu²⁺ with six neutral ligands: +2'},
+ fe2aq:{f:'[Fe(H₂O)₆]²⁺',M:'Fe',ox:'+2',g:'oct',L:[W,W,W,W,W,W],q:'2+',col:'#d3eac0',cn:'pale green',st:'solution',cw:'Fe²⁺ with six neutral ligands: +2'},
+ fe2cl:{f:'[FeCl₄]²⁻',M:'Fe',ox:'+2',g:'tet',L:[C,C,C,C],q:'2−',col:'#e4e9a8',cn:'pale yellow-green',st:'solution',cw:'(+2) + 4 × (−1) = −2'},
+ fe2oh:{f:'[Fe(H₂O)₄(OH)₂]',M:'Fe',ox:'+2',g:'oct',L:[O,O,W,W,W,W],q:'',col:'#4f7a3a',light:1,cn:'green',st:'precipitate',cw:'(+2) + 2 × (−1) = 0, so it is neutral and insoluble'},
+ fe3aq:{f:'[Fe(H₂O)₆]³⁺',M:'Fe',ox:'+3',g:'oct',L:[W,W,W,W,W,W],q:'3+',col:'#d29b3a',cn:'yellow-brown',st:'solution',cw:'Fe³⁺ with six neutral ligands: +3'},
+ fe3cl:{f:'[FeCl₄]⁻',M:'Fe',ox:'+3',g:'tet',L:[C,C,C,C],q:'−',col:'#f2d43a',cn:'yellow',st:'solution',cw:'(+3) + 4 × (−1) = −1'},
+ fe3oh:{f:'[Fe(H₂O)₃(OH)₃]',M:'Fe',ox:'+3',g:'oct',L:[O,W,W,O,O,W],q:'',col:'#9a4f17',light:1,cn:'orange-brown',st:'precipitate',cw:'(+3) + 3 × (−1) = 0, so it is neutral and insoluble'}};
+const SHAPE={oct:['octahedral','90°',6],tet:['tetrahedral','109.5°',4]};
+/* positions: oct = up, down, back-left, back-right, front-left, front-right; tet = up, lower-left, front-right, back-right */
+const POS={oct:[[0,-1,'l'],[0,1,'l'],[-1,-.32,'d'],[1,-.32,'d'],[-.78,.5,'w'],[.78,.5,'w']],tet:[[0,-1,'l'],[-.95,.42,'l'],[.5,.8,'w'],[.98,.12,'d']]};
+const LAB={H2O:['H₂O','OH₂','OH₂'],NH3:['H₃N','NH₃','NH₃'],OH:['HO','OH','OH'],Cl:['Cl','Cl','Cl']};
+function draw(k,scale){const c=CX[k],cx=200,cy=165,R=92;let s='<svg class="cx" viewBox="0 0 400 330" role="img" aria-label="Diagram of '+c.f+'"'+(scale?' style="max-width:'+scale+'px;margin:0 auto"':'')+'>';
+ POS[c.g].forEach((p,i)=>{const[dx,dy,t]=p,len=Math.hypot(dx,dy),ux=dx/len,uy=dy/len,x0=cx+ux*20,y0=cy+uy*20,x1=cx+ux*R,y1=cy+uy*R;
+  if(t==='l')s+='<line x1="'+x0+'" y1="'+y0+'" x2="'+x1+'" y2="'+y1+'" stroke="var(--ink)" stroke-width="2.6"/>';
+  else if(t==='w'){const px=-uy,py=ux;s+='<polygon points="'+x0+','+y0+' '+(x1+px*7)+','+(y1+py*7)+' '+(x1-px*7)+','+(y1-py*7)+'" fill="var(--ink)"/>';}
+  else{const px=-uy,py=ux;for(let j=1;j<=7;j++){const f=j/8,mx=x0+(x1-x0)*f,my=y0+(y1-y0)*f,w=1.5+6*f;s+='<line x1="'+(mx+px*w)+'" y1="'+(my+py*w)+'" x2="'+(mx-px*w)+'" y2="'+(my-py*w)+'" stroke="var(--ink)" stroke-width="1.8"/>';}}
+  const L=c.L[i],side=dx<-.2?0:dx>.2?1:2,txt=LAB[L][side],col=L===C?'var(--anion)':L===O?'var(--oxy)':L===A?'var(--cation)':'var(--ink)';
+  let tx,ty,an;if(side===0){tx=x1-5;ty=y1+6;an='end';}else if(side===1){tx=x1+5;ty=y1+6;an='start';}else{tx=x1-8;ty=dy<0?y1-8:y1+20;an='start';}
+  s+='<text x="'+tx+'" y="'+ty+'" text-anchor="'+an+'" style="fill:'+col+';font-weight:700;font-size:22px">'+txt+'</text>';});
+ s+='<text x="'+cx+'" y="'+(cy+7)+'" text-anchor="middle" style="fill:var(--ink);font-weight:800;font-size:25px">'+c.M+'</text>';
+ s+='<path d="M48 22 H34 V308 H48 M352 22 H366 V308 H352" fill="none" stroke="var(--ink)" stroke-width="2.4"/>';
+ if(c.q)s+='<text x="370" y="30" style="fill:var(--ink);font-weight:700;font-size:20px">'+c.q+'</text>';
+ return s+'</svg>';}
+function facts(k){const c=CX[k],sh=SHAPE[c.g];return '<h3>'+c.f+'</h3><p><span class="sw" style="background:'+c.col+'"></span>'+c.cn+' '+c.st+'</p><table>'+
+ '<tr><td>Shape</td><td><b>'+sh[0]+'</b>, '+sh[1]+'</td></tr><tr><td>Co-ordination number</td><td>'+sh[2]+'</td></tr><tr><td>Oxidation state of '+c.M+'</td><td>'+c.ox+'</td></tr><tr><td>Overall charge</td><td>'+c.cw+'</td></tr></table>';}
+
+/* ---------- maps ---------- */
+const KCOL={ls:'var(--cation)',pr:'var(--muted)',ox:'var(--oxy)',rd:'var(--anion)'};
+const KNAME={ls:'Ligand substitution',pr:'Precipitation: NH₃ acting as a base',ox:'Oxidation',rd:'Reduction'};
+const MAPS=[
+ {name:'Copper(II)',vb:'0 0 900 470',nodes:{cuaq:[450,235],cucl:[140,235],cuoh:[760,95],cunh:[760,375]},edges:[
+  {k:'ls',p:[340,218,250,218],lab:'conc. HCl',lp:[295,206,'middle'],eq:'[Cu(H₂O)₆]²⁺ + 4Cl⁻ ⇌ [CuCl₄]²⁻ + 6H₂O',obs:'Blue solution → yellow-green solution',why:'Four Cl⁻ ligands replace six H₂O ligands, because Cl⁻ is larger. Co-ordination number 6 → 4; octahedral → tetrahedral.'},
+  {k:'ls',p:[250,254,340,254],lab:'add water',lp:[295,276,'middle'],eq:'[CuCl₄]²⁻ + 6H₂O ⇌ [Cu(H₂O)₆]²⁺ + 4Cl⁻',obs:'Yellow-green → blue again',why:'The reaction is reversible. Water lowers [Cl⁻] and raises [H₂O], so the position of equilibrium shifts left.'},
+  {k:'pr',p:[540,200,660,128],lab:'NH₃, a few drops',lp:[598,152,'end'],eq:'[Cu(H₂O)₆]²⁺ + 2NH₃ → [Cu(H₂O)₄(OH)₂] + 2NH₄⁺',obs:'Pale blue precipitate',why:'NH₃ acts as a base: it removes H⁺ from two water ligands. The neutral complex is insoluble.'},
+  {k:'ls',p:[760,140,760,330],lab:'excess NH₃',lp:[772,240,'start'],eq:'[Cu(H₂O)₄(OH)₂] + 4NH₃ → [Cu(NH₃)₄(H₂O)₂]²⁺ + 2H₂O + 2OH⁻',obs:'Precipitate dissolves → deep blue solution',why:'NH₃ now acts as a ligand. Substitution is incomplete: only four ligands are replaced, and c.n. stays 6 because NH₃ and H₂O are a similar size.'}]},
+ {name:'Iron(II) and iron(III)',vb:'0 0 900 520',nodes:{fe2aq:[450,105],fe2cl:[140,105],fe2oh:[760,105],fe3aq:[450,415],fe3cl:[140,415],fe3oh:[760,415]},edges:[
+  {k:'ls',p:[340,105,250,105],lab:'conc. HCl',lp:[295,93,'middle'],eq:'[Fe(H₂O)₆]²⁺ + 4Cl⁻ ⇌ [FeCl₄]²⁻ + 6H₂O',obs:'Pale green → pale yellow-green solution',why:'Ligand substitution; c.n. 6 → 4, octahedral → tetrahedral. Charge (+2) + 4(−1) = −2.'},
+  {k:'ls',p:[340,415,250,415],lab:'conc. HCl',lp:[295,403,'middle'],eq:'[Fe(H₂O)₆]³⁺ + 4Cl⁻ ⇌ [FeCl₄]⁻ + 6H₂O',obs:'Yellow-brown → yellow solution',why:'Ligand substitution; c.n. 6 → 4. Charge (+3) + 4(−1) = −1.'},
+  {k:'pr',p:[560,105,650,105],lab:'NH₃(aq)',lp:[605,93,'middle'],eq:'[Fe(H₂O)₆]²⁺ + 2NH₃ → [Fe(H₂O)₄(OH)₂] + 2NH₄⁺',obs:'Green precipitate, insoluble in excess NH₃',why:'NH₃ acts only as a base, so no soluble ammine complex forms.'},
+  {k:'pr',p:[560,415,650,415],lab:'NH₃(aq)',lp:[605,403,'middle'],eq:'[Fe(H₂O)₆]³⁺ + 3NH₃ → [Fe(H₂O)₃(OH)₃] + 3NH₄⁺',obs:'Orange-brown precipitate, insoluble in excess NH₃',why:'NH₃ removes H⁺ from three water ligands, giving a neutral, insoluble complex.'},
+  {k:'ox',p:[415,148,415,372],lab:'acidified KMnO₄',lp:[403,255,'end'],eq:'MnO₄⁻ + 8H⁺ + 5Fe²⁺ → Mn²⁺ + 4H₂O + 5Fe³⁺',obs:'Purple KMnO₄ is decolourised',why:'Fe²⁺ → Fe³⁺ + e⁻ (oxidation). MnO₄⁻ is reduced to Mn²⁺. Acid is needed because H⁺ is a reactant.'},
+  {k:'rd',p:[485,372,485,148],lab:'Zn / H⁺, warm',lp:[497,255,'start'],eq:'2Fe³⁺ + Zn → 2Fe²⁺ + Zn²⁺',obs:'Yellow-brown → pale green; fizzing (H₂ from Zn + acid)',why:'E°(Zn²⁺/Zn) = −0.76 V is more negative than E°(Fe³⁺/Fe²⁺) = +0.77 V. e.m.f. = +1.53 V, so it is feasible.'},
+  {k:'ox',p:[760,150,760,370],lab:'O₂ in air, on standing',lp:[772,262,'start'],eq:'4[Fe(H₂O)₄(OH)₂] + O₂ → 4[Fe(H₂O)₃(OH)₃] + 2H₂O',obs:'Green precipitate turns brown at the surface',why:'Oxygen in the air oxidises Fe(II) to Fe(III), so the surface turns into the orange-brown Fe(III) hydroxide.'}]}];
+let mSel=0;
+function drawMap(){const m=MAPS[mSel];let s='<svg viewBox="'+m.vb+'" role="img" aria-label="Reaction map for '+m.name+'"><defs>'+Object.keys(KCOL).map(k=>'<marker id="ah-'+k+'" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" style="fill:'+KCOL[k]+'"/></marker>').join('')+'</defs>';
+ m.edges.forEach((e,i)=>{const[x1,y1,x2,y2]=e.p;s+='<g class="edge" data-e="'+i+'" tabindex="0" role="button" aria-label="'+e.lab+'"><line class="hit" x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'"/><line class="ln" x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" style="stroke:'+KCOL[e.k]+';stroke-width:3.2" marker-end="url(#ah-'+e.k+')"/><text class="elab" x="'+e.lp[0]+'" y="'+e.lp[1]+'" text-anchor="'+e.lp[2]+'" style="fill:'+KCOL[e.k]+'">'+e.lab+'</text></g>';});
+ Object.entries(m.nodes).forEach(([k,[x,y]])=>{const c=CX[k],tc=c.light?'#fff':'#2a2017';s+='<g class="node" data-n="'+k+'" tabindex="0" role="button" aria-label="'+c.f+'"><rect x="'+(x-105)+'" y="'+(y-40)+'" width="210" height="80" rx="14" style="fill:'+c.col+';stroke:var(--ink);stroke-width:1.6'+(c.st==='precipitate'?';stroke-dasharray:7 4':'')+'"/><text x="'+x+'" y="'+(y-3)+'" text-anchor="middle" style="fill:'+tc+';font-weight:700;font-size:'+(c.f.length>16?15.5:18)+'px">'+c.f+'</text><text x="'+x+'" y="'+(y+21)+'" text-anchor="middle" style="fill:'+tc+';font-size:13px">'+c.cn.replace(' (often looks green)','')+' '+c.st+'</text></g>';});
+ $('#map').innerHTML=s+'</svg><p class="caption">Dashed border = precipitate. Arrow colour = type of reaction.</p>';
+ $('#info').innerHTML='<p class="caption">Click a box to see the complex, or an arrow to see the reaction.</p>';}
+function sel(el){$$('#map .sel').forEach(x=>x.classList.remove('sel'));el.classList.add('sel');}
+function mapClick(e){const n=e.target.closest('.node'),g=e.target.closest('.edge');
+ if(n){sel(n);$('#info').innerHTML='<div class="fig">'+draw(n.dataset.n,300)+'</div><div class="readout">'+facts(n.dataset.n)+'</div>';}
+ else if(g){sel(g);const ed=MAPS[mSel].edges[+g.dataset.e];$('#info').innerHTML='<div class="readout"><span class="kind '+ed.k+'">'+KNAME[ed.k]+'</span><h3>Reagent: '+ed.lab+'</h3><div class="eq">'+ed.eq+'</div></div><div class="readout"><p><b>You see:</b> '+ed.obs+'</p><p><b>Why:</b> '+ed.why+'</p></div>';}}
+$('#map').addEventListener('click',mapClick);
+$('#map').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();mapClick(e);}});
+chips('#mapPick',MAPS.map(m=>m.name),i=>{mSel=i;drawMap();});
+
+/* ---------- chloride slider ---------- */
+const CL=[['Cu²⁺','cuaq','cucl'],['Fe³⁺','fe3aq','fe3cl'],['Fe²⁺','fe2aq','fe2cl']];let clSel=0;
+function drawCl(){const[nm,a,b]=CL[clSel],t=+$('#clR').value/100,col=mix(CX[a].col,CX[b].col,t),dom=t<.5?a:b;
+ $('#clFig').innerHTML=rack(1,x=>tube(x,{liq:col,label:nm,sub:t<.15?'in water':t>.85?'conc. HCl':'mixture'}),244)+draw(dom,260);
+ $('#clOut').innerHTML='<div class="eq">'+CX[a].f+' + 4Cl⁻ ⇌ '+CX[b].f+' + 6H₂O</div><p>'+(t<.15?'Equilibrium lies well to the <b>left</b>: mostly the octahedral aqua ion.':t>.85?'High [Cl⁻]: equilibrium lies well to the <b>right</b>: mostly the tetrahedral chloro complex.':'A mixture of both complexes, so the colour is in between.')+'</p>'+facts(dom);}
+chips('#clPick',CL.map(c=>c[0]),i=>{clSel=i;drawCl();});$('#clR').addEventListener('input',drawCl);
+
+/* ---------- ammonia ---------- */
+const NH=[
+ {n:'Cu²⁺',s:[['cuaq',0],['cuoh',1],['cunh',0]],t:['Blue solution of [Cu(H₂O)₆]²⁺.','<b>Pale blue precipitate</b>. NH₃ acts as a <b>base</b>: [Cu(H₂O)₆]²⁺ + 2NH₃ → [Cu(H₂O)₄(OH)₂] + 2NH₄⁺','The precipitate <b>dissolves</b> to give a <b>deep blue solution</b>. NH₃ now acts as a <b>ligand</b>: [Cu(H₂O)₄(OH)₂] + 4NH₃ → [Cu(NH₃)₄(H₂O)₂]²⁺ + 2H₂O + 2OH⁻']},
+ {n:'Fe²⁺',s:[['fe2aq',0],['fe2oh',1],['fe2oh',1]],t:['Pale green solution of [Fe(H₂O)₆]²⁺.','<b>Green precipitate</b>. NH₃ acts as a base: [Fe(H₂O)₆]²⁺ + 2NH₃ → [Fe(H₂O)₄(OH)₂] + 2NH₄⁺','<b>No further change</b>: the precipitate is insoluble in excess NH₃. On standing it turns brown at the surface (oxidised by air).']},
+ {n:'Fe³⁺',s:[['fe3aq',0],['fe3oh',1],['fe3oh',1]],t:['Yellow-brown solution of [Fe(H₂O)₆]³⁺.','<b>Orange-brown precipitate</b>. NH₃ acts as a base: [Fe(H₂O)₆]³⁺ + 3NH₃ → [Fe(H₂O)₃(OH)₃] + 3NH₄⁺','<b>No further change</b>: the precipitate is insoluble in excess NH₃.']}];
+let nhSel=0,nhSt=0;
+function drawNH(fresh){const d=NH[nhSel],[k,p]=d.s[nhSt],c=CX[k];
+ $('#nhFig').innerHTML=rack(1,x=>tube(x,{liq:p?'var(--liq)':c.col,ppt:p,pcol:c.col,fresh:fresh,drop:1,label:d.n,sub:['no NH₃','a few drops','excess NH₃'][nhSt]}))+draw(k,240);
+ $('#nhOut').innerHTML='<h3>'+c.f+'</h3><p>'+d.t[nhSt]+'</p>';}
+chips('#nhPick',NH.map(n=>n.n),i=>{nhSel=i;nhSt=0;drawNH(false);});
+$('#nhGo').addEventListener('click',()=>{nhSt=1;drawNH(true);});$('#nhEx').addEventListener('click',()=>{const was=nhSt;nhSt=2;drawNH(was===0);});$('#nhReset').addEventListener('click',()=>{nhSt=0;drawNH(false);});
+
+/* ---------- Fe tests ---------- */
+const FS=[{n:'FeSO₄(aq)',fe:2},{n:'Fe³⁺(aq)',fe:3},{n:'Fe³⁺ after Zn/H⁺',fe:2},{n:'Fe²⁺ after excess KMnO₄',fe:3}];let fsSel=0;
+function feTest(t){const s=FS[fsSel];let o;
+ if(t===0){const dec=s.fe===2;$('#feFig').innerHTML=rack(1,x=>tube(x,{liq:dec?'#ecd9a6':'#b54a9e',fresh:1,drop:1,label:s.n,sub:'+ acidified KMnO₄'}));
+  o=dec?'Purple colour <b>disappears</b>: Fe²⁺ is present and is oxidised.':'Solution stays <b>purple/pink</b>: no Fe²⁺ left to reduce the MnO₄⁻.';}
+ else{const k=s.fe===2?'fe2oh':'fe3oh';$('#feFig').innerHTML=rack(1,x=>tube(x,{ppt:1,pcol:CX[k].col,fresh:1,drop:1,label:s.n,sub:'+ NH₃(aq)'}));
+  o=(s.fe===2?'<b>Green</b> precipitate: Fe²⁺ is present.':'<b>Orange-brown</b> precipitate: Fe³⁺ is present.');}
+ $('#feOut').innerHTML='<h3>'+s.n+'</h3><p>'+o+'</p>';}
+chips('#fePick',FS.map(f=>f.n),i=>{fsSel=i;$('#feFig').innerHTML=rack(1,x=>tube(x,{liq:CX[FS[i].fe===2?'fe2aq':'fe3aq'].col,label:FS[i].n}));$('#feOut').innerHTML='<p class="caption">Choose a test.</p>';});
+$$('[data-t]').forEach(b=>b.addEventListener('click',()=>feTest(+b.dataset.t)));
+
+/* ---------- drawing gallery ---------- */
+const KEYS=Object.keys(CX);
+chips('#drPick',KEYS.map(k=>CX[k].f),i=>{const k=KEYS[i],c=CX[k];$('#drFig').innerHTML=draw(k);
+ const lig=c.L.reduce((a,l)=>(a[l]=(a[l]||0)+1,a),{}),nm={H2O:'H₂O (lone pair on O)',NH3:'NH₃ (lone pair on N)',OH:'OH⁻ (lone pair on O)',Cl:'Cl⁻'};
+ $('#drOut').innerHTML=facts(k)+'<p><b>Ligands:</b> '+Object.entries(lig).map(([l,n])=>n+' × '+nm[l]).join(', ')+'. Each forms a co-ordinate bond to the metal ion.</p>';});
+
+/* ---------- colour table ---------- */
+$('#colTable').innerHTML='<tr><th>Complex</th><th>Metal</th><th>Solution or precipitate</th><th>Colour</th></tr>'+KEYS.map(k=>{const c=CX[k];return '<tr><td><b>'+c.f+'</b></td><td>'+c.M+'('+(c.ox==='+2'?'II':'III')+')</td><td>'+c.st+'</td><td class="c"><span><span class="sw" style="background:'+c.col+'"></span>'+c.cn+'</span></td></tr>';}).join('');
+$('#colTable').addEventListener('click',e=>{const r=e.target.closest('tr');if(r&&r.rowIndex>0)r.classList.toggle('hid');});
+
+const CK=[
+ 'Name the complex, its colour and whether it is a solution or a precipitate for every box on both maps',
+ 'Write the equations for Cu²⁺, Fe²⁺ and Fe³⁺ with concentrated HCl, and explain why only four Cl⁻ ligands bond',
+ 'Explain why adding water reverses the reaction with HCl',
+ 'Explain the two jobs of ammonia, and why only the copper precipitate dissolves in excess',
+ 'Write the equations for oxidising Fe²⁺ with acidified KMnO₄ and reducing Fe³⁺ with zinc, and use E° values to explain feasibility',
+ 'Explain why the green Fe(II) precipitate turns brown on standing',
+ 'Draw octahedral and tetrahedral complexes with wedges, dashes, brackets, charge and the correct bonding atoms'];
+
+const Q={
+s1:[
+ {q:'Which arrow on the copper map is a precipitation reaction?',o:[['Adding a few drops of NH₃ to [Cu(H₂O)₆]²⁺',1,'Correct. NH₃ acts as a base.'],['Adding conc. HCl to [Cu(H₂O)₆]²⁺',0,'That is ligand substitution.'],['Adding excess NH₃ to the precipitate',0,'That is ligand substitution: the precipitate dissolves.'],['Adding water to [CuCl₄]²⁻',0,'That reverses a ligand substitution.']]},
+ {q:'Which reagent turns [Fe(H₂O)₆]³⁺ back into [Fe(H₂O)₆]²⁺?',o:[['Zinc and dilute acid, warmed',1,'Correct. Zinc is the reducing agent.'],['Acidified KMnO₄',0,'That oxidises Fe²⁺ to Fe³⁺.'],['Excess NH₃',0,'That gives a precipitate.'],['Oxygen in the air',0,'Air oxidises Fe(II) to Fe(III), the other way round.']]}
+],
+s2:[
+ {q:'Why do only four chloride ligands bond to Cu²⁺?',o:[['Cl⁻ ions are larger than H₂O molecules',1,'Correct. They also repel each other as negative ions.'],['Cu²⁺ has a charge of 4+',0,'Cu²⁺ has a 2+ charge.'],['Chloride forms two bonds each',0,'Cl⁻ is monodentate.'],['Water ligands are larger than chloride ions',0,'The other way round.']]},
+ {q:'What is the charge on the iron complex formed when conc. HCl is added to an Fe³⁺ solution?',o:[['−1',1,'Correct. (+3) + 4(−1) = −1, so [FeCl₄]⁻.'],['−2',0,'That would be with Fe²⁺.'],['+3',0,'The four Cl⁻ ligands each add −1.'],['−4',0,'Include the +3 of the iron.']]}
+],
+s3:[
+ {q:'Why does the copper hydroxide precipitate dissolve in excess ammonia, but the iron hydroxides don\'t?',o:[['With copper, NH₃ also acts as a ligand and forms the soluble [Cu(NH₃)₄(H₂O)₂]²⁺; with iron it only acts as a base',1,'Correct.'],['Iron hydroxides are bigger',0,'It is about whether NH₃ substitutes as a ligand.'],['Excess NH₃ is acidic',0,'NH₃ is a base.'],['Copper is more reactive than iron',0,'This isn\'t about reactivity.']]},
+ {q:'Why doesn\'t the co-ordination number change when NH₃ replaces H₂O around Cu²⁺?',o:[['NH₃ and H₂O are a similar size and both uncharged',1,'Correct.'],['NH₃ is much larger than H₂O',0,'They are a similar size.'],['NH₃ is negatively charged',0,'NH₃ is neutral.'],['Only two NH₃ ligands bond',0,'Four NH₃ ligands bond, alongside two H₂O.']]}
+],
+s4:[
+ {q:'Why must Fe²⁺ be acidified before titrating it with KMnO₄?',o:[['H⁺ is a reactant; without enough acid, brown MnO₂ forms instead of Mn²⁺',1,'Correct.'],['To stop Fe²⁺ forming a precipitate with water',0,'The reason is the manganate half-equation.'],['Acid is the indicator',0,'MnO₄⁻ acts as its own indicator.'],['To make Fe³⁺',0,'MnO₄⁻ does the oxidising.']]},
+ {q:'Using E°(Fe³⁺/Fe²⁺) = +0.77 V and E°(Zn²⁺/Zn) = −0.76 V, what is the e.m.f. of the reaction between zinc and Fe³⁺?',o:[['+1.53 V',1,'Correct. 0.77 − (−0.76).'],['+0.01 V',0,'Subtract the negative value: 0.77 + 0.76.'],['−1.53 V',0,'The feasible direction gives a positive e.m.f.'],['+0.77 V',0,'Use both electrode potentials.']]}
+],
+s5:[
+ {q:'When drawing [Fe(H₂O)₆]²⁺, which atom of each water ligand must the bond go to?',o:[['Oxygen',1,'Correct. O has the lone pair that forms the co-ordinate bond.'],['Hydrogen',0,'H has no lone pair.'],['Either atom',0,'It must be O.'],['The metal bonds to the H₂O molecule as a whole',0,'Draw the bond to the O.']]}
+],
+s6:[
+ {q:'Which complex is a deep blue solution?',o:[['[Cu(NH₃)₄(H₂O)₂]²⁺',1,'Correct.'],['[Cu(H₂O)₆]²⁺',0,'That is a paler blue solution.'],['[Cu(H₂O)₄(OH)₂]',0,'That is a pale blue precipitate.'],['[CuCl₄]²⁻',0,'That is yellow (often looks green).']]},
+ {q:'Which pair is matched correctly?',o:[['[Fe(H₂O)₃(OH)₃]: orange-brown precipitate',1,'Correct.'],['[Fe(H₂O)₄(OH)₂]: orange-brown precipitate',0,'The Fe(II) hydroxide is green.'],['[Fe(H₂O)₆]²⁺: yellow-brown solution',0,'Fe²⁺(aq) is pale green.'],['[FeCl₄]⁻: deep blue solution',0,'[FeCl₄]⁻ is yellow.']]}
+],
+s7:[
+ {q:'Which equation shows the overall reaction of [Cu(H₂O)₆]²⁺ with excess ammonia?',o:[['[Cu(H₂O)₆]²⁺ + 4NH₃ → [Cu(NH₃)₄(H₂O)₂]²⁺ + 4H₂O',1,'Correct.'],['[Cu(H₂O)₆]²⁺ + 6NH₃ → [Cu(NH₃)₆]²⁺ + 6H₂O',0,'Substitution is incomplete: only four NH₃.'],['[Cu(H₂O)₆]²⁺ + 2NH₃ → [Cu(H₂O)₄(OH)₂] + 2NH₄⁺',0,'That is with a few drops only.'],['[Cu(H₂O)₆]²⁺ + 4NH₃ → [Cu(NH₃)₄]²⁺ + 6H₂O',0,'Two water ligands remain.']]},
+ {q:'What is the shape and bond angle of [CuCl₄]²⁻?',o:[['Tetrahedral, 109.5°',1,'Correct.'],['Octahedral, 90°',0,'Four ligands, not six.'],['Square planar, 90°',0,'AQA expects tetrahedral for [CuCl₄]²⁻.'],['Tetrahedral, 90°',0,'Tetrahedral is 109.5°.']]},
+ {q:'A solution gives a green precipitate with NH₃(aq) that turns brown at the surface on standing. Which ion was in the solution?',o:[['Fe²⁺',1,'Correct. Fe(II) hydroxide is oxidised by air to Fe(III) hydroxide.'],['Fe³⁺',0,'Fe³⁺ gives an orange-brown precipitate straight away.'],['Cu²⁺',0,'Cu²⁺ gives a pale blue precipitate.'],['Cl⁻',0,'Chloride is a ligand here, not the metal ion.']]},
+ {q:'Adding water to the yellow-green [CuCl₄]²⁻ solution turns it blue. Why?',o:[['The equilibrium shifts left because [Cl⁻] falls and [H₂O] rises',1,'Correct.'],['Water oxidises the copper',0,'The oxidation state stays +2.'],['Water precipitates the copper',0,'No precipitate forms.'],['The chloride ions evaporate',0,'It is an equilibrium shift.']]},
+ {q:'Which change is a redox reaction?',o:[['[Fe(H₂O)₆]²⁺ → [Fe(H₂O)₆]³⁺ with acidified KMnO₄',1,'Correct. Fe goes from +2 to +3.'],['[Cu(H₂O)₆]²⁺ → [CuCl₄]²⁻',0,'Cu stays +2: ligand substitution.'],['[Fe(H₂O)₆]³⁺ → [Fe(H₂O)₃(OH)₃]',0,'Fe stays +3: an acid–base reaction.'],['[Cu(H₂O)₄(OH)₂] → [Cu(NH₃)₄(H₂O)₂]²⁺',0,'Cu stays +2.']]}
+]};
+
+initMCQ();
+</script>
+</body>
+</html>
