@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>5 · LDRs and thermistors — GCSE Physics Electricity</title>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="core.css">
+</head>
+<body data-lesson="5" data-next="L6.html">
+<header class="top"><a class="home" href="index.html">← All Electricity walkthroughs</a>
+<h1>Lesson 5 · LDRs, thermistors and sensing circuits</h1>
+<p>AQA GCSE Physics / Combined Science · Electricity 4.2.1.4 · about 25 minutes</p></header>
+<main>
+
+<section id="s1" data-title="LDRs" data-mins="6">
+<h2>Light-dependent resistors</h2>
+<p class="lead">The resistance of an <b>LDR</b> depends on how much light falls on it.</p>
+<div class="grid2">
+ <div class="card" style="padding:8px"><svg id="ldr" viewBox="0 0 340 220" width="100%"></svg>
+  <div class="sl">Light intensity: <b id="lv"></b><input type="range" id="l" min="0" max="100" step="1" value="60"></div></div>
+ <div class="card"><h3>Resistance against light</h3><svg id="ldrG" viewBox="0 0 300 200" width="100%"></svg><div id="ldrR"></div></div>
+</div>
+<div class="key">As light intensity <b>increases</b>, the resistance of an LDR <b>decreases</b>. In the dark its resistance is very high.<br>Uses: switching on <b>street lights</b> or security lights when it gets dark.</div>
+<div id="q1a"></div>
+</section>
+
+<section id="s2" data-title="Thermistors" data-mins="6">
+<h2>Thermistors</h2>
+<p class="lead">The resistance of a <b>thermistor</b> depends on its temperature.</p>
+<div class="grid2">
+ <div class="card" style="padding:8px"><svg id="th" viewBox="0 0 340 220" width="100%"></svg>
+  <div class="sl">Temperature: <b id="tv"></b> °C<input type="range" id="t" min="0" max="100" step="1" value="20"></div></div>
+ <div class="card"><h3>Resistance against temperature</h3><svg id="thG" viewBox="0 0 300 200" width="100%"></svg><div id="thR"></div></div>
+</div>
+<div class="key">As temperature <b>increases</b>, the resistance of a thermistor <b>decreases</b>.<br>Uses: <b>thermostats</b> in heating systems, fire alarms, car engine temperature sensors.</div>
+<div id="q2a"></div>
+</section>
+
+<section id="s3" data-title="Sensing circuits" data-mins="7">
+<h2>A night light that switches itself on</h2>
+<p class="lead">An LDR and a fixed resistor are in series with a 6 V supply. They <b>share</b> the 6 V. The bigger resistance gets the bigger share. When the p.d. across the LDR goes above 3 V, the light switches on.</p>
+<div class="grid2">
+ <div class="card" style="padding:8px"><svg id="nl" viewBox="0 0 340 240" width="100%"></svg>
+  <div class="sl">Light outside: <b id="nlv"></b><input type="range" id="nlL" min="0" max="100" step="1" value="80"></div></div>
+ <div class="card"><h3>How the 6 V is shared</h3><div id="share"></div><div class="read" id="nlR" style="font-family:inherit;margin-top:8px"></div></div>
+</div>
+<div class="tip">Explain it as a chain: <b>darker → LDR resistance increases → LDR gets a bigger share of the p.d. → light switches on</b>.</div>
+<div id="q3a"></div><div id="q3b"></div>
+</section>
+
+<section id="s4" data-title="Exam practice" data-mins="6">
+<h2>Exam practice</h2>
+<div id="ex1"></div><div id="ex2"></div>
+<div class="summary"><h3>Lesson summary</h3><ul>
+<li>LDR: more light → lower resistance. Used for automatic lights.</li>
+<li>Thermistor: higher temperature → lower resistance. Used in thermostats.</li>
+<li>In series, components share the supply p.d. — the bigger resistance gets the bigger share.</li>
+<li>Explain sensing circuits step by step: condition → resistance → p.d. share → output.</li></ul></div>
+</section>
+</main>
+<script src="core.js"></script>
+<script>
+const RL=L=>Math.round(10000*Math.pow(10,-L/38)+40);
+const RT=T=>Math.round(5000*Math.exp(-0.04*T)+20);
+function sensor(svg,type,val,R,V){const I=V/(R+100);const glowLamp=Math.min(1,I/0.05);
+ $(svg).innerHTML=(type==='ldr'?`<circle cx="60" cy="40" r="${10+val/8}" fill="#ffd54f" opacity="${0.2+val/130}"/><text x="60" y="47" font-size="22" text-anchor="middle">${val>15?'☀️':'🌙'}</text>`:`<rect x="40" y="10" width="16" height="70" rx="8" fill="#eee" stroke="#999"/><rect x="43" y="${75-val*0.6}" width="10" height="${val*0.6}" fill="#e74c3c"/><circle cx="48" cy="84" r="9" fill="#e74c3c"/>`)+
+ `<path d="M40 130 H300 V200 H40 Z" fill="none" stroke="#1d2433" stroke-width="2.5"/>`+CIR.sym('battery',170,200,{label:V+' V',ly:-22})+CIR.sym(type,170,130)+CIR.sym('ammeter',300,165,{rot:90})+CIR.sym('lamp',40,165,{rot:90,glow:glowLamp})+
+ `<text x="200" y="112" text-anchor="start" font-size="13" font-weight="700" fill="#1d2433">R = ${R>=1000?(R/1000).toFixed(1)+' kΩ':R+' Ω'}</text>`;return I}
+function curve(svg,fn,cur,xl,xmax,ymax,ylab){const x0=40,y0=170,X=x=>x0+x/xmax*240,Y=y=>y0-Math.min(1,y/ymax)*150;let d='';for(let x=0;x<=xmax;x+=xmax/60)d+=(x?' L':'M')+X(x).toFixed(1)+' '+Y(fn(x)).toFixed(1);
+ $(svg).innerHTML=`<line x1="${x0}" y1="${y0}" x2="290" y2="${y0}" stroke="#556"/><line x1="${x0}" y1="${y0}" x2="${x0}" y2="12" stroke="#556"/><text x="165" y="194" font-size="11" text-anchor="middle" fill="#556">${xl}</text><text x="${x0+4}" y="12" font-size="11" fill="#556">${ylab}</text><path d="${d}" fill="none" stroke="#c2410c" stroke-width="2.5"/><circle cx="${X(cur)}" cy="${Y(fn(cur))}" r="6" fill="#2e86de"/>`}
+function ldr(){const L=+$('l').value;$('lv').textContent=L<10?'dark':L<40?'dim':L<75?'daylight':'bright';const R=RL(L);const I=sensor('ldr','ldr',L,R,6);curve('ldrG',RL,L,'light intensity →',100,10000,'resistance');$('ldrR').innerHTML=`<span class="meter">${(I*1000).toFixed(1)} mA</span> More light → lower resistance → bigger current.`}
+function th(){const T=+$('t').value;$('tv').textContent=T;const R=RT(T);const I=sensor('th','thermistor',T,R,6);curve('thG',RT,T,'temperature / °C →',100,5000,'resistance');$('thR').innerHTML=`<span class="meter">${(I*1000).toFixed(1)} mA</span> Hotter → lower resistance → bigger current.`}
+$('l').oninput=ldr;$('t').oninput=th;ldr();th();
+MCQ('q1a',{q:'It gets darker. What happens to the resistance of an LDR and the current through it (with a fixed supply p.d.)?',opts:['Resistance increases, current increases','Resistance increases, current decreases','Resistance decreases, current increases','Resistance decreases, current decreases'],a:1});
+MCQ('q2a',{q:'Which device would a thermostat use to sense the temperature of a room?',opts:['LDR','Diode','Thermistor','Fuse'],a:2});
+/* night light */
+const RF=2000;
+function nl(){const L=+$('nlL').value;$('nlv').textContent=L<10?'night':L<40?'dusk':'day';const R=RL(L);const Vl=6*R/(R+RF),Vf=6-Vl;const on=Vl>3;
+ $('nl').innerHTML=`<rect x="0" y="0" width="340" height="240" fill="${on?'#1d2433':'#eaf3fb'}" opacity="${on?.12:.6}"/><path d="M40 60 H300 V180 H40 Z" fill="none" stroke="#1d2433" stroke-width="2.5"/>`+CIR.sym('battery',170,180,{label:'6 V',ly:30})+CIR.sym('ldr',110,60,{label:'LDR',lx:-26,ly:-26,la:'end'})+CIR.sym('resistor',230,60,{label:'2 kΩ',ly:-20})+
+  `<path d="M80 60 V110 H140 V60" fill="none" stroke="#c2410c" stroke-width="2"/>`+CIR.sym('voltmeter',110,110,{ink:'#c2410c'})+`<text x="110" y="142" text-anchor="middle" font-size="13" font-weight="700" fill="#c2410c">${Vl.toFixed(1)} V</text>`+
+  `<text x="300" y="30" font-size="30" text-anchor="end">${on?'💡':'⚫'}</text><text x="255" y="25" font-size="11" text-anchor="end" fill="#5b6478">night light ${on?'ON':'off'}</text>`;
+ bars('share',[{l:'LDR',c:'#c2410c',v:Vl,txt:Vl.toFixed(1)+' V'},{l:'fixed resistor',c:'#7f8c8d',v:Vf,txt:Vf.toFixed(1)+' V'}],6);
+ $('nlR').innerHTML=`LDR resistance = <b>${R>=1000?(R/1000).toFixed(1)+' kΩ':R+' Ω'}</b>, fixed resistor = 2 kΩ.<br>${on?'The LDR now has the <b>bigger resistance</b>, so it gets more than half the p.d. → <b>light on</b>.':'The LDR has the smaller resistance, so it gets less than half the p.d. → light off.'}`}
+$('nlL').oninput=nl;nl();
+MCQ('q3a',{q:'A thermistor and a fixed resistor are in series. The thermistor gets hotter. What happens to the p.d. across the thermistor?',opts:['It increases','It decreases','It stays the same','It becomes zero'],a:1,why:'Hotter → thermistor resistance decreases → it gets a smaller share of the supply p.d.'});
+MCQ('q3b',{q:'In the night-light circuit, the two resistances are equal. What is the p.d. across the LDR?',opts:['0 V','2 V','3 V','6 V'],a:2,why:'Equal resistances in series share the p.d. equally: 6 V ÷ 2 = 3 V.'});
+ExamQ('ex1',{title:'Question 1 · Street light',stem:'<p>A street light uses an LDR to switch on automatically.</p>',parts:[
+ {label:'1.1',q:'Describe how the resistance of an LDR changes as it gets dark.',marks:1,ms:['Resistance increases (as light intensity decreases)']},
+ {label:'1.2',q:'The LDR is in series with a fixed resistor and a 12 V supply. Explain why the p.d. across the LDR increases as it gets dark.',marks:3,ms:['LDR resistance increases','Components in series share the supply p.d.','The component with the bigger resistance has the bigger share of the p.d. (so the LDR’s share increases)']}]});
+ExamQ('ex2',{title:'Question 2 · Thermistor',stem:'<p>A thermistor is connected to a 6.0 V supply. At 20 °C its resistance is 1500 Ω.</p>',parts:[
+ {label:'2.1',q:'Calculate the current at 20 °C.',marks:2,ms:['I = V ÷ R = 6.0 ÷ 1500','= 0.004 A (4.0 mA)']},
+ {label:'2.2',q:'The thermistor is warmed to 60 °C. State and explain what happens to the current.',marks:2,ms:['The current increases','Because the resistance of the thermistor decreases as temperature increases']}]});
+</script>
+</body>
+</html>
