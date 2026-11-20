@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Titration calculation walkthroughs</title>
+<style>
+/* VOICE: calm, classroom-clear; teacher steps through, nothing auto-advances
+   IDEA: the student's own sketch of the experiment, worked backwards from the burette
+   PICTURE: glassware chain with the calculation filling in under each piece; for back titrations, the central block split into reacted + left over
+   COLOUR and TYPE: Nick's cream-and-brown projector palette; blue = known, sienna = unknown, mustard = excess; system sans
+   LAYOUT: problem on top, big diagram left, step card right, step chips and one-card method below */
+:root{color-scheme:light dark;
+--bg:light-dark(#f6efe2,#1d1712);--panel:light-dark(#fffaf1,#2a221b);--ink:light-dark(#3a2a1d,#f1e6d6);--muted:light-dark(#7a6450,#b9a58f);
+--line:light-dark(#e2d4bd,#4a3b2f);--brown:light-dark(#8a5a2b,#d79c62);--glass:light-dark(#5a4634,#cdbba5);
+--k:light-dark(#2c6e8f,#74b6d6);--kl:light-dark(#d4e6ef,#1f3a4b);--u:light-dark(#a0462a,#e48f6c);--ul:light-dark(#f3dacd,#4b2a20);
+--x:light-dark(#a87a0a,#e0b44a);--xl:light-dark(#f4e3b2,#4a3d17);--powder:light-dark(#e9e3d6,#d9d0c0);--good:light-dark(#2f7a3d,#7fcf8c)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow-x:clip}
+.band{padding:clamp(18px,3vw,40px) max(4vw,14px)}
+.wrap{max-width:1240px;margin:0 auto}
+header{border-bottom:1px solid var(--line);padding-bottom:14px}
+h1{font-size:clamp(28px,4vw,42px);line-height:1.08;margin:0 0 6px;text-wrap:balance}
+.sub{margin:0;color:var(--muted);max-width:70ch}
+.tabs,.exbar{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+button{font:inherit;cursor:pointer;min-height:44px;border-radius:10px;border:1.5px solid var(--brown);background:var(--panel);color:var(--ink);padding:8px 16px}
+button:focus-visible,input:focus-visible{outline:3px solid var(--k);outline-offset:2px}
+.tabs button{font-weight:700;font-size:17px}
+button[aria-pressed=true]{background:var(--brown);color:var(--panel)}
+.exbar button{font-size:15px;border-color:var(--line)}
+.exbar button[aria-pressed=true]{border-color:var(--brown)}
+.problem{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 18px;margin:16px 0;display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
+.problem p{margin:0;flex:1 1 420px;max-width:95ch}
+.grid{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(0,1fr);gap:18px;align-items:start}
+.fig{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:8px}
+.fig svg{display:block;width:100%;height:auto}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.stepno{margin:0;color:var(--muted);font-size:14px}
+.card h2{font-size:23px;line-height:1.2;margin:2px 0 10px}
+.card ul{padding-left:20px;margin:6px 0}
+.eq{background:var(--bg);border-radius:8px;padding:6px 10px;font-weight:600}
+.work{border-left:4px solid var(--brown);background:var(--bg);padding:10px 12px;border-radius:0 8px 8px 0;margin:12px 0;font-variant-numeric:tabular-nums}
+.tip{font-size:15px;color:var(--muted);margin:10px 0 0}
+.tip b{color:var(--ink)}
+.kk{color:var(--k);font-weight:700}.uu{color:var(--u);font-weight:700}.xx{color:var(--x);font-weight:700}
+.ask{margin:12px 0;padding:12px;border:1.5px dashed var(--brown);border-radius:10px}
+.ask label{display:block;font-weight:600;margin-bottom:6px}
+.ask .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.ask input{font:inherit;font-size:16px;min-height:44px;width:12em;padding:6px 10px;border:1.5px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink)}
+.fb{margin:8px 0 0;font-weight:600;min-height:1.4em}.fb.ok{color:var(--good)}.fb.no{color:var(--u)}
+.hint{font-size:13px;color:var(--muted);margin:6px 0 0}
+.nav{display:flex;justify-content:space-between;gap:10px;margin-top:16px}
+.nav button{flex:1;font-weight:700}
+.nav .next{background:var(--brown);color:var(--panel)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;list-style:none;padding:0;margin:14px 0 0}
+.chips button{min-height:38px;padding:4px 12px;font-size:14px;border-color:var(--line)}
+.chips button.done{border-color:var(--brown)}
+.chips button[aria-current=true]{background:var(--brown);color:var(--panel);border-color:var(--brown)}
+.method{margin-top:22px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}
+.method h3{margin:0 0 6px;font-size:19px}
+.method ol{margin:0;padding-left:22px}.method li{margin:3px 0}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:14px;color:var(--muted);margin-top:8px}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:4px;vertical-align:-2px;margin-right:5px}
+/* svg */
+svg text{fill:var(--ink);font-size:12.5px;font-family:inherit}
+svg .sm{font-size:11.5px;fill:var(--muted)} svg .b{font-weight:700} svg .lg{font-size:14px;font-weight:700}
+.glass{fill:none;stroke:var(--glass);stroke-width:2.2;stroke-linejoin:round;stroke-linecap:round}
+.liq-k{fill:var(--kl)}.liq-u{fill:var(--ul)}.powder{fill:var(--powder);stroke:var(--glass);stroke-width:1}
+.tap{fill:var(--glass)}
+.box{fill:var(--panel);stroke-width:1.8}.box.k{stroke:var(--k)}.box.u{stroke:var(--u)}.box.x{stroke:var(--x)}
+.arr{stroke:var(--muted);stroke-width:1.6}.big{stroke:var(--brown);stroke-width:4}.arr-x{stroke:var(--x);stroke-width:2.4}
+.mk-arr{fill:var(--muted)}.mk-big{fill:var(--brown)}.mk-x{fill:var(--x)}
+.pill-k{fill:var(--k)}.pill-u{fill:var(--u)}.badge{fill:var(--brown)}
+svg .wt{fill:var(--panel);font-weight:700;font-size:13px}
+.band-eq{fill:var(--bg);stroke:var(--line)}
+.block-k{fill:var(--kl);stroke:var(--k);stroke-width:2}.block-x{fill:var(--xl);stroke:var(--x);stroke-width:2}.block-u{fill:var(--ul);stroke:var(--u);stroke-width:2}
+svg .tk{fill:var(--k)}svg .tu{fill:var(--u)}svg .tx{fill:var(--x)}
+.new{animation:pop .6s ease both;transform-box:fill-box}
+@keyframes pop{from{opacity:0;transform:translateY(8px)}}
+.grow-l,.grow-r{transform-box:fill-box;animation:grow .9s ease both}.grow-l{transform-origin:left}.grow-r{transform-origin:right}
+@keyframes grow{from{transform:scaleX(0)}}
+.drip{fill:var(--kl);stroke:var(--k);animation:drip 1.1s ease-in infinite}
+@keyframes drip{0%{transform:translateY(0);opacity:0}15%{opacity:1}85%{opacity:1;transform:translateY(16px)}100%{opacity:0;transform:translateY(18px)}}
+@media(prefers-reduced-motion:reduce){.new,.grow-l,.grow-r,.drip{animation:none}}
+@media(max-width:900px){.grid,.method{grid-template-columns:minmax(0,1fr)}}
+</style>
+</head>
+<body>
+<div class="band"><div class="wrap">
+<header>
+<h1>Multi-step titration calculations</h1>
+<p class="sub">Work backwards from what you know. Step through each worked example, then try one with new numbers.</p>
+<div class="tabs" role="group" aria-label="Type of calculation">
+<button id="t-std" aria-pressed="true">Standard solution: M<sub>r</sub> or % purity</button>
+<button id="t-back" aria-pressed="false">Back titration</button>
+</div>
+</header>
+
+<div class="exbar" id="exbar" role="group" aria-label="Example"></div>
+<div class="problem"><p id="problem"></p><button id="newnums" hidden>New numbers</button></div>
+
+<div class="grid">
+<div class="fig"><div id="fig"></div>
+<div class="legend"><span><i style="background:var(--k)"></i>known</span><span><i style="background:var(--u)"></i>unknown / reacted</span><span id="lg-x"><i style="background:var(--x)"></i>left over (excess)</span></div>
+</div>
+<aside class="card" aria-live="polite">
+<p class="stepno" id="stepno"></p>
+<h2 id="steptitle"></h2>
+<div id="stepbody"></div>
+<div class="nav"><button id="prev">← Back</button><button id="next" class="next">Next →</button></div>
+</aside>
+</div>
+<ol class="chips" id="chips"></ol>
+
+<section class="method">
+<div class="card" id="m-std">
+<h3>Standard solution: the method on one card</h3>
+<ol>
+<li>Map the chain: solid → made up to 250 cm³ → 25.0 cm³ pipetted → titrated.</li>
+<li>The burette solution is the <span class="kk">known</span>. Write the equation and the ratio as known : <span class="uu">unknown</span>.</li>
+<li>n(known) = c × V ÷ 1000</li>
+<li>Use the ratio → n(unknown) in the 25.0 cm³ portion.</li>
+<li>× 10 → n(unknown) in the 250 cm³ flask = n in the solid weighed out.</li>
+<li>Finish: m = n × M<sub>r</sub> → % purity, <i>or</i> M<sub>r</sub> = m ÷ n (→ x).</li>
+</ol>
+</div>
+<div class="card" id="m-back">
+<h3>Back titration: the method on one card</h3>
+<ol>
+<li>Map it: an excess is added → some reacts with the solid, the rest is <span class="xx">left over</span> → the leftover is titrated.</li>
+<li>The central block: n(excess reagent added) = c × V ÷ 1000.</li>
+<li>Titration: n(titrant) = c × V ÷ 1000.</li>
+<li>Titration ratio → leftover in the 25.0 cm³ portion.</li>
+<li>× 10 → leftover in the whole flask.</li>
+<li>Block − leftover = the piece that <span class="uu">reacted</span> with the solid.</li>
+<li>Reaction ratio → n(solid).</li>
+<li>Finish: mass and % purity, <i>or</i> M<sub>r</sub> and identify.</li>
+</ol>
+</div>
+</section>
+</div></div>
+
+<script>
+{
+const $=s=>document.querySelector(s);
+const SUP={'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
+const fmt=(x,sf=3)=>{if(!isFinite(x))return'—';const a=Math.abs(x);if(a!==0&&(a<0.01||a>=1000)){let e=Math.floor(Math.log10(a));let m=(x/10**e).toPrecision(sf);if(Math.abs(+m)>=10){e++;m=(x/10**e).toPrecision(sf)}return m+'×10'+String(e).replace(/./g,c=>SUP[c])}return x.toPrecision(sf)};
+const op=(from,to)=>from===to?'× 1':from>to?`÷ ${from/to}`:`× ${to/from}`;
+const R=(a,b)=>a+Math.random()*(b-a);
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const METALS=[{M:'Mg',Ar:24.3},{M:'Ca',Ar:40.1},{M:'Sr',Ar:87.6},{M:'Ba',Ar:137.3}];
+
+/* ---------- data ---------- */
+const BACKBASE={kind:'back',R:'HCl',Rname:'hydrochloric acid',T:'NaOH',Tname:'sodium hydroxide',eqT:'NaOH + HCl → NaCl + H₂O',tA:1,tB:1,sR:2};
+const STD_P=[
+ {U:'Na₂CO₃',Uname:'sodium carbonate',K:'HCl',Kname:'hydrochloric acid',a:2,b:1,Mr:106.0,eq:'Na₂CO₃ + 2HCl → 2NaCl + H₂O + CO₂'},
+ {U:'K₂CO₃',Uname:'potassium carbonate',K:'HCl',Kname:'hydrochloric acid',a:2,b:1,Mr:138.2,eq:'K₂CO₃ + 2HCl → 2KCl + H₂O + CO₂'},
+ {U:'NaOH',Uname:'sodium hydroxide',K:'HCl',Kname:'hydrochloric acid',a:1,b:1,Mr:40.0,eq:'NaOH + HCl → NaCl + H₂O'},
+ {U:'KHCO₃',Uname:'potassium hydrogencarbonate',K:'HCl',Kname:'hydrochloric acid',a:1,b:1,Mr:100.1,eq:'KHCO₃ + HCl → KCl + H₂O + CO₂'}];
+const STD_M=[
+ {U:'H₂C₂O₄·xH₂O',Ushort:'H₂C₂O₄',Uname:'hydrated ethanedioic acid',K:'NaOH',Kname:'sodium hydroxide',a:2,b:1,anh:90.0,xt:2,eq:'H₂C₂O₄ + 2NaOH → Na₂C₂O₄ + 2H₂O'},
+ {U:'Na₂CO₃·xH₂O',Ushort:'Na₂CO₃',Uname:'hydrated sodium carbonate',K:'HCl',Kname:'hydrochloric acid',a:2,b:1,anh:106.0,xt:10,eq:'Na₂CO₃ + 2HCl → 2NaCl + H₂O + CO₂'}];
+const BACK_P=[
+ {S:'CaCO₃',Sdesc:'impure calcium carbonate (powdered limestone)',Mr:100.1,eqS:'CaCO₃ + 2HCl → CaCl₂ + H₂O + CO₂'},
+ {S:'MgO',Sdesc:'impure magnesium oxide',Mr:40.3,eqS:'MgO + 2HCl → MgCl₂ + H₂O'},
+ {S:'ZnO',Sdesc:'impure zinc oxide',Mr:81.4,eqS:'ZnO + 2HCl → ZnCl₂ + H₂O'}];
+const EX={
+ std:[
+  {...STD_P[0],kind:'std',mode:'purity',massS:'1.50',cS:'0.100',titreS:'27.00',label:'Example 1: % purity'},
+  {...STD_M[0],kind:'std',mode:'mr',massS:'1.575',cS:'0.100',titreS:'24.80',label:'Example 2: Mᵣ and x'}],
+ back:[
+  {...BACKBASE,...BACK_P[0],mode:'purity',massS:'1.00',c1S:'1.00',V1S:'40.0',c2S:'0.100',titreS:'22.40',label:'Example 1: % purity'},
+  {...BACKBASE,S:'MCO₃',mode:'mr',massS:'1.20',c1S:'1.00',V1S:'50.0',c2S:'0.100',titreS:'21.55',eqS:'MCO₃ + 2HCl → MCl₂ + H₂O + CO₂',label:'Example 2: identify a metal'}]};
+
+function derive(d){
+ d.mass=+d.massS;d.titre=+d.titreS;
+ if(d.kind==='std'){
+  d.c=+d.cS;d.nK=d.c*d.titre/1000;d.nU25=d.nK*d.b/d.a;d.nU=d.nU25*250/25;
+  if(d.mode==='purity'){d.m=d.nU*d.Mr;d.pc=d.m/d.mass*100}
+  else{d.MrF=d.mass/d.nU;d.xv=(d.MrF-d.anh)/18.0;d.xi=Math.round(d.xv)}
+ }else{
+  d.c1=+d.c1S;d.V1=+d.V1S;d.c2=+d.c2S;
+  d.nB=d.c1*d.V1/1000;d.nT=d.c2*d.titre/1000;d.nL25=d.nT*d.tB/d.tA;d.nL=d.nL25*10;d.nR=d.nB-d.nL;d.nS=d.nR/d.sR;
+  if(d.mode==='purity'){d.m=d.nS*d.Mr;d.pc=d.m/d.mass*100}
+  else{d.MrF=d.mass/d.nS;d.Ar=d.MrF-60.0;d.metal=METALS.reduce((b,m)=>Math.abs(m.Ar-d.Ar)<Math.abs(b.Ar-d.Ar)?m:b)}
+ }
+ return d;
+}
+const tr=t=>(Math.round(t*20)/20).toFixed(2);
+function genStd(){
+ for(let i=0;i<500;i++){
+  if(Math.random()<.5){
+   const s=pick(STD_P),mass=R(1.0,2.6),p=R(82,99),nK=mass*p/100/s.Mr/10*s.a/s.b;
+   for(const cS of['0.100','0.0500','0.200','0.150']){const t=nK*1000/+cS;if(t>=18&&t<=38)return derive({...s,kind:'std',mode:'purity',massS:mass.toFixed(2),cS,titreS:tr(t)})}
+  }else{
+   const s=pick(STD_M),cS=pick(['0.100','0.0500','0.200']),t=R(20,34),mass=t*+cS/1000*s.b/s.a*10*(s.anh+18.0*s.xt);
+   if(mass>0.4&&mass<6)return derive({...s,kind:'std',mode:'mr',massS:mass.toFixed(3),cS,titreS:tr(t)});
+  }}
+}
+function genBack(){
+ for(let i=0;i<500;i++){
+  const V1S=pick(['40.0','50.0']),c1S=pick(['1.00','0.500']),nB=+c1S*+V1S/1000,nR=nB*R(.35,.7),nL=nB-nR;
+  for(const c2S of['0.100','0.200','0.0500']){
+   const t=nL/10*1000/+c2S;if(t<15||t>40)continue;
+   if(Math.random()<.5){const s=pick(BACK_P),mass=nR/2*s.Mr/(R(78,98)/100);return derive({...BACKBASE,...s,mode:'purity',massS:mass.toFixed(2),c1S,V1S,c2S,titreS:tr(t)})}
+   const m=pick(METALS),mass=nR/2*(m.Ar+60.0);
+   return derive({...BACKBASE,S:'MCO₃',mode:'mr',eqS:'MCO₃ + 2HCl → MCl₂ + H₂O + CO₂',massS:mass.toFixed(3),c1S,V1S,c2S,titreS:tr(t)});
+  }}
+}
+function intro(d){
+ if(d.kind==='std'){
+  const start=d.mode==='purity'?`${d.massS} g of impure ${d.Uname}, ${d.U},`:`${d.massS} g of ${d.Uname}, ${d.U},`;
+  const end=d.mode==='purity'?`Calculate the percentage purity of the ${d.Uname}.`:`Calculate the Mᵣ of ${d.U} and the value of x.`;
+  return `${start} was dissolved in water and the solution made up to 250 cm³ in a volumetric flask. 25.0 cm³ portions were titrated with ${d.cS} mol dm⁻³ ${d.Kname}. The mean titre was ${d.titreS} cm³. ${end}`;
+ }
+ const start=d.mode==='purity'?`A ${d.massS} g sample of ${d.Sdesc}`:`${d.massS} g of a Group 2 carbonate, MCO₃,`;
+ const end=d.mode==='purity'?`Calculate the percentage by mass of ${d.S} in the sample.`:'Calculate the Mᵣ of MCO₃ and identify the metal M.';
+ return `${start} was added to ${d.V1S} cm³ of ${d.c1S} mol dm⁻³ hydrochloric acid (an excess). When the reaction had finished, the solution was made up to 250 cm³ in a volumetric flask. 25.0 cm³ portions were titrated with ${d.c2S} mol dm⁻³ sodium hydroxide. The mean titre was ${d.titreS} cm³. ${end}`;
+}
+
+/* ---------- steps ---------- */
+function stdSteps(d){
+ const U=d.Ushort||d.U,K=d.K,o=op(d.a,d.b);
+ const s=[
+ {t:'Map out the experiment',v:1,html:`<p>Sketch the chain like the diagram and put every number from the question next to its piece of glassware:</p><ul><li>${d.massS} g of solid → dissolved and made up to <b>250 cm³</b></li><li><b>25.0 cm³</b> pipetted out</li><li>titrated with <b>${d.cS} mol dm⁻³ ${K}</b>, mean titre <b>${d.titreS} cm³</b></li></ul>`,tip:'Only the 25.0 cm³ portion reacts in the titration. Keep track of which bit of solution each number belongs to.'},
+ {t:'Known, unknown and the ratio',v:2,html:`<p>The <span class="kk">known</span> is the ${K} in the burette: we have its concentration <i>and</i> its volume. The <span class="uu">unknown</span> is the ${U}.</p><p class="eq">${d.eq}</p><p>Ratio, written known : unknown → <b>${d.a} ${K} : ${d.b} ${U}</b></p><p>The calculation now runs <b>backwards</b> along the chain: burette → pipette → flask → solid.</p>`,tip:'Write the ratio as known : unknown every time, then you can see straight away whether to multiply or divide.'},
+ {t:`Moles of ${K}, the known`,v:3,ask:{k:'nK',l:`n(${K}) in the mean titre / mol`},html:`<p>Use the mean titre and the concentration of the solution in the burette.</p>`,work:`n = c × V ÷ 1000<br>n(${K}) = ${d.cS} × ${d.titreS} ÷ 1000 = <b>${fmt(d.nK)} mol</b>`,tip:'The titre is in cm³, so divide by 1000 to get dm³.'},
+ {t:`Moles of ${U} in 25.0 cm³`,v:4,ask:{k:'nU25',l:`n(${U}) in the 25.0 cm³ portion / mol`},html:`<p>Use the ratio ${d.a} ${K} : ${d.b} ${U} to cross from the known to the unknown.</p>`,work:`n(${U}) = ${fmt(d.nK)} ${o} = <b>${fmt(d.nU25)} mol</b>`,tip:'This is only what was in the pipette, not the whole sample yet.'},
+ {t:'Scale up to the whole flask',v:5,ask:{k:'nU',l:`n(${U}) in the 250 cm³ flask / mol`},html:`<p>We titrated 25.0 cm³ out of 250 cm³: one tenth. The flask held ten times as much, and that is <b>all of the ${U}</b> that was in the solid weighed out.</p>`,work:`n(${U}) = ${fmt(d.nU25)} × 250 ÷ 25.0 = <b>${fmt(d.nU)} mol</b>`,tip:'Forgetting the × 10 is the most common way to lose marks on these questions.'}];
+ if(d.mode==='purity')s.push(
+ {t:`Mass of pure ${U}`,v:6,ask:{k:'m',l:`mass of pure ${U} / g`},html:`<p>Turn moles back into a mass with m = n × M<sub>r</sub>. M<sub>r</sub>(${U}) = ${d.Mr.toFixed(1)}</p>`,work:`m = ${fmt(d.nU)} × ${d.Mr.toFixed(1)} = <b>${fmt(d.m)} g</b>`,tip:'This is the mass of the pure compound, so it must be less than the mass weighed out.'},
+ {t:'Percentage purity',v:7,ask:{k:'pc',l:'percentage purity / %'},html:`<p>Compare the mass of pure ${U} with the mass of impure solid that was weighed out.</p>`,work:`% purity = ${fmt(d.m)} ÷ ${d.massS} × 100 = <b>${fmt(d.pc)} %</b>`,tip:'More than 100 % means a step has been missed, usually the × 10.'});
+ else s.push(
+ {t:`Mᵣ of ${d.U}`,v:6,ask:{k:'MrF',l:`Mᵣ of ${d.U}`},html:`<p>The ${d.massS} g weighed out contains exactly this many moles, so M<sub>r</sub> = m ÷ n.</p>`,work:`Mᵣ = ${d.massS} ÷ ${fmt(d.nU)} = <b>${fmt(d.MrF)}</b>`,tip:'Use the moles in the whole flask, not the 25.0 cm³ portion.'},
+ {t:'Find x',v:7,ask:{k:'xi',l:'value of x (whole number)',int:true},html:`<p>Whatever is not ${d.Ushort} must be water. M<sub>r</sub>(${d.Ushort}) = ${d.anh.toFixed(1)} and M<sub>r</sub>(H₂O) = 18.0</p>`,work:`x = (${fmt(d.MrF)} − ${d.anh.toFixed(1)}) ÷ 18.0 = ${d.xv.toFixed(2)} → <b>x = ${d.xi}</b>`,tip:'Round x to a whole number only at the very end: water of crystallisation comes in whole molecules.'});
+ return s;
+}
+function backSteps(d){
+ const {R,T,S}=d;
+ const s=[
+ {t:'Map out the experiment',v:1,html:`<p>A back titration has <b>two reactions</b>. An excess of ${R} is added to the solid. Some reacts with the solid; the rest is <span class="xx">left over</span>. We can't titrate the solid directly, so we titrate the leftover ${R} instead.</p><ul><li>${d.V1S} cm³ of ${d.c1S} mol dm⁻³ ${R} + ${d.massS} g of solid</li><li>made up to 250 cm³; 25.0 cm³ pipetted out</li><li>titrated with ${d.c2S} mol dm⁻³ ${T}, titre ${d.titreS} cm³</li></ul>`,tip:'How to spot a back titration: an excess of a reagent is added, and then the excess is titrated.'},
+ {t:`The central block: all the ${R} added`,v:2,ask:{k:'nB',l:`total n(${R}) added / mol`},html:`<p>Draw the central block: the total moles of ${R} added at the start. We know its concentration and volume, so we can work it out straight away.</p><p>The block is going to split into two pieces: the part that <span class="uu">reacted</span> with the solid and the part <span class="xx">left over</span>.</p>`,work:`n(${R}) = ${d.c1S} × ${d.V1S} ÷ 1000 = <b>${fmt(d.nB)} mol</b>`,tip:`Ignore the solid for now. The block is just the ${R} that was poured in.`},
+ {t:`Moles of ${T} in the titre`,v:3,ask:{k:'nT',l:`n(${T}) in the mean titre / mol`},html:`<p>Now the titration, which works just like a normal one. The ${T} in the burette is the known.</p>`,work:`n(${T}) = ${d.c2S} × ${d.titreS} ÷ 1000 = <b>${fmt(d.nT)} mol</b>`,tip:'Titre in cm³ → divide by 1000.'},
+ {t:`Leftover ${R} in 25.0 cm³`,v:4,ask:{k:'nL25',l:`n(${R}) left over in the 25.0 cm³ portion / mol`},html:`<p class="eq">${d.eqT}</p><p>Titration ratio ${T} : ${R} = 1 : 1, so the moles of leftover ${R} in the 25.0 cm³ portion are the same.</p>`,work:`n(${R}) in 25.0 cm³ = ${fmt(d.nT)} × 1 = <b>${fmt(d.nL25)} mol</b>`,tip:'Use the titration equation here, not the reaction with the solid.'},
+ {t:'Scale up the leftover',v:5,ask:{k:'nL',l:`n(${R}) left over in the whole flask / mol`},html:`<p>25.0 cm³ is one tenth of the 250 cm³ flask, so multiply by 10. This is the <span class="xx">left-over</span> piece of the block.</p>`,work:`n(${R}) left over = ${fmt(d.nL25)} × 10 = <b>${fmt(d.nL)} mol</b>`,tip:'Scale up before you subtract: you need the leftover from the whole block, not a tenth of it.'},
+ {t:'Subtract from the block',v:6,ask:{k:'nR',l:`n(${R}) that reacted with the solid / mol`},html:`<p>Block − left over = the piece that <span class="uu">reacted</span> with the solid.</p>`,work:`n(${R}) reacted = ${fmt(d.nB)} − ${fmt(d.nL)} = <b>${fmt(d.nR)} mol</b>`,tip:'If this comes out negative, or bigger than the block, something earlier has gone wrong.'},
+ {t:`Moles of ${S}`,v:7,ask:{k:'nS',l:`n(${S}) / mol`},html:`<p class="eq">${d.eqS}</p><p>Now use the ratio for the reaction with the solid: ${R} : ${S} = ${d.sR} : 1</p>`,work:`n(${S}) = ${fmt(d.nR)} ÷ ${d.sR} = <b>${fmt(d.nS)} mol</b>`,tip:'Two equations, two different ratios. Say which one you are using.'}];
+ if(d.mode==='purity')s.push(
+ {t:`Mass of ${S}`,v:8,ask:{k:'m',l:`mass of ${S} / g`},html:`<p>m = n × M<sub>r</sub>, with M<sub>r</sub>(${S}) = ${d.Mr.toFixed(1)}</p>`,work:`m = ${fmt(d.nS)} × ${d.Mr.toFixed(1)} = <b>${fmt(d.m)} g</b>`,tip:'This must be less than the mass of the sample.'},
+ {t:'Percentage by mass',v:9,ask:{k:'pc',l:`percentage of ${S} in the sample / %`},html:`<p>Compare with the mass of the sample that was added to the acid.</p>`,work:`% = ${fmt(d.m)} ÷ ${d.massS} × 100 = <b>${fmt(d.pc)} %</b>`,tip:'Over 100 %? Check the × 10 and the subtraction.'});
+ else s.push(
+ {t:'Mᵣ of MCO₃',v:8,ask:{k:'MrF',l:'Mᵣ of MCO₃'},html:`<p>The ${d.massS} g of carbonate contains this many moles, so M<sub>r</sub> = m ÷ n.</p>`,work:`Mᵣ = ${d.massS} ÷ ${fmt(d.nS)} = <b>${fmt(d.MrF)}</b>`,tip:'Use the moles of the solid, not the moles of acid.'},
+ {t:'Identify M',v:9,ask:{k:'Ar',l:'Aᵣ of M',abs:1.5},html:`<p>Take off the carbonate: M<sub>r</sub>(CO₃) = 12.0 + 3 × 16.0 = 60.0, then find the closest Group 2 metal.</p>`,work:`Aᵣ(M) = ${fmt(d.MrF)} − 60.0 = ${fmt(d.Ar)} → <b>M is ${d.metal.M}</b> (Aᵣ ${d.metal.Ar})`,tip:'Look for the nearest Aᵣ in the right group; experimental values are rarely exact.'});
+ return s;
+}
+
+/* ---------- drawing ---------- */
+const L=(x,y,t,c='',a='middle')=>`<text x="${x}" y="${y}" text-anchor="${a}" class="${c}">${t}</text>`;
+const G=(s,st,inner)=>st<s?'':`<g class="${s===st?'new':''}">${inner}</g>`;
+const A=(x1,y1,x2,y2,c='arr')=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" class="${c}" marker-end="url(#m-${c})"/>`;
+const pill=(cx,cy,t,c)=>{const w=16+t.length*7.6;return `<rect x="${cx-w/2}" y="${cy-11}" width="${w}" height="22" rx="11" class="${c}"/>`+L(cx,cy+4.5,t,'wt')};
+const boxR=(x,y,w,n,c)=>`<rect x="${x}" y="${y}" width="${w}" height="${18+n*18}" rx="10" class="box ${c}"/>`;
+const lines=(x,y,arr,from=0)=>arr.map((t,i)=>L(x+12,y+24+(i+from)*18,t,i+from===0?'b':'','start')).join('');
+const DEFS=`<defs>${['arr','big','x'].map(c=>`<marker id="m-${c==='x'?'arr-x':c}" viewBox="0 0 10 10" refX="8" refY="5" markerUnits="userSpaceOnUse" markerWidth="${c==='big'?18:11}" markerHeight="${c==='big'?18:11}" orient="auto"><path d="M0 0L10 5L0 10z" class="mk-${c}"/></marker>`).join('')}</defs>`;
+const flask=x=>`<circle cx="${x}" cy="163" r="31" class="liq-u"/><rect x="${x-6}" y="80" width="12" height="54" class="liq-u"/><path d="M${x-8} 50 V128 A36 36 0 1 0 ${x+8} 128 V50" class="glass"/><line x1="${x-14}" y1="78" x2="${x+14}" y2="78" class="glass"/>`;
+const burette=(x,st)=>`<rect x="${x-7}" y="16" width="14" height="114" class="glass"/><rect x="${x-5}" y="34" width="10" height="94" class="liq-k"/><rect x="${x-14}" y="130" width="28" height="7" rx="2" class="tap"/><path d="M${x-2} 137 L${x} 150 L${x+2} 137" class="glass"/><path d="M${x-28} 190 L${x-38} 206 H${x+38} L${x+28} 190Z" class="liq-u"/><path d="M${x-10} 158 V170 L${x-38} 206 H${x+38} L${x+10} 170 V158" class="glass"/>${st===3?`<circle cx="${x}" cy="152" r="3.2" class="drip"/>`:''}`;
+
+function drawStd(d,st){
+ const U=d.Ushort||d.U,X=[100,300,500,690],purity=d.mode==='purity';
+ let o=`<svg viewBox="0 0 800 470" role="img" aria-label="Diagram of the titration chain with the calculation filling in step by step">${DEFS}`;
+ o+=G(1,st,`<path d="M58 182 Q100 200 142 182 L134 174 L66 174Z" class="glass"/><path d="M72 176 Q100 132 128 176Z" class="powder"/>
+ ${L(100,222,`${d.massS} g of solid`,'b')}${L(100,238,purity?`impure ${U}`:d.U,'sm')}
+ ${flask(300)}${L(300,222,'250 cm³','b')}${L(300,238,'volumetric flask','sm')}
+ <line x1="500" y1="36" x2="500" y2="96" class="glass" style="stroke-width:5"/><ellipse cx="500" cy="122" rx="11" ry="26" class="liq-u"/><ellipse cx="500" cy="122" rx="11" ry="26" class="glass"/><line x1="500" y1="148" x2="500" y2="200" class="glass" style="stroke-width:5"/><line x1="490" y1="66" x2="510" y2="66" class="glass"/>
+ ${L(500,222,'25.0 cm³','b')}${L(500,238,'pipette','sm')}
+ ${burette(690,st)}${L(690,222,`${d.titreS} cm³ of`,'b')}${L(690,238,`${d.cS} mol dm⁻³ ${d.K}`,'sm')}
+ ${A(148,112,262,112)}${L(205,90,'dissolve, make up','sm')}${L(205,102,'to 250 cm³','sm')}
+ ${A(336,112,474,112)}${L(405,102,'pipette out 25.0 cm³','sm')}
+ ${A(524,112,640,112)}${L(582,102,'titrate','sm')}`);
+ o+=G(2,st,`${pill(744,30,'known','pill-k')}${pill(430,30,'unknown','pill-u')}
+ <rect x="30" y="252" width="740" height="50" rx="12" class="band-eq"/>${L(400,272,d.eq,'lg')}${L(400,292,`known : unknown = ${d.a} ${d.K} : ${d.b} ${U}`)}
+ <line x1="768" y1="324" x2="40" y2="324" class="big" marker-end="url(#m-big)"/>${L(770,344,'start at the known','sm','end')}${L(30,344,'finish at the solid','sm','start')}`);
+ o+=G(3,st,`${boxR(602,356,176,3,'k')}${lines(602,356,[`n(${d.K}) = c × V`,`= ${d.cS} × ${d.titreS} ÷ 1000`,`= ${fmt(d.nK)} mol`])}`);
+ o+=G(4,st,`${pill(595,324,op(d.a,d.b),'badge')}${boxR(412,356,176,3,'u')}${lines(412,356,[`n(${U}) in 25.0 cm³`,`= ${fmt(d.nK)} ${op(d.a,d.b)}`,`= ${fmt(d.nU25)} mol`])}`);
+ o+=G(5,st,`${pill(400,324,'× 10','badge')}${st===5?L(400,344,'25.0 of 250 cm³ was titrated','sm'):''}${boxR(212,356,176,3,'u')}${lines(212,356,[`n(${U}) in 250 cm³`,`= ${fmt(d.nU25)} × 10`,`= ${fmt(d.nU)} mol`])}`);
+ const f1=purity?[`mass of pure ${U}`,`= ${fmt(d.nU)} × ${d.Mr.toFixed(1)}`,`= ${fmt(d.m)} g`]:[`Mᵣ = ${d.massS} ÷ ${fmt(d.nU)}`,`= ${fmt(d.MrF)}`];
+ const f2=purity?[`purity = ${fmt(d.pc)} %`]:[`x = (${fmt(d.MrF)} − ${d.anh.toFixed(1)}) ÷ 18.0`,`= ${d.xv.toFixed(2)} → x = ${d.xi}`];
+ o+=G(6,st,`${pill(205,324,purity?'× Mᵣ':'m ÷ n','badge')}${boxR(12,356,190,f1.length+f2.length,'u')}${lines(12,356,f1)}`);
+ o+=G(7,st,lines(12,356,f2,f1.length));
+ return o+'</svg>';
+}
+
+function drawBack(d,st){
+ const W=720,x0=40,fL=Math.max(0,Math.min(1,d.nL/d.nB)),xb=x0+W*(1-fL),purity=d.mode==='purity';
+ let o=`<svg viewBox="0 0 800 470" role="img" aria-label="Diagram of the back titration: the central block of acid split into the part that reacted and the part left over">${DEFS}`;
+ o+=G(1,st,`<path d="M80 124 V182 Q80 188 86 188 H154 Q160 188 160 182 V124Z" class="liq-k"/><path d="M78 86 V182 Q78 190 86 190 H154 Q162 190 162 182 V86" class="glass"/>
+ ${[[112,70],[124,58],[131,76],[118,48],[106,58]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="4.5" class="powder"/>`).join('')}
+ ${L(120,210,`${d.V1S} cm³ of ${d.c1S} mol dm⁻³ ${d.R}`,'b')}${L(120,226,'(an excess)','sm')}${L(120,242,`+ ${d.massS} g ${purity?`impure ${d.S}`:d.S}`,'sm')}
+ ${flask(400)}${L(400,222,'made up to 250 cm³','b')}${L(400,238,`holds the leftover ${d.R}`,'sm')}
+ ${burette(680,st)}${L(680,222,`25.0 cm³ titrated with`,'b')}${L(680,238,`${d.c2S} mol dm⁻³ ${d.T}: ${d.titreS} cm³`,'sm')}
+ ${A(176,112,342,112)}${L(258,90,'react, then make up','sm')}${L(258,102,'to 250 cm³','sm')}
+ ${A(446,112,628,112)}${L(537,102,'pipette 25.0 cm³, titrate','sm')}`);
+ o+=G(2,st,`<rect x="${x0}" y="272" width="${W}" height="50" rx="6" class="block-k ${st===2?'grow-l':''}"/>${st<5?L(400,302,`the central block: all the ${d.R} added`,'b'):''}
+ ${L(x0,262,`Total ${d.R} added = ${d.c1S} × ${d.V1S} ÷ 1000 = ${fmt(d.nB)} mol`,'b tk','start')}`);
+ o+=G(3,st,`${boxR(530,362,240,4,'x')}${lines(530,362,[`n(${d.T}) = ${d.c2S} × ${d.titreS} ÷ 1000`,`= ${fmt(d.nT)} mol`])}`);
+ o+=G(4,st,lines(530,362,[`${d.T} : ${d.R} = 1 : 1`,`${d.R} in 25.0 cm³ = ${fmt(d.nL25)} mol`],2));
+ const xc=(xb+x0+W)/2;
+ o+=G(5,st,`<rect x="${xb}" y="272" width="${x0+W-xb}" height="50" rx="6" class="block-x ${st===5?'grow-r':''}"/>${(x0+W-xb)>80?L(xc,302,'left over','b tx'):''}
+ ${L(x0+W,262,`left over = ${fmt(d.nL25)} × 10 = ${fmt(d.nL)} mol`,'b tx','end')}
+ <line x1="650" y1="360" x2="${xc}" y2="328" class="arr-x" marker-end="url(#m-arr-x)"/>${pill((650+xc)/2+26,345,'× 10','badge')}`);
+ o+=G(6,st,`<rect x="${x0}" y="272" width="${xb-x0}" height="50" rx="6" class="block-u ${st===6?'grow-l':''}"/>${(xb-x0)>170?L((x0+xb)/2,302,`reacted with the ${d.S}`,'b tu'):(xb-x0)>60?L((x0+xb)/2,302,'reacted','b tu'):''}
+ ${L(x0,344,`reacted = ${fmt(d.nB)} − ${fmt(d.nL)} = ${fmt(d.nR)} mol`,'b tu','start')}`);
+ o+=G(7,st,`${boxR(30,362,230,3,'u')}${lines(30,362,[`${d.R} : ${d.S} = ${d.sR} : 1`,`n(${d.S}) = ${fmt(d.nR)} ÷ ${d.sR}`,`= ${fmt(d.nS)} mol`])}`);
+ const f1=purity?[`mass = ${fmt(d.nS)} × ${d.Mr.toFixed(1)}`,`= ${fmt(d.m)} g`]:[`Mᵣ = ${d.massS} ÷ ${fmt(d.nS)}`,`= ${fmt(d.MrF)}`];
+ const f2=purity?[`% = ${fmt(d.m)} ÷ ${d.massS} × 100`,`= ${fmt(d.pc)} %`]:[`Aᵣ(M) = ${fmt(d.MrF)} − 60.0`,`= ${fmt(d.Ar)} → M is ${d.metal.M}`];
+ o+=G(8,st,`${boxR(272,362,250,4,'u')}${lines(272,362,f1)}`);
+ o+=G(9,st,lines(272,362,f2,2));
+ return o+'</svg>';
+}
+
+/* ---------- state + render ---------- */
+const S={tab:'std',ex:0,step:0,d:null,solved:new Set(),shown:new Set()};
+const isPrac=()=>S.ex===2;
+function load(fresh){
+ S.d=isPrac()?(S.tab==='std'?genStd():genBack()):derive({...EX[S.tab][S.ex]});
+ S.step=0;S.solved=new Set();S.shown=new Set();render();
+}
+function steps(){return(S.d.kind==='std'?stdSteps:backSteps)(S.d)}
+function render(){
+ const d=S.d,all=steps(),st=all[S.step],prac=isPrac();
+ const locked=prac&&st.ask&&!S.solved.has(S.step)&&!S.shown.has(S.step);
+ $('#t-std').setAttribute('aria-pressed',S.tab==='std');$('#t-back').setAttribute('aria-pressed',S.tab==='back');
+ $('#exbar').innerHTML=[...EX[S.tab].map(e=>e.label),'Your turn: new numbers'].map((l,i)=>`<button data-ex="${i}" aria-pressed="${S.ex===i}">${l}</button>`).join('');
+ $('#problem').textContent=intro(d);
+ $('#newnums').hidden=!prac;
+ $('#lg-x').hidden=S.tab==='std';
+ $('#m-std').hidden=S.tab!=='std';$('#m-back').hidden=S.tab!=='back';
+ $('#fig').innerHTML=(d.kind==='std'?drawStd:drawBack)(d,locked?st.v-1:st.v);
+ $('#stepno').textContent=`Step ${S.step+1} of ${all.length}`;
+ $('#steptitle').textContent=st.t;
+ let b=st.html;
+ if(locked){
+  b+=`<div class="ask"><label for="ans">Your turn: ${st.ask.l}</label><div class="row"><input id="ans" inputmode="decimal" autocomplete="off" placeholder="e.g. 2.70e-3"><button id="check">Check</button><button id="showme">Show me</button></div><p class="fb" id="fb"></p><p class="hint">Standard form: type 2.70e-3 or 2.70×10^-3</p></div>`;
+ }else if(st.work){
+  b+=`<div class="work">${st.work}</div>`;
+  if(prac&&S.solved.has(S.step))b+=`<p class="fb ok">Correct.</p>`;
+ }
+ b+=`<p class="tip"><b>Watch out:</b> ${st.tip}</p>`;
+ $('#stepbody').innerHTML=b;
+ $('#prev').disabled=S.step===0;$('#next').textContent=S.step===all.length-1?'Start again ↺':'Next →';
+ $('#chips').innerHTML=all.map((s,i)=>`<li><button data-step="${i}" aria-current="${i===S.step}" class="${prac&&(S.solved.has(i)||S.shown.has(i))?'done':''}">${i+1}. ${s.t}</button></li>`).join('');
+ if(locked){const inp=$('#ans');inp.addEventListener('keydown',e=>{if(e.key==='Enter')check()});}
+}
+const parse=s=>{s=s.trim().replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁻]/g,c=>({'⁰':0,'¹':1,'²':2,'³':3,'⁴':4,'⁵':5,'⁶':6,'⁷':7,'⁸':8,'⁹':9,'⁻':'-'})[c]).replace(/[−–]/g,'-').replace(/[\s,]/g,'').replace(/[×xX*]10\^?([-+]?\d+)/,'e$1');return parseFloat(s)};
+function check(){
+ const st=steps()[S.step],v=parse($('#ans').value),t=S.d[st.ask.k],fb=$('#fb');
+ if(!isFinite(v)){fb.className='fb no';fb.textContent='Type a number first.';return}
+ const ok=st.ask.int?Math.round(v)===t&&Math.abs(v-t)<0.5:st.ask.abs?Math.abs(v-t)<=st.ask.abs:Math.abs(v-t)<=Math.abs(t)*0.02;
+ if(ok){S.solved.add(S.step);render()}
+ else{fb.className='fb no';const r=v/t;fb.textContent=Math.abs(r-10)<0.5||Math.abs(r-0.1)<0.01?'Not quite. Check your × 10 (25.0 cm³ out of 250 cm³).':Math.abs(r-1000)<50||Math.abs(r-0.001)<0.0001?'Not quite. Did you divide the volume by 1000?':Math.abs(r-2)<0.05||Math.abs(r-0.5)<0.02?'Not quite. Check which way round the ratio goes.':'Not quite. Have another go, or press Show me.'}
+}
+document.addEventListener('click',e=>{
+ const t=e.target.closest('button');if(!t)return;
+ if(t.id==='t-std'||t.id==='t-back'){S.tab=t.id==='t-std'?'std':'back';S.ex=0;load()}
+ else if(t.dataset.ex!=null){S.ex=+t.dataset.ex;load()}
+ else if(t.dataset.step!=null){S.step=+t.dataset.step;render()}
+ else if(t.id==='newnums')load();
+ else if(t.id==='prev'&&S.step>0){S.step--;render()}
+ else if(t.id==='next'){const n=steps().length;if(S.step<n-1)S.step++;else S.step=0;render()}
+ else if(t.id==='check')check();
+ else if(t.id==='showme'){S.shown.add(S.step);render()}
+});
+document.addEventListener('keydown',e=>{
+ if(e.target.tagName==='INPUT')return;
+ if(e.key==='ArrowRight'){$('#next').click()}else if(e.key==='ArrowLeft'){$('#prev').click()}
+});
+load();
+}
+</script>
+</body>
+</html>
