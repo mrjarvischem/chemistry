@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kinetics 2 – Rates from Graphs and Clock Reactions</title>
+<style>
+:root{
+  --bg:#f6efe1; --card:#fffaf0; --ink:#3b2a1a; --brown:#6b4423; --brown2:#8b5a2b;
+  --accent:#b5651d; --soft:#ead9bd; --line:#d8c4a0; --good:#2f7d4a; --bad:#b03a2e; --blue:#2c4a7a;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Arial,sans-serif;font-size:19px;line-height:1.55}
+header{background:var(--brown);color:#fff8ec;padding:14px 24px}
+header h1{margin:0;font-family:Georgia,serif;font-size:28px;font-weight:normal}
+header p{margin:2px 0 0;opacity:.85;font-size:16px}
+nav{display:flex;flex-wrap:wrap;gap:6px;padding:10px 24px;background:var(--soft);border-bottom:2px solid var(--line);position:sticky;top:0;z-index:5}
+nav button{border:2px solid var(--brown2);background:var(--card);color:var(--brown);padding:7px 14px;border-radius:20px;font-size:16px;cursor:pointer}
+nav button.on{background:var(--brown2);color:#fff}
+main{max-width:1100px;margin:0 auto;padding:20px 24px 60px}
+.page{display:none}.page.on{display:block}
+h2{font-family:Georgia,serif;color:var(--brown);font-size:30px;margin:6px 0 12px;font-weight:normal}
+h3{color:var(--brown2);font-size:22px;margin:22px 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:14px 0;box-shadow:0 2px 0 var(--line)}
+.key{border-left:6px solid var(--accent)}
+.eq{font-family:Georgia,serif;font-size:24px;text-align:center;padding:10px;background:#fff;border:1px dashed var(--line);border-radius:8px;margin:10px 0}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 6px}
+.frac>span:first-child{border-bottom:2px solid var(--ink);padding:0 6px}
+.row{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+.row>*{flex:1 1 380px}
+button.b{background:var(--brown2);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:17px;cursor:pointer;margin:4px 6px 4px 0}
+button.b.alt{background:var(--card);color:var(--brown);border:2px solid var(--brown2)}
+button.b:disabled{opacity:.45;cursor:default}
+.check{background:#fdf6e6;border:2px solid var(--accent);border-radius:12px;padding:14px 18px;margin:16px 0}
+.check .tag{display:inline-block;background:var(--accent);color:#fff;font-size:14px;padding:2px 10px;border-radius:12px;margin-bottom:6px;letter-spacing:.5px}
+.check .src{font-size:14px;color:#8a7356;font-style:italic}
+input.ans{font-size:18px;padding:6px 10px;width:200px;border:2px solid var(--line);border-radius:6px}
+.fb{font-weight:600;margin-left:8px}
+.fb.ok{color:var(--good)}.fb.no{color:var(--bad)}
+.work{display:none;background:#fff;border-left:4px solid var(--brown2);padding:8px 14px;margin-top:8px;border-radius:4px}
+.work.on{display:block}
+table.t{border-collapse:collapse;margin:8px 0;background:#fff}
+table.t th,table.t td{border:1px solid var(--line);padding:6px 12px;text-align:center}
+table.t th{background:var(--soft);color:var(--brown)}
+svg text{font-family:"Segoe UI",Arial,sans-serif}
+.readout{font-family:Consolas,monospace;background:#2b1d10;color:#ffe9c4;padding:10px 14px;border-radius:8px;font-size:17px;line-height:1.6}
+.slider{width:100%}
+label.s{display:block;font-weight:600;color:var(--brown);margin-top:8px}
+.steps li{margin:6px 0}
+.reveal{display:none}.reveal.on{display:block;animation:fade .4s}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+.pager{display:flex;justify-content:space-between;margin-top:30px}
+.mcq button.opt{display:block;width:100%;text-align:left;margin:6px 0;padding:10px 14px;font-size:17px;border:2px solid var(--line);background:#fff;border-radius:8px;cursor:pointer;color:var(--ink)}
+.mcq button.opt.right{border-color:var(--good);background:#e6f4ea}
+.mcq button.opt.wrong{border-color:var(--bad);background:#fbe9e7}
+.mcq .exp{display:none;margin-top:6px;font-size:17px}
+.mcq.done .exp{display:block}
+.warn{background:#fbeee4;border-left:6px solid var(--bad);padding:10px 16px;border-radius:6px;margin:12px 0}
+.small{font-size:15px;color:#7a6448}
+canvas{background:#fff;border:1px solid var(--line);border-radius:8px;max-width:100%}
+.chip{display:inline-block;padding:2px 10px;border-radius:12px;background:var(--soft);margin:2px;font-size:16px}
+.big{font-size:22px}
+table.ice{border-collapse:collapse;margin:10px auto;background:#fff;font-size:18px}
+table.ice th,table.ice td{border:1px solid var(--line);padding:8px 14px;text-align:center;min-width:90px}
+table.ice th{background:var(--soft);color:var(--brown)}
+table.ice td.lab{background:#fbf3e3;font-weight:600;color:var(--brown);text-align:left}
+table.ice td.hl{background:#fde9c8;transition:background .4s}
+table.ice td.done{color:var(--good);font-weight:700}
+table.ice input{width:100px;font-size:17px;padding:3px 6px;border:2px solid var(--line);border-radius:6px;text-align:center}
+.slot{display:inline-block;min-width:60px;border-bottom:2px dashed var(--brown2);margin:0 4px;text-align:center}
+select.s{font-size:18px;padding:4px 6px;border:2px solid var(--line);border-radius:6px;background:#fff}
+.tick{color:var(--good);font-weight:700}.cross{color:var(--bad);font-weight:700}
+.legend span{display:inline-block;margin-right:14px;font-size:15px}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:-2px;margin-right:4px}
+.src{font-size:14px;color:#8a7356;font-style:italic;display:block;margin-bottom:4px}
+.readout .frac>span:first-child{border-bottom-color:#ffe9c4}
+
+</style>
+</head>
+<body>
+<header>
+  <h1>Kinetics 2 – Rates from Graphs and Clock Reactions</h1>
+  <p>AQA A-level Chemistry · Kinetics walkthrough</p>
+</header>
+<nav id="nav"></nav>
+<main>
+<!-- ============ PAGE 1 ============ -->
+<section class="page" data-title="1. Tangents">
+<h2>1. Rate at a particular moment: tangents</h2>
+<div class="card key">
+  <ul>
+    <li>The <b>gradient</b> of a graph of amount against time <b>is</b> the rate.</li>
+    <li>A curve has a different gradient at every point. To find the rate at one moment, draw a <b>tangent</b> (a straight line that just touches the curve there) and find its gradient.</li>
+    <li>The tangent at <b>t = 0</b> gives the <b>initial rate</b>.</li>
+    <li>For a <b>reactant</b> the gradient is negative. Quote the rate as a positive number.</li>
+  </ul>
+  <div class="eq">gradient = <span class="frac"><span>change in y (Δy)</span><span>change in x (Δx)</span></span></div>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Interactive: slide the tangent along the curve</h3>
+  <div style="margin-bottom:6px"><button class="b tm" data-m="p">Product: volume of gas</button><button class="b alt tm" data-m="r">Reactant: concentration</button>
+  <label style="margin-left:10px"><input type="checkbox" id="tgChord"> also show the mean rate from t = 0</label></div>
+  <label class="s">Time of tangent: <span id="tgV"></span> s</label>
+  <input type="range" class="slider" id="tgS" min="0" max="100" step="5" value="0">
+  <div class="row"><div style="flex:2 1 460px"><svg id="tgSvg" viewBox="0 0 660 400" width="100%"></svg></div><div style="flex:1 1 260px"><div class="readout" id="tgOut"></div></div></div>
+  <p class="small">Notice the tangent gets flatter with time: the rate falls because the reactants are being used up.</p>
+</div>
+
+<div class="card key">
+  <h3 style="margin-top:0">Drawing a good tangent</h3>
+  <ol>
+    <li>Use a ruler. The line should touch the curve at one point and <b>not cut across it</b>.</li>
+    <li>Make it <b>long</b>. Use a big gradient triangle, at least half the grid, to cut the reading error.</li>
+    <li>Read two points on the <b>tangent</b> (not the curve) and calculate Δy ÷ Δx.</li>
+    <li>Units: (y units) ÷ (x units), e.g. cm³ s⁻¹, mol dm⁻³ s⁻¹, g min⁻¹.</li>
+  </ol>
+</div>
+</section>
+
+<!-- ============ PAGE 2 ============ -->
+<section class="page" data-title="2. Practice">
+<h2>2. Practice: reading tangents</h2>
+<div class="check">
+  <span class="tag">TANGENT PRACTICE</span>
+  <p id="tpQ"></p>
+  <svg id="tpSvg" viewBox="0 0 660 400" width="100%" style="max-width:640px"></svg>
+  <p>Rate = <input class="ans" id="tpA"> <span id="tpU"></span> <button class="b" onclick="tpCheck()">Check</button><span class="fb" id="tpAfb"></span></p>
+  <button class="b alt" onclick="tog('tpW')">Working</button><button class="b" onclick="tpNew()">New graph</button> <span class="small" id="tpS"></span>
+  <div class="work" id="tpW"></div>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 1</span>
+  <span class="src">June 2024 Paper 3 Q15 (1 mark)</span>
+  <p>Mg(s) + 2HCl(aq) → MgCl₂(aq) + H₂(g). Which value is closest to the rate of reaction, in cm³ s⁻¹, at 70 s?</p>
+  <svg id="mgSvg" viewBox="0 0 660 400" width="100%" style="max-width:640px"></svg>
+  <button class="b alt" onclick="pick(this,true,'c1')">A 0.4</button><button class="b alt" onclick="pick(this,false,'c1')">B 0.9</button><button class="b alt" onclick="pick(this,false,'c1')">C 1.1</button><button class="b alt" onclick="pick(this,false,'c1')">D 2.5</button><span class="fb" id="c1"></span>
+  <button class="b alt" onclick="mgTan();tog('c1w')">Show the tangent</button>
+  <div class="work" id="c1w">The tangent at 70 s rises about 9 cm³ every 20 s, so the gradient ≈ 0.45 cm³ s⁻¹ → <b>A</b>.<br>B (0.9) is the <i>mean</i> rate from 0 to 70 s (≈ 63 ÷ 70), not the rate at 70 s. C (1.1) is close to the initial rate.</div>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 2</span>
+  <span class="src">June 2017 Paper 2 Q2.1–2.2 (2 marks)</span>
+  <p>The graph shows [A] against time. Draw a tangent at t = 0 and use it to find the initial rate.</p>
+  <svg id="a0Svg" viewBox="0 0 660 400" width="100%" style="max-width:640px"></svg>
+  <p>Initial rate = <input class="ans" id="c2"> mol dm⁻³ s⁻¹ <button class="b" onclick="c2Check()">Check</button><span class="fb" id="c2fb"></span>
+  <button class="b alt" onclick="a0Tan();tog('c2w')">Show tangent</button></p>
+  <div class="work" id="c2w">The tangent starts at (0, 0.50) and hits the time axis at about 11 s.<br>gradient = 0.50 ÷ 11 = <b>0.045 mol dm⁻³ s⁻¹</b> (ignore the minus sign).<br><i>The mark scheme accepted 0.04 to 0.1. A tangent that doesn't touch 0.50 at t = 0 scores zero.</i></div>
+</div>
+</section>
+
+<!-- ============ PAGE 3 ============ -->
+<section class="page" data-title="3. Clock reactions">
+<h2>3. Clock reactions: why rate ∝ 1/t</h2>
+<div class="card key">
+  <p>In a <b>clock reaction</b> you time how long it takes to make a <b>fixed amount</b> of product. That's enough to hide a cross (sulfur), or for a colour to appear or disappear.</p>
+  <div class="eq">mean rate = <span class="frac"><span>fixed amount</span><span>t</span></span> &nbsp;&nbsp;⇒&nbsp;&nbsp; rate ∝ <span class="frac"><span>1</span><span>t</span></span></div>
+  <ul>
+    <li>The amount is the <b>same</b> every time, so it's just a constant. A shorter time means a faster rate.</li>
+    <li>Only a <b>small fraction</b> of the reactants has reacted when the clock stops. The curve is still nearly straight, so this mean rate is a good approximation to the <b>initial rate</b>.</li>
+    <li>1/t values are small, so many questions use <b>1000/t</b> to get easier numbers. It's still proportional to rate.</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Animation: disappearing cross at different temperatures</h3>
+  <p>Na₂S₂O₃(aq) + 2HCl(aq) → 2NaCl(aq) + SO₂(g) + S(s) + H₂O(l)</p>
+  <label class="s">Temperature: <span id="ckTV"></span> °C</label>
+  <input type="range" class="slider" id="ckT" min="20" max="60" step="5" value="20">
+  <div style="margin:6px 0"><button class="b" id="ckGo">▶ Start the reaction</button><button class="b alt" onclick="ckClear()">Clear results</button></div>
+  <div class="row">
+    <div style="flex:1 1 240px;text-align:center"><canvas id="ckCv" width="240" height="240"></canvas><div class="readout" id="ckOut" style="text-align:left"></div></div>
+    <div style="flex:2 1 420px"><svg id="ckSvg" viewBox="0 0 660 400" width="100%"></svg></div>
+  </div>
+  <table class="t" id="ckTab" style="margin:8px auto"><tr><th>T / °C</th><th>t / s</th><th>1/t / s⁻¹</th><th>1000/t</th></tr></table>
+  <div class="row"><div><svg id="ckG1" viewBox="0 0 660 400" width="100%"></svg></div><div><svg id="ckG2" viewBox="0 0 660 400" width="100%"></svg></div></div>
+  <p class="small">The graph of t against T is a curve going down. The graph of 1/t (rate) against T curves <b>upwards</b>: the rate increases more and more steeply as T rises.</p>
+</div>
+</section>
+
+<!-- ============ PAGE 4 ============ -->
+<section class="page" data-title="4. Exam question">
+<h2>4. Past-paper practice: a clock reaction</h2>
+<div class="check">
+  <span class="tag">EXAM QUESTION</span>
+  <span class="src">June 2022 AS Paper 2 Q1</span>
+  <p>2MnO₄⁻ + 16H⁺ + 5C₂O₄²⁻ → 2Mn²⁺ + 8H₂O + 10CO₂. The purple mixture goes colourless when all the MnO₄⁻ has reacted. Rate is measured as 1000/t.</p>
+  <table class="t"><tr><th>Temperature / °C</th><td>32</td><td>38</td><td>44</td><td>54</td><td>67</td></tr>
+  <tr><th>Time t / s</th><td>155</td><td>85</td><td>50</td><td>22</td><td>9</td></tr>
+  <tr><th>1000 / t</th><td>6.45</td><td>11.8</td><td>20.0</td><td>45.5</td><td><b>?</b></td></tr></table>
+  <p><b>1.1</b> Complete the table. <input class="ans" id="e1" style="width:110px"> <button class="b" onclick="numCheck('e1',111.1,0.01)">Check</button><span class="fb" id="e1fb"></span></p>
+  <p><b>1.2</b> State the independent variable.</p>
+  <button class="b alt" onclick="pick(this,true,'e2')">temperature</button><button class="b alt" onclick="pick(this,false,'e2')">time</button><button class="b alt" onclick="pick(this,false,'e2')">1000/t</button><button class="b alt" onclick="pick(this,false,'e2')">concentration</button><span class="fb" id="e2"></span>
+  <p><b>1.4–1.5</b> Plot 1000/t against temperature, then use your curve to find the time to go colourless at 60 °C.</p>
+  <button class="b alt" onclick="exPlot(1)">Plot the points</button><button class="b alt" onclick="exPlot(2)">Draw best-fit curve</button><button class="b alt" onclick="exPlot(3)">Read off at 60 °C</button>
+  <svg id="exSvg" viewBox="0 0 660 400" width="100%" style="max-width:640px"></svg>
+  <p>Time at 60 °C: <input class="ans" id="e5" style="width:110px"> s <button class="b" onclick="e5Check()">Check</button><span class="fb" id="e5fb"></span></p>
+  <div class="work" id="e5w">Reading the curve at 60 °C gives 1000/t ≈ 69, so t = 1000 ÷ 69 ≈ <b>14 s</b>. Mark scheme: time = 1000 ÷ (value from <i>your</i> line at 60 °C). Show the construction lines.</div>
+  <p><b>1.6</b> Explain why the rate increases with temperature. (2 marks)</p>
+  <button class="b alt" onclick="tog('e6w')">Mark scheme</button>
+  <div class="work" id="e6w"><b>M1</b> many more particles have energy ≥ the activation energy<br><b>M2</b> more successful collisions per unit time (greater frequency of successful collisions)<br><i>"Many" more matters: the rate increase is far bigger than the increase in collision frequency.</i></div>
+</div>
+</section>
+
+<!-- ============ PAGE 5 ============ -->
+<section class="page" data-title="5. Quiz">
+<h2>5. End-of-walkthrough quiz</h2>
+<p>Click an answer. You get one go at each question.</p>
+<div id="quiz"></div>
+<div class="card" id="score" style="font-size:22px;text-align:center"></div>
+<button class="b alt" onclick="buildQuiz()">Reset quiz</button>
+<p class="small">Next: Kinetics 3 – collision theory and activation energy.</p>
+</section>
+
+<div class="pager"><button class="b alt" id="prevB">◀ Previous</button><button class="b" id="nextB">Next ▶</button></div>
+</main>
+<script>
+/* ---------- navigation ---------- */
+const pages=[...document.querySelectorAll('.page')];let cur=0;
+const nav=document.getElementById('nav');
+pages.forEach((p,i)=>{const b=document.createElement('button');b.textContent=p.dataset.title;b.onclick=()=>go(i);nav.appendChild(b)});
+function go(i){cur=i;pages.forEach((p,j)=>p.classList.toggle('on',j===i));[...nav.children].forEach((b,j)=>b.classList.toggle('on',j===i));
+ document.getElementById('prevB').disabled=i===0;document.getElementById('nextB').disabled=i===pages.length-1;window.scrollTo(0,0);
+ if(typeof onPage==='function')onPage(i)}
+document.getElementById('prevB').onclick=()=>go(Math.max(0,cur-1));
+document.getElementById('nextB').onclick=()=>go(Math.min(pages.length-1,cur+1));
+
+/* ---------- helpers ---------- */
+const $=id=>document.getElementById(id);
+function tog(id){$(id).classList.toggle('on')}
+function stepReveal(id){const r=[...document.querySelectorAll('#'+id+' .reveal:not(.on)')];if(r.length)r[0].classList.add('on')}
+function parseNum(s){
+ s=s.trim().replace(/\s/g,'');const sp={'⁰':'0','¹':'1','²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9','⁻':'-'};
+ s=s.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁻]/g,c=>sp[c]).replace(/[−–]/g,'-').replace(/,/g,'');
+ let m=s.match(/^(-?[\d.]+)[x×X*]10\^?(-?\d+)$/);if(m)return parseFloat(m[1])*Math.pow(10,parseInt(m[2]));
+ m=s.match(/^(-?[\d.]+)[eE](-?\d+)$/);if(m)return parseFloat(s);
+ const v=Number(s);return (s===''||isNaN(v))?null:v}
+function numCheck(id,target,tol){const v=parseNum($(id).value);const fb=$(id+'fb');
+ if(v===null){fb.textContent='Enter a number';fb.className='fb no';return false}
+ if(Math.abs(v-target)<=Math.abs(target)*tol){fb.textContent='✔ Correct';fb.className='fb ok';return true}
+ fb.textContent='✘ Not quite, check your working';fb.className='fb no';return false}
+function pick(btn,ok,id){const f=$(id);f.textContent=ok?'✔ Correct':'✘ Try again';f.className='fb '+(ok?'ok':'no')}
+const sup=n=>String(n).split('').map(c=>({'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'})[c]).join('');
+/* format number to n s.f.; standard form for very small/large */
+function sf(x,n=3){if(x===0)return '0';let e=Math.floor(Math.log10(Math.abs(x)));
+ if(e<-3||e>=5){let m=(x/Math.pow(10,e)).toFixed(n-1);if(Math.abs(+m)>=10){e++;m=(x/Math.pow(10,e)).toFixed(n-1)}return m+' × 10'+sup(e)}
+ return x.toFixed(Math.max(0,n-1-e))}
+/* units of Kc from Δn = (moles top − moles bottom) */
+function kcUnits(dn){if(dn===0)return 'no units';const m=dn===1?'mol':'mol'+sup(dn);return `${m} dm${sup(-3*dn)}`}
+/* render a fraction */
+const fr=(t,b)=>`<span class="frac"><span>${t}</span><span>${b}</span></span>`;
+
+/* ---------- SVG plotting ---------- */
+const NS='http://www.w3.org/2000/svg';
+function E(tag,a,p){const e=document.createElementNS(NS,tag);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e}
+function plot(svg,o){
+ svg.innerHTML='';const W=660,H=400,ml=80,mr=20,mt=18,mb=60,pw=W-ml-mr,ph=H-mt-mb;
+ const X=x=>ml+x/o.xmax*pw,Y=y=>mt+ph-y/o.ymax*ph;
+ const id='cl'+Math.random().toString(36).slice(2);
+ const d=E('defs',{},svg);const cp=E('clipPath',{id},d);E('rect',{x:ml,y:mt,width:pw,height:ph},cp);
+ E('rect',{x:ml,y:mt,width:pw,height:ph,fill:'#fff'},svg);
+ const gx=o.gx||o.xt,gy=o.gy||o.yt;
+ for(let x=0;x<=o.xmax+1e-9;x+=gx)E('line',{x1:X(x),x2:X(x),y1:mt,y2:mt+ph,stroke:'#efe3cc'},svg);
+ for(let y=0;y<=o.ymax+1e-9;y+=gy)E('line',{x1:ml,x2:ml+pw,y1:Y(y),y2:Y(y),stroke:'#efe3cc'},svg);
+ if(!o.noxt)for(let x=0;x<=o.xmax+1e-9;x+=o.xt){E('line',{x1:X(x),x2:X(x),y1:mt+ph,y2:mt+ph+6,stroke:'#3b2a1a'},svg);const t=E('text',{x:X(x),y:mt+ph+24,'text-anchor':'middle','font-size':15,fill:'#3b2a1a'},svg);t.textContent=+x.toFixed(4)}
+ if(!o.noyt)for(let y=0;y<=o.ymax+1e-9;y+=o.yt){E('line',{x1:ml-6,x2:ml,y1:Y(y),y2:Y(y),stroke:'#3b2a1a'},svg);const t=E('text',{x:ml-10,y:Y(y)+5,'text-anchor':'end','font-size':15,fill:'#3b2a1a'},svg);t.textContent=(o.yfmt?o.yfmt(y):+y.toFixed(3))}
+ E('line',{x1:ml,x2:ml+pw,y1:mt+ph,y2:mt+ph,stroke:'#3b2a1a','stroke-width':2},svg);
+ E('line',{x1:ml,x2:ml,y1:mt,y2:mt+ph,stroke:'#3b2a1a','stroke-width':2},svg);
+ let t=E('text',{x:ml+pw/2,y:H-12,'text-anchor':'middle','font-size':17,fill:'#6b4423'},svg);t.textContent=o.xlab;
+ t=E('text',{x:18,y:mt+ph/2,'text-anchor':'middle','font-size':17,fill:'#6b4423',transform:`rotate(-90 18 ${mt+ph/2})`},svg);t.textContent=o.ylab;
+ const g=E('g',{'clip-path':`url(#${id})`},svg);
+ return {X,Y,g,svg,curve(f,col='#6b4423',w=3,dash,x0=0,x1=o.xmax){let dd='';for(let i=0;i<=300;i++){const x=x0+(x1-x0)*i/300;dd+=(i?'L':'M')+X(x)+' '+Y(f(x))}return E('path',{d:dd,fill:'none',stroke:col,'stroke-width':w,'stroke-dasharray':dash||''},g)},
+  text(x,y,s,col='#3b2a1a',sz=15,anc='start'){const t=E('text',{x:X(x),y:Y(y),'font-size':sz,fill:col,'text-anchor':anc},g);t.textContent=s;return t}};
+}
+
+/* ---------- quiz ---------- */
+let qs=0,qa=0;
+function buildQuiz(){const w=$('quiz');w.innerHTML='';qs=0;qa=0;
+ Q.forEach((q,i)=>{const c=document.createElement('div');c.className='card mcq';c.innerHTML=`<b>Q${i+1}.</b> ${q[0]}`;
+  q[1].forEach((o,j)=>{const b=document.createElement('button');b.className='opt';b.innerHTML=o;
+   b.onclick=()=>{if(c.classList.contains('done'))return;c.classList.add('done');qa++;
+    if(j===q[2]){b.classList.add('right');qs++}else{b.classList.add('wrong');c.querySelectorAll('.opt')[q[2]].classList.add('right')}score()};c.appendChild(b)});
+  const e=document.createElement('div');e.className='exp';e.innerHTML='💡 '+q[3];c.appendChild(e);w.appendChild(c)});score()}
+function score(){const n=Q.length;$('score').innerHTML=`Score: <b>${qs}</b> / ${n}`+(qa===n?(qs>=n-1?' – excellent!':qs>=Math.ceil(n*0.7)?' – good, review the ones you missed':' – go back through the walkthrough and try again'):'')}
+
+const rnd=(a,b,dp=2)=>+(a+Math.random()*(b-a)).toFixed(dp);const pickA=a=>a[Math.floor(Math.random()*a.length)];
+/* monotone cubic (Fritsch–Carlson) */
+function mspline(xs,ys){const n=xs.length,d=[],m=[];for(let i=0;i<n-1;i++)d.push((ys[i+1]-ys[i])/(xs[i+1]-xs[i]));
+ m[0]=d[0];m[n-1]=d[n-2];for(let i=1;i<n-1;i++)m[i]=d[i-1]*d[i]<=0?0:(d[i-1]+d[i])/2;
+ for(let i=0;i<n-1;i++){if(d[i]===0){m[i]=m[i+1]=0;continue}const a=m[i]/d[i],b=m[i+1]/d[i],h=a*a+b*b;if(h>9){const t=3/Math.sqrt(h);m[i]=t*a*d[i];m[i+1]=t*b*d[i]}}
+ const f=x=>{if(x<=xs[0])return ys[0];if(x>=xs[n-1])return ys[n-1];let i=0;while(x>xs[i+1])i++;const h=xs[i+1]-xs[i],t=(x-xs[i])/h,t2=t*t,t3=t2*t;
+  return(2*t3-3*t2+1)*ys[i]+(t3-2*t2+t)*h*m[i]+(-2*t3+3*t2)*ys[i+1]+(t3-t2)*h*m[i+1]};
+ f.d=x=>(f(x+0.01)-f(x-0.01))/0.02;return f}
+function cross(P,x,y,col='#3b2a1a'){const X=P.X(x),Y=P.Y(y);E('path',{d:`M${X-5} ${Y-5}L${X+5} ${Y+5}M${X-5} ${Y+5}L${X+5} ${Y-5}`,stroke:col,'stroke-width':2.2},P.g)}
+
+/* ---------- page 1: tangent tool ---------- */
+let tgM='p';
+const TG={p:{f:t=>60*(1-Math.exp(-0.04*t)),d:t=>2.4*Math.exp(-0.04*t),o:{xmax:100,ymax:70,xt:10,yt:10,gx:5,gy:5,xlab:'time / s',ylab:'volume of gas / cm³'},u:'cm³ s⁻¹',fx:1},
+ r:{f:t=>0.8*Math.exp(-0.03*t),d:t=>-0.024*Math.exp(-0.03*t),o:{xmax:100,ymax:0.9,xt:10,yt:0.1,gx:5,gy:0.05,xlab:'time / s',ylab:'[reactant] / mol dm⁻³'},u:'mol dm⁻³ s⁻¹',fx:3}};
+function tg(){const t0=+$('tgS').value;$('tgV').textContent=t0;const M=TG[tgM],P=plot($('tgSvg'),M.o);P.curve(M.f,'#6b4423',3.5);
+ const y0=M.f(t0),m=M.d(t0);P.curve(t=>y0+m*(t-t0),'#b03a2e',2.5,'',Math.max(0,t0-30),Math.min(100,t0+30));
+ const a=t0===0?0:Math.max(0,t0-15),b=a+30,ya=y0+m*(a-t0),yb=y0+m*(b-t0);
+ E('path',{d:`M${P.X(a)} ${P.Y(ya)}L${P.X(b)} ${P.Y(ya)}L${P.X(b)} ${P.Y(yb)}`,fill:'none',stroke:'#2c4a7a','stroke-width':2,'stroke-dasharray':'6 4'},P.g);
+ E('circle',{cx:P.X(t0),cy:P.Y(y0),r:6,fill:'#b03a2e'},P.g);
+ let s=`${t0===0?'<b>Initial rate</b> (tangent at t = 0)':'Tangent at t = '+t0+' s'}<br>Δy = ${(yb-ya).toFixed(M.fx+1)}<br>Δx = 30 s<br>gradient = ${(yb-ya).toFixed(M.fx+1)} ÷ 30<br>rate = <b>${sf(Math.abs(m))} ${M.u}</b>`;
+ if($('tgChord').checked&&t0>0){P.curve(t=>M.f(0)+(M.f(t0)-M.f(0))/t0*t,'#2f7d4a',2,'4 4',0,t0);s+=`<br><span style="color:#9be3b0">mean rate 0→${t0} s = ${sf(Math.abs((M.f(t0)-M.f(0))/t0))} ${M.u}</span>`}
+ $('tgOut').innerHTML=s}
+$('tgS').oninput=tg;$('tgChord').onchange=tg;document.querySelectorAll('.tm').forEach(b=>b.onclick=()=>{tgM=b.dataset.m;document.querySelectorAll('.tm').forEach(x=>x.classList.toggle('alt',x!==b));tg()});tg();
+
+/* ---------- page 2: practice generator ---------- */
+let TP=null,tpN=0,tpOk=0,tpDone=false;
+function tpNew(){const prod=Math.random()<0.6;const V=prod?pickA([40,50,60,70,80]):pickA([0.6,0.8,1.0]),k=pickA([0.03,0.04,0.05,0.06]);
+ const f=prod?(t=>V*(1-Math.exp(-k*t))):(t=>V*Math.exp(-k*t)),d=prod?(t=>V*k*Math.exp(-k*t)):(t=>-V*k*Math.exp(-k*t));
+ const t0=pickA([0,10,20,30,40]),y0=f(t0),m=d(t0);const o=prod?{xmax:100,ymax:Math.ceil((V+5)/10)*10,xt:10,yt:10,gx:2,gy:2,xlab:'time / s',ylab:'volume of gas / cm³'}:{xmax:100,ymax:V+0.1,xt:10,yt:0.1,gx:2,gy:0.02,xlab:'time / s',ylab:'concentration / mol dm⁻³'};
+ const P=plot($('tpSvg'),o);P.curve(f,'#6b4423',3);
+ let x1=t0===0?0:t0-10,x2=t0+20;let y1=y0+m*(x1-t0),y2=y0+m*(x2-t0);
+ while((y2<0||y2>o.ymax)&&x2>x1+5){x2-=5;y2=y0+m*(x2-t0)}
+ P.curve(t=>y0+m*(t-t0),'#b03a2e',2.5,'',Math.max(0,t0-25),Math.min(100,t0+35));cross(P,x1,y1,'#b03a2e');cross(P,x2,y2,'#b03a2e');
+ [[x1,y1],[x2,y2]].forEach(([x,y])=>{const t=E('text',{x:P.X(x)+8,y:P.Y(y)-8,'font-size':14,fill:'#b03a2e'},P.g);t.textContent=`(${x}, ${prod?y.toFixed(1):y.toFixed(3)})`});
+ TP={a:Math.abs((y2-y1)/(x2-x1)),u:prod?'cm³ s⁻¹':'mol dm⁻³ s⁻¹'};tpDone=false;
+ $('tpQ').innerHTML=`The red line is the tangent at t = ${t0} s. Two points on it are marked. Find the ${t0===0?'initial rate':'rate at '+t0+' s'}.`;$('tpU').textContent=TP.u;$('tpA').value='';$('tpAfb').textContent='';
+ $('tpW').classList.remove('on');$('tpW').innerHTML=`gradient = ${fr((prod?y2.toFixed(1):y2.toFixed(3))+' − '+(prod?y1.toFixed(1):y1.toFixed(3)),x2+' − '+x1)} = <b>${sf(TP.a)} ${TP.u}</b>${prod?'':' (ignore the minus sign)'}`}
+function tpCheck(){const ok=numCheck('tpA',TP.a,0.05);if(!tpDone&&parseNum($('tpA').value)!==null){tpDone=true;tpN++;if(ok)tpOk++;$('tpS').textContent=`Right first time: ${tpOk} / ${tpN}`}}
+tpNew();
+
+/* June 2024 P3 Q15 */
+const mgx=[0,20,40,60,80,100,120,140,160,180,190],mgy=[0,24.5,45,58,67,72,74.7,76,76,76,76];const mgF=mspline(mgx,mgy);
+const mgP=plot($('mgSvg'),{xmax:190,ymax:80,xt:10,yt:5,gx:2,gy:1,xlab:'time / s',ylab:'volume of gas / cm³'});mgP.curve(mgF,'#3b2a1a',2.5);
+[[0,0],[20,24.5],[40,45],[60,58],[80,67],[100,72],[120,74],[140,76],[160,76],[180,76]].forEach(([x,y])=>cross(mgP,x,y));
+let mgDone=false;function mgTan(){if(mgDone)return;mgDone=true;const y0=mgF(70),m=mgF.d(70);mgP.curve(t=>y0+m*(t-70),'#b03a2e',2.5,'',20,130);E('circle',{cx:mgP.X(70),cy:mgP.Y(y0),r:5,fill:'#b03a2e'},mgP.g)}
+
+/* June 2017 P2 Q2 */
+const a0P=plot($('a0Svg'),{xmax:40,ymax:0.6,xt:5,yt:0.1,gx:1,gy:0.02,xlab:'time / s',ylab:'[A] / mol dm⁻³'});a0P.curve(t=>0.5*Math.exp(-0.09*t),'#3b2a1a',2.5);
+let a0Done=false;function a0Tan(){if(a0Done)return;a0Done=true;a0P.curve(t=>0.5-0.045*t,'#b03a2e',2.5,'',0,12)}
+function c2Check(){const v=parseNum($('c2').value),f=$('c2fb');if(v===null){f.textContent='Enter a number';f.className='fb no';return}
+ const a=Math.abs(v);if(a>=0.04&&a<=0.1){f.textContent='✔ Within the mark scheme range (0.04–0.1)';f.className='fb ok'}else{f.textContent='✘ Outside 0.04–0.1. Is your tangent through (0, 0.50)?';f.className='fb no'}}
+
+/* ---------- page 3: clock reaction ---------- */
+const kT=T=>0.10536/120*Math.pow(2,(T-20)/10);const tClock=T=>-Math.log(0.9)/kT(T);
+let ck={run:false,t:0,T:20},ckRes=[];
+function ckDrawBeaker(frac){const c=$('ckCv').getContext('2d');c.clearRect(0,0,240,240);
+ c.strokeStyle='#3b2a1a';c.lineWidth=6;c.beginPath();c.moveTo(70,170);c.lineTo(170,230);c.moveTo(170,170);c.lineTo(70,230);c.stroke();
+ c.fillStyle=`rgba(235,225,180,${Math.min(1,frac)*0.97})`;c.beginPath();c.ellipse(120,200,95,40,0,0,7);c.fill();
+ c.strokeStyle='#6b4423';c.lineWidth=3;c.beginPath();c.moveTo(40,20);c.lineTo(40,190);c.quadraticCurveTo(40,215,70,215);c.lineTo(170,215);c.quadraticCurveTo(200,215,200,190);c.lineTo(200,20);c.stroke();
+ c.fillStyle=`rgba(225,215,160,${Math.min(1,frac)*0.75})`;c.fillRect(42,60,156,150)}
+function ckGraph(){const P=plot($('ckSvg'),{xmax:140,ymax:0.2,xt:20,yt:0.05,gx:10,gy:0.025,xlab:'time / s',ylab:'fraction of reactant used',yfmt:y=>y.toFixed(2)});
+ P.curve(()=>0.1,'#b03a2e',2,'6 4');P.text(2,0.106,'amount of sulfur that hides the cross','#b03a2e',14);
+ const cols=['#2c4a7a','#6b4423','#b5651d','#2f7d4a','#8a3b10'];
+ ckRes.forEach((r,i)=>{P.curve(t=>1-Math.exp(-kT(r.T)*t),cols[i%5],2.5,'',0,Math.min(140,r.t*1.6));E('line',{x1:P.X(r.t),x2:P.X(r.t),y1:P.Y(0),y2:P.Y(0.1),stroke:cols[i%5],'stroke-dasharray':'3 3'},P.g);P.text(Math.min(r.t+1,125),0.12+0.012*(i%5),r.T+' °C','#333',13)});
+ if(ck.run)P.curve(t=>1-Math.exp(-kT(ck.T)*t),'#999',3,'',0,Math.min(ck.t,140))}
+function ckPlots(){const P1=plot($('ckG1'),{xmax:40,ymax:140,xt:10,yt:20,xlab:'temperature / °C',ylab:'time t / s',noxt:true});
+ const P2=plot($('ckG2'),{xmax:40,ymax:140,xt:10,yt:20,xlab:'temperature / °C',ylab:'1000 / t',noxt:true});
+ [P1,P2].forEach(P=>[20,30,40,50,60].forEach(v=>{const t=E('text',{x:P.X(v-20),y:366,'text-anchor':'middle','font-size':15,fill:'#3b2a1a'},P.svg);t.textContent=v}));
+ if(ckRes.length>1){P1.curve(x=>tClock(x+20),'#ccb',1.5,'5 4');P2.curve(x=>1000/tClock(x+20),'#ccb',1.5,'5 4')}
+ ckRes.forEach(r=>{cross(P1,r.T-20,r.t);cross(P2,r.T-20,1000/r.t)})}
+function ckClear(){ckRes=[];$('ckTab').innerHTML='<tr><th>T / °C</th><th>t / s</th><th>1/t / s⁻¹</th><th>1000/t</th></tr>';ckGraph();ckPlots()}
+$('ckT').oninput=()=>{$('ckTV').textContent=$('ckT').value};$('ckTV').textContent=20;
+$('ckGo').onclick=()=>{ck={run:true,t:0,T:+$('ckT').value}};
+let ckLast=performance.now();
+function ckLoop(ts){const dt=Math.min(.05,(ts-ckLast)/1000);ckLast=ts;
+ if(ck.run){ck.t+=dt*20;const used=1-Math.exp(-kT(ck.T)*ck.t),frac=used/0.1;ckDrawBeaker(frac);
+  $('ckOut').innerHTML=`T = ${ck.T} °C<br>timer: <b>${ck.t.toFixed(0)} s</b><br>sulfur: ${(Math.min(1,frac)*100).toFixed(0)}% of the amount needed`;
+  if(frac>=1){ck.run=false;const t=Math.round(tClock(ck.T));ckRes=ckRes.filter(r=>r.T!==ck.T);ckRes.push({T:ck.T,t});ckRes.sort((a,b)=>a.T-b.T);
+   $('ckTab').innerHTML='<tr><th>T / °C</th><th>t / s</th><th>1/t / s⁻¹</th><th>1000/t</th></tr>'+ckRes.map(r=>`<tr><td>${r.T}</td><td>${r.t}</td><td>${(1/r.t).toFixed(4)}</td><td>${(1000/r.t).toFixed(1)}</td></tr>`).join('');
+   $('ckOut').innerHTML+=`<br><span style="color:#9be3b0">Cross hidden at ${t} s → 1/t = ${(1/t).toFixed(4)} s⁻¹</span>`;ckPlots()}
+  if(cur===2)ckGraph()}requestAnimationFrame(ckLoop)}
+ckDrawBeaker(0);ckGraph();ckPlots();requestAnimationFrame(ckLoop);
+
+/* ---------- page 4: June 2022 AS ---------- */
+const EX=[[32,6.45],[38,11.8],[44,20.0],[54,45.5],[67,111.1]];
+const exF=T=>{for(let i=0;i<EX.length-1;i++){const[a,ya]=EX[i],[b,yb]=EX[i+1];if(T<=b)return ya*Math.pow(yb/ya,(T-a)/(b-a))}return EX[4][1]};
+let exS=0;function exPlot(s){exS=Math.max(exS,s);const P=plot($('exSvg'),{xmax:40,ymax:120,xt:10,yt:20,gx:2,gy:4,xlab:'temperature / °C',ylab:'1000 / t',noxt:true});
+ [30,40,50,60,70].forEach(v=>{const t=E('text',{x:P.X(v-30),y:366,'text-anchor':'middle','font-size':15,fill:'#3b2a1a'},P.svg);t.textContent=v});
+ if(exS>=1)EX.forEach(([T,y])=>cross(P,T-30,y));if(exS>=2)P.curve(x=>exF(x+30),'#6b4423',2.5,'',2,37);
+ if(exS>=3){const y=exF(60);E('path',{d:`M${P.X(30)} ${P.Y(0)}L${P.X(30)} ${P.Y(y)}L${P.X(0)} ${P.Y(y)}`,fill:'none',stroke:'#2c4a7a','stroke-dasharray':'6 4','stroke-width':2},P.g);P.text(1,y+3,'≈ '+y.toFixed(0),'#2c4a7a',15)}}
+exPlot(0);
+function e5Check(){const v=parseNum($('e5').value),f=$('e5fb');if(v===null){f.textContent='Enter a number';f.className='fb no';return}
+ if(v>=12&&v<=17){f.textContent='✔ Good: about 14 s';f.className='fb ok';$('e5w').classList.add('on')}else{f.textContent='✘ Read 1000/t at 60 °C, then t = 1000 ÷ that value';f.className='fb no'}}
+
+/* ---------- quiz ---------- */
+const Q=[
+ ["How do you find the rate at a particular time from a curved graph?",["Divide the y value by the time","Find the gradient of the tangent at that time","Find the area under the curve","Read the y value"],1,"Rate = gradient of the tangent."],
+ ["What is the initial rate?",["The mean rate over the whole reaction","The gradient of the tangent at t = 0","The rate when the reaction stops","The total amount ÷ total time"],1,"It's the rate at the very start."],
+ ["A tangent passes through (0 s, 10 cm³) and (50 s, 60 cm³). What is the rate?",["1.0 cm³ s⁻¹","1.2 cm³ s⁻¹","0.83 cm³ s⁻¹","50 cm³ s⁻¹"],0,"(60 − 10) ÷ 50 = 1.0 cm³ s⁻¹."],
+ ["Why does the gradient of a product–time curve get smaller with time?",["The temperature falls","Reactants are used up, so their concentration falls","The catalyst is used up","The product slows it down"],1,"Lower reactant concentration → fewer collisions per second → slower rate."],
+ ["In a clock reaction, why is rate ∝ 1/t?",["Because time is always constant","The same fixed amount of product forms each time, so rate = amount/t","Because the reaction is first order","Because temperature is constant"],1,"amount ÷ t with a fixed amount means rate ∝ 1/t."],
+ ["Why is 1/t from a clock reaction a good measure of the <i>initial</i> rate?",["Only a small proportion of reactant has been used when the clock stops","The reaction stops at time t","t is very long","1/t is always the initial rate"],0,"Over the early part the curve is nearly straight, so the mean rate ≈ initial rate."],
+ ["t = 25 s. What is 1000/t?",["0.04","25","40","4.0"],2,"1000 ÷ 25 = 40."],
+ ["At a higher temperature, the time for the cross to disappear…",["increases","decreases","stays the same","doubles"],1,"Faster rate → the fixed amount of sulfur forms sooner."],
+ ["A graph of 1/t against temperature is…",["a straight line through the origin","a curve that gets steeper as T rises","a horizontal line","a curve that levels off"],1,"Rate increases more and more steeply with temperature."],
+ ["A tangent on a mass-loss graph with time in minutes has gradient 0.30. Which is correct?",["0.30 g s⁻¹","0.30 g min⁻¹ = 5.0 × 10⁻³ g s⁻¹","18 g s⁻¹","0.30 g min"],1,"Units follow the axes; ÷ 60 to convert to per second."]
+];
+
+buildQuiz();
+go(0);
+</script>
+</body>
+</html>

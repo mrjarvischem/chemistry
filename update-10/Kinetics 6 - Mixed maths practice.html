@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kinetics 6 – Mixed Maths Practice</title>
+<style>
+:root{
+  --bg:#f6efe1; --card:#fffaf0; --ink:#3b2a1a; --brown:#6b4423; --brown2:#8b5a2b;
+  --accent:#b5651d; --soft:#ead9bd; --line:#d8c4a0; --good:#2f7d4a; --bad:#b03a2e; --blue:#2c4a7a;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Arial,sans-serif;font-size:19px;line-height:1.55}
+header{background:var(--brown);color:#fff8ec;padding:14px 24px}
+header h1{margin:0;font-family:Georgia,serif;font-size:28px;font-weight:normal}
+header p{margin:2px 0 0;opacity:.85;font-size:16px}
+nav{display:flex;flex-wrap:wrap;gap:6px;padding:10px 24px;background:var(--soft);border-bottom:2px solid var(--line);position:sticky;top:0;z-index:5}
+nav button{border:2px solid var(--brown2);background:var(--card);color:var(--brown);padding:7px 14px;border-radius:20px;font-size:16px;cursor:pointer}
+nav button.on{background:var(--brown2);color:#fff}
+main{max-width:1100px;margin:0 auto;padding:20px 24px 60px}
+.page{display:none}.page.on{display:block}
+h2{font-family:Georgia,serif;color:var(--brown);font-size:30px;margin:6px 0 12px;font-weight:normal}
+h3{color:var(--brown2);font-size:22px;margin:22px 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:14px 0;box-shadow:0 2px 0 var(--line)}
+.key{border-left:6px solid var(--accent)}
+.eq{font-family:Georgia,serif;font-size:24px;text-align:center;padding:10px;background:#fff;border:1px dashed var(--line);border-radius:8px;margin:10px 0}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 6px}
+.frac>span:first-child{border-bottom:2px solid var(--ink);padding:0 6px}
+.row{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+.row>*{flex:1 1 380px}
+button.b{background:var(--brown2);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:17px;cursor:pointer;margin:4px 6px 4px 0}
+button.b.alt{background:var(--card);color:var(--brown);border:2px solid var(--brown2)}
+button.b:disabled{opacity:.45;cursor:default}
+.check{background:#fdf6e6;border:2px solid var(--accent);border-radius:12px;padding:14px 18px;margin:16px 0}
+.check .tag{display:inline-block;background:var(--accent);color:#fff;font-size:14px;padding:2px 10px;border-radius:12px;margin-bottom:6px;letter-spacing:.5px}
+.check .src{font-size:14px;color:#8a7356;font-style:italic}
+input.ans{font-size:18px;padding:6px 10px;width:200px;border:2px solid var(--line);border-radius:6px}
+.fb{font-weight:600;margin-left:8px}
+.fb.ok{color:var(--good)}.fb.no{color:var(--bad)}
+.work{display:none;background:#fff;border-left:4px solid var(--brown2);padding:8px 14px;margin-top:8px;border-radius:4px}
+.work.on{display:block}
+table.t{border-collapse:collapse;margin:8px 0;background:#fff}
+table.t th,table.t td{border:1px solid var(--line);padding:6px 12px;text-align:center}
+table.t th{background:var(--soft);color:var(--brown)}
+svg text{font-family:"Segoe UI",Arial,sans-serif}
+.readout{font-family:Consolas,monospace;background:#2b1d10;color:#ffe9c4;padding:10px 14px;border-radius:8px;font-size:17px;line-height:1.6}
+.slider{width:100%}
+label.s{display:block;font-weight:600;color:var(--brown);margin-top:8px}
+.steps li{margin:6px 0}
+.reveal{display:none}.reveal.on{display:block;animation:fade .4s}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+.pager{display:flex;justify-content:space-between;margin-top:30px}
+.mcq button.opt{display:block;width:100%;text-align:left;margin:6px 0;padding:10px 14px;font-size:17px;border:2px solid var(--line);background:#fff;border-radius:8px;cursor:pointer;color:var(--ink)}
+.mcq button.opt.right{border-color:var(--good);background:#e6f4ea}
+.mcq button.opt.wrong{border-color:var(--bad);background:#fbe9e7}
+.mcq .exp{display:none;margin-top:6px;font-size:17px}
+.mcq.done .exp{display:block}
+.warn{background:#fbeee4;border-left:6px solid var(--bad);padding:10px 16px;border-radius:6px;margin:12px 0}
+.small{font-size:15px;color:#7a6448}
+canvas{background:#fff;border:1px solid var(--line);border-radius:8px;max-width:100%}
+.chip{display:inline-block;padding:2px 10px;border-radius:12px;background:var(--soft);margin:2px;font-size:16px}
+.big{font-size:22px}
+table.ice{border-collapse:collapse;margin:10px auto;background:#fff;font-size:18px}
+table.ice th,table.ice td{border:1px solid var(--line);padding:8px 14px;text-align:center;min-width:90px}
+table.ice th{background:var(--soft);color:var(--brown)}
+table.ice td.lab{background:#fbf3e3;font-weight:600;color:var(--brown);text-align:left}
+table.ice td.hl{background:#fde9c8;transition:background .4s}
+table.ice td.done{color:var(--good);font-weight:700}
+table.ice input{width:100px;font-size:17px;padding:3px 6px;border:2px solid var(--line);border-radius:6px;text-align:center}
+.slot{display:inline-block;min-width:60px;border-bottom:2px dashed var(--brown2);margin:0 4px;text-align:center}
+select.s{font-size:18px;padding:4px 6px;border:2px solid var(--line);border-radius:6px;background:#fff}
+.tick{color:var(--good);font-weight:700}.cross{color:var(--bad);font-weight:700}
+.legend span{display:inline-block;margin-right:14px;font-size:15px}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:-2px;margin-right:4px}
+.src{font-size:14px;color:#8a7356;font-style:italic;display:block;margin-bottom:4px}
+.readout .frac>span:first-child{border-bottom-color:#ffe9c4}
+
+</style>
+</head>
+<body>
+<header>
+  <h1>Kinetics 6 – Mixed Maths Practice</h1>
+  <p>AQA A-level Chemistry · Kinetics walkthrough</p>
+</header>
+<nav id="nav"></nav>
+<main>
+<!-- ============ PAGE 1 ============ -->
+<section class="page" data-title="1. Maths toolkit">
+<h2>1. The kinetics maths toolkit</h2>
+<div class="card key">
+  <table class="t" style="margin:auto;text-align:left">
+    <tr><th>What</th><th>How</th><th>Watch out for</th></tr>
+    <tr><td>Mean rate</td><td>change in amount ÷ time</td><td>units: (amount unit) (time unit)⁻¹</td></tr>
+    <tr><td>Rate at an instant</td><td>gradient of the tangent = Δy ÷ Δx</td><td>big triangle; positive value</td></tr>
+    <tr><td>Initial rate</td><td>tangent at t = 0</td><td>tangent must touch the curve at t = 0</td></tr>
+    <tr><td>Clock reactions</td><td>rate ∝ 1/t (or 1000/t)</td><td>fixed amount formed each time</td></tr>
+    <tr><td>min⁻¹ → s⁻¹</td><td>÷ 60</td><td>the number gets smaller</td></tr>
+    <tr><td>Gas volume → moles</td><td>n = pV / RT</td><td>Pa, m³ (cm³ × 10⁻⁶), K</td></tr>
+    <tr><td>Mass → moles</td><td>n = m / M<sub>r</sub></td><td>the mass lost is the gas</td></tr>
+    <tr><td>Rates of other species</td><td>× ratio of balancing numbers</td><td>check which one is faster</td></tr>
+    <tr><td>Reverse E<sub>a</sub></td><td>E<sub>a</sub>(rev) = E<sub>a</sub>(fwd) − ΔH</td><td>sign of ΔH</td></tr>
+    <tr><td>% uncertainty</td><td>uncertainty ÷ value × 100</td><td>two readings → double it</td></tr>
+    <tr><td>Rate ratio (clock)</td><td>rate₂ / rate₁ = t₁ / t₂</td><td>the times are flipped</td></tr>
+  </table>
+</div>
+</section>
+
+<!-- ============ PAGE 2 ============ -->
+<section class="page" data-title="2. Exam-style practice">
+<h2>2. Mixed exam-style practice</h2>
+<p>Enter each answer and press Check. The score at the bottom updates as you go. Every question shows its full working.</p>
+<div id="mx"></div>
+<div class="card" id="mxScore" style="font-size:22px;text-align:center"></div>
+</section>
+
+<!-- ============ PAGE 3 ============ -->
+<section class="page" data-title="3. Quiz">
+<h2>3. Final quiz</h2>
+<p>Click an answer. You get one go at each question.</p>
+<div id="quiz"></div>
+<div class="card" id="score" style="font-size:22px;text-align:center"></div>
+<button class="b alt" onclick="buildQuiz()">Reset quiz</button>
+<p class="small">That's the end of the AS kinetics walkthroughs. In Year 2, the rate equations walkthroughs build on all of this.</p>
+</section>
+
+<div class="pager"><button class="b alt" id="prevB">◀ Previous</button><button class="b" id="nextB">Next ▶</button></div>
+</main>
+<script>
+/* ---------- navigation ---------- */
+const pages=[...document.querySelectorAll('.page')];let cur=0;
+const nav=document.getElementById('nav');
+pages.forEach((p,i)=>{const b=document.createElement('button');b.textContent=p.dataset.title;b.onclick=()=>go(i);nav.appendChild(b)});
+function go(i){cur=i;pages.forEach((p,j)=>p.classList.toggle('on',j===i));[...nav.children].forEach((b,j)=>b.classList.toggle('on',j===i));
+ document.getElementById('prevB').disabled=i===0;document.getElementById('nextB').disabled=i===pages.length-1;window.scrollTo(0,0);
+ if(typeof onPage==='function')onPage(i)}
+document.getElementById('prevB').onclick=()=>go(Math.max(0,cur-1));
+document.getElementById('nextB').onclick=()=>go(Math.min(pages.length-1,cur+1));
+
+/* ---------- helpers ---------- */
+const $=id=>document.getElementById(id);
+function tog(id){$(id).classList.toggle('on')}
+function stepReveal(id){const r=[...document.querySelectorAll('#'+id+' .reveal:not(.on)')];if(r.length)r[0].classList.add('on')}
+function parseNum(s){
+ s=s.trim().replace(/\s/g,'');const sp={'⁰':'0','¹':'1','²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9','⁻':'-'};
+ s=s.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁻]/g,c=>sp[c]).replace(/[−–]/g,'-').replace(/,/g,'');
+ let m=s.match(/^(-?[\d.]+)[x×X*]10\^?(-?\d+)$/);if(m)return parseFloat(m[1])*Math.pow(10,parseInt(m[2]));
+ m=s.match(/^(-?[\d.]+)[eE](-?\d+)$/);if(m)return parseFloat(s);
+ const v=Number(s);return (s===''||isNaN(v))?null:v}
+function numCheck(id,target,tol){const v=parseNum($(id).value);const fb=$(id+'fb');
+ if(v===null){fb.textContent='Enter a number';fb.className='fb no';return false}
+ if(Math.abs(v-target)<=Math.abs(target)*tol){fb.textContent='✔ Correct';fb.className='fb ok';return true}
+ fb.textContent='✘ Not quite, check your working';fb.className='fb no';return false}
+function pick(btn,ok,id){const f=$(id);f.textContent=ok?'✔ Correct':'✘ Try again';f.className='fb '+(ok?'ok':'no')}
+const sup=n=>String(n).split('').map(c=>({'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'})[c]).join('');
+/* format number to n s.f.; standard form for very small/large */
+function sf(x,n=3){if(x===0)return '0';let e=Math.floor(Math.log10(Math.abs(x)));
+ if(e<-3||e>=5){let m=(x/Math.pow(10,e)).toFixed(n-1);if(Math.abs(+m)>=10){e++;m=(x/Math.pow(10,e)).toFixed(n-1)}return m+' × 10'+sup(e)}
+ return x.toFixed(Math.max(0,n-1-e))}
+/* units of Kc from Δn = (moles top − moles bottom) */
+function kcUnits(dn){if(dn===0)return 'no units';const m=dn===1?'mol':'mol'+sup(dn);return `${m} dm${sup(-3*dn)}`}
+/* render a fraction */
+const fr=(t,b)=>`<span class="frac"><span>${t}</span><span>${b}</span></span>`;
+
+/* ---------- SVG plotting ---------- */
+const NS='http://www.w3.org/2000/svg';
+function E(tag,a,p){const e=document.createElementNS(NS,tag);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e}
+function plot(svg,o){
+ svg.innerHTML='';const W=660,H=400,ml=80,mr=20,mt=18,mb=60,pw=W-ml-mr,ph=H-mt-mb;
+ const X=x=>ml+x/o.xmax*pw,Y=y=>mt+ph-y/o.ymax*ph;
+ const id='cl'+Math.random().toString(36).slice(2);
+ const d=E('defs',{},svg);const cp=E('clipPath',{id},d);E('rect',{x:ml,y:mt,width:pw,height:ph},cp);
+ E('rect',{x:ml,y:mt,width:pw,height:ph,fill:'#fff'},svg);
+ const gx=o.gx||o.xt,gy=o.gy||o.yt;
+ for(let x=0;x<=o.xmax+1e-9;x+=gx)E('line',{x1:X(x),x2:X(x),y1:mt,y2:mt+ph,stroke:'#efe3cc'},svg);
+ for(let y=0;y<=o.ymax+1e-9;y+=gy)E('line',{x1:ml,x2:ml+pw,y1:Y(y),y2:Y(y),stroke:'#efe3cc'},svg);
+ if(!o.noxt)for(let x=0;x<=o.xmax+1e-9;x+=o.xt){E('line',{x1:X(x),x2:X(x),y1:mt+ph,y2:mt+ph+6,stroke:'#3b2a1a'},svg);const t=E('text',{x:X(x),y:mt+ph+24,'text-anchor':'middle','font-size':15,fill:'#3b2a1a'},svg);t.textContent=+x.toFixed(4)}
+ if(!o.noyt)for(let y=0;y<=o.ymax+1e-9;y+=o.yt){E('line',{x1:ml-6,x2:ml,y1:Y(y),y2:Y(y),stroke:'#3b2a1a'},svg);const t=E('text',{x:ml-10,y:Y(y)+5,'text-anchor':'end','font-size':15,fill:'#3b2a1a'},svg);t.textContent=(o.yfmt?o.yfmt(y):+y.toFixed(3))}
+ E('line',{x1:ml,x2:ml+pw,y1:mt+ph,y2:mt+ph,stroke:'#3b2a1a','stroke-width':2},svg);
+ E('line',{x1:ml,x2:ml,y1:mt,y2:mt+ph,stroke:'#3b2a1a','stroke-width':2},svg);
+ let t=E('text',{x:ml+pw/2,y:H-12,'text-anchor':'middle','font-size':17,fill:'#6b4423'},svg);t.textContent=o.xlab;
+ t=E('text',{x:18,y:mt+ph/2,'text-anchor':'middle','font-size':17,fill:'#6b4423',transform:`rotate(-90 18 ${mt+ph/2})`},svg);t.textContent=o.ylab;
+ const g=E('g',{'clip-path':`url(#${id})`},svg);
+ return {X,Y,g,svg,curve(f,col='#6b4423',w=3,dash,x0=0,x1=o.xmax){let dd='';for(let i=0;i<=300;i++){const x=x0+(x1-x0)*i/300;dd+=(i?'L':'M')+X(x)+' '+Y(f(x))}return E('path',{d:dd,fill:'none',stroke:col,'stroke-width':w,'stroke-dasharray':dash||''},g)},
+  text(x,y,s,col='#3b2a1a',sz=15,anc='start'){const t=E('text',{x:X(x),y:Y(y),'font-size':sz,fill:col,'text-anchor':anc},g);t.textContent=s;return t}};
+}
+
+/* ---------- quiz ---------- */
+let qs=0,qa=0;
+function buildQuiz(){const w=$('quiz');w.innerHTML='';qs=0;qa=0;
+ Q.forEach((q,i)=>{const c=document.createElement('div');c.className='card mcq';c.innerHTML=`<b>Q${i+1}.</b> ${q[0]}`;
+  q[1].forEach((o,j)=>{const b=document.createElement('button');b.className='opt';b.innerHTML=o;
+   b.onclick=()=>{if(c.classList.contains('done'))return;c.classList.add('done');qa++;
+    if(j===q[2]){b.classList.add('right');qs++}else{b.classList.add('wrong');c.querySelectorAll('.opt')[q[2]].classList.add('right')}score()};c.appendChild(b)});
+  const e=document.createElement('div');e.className='exp';e.innerHTML='💡 '+q[3];c.appendChild(e);w.appendChild(c)});score()}
+function score(){const n=Q.length;$('score').innerHTML=`Score: <b>${qs}</b> / ${n}`+(qa===n?(qs>=n-1?' – excellent!':qs>=Math.ceil(n*0.7)?' – good, review the ones you missed':' – go back through the walkthrough and try again'):'')}
+
+const MX=[
+ {h:'Question 1: gas collection and moles',s:'2H₂O₂(aq) → 2H₂O(l) + O₂(g). A catalyst is added to 50.0 cm³ of 0.500 mol dm⁻³ H₂O₂. In the first 30 s, 36.0 cm³ of O₂ is collected at 101 kPa and 298 K. (R = 8.31 J K⁻¹ mol⁻¹)',
+  p:[['(a) Amount of O₂ formed / mol',1.468e-3,0.01,'n = pV/RT = (101 000 × 36.0 × 10⁻⁶) ÷ (8.31 × 298) = 1.47 × 10⁻³ mol'],
+     ['(b) Mean rate of O₂ formation / mol s⁻¹',4.894e-5,0.015,'1.47 × 10⁻³ ÷ 30 = 4.89 × 10⁻⁵ mol s⁻¹'],
+     ['(c) Mean rate H₂O₂ is used up / mol s⁻¹',9.79e-5,0.015,'2 H₂O₂ per O₂: 2 × 4.89 × 10⁻⁵ = 9.79 × 10⁻⁵ mol s⁻¹'],
+     ['(d) That rate in mol dm⁻³ s⁻¹',1.958e-3,0.015,'9.79 × 10⁻⁵ ÷ 0.0500 dm³ = 1.96 × 10⁻³ mol dm⁻³ s⁻¹'],
+     ['(e) Percentage of the H₂O₂ used up in the 30 s',11.75,0.02,'Initial H₂O₂ = 0.0500 × 0.500 = 0.0250 mol. Used = 2 × 1.47 × 10⁻³ = 2.94 × 10⁻³ mol → 11.7%. About 12% has reacted, so this mean rate is still a reasonable estimate of the initial rate.']]},
+ {h:'Question 2: clock reaction ratios',s:'Using November 2020 AS Paper 2 data: at 31 °C the cross disappeared in 48 s; at 42 °C in 26 s.',
+  p:[['(a) 1000/t at 31 °C',20.83,0.01,'1000 ÷ 48 = 20.8'],
+     ['(b) How many times faster is the reaction at 42 °C than at 31 °C?',1.846,0.01,'rate ∝ 1/t, so rate₂/rate₁ = t₁/t₂ = 48 ÷ 26 = 1.85']]},
+ {h:'Question 3: tangent units',s:'On a graph of mass of flask (g) against time (min), a tangent at 2 min passes through (0.5 min, 1.20 g) and (3.5 min, 0.24 g).',
+  p:[['(a) Rate at 2 min in g min⁻¹',0.32,0.01,'(1.20 − 0.24) ÷ (3.5 − 0.5) = 0.96 ÷ 3.0 = 0.32 g min⁻¹'],
+     ['(b) The same rate in g s⁻¹',5.333e-3,0.015,'0.32 ÷ 60 = 5.33 × 10⁻³ g s⁻¹']]},
+ {h:'Question 4: reaction profiles',s:'H₂(g) + I₂(g) ⇌ 2HI(g), ΔH = +52 kJ mol⁻¹. E<sub>a</sub> (forward) = 173 kJ mol⁻¹.',
+  p:[['(a) E<sub>a</sub> for the reverse reaction / kJ mol⁻¹',121,0.005,'173 − (+52) = 121 kJ mol⁻¹'],
+     ['(b) A catalyst lowers the forward E<sub>a</sub> by 60 kJ mol⁻¹. New reverse E<sub>a</sub> / kJ mol⁻¹',61,0.005,'ΔH is unchanged, so the reverse E<sub>a</sub> also falls by 60: 121 − 60 = 61 kJ mol⁻¹']]},
+ {h:'Question 5: extension, Maxwell–Boltzmann maths',s:'The fraction of molecules with E ≥ E<sub>a</sub> ≈ e<sup>−Ea/RT</sup>. E<sub>a</sub> = 75 kJ mol⁻¹.',
+  p:[['By what factor does this fraction increase from 300 K to 310 K?',2.639,0.02,'e<sup>(75 000/8.31)(1/300 − 1/310)</sup> = e<sup>0.970</sup> = 2.64']]},
+ {h:'Question 6: uncertainty',s:'A clock-reaction time of 12 s is measured with an uncertainty of ±0.5 s.',
+  p:[['Percentage uncertainty / %',4.167,0.02,'0.5 ÷ 12 × 100 = 4.2%']]}];
+let mxOk=new Set(),mxTot=0;
+MX.forEach((q,i)=>{const d=document.createElement('div');d.className='check';d.innerHTML=`<span class="tag">${q.h}</span><p>${q.s}</p>`;
+ q.p.forEach((p,j)=>{mxTot++;const id=`m${i}_${j}`;d.innerHTML+=`<p>${p[0]}<br><input class="ans" id="${id}"> <button class="b" data-i="${i}" data-j="${j}">Check</button><span class="fb" id="${id}fb"></span> <button class="b alt" onclick="tog('${id}w')">Working</button></p><div class="work" id="${id}w">${p[3]}</div>`});
+ $('mx').appendChild(d)});
+document.querySelectorAll('#mx button[data-i]').forEach(b=>b.onclick=()=>{const i=+b.dataset.i,j=+b.dataset.j,p=MX[i].p[j],id=`m${i}_${j}`;if(numCheck(id,p[1],p[2]))mxOk.add(id);mxSc()});
+function mxSc(){$('mxScore').innerHTML=`Correct: <b>${mxOk.size}</b> / ${mxTot}`}mxSc();
+
+const Q=[
+ ["Which expression gives the rate at exactly 20 s from a curved graph?",["y at 20 s ÷ 20","Gradient of the tangent at 20 s","Area under the curve to 20 s","Total change ÷ total time"],1,"Tangent gradient."],
+ ["0.90 cm³ s⁻¹ in cm³ min⁻¹ is…",["0.015","54","90","5.4"],1,"× 60."],
+ ["N₂O₅ decomposes: 2N₂O₅ → 4NO₂ + O₂. If NO₂ forms at 4.0 × 10⁻⁴ mol dm⁻³ s⁻¹, how fast is N₂O₅ used?",["8.0 × 10⁻⁴","4.0 × 10⁻⁴","2.0 × 10⁻⁴","1.0 × 10⁻⁴"],2,"2 : 4 → half."],
+ ["At 20 °C t = 80 s; at 40 °C t = 20 s. How many times faster at 40 °C?",["0.25","2","4","60"],2,"80 ÷ 20 = 4."],
+ ["The volume in pV = nRT must be in…",["cm³","dm³","m³","litres"],2,"SI units: m³."],
+ ["Which change increases the proportion of collisions with E ≥ E<sub>a</sub> without changing the curve?",["Raising T","Adding a catalyst","Raising concentration","Raising pressure"],1,"The catalyst moves E<sub>a</sub> left."],
+ ["E<sub>a</sub>(fwd) = 90, ΔH = −40 kJ mol⁻¹. E<sub>a</sub>(rev)?",["50","130","−130","90"],1,"90 − (−40) = 130."],
+ ["Why is \"many more molecules have E ≥ E<sub>a</sub>\" better than \"more collisions\" for temperature?",["Collision frequency hardly changes; the energy effect is much bigger","They mean the same","Collisions decrease with temperature","E<sub>a</sub> decreases"],0,"The fraction above E<sub>a</sub> roughly doubles per 10 K."],
+ ["% uncertainty in a 25 s time measured ±0.5 s?",["0.5%","2%","5%","12.5%"],1,"0.5/25 × 100 = 2%."],
+ ["0.88 g CO₂ lost in 40 s. Rate in mol s⁻¹?",["0.022","5.0 × 10⁻⁴","2.0 × 10⁻²","8.8 × 10⁻²"],1,"0.88/44 = 0.020 mol; ÷ 40 = 5.0 × 10⁻⁴."]
+];
+
+buildQuiz();
+go(0);
+</script>
+</body>
+</html>

@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kinetics 1 – Calculating Rates of Reaction</title>
+<style>
+:root{
+  --bg:#f6efe1; --card:#fffaf0; --ink:#3b2a1a; --brown:#6b4423; --brown2:#8b5a2b;
+  --accent:#b5651d; --soft:#ead9bd; --line:#d8c4a0; --good:#2f7d4a; --bad:#b03a2e; --blue:#2c4a7a;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Arial,sans-serif;font-size:19px;line-height:1.55}
+header{background:var(--brown);color:#fff8ec;padding:14px 24px}
+header h1{margin:0;font-family:Georgia,serif;font-size:28px;font-weight:normal}
+header p{margin:2px 0 0;opacity:.85;font-size:16px}
+nav{display:flex;flex-wrap:wrap;gap:6px;padding:10px 24px;background:var(--soft);border-bottom:2px solid var(--line);position:sticky;top:0;z-index:5}
+nav button{border:2px solid var(--brown2);background:var(--card);color:var(--brown);padding:7px 14px;border-radius:20px;font-size:16px;cursor:pointer}
+nav button.on{background:var(--brown2);color:#fff}
+main{max-width:1100px;margin:0 auto;padding:20px 24px 60px}
+.page{display:none}.page.on{display:block}
+h2{font-family:Georgia,serif;color:var(--brown);font-size:30px;margin:6px 0 12px;font-weight:normal}
+h3{color:var(--brown2);font-size:22px;margin:22px 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:14px 0;box-shadow:0 2px 0 var(--line)}
+.key{border-left:6px solid var(--accent)}
+.eq{font-family:Georgia,serif;font-size:24px;text-align:center;padding:10px;background:#fff;border:1px dashed var(--line);border-radius:8px;margin:10px 0}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 6px}
+.frac>span:first-child{border-bottom:2px solid var(--ink);padding:0 6px}
+.row{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+.row>*{flex:1 1 380px}
+button.b{background:var(--brown2);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:17px;cursor:pointer;margin:4px 6px 4px 0}
+button.b.alt{background:var(--card);color:var(--brown);border:2px solid var(--brown2)}
+button.b:disabled{opacity:.45;cursor:default}
+.check{background:#fdf6e6;border:2px solid var(--accent);border-radius:12px;padding:14px 18px;margin:16px 0}
+.check .tag{display:inline-block;background:var(--accent);color:#fff;font-size:14px;padding:2px 10px;border-radius:12px;margin-bottom:6px;letter-spacing:.5px}
+.check .src{font-size:14px;color:#8a7356;font-style:italic}
+input.ans{font-size:18px;padding:6px 10px;width:200px;border:2px solid var(--line);border-radius:6px}
+.fb{font-weight:600;margin-left:8px}
+.fb.ok{color:var(--good)}.fb.no{color:var(--bad)}
+.work{display:none;background:#fff;border-left:4px solid var(--brown2);padding:8px 14px;margin-top:8px;border-radius:4px}
+.work.on{display:block}
+table.t{border-collapse:collapse;margin:8px 0;background:#fff}
+table.t th,table.t td{border:1px solid var(--line);padding:6px 12px;text-align:center}
+table.t th{background:var(--soft);color:var(--brown)}
+svg text{font-family:"Segoe UI",Arial,sans-serif}
+.readout{font-family:Consolas,monospace;background:#2b1d10;color:#ffe9c4;padding:10px 14px;border-radius:8px;font-size:17px;line-height:1.6}
+.slider{width:100%}
+label.s{display:block;font-weight:600;color:var(--brown);margin-top:8px}
+.steps li{margin:6px 0}
+.reveal{display:none}.reveal.on{display:block;animation:fade .4s}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+.pager{display:flex;justify-content:space-between;margin-top:30px}
+.mcq button.opt{display:block;width:100%;text-align:left;margin:6px 0;padding:10px 14px;font-size:17px;border:2px solid var(--line);background:#fff;border-radius:8px;cursor:pointer;color:var(--ink)}
+.mcq button.opt.right{border-color:var(--good);background:#e6f4ea}
+.mcq button.opt.wrong{border-color:var(--bad);background:#fbe9e7}
+.mcq .exp{display:none;margin-top:6px;font-size:17px}
+.mcq.done .exp{display:block}
+.warn{background:#fbeee4;border-left:6px solid var(--bad);padding:10px 16px;border-radius:6px;margin:12px 0}
+.small{font-size:15px;color:#7a6448}
+canvas{background:#fff;border:1px solid var(--line);border-radius:8px;max-width:100%}
+.chip{display:inline-block;padding:2px 10px;border-radius:12px;background:var(--soft);margin:2px;font-size:16px}
+.big{font-size:22px}
+table.ice{border-collapse:collapse;margin:10px auto;background:#fff;font-size:18px}
+table.ice th,table.ice td{border:1px solid var(--line);padding:8px 14px;text-align:center;min-width:90px}
+table.ice th{background:var(--soft);color:var(--brown)}
+table.ice td.lab{background:#fbf3e3;font-weight:600;color:var(--brown);text-align:left}
+table.ice td.hl{background:#fde9c8;transition:background .4s}
+table.ice td.done{color:var(--good);font-weight:700}
+table.ice input{width:100px;font-size:17px;padding:3px 6px;border:2px solid var(--line);border-radius:6px;text-align:center}
+.slot{display:inline-block;min-width:60px;border-bottom:2px dashed var(--brown2);margin:0 4px;text-align:center}
+select.s{font-size:18px;padding:4px 6px;border:2px solid var(--line);border-radius:6px;background:#fff}
+.tick{color:var(--good);font-weight:700}.cross{color:var(--bad);font-weight:700}
+.legend span{display:inline-block;margin-right:14px;font-size:15px}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:-2px;margin-right:4px}
+.src{font-size:14px;color:#8a7356;font-style:italic;display:block;margin-bottom:4px}
+.readout .frac>span:first-child{border-bottom-color:#ffe9c4}
+
+</style>
+</head>
+<body>
+<header>
+  <h1>Kinetics 1 – Calculating Rates of Reaction</h1>
+  <p>AQA A-level Chemistry · Kinetics walkthrough</p>
+</header>
+<nav id="nav"></nav>
+<main>
+<!-- ============ PAGE 1 ============ -->
+<section class="page" data-title="1. What is rate?">
+<h2>1. What is the rate of a reaction?</h2>
+<div class="card key">
+  <div class="eq">rate of reaction = <span class="frac"><span>change in amount of a reactant or product</span><span>time taken</span></span></div>
+  <ul>
+    <li>The "amount" can be anything you can measure: volume of gas, mass, moles, concentration, even colour.</li>
+    <li>A <b>reactant</b> goes down, a <b>product</b> goes up. Rate is always given as a <b>positive</b> number.</li>
+    <li>The <b>units</b> are always: (units of what you measured) ÷ (units of time).</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Interactive: build the units</h3>
+  <div class="row">
+    <div>
+      <label class="s">What did you measure?</label>
+      <select class="s" id="uQ"><option value="cm³">volume of gas (cm³)</option><option value="dm³">volume of gas (dm³)</option><option value="g">mass (g)</option><option value="mol">amount (mol)</option><option value="mol dm⁻³">concentration (mol dm⁻³)</option></select>
+      <label class="s">Time measured in</label>
+      <select class="s" id="uT"><option value="s">seconds</option><option value="min">minutes</option></select>
+    </div>
+    <div><div class="readout" id="uOut" style="font-size:20px"></div></div>
+  </div>
+  <p class="small">AQA wants units written with negative powers: <b>cm³ s⁻¹</b>, not cm³/s. The June 2020 Paper 2 mark scheme says "NOT cm³/s", and June 2023 says "penalise g/min".</p>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Mean rate</h3>
+  <p>A <b>mean (average) rate</b> uses the total change over a period of time.</p>
+  <p>Magnesium reacts with acid. 45.0 cm³ of hydrogen is collected in the first 30 s.</p>
+  <button class="b alt" onclick="stepReveal('we1')">Show next step</button>
+  <ol class="steps" id="we1">
+    <li class="reveal">change = 45.0 − 0 = 45.0 cm³ &nbsp; time = 30 s</li>
+    <li class="reveal">mean rate = 45.0 ÷ 30 = <b>1.50 cm³ s⁻¹</b></li>
+    <li class="reveal">In cm³ min⁻¹: 45.0 cm³ in 0.5 min → 45.0 ÷ 0.5 = <b>90.0 cm³ min⁻¹</b> (the same rate, × 60)</li>
+  </ol>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 1</span>
+  <p>The concentration of a reactant falls from 0.80 to 0.50 mol dm⁻³ in 2.0 minutes. Calculate the mean rate in mol dm⁻³ s⁻¹.</p>
+  <input class="ans" id="c1"> <button class="b" onclick="numCheck('c1',2.5e-3,0.01)">Check</button><span class="fb" id="c1fb"></span>
+  <button class="b alt" onclick="tog('c1w')">Working</button>
+  <div class="work" id="c1w">change = 0.80 − 0.50 = 0.30 mol dm⁻³ &nbsp; time = 2.0 × 60 = 120 s<br>rate = 0.30 ÷ 120 = <b>2.5 × 10⁻³ mol dm⁻³ s⁻¹</b></div>
+</div>
+</section>
+
+<!-- ============ PAGE 2 ============ -->
+<section class="page" data-title="2. Converting units">
+<h2>2. Converting rate units</h2>
+<div class="card key">
+  <p>Converting is just multiplying or dividing by the right factor. Ask: <b>is the number going to get bigger or smaller?</b></p>
+  <table class="t" style="margin:auto">
+    <tr><th>From</th><th>To</th><th>Do this</th><th>Why</th></tr>
+    <tr><td>per minute (min⁻¹)</td><td>per second (s⁻¹)</td><td><b>÷ 60</b></td><td>less happens in 1 s than in 1 min</td></tr>
+    <tr><td>per second (s⁻¹)</td><td>per minute (min⁻¹)</td><td><b>× 60</b></td><td>more happens in a minute</td></tr>
+    <tr><td>cm³</td><td>dm³</td><td><b>÷ 1000</b></td><td>1 dm³ = 1000 cm³</td></tr>
+    <tr><td>g</td><td>mol</td><td><b>÷ M<sub>r</sub></b></td><td>n = m / M<sub>r</sub></td></tr>
+  </table>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Exam example</h3>
+  <span class="src">June 2023 Paper 2 Q1.2 (mark scheme)</span>
+  <p>A tangent to a mass-loss graph (mass in g, time in minutes) has a gradient of 0.50. The units are <b>g min⁻¹</b>. A student who converted to seconds got full marks too:</p>
+  <div class="eq">0.50 g min⁻¹ ÷ 60 = 8.3 × 10⁻³ g s⁻¹</div>
+  <p class="small">Either is fine, as long as the <b>number matches the units</b>. "0.50 g s⁻¹" would be wrong.</p>
+</div>
+
+<div class="check">
+  <span class="tag">CONVERSION DRILL</span>
+  <p>A new conversion every time. Give your answer to 3 significant figures (standard form is fine, e.g. 2.5e-3 or 2.5 × 10⁻³).</p>
+  <p class="big" id="cvQ"></p>
+  <input class="ans" id="cvA"> <span id="cvU"></span> <button class="b" onclick="cvCheck()">Check</button><span class="fb" id="cvAfb"></span>
+  <div><button class="b alt" onclick="tog('cvW')">Working</button><button class="b" onclick="cvNew()">Next</button> <span class="small" id="cvS"></span></div>
+  <div class="work" id="cvW"></div>
+</div>
+
+<div class="card key">
+  <h3 style="margin-top:0">Standard form on your calculator</h3>
+  <p>Rates are often tiny. Type 8.3 × 10⁻³ as <b>8.3 ×10ˣ −3</b> (or EXP / EE). Don't type "× 10 ^ −3" with brackets missing, or the calculator may divide wrongly.</p>
+</div>
+</section>
+
+<!-- ============ PAGE 3 ============ -->
+<section class="page" data-title="3. Into moles">
+<h2>3. From measurements to mol s⁻¹ and mol dm⁻³ s⁻¹</h2>
+<div class="card key">
+  <p>To compare different reactions, convert your measurement into <b>moles</b>:</p>
+  <ul>
+    <li><b>Mass of gas lost</b>: n = m ÷ M<sub>r</sub></li>
+    <li><b>Volume of gas</b>: n = pV ÷ RT (p in Pa, V in m³, T in K, R = 8.31 J K⁻¹ mol⁻¹)</li>
+    <li><b>Concentration rate</b>: divide the mol s⁻¹ by the volume of solution in dm³ → mol dm⁻³ s⁻¹</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Worked example 1: mass loss</h3>
+  <p>CaCO₃(s) + 2HCl(aq) → CaCl₂(aq) + H₂O(l) + CO₂(g). The flask loses 0.66 g in the first 60 s. The acid volume is 50.0 cm³.</p>
+  <button class="b alt" onclick="stepReveal('we2')">Show next step</button>
+  <ol class="steps" id="we2">
+    <li class="reveal">The mass lost is CO₂ escaping. n(CO₂) = 0.66 ÷ 44.0 = <b>0.0150 mol</b></li>
+    <li class="reveal">rate of CO₂ formation = 0.0150 ÷ 60 = <b>2.50 × 10⁻⁴ mol s⁻¹</b></li>
+    <li class="reveal">2 HCl react per CO₂, so HCl is used up at 2 × 2.50 × 10⁻⁴ = <b>5.00 × 10⁻⁴ mol s⁻¹</b></li>
+    <li class="reveal">In 0.0500 dm³: rate = 5.00 × 10⁻⁴ ÷ 0.0500 = <b>1.00 × 10⁻² mol dm⁻³ s⁻¹</b></li>
+  </ol>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Worked example 2: gas volume with pV = nRT</h3>
+  <p>48.0 cm³ of H₂ is collected in 40 s at 100 kPa and 298 K. Calculate the mean rate of H₂ formation in mol s⁻¹.</p>
+  <button class="b alt" onclick="stepReveal('we3')">Show next step</button>
+  <ol class="steps" id="we3">
+    <li class="reveal">Convert: p = 100 × 10³ Pa, &nbsp; V = 48.0 × 10⁻⁶ m³ (cm³ → m³ is ÷ 10⁶)</li>
+    <li class="reveal">n = <span class="frac"><span>pV</span><span>RT</span></span> = <span class="frac"><span>100 000 × 48.0 × 10⁻⁶</span><span>8.31 × 298</span></span> = <b>1.94 × 10⁻³ mol</b></li>
+    <li class="reveal">rate = 1.94 × 10⁻³ ÷ 40 = <b>4.85 × 10⁻⁵ mol s⁻¹</b></li>
+  </ol>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Interactive: gas volume → mol s⁻¹</h3>
+  <div class="row">
+    <div>
+      <label class="s">Volume of gas: <span id="gvV"></span> cm³</label><input type="range" class="slider" id="gvS" min="5" max="100" step="1" value="48">
+      <label class="s">Time: <span id="gtV"></span> s</label><input type="range" class="slider" id="gtS" min="10" max="120" step="5" value="40">
+      <label class="s">Temperature: <span id="gTV"></span> K</label><input type="range" class="slider" id="gTS" min="273" max="353" step="1" value="298">
+    </div>
+    <div><div class="readout" id="gvOut"></div></div>
+  </div>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 2</span>
+  <p>Zinc reacts with sulfuric acid. 0.0981 g of zinc (A<sub>r</sub> = 65.4) is used up in 25 s. Calculate the mean rate of reaction of zinc in mol s⁻¹.</p>
+  <input class="ans" id="c2"> <button class="b" onclick="numCheck('c2',6.0e-5,0.01)">Check</button><span class="fb" id="c2fb"></span>
+  <button class="b alt" onclick="tog('c2w')">Working</button>
+  <div class="work" id="c2w">n = 0.0981 ÷ 65.4 = 1.50 × 10⁻³ mol<br>rate = 1.50 × 10⁻³ ÷ 25 = <b>6.00 × 10⁻⁵ mol s⁻¹</b></div>
+</div>
+</section>
+
+<!-- ============ PAGE 4 ============ -->
+<section class="page" data-title="4. Using the equation">
+<h2>4. Rates of different substances: use the equation</h2>
+<div class="card key">
+  <p>Different substances in the same reaction change at different rates. The ratio is the <b>balancing numbers</b>.</p>
+  <div class="eq">2MnO₄⁻ + 16H⁺ + 5C₂O₄²⁻ → 2Mn²⁺ + 8H₂O + 10CO₂</div>
+  <p>Every time 2 MnO₄⁻ react, 5 C₂O₄²⁻ react and 10 CO₂ form. So CO₂ forms <b>5 times faster</b> than MnO₄⁻ is used up.</p>
+  <div class="eq">rate for X = rate for Y × <span class="frac"><span>balancing number of X</span><span>balancing number of Y</span></span></div>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Interactive: ratio calculator</h3>
+  <p>MnO₄⁻ is used up at <input class="ans" id="stR" value="2.0e-5" style="width:120px"> mol dm⁻³ s⁻¹ (June 2022 AS Paper 2 Q1 reaction)</p>
+  <table class="t" id="stTab" style="margin:auto"></table>
+</div>
+
+<div class="check">
+  <span class="tag">RATIO DRILL</span>
+  <div class="eq" id="sdEq"></div>
+  <p class="big" id="sdQ"></p>
+  <input class="ans" id="sdA"> <span id="sdU"></span> <button class="b" onclick="sdCheck()">Check</button><span class="fb" id="sdAfb"></span>
+  <div><button class="b alt" onclick="tog('sdW')">Working</button><button class="b" onclick="sdNew()">Next</button> <span class="small" id="sdS"></span></div>
+  <div class="work" id="sdW"></div>
+</div>
+</section>
+
+<!-- ============ PAGE 5 ============ -->
+<section class="page" data-title="5. Quiz">
+<h2>5. End-of-walkthrough quiz</h2>
+<p>Click an answer. You get one go at each question.</p>
+<div id="quiz"></div>
+<div class="card" id="score" style="font-size:22px;text-align:center"></div>
+<button class="b alt" onclick="buildQuiz()">Reset quiz</button>
+<p class="small">Next: Kinetics 2 – rates from graphs and clock reactions.</p>
+</section>
+
+<div class="pager"><button class="b alt" id="prevB">◀ Previous</button><button class="b" id="nextB">Next ▶</button></div>
+</main>
+<script>
+/* ---------- navigation ---------- */
+const pages=[...document.querySelectorAll('.page')];let cur=0;
+const nav=document.getElementById('nav');
+pages.forEach((p,i)=>{const b=document.createElement('button');b.textContent=p.dataset.title;b.onclick=()=>go(i);nav.appendChild(b)});
+function go(i){cur=i;pages.forEach((p,j)=>p.classList.toggle('on',j===i));[...nav.children].forEach((b,j)=>b.classList.toggle('on',j===i));
+ document.getElementById('prevB').disabled=i===0;document.getElementById('nextB').disabled=i===pages.length-1;window.scrollTo(0,0);
+ if(typeof onPage==='function')onPage(i)}
+document.getElementById('prevB').onclick=()=>go(Math.max(0,cur-1));
+document.getElementById('nextB').onclick=()=>go(Math.min(pages.length-1,cur+1));
+
+/* ---------- helpers ---------- */
+const $=id=>document.getElementById(id);
+function tog(id){$(id).classList.toggle('on')}
+function stepReveal(id){const r=[...document.querySelectorAll('#'+id+' .reveal:not(.on)')];if(r.length)r[0].classList.add('on')}
+function parseNum(s){
+ s=s.trim().replace(/\s/g,'');const sp={'⁰':'0','¹':'1','²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9','⁻':'-'};
+ s=s.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁻]/g,c=>sp[c]).replace(/[−–]/g,'-').replace(/,/g,'');
+ let m=s.match(/^(-?[\d.]+)[x×X*]10\^?(-?\d+)$/);if(m)return parseFloat(m[1])*Math.pow(10,parseInt(m[2]));
+ m=s.match(/^(-?[\d.]+)[eE](-?\d+)$/);if(m)return parseFloat(s);
+ const v=Number(s);return (s===''||isNaN(v))?null:v}
+function numCheck(id,target,tol){const v=parseNum($(id).value);const fb=$(id+'fb');
+ if(v===null){fb.textContent='Enter a number';fb.className='fb no';return false}
+ if(Math.abs(v-target)<=Math.abs(target)*tol){fb.textContent='✔ Correct';fb.className='fb ok';return true}
+ fb.textContent='✘ Not quite, check your working';fb.className='fb no';return false}
+function pick(btn,ok,id){const f=$(id);f.textContent=ok?'✔ Correct':'✘ Try again';f.className='fb '+(ok?'ok':'no')}
+const sup=n=>String(n).split('').map(c=>({'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'})[c]).join('');
+/* format number to n s.f.; standard form for very small/large */
+function sf(x,n=3){if(x===0)return '0';let e=Math.floor(Math.log10(Math.abs(x)));
+ if(e<-3||e>=5){let m=(x/Math.pow(10,e)).toFixed(n-1);if(Math.abs(+m)>=10){e++;m=(x/Math.pow(10,e)).toFixed(n-1)}return m+' × 10'+sup(e)}
+ return x.toFixed(Math.max(0,n-1-e))}
+/* units of Kc from Δn = (moles top − moles bottom) */
+function kcUnits(dn){if(dn===0)return 'no units';const m=dn===1?'mol':'mol'+sup(dn);return `${m} dm${sup(-3*dn)}`}
+/* render a fraction */
+const fr=(t,b)=>`<span class="frac"><span>${t}</span><span>${b}</span></span>`;
+
+/* ---------- SVG plotting ---------- */
+const NS='http://www.w3.org/2000/svg';
+function E(tag,a,p){const e=document.createElementNS(NS,tag);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e}
+function plot(svg,o){
+ svg.innerHTML='';const W=660,H=400,ml=80,mr=20,mt=18,mb=60,pw=W-ml-mr,ph=H-mt-mb;
+ const X=x=>ml+x/o.xmax*pw,Y=y=>mt+ph-y/o.ymax*ph;
+ const id='cl'+Math.random().toString(36).slice(2);
+ const d=E('defs',{},svg);const cp=E('clipPath',{id},d);E('rect',{x:ml,y:mt,width:pw,height:ph},cp);
+ E('rect',{x:ml,y:mt,width:pw,height:ph,fill:'#fff'},svg);
+ const gx=o.gx||o.xt,gy=o.gy||o.yt;
+ for(let x=0;x<=o.xmax+1e-9;x+=gx)E('line',{x1:X(x),x2:X(x),y1:mt,y2:mt+ph,stroke:'#efe3cc'},svg);
+ for(let y=0;y<=o.ymax+1e-9;y+=gy)E('line',{x1:ml,x2:ml+pw,y1:Y(y),y2:Y(y),stroke:'#efe3cc'},svg);
+ if(!o.noxt)for(let x=0;x<=o.xmax+1e-9;x+=o.xt){E('line',{x1:X(x),x2:X(x),y1:mt+ph,y2:mt+ph+6,stroke:'#3b2a1a'},svg);const t=E('text',{x:X(x),y:mt+ph+24,'text-anchor':'middle','font-size':15,fill:'#3b2a1a'},svg);t.textContent=+x.toFixed(4)}
+ if(!o.noyt)for(let y=0;y<=o.ymax+1e-9;y+=o.yt){E('line',{x1:ml-6,x2:ml,y1:Y(y),y2:Y(y),stroke:'#3b2a1a'},svg);const t=E('text',{x:ml-10,y:Y(y)+5,'text-anchor':'end','font-size':15,fill:'#3b2a1a'},svg);t.textContent=(o.yfmt?o.yfmt(y):+y.toFixed(3))}
+ E('line',{x1:ml,x2:ml+pw,y1:mt+ph,y2:mt+ph,stroke:'#3b2a1a','stroke-width':2},svg);
+ E('line',{x1:ml,x2:ml,y1:mt,y2:mt+ph,stroke:'#3b2a1a','stroke-width':2},svg);
+ let t=E('text',{x:ml+pw/2,y:H-12,'text-anchor':'middle','font-size':17,fill:'#6b4423'},svg);t.textContent=o.xlab;
+ t=E('text',{x:18,y:mt+ph/2,'text-anchor':'middle','font-size':17,fill:'#6b4423',transform:`rotate(-90 18 ${mt+ph/2})`},svg);t.textContent=o.ylab;
+ const g=E('g',{'clip-path':`url(#${id})`},svg);
+ return {X,Y,g,svg,curve(f,col='#6b4423',w=3,dash,x0=0,x1=o.xmax){let dd='';for(let i=0;i<=300;i++){const x=x0+(x1-x0)*i/300;dd+=(i?'L':'M')+X(x)+' '+Y(f(x))}return E('path',{d:dd,fill:'none',stroke:col,'stroke-width':w,'stroke-dasharray':dash||''},g)},
+  text(x,y,s,col='#3b2a1a',sz=15,anc='start'){const t=E('text',{x:X(x),y:Y(y),'font-size':sz,fill:col,'text-anchor':anc},g);t.textContent=s;return t}};
+}
+
+/* ---------- quiz ---------- */
+let qs=0,qa=0;
+function buildQuiz(){const w=$('quiz');w.innerHTML='';qs=0;qa=0;
+ Q.forEach((q,i)=>{const c=document.createElement('div');c.className='card mcq';c.innerHTML=`<b>Q${i+1}.</b> ${q[0]}`;
+  q[1].forEach((o,j)=>{const b=document.createElement('button');b.className='opt';b.innerHTML=o;
+   b.onclick=()=>{if(c.classList.contains('done'))return;c.classList.add('done');qa++;
+    if(j===q[2]){b.classList.add('right');qs++}else{b.classList.add('wrong');c.querySelectorAll('.opt')[q[2]].classList.add('right')}score()};c.appendChild(b)});
+  const e=document.createElement('div');e.className='exp';e.innerHTML='💡 '+q[3];c.appendChild(e);w.appendChild(c)});score()}
+function score(){const n=Q.length;$('score').innerHTML=`Score: <b>${qs}</b> / ${n}`+(qa===n?(qs>=n-1?' – excellent!':qs>=Math.ceil(n*0.7)?' – good, review the ones you missed':' – go back through the walkthrough and try again'):'')}
+
+/* ---------- page 1: units ---------- */
+function uUpd(){const q=$('uQ').value,t=$('uT').value;const tu=t==='s'?'s⁻¹':'min⁻¹';
+ $('uOut').innerHTML=`rate = <span class="frac"><span>${q}</span><span>${t}</span></span> → <b>${q} ${tu}</b>`+(t==='min'?`<br><span style="color:#e8a860">To change to per second: ÷ 60</span>`:'')}
+$('uQ').onchange=uUpd;$('uT').onchange=uUpd;uUpd();
+
+/* ---------- page 2: conversion drill ---------- */
+const rnd=(a,b,dp=2)=>+(a+Math.random()*(b-a)).toFixed(dp);const pickA=a=>a[Math.floor(Math.random()*a.length)];
+let CV=null,cvN=0,cvOk=0,cvDone=false;
+function cvNew(){const types=[
+ ()=>{const v=rnd(5,90,1);return{q:`${v} cm³ min⁻¹ → cm³ s⁻¹`,a:v/60,u:'cm³ s⁻¹',w:`${v} ÷ 60 = ${sf(v/60)} cm³ s⁻¹ (per second is smaller)`}},
+ ()=>{const v=rnd(0.2,3,2);return{q:`${v} g min⁻¹ → g s⁻¹`,a:v/60,u:'g s⁻¹',w:`${v} ÷ 60 = ${sf(v/60)} g s⁻¹`}},
+ ()=>{const v=rnd(0.2,5,2);return{q:`${v} cm³ s⁻¹ → cm³ min⁻¹`,a:v*60,u:'cm³ min⁻¹',w:`${v} × 60 = ${sf(v*60)} cm³ min⁻¹ (more happens in a minute)`}},
+ ()=>{const v=rnd(1.2,9.8,1),e=-pickA([2,3,4]);const x=v*Math.pow(10,e);return{q:`${v} × 10${sup(e)} mol dm⁻³ min⁻¹ → mol dm⁻³ s⁻¹`,a:x/60,u:'mol dm⁻³ s⁻¹',w:`${v} × 10${sup(e)} ÷ 60 = ${sf(x/60)} mol dm⁻³ s⁻¹`}},
+ ()=>{const v=rnd(10,95,1);return{q:`${v} cm³ s⁻¹ → dm³ s⁻¹`,a:v/1000,u:'dm³ s⁻¹',w:`${v} ÷ 1000 = ${sf(v/1000)} dm³ s⁻¹`}},
+ ()=>{const m=rnd(0.05,0.9,2),M=pickA([[44.0,'CO₂'],[32.0,'O₂'],[64.1,'SO₂']]);return{q:`${m} g min⁻¹ of ${M[1]} (M<sub>r</sub> = ${M[0]}) → mol s⁻¹`,a:m/M[0]/60,u:'mol s⁻¹',w:`${m} ÷ ${M[0]} = ${sf(m/M[0])} mol min⁻¹, then ÷ 60 = ${sf(m/M[0]/60)} mol s⁻¹`}}];
+ CV=pickA(types)();cvDone=false;$('cvQ').innerHTML=CV.q;$('cvU').textContent=CV.u;$('cvA').value='';$('cvAfb').textContent='';$('cvW').classList.remove('on');$('cvW').innerHTML=CV.w}
+function cvCheck(){const ok=numCheck('cvA',CV.a,0.01);if(!cvDone&&parseNum($('cvA').value)!==null){cvDone=true;cvN++;if(ok)cvOk++;$('cvS').textContent=`Right first time: ${cvOk} / ${cvN}`}}
+cvNew();
+
+/* ---------- page 3: gas volume ---------- */
+function gv(){const V=+$('gvS').value,t=+$('gtS').value,T=+$('gTS').value;$('gvV').textContent=V;$('gtV').textContent=t;$('gTV').textContent=T;
+ const n=100000*V*1e-6/(8.31*T);
+ $('gvOut').innerHTML=`p = 100 000 Pa, V = ${V} × 10⁻⁶ m³, T = ${T} K<br>n = pV / RT = ${fr('100 000 × '+V+' × 10⁻⁶','8.31 × '+T)}<br>n = <b>${sf(n)} mol</b><br>rate = ${sf(n)} ÷ ${t} = <b>${sf(n/t)} mol s⁻¹</b>`}
+['gvS','gtS','gTS'].forEach(i=>$(i).oninput=gv);gv();
+
+/* ---------- page 4: ratio calculator ---------- */
+const MN=[['MnO₄⁻',2,'used'],['H⁺',16,'used'],['C₂O₄²⁻',5,'used'],['Mn²⁺',2,'formed'],['CO₂',10,'formed']];
+function st(){const r=parseNum($('stR').value);const t=$('stTab');if(r===null){t.innerHTML='<tr><td>Enter a number</td></tr>';return}
+ t.innerHTML='<tr><th>Species</th><th>Balancing number</th><th>Rate / mol dm⁻³ s⁻¹</th><th>Working</th></tr>'+MN.map(([f,c,w])=>`<tr><td>${f} ${w}</td><td>${c}</td><td><b>${sf(r*c/2)}</b></td><td>${sf(r)} × ${c}/2</td></tr>`).join('')}
+$('stR').oninput=st;st();
+
+const SD=[{eq:'2H₂O₂ → 2H₂O + O₂',sp:[['H₂O₂',2],['O₂',1]]},{eq:'N₂ + 3H₂ → 2NH₃',sp:[['N₂',1],['H₂',3],['NH₃',2]]},
+ {eq:'CaCO₃ + 2HCl → CaCl₂ + H₂O + CO₂',sp:[['HCl',2],['CO₂',1]]},{eq:'Mg + 2HCl → MgCl₂ + H₂',sp:[['HCl',2],['H₂',1]]},
+ {eq:'2N₂O₅ → 4NO₂ + O₂',sp:[['N₂O₅',2],['NO₂',4],['O₂',1]]},{eq:'2MnO₄⁻ + 16H⁺ + 5C₂O₄²⁻ → 2Mn²⁺ + 8H₂O + 10CO₂',sp:[['MnO₄⁻',2],['C₂O₄²⁻',5],['CO₂',10],['H⁺',16]]}];
+let SQ=null,sdN=0,sdOk=0,sdDone=false;
+function sdNew(){const e=pickA(SD);let a=pickA(e.sp),b;do{b=pickA(e.sp)}while(b===a);const v=rnd(1.1,9.9,1),ex=-pickA([3,4,5]);const r=v*Math.pow(10,ex);
+ SQ={a:r*b[1]/a[1]};sdDone=false;$('sdEq').textContent=e.eq;$('sdQ').innerHTML=`${a[0]} changes at ${v} × 10${sup(ex)} mol dm⁻³ s⁻¹. What is the rate for ${b[0]}?`;$('sdU').textContent='mol dm⁻³ s⁻¹';
+ $('sdA').value='';$('sdAfb').textContent='';$('sdW').classList.remove('on');$('sdW').innerHTML=`${b[0]} : ${a[0]} = ${b[1]} : ${a[1]}<br>rate = ${v} × 10${sup(ex)} × ${b[1]}/${a[1]} = <b>${sf(SQ.a)} mol dm⁻³ s⁻¹</b>`}
+function sdCheck(){const ok=numCheck('sdA',SQ.a,0.01);if(!sdDone&&parseNum($('sdA').value)!==null){sdDone=true;sdN++;if(ok)sdOk++;$('sdS').textContent=`Right first time: ${sdOk} / ${sdN}`}}
+sdNew();
+
+/* ---------- quiz ---------- */
+const Q=[
+ ["What are the correct units for a rate measured as mass lost per second?",["g/s","g s⁻¹","s g⁻¹","g s"],1,"AQA uses negative powers: g s⁻¹."],
+ ["30 cm³ of gas is collected in 2 minutes. What is the mean rate in cm³ s⁻¹?",["15","0.25","0.50","60"],1,"30 ÷ 120 s = 0.25 cm³ s⁻¹."],
+ ["A rate is 0.60 g min⁻¹. What is it in g s⁻¹?",["36","0.010","0.60","0.0060"],1,"0.60 ÷ 60 = 0.010 g s⁻¹."],
+ ["Mass lost from a flask of CaCO₃ and acid is 0.88 g in 40 s. What is the rate of CO₂ formation in mol s⁻¹? (M<sub>r</sub> CO₂ = 44.0)",["5.0 × 10⁻⁴","0.022","2.0 × 10⁻²","8.0 × 10⁻⁴"],0,"0.88 ÷ 44.0 = 0.020 mol, then ÷ 40 = 5.0 × 10⁻⁴ mol s⁻¹."],
+ ["2H₂O₂ → 2H₂O + O₂. O₂ forms at 3.0 × 10⁻⁴ mol s⁻¹. How fast is H₂O₂ used up?",["1.5 × 10⁻⁴","3.0 × 10⁻⁴","6.0 × 10⁻⁴","9.0 × 10⁻⁴"],2,"2 H₂O₂ per O₂, so twice as fast."],
+ ["Which volume conversion is right for pV = nRT?",["cm³ ÷ 1000 → m³","cm³ ÷ 10⁶ → m³","dm³ × 1000 → m³","cm³ × 10⁶ → m³"],1,"1 m³ = 10⁶ cm³."],
+ ["5.0 × 10⁻⁴ mol s⁻¹ of HCl is used in 0.025 dm³ of solution. What is the rate in mol dm⁻³ s⁻¹?",["1.25 × 10⁻⁵","2.0 × 10⁻²","5.0 × 10⁻⁴","0.020 × 10⁻³"],1,"5.0 × 10⁻⁴ ÷ 0.025 = 0.020 = 2.0 × 10⁻² mol dm⁻³ s⁻¹."],
+ ["Why is rate given as a positive number even when a reactant's concentration falls?",["It's a convention: rate is the size of the change per unit time","Reactants never fall","Because time is negative","It's only positive for products"],0,"The gradient of a reactant graph is negative, but the rate is quoted as positive."],
+ ["N₂ + 3H₂ → 2NH₃. NH₃ forms at 0.12 mol dm⁻³ s⁻¹. How fast is H₂ used?",["0.08","0.12","0.18","0.36"],2,"H₂ : NH₃ = 3 : 2 → 0.12 × 3/2 = 0.18."],
+ ["A student gives the rate from a graph in minutes as 0.50 g s⁻¹ (no conversion). What's wrong?",["Nothing","The number is per minute but the unit says per second","They should have multiplied by 60","g should be kg"],1,"The units must match the number: 0.50 g min⁻¹ or 8.3 × 10⁻³ g s⁻¹."]
+];
+
+buildQuiz();
+go(0);
+</script>
+</body>
+</html>

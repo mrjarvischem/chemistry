@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kinetics 3 – Collision Theory and Activation Energy</title>
+<style>
+:root{
+  --bg:#f6efe1; --card:#fffaf0; --ink:#3b2a1a; --brown:#6b4423; --brown2:#8b5a2b;
+  --accent:#b5651d; --soft:#ead9bd; --line:#d8c4a0; --good:#2f7d4a; --bad:#b03a2e; --blue:#2c4a7a;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Arial,sans-serif;font-size:19px;line-height:1.55}
+header{background:var(--brown);color:#fff8ec;padding:14px 24px}
+header h1{margin:0;font-family:Georgia,serif;font-size:28px;font-weight:normal}
+header p{margin:2px 0 0;opacity:.85;font-size:16px}
+nav{display:flex;flex-wrap:wrap;gap:6px;padding:10px 24px;background:var(--soft);border-bottom:2px solid var(--line);position:sticky;top:0;z-index:5}
+nav button{border:2px solid var(--brown2);background:var(--card);color:var(--brown);padding:7px 14px;border-radius:20px;font-size:16px;cursor:pointer}
+nav button.on{background:var(--brown2);color:#fff}
+main{max-width:1100px;margin:0 auto;padding:20px 24px 60px}
+.page{display:none}.page.on{display:block}
+h2{font-family:Georgia,serif;color:var(--brown);font-size:30px;margin:6px 0 12px;font-weight:normal}
+h3{color:var(--brown2);font-size:22px;margin:22px 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:14px 0;box-shadow:0 2px 0 var(--line)}
+.key{border-left:6px solid var(--accent)}
+.eq{font-family:Georgia,serif;font-size:24px;text-align:center;padding:10px;background:#fff;border:1px dashed var(--line);border-radius:8px;margin:10px 0}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 6px}
+.frac>span:first-child{border-bottom:2px solid var(--ink);padding:0 6px}
+.row{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+.row>*{flex:1 1 380px}
+button.b{background:var(--brown2);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:17px;cursor:pointer;margin:4px 6px 4px 0}
+button.b.alt{background:var(--card);color:var(--brown);border:2px solid var(--brown2)}
+button.b:disabled{opacity:.45;cursor:default}
+.check{background:#fdf6e6;border:2px solid var(--accent);border-radius:12px;padding:14px 18px;margin:16px 0}
+.check .tag{display:inline-block;background:var(--accent);color:#fff;font-size:14px;padding:2px 10px;border-radius:12px;margin-bottom:6px;letter-spacing:.5px}
+.check .src{font-size:14px;color:#8a7356;font-style:italic}
+input.ans{font-size:18px;padding:6px 10px;width:200px;border:2px solid var(--line);border-radius:6px}
+.fb{font-weight:600;margin-left:8px}
+.fb.ok{color:var(--good)}.fb.no{color:var(--bad)}
+.work{display:none;background:#fff;border-left:4px solid var(--brown2);padding:8px 14px;margin-top:8px;border-radius:4px}
+.work.on{display:block}
+table.t{border-collapse:collapse;margin:8px 0;background:#fff}
+table.t th,table.t td{border:1px solid var(--line);padding:6px 12px;text-align:center}
+table.t th{background:var(--soft);color:var(--brown)}
+svg text{font-family:"Segoe UI",Arial,sans-serif}
+.readout{font-family:Consolas,monospace;background:#2b1d10;color:#ffe9c4;padding:10px 14px;border-radius:8px;font-size:17px;line-height:1.6}
+.slider{width:100%}
+label.s{display:block;font-weight:600;color:var(--brown);margin-top:8px}
+.steps li{margin:6px 0}
+.reveal{display:none}.reveal.on{display:block;animation:fade .4s}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+.pager{display:flex;justify-content:space-between;margin-top:30px}
+.mcq button.opt{display:block;width:100%;text-align:left;margin:6px 0;padding:10px 14px;font-size:17px;border:2px solid var(--line);background:#fff;border-radius:8px;cursor:pointer;color:var(--ink)}
+.mcq button.opt.right{border-color:var(--good);background:#e6f4ea}
+.mcq button.opt.wrong{border-color:var(--bad);background:#fbe9e7}
+.mcq .exp{display:none;margin-top:6px;font-size:17px}
+.mcq.done .exp{display:block}
+.warn{background:#fbeee4;border-left:6px solid var(--bad);padding:10px 16px;border-radius:6px;margin:12px 0}
+.small{font-size:15px;color:#7a6448}
+canvas{background:#fff;border:1px solid var(--line);border-radius:8px;max-width:100%}
+.chip{display:inline-block;padding:2px 10px;border-radius:12px;background:var(--soft);margin:2px;font-size:16px}
+.big{font-size:22px}
+table.ice{border-collapse:collapse;margin:10px auto;background:#fff;font-size:18px}
+table.ice th,table.ice td{border:1px solid var(--line);padding:8px 14px;text-align:center;min-width:90px}
+table.ice th{background:var(--soft);color:var(--brown)}
+table.ice td.lab{background:#fbf3e3;font-weight:600;color:var(--brown);text-align:left}
+table.ice td.hl{background:#fde9c8;transition:background .4s}
+table.ice td.done{color:var(--good);font-weight:700}
+table.ice input{width:100px;font-size:17px;padding:3px 6px;border:2px solid var(--line);border-radius:6px;text-align:center}
+.slot{display:inline-block;min-width:60px;border-bottom:2px dashed var(--brown2);margin:0 4px;text-align:center}
+select.s{font-size:18px;padding:4px 6px;border:2px solid var(--line);border-radius:6px;background:#fff}
+.tick{color:var(--good);font-weight:700}.cross{color:var(--bad);font-weight:700}
+.legend span{display:inline-block;margin-right:14px;font-size:15px}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:-2px;margin-right:4px}
+.src{font-size:14px;color:#8a7356;font-style:italic;display:block;margin-bottom:4px}
+.readout .frac>span:first-child{border-bottom-color:#ffe9c4}
+
+</style>
+</head>
+<body>
+<header>
+  <h1>Kinetics 3 – Collision Theory and Activation Energy</h1>
+  <p>AQA A-level Chemistry · Kinetics walkthrough</p>
+</header>
+<nav id="nav"></nav>
+<main>
+<!-- ============ PAGE 1 ============ -->
+<section class="page" data-title="1. Collision theory">
+<h2>1. Collision theory</h2>
+<div class="card key">
+  <p>For particles to react they must:</p>
+  <ol>
+    <li><b>collide</b>, and</li>
+    <li>collide with energy <b>greater than or equal to the activation energy</b> (E ≥ E<sub>a</sub>), and</li>
+    <li>collide in the right <b>orientation</b>.</li>
+  </ol>
+  <p><b>Activation energy, E<sub>a</sub></b>: the <b>minimum energy</b> particles need to collide with for a reaction to happen. It's the energy needed to start breaking bonds.</p>
+  <p>Most collisions are <b>not</b> successful. Rate depends on the number of <b>successful collisions per second</b>.</p>
+  <div class="eq">rate ∝ (collisions per second) × (fraction of collisions with E ≥ E<sub>a</sub>)</div>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Simulation: count the successful collisions</h3>
+  <p>Blue (A) and orange (B) particles react only when an A hits a B. Collisions flash <b style="color:#2f7d4a">green</b> if E ≥ E<sub>a</sub> (successful) and <b style="color:#b03a2e">red</b> if not.</p>
+  <div class="row">
+    <div style="flex:2 1 460px"><canvas id="csCv" width="600" height="360" style="width:100%"></canvas></div>
+    <div style="flex:1 1 260px">
+      <label class="s">Concentration: <span id="csNV"></span> particles of each</label><input type="range" class="slider" id="csN" min="4" max="30" step="1" value="16">
+      <label class="s">Temperature: <span id="csTV"></span> K</label><input type="range" class="slider" id="csT" min="200" max="600" step="10" value="300">
+      <label class="s">Activation energy: <span id="csEV"></span> (arbitrary units)</label><input type="range" class="slider" id="csE" min="2" max="12" step="0.5" value="6">
+      <label style="display:block;margin-top:6px"><input type="checkbox" id="csCat"> add a catalyst (lowers E<sub>a</sub>)</label>
+      <label style="display:block"><input type="checkbox" id="csOr"> orientation matters too</label>
+      <button class="b alt" onclick="csReset()" style="margin-top:6px">Reset counters</button>
+    </div>
+  </div>
+  <div class="readout" id="csOut"></div>
+  <p class="small">Try: double the concentration (collisions per second roughly double, % successful stays the same). Then raise the temperature (collisions per second rise a little, % successful rises a lot).</p>
+</div>
+</section>
+
+<!-- ============ PAGE 2 ============ -->
+<section class="page" data-title="2. What each factor changes">
+<h2>2. Frequency or energy? What each factor changes</h2>
+<div class="card key">
+  <table class="t" style="margin:auto">
+    <tr><th>Change</th><th>Collisions per second</th><th>Fraction with E ≥ E<sub>a</sub></th><th>Why</th></tr>
+    <tr><td>↑ concentration</td><td><b>↑</b></td><td>same</td><td>more particles in the same volume</td></tr>
+    <tr><td>↑ pressure (gases)</td><td><b>↑</b></td><td>same</td><td>particles closer together</td></tr>
+    <tr><td>↑ surface area</td><td><b>↑</b></td><td>same</td><td>more particles exposed to collide</td></tr>
+    <tr><td>↑ temperature</td><td>↑ a little</td><td><b>↑ a lot</b></td><td>particles have more energy</td></tr>
+    <tr><td>catalyst</td><td>same</td><td><b>↑</b></td><td>alternative route with lower E<sub>a</sub></td></tr>
+  </table>
+</div>
+
+<div class="check">
+  <span class="tag">SORT IT</span>
+  <p>For each change, does it work mainly by increasing the <b>frequency</b> of collisions, or the <b>proportion</b> of collisions that are successful?</p>
+  <div id="sortQ"></div>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 1</span>
+  <span class="src">June 2018 AS Paper 2 Q1.3 (2 marks)</span>
+  <p>Explain why increasing the concentration of hydrogen peroxide increases the rate of its decomposition.</p>
+  <button class="b alt" onclick="tog('c1w')">Mark scheme</button>
+  <div class="work" id="c1w"><b>M1</b> more particles in the same volume / particles closer together<br><b>M2</b> successful collisions are more frequent (more per unit time)<br><i>Penalise any mention of changing the activation energy (CE = 0). "More chance of collisions" and "rate of collisions" are ignored: say <b>more frequent successful collisions</b>.</i></div>
+</div>
+</section>
+
+<!-- ============ PAGE 3 ============ -->
+<section class="page" data-title="3. Reaction profiles">
+<h2>3. Reaction profiles and activation energy</h2>
+<div class="card key">
+  <ul>
+    <li>E<sub>a</sub> is the height from the <b>reactants</b> to the top of the hump.</li>
+    <li>ΔH is the height from reactants to <b>products</b>: negative (down) for exothermic, positive (up) for endothermic.</li>
+    <li>A <b>catalyst</b> provides an <b>alternative route (pathway) with a lower activation energy</b>. ΔH doesn't change.</li>
+  </ul>
+  <div class="eq">E<sub>a</sub>(reverse) = E<sub>a</sub>(forward) − ΔH</div>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Interactive: build a reaction profile</h3>
+  <div class="row">
+    <div style="flex:2 1 440px"><svg id="rpSvg" viewBox="0 0 660 400" width="100%"></svg></div>
+    <div style="flex:1 1 240px">
+      <label class="s">ΔH: <span id="rpHV"></span> kJ mol⁻¹</label><input type="range" class="slider" id="rpH" min="-200" max="200" step="10" value="-90">
+      <label class="s">E<sub>a</sub> (forward): <span id="rpEV"></span> kJ mol⁻¹</label><input type="range" class="slider" id="rpE" min="20" max="300" step="10" value="150">
+      <label style="display:block;margin-top:6px"><input type="checkbox" id="rpCat"> show catalysed route</label>
+      <div class="readout" id="rpOut"></div>
+    </div>
+  </div>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 2</span>
+  <p>A reaction has ΔH = −92 kJ mol⁻¹ and E<sub>a</sub> = +230 kJ mol⁻¹ for the forward reaction. Calculate E<sub>a</sub> for the reverse reaction.</p>
+  <input class="ans" id="c2"> kJ mol⁻¹ <button class="b" onclick="numCheck('c2',322,0.005)">Check</button><span class="fb" id="c2fb"></span>
+  <button class="b alt" onclick="tog('c2w')">Working</button>
+  <div class="work" id="c2w">E<sub>a</sub>(reverse) = 230 − (−92) = <b>322 kJ mol⁻¹</b>. For an exothermic reaction the reverse has the bigger hump.</div>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 3</span>
+  <span class="src">June 2025 AS Paper 2 Q2.1 and June 2018 AS Paper 2 Q1.1 (2 marks)</span>
+  <p>Explain how a catalyst increases the rate of a reaction.</p>
+  <button class="b alt" onclick="tog('c3w')">Mark scheme</button>
+  <div class="work" id="c3w"><b>M1</b> provides an alternative route / mechanism / pathway<br><b>M2</b> with a lower activation energy<br><i>June 2018: any reference to increasing the energy of particles gets CE = 0. References to more collisions or surface area are ignored.</i></div>
+</div>
+
+<div class="check">
+  <span class="tag">PROFILE DRILL</span>
+  <p id="pdQ"></p>
+  <input class="ans" id="pdA"> kJ mol⁻¹ <button class="b" onclick="pdCheck()">Check</button><span class="fb" id="pdAfb"></span>
+  <button class="b alt" onclick="tog('pdW')">Working</button><button class="b" onclick="pdNew()">Next</button>
+  <div class="work" id="pdW"></div>
+</div>
+</section>
+
+<!-- ============ PAGE 4 ============ -->
+<section class="page" data-title="4. Quiz">
+<h2>4. End-of-walkthrough quiz</h2>
+<p>Click an answer. You get one go at each question.</p>
+<div id="quiz"></div>
+<div class="card" id="score" style="font-size:22px;text-align:center"></div>
+<button class="b alt" onclick="buildQuiz()">Reset quiz</button>
+<p class="small">Next: Kinetics 4 – the Maxwell–Boltzmann distribution.</p>
+</section>
+
+<div class="pager"><button class="b alt" id="prevB">◀ Previous</button><button class="b" id="nextB">Next ▶</button></div>
+</main>
+<script>
+/* ---------- navigation ---------- */
+const pages=[...document.querySelectorAll('.page')];let cur=0;
+const nav=document.getElementById('nav');
+pages.forEach((p,i)=>{const b=document.createElement('button');b.textContent=p.dataset.title;b.onclick=()=>go(i);nav.appendChild(b)});
+function go(i){cur=i;pages.forEach((p,j)=>p.classList.toggle('on',j===i));[...nav.children].forEach((b,j)=>b.classList.toggle('on',j===i));
+ document.getElementById('prevB').disabled=i===0;document.getElementById('nextB').disabled=i===pages.length-1;window.scrollTo(0,0);
+ if(typeof onPage==='function')onPage(i)}
+document.getElementById('prevB').onclick=()=>go(Math.max(0,cur-1));
+document.getElementById('nextB').onclick=()=>go(Math.min(pages.length-1,cur+1));
+
+/* ---------- helpers ---------- */
+const $=id=>document.getElementById(id);
+function tog(id){$(id).classList.toggle('on')}
+function stepReveal(id){const r=[...document.querySelectorAll('#'+id+' .reveal:not(.on)')];if(r.length)r[0].classList.add('on')}
+function parseNum(s){
+ s=s.trim().replace(/\s/g,'');const sp={'⁰':'0','¹':'1','²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9','⁻':'-'};
+ s=s.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁻]/g,c=>sp[c]).replace(/[−–]/g,'-').replace(/,/g,'');
+ let m=s.match(/^(-?[\d.]+)[x×X*]10\^?(-?\d+)$/);if(m)return parseFloat(m[1])*Math.pow(10,parseInt(m[2]));
+ m=s.match(/^(-?[\d.]+)[eE](-?\d+)$/);if(m)return parseFloat(s);
+ const v=Number(s);return (s===''||isNaN(v))?null:v}
+function numCheck(id,target,tol){const v=parseNum($(id).value);const fb=$(id+'fb');
+ if(v===null){fb.textContent='Enter a number';fb.className='fb no';return false}
+ if(Math.abs(v-target)<=Math.abs(target)*tol){fb.textContent='✔ Correct';fb.className='fb ok';return true}
+ fb.textContent='✘ Not quite, check your working';fb.className='fb no';return false}
+function pick(btn,ok,id){const f=$(id);f.textContent=ok?'✔ Correct':'✘ Try again';f.className='fb '+(ok?'ok':'no')}
+const sup=n=>String(n).split('').map(c=>({'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'})[c]).join('');
+/* format number to n s.f.; standard form for very small/large */
+function sf(x,n=3){if(x===0)return '0';let e=Math.floor(Math.log10(Math.abs(x)));
+ if(e<-3||e>=5){let m=(x/Math.pow(10,e)).toFixed(n-1);if(Math.abs(+m)>=10){e++;m=(x/Math.pow(10,e)).toFixed(n-1)}return m+' × 10'+sup(e)}
+ return x.toFixed(Math.max(0,n-1-e))}
+/* units of Kc from Δn = (moles top − moles bottom) */
+function kcUnits(dn){if(dn===0)return 'no units';const m=dn===1?'mol':'mol'+sup(dn);return `${m} dm${sup(-3*dn)}`}
+/* render a fraction */
+const fr=(t,b)=>`<span class="frac"><span>${t}</span><span>${b}</span></span>`;
+
+/* ---------- SVG plotting ---------- */
+const NS='http://www.w3.org/2000/svg';
+function E(tag,a,p){const e=document.createElementNS(NS,tag);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e}
+function plot(svg,o){
+ svg.innerHTML='';const W=660,H=400,ml=80,mr=20,mt=18,mb=60,pw=W-ml-mr,ph=H-mt-mb;
+ const X=x=>ml+x/o.xmax*pw,Y=y=>mt+ph-y/o.ymax*ph;
+ const id='cl'+Math.random().toString(36).slice(2);
+ const d=E('defs',{},svg);const cp=E('clipPath',{id},d);E('rect',{x:ml,y:mt,width:pw,height:ph},cp);
+ E('rect',{x:ml,y:mt,width:pw,height:ph,fill:'#fff'},svg);
+ const gx=o.gx||o.xt,gy=o.gy||o.yt;
+ for(let x=0;x<=o.xmax+1e-9;x+=gx)E('line',{x1:X(x),x2:X(x),y1:mt,y2:mt+ph,stroke:'#efe3cc'},svg);
+ for(let y=0;y<=o.ymax+1e-9;y+=gy)E('line',{x1:ml,x2:ml+pw,y1:Y(y),y2:Y(y),stroke:'#efe3cc'},svg);
+ if(!o.noxt)for(let x=0;x<=o.xmax+1e-9;x+=o.xt){E('line',{x1:X(x),x2:X(x),y1:mt+ph,y2:mt+ph+6,stroke:'#3b2a1a'},svg);const t=E('text',{x:X(x),y:mt+ph+24,'text-anchor':'middle','font-size':15,fill:'#3b2a1a'},svg);t.textContent=+x.toFixed(4)}
+ if(!o.noyt)for(let y=0;y<=o.ymax+1e-9;y+=o.yt){E('line',{x1:ml-6,x2:ml,y1:Y(y),y2:Y(y),stroke:'#3b2a1a'},svg);const t=E('text',{x:ml-10,y:Y(y)+5,'text-anchor':'end','font-size':15,fill:'#3b2a1a'},svg);t.textContent=(o.yfmt?o.yfmt(y):+y.toFixed(3))}
+ E('line',{x1:ml,x2:ml+pw,y1:mt+ph,y2:mt+ph,stroke:'#3b2a1a','stroke-width':2},svg);
+ E('line',{x1:ml,x2:ml,y1:mt,y2:mt+ph,stroke:'#3b2a1a','stroke-width':2},svg);
+ let t=E('text',{x:ml+pw/2,y:H-12,'text-anchor':'middle','font-size':17,fill:'#6b4423'},svg);t.textContent=o.xlab;
+ t=E('text',{x:18,y:mt+ph/2,'text-anchor':'middle','font-size':17,fill:'#6b4423',transform:`rotate(-90 18 ${mt+ph/2})`},svg);t.textContent=o.ylab;
+ const g=E('g',{'clip-path':`url(#${id})`},svg);
+ return {X,Y,g,svg,curve(f,col='#6b4423',w=3,dash,x0=0,x1=o.xmax){let dd='';for(let i=0;i<=300;i++){const x=x0+(x1-x0)*i/300;dd+=(i?'L':'M')+X(x)+' '+Y(f(x))}return E('path',{d:dd,fill:'none',stroke:col,'stroke-width':w,'stroke-dasharray':dash||''},g)},
+  text(x,y,s,col='#3b2a1a',sz=15,anc='start'){const t=E('text',{x:X(x),y:Y(y),'font-size':sz,fill:col,'text-anchor':anc},g);t.textContent=s;return t}};
+}
+
+/* ---------- quiz ---------- */
+let qs=0,qa=0;
+function buildQuiz(){const w=$('quiz');w.innerHTML='';qs=0;qa=0;
+ Q.forEach((q,i)=>{const c=document.createElement('div');c.className='card mcq';c.innerHTML=`<b>Q${i+1}.</b> ${q[0]}`;
+  q[1].forEach((o,j)=>{const b=document.createElement('button');b.className='opt';b.innerHTML=o;
+   b.onclick=()=>{if(c.classList.contains('done'))return;c.classList.add('done');qa++;
+    if(j===q[2]){b.classList.add('right');qs++}else{b.classList.add('wrong');c.querySelectorAll('.opt')[q[2]].classList.add('right')}score()};c.appendChild(b)});
+  const e=document.createElement('div');e.className='exp';e.innerHTML='💡 '+q[3];c.appendChild(e);w.appendChild(c)});score()}
+function score(){const n=Q.length;$('score').innerHTML=`Score: <b>${qs}</b> / ${n}`+(qa===n?(qs>=n-1?' – excellent!':qs>=Math.ceil(n*0.7)?' – good, review the ones you missed':' – go back through the walkthrough and try again'):'')}
+
+const pickA=a=>a[Math.floor(Math.random()*a.length)];
+/* ---------- page 1: collision simulator ---------- */
+const CW=600,CH=360,R=8;let cs=[],csT=300,csEv=[],csFl=[],csTime=0;
+const gauss=()=>{let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)};
+const sig=T=>70*Math.sqrt(T/300);
+function csMake(){const n=+$('csN').value;$('csNV').textContent=n;const s=sig(csT);cs=[];
+ for(let i=0;i<2*n;i++)cs.push({x:R+Math.random()*(CW-2*R),y:R+Math.random()*(CH-2*R),vx:gauss()*s,vy:gauss()*s,t:i%2})}
+function csReset(){csEv=[];csTime=0}
+function Ea(){return(+$('csE').value)*($('csCat').checked?0.6:1)}
+function csStep(dt){csTime+=dt;const th=Ea()*1900,orient=$('csOr').checked;
+ cs.forEach(p=>{p.x+=p.vx*dt;p.y+=p.vy*dt;if(p.x<R){p.x=R;p.vx=Math.abs(p.vx)}if(p.x>CW-R){p.x=CW-R;p.vx=-Math.abs(p.vx)}if(p.y<R){p.y=R;p.vy=Math.abs(p.vy)}if(p.y>CH-R){p.y=CH-R;p.vy=-Math.abs(p.vy)}});
+ for(let i=0;i<cs.length;i++)for(let j=i+1;j<cs.length;j++){const a=cs[i],b=cs[j],dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy);if(d>=2*R||d===0)continue;
+  const nx=dx/d,ny=dy/d,vn=(a.vx-b.vx)*nx+(a.vy-b.vy)*ny;if(vn<=0)continue;
+  a.vx-=vn*nx;a.vy-=vn*ny;b.vx+=vn*nx;b.vy+=vn*ny;
+  if(a.t!==b.t){const E=0.25*vn*vn,ok=E>=th&&(!orient||Math.random()<0.5);csEv.push([csTime,ok]);csFl.push({x:(a.x+b.x)/2,y:(a.y+b.y)/2,l:.5,ok})}}
+ csFl.forEach(f=>f.l-=dt);csFl=csFl.filter(f=>f.l>0);csEv=csEv.filter(e=>e[0]>csTime-8)}
+function csDraw(){const c=$('csCv').getContext('2d');c.fillStyle='#fff';c.fillRect(0,0,CW,CH);
+ cs.forEach(p=>{c.beginPath();c.arc(p.x,p.y,R,0,7);c.fillStyle=p.t?'#b5651d':'#2c4a7a';c.fill()});
+ csFl.forEach(f=>{c.beginPath();c.arc(f.x,f.y,10+(0.5-f.l)*30,0,7);c.strokeStyle=f.ok?`rgba(47,125,74,${f.l*2})`:`rgba(176,58,46,${f.l*1.4})`;c.lineWidth=f.ok?4:2;c.stroke()});
+ const w=Math.min(8,csTime)||1,n=csEv.length,s=csEv.filter(e=>e[1]).length;
+ $('csOut').innerHTML=`A–B collisions per second: <b>${(n/w).toFixed(1)}</b> &nbsp; successful per second: <b>${(s/w).toFixed(1)}</b> &nbsp; % successful: <b>${n?(100*s/n).toFixed(0):0}%</b><br>E<sub>a</sub> = ${Ea().toFixed(1)}${$('csCat').checked?' (catalysed)':''} &nbsp; T = ${csT} K <span style="color:#e8a860">(counts are averaged over the last ${w.toFixed(0)} s, so they jump about: watch the trend)</span>`}
+$('csN').oninput=()=>{csMake();csReset()};
+$('csT').oninput=()=>{const T=+$('csT').value,f=Math.sqrt(T/csT);cs.forEach(p=>{p.vx*=f;p.vy*=f});csT=T;$('csTV').textContent=T;csReset()};
+$('csE').oninput=()=>{$('csEV').textContent=$('csE').value;csReset()};$('csCat').onchange=csReset;$('csOr').onchange=csReset;
+$('csTV').textContent=300;$('csEV').textContent=6;csMake();
+let csLast=performance.now();function csLoop(ts){const dt=Math.min(.04,(ts-csLast)/1000);csLast=ts;if(cur===0){csStep(dt);csDraw()}requestAnimationFrame(csLoop)}requestAnimationFrame(csLoop);
+
+/* ---------- page 2: sort ---------- */
+const SQ=[['Increasing the concentration of acid','F'],['Increasing the pressure of a gas','F'],['Using powder instead of lumps','F'],['Raising the temperature','P'],['Adding a catalyst','P']];
+SQ.forEach(([q,a],i)=>{const p=document.createElement('div');p.style.margin='8px 0';p.innerHTML=`<span style="display:inline-block;min-width:330px">${q}</span>`;
+ [['more frequent collisions','F'],['bigger proportion successful','P']].forEach(([t,v])=>{const b=document.createElement('button');b.className='b alt';b.textContent=t;b.onclick=()=>pick(b,v===a,'sq'+i);p.appendChild(b)});
+ const f=document.createElement('span');f.className='fb';f.id='sq'+i;p.appendChild(f);$('sortQ').appendChild(p)});
+
+/* ---------- page 3: reaction profile ---------- */
+function bump(x,x0,x1,y0,y1){if(x<=x0)return y0;if(x>=x1)return y1;return y0+(y1-y0)*(1-Math.cos(Math.PI*(x-x0)/(x1-x0)))/2}
+function rp(){const H=+$('rpH').value,Ea=+$('rpE').value,cat=$('rpCat').checked;$('rpHV').textContent=(H>0?'+':'')+H;$('rpEV').textContent=Ea;
+ if(+$('rpE').value<Math.max(0,H)+10){$('rpE').value=Math.max(0,H)+10;$('rpEV').textContent=$('rpE').value}const EA=+$('rpE').value;
+ const ymin=Math.floor((Math.min(0,H)-30)/50)*50,ymax=Math.ceil((Math.max(EA,H)+30)/50)*50,span=ymax-ymin;
+ const P=plot($('rpSvg'),{xmax:10,ymax:span,xt:20,yt:50,xlab:'progress of reaction',ylab:'enthalpy / kJ mol⁻¹',noxt:true,yfmt:y=>(y+ymin).toFixed(0)});
+ const Y=v=>v-ymin,prof=(pk)=>x=>x<5?bump(x,1.5,5,0,pk):bump(x,5,8.5,pk,H);
+ P.curve(x=>Y(prof(EA)(x)),'#6b4423',3.5);if(cat){const pc=Math.max(Math.max(0,H)+5,EA*0.55);P.curve(x=>Y(prof(pc)(x)),'#2f7d4a',3,'7 5')}
+ const arr=(x,a,b,col,lab)=>{E('line',{x1:P.X(x),x2:P.X(x),y1:P.Y(Y(a)),y2:P.Y(Y(b)),stroke:col,'stroke-width':2.5,'marker-end':''},P.g);[a,b].forEach(v=>E('line',{x1:P.X(x)-6,x2:P.X(x)+6,y1:P.Y(Y(v)),y2:P.Y(Y(v)),stroke:col,'stroke-width':2.5},P.g));const t=E('text',{x:P.X(x)+8,y:P.Y(Y((a+b)/2))+5,'font-size':15,fill:col},P.g);t.textContent=lab};
+ E('line',{x1:P.X(0.3),x2:P.X(5.5),y1:P.Y(Y(0)),y2:P.Y(Y(0)),stroke:'#999','stroke-dasharray':'4 4'},P.g);
+ arr(3.3,0,EA,'#b03a2e','Eₐ');arr(9.2,0,H,'#2c4a7a','ΔH');E('line',{x1:P.X(6),x2:P.X(9.6),y1:P.Y(Y(0)),y2:P.Y(Y(0)),stroke:'#999','stroke-dasharray':'4 4'},P.g);
+ if(EA-H>0)arr(6.6,H,EA,'#8a3b10','Eₐ(rev)');
+ P.text(0.2,Y(0)+span*0.04,'reactants','#3b2a1a',14);P.text(8.3,Y(H)+span*0.04,'products','#3b2a1a',14);
+ $('rpOut').innerHTML=`${H<0?'Exothermic':H>0?'Endothermic':'Thermoneutral'}<br>E<sub>a</sub>(forward) = ${EA}<br>E<sub>a</sub>(reverse) = ${EA} − (${H}) = <b>${EA-H}</b> kJ mol⁻¹`+(cat?`<br><span style="color:#9be3b0">Catalyst: lower E<sub>a</sub>, same ΔH</span>`:'')}
+['rpH','rpE'].forEach(i=>$(i).oninput=rp);$('rpCat').onchange=rp;rp();
+
+/* drill */
+let PD=null;function pdNew(){const H=pickA([-1,1])*pickA([40,58,92,120,196,206,285]),Ea=Math.max(0,H)+pickA([30,50,75,110,150,180]);const k=pickA([0,1,2]);
+ if(k===0)PD={q:`ΔH = ${H>0?'+':''}${H} kJ mol⁻¹ and E<sub>a</sub>(forward) = ${Ea} kJ mol⁻¹. Find E<sub>a</sub>(reverse).`,a:Ea-H,w:`${Ea} − (${H}) = ${Ea-H}`};
+ if(k===1)PD={q:`ΔH = ${H>0?'+':''}${H} kJ mol⁻¹ and E<sub>a</sub>(reverse) = ${Ea-H} kJ mol⁻¹. Find E<sub>a</sub>(forward).`,a:Ea,w:`E<sub>a</sub>(fwd) = E<sub>a</sub>(rev) + ΔH = ${Ea-H} + (${H}) = ${Ea}`};
+ if(k===2)PD={q:`E<sub>a</sub>(forward) = ${Ea} and E<sub>a</sub>(reverse) = ${Ea-H} kJ mol⁻¹. Find ΔH (include the sign).`,a:H,w:`ΔH = E<sub>a</sub>(fwd) − E<sub>a</sub>(rev) = ${Ea} − ${Ea-H} = ${H>0?'+':''}${H}`};
+ $('pdQ').innerHTML=PD.q;$('pdA').value='';$('pdAfb').textContent='';$('pdW').classList.remove('on');$('pdW').innerHTML=PD.w+' kJ mol⁻¹'}
+function pdCheck(){numCheck('pdA',PD.a,0.001)}pdNew();
+
+/* ---------- quiz ---------- */
+const Q=[
+ ["What is the activation energy?",["The energy released by a reaction","The minimum energy needed for a collision to lead to a reaction","The average energy of the particles","The energy of the products"],1,"It's the minimum collision energy for reaction."],
+ ["Why don't all collisions lead to a reaction?",["Most collisions have energy less than E<sub>a</sub> (or the wrong orientation)","Particles stick together","The catalyst is missing","The products block them"],0,"Only collisions with E ≥ E<sub>a</sub> in the right orientation succeed."],
+ ["How does increasing concentration increase the rate?",["It lowers E<sub>a</sub>","It gives particles more energy","More particles in the same volume, so more frequent successful collisions","It increases the fraction of particles with E ≥ E<sub>a</sub>"],2,"Concentration affects collision frequency only."],
+ ["How does a catalyst increase the rate?",["By increasing the temperature","By providing an alternative route with a lower activation energy","By increasing collision frequency","By giving particles more kinetic energy"],1,"Lower E<sub>a</sub> → more collisions have enough energy."],
+ ["Which change does NOT alter the fraction of collisions with E ≥ E<sub>a</sub>?",["Raising the temperature","Adding a catalyst","Increasing the pressure","Lowering the temperature"],2,"Pressure increases frequency only."],
+ ["Which statement explains why a catalyst increases rate at constant temperature? (June 2024 AS Paper 2 Q10)",["Collision frequency increases because E<sub>a</sub> increases","Collision frequency increases because mean energy increases","The proportion of successful collisions increases because E<sub>a</sub> decreases","The proportion of successful collisions increases because mean energy increases"],2,"The answer is C."],
+ ["ΔH = −50 kJ mol⁻¹, E<sub>a</sub>(forward) = 80 kJ mol⁻¹. What is E<sub>a</sub>(reverse)?",["30","80","130","−130"],2,"80 − (−50) = 130 kJ mol⁻¹."],
+ ["On a reaction profile, how does a catalyst change ΔH?",["Makes it more negative","Makes it less negative","No change","Reverses its sign"],2,"Reactants and products are the same, so ΔH is unchanged."],
+ ["Why does powdering a solid increase the rate?",["It increases E<sub>a</sub>","Larger surface area, so more frequent collisions","The particles have more energy","It acts as a catalyst"],1,"More particles exposed at the surface."],
+ ["E<sub>a</sub>(forward) = 120 and E<sub>a</sub>(reverse) = 75 kJ mol⁻¹. What is ΔH?",["+45","−45","+195","−195"],0,"ΔH = 120 − 75 = +45 kJ mol⁻¹ (endothermic)."]
+];
+
+buildQuiz();
+go(0);
+</script>
+</body>
+</html>
