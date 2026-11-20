@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Equilibrium (Kc) 4 – Equilibrium Amounts and ICE Tables</title>
+<style>
+:root{
+  --bg:#f6efe1; --card:#fffaf0; --ink:#3b2a1a; --brown:#6b4423; --brown2:#8b5a2b;
+  --accent:#b5651d; --soft:#ead9bd; --line:#d8c4a0; --good:#2f7d4a; --bad:#b03a2e; --blue:#2c4a7a;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Arial,sans-serif;font-size:19px;line-height:1.55}
+header{background:var(--brown);color:#fff8ec;padding:14px 24px}
+header h1{margin:0;font-family:Georgia,serif;font-size:28px;font-weight:normal}
+header p{margin:2px 0 0;opacity:.85;font-size:16px}
+nav{display:flex;flex-wrap:wrap;gap:6px;padding:10px 24px;background:var(--soft);border-bottom:2px solid var(--line);position:sticky;top:0;z-index:5}
+nav button{border:2px solid var(--brown2);background:var(--card);color:var(--brown);padding:7px 14px;border-radius:20px;font-size:16px;cursor:pointer}
+nav button.on{background:var(--brown2);color:#fff}
+main{max-width:1100px;margin:0 auto;padding:20px 24px 60px}
+.page{display:none}.page.on{display:block}
+h2{font-family:Georgia,serif;color:var(--brown);font-size:30px;margin:6px 0 12px;font-weight:normal}
+h3{color:var(--brown2);font-size:22px;margin:22px 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:14px 0;box-shadow:0 2px 0 var(--line)}
+.key{border-left:6px solid var(--accent)}
+.eq{font-family:Georgia,serif;font-size:24px;text-align:center;padding:10px;background:#fff;border:1px dashed var(--line);border-radius:8px;margin:10px 0}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 6px}
+.frac>span:first-child{border-bottom:2px solid var(--ink);padding:0 6px}
+.row{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+.row>*{flex:1 1 380px}
+button.b{background:var(--brown2);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:17px;cursor:pointer;margin:4px 6px 4px 0}
+button.b.alt{background:var(--card);color:var(--brown);border:2px solid var(--brown2)}
+button.b:disabled{opacity:.45;cursor:default}
+.check{background:#fdf6e6;border:2px solid var(--accent);border-radius:12px;padding:14px 18px;margin:16px 0}
+.check .tag{display:inline-block;background:var(--accent);color:#fff;font-size:14px;padding:2px 10px;border-radius:12px;margin-bottom:6px;letter-spacing:.5px}
+.check .src{font-size:14px;color:#8a7356;font-style:italic}
+input.ans{font-size:18px;padding:6px 10px;width:200px;border:2px solid var(--line);border-radius:6px}
+.fb{font-weight:600;margin-left:8px}
+.fb.ok{color:var(--good)}.fb.no{color:var(--bad)}
+.work{display:none;background:#fff;border-left:4px solid var(--brown2);padding:8px 14px;margin-top:8px;border-radius:4px}
+.work.on{display:block}
+table.t{border-collapse:collapse;margin:8px 0;background:#fff}
+table.t th,table.t td{border:1px solid var(--line);padding:6px 12px;text-align:center}
+table.t th{background:var(--soft);color:var(--brown)}
+svg text{font-family:"Segoe UI",Arial,sans-serif}
+.readout{font-family:Consolas,monospace;background:#2b1d10;color:#ffe9c4;padding:10px 14px;border-radius:8px;font-size:17px;line-height:1.6}
+.slider{width:100%}
+label.s{display:block;font-weight:600;color:var(--brown);margin-top:8px}
+.steps li{margin:6px 0}
+.reveal{display:none}.reveal.on{display:block;animation:fade .4s}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+.pager{display:flex;justify-content:space-between;margin-top:30px}
+.mcq button.opt{display:block;width:100%;text-align:left;margin:6px 0;padding:10px 14px;font-size:17px;border:2px solid var(--line);background:#fff;border-radius:8px;cursor:pointer;color:var(--ink)}
+.mcq button.opt.right{border-color:var(--good);background:#e6f4ea}
+.mcq button.opt.wrong{border-color:var(--bad);background:#fbe9e7}
+.mcq .exp{display:none;margin-top:6px;font-size:17px}
+.mcq.done .exp{display:block}
+.warn{background:#fbeee4;border-left:6px solid var(--bad);padding:10px 16px;border-radius:6px;margin:12px 0}
+.small{font-size:15px;color:#7a6448}
+canvas{background:#fff;border:1px solid var(--line);border-radius:8px;max-width:100%}
+.chip{display:inline-block;padding:2px 10px;border-radius:12px;background:var(--soft);margin:2px;font-size:16px}
+.big{font-size:22px}
+table.ice{border-collapse:collapse;margin:10px auto;background:#fff;font-size:18px}
+table.ice th,table.ice td{border:1px solid var(--line);padding:8px 14px;text-align:center;min-width:90px}
+table.ice th{background:var(--soft);color:var(--brown)}
+table.ice td.lab{background:#fbf3e3;font-weight:600;color:var(--brown);text-align:left}
+table.ice td.hl{background:#fde9c8;transition:background .4s}
+table.ice td.done{color:var(--good);font-weight:700}
+table.ice input{width:100px;font-size:17px;padding:3px 6px;border:2px solid var(--line);border-radius:6px;text-align:center}
+.slot{display:inline-block;min-width:60px;border-bottom:2px dashed var(--brown2);margin:0 4px;text-align:center}
+select.s{font-size:18px;padding:4px 6px;border:2px solid var(--line);border-radius:6px;background:#fff}
+.tick{color:var(--good);font-weight:700}.cross{color:var(--bad);font-weight:700}
+.legend span{display:inline-block;margin-right:14px;font-size:15px}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:-2px;margin-right:4px}
+.src{font-size:14px;color:#8a7356;font-style:italic;display:block;margin-bottom:4px}
+.readout .frac>span:first-child{border-bottom-color:#ffe9c4}
+
+</style>
+</head>
+<body>
+<header>
+  <h1>Equilibrium (Kc) 4 – Equilibrium Amounts and ICE Tables</h1>
+  <p>AQA A-level Chemistry · Equilibria walkthrough</p>
+</header>
+<nav id="nav"></nav>
+<main>
+<!-- ============ PAGE 1 ============ -->
+<section class="page" data-title="1. The ICE table">
+<h2>1. Finding equilibrium amounts with an ICE table</h2>
+<div class="card key">
+  <p>Usually you're told the <b>starting amounts</b> and only <b>one</b> equilibrium amount. You work out the rest with an <b>ICE table</b>:</p>
+  <table class="t" style="margin:8px auto"><tr><th>I</th><td style="text-align:left"><b>Initial</b> moles: what you start with</td></tr><tr><th>C</th><td style="text-align:left"><b>Change</b>: how many moles react or form. These <b>must</b> follow the ratio in the equation.</td></tr><tr><th>E</th><td style="text-align:left"><b>Equilibrium</b> moles = Initial + Change</td></tr></table>
+  <ul>
+    <li>Reactants go <b>down</b> (−), products go <b>up</b> (+). Assume the reaction goes forwards unless you're told otherwise.</li>
+    <li>Work in <b>moles</b>, not concentrations. The volume comes later (Walkthrough 5).</li>
+    <li>Find the change for the substance you know <b>both</b> numbers for first. Then use the ratio.</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Animated worked example</h3>
+  <span class="src">June 2019 AS Paper 1 Q5.1 (2 marks)</span>
+  <p>2NO(g) + Cl₂(g) ⇌ 2NOCl(g). 1.50 mol NO is mixed with 1.00 mol Cl₂. At equilibrium there is 0.350 mol NOCl. Find the amounts of NO and Cl₂ at equilibrium.</p>
+  <div id="ice1"></div>
+  <div style="text-align:center"><button class="b" id="ice1Next">Next step ▶</button><button class="b alt" id="ice1Reset">Start again</button></div>
+  <div class="readout" id="ice1Txt" style="margin-top:8px"></div>
+</div>
+</section>
+
+<!-- ============ PAGE 2 ============ -->
+<section class="page" data-title="2. Practice tables">
+<h2>2. Practice ICE tables</h2>
+<p>Fill in the <b>Change</b> and <b>Equilibrium</b> rows, then press <b>Check</b>. Use + for amounts formed and − for amounts used up. A new random problem appears every time.</p>
+<div class="card">
+  <div style="margin-bottom:8px"><button class="b" onclick="iceNew()">New problem</button> <label class="small"><input type="checkbox" id="iceHard"> harder (some product present at the start)</label> <span class="small" id="iceScore"></span></div>
+  <div class="eq" id="iceEq"></div>
+  <p id="iceQ"></p>
+  <div id="iceTab"></div>
+  <div style="text-align:center"><button class="b" onclick="iceCheck()">Check</button><button class="b alt" onclick="iceShow()">Show answer</button><span class="fb" id="iceFb"></span></div>
+  <div class="work" id="iceW"></div>
+</div>
+<div class="warn"><b>Common errors:</b> ignoring the ratio (e.g. taking 0.350 mol of Cl₂ away when only 0.175 mol reacted); adding the change to a reactant instead of subtracting; forgetting that a product already present at the start must be added on to.</div>
+</section>
+
+<!-- ============ PAGE 3 ============ -->
+<section class="page" data-title="3. Exam questions">
+<h2>3. Past-paper practice</h2>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 1</span>
+  <span class="src">June 2023 AS Paper 1 Q8.1 (2 marks)</span>
+  <p>A(aq) + 2B(aq) ⇌ C(aq). A solution containing 0.60 mol of A is added to a solution containing 0.60 mol of B. At equilibrium there is 0.28 mol of C. Find the amounts of A and B at equilibrium.</p>
+  A: <input class="ans" id="c1a" style="width:110px"> mol <button class="b" onclick="numCheck('c1a',0.32,0.01)">Check</button><span class="fb" id="c1afb"></span><br>
+  B: <input class="ans" id="c1b" style="width:110px"> mol <button class="b" onclick="numCheck('c1b',0.04,0.01)">Check</button><span class="fb" id="c1bfb"></span><br>
+  <button class="b alt" onclick="tog('c1w')">Working</button>
+  <div class="work" id="c1w"><table class="ice"><tr><th></th><th>A</th><th>2B</th><th>C</th></tr><tr><td class="lab">I</td><td>0.60</td><td>0.60</td><td>0</td></tr><tr><td class="lab">C</td><td>−0.28</td><td>−0.56</td><td>+0.28</td></tr><tr><td class="lab">E</td><td><b>0.32</b></td><td><b>0.04</b></td><td>0.28</td></tr></table>2 mol of B react for every 1 mol of C formed, so B falls by 2 × 0.28 = 0.56.</div>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 2</span>
+  <span class="src">June 2020 Paper 2 Q9.1 (2 marks)</span>
+  <p>A(aq) + 2B(aq) ⇌ C(aq). 0.25 mol A is added to 0.25 mol B. At equilibrium there is 0.015 mol C. Find the amounts of A and B at equilibrium.</p>
+  A: <input class="ans" id="c2a" style="width:110px"> mol <button class="b" onclick="numCheck('c2a',0.235,0.01)">Check</button><span class="fb" id="c2afb"></span><br>
+  B: <input class="ans" id="c2b" style="width:110px"> mol <button class="b" onclick="numCheck('c2b',0.22,0.01)">Check</button><span class="fb" id="c2bfb"></span><br>
+  <button class="b alt" onclick="tog('c2w')">Working</button>
+  <div class="work" id="c2w">A = 0.25 − 0.015 = <b>0.235 mol</b> &nbsp; B = 0.25 − (2 × 0.015) = <b>0.22 mol</b></div>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 3</span>
+  <span class="src">June 2022 Paper 2 Q2.1 (2 marks)</span>
+  <p>2CHClF₂(g) ⇌ C₂F₄(g) + 2HCl(g). 2.00 mol CHClF₂ is heated. At equilibrium 0.270 mol CHClF₂ is left. Find the amounts of C₂F₄ and HCl.</p>
+  C₂F₄: <input class="ans" id="c3a" style="width:110px"> mol <button class="b" onclick="numCheck('c3a',0.865,0.01)">Check</button><span class="fb" id="c3afb"></span><br>
+  HCl: <input class="ans" id="c3b" style="width:110px"> mol <button class="b" onclick="numCheck('c3b',1.73,0.01)">Check</button><span class="fb" id="c3bfb"></span><br>
+  <button class="b alt" onclick="tog('c3w')">Working</button>
+  <div class="work" id="c3w">CHClF₂ reacted = 2.00 − 0.270 = 1.73 mol<br>C₂F₄ = 1.73 ÷ 2 = <b>0.865 mol</b> &nbsp; HCl = 1.73 × 2/2 = <b>1.73 mol</b></div>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 4</span>
+  <span class="src">June 2022 AS Paper 2 Q19 (1 mark)</span>
+  <p>CO(g) + 2H₂(g) ⇌ CH₃OH(g). 2.0 mol CO is mixed with 3.0 mol H₂. The equilibrium mixture contains 0.6 mol methanol. What is the <b>total</b> amount of gas at equilibrium?</p>
+  <button class="b alt" onclick="pick(this,false,'c4')">A 3.2</button><button class="b alt" onclick="pick(this,true,'c4')">B 3.8</button><button class="b alt" onclick="pick(this,false,'c4')">C 4.4</button><button class="b alt" onclick="pick(this,false,'c4')">D 5.0</button><span class="fb" id="c4"></span>
+  <button class="b alt" onclick="tog('c4w')">Working</button>
+  <div class="work" id="c4w">CO = 2.0 − 0.6 = 1.4 &nbsp; H₂ = 3.0 − 1.2 = 1.8 &nbsp; CH₃OH = 0.6<br>Total = 1.4 + 1.8 + 0.6 = <b>3.8 mol</b></div>
+</div>
+</section>
+
+<!-- ============ PAGE 4 ============ -->
+<section class="page" data-title="4. Harder ICE tables">
+<h2>4. Harder ICE tables</h2>
+
+<div class="card">
+  <h3 style="margin-top:0">A product is there at the start</h3>
+  <span class="src">June 2018 Paper 2 Q4.1 (5 marks)</span>
+  <p>2A + B ⇌ 3C + D. A beaker contained 40 cm³ of 0.16 mol dm⁻³ A. Then 9.5 × 10⁻³ mol B and 2.8 × 10⁻² mol C were added. At equilibrium there was 3.9 × 10⁻³ mol A. Find the equilibrium amounts of B, C and D.</p>
+  <button class="b alt" onclick="stepReveal('h1')">Show next step</button>
+  <ol class="steps" id="h1">
+    <li class="reveal">Initial A = 0.040 × 0.16 = <b>6.4 × 10⁻³ mol</b> (moles = conc × volume in dm³)</li>
+    <li class="reveal">A used = 6.4 × 10⁻³ − 3.9 × 10⁻³ = 2.5 × 10⁻³ mol. The equation has 2A, so "one lot" of reaction, x = 2.5 × 10⁻³ ÷ 2 = <b>1.25 × 10⁻³</b></li>
+    <li class="reveal"><table class="ice"><tr><th></th><th>2A</th><th>B</th><th>3C</th><th>D</th></tr>
+      <tr><td class="lab">I</td><td>6.4 × 10⁻³</td><td>9.5 × 10⁻³</td><td>2.8 × 10⁻²</td><td>0</td></tr>
+      <tr><td class="lab">C</td><td>−2x</td><td>−x</td><td>+3x</td><td>+x</td></tr>
+      <tr><td class="lab">E</td><td>3.9 × 10⁻³</td><td><b>8.25 × 10⁻³</b></td><td><b>0.0318</b></td><td><b>1.25 × 10⁻³</b></td></tr></table></li>
+    <li class="reveal">C <b>started</b> at 2.8 × 10⁻², so 3x is <b>added on</b>: 0.028 + 0.00375 = 0.0318 mol.</li>
+  </ol>
+</div>
+
+<div class="card key">
+  <h3 style="margin-top:0">Using x</h3>
+  <p>Calling one "lot" of reaction <b>x</b> makes the ratio automatic: each change is just the balancing number × x.</p>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 5</span>
+  <span class="src">June 2017 AS Paper 1 Q4.1 (1 mark)</span>
+  <p>P(g) + Q(g) ⇌ 2R(g). 1.0 mol P and 1.0 mol Q are mixed. At equilibrium x mol of P has reacted, leaving (1 − x) mol of P and of Q. How many moles of R are there?</p>
+  <button class="b alt" onclick="pick(this,false,'c5')">x</button><button class="b alt" onclick="pick(this,true,'c5')">2x</button><button class="b alt" onclick="pick(this,false,'c5')">1 − x</button><button class="b alt" onclick="pick(this,false,'c5')">2 − 2x</button><span class="fb" id="c5"></span>
+  <p class="small">You'll use this to find x from K<sub>c</sub> in Walkthrough 6.</p>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 6 – working backwards</span>
+  <span class="src">June 2024 Paper 2 Q2.1 (2 marks)</span>
+  <p>2P(aq) + Q(aq) ⇌ R(aq) + 3S(aq). A 25.0 cm³ sample of P solution is added to 20.0 cm³ of Q solution. At equilibrium: P = 0.0145 mol, Q = 0.0275 mol, R = 0.0115 mol, S = 0.0345 mol.<br>Calculate the amount of P <b>before</b> the reaction, and the concentration of the original P solution.</p>
+  Initial P: <input class="ans" id="c6a" style="width:110px"> mol <button class="b" onclick="numCheck('c6a',0.0375,0.01)">Check</button><span class="fb" id="c6afb"></span><br>
+  [P] in the 25.0 cm³ sample: <input class="ans" id="c6b" style="width:110px"> mol dm⁻³ <button class="b" onclick="numCheck('c6b',1.50,0.01)">Check</button><span class="fb" id="c6bfb"></span><br>
+  <button class="b alt" onclick="tog('c6w')">Working</button>
+  <div class="work" id="c6w">0.0115 mol R formed, so 2 × 0.0115 = 0.0230 mol P was used.<br>Initial P = 0.0145 + 0.0230 = <b>0.0375 mol</b><br>[P] = 0.0375 ÷ 0.0250 = <b>1.50 mol dm⁻³</b> (use the volume of the P sample only)</div>
+</div>
+</section>
+
+<!-- ============ PAGE 5 ============ -->
+<section class="page" data-title="5. Quiz">
+<h2>5. End-of-walkthrough quiz</h2>
+<p>Click an answer. You get one go at each question.</p>
+<div id="quiz"></div>
+<div class="card" id="score" style="font-size:22px;text-align:center"></div>
+<button class="b alt" onclick="buildQuiz()">Reset quiz</button>
+<p class="small">Next: Walkthrough 5 – ICE tables and volumes to calculate K<sub>c</sub>.</p>
+</section>
+
+<div class="pager"><button class="b alt" id="prevB">◀ Previous</button><button class="b" id="nextB">Next ▶</button></div>
+</main>
+<script>
+/* ---------- navigation ---------- */
+const pages=[...document.querySelectorAll('.page')];let cur=0;
+const nav=document.getElementById('nav');
+pages.forEach((p,i)=>{const b=document.createElement('button');b.textContent=p.dataset.title;b.onclick=()=>go(i);nav.appendChild(b)});
+function go(i){cur=i;pages.forEach((p,j)=>p.classList.toggle('on',j===i));[...nav.children].forEach((b,j)=>b.classList.toggle('on',j===i));
+ document.getElementById('prevB').disabled=i===0;document.getElementById('nextB').disabled=i===pages.length-1;window.scrollTo(0,0);
+ if(typeof onPage==='function')onPage(i)}
+document.getElementById('prevB').onclick=()=>go(Math.max(0,cur-1));
+document.getElementById('nextB').onclick=()=>go(Math.min(pages.length-1,cur+1));
+
+/* ---------- helpers ---------- */
+const $=id=>document.getElementById(id);
+function tog(id){$(id).classList.toggle('on')}
+function stepReveal(id){const r=[...document.querySelectorAll('#'+id+' .reveal:not(.on)')];if(r.length)r[0].classList.add('on')}
+function parseNum(s){
+ s=s.trim().replace(/\s/g,'');const sp={'⁰':'0','¹':'1','²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9','⁻':'-'};
+ s=s.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁻]/g,c=>sp[c]).replace(/[−–]/g,'-').replace(/,/g,'');
+ let m=s.match(/^(-?[\d.]+)[x×X*]10\^?(-?\d+)$/);if(m)return parseFloat(m[1])*Math.pow(10,parseInt(m[2]));
+ m=s.match(/^(-?[\d.]+)[eE](-?\d+)$/);if(m)return parseFloat(s);
+ const v=Number(s);return (s===''||isNaN(v))?null:v}
+function numCheck(id,target,tol){const v=parseNum($(id).value);const fb=$(id+'fb');
+ if(v===null){fb.textContent='Enter a number';fb.className='fb no';return false}
+ if(Math.abs(v-target)<=Math.abs(target)*tol){fb.textContent='✔ Correct';fb.className='fb ok';return true}
+ fb.textContent='✘ Not quite, check your working';fb.className='fb no';return false}
+function pick(btn,ok,id){const f=$(id);f.textContent=ok?'✔ Correct':'✘ Try again';f.className='fb '+(ok?'ok':'no')}
+const sup=n=>String(n).split('').map(c=>({'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'})[c]).join('');
+/* format number to n s.f.; standard form for very small/large */
+function sf(x,n=3){if(x===0)return '0';let e=Math.floor(Math.log10(Math.abs(x)));
+ if(e<-3||e>=5){let m=(x/Math.pow(10,e)).toFixed(n-1);if(Math.abs(+m)>=10){e++;m=(x/Math.pow(10,e)).toFixed(n-1)}return m+' × 10'+sup(e)}
+ return x.toFixed(Math.max(0,n-1-e))}
+/* units of Kc from Δn = (moles top − moles bottom) */
+function kcUnits(dn){if(dn===0)return 'no units';const m=dn===1?'mol':'mol'+sup(dn);return `${m} dm${sup(-3*dn)}`}
+/* render a fraction */
+const fr=(t,b)=>`<span class="frac"><span>${t}</span><span>${b}</span></span>`;
+
+/* ---------- SVG plotting ---------- */
+const NS='http://www.w3.org/2000/svg';
+function E(tag,a,p){const e=document.createElementNS(NS,tag);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e}
+function plot(svg,o){
+ svg.innerHTML='';const W=660,H=400,ml=80,mr=20,mt=18,mb=60,pw=W-ml-mr,ph=H-mt-mb;
+ const X=x=>ml+x/o.xmax*pw,Y=y=>mt+ph-y/o.ymax*ph;
+ const id='cl'+Math.random().toString(36).slice(2);
+ const d=E('defs',{},svg);const cp=E('clipPath',{id},d);E('rect',{x:ml,y:mt,width:pw,height:ph},cp);
+ E('rect',{x:ml,y:mt,width:pw,height:ph,fill:'#fff'},svg);
+ const gx=o.gx||o.xt,gy=o.gy||o.yt;
+ for(let x=0;x<=o.xmax+1e-9;x+=gx)E('line',{x1:X(x),x2:X(x),y1:mt,y2:mt+ph,stroke:'#efe3cc'},svg);
+ for(let y=0;y<=o.ymax+1e-9;y+=gy)E('line',{x1:ml,x2:ml+pw,y1:Y(y),y2:Y(y),stroke:'#efe3cc'},svg);
+ if(!o.noxt)for(let x=0;x<=o.xmax+1e-9;x+=o.xt){E('line',{x1:X(x),x2:X(x),y1:mt+ph,y2:mt+ph+6,stroke:'#3b2a1a'},svg);const t=E('text',{x:X(x),y:mt+ph+24,'text-anchor':'middle','font-size':15,fill:'#3b2a1a'},svg);t.textContent=+x.toFixed(4)}
+ if(!o.noyt)for(let y=0;y<=o.ymax+1e-9;y+=o.yt){E('line',{x1:ml-6,x2:ml,y1:Y(y),y2:Y(y),stroke:'#3b2a1a'},svg);const t=E('text',{x:ml-10,y:Y(y)+5,'text-anchor':'end','font-size':15,fill:'#3b2a1a'},svg);t.textContent=(o.yfmt?o.yfmt(y):+y.toFixed(3))}
+ E('line',{x1:ml,x2:ml+pw,y1:mt+ph,y2:mt+ph,stroke:'#3b2a1a','stroke-width':2},svg);
+ E('line',{x1:ml,x2:ml,y1:mt,y2:mt+ph,stroke:'#3b2a1a','stroke-width':2},svg);
+ let t=E('text',{x:ml+pw/2,y:H-12,'text-anchor':'middle','font-size':17,fill:'#6b4423'},svg);t.textContent=o.xlab;
+ t=E('text',{x:18,y:mt+ph/2,'text-anchor':'middle','font-size':17,fill:'#6b4423',transform:`rotate(-90 18 ${mt+ph/2})`},svg);t.textContent=o.ylab;
+ const g=E('g',{'clip-path':`url(#${id})`},svg);
+ return {X,Y,g,svg,curve(f,col='#6b4423',w=3,dash,x0=0,x1=o.xmax){let dd='';for(let i=0;i<=300;i++){const x=x0+(x1-x0)*i/300;dd+=(i?'L':'M')+X(x)+' '+Y(f(x))}return E('path',{d:dd,fill:'none',stroke:col,'stroke-width':w,'stroke-dasharray':dash||''},g)},
+  text(x,y,s,col='#3b2a1a',sz=15,anc='start'){const t=E('text',{x:X(x),y:Y(y),'font-size':sz,fill:col,'text-anchor':anc},g);t.textContent=s;return t}};
+}
+
+/* ---------- quiz ---------- */
+let qs=0,qa=0;
+function buildQuiz(){const w=$('quiz');w.innerHTML='';qs=0;qa=0;
+ Q.forEach((q,i)=>{const c=document.createElement('div');c.className='card mcq';c.innerHTML=`<b>Q${i+1}.</b> ${q[0]}`;
+  q[1].forEach((o,j)=>{const b=document.createElement('button');b.className='opt';b.innerHTML=o;
+   b.onclick=()=>{if(c.classList.contains('done'))return;c.classList.add('done');qa++;
+    if(j===q[2]){b.classList.add('right');qs++}else{b.classList.add('wrong');c.querySelectorAll('.opt')[q[2]].classList.add('right')}score()};c.appendChild(b)});
+  const e=document.createElement('div');e.className='exp';e.innerHTML='💡 '+q[3];c.appendChild(e);w.appendChild(c)});score()}
+function score(){const n=Q.length;$('score').innerHTML=`Score: <b>${qs}</b> / ${n}`+(qa===n?(qs>=n-1?' – excellent!':qs>=Math.ceil(n*0.7)?' – good, review the ones you missed':' – go back through the walkthrough and try again'):'')}
+
+/* ---------- shared: equation bank and Kc rendering ---------- */
+const BANK=[
+ {eq:'N₂(g) + 3H₂(g) ⇌ 2NH₃(g)',r:[[1,'N₂'],[3,'H₂']],p:[[2,'NH₃']],src:'Haber process'},
+ {eq:'2SO₂(g) + O₂(g) ⇌ 2SO₃(g)',r:[[2,'SO₂'],[1,'O₂']],p:[[2,'SO₃']],src:'November 2021 AS Paper 1 Q10'},
+ {eq:'2NO(g) + Cl₂(g) ⇌ 2NOCl(g)',r:[[2,'NO'],[1,'Cl₂']],p:[[2,'NOCl']],src:'June 2019 AS Paper 1 Q5'},
+ {eq:'H₂(g) + I₂(g) ⇌ 2HI(g)',r:[[1,'H₂'],[1,'I₂']],p:[[2,'HI']],src:'June 2025 AS Paper 1 Q7'},
+ {eq:'CO₂(g) + 3H₂(g) ⇌ CH₃OH(g) + H₂O(g)',r:[[1,'CO₂'],[3,'H₂']],p:[[1,'CH₃OH'],[1,'H₂O']],src:'June 2025 AS Paper 1 Q7.3'},
+ {eq:'C₂H₅OH(g) + H₂O(g) ⇌ 2CO(g) + 4H₂(g)',r:[[1,'C₂H₅OH'],[1,'H₂O']],p:[[2,'CO'],[4,'H₂']],src:'November 2020 AS Paper 2 Q8'},
+ {eq:'2CHClF₂(g) ⇌ C₂F₄(g) + 2HCl(g)',r:[[2,'CHClF₂']],p:[[1,'C₂F₄'],[2,'HCl']],src:'June 2022 Paper 2 Q2'},
+ {eq:'2A + B ⇌ 3C + D',r:[[2,'A'],[1,'B']],p:[[3,'C'],[1,'D']],src:'June 2018 Paper 2 Q4'},
+ {eq:'A(aq) + 2B(aq) ⇌ C(aq)',r:[[1,'A'],[2,'B']],p:[[1,'C']],src:'June 2023 AS Paper 1 Q8'},
+ {eq:'2P(aq) + Q(aq) ⇌ R(aq) + 3S(aq)',r:[[2,'P'],[1,'Q']],p:[[1,'R'],[3,'S']],src:'June 2024 Paper 2 Q2'},
+ {eq:'C₂H₄(g) + CO(g) + H₂O(g) ⇌ CH₃CH₂COOH(g)',r:[[1,'C₂H₄'],[1,'CO'],[1,'H₂O']],p:[[1,'CH₃CH₂COOH']],src:'June 2024 AS Paper 2 Q7'},
+ {eq:'2CH₃COOH(l) + HOCH₂CH₂OH(l) ⇌ C₆H₁₀O₄(l) + 2H₂O(l)',r:[[2,'CH₃COOH'],[1,'HOCH₂CH₂OH']],p:[[1,'C₆H₁₀O₄'],[2,'H₂O']],src:'June 2017 Paper 2 Q5'},
+ {eq:'2Fe³⁺(aq) + 2I⁻(aq) ⇌ 2Fe²⁺(aq) + I₂(aq)',r:[[2,'Fe³⁺'],[2,'I⁻']],p:[[2,'Fe²⁺'],[1,'I₂']],src:'June 2025 Paper 3 Q4'},
+ {eq:'CH₄(g) + H₂O(g) ⇌ CO(g) + 3H₂(g)',r:[[1,'CH₄'],[1,'H₂O']],p:[[1,'CO'],[3,'H₂']],src:'November 2021 AS Paper 1 Q9'}
+];
+const term=([c,f])=>`[${f}]${c>1?sup(c):''}`;
+const side=a=>a.map(term).join(' ');
+function kcHTML(rx){return `K<sub>c</sub> = ${fr(side(rx.p),side(rx.r))}`}
+
+
+/* ---------- ICE table renderer ---------- */
+function iceHTML(sp,rows,hl={}){let h='<table class="ice"><tr><th></th>'+sp.map(s=>`<th>${s.c>1?s.c:''}${s.f}</th>`).join('')+'</tr>';
+ ['I','C','E'].forEach(r=>{h+=`<tr><td class="lab">${{I:'Initial',C:'Change',E:'Equilibrium'}[r]} / mol</td>`+sp.map((s,i)=>{const v=rows[r][i];return `<td class="${hl[r+i]?'hl':''}">${v===undefined||v===null?'':v}</td>`}).join('')+'</tr>'});return h+'</table>'}
+
+/* ---------- page 1: animated worked example ---------- */
+const S1=[{f:'NO',c:2},{f:'Cl₂',c:1},{f:'NOCl',c:2}];
+const ST=[
+ [{I:['1.50','1.00','0'],C:[],E:[]},{I0:1,I1:1,I2:1},'Step 1: fill in the <b>Initial</b> row. No NOCl at the start.'],
+ [{I:['1.50','1.00','0'],C:[],E:[,,'0.350']},{E2:1},'Step 2: put in the one equilibrium amount you know: <b>0.350 mol NOCl</b>.'],
+ [{I:['1.50','1.00','0'],C:[,,'+0.350'],E:[,,'0.350']},{C2:1},'Step 3: NOCl went from 0 to 0.350, so the change is <b>+0.350</b>.'],
+ [{I:['1.50','1.00','0'],C:['−0.350',,'+0.350'],E:[,,'0.350']},{C0:1},'Step 4: ratio NO : NOCl = 2 : 2 = 1 : 1, so <b>0.350 mol NO</b> was used up.'],
+ [{I:['1.50','1.00','0'],C:['−0.350','−0.175','+0.350'],E:[,,'0.350']},{C1:1},'Step 5: ratio Cl₂ : NOCl = 1 : 2, so 0.350 ÷ 2 = <b>0.175 mol Cl₂</b> was used up.'],
+ [{I:['1.50','1.00','0'],C:['−0.350','−0.175','+0.350'],E:['<b>1.15</b>','<b>0.825</b>','0.350']},{E0:1,E1:1},'Step 6: Equilibrium = Initial + Change.<br>NO = 1.50 − 0.350 = <b>1.15 mol</b> &nbsp; Cl₂ = 1.00 − 0.175 = <b>0.825 mol</b> ✔ (matches the mark scheme)']];
+let st1=0;function ice1(){const s=ST[st1];$('ice1').innerHTML=iceHTML(S1,s[0],s[1]);$('ice1Txt').innerHTML=s[2];$('ice1Next').disabled=st1===ST.length-1}
+$('ice1Next').onclick=()=>{if(st1<ST.length-1){st1++;ice1()}};$('ice1Reset').onclick=()=>{st1=0;ice1()};ice1();
+
+/* ---------- page 2: generator ---------- */
+const TPL=[
+ {eq:'2NO(g) + Cl₂(g) ⇌ 2NOCl(g)',sp:[[2,'NO',-1],[1,'Cl₂',-1],[2,'NOCl',1]]},
+ {eq:'N₂(g) + 3H₂(g) ⇌ 2NH₃(g)',sp:[[1,'N₂',-1],[3,'H₂',-1],[2,'NH₃',1]]},
+ {eq:'2SO₂(g) + O₂(g) ⇌ 2SO₃(g)',sp:[[2,'SO₂',-1],[1,'O₂',-1],[2,'SO₃',1]]},
+ {eq:'CO(g) + 2H₂(g) ⇌ CH₃OH(g)',sp:[[1,'CO',-1],[2,'H₂',-1],[1,'CH₃OH',1]]},
+ {eq:'CO₂(g) + 3H₂(g) ⇌ CH₃OH(g) + H₂O(g)',sp:[[1,'CO₂',-1],[3,'H₂',-1],[1,'CH₃OH',1],[1,'H₂O',1]]},
+ {eq:'2CHClF₂(g) ⇌ C₂F₄(g) + 2HCl(g)',sp:[[2,'CHClF₂',-1],[1,'C₂F₄',1],[2,'HCl',1]]},
+ {eq:'CH₄(g) + H₂O(g) ⇌ CO(g) + 3H₂(g)',sp:[[1,'CH₄',-1],[1,'H₂O',-1],[1,'CO',1],[3,'H₂',1]]},
+ {eq:'2CH₃COOH + HOCH₂CH₂OH ⇌ C₆H₁₀O₄ + 2H₂O',sp:[[2,'CH₃COOH',-1],[1,'HOCH₂CH₂OH',-1],[1,'C₆H₁₀O₄',1],[2,'H₂O',1]]},
+ {eq:'2A + B ⇌ 3C + D',sp:[[2,'A',-1],[1,'B',-1],[3,'C',1],[1,'D',1]]}];
+let P=null,iN=0,iOk=0;
+const r2=x=>Math.round(x*1000)/1000;const fm=x=>(+x.toPrecision(3)).toString();
+function iceNew(){const t=TPL[Math.floor(Math.random()*TPL.length)];const hard=$('iceHard').checked;
+ const I=t.sp.map(([c,f,s])=>s<0?Math.round((0.3+Math.random()*1.7)*100)/100:0);
+ if(hard){const pi=t.sp.findIndex(x=>x[2]>0);I[pi]=Math.round((0.05+Math.random()*0.4)*100)/100}
+ const lim=Math.min(...t.sp.filter(x=>x[2]<0).map((x,i)=>I[t.sp.indexOf(x)]/x[0]));
+ const x=r2(Math.max(0.01,lim*(0.2+Math.random()*0.6)));
+ const C=t.sp.map(([c,f,s])=>s*c*x),Eq=I.map((v,i)=>v+C[i]);
+ const gi=Math.random()<0.6?t.sp.findIndex(z=>z[2]>0):Math.floor(Math.random()*t.sp.length);
+ P={t,I,C,Eq,gi};$('iceEq').textContent=t.eq;$('iceFb').textContent='';$('iceW').classList.remove('on');
+ const start=t.sp.map((s,i)=>I[i]>0?`${fm(I[i])} mol ${s[1]}`:null).filter(Boolean).join(', ');
+ $('iceQ').innerHTML=`Start: ${start}. At equilibrium there is <b>${fm(Eq[gi])} mol ${t.sp[gi][1]}</b>. Complete the table.`;
+ const sp=t.sp.map(([c,f])=>({c,f}));
+ const rows={I:I.map(fm),C:t.sp.map((s,i)=>`<input id="ic${i}">`),E:t.sp.map((s,i)=>i===gi?fm(Eq[i]):`<input id="ie${i}">`)};
+ $('iceTab').innerHTML=iceHTML(sp,rows)}
+function iceCheck(){let ok=true,blank=false;P.t.sp.forEach((s,i)=>{[['ic',P.C[i]],['ie',P.Eq[i]]].forEach(([k,tgt])=>{const el=$(k+i);if(!el)return;const v=parseNum(el.value);
+ if(v===null){blank=true;return}const good=Math.abs(v-tgt)<=Math.max(1e-6,Math.abs(tgt)*0.015);el.style.borderColor=good?'#2f7d4a':'#b03a2e';if(!good)ok=false})});
+ const fb=$('iceFb');if(blank){fb.className='fb no';fb.textContent='Fill in every box (use − for used up)';return}
+ iN++;if(ok)iOk++;$('iceScore').textContent=`Score: ${iOk} / ${iN}`;fb.className='fb '+(ok?'ok':'no');fb.textContent=ok?'✔ All correct!':'✘ Red boxes are wrong. Check the signs and the ratio.'}
+function iceShow(){const t=P.t,g=P.gi;const ch=P.C[g];const x=Math.abs(ch)/t.sp[g][0];
+ $('iceW').innerHTML=`${t.sp[g][1]} changed by ${ch>0?'+':''}${fm(ch)} mol. Its balancing number is ${t.sp[g][0]}, so one "lot" x = ${fm(Math.abs(ch))} ÷ ${t.sp[g][0]} = <b>${fm(x)}</b><br>`+
+  iceHTML(t.sp.map(([c,f])=>({c,f})),{I:P.I.map(fm),C:P.C.map(v=>(v>0?'+':v<0?'−':'')+fm(Math.abs(v))),E:P.Eq.map(v=>'<b>'+fm(v)+'</b>')});$('iceW').classList.add('on')}
+iceNew();
+
+/* ---------- quiz ---------- */
+const Q=[
+ ["In an ICE table, what does the 'C' row show?",["The concentrations at equilibrium","The change in moles, in the ratio of the equation","The catalyst used","The constant, K<sub>c</sub>"],1,"The change row must follow the balancing numbers in the equation."],
+ ["N₂ + 3H₂ ⇌ 2NH₃. 0.40 mol of NH₃ forms. How many moles of H₂ are used up?",["0.40","0.60","0.20","1.20"],1,"H₂ : NH₃ = 3 : 2, so 0.40 × 3/2 = 0.60 mol."],
+ ["N₂ + 3H₂ ⇌ 2NH₃. 0.40 mol of NH₃ forms. How many moles of N₂ are used up?",["0.40","0.80","0.20","0.10"],2,"N₂ : NH₃ = 1 : 2, so 0.40 ÷ 2 = 0.20 mol."],
+ ["2SO₂ + O₂ ⇌ 2SO₃. Start with 1.00 mol SO₂ and 0.50 mol O₂. At equilibrium 0.80 mol SO₃. How much O₂ is left?",["0.10 mol","0.40 mol","0.30 mol","0.20 mol"],0,"O₂ used = 0.80 ÷ 2 = 0.40, so 0.50 − 0.40 = 0.10 mol."],
+ ["Which row is found by adding the other two?",["Initial","Change","Equilibrium","None of them"],2,"Equilibrium = Initial + Change (with the change negative for reactants)."],
+ ["H₂ + I₂ ⇌ 2HI. Start with 1.0 mol H₂, 1.0 mol I₂ and 0.20 mol HI. At equilibrium there is 1.0 mol HI. How much H₂ is left?",["0.50 mol","0.60 mol","0.40 mol","0.00 mol"],1,"HI increased by 0.80, so H₂ fell by 0.40: 1.0 − 0.40 = 0.60 mol."],
+ ["PCl₅ ⇌ PCl₃ + Cl₂. Start with 0.50 mol PCl₅. At equilibrium 0.30 mol PCl₅ remains. What is the total number of moles at equilibrium?",["0.50","0.70","0.80","0.30"],1,"0.20 mol reacted, forming 0.20 PCl₃ and 0.20 Cl₂. Total = 0.30 + 0.20 + 0.20 = 0.70."],
+ ["Why should you use moles, not concentrations, in the ICE table when two solutions are mixed?",["Concentrations can't be negative","Mixing changes the volume, so concentrations change even without reaction, but moles don't","Moles are always bigger","K<sub>c</sub> uses moles"],1,"Moles only change because of the reaction. Do the table in moles, then divide by the total volume."],
+ ["25.0 cm³ of 0.200 mol dm⁻³ X is used. How many moles of X is that?",["5.00 × 10⁻³","8.00 × 10⁻³","5.00","0.125"],0,"0.0250 dm³ × 0.200 = 5.00 × 10⁻³ mol."],
+ ["2A + B ⇌ 3C + D. If x mol of B reacts, how many moles of C form?",["x","2x","3x","x/3"],2,"B : C = 1 : 3."]
+];
+
+buildQuiz();
+go(0);
+</script>
+</body>
+</html>

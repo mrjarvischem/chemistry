@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Equilibrium (Kc) 1 – Dynamic Equilibrium and Writing Kc Expressions</title>
+<style>
+:root{
+  --bg:#f6efe1; --card:#fffaf0; --ink:#3b2a1a; --brown:#6b4423; --brown2:#8b5a2b;
+  --accent:#b5651d; --soft:#ead9bd; --line:#d8c4a0; --good:#2f7d4a; --bad:#b03a2e; --blue:#2c4a7a;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Arial,sans-serif;font-size:19px;line-height:1.55}
+header{background:var(--brown);color:#fff8ec;padding:14px 24px}
+header h1{margin:0;font-family:Georgia,serif;font-size:28px;font-weight:normal}
+header p{margin:2px 0 0;opacity:.85;font-size:16px}
+nav{display:flex;flex-wrap:wrap;gap:6px;padding:10px 24px;background:var(--soft);border-bottom:2px solid var(--line);position:sticky;top:0;z-index:5}
+nav button{border:2px solid var(--brown2);background:var(--card);color:var(--brown);padding:7px 14px;border-radius:20px;font-size:16px;cursor:pointer}
+nav button.on{background:var(--brown2);color:#fff}
+main{max-width:1100px;margin:0 auto;padding:20px 24px 60px}
+.page{display:none}.page.on{display:block}
+h2{font-family:Georgia,serif;color:var(--brown);font-size:30px;margin:6px 0 12px;font-weight:normal}
+h3{color:var(--brown2);font-size:22px;margin:22px 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:14px 0;box-shadow:0 2px 0 var(--line)}
+.key{border-left:6px solid var(--accent)}
+.eq{font-family:Georgia,serif;font-size:24px;text-align:center;padding:10px;background:#fff;border:1px dashed var(--line);border-radius:8px;margin:10px 0}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 6px}
+.frac>span:first-child{border-bottom:2px solid var(--ink);padding:0 6px}
+.row{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+.row>*{flex:1 1 380px}
+button.b{background:var(--brown2);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:17px;cursor:pointer;margin:4px 6px 4px 0}
+button.b.alt{background:var(--card);color:var(--brown);border:2px solid var(--brown2)}
+button.b:disabled{opacity:.45;cursor:default}
+.check{background:#fdf6e6;border:2px solid var(--accent);border-radius:12px;padding:14px 18px;margin:16px 0}
+.check .tag{display:inline-block;background:var(--accent);color:#fff;font-size:14px;padding:2px 10px;border-radius:12px;margin-bottom:6px;letter-spacing:.5px}
+.check .src{font-size:14px;color:#8a7356;font-style:italic}
+input.ans{font-size:18px;padding:6px 10px;width:200px;border:2px solid var(--line);border-radius:6px}
+.fb{font-weight:600;margin-left:8px}
+.fb.ok{color:var(--good)}.fb.no{color:var(--bad)}
+.work{display:none;background:#fff;border-left:4px solid var(--brown2);padding:8px 14px;margin-top:8px;border-radius:4px}
+.work.on{display:block}
+table.t{border-collapse:collapse;margin:8px 0;background:#fff}
+table.t th,table.t td{border:1px solid var(--line);padding:6px 12px;text-align:center}
+table.t th{background:var(--soft);color:var(--brown)}
+svg text{font-family:"Segoe UI",Arial,sans-serif}
+.readout{font-family:Consolas,monospace;background:#2b1d10;color:#ffe9c4;padding:10px 14px;border-radius:8px;font-size:17px;line-height:1.6}
+.slider{width:100%}
+label.s{display:block;font-weight:600;color:var(--brown);margin-top:8px}
+.steps li{margin:6px 0}
+.reveal{display:none}.reveal.on{display:block;animation:fade .4s}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+.pager{display:flex;justify-content:space-between;margin-top:30px}
+.mcq button.opt{display:block;width:100%;text-align:left;margin:6px 0;padding:10px 14px;font-size:17px;border:2px solid var(--line);background:#fff;border-radius:8px;cursor:pointer;color:var(--ink)}
+.mcq button.opt.right{border-color:var(--good);background:#e6f4ea}
+.mcq button.opt.wrong{border-color:var(--bad);background:#fbe9e7}
+.mcq .exp{display:none;margin-top:6px;font-size:17px}
+.mcq.done .exp{display:block}
+.warn{background:#fbeee4;border-left:6px solid var(--bad);padding:10px 16px;border-radius:6px;margin:12px 0}
+.small{font-size:15px;color:#7a6448}
+canvas{background:#fff;border:1px solid var(--line);border-radius:8px;max-width:100%}
+.chip{display:inline-block;padding:2px 10px;border-radius:12px;background:var(--soft);margin:2px;font-size:16px}
+.big{font-size:22px}
+table.ice{border-collapse:collapse;margin:10px auto;background:#fff;font-size:18px}
+table.ice th,table.ice td{border:1px solid var(--line);padding:8px 14px;text-align:center;min-width:90px}
+table.ice th{background:var(--soft);color:var(--brown)}
+table.ice td.lab{background:#fbf3e3;font-weight:600;color:var(--brown);text-align:left}
+table.ice td.hl{background:#fde9c8;transition:background .4s}
+table.ice td.done{color:var(--good);font-weight:700}
+table.ice input{width:100px;font-size:17px;padding:3px 6px;border:2px solid var(--line);border-radius:6px;text-align:center}
+.slot{display:inline-block;min-width:60px;border-bottom:2px dashed var(--brown2);margin:0 4px;text-align:center}
+select.s{font-size:18px;padding:4px 6px;border:2px solid var(--line);border-radius:6px;background:#fff}
+.tick{color:var(--good);font-weight:700}.cross{color:var(--bad);font-weight:700}
+.legend span{display:inline-block;margin-right:14px;font-size:15px}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:-2px;margin-right:4px}
+.src{font-size:14px;color:#8a7356;font-style:italic;display:block;margin-bottom:4px}
+.readout .frac>span:first-child{border-bottom-color:#ffe9c4}
+
+</style>
+</head>
+<body>
+<header>
+  <h1>Equilibrium (Kc) 1 – Dynamic Equilibrium and Writing Kc Expressions</h1>
+  <p>AQA A-level Chemistry · Equilibria walkthrough</p>
+</header>
+<nav id="nav"></nav>
+<main>
+<!-- ============ PAGE 1 ============ -->
+<section class="page" data-title="1. Dynamic equilibrium">
+<h2>1. What is a dynamic equilibrium?</h2>
+<div class="card key">
+  <p>A <b>reversible reaction</b> can go both ways: A ⇌ B. In a <b>closed system</b> (nothing gets in or out) it reaches <b>dynamic equilibrium</b>.</p>
+  <ul>
+    <li>The <b>rate of the forward reaction = the rate of the reverse reaction</b>.</li>
+    <li>The <b>concentrations</b> of reactants and products stay <b>constant</b> (they are <u>not</u> usually equal).</li>
+    <li>It is <b>dynamic</b>: both reactions are still happening, just at the same rate, so there is no overall change.</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Animation: watch an equilibrium set up</h3>
+  <p>Each <b style="color:#2c4a7a">blue</b> particle is A, each <b style="color:#b5651d">orange</b> particle is B. A particle can flip A → B or B → A at any moment. Start with only A, then try starting with only B.</p>
+  <div style="margin-bottom:8px">
+    <button class="b" id="eqA">Start with all A</button>
+    <button class="b alt" id="eqB">Start with all B</button>
+    <button class="b alt" id="eqP">❚❚ Pause</button>
+  </div>
+  <div class="row">
+    <div style="flex:1 1 320px"><canvas id="eqCv" width="340" height="300"></canvas><div class="readout" id="eqOut"></div></div>
+    <div style="flex:2 1 420px"><svg id="eqSvgC" viewBox="0 0 660 400" width="100%"></svg><svg id="eqSvgR" viewBox="0 0 660 400" width="100%"></svg></div>
+  </div>
+  <p class="small">The forward reaction is faster per particle here, so more B than A is present at equilibrium. Whichever side you start from, the mixture ends up with the <b>same</b> equilibrium amounts.</p>
+</div>
+
+<div class="card key">
+  <h3 style="margin-top:0">What the graphs show</h3>
+  <ol>
+    <li>At the start, only the forward reaction can happen, so its rate is high and the reverse rate is zero.</li>
+    <li>As A is used up, the forward rate <b>falls</b>. As B builds up, the reverse rate <b>rises</b>.</li>
+    <li>When the two rates become <b>equal</b>, the concentrations stop changing. This is equilibrium.</li>
+  </ol>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 1</span>
+  <span class="src">June 2022 Paper 1 Q1.1 (2 marks)</span>
+  <p>Give <b>two</b> features of a reaction in dynamic equilibrium.</p>
+  <button class="b alt" onclick="tog('c1w')">Model answer</button>
+  <div class="work" id="c1w">Any two of:<br>• the rate of the forward reaction equals the rate of the reverse reaction<br>• the concentrations of reactants and products stay constant (no longer change)<br>• it happens in a closed system<br><i>"The concentrations are equal" is wrong. They stay constant, but are rarely equal.</i></div>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 2</span>
+  <p>A student says "at equilibrium the reaction has stopped". Why is this wrong?</p>
+  <button class="b alt" onclick="pick(this,false,'c2')">Because the concentrations are still changing</button>
+  <button class="b alt" onclick="pick(this,true,'c2')">Both reactions are still happening at the same rate</button>
+  <button class="b alt" onclick="pick(this,false,'c2')">The reverse reaction has stopped but the forward hasn't</button>
+  <span class="fb" id="c2"></span>
+</div>
+</section>
+
+<!-- ============ PAGE 2 ============ -->
+<section class="page" data-title="2. Writing Kc">
+<h2>2. Writing an expression for K<sub>c</sub></h2>
+<div class="card key">
+  <p>For the general equilibrium &nbsp; <b>aA + bB ⇌ cC + dD</b></p>
+  <div class="eq">K<sub>c</sub> = <span class="frac"><span>[C]<sup>c</sup> [D]<sup>d</sup></span><span>[A]<sup>a</sup> [B]<sup>b</sup></span></span></div>
+  <ul>
+    <li><b>Products on top</b>, <b>reactants on the bottom</b>.</li>
+    <li>Each <b>[ ]</b> means "concentration in mol dm⁻³ <b>at equilibrium</b>". You <b>must</b> use square brackets. Round brackets lose the mark.</li>
+    <li>The <b>balancing numbers become powers</b>.</li>
+    <li>The concentrations are <b>multiplied</b>, never added.</li>
+    <li>At A-level you only need K<sub>c</sub> for <b>homogeneous</b> equilibria, where everything is in the same phase (all gases, or all in solution).</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Step by step: the Haber process</h3>
+  <div class="eq">N₂(g) + 3H₂(g) ⇌ 2NH₃(g)</div>
+  <button class="b alt" onclick="stepReveal('we1')">Show next step</button>
+  <ol class="steps" id="we1">
+    <li class="reveal">Product on top, reactants on the bottom: K<sub>c</sub> = <span class="frac"><span>[NH₃]</span><span>[N₂] [H₂]</span></span></li>
+    <li class="reveal">Add the balancing numbers as powers: there are <b>2</b> NH₃ and <b>3</b> H₂.</li>
+    <li class="reveal"><span class="big">K<sub>c</sub> = <span class="frac"><span>[NH₃]²</span><span>[N₂] [H₂]³</span></span></span></li>
+    <li class="reveal">Check: square brackets ✔ products on top ✔ powers match the equation ✔ multiplied, not added ✔</li>
+  </ol>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Interactive: Kc from any equation</h3>
+  <p>Pick an equilibrium. Every one of these has come up in an AQA paper.</p>
+  <select class="s" id="exSel" style="max-width:100%"></select>
+  <div class="eq" id="exEq"></div>
+  <div class="eq" id="exKc"></div>
+  <p class="small" id="exNote"></p>
+</div>
+
+<div class="warn"><b>Common errors:</b> reactants on top (upside down); round brackets ( ) instead of square [ ]; adding the terms; forgetting a power; putting the balancing number in front, e.g. 2[NH₃] instead of [NH₃]².</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 3</span>
+  <span class="src">June 2022 AS Paper 2 Q18</span>
+  <p>CO(g) + 2H₂(g) ⇌ CH₃OH(g) &nbsp; Which is the expression for K<sub>c</sub>?</p>
+  <div id="c3opts"></div><span class="fb" id="c3"></span>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 4</span>
+  <span class="src">June 2019 AS Paper 1 Q5.2</span>
+  <p>2NO(g) + Cl₂(g) ⇌ 2NOCl(g) &nbsp; Write the expression for K<sub>c</sub>, then check it.</p>
+  <button class="b alt" onclick="tog('c4w')">Answer</button>
+  <div class="work" id="c4w"><span class="big">K<sub>c</sub> = <span class="frac"><span>[NOCl]²</span><span>[NO]² [Cl₂]</span></span></span></div>
+</div>
+</section>
+
+<!-- ============ PAGE 3 ============ -->
+<section class="page" data-title="3. Build it yourself">
+<h2>3. Build the expression yourself</h2>
+<p>For each substance, choose whether it goes on the <b>top</b> or the <b>bottom</b>, and what <b>power</b> it is raised to. Then press <b>Check</b>.</p>
+<div class="card">
+  <div style="margin-bottom:8px"><button class="b" onclick="newBuild()">New equation</button> <span class="small" id="bdCount"></span></div>
+  <div class="eq" id="bdEq"></div>
+  <table class="t" id="bdTab" style="margin:10px auto"></table>
+  <div class="eq" id="bdLive"></div>
+  <div style="text-align:center"><button class="b" onclick="checkBuild()">Check</button><span class="fb" id="bdFb"></span></div>
+</div>
+<div class="card key">
+  <h3 style="margin-top:0">Tip</h3>
+  <p>Read the equation from left to right. Everything on the <b>right</b> of the ⇌ goes on the <b>top</b>. Everything on the <b>left</b> goes on the <b>bottom</b>. Then copy the big number in front of each formula up into its power.</p>
+</div>
+</section>
+
+<!-- ============ PAGE 4 ============ -->
+<section class="page" data-title="4. Reversing the equation">
+<h2>4. What happens to K<sub>c</sub> if you change the equation?</h2>
+<div class="card key">
+  <p>K<sub>c</sub> belongs to <b>one particular equation</b>. If the equation is written differently, the expression changes too.</p>
+  <table class="t" style="margin:10px auto">
+    <tr><th>Change to the equation</th><th>Effect on the expression</th><th>New value</th></tr>
+    <tr><td>Write it <b>backwards</b></td><td>flip it upside down</td><td><b>1 / K<sub>c</sub></b></td></tr>
+    <tr><td><b>Double</b> every balancing number</td><td>every power doubles</td><td><b>K<sub>c</sub>²</b></td></tr>
+    <tr><td><b>Halve</b> every balancing number</td><td>every power halves</td><td><b>√K<sub>c</sub></b></td></tr>
+  </table>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Interactive: change the equation</h3>
+  <p>Start: 2SO₂(g) + O₂(g) ⇌ 2SO₃(g), &nbsp; K<sub>c</sub> = 15.0 at temperature T</p>
+  <button class="b alt rv" data-m="fwd">Original</button>
+  <button class="b alt rv" data-m="rev">Reverse it</button>
+  <button class="b alt rv" data-m="dbl">Double it</button>
+  <button class="b alt rv" data-m="hlf">Halve it</button>
+  <div class="eq" id="rvEq"></div>
+  <div class="eq" id="rvKc"></div>
+  <div class="readout" id="rvOut"></div>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 5</span>
+  <span class="src">Based on June 2018 AS Paper 2 Q8.4</span>
+  <p>CO(g) + 2H₂(g) ⇌ CH₃OH(g) has K<sub>c</sub> = [CH₃OH] / ([CO][H₂]²).<br>Methanol decomposes in the reverse reaction: CH₃OH(g) ⇌ CO(g) + 2H₂(g). Which expression is K<sub>c</sub> for the decomposition?</p>
+  <div id="c5opts"></div><span class="fb" id="c5"></span>
+  <p class="small">You'll calculate the actual value in Walkthrough 2.</p>
+</div>
+</section>
+
+<!-- ============ PAGE 5 ============ -->
+<section class="page" data-title="5. Quiz">
+<h2>5. End-of-walkthrough quiz</h2>
+<p>Click an answer. You get one go at each question.</p>
+<div id="quiz"></div>
+<div class="card" id="score" style="font-size:22px;text-align:center"></div>
+<button class="b alt" onclick="buildQuiz()">Reset quiz</button>
+<p class="small">Next: Walkthrough 2 – the units of K<sub>c</sub>.</p>
+</section>
+
+<div class="pager"><button class="b alt" id="prevB">◀ Previous</button><button class="b" id="nextB">Next ▶</button></div>
+</main>
+<script>
+/* ---------- navigation ---------- */
+const pages=[...document.querySelectorAll('.page')];let cur=0;
+const nav=document.getElementById('nav');
+pages.forEach((p,i)=>{const b=document.createElement('button');b.textContent=p.dataset.title;b.onclick=()=>go(i);nav.appendChild(b)});
+function go(i){cur=i;pages.forEach((p,j)=>p.classList.toggle('on',j===i));[...nav.children].forEach((b,j)=>b.classList.toggle('on',j===i));
+ document.getElementById('prevB').disabled=i===0;document.getElementById('nextB').disabled=i===pages.length-1;window.scrollTo(0,0);
+ if(typeof onPage==='function')onPage(i)}
+document.getElementById('prevB').onclick=()=>go(Math.max(0,cur-1));
+document.getElementById('nextB').onclick=()=>go(Math.min(pages.length-1,cur+1));
+
+/* ---------- helpers ---------- */
+const $=id=>document.getElementById(id);
+function tog(id){$(id).classList.toggle('on')}
+function stepReveal(id){const r=[...document.querySelectorAll('#'+id+' .reveal:not(.on)')];if(r.length)r[0].classList.add('on')}
+function parseNum(s){
+ s=s.trim().replace(/\s/g,'');const sp={'⁰':'0','¹':'1','²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9','⁻':'-'};
+ s=s.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁻]/g,c=>sp[c]).replace(/[−–]/g,'-').replace(/,/g,'');
+ let m=s.match(/^(-?[\d.]+)[x×X*]10\^?(-?\d+)$/);if(m)return parseFloat(m[1])*Math.pow(10,parseInt(m[2]));
+ m=s.match(/^(-?[\d.]+)[eE](-?\d+)$/);if(m)return parseFloat(s);
+ const v=Number(s);return (s===''||isNaN(v))?null:v}
+function numCheck(id,target,tol){const v=parseNum($(id).value);const fb=$(id+'fb');
+ if(v===null){fb.textContent='Enter a number';fb.className='fb no';return false}
+ if(Math.abs(v-target)<=Math.abs(target)*tol){fb.textContent='✔ Correct';fb.className='fb ok';return true}
+ fb.textContent='✘ Not quite, check your working';fb.className='fb no';return false}
+function pick(btn,ok,id){const f=$(id);f.textContent=ok?'✔ Correct':'✘ Try again';f.className='fb '+(ok?'ok':'no')}
+const sup=n=>String(n).split('').map(c=>({'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'})[c]).join('');
+/* format number to n s.f.; standard form for very small/large */
+function sf(x,n=3){if(x===0)return '0';let e=Math.floor(Math.log10(Math.abs(x)));
+ if(e<-3||e>=5){let m=(x/Math.pow(10,e)).toFixed(n-1);if(Math.abs(+m)>=10){e++;m=(x/Math.pow(10,e)).toFixed(n-1)}return m+' × 10'+sup(e)}
+ return x.toFixed(Math.max(0,n-1-e))}
+/* units of Kc from Δn = (moles top − moles bottom) */
+function kcUnits(dn){if(dn===0)return 'no units';const m=dn===1?'mol':'mol'+sup(dn);return `${m} dm${sup(-3*dn)}`}
+/* render a fraction */
+const fr=(t,b)=>`<span class="frac"><span>${t}</span><span>${b}</span></span>`;
+
+/* ---------- SVG plotting ---------- */
+const NS='http://www.w3.org/2000/svg';
+function E(tag,a,p){const e=document.createElementNS(NS,tag);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e}
+function plot(svg,o){
+ svg.innerHTML='';const W=660,H=400,ml=80,mr=20,mt=18,mb=60,pw=W-ml-mr,ph=H-mt-mb;
+ const X=x=>ml+x/o.xmax*pw,Y=y=>mt+ph-y/o.ymax*ph;
+ const id='cl'+Math.random().toString(36).slice(2);
+ const d=E('defs',{},svg);const cp=E('clipPath',{id},d);E('rect',{x:ml,y:mt,width:pw,height:ph},cp);
+ E('rect',{x:ml,y:mt,width:pw,height:ph,fill:'#fff'},svg);
+ const gx=o.gx||o.xt,gy=o.gy||o.yt;
+ for(let x=0;x<=o.xmax+1e-9;x+=gx)E('line',{x1:X(x),x2:X(x),y1:mt,y2:mt+ph,stroke:'#efe3cc'},svg);
+ for(let y=0;y<=o.ymax+1e-9;y+=gy)E('line',{x1:ml,x2:ml+pw,y1:Y(y),y2:Y(y),stroke:'#efe3cc'},svg);
+ if(!o.noxt)for(let x=0;x<=o.xmax+1e-9;x+=o.xt){E('line',{x1:X(x),x2:X(x),y1:mt+ph,y2:mt+ph+6,stroke:'#3b2a1a'},svg);const t=E('text',{x:X(x),y:mt+ph+24,'text-anchor':'middle','font-size':15,fill:'#3b2a1a'},svg);t.textContent=+x.toFixed(4)}
+ if(!o.noyt)for(let y=0;y<=o.ymax+1e-9;y+=o.yt){E('line',{x1:ml-6,x2:ml,y1:Y(y),y2:Y(y),stroke:'#3b2a1a'},svg);const t=E('text',{x:ml-10,y:Y(y)+5,'text-anchor':'end','font-size':15,fill:'#3b2a1a'},svg);t.textContent=(o.yfmt?o.yfmt(y):+y.toFixed(3))}
+ E('line',{x1:ml,x2:ml+pw,y1:mt+ph,y2:mt+ph,stroke:'#3b2a1a','stroke-width':2},svg);
+ E('line',{x1:ml,x2:ml,y1:mt,y2:mt+ph,stroke:'#3b2a1a','stroke-width':2},svg);
+ let t=E('text',{x:ml+pw/2,y:H-12,'text-anchor':'middle','font-size':17,fill:'#6b4423'},svg);t.textContent=o.xlab;
+ t=E('text',{x:18,y:mt+ph/2,'text-anchor':'middle','font-size':17,fill:'#6b4423',transform:`rotate(-90 18 ${mt+ph/2})`},svg);t.textContent=o.ylab;
+ const g=E('g',{'clip-path':`url(#${id})`},svg);
+ return {X,Y,g,svg,curve(f,col='#6b4423',w=3,dash,x0=0,x1=o.xmax){let dd='';for(let i=0;i<=300;i++){const x=x0+(x1-x0)*i/300;dd+=(i?'L':'M')+X(x)+' '+Y(f(x))}return E('path',{d:dd,fill:'none',stroke:col,'stroke-width':w,'stroke-dasharray':dash||''},g)},
+  text(x,y,s,col='#3b2a1a',sz=15,anc='start'){const t=E('text',{x:X(x),y:Y(y),'font-size':sz,fill:col,'text-anchor':anc},g);t.textContent=s;return t}};
+}
+
+/* ---------- quiz ---------- */
+let qs=0,qa=0;
+function buildQuiz(){const w=$('quiz');w.innerHTML='';qs=0;qa=0;
+ Q.forEach((q,i)=>{const c=document.createElement('div');c.className='card mcq';c.innerHTML=`<b>Q${i+1}.</b> ${q[0]}`;
+  q[1].forEach((o,j)=>{const b=document.createElement('button');b.className='opt';b.innerHTML=o;
+   b.onclick=()=>{if(c.classList.contains('done'))return;c.classList.add('done');qa++;
+    if(j===q[2]){b.classList.add('right');qs++}else{b.classList.add('wrong');c.querySelectorAll('.opt')[q[2]].classList.add('right')}score()};c.appendChild(b)});
+  const e=document.createElement('div');e.className='exp';e.innerHTML='💡 '+q[3];c.appendChild(e);w.appendChild(c)});score()}
+function score(){const n=Q.length;$('score').innerHTML=`Score: <b>${qs}</b> / ${n}`+(qa===n?(qs>=n-1?' – excellent!':qs>=Math.ceil(n*0.7)?' – good, review the ones you missed':' – go back through the walkthrough and try again'):'')}
+
+/* ---------- shared: equation bank and Kc rendering ---------- */
+const BANK=[
+ {eq:'N₂(g) + 3H₂(g) ⇌ 2NH₃(g)',r:[[1,'N₂'],[3,'H₂']],p:[[2,'NH₃']],src:'Haber process'},
+ {eq:'2SO₂(g) + O₂(g) ⇌ 2SO₃(g)',r:[[2,'SO₂'],[1,'O₂']],p:[[2,'SO₃']],src:'November 2021 AS Paper 1 Q10'},
+ {eq:'2NO(g) + Cl₂(g) ⇌ 2NOCl(g)',r:[[2,'NO'],[1,'Cl₂']],p:[[2,'NOCl']],src:'June 2019 AS Paper 1 Q5'},
+ {eq:'H₂(g) + I₂(g) ⇌ 2HI(g)',r:[[1,'H₂'],[1,'I₂']],p:[[2,'HI']],src:'June 2025 AS Paper 1 Q7'},
+ {eq:'CO₂(g) + 3H₂(g) ⇌ CH₃OH(g) + H₂O(g)',r:[[1,'CO₂'],[3,'H₂']],p:[[1,'CH₃OH'],[1,'H₂O']],src:'June 2025 AS Paper 1 Q7.3'},
+ {eq:'C₂H₅OH(g) + H₂O(g) ⇌ 2CO(g) + 4H₂(g)',r:[[1,'C₂H₅OH'],[1,'H₂O']],p:[[2,'CO'],[4,'H₂']],src:'November 2020 AS Paper 2 Q8'},
+ {eq:'2CHClF₂(g) ⇌ C₂F₄(g) + 2HCl(g)',r:[[2,'CHClF₂']],p:[[1,'C₂F₄'],[2,'HCl']],src:'June 2022 Paper 2 Q2'},
+ {eq:'2A + B ⇌ 3C + D',r:[[2,'A'],[1,'B']],p:[[3,'C'],[1,'D']],src:'June 2018 Paper 2 Q4'},
+ {eq:'A(aq) + 2B(aq) ⇌ C(aq)',r:[[1,'A'],[2,'B']],p:[[1,'C']],src:'June 2023 AS Paper 1 Q8'},
+ {eq:'2P(aq) + Q(aq) ⇌ R(aq) + 3S(aq)',r:[[2,'P'],[1,'Q']],p:[[1,'R'],[3,'S']],src:'June 2024 Paper 2 Q2'},
+ {eq:'C₂H₄(g) + CO(g) + H₂O(g) ⇌ CH₃CH₂COOH(g)',r:[[1,'C₂H₄'],[1,'CO'],[1,'H₂O']],p:[[1,'CH₃CH₂COOH']],src:'June 2024 AS Paper 2 Q7'},
+ {eq:'2CH₃COOH(l) + HOCH₂CH₂OH(l) ⇌ C₆H₁₀O₄(l) + 2H₂O(l)',r:[[2,'CH₃COOH'],[1,'HOCH₂CH₂OH']],p:[[1,'C₆H₁₀O₄'],[2,'H₂O']],src:'June 2017 Paper 2 Q5'},
+ {eq:'2Fe³⁺(aq) + 2I⁻(aq) ⇌ 2Fe²⁺(aq) + I₂(aq)',r:[[2,'Fe³⁺'],[2,'I⁻']],p:[[2,'Fe²⁺'],[1,'I₂']],src:'June 2025 Paper 3 Q4'},
+ {eq:'CH₄(g) + H₂O(g) ⇌ CO(g) + 3H₂(g)',r:[[1,'CH₄'],[1,'H₂O']],p:[[1,'CO'],[3,'H₂']],src:'November 2021 AS Paper 1 Q9'}
+];
+const term=([c,f])=>`[${f}]${c>1?sup(c):''}`;
+const side=a=>a.map(term).join(' ');
+function kcHTML(rx){return `K<sub>c</sub> = ${fr(side(rx.p),side(rx.r))}`}
+
+
+/* ---------- page 1: equilibrium animation ---------- */
+const eqCv=$('eqCv'),ecx=eqCv.getContext('2d'),EW=340,EH=300,NP=60,kf=0.30,kr=0.15;
+let ep=[],et=0,eRun=true,eHist=[],eNext=0,eFl=[];
+function eqInit(st){ep=[];for(let i=0;i<NP;i++){const a=Math.random()*6.28,v=40+Math.random()*30;ep.push({x:10+Math.random()*(EW-20),y:10+Math.random()*(EH-20),vx:v*Math.cos(a),vy:v*Math.sin(a),s:st})}
+ et=0;eHist=[];eNext=0;eFl=[];eqGraphs()}
+function eqStep(dt){et+=dt;ep.forEach(p=>{p.x+=p.vx*dt;p.y+=p.vy*dt;
+ if(p.x<8){p.x=8;p.vx*=-1}if(p.x>EW-8){p.x=EW-8;p.vx*=-1}if(p.y<8){p.y=8;p.vy*=-1}if(p.y>EH-8){p.y=EH-8;p.vy*=-1}
+ const k=p.s?kr:kf;if(Math.random()<k*dt){p.s=1-p.s;eFl.push({x:p.x,y:p.y,l:.5,s:p.s})}});
+ eFl.forEach(f=>f.l-=dt);eFl=eFl.filter(f=>f.l>0);
+ if(et>=eNext&&et<=40.01){const nB=ep.filter(p=>p.s).length;eHist.push([et,NP-nB,nB]);eNext+=0.5;eqGraphs()}}
+function eqDraw(){ecx.fillStyle='#fff';ecx.fillRect(0,0,EW,EH);
+ ep.forEach(p=>{ecx.beginPath();ecx.arc(p.x,p.y,7,0,7);ecx.fillStyle=p.s?'#b5651d':'#2c4a7a';ecx.fill()});
+ eFl.forEach(f=>{ecx.beginPath();ecx.arc(f.x,f.y,9+(0.5-f.l)*24,0,7);ecx.strokeStyle=`rgba(120,120,120,${f.l*1.6})`;ecx.lineWidth=2;ecx.stroke()});
+ const nB=ep.filter(p=>p.s).length,nA=NP-nB;
+ $('eqOut').innerHTML=`t = ${et.toFixed(1)} s<br>A: ${nA} &nbsp; B: ${nB}<br>forward rate ∝ ${kf}×${nA} = ${(kf*nA).toFixed(1)}<br>reverse rate ∝ ${kr}×${nB} = ${(kr*nB).toFixed(1)}`}
+function smooth(arr,i,k){k=Math.min(k,i);let s=0,n=0;for(let j=Math.max(0,i-k);j<=Math.min(arr.length-1,i+k);j++){s+=arr[j];n++}return s/n}
+function eqGraphs(){
+ const pc=plot($('eqSvgC'),{xmax:40,ymax:60,xt:5,yt:10,xlab:'time / s',ylab:'number of particles'});
+ const pr=plot($('eqSvgR'),{xmax:40,ymax:20,xt:5,yt:5,xlab:'time / s',ylab:'rate (arbitrary units)'});
+ if(eHist.length<2)return;
+ const nA=eHist.map(h=>h[1]),nB=eHist.map(h=>h[2]);
+ const line=(P,ys,col)=>{let d='';eHist.forEach((h,i)=>{d+=(i?'L':'M')+P.X(h[0])+' '+P.Y(ys(i))});E('path',{d,fill:'none',stroke:col,'stroke-width':3},P.g)};
+ line(pc,i=>smooth(nA,i,2),'#2c4a7a');line(pc,i=>smooth(nB,i,2),'#b5651d');
+ line(pr,i=>kf*smooth(nA,i,3),'#2c4a7a');line(pr,i=>kr*smooth(nB,i,3),'#b5651d');
+ pc.text(33,57,'— A','#2c4a7a',16);pc.text(33,52,'— B','#b5651d',16);
+ pr.text(26,19,'— forward (A→B)','#2c4a7a',15);pr.text(26,17.5,'— reverse (B→A)','#b5651d',15)}
+let eLast=performance.now();
+function eqLoop(ts){const dt=Math.min(.05,(ts-eLast)/1000);eLast=ts;if(eRun){eqStep(dt);eqDraw()}requestAnimationFrame(eqLoop)}
+$('eqA').onclick=()=>{eqInit(0);$('eqA').classList.remove('alt');$('eqB').classList.add('alt')};
+$('eqB').onclick=()=>{eqInit(1);$('eqB').classList.remove('alt');$('eqA').classList.add('alt')};
+$('eqP').onclick=function(){eRun=!eRun;this.textContent=eRun?'❚❚ Pause':'▶ Play'};
+eqInit(0);requestAnimationFrame(eqLoop);
+
+/* ---------- page 2: example selector ---------- */
+BANK.forEach((b,i)=>{const o=document.createElement('option');o.value=i;o.textContent=b.eq;$('exSel').appendChild(o)});
+function showEx(){const b=BANK[+$('exSel').value];$('exEq').textContent=b.eq;$('exKc').innerHTML=kcHTML(b);$('exNote').textContent='Source: '+b.src}
+$('exSel').onchange=showEx;showEx();
+
+function optBlock(id,opts,ans,fb){const w=$(id);opts.forEach((o,i)=>{const b=document.createElement('button');b.className='b alt';b.style.fontSize='19px';b.innerHTML=String.fromCharCode(65+i)+' &nbsp; '+o;
+ b.onclick=()=>pick(b,i===ans,fb);w.appendChild(b)})}
+optBlock('c3opts',[fr('[CH₃OH]','[CO] + [H₂]²'),fr('[CH₃OH]','[CO] [H₂]²'),fr('[CO] + [H₂]²','[CH₃OH]'),fr('[CO] [H₂]²','[CH₃OH]')],1,'c3');
+optBlock('c5opts',[fr('[CH₃OH]','[CO] [H₂]²'),fr('[CO] [H₂]²','[CH₃OH]'),fr('[CO] [2H₂]','[CH₃OH]'),'[CO] [H₂]² [CH₃OH]'],1,'c5');
+
+/* ---------- page 3: builder ---------- */
+let bd=null,bdN=0,bdOk=0;
+function newBuild(){let b;do{b=BANK[Math.floor(Math.random()*BANK.length)]}while(bd&&b===bd.rx);
+ const sp=[...b.r.map(x=>({f:x[1],c:x[0],pos:'bottom'})),...b.p.map(x=>({f:x[1],c:x[0],pos:'top'}))].sort(()=>Math.random()-.5);
+ bd={rx:b,sp};$('bdEq').textContent=b.eq;$('bdFb').textContent='';
+ const t=$('bdTab');t.innerHTML='<tr><th>Substance</th><th>Top or bottom?</th><th>Power</th></tr>';
+ sp.forEach((s,i)=>{const r=t.insertRow();r.innerHTML=`<td><b>${s.f}</b></td><td><select class="s" id="bp${i}"><option value="">–</option><option>top</option><option>bottom</option></select></td><td><select class="s" id="bw${i}"><option value="">–</option><option>1</option><option>2</option><option>3</option><option>4</option></select></td>`;
+  $('bp'+i).onchange=bdLive;$('bw'+i).onchange=bdLive});bdLive()}
+function bdLive(){const top=[],bot=[];bd.sp.forEach((s,i)=>{const p=$('bp'+i).value,w=+$('bw'+i).value||1;const t=`[${s.f}]${w>1?sup(w):''}`;if(p==='top')top.push(t);if(p==='bottom')bot.push(t)});
+ $('bdLive').innerHTML='Your K<sub>c</sub> = '+fr(top.join(' ')||'?',bot.join(' ')||'?')}
+function checkBuild(){let ok=true,blank=false;bd.sp.forEach((s,i)=>{const p=$('bp'+i),w=$('bw'+i);if(!p.value||!w.value)blank=true;
+ const good=p.value===s.pos&&+w.value===s.c;[p,w].forEach(x=>x.style.borderColor=good?'#2f7d4a':'#b03a2e');if(!good)ok=false});
+ const fb=$('bdFb');if(blank){fb.textContent='Fill in every box';fb.className='fb no';return}
+ bdN++;if(ok)bdOk++;$('bdCount').textContent=`Score: ${bdOk} / ${bdN}`;
+ fb.className='fb '+(ok?'ok':'no');fb.innerHTML=ok?'✔ Correct!':'✘ Not quite. Red boxes are wrong. Correct: '+kcHTML(bd.rx)}
+newBuild();
+
+/* ---------- page 4: reversing ---------- */
+const RV={fwd:{eq:'2SO₂(g) + O₂(g) ⇌ 2SO₃(g)',kc:fr('[SO₃]²','[SO₂]² [O₂]'),v:'15.0',how:'This is the original equation.',u:'mol⁻¹ dm³'},
+ rev:{eq:'2SO₃(g) ⇌ 2SO₂(g) + O₂(g)',kc:fr('[SO₂]² [O₂]','[SO₃]²'),v:'1 / 15.0 = 0.0667',how:'Reactants and products swap, so the expression is turned upside down. New K<sub>c</sub> = 1 / old K<sub>c</sub>.',u:'mol dm⁻³'},
+ dbl:{eq:'4SO₂(g) + 2O₂(g) ⇌ 4SO₃(g)',kc:fr('[SO₃]⁴','[SO₂]⁴ [O₂]²'),v:'15.0² = 225',how:'Every power doubles, so the whole expression is squared. New K<sub>c</sub> = (old K<sub>c</sub>)².',u:'mol⁻² dm⁶'},
+ hlf:{eq:'SO₂(g) + ½O₂(g) ⇌ SO₃(g)',kc:fr('[SO₃]','[SO₂] [O₂]<sup>½</sup>'),v:'√15.0 = 3.87',how:'Every power halves, so you take the square root. New K<sub>c</sub> = √(old K<sub>c</sub>).',u:'mol<sup>-½</sup> dm<sup>3/2</sup>'}};
+function rv(m){const r=RV[m];$('rvEq').textContent=r.eq;$('rvKc').innerHTML='K<sub>c</sub> = '+r.kc;$('rvOut').innerHTML=`${r.how}<br>K<sub>c</sub> = <b>${r.v}</b> &nbsp; (units: ${r.u})`;
+ document.querySelectorAll('.rv').forEach(b=>b.classList.toggle('alt',b.dataset.m!==m))}
+document.querySelectorAll('.rv').forEach(b=>b.onclick=()=>rv(b.dataset.m));rv('fwd');
+
+/* ---------- quiz ---------- */
+const Q=[
+ ["Which statement about a reaction at dynamic equilibrium is correct?",["The concentrations of reactants and products are equal","The forward and reverse reactions have both stopped","The rates of the forward and reverse reactions are equal","The forward reaction is faster than the reverse reaction"],2,"At equilibrium both reactions continue at the same rate, so the concentrations stay constant."],
+ ["Why must an equilibrium be set up in a closed system?",["So the temperature stays the same","So no reactants or products can escape or be added","So a catalyst can work","So the reaction goes faster"],1,"If a product escaped (e.g. a gas leaving an open flask) the reverse reaction couldn't keep up and equilibrium would never be reached."],
+ ["What does [NH₃] mean in a K<sub>c</sub> expression?",["The number of moles of NH₃","The mass of NH₃","The concentration of NH₃ at equilibrium in mol dm⁻³","The initial concentration of NH₃"],2,"Square brackets mean concentration in mol dm⁻³, and in K<sub>c</sub> it is always the equilibrium concentration."],
+ ["What is K<sub>c</sub> for H₂(g) + I₂(g) ⇌ 2HI(g)?",[fr('[HI]','[H₂][I₂]'),fr('[HI]²','[H₂][I₂]'),fr('2[HI]','[H₂][I₂]'),fr('[H₂][I₂]','[HI]²')],1,"Product on top, and the 2 becomes a power: [HI]²."],
+ ["What is K<sub>c</sub> for 2SO₂(g) + O₂(g) ⇌ 2SO₃(g)?",[fr('[SO₃]²','[SO₂]²[O₂]'),fr('[SO₃]²','[SO₂]² + [O₂]'),fr('[SO₂]²[O₂]','[SO₃]²'),fr('[SO₃]','[SO₂][O₂]')],0,"Multiply the reactant terms, never add them."],
+ ["2CHClF₂(g) ⇌ C₂F₄(g) + 2HCl(g). Which substance is raised to the power 2 on the bottom of the K<sub>c</sub> expression?",["HCl","C₂F₄","CHClF₂","None of them"],2,"CHClF₂ is the only reactant and it has a 2 in front, so it's [CHClF₂]² on the bottom."],
+ ["A student writes K<sub>c</sub> = ([C]³(D)) / ([A]²[B]). Why would this lose the mark?",["The powers are wrong","Round brackets have been used for D","Products should be on the bottom","D should be squared"],1,"AQA mark schemes insist on square brackets for concentrations."],
+ ["K<sub>c</sub> for an equilibrium is 4.0. What is K<sub>c</sub> for the reverse reaction at the same temperature?",["4.0","−4.0","0.25","16"],2,"Reversing the equation flips the expression: 1 / 4.0 = 0.25."],
+ ["K<sub>c</sub> for N₂ + 3H₂ ⇌ 2NH₃ is K. What is K<sub>c</sub> for ½N₂ + 1½H₂ ⇌ NH₃?",["K / 2","2K","√K","K²"],2,"Halving the equation halves every power, which is the same as taking the square root."],
+ ["Which equilibrium is <b>homogeneous</b>?",["CaCO₃(s) ⇌ CaO(s) + CO₂(g)","CO₂(g) + 3H₂(g) ⇌ CH₃OH(g) + H₂O(g)","C(s) + H₂O(g) ⇌ CO(g) + H₂(g)","Ag⁺(aq) + Cl⁻(aq) ⇌ AgCl(s)"],1,"Homogeneous means everything is in the same phase. Here every substance is a gas."]
+];
+
+buildQuiz();
+go(0);
+</script>
+</body>
+</html>

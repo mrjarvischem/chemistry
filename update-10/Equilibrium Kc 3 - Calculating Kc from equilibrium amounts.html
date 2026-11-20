@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Equilibrium (Kc) 3 – Calculating Kc from Equilibrium Amounts</title>
+<style>
+:root{
+  --bg:#f6efe1; --card:#fffaf0; --ink:#3b2a1a; --brown:#6b4423; --brown2:#8b5a2b;
+  --accent:#b5651d; --soft:#ead9bd; --line:#d8c4a0; --good:#2f7d4a; --bad:#b03a2e; --blue:#2c4a7a;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Arial,sans-serif;font-size:19px;line-height:1.55}
+header{background:var(--brown);color:#fff8ec;padding:14px 24px}
+header h1{margin:0;font-family:Georgia,serif;font-size:28px;font-weight:normal}
+header p{margin:2px 0 0;opacity:.85;font-size:16px}
+nav{display:flex;flex-wrap:wrap;gap:6px;padding:10px 24px;background:var(--soft);border-bottom:2px solid var(--line);position:sticky;top:0;z-index:5}
+nav button{border:2px solid var(--brown2);background:var(--card);color:var(--brown);padding:7px 14px;border-radius:20px;font-size:16px;cursor:pointer}
+nav button.on{background:var(--brown2);color:#fff}
+main{max-width:1100px;margin:0 auto;padding:20px 24px 60px}
+.page{display:none}.page.on{display:block}
+h2{font-family:Georgia,serif;color:var(--brown);font-size:30px;margin:6px 0 12px;font-weight:normal}
+h3{color:var(--brown2);font-size:22px;margin:22px 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:14px 0;box-shadow:0 2px 0 var(--line)}
+.key{border-left:6px solid var(--accent)}
+.eq{font-family:Georgia,serif;font-size:24px;text-align:center;padding:10px;background:#fff;border:1px dashed var(--line);border-radius:8px;margin:10px 0}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 6px}
+.frac>span:first-child{border-bottom:2px solid var(--ink);padding:0 6px}
+.row{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+.row>*{flex:1 1 380px}
+button.b{background:var(--brown2);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:17px;cursor:pointer;margin:4px 6px 4px 0}
+button.b.alt{background:var(--card);color:var(--brown);border:2px solid var(--brown2)}
+button.b:disabled{opacity:.45;cursor:default}
+.check{background:#fdf6e6;border:2px solid var(--accent);border-radius:12px;padding:14px 18px;margin:16px 0}
+.check .tag{display:inline-block;background:var(--accent);color:#fff;font-size:14px;padding:2px 10px;border-radius:12px;margin-bottom:6px;letter-spacing:.5px}
+.check .src{font-size:14px;color:#8a7356;font-style:italic}
+input.ans{font-size:18px;padding:6px 10px;width:200px;border:2px solid var(--line);border-radius:6px}
+.fb{font-weight:600;margin-left:8px}
+.fb.ok{color:var(--good)}.fb.no{color:var(--bad)}
+.work{display:none;background:#fff;border-left:4px solid var(--brown2);padding:8px 14px;margin-top:8px;border-radius:4px}
+.work.on{display:block}
+table.t{border-collapse:collapse;margin:8px 0;background:#fff}
+table.t th,table.t td{border:1px solid var(--line);padding:6px 12px;text-align:center}
+table.t th{background:var(--soft);color:var(--brown)}
+svg text{font-family:"Segoe UI",Arial,sans-serif}
+.readout{font-family:Consolas,monospace;background:#2b1d10;color:#ffe9c4;padding:10px 14px;border-radius:8px;font-size:17px;line-height:1.6}
+.slider{width:100%}
+label.s{display:block;font-weight:600;color:var(--brown);margin-top:8px}
+.steps li{margin:6px 0}
+.reveal{display:none}.reveal.on{display:block;animation:fade .4s}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+.pager{display:flex;justify-content:space-between;margin-top:30px}
+.mcq button.opt{display:block;width:100%;text-align:left;margin:6px 0;padding:10px 14px;font-size:17px;border:2px solid var(--line);background:#fff;border-radius:8px;cursor:pointer;color:var(--ink)}
+.mcq button.opt.right{border-color:var(--good);background:#e6f4ea}
+.mcq button.opt.wrong{border-color:var(--bad);background:#fbe9e7}
+.mcq .exp{display:none;margin-top:6px;font-size:17px}
+.mcq.done .exp{display:block}
+.warn{background:#fbeee4;border-left:6px solid var(--bad);padding:10px 16px;border-radius:6px;margin:12px 0}
+.small{font-size:15px;color:#7a6448}
+canvas{background:#fff;border:1px solid var(--line);border-radius:8px;max-width:100%}
+.chip{display:inline-block;padding:2px 10px;border-radius:12px;background:var(--soft);margin:2px;font-size:16px}
+.big{font-size:22px}
+table.ice{border-collapse:collapse;margin:10px auto;background:#fff;font-size:18px}
+table.ice th,table.ice td{border:1px solid var(--line);padding:8px 14px;text-align:center;min-width:90px}
+table.ice th{background:var(--soft);color:var(--brown)}
+table.ice td.lab{background:#fbf3e3;font-weight:600;color:var(--brown);text-align:left}
+table.ice td.hl{background:#fde9c8;transition:background .4s}
+table.ice td.done{color:var(--good);font-weight:700}
+table.ice input{width:100px;font-size:17px;padding:3px 6px;border:2px solid var(--line);border-radius:6px;text-align:center}
+.slot{display:inline-block;min-width:60px;border-bottom:2px dashed var(--brown2);margin:0 4px;text-align:center}
+select.s{font-size:18px;padding:4px 6px;border:2px solid var(--line);border-radius:6px;background:#fff}
+.tick{color:var(--good);font-weight:700}.cross{color:var(--bad);font-weight:700}
+.legend span{display:inline-block;margin-right:14px;font-size:15px}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:-2px;margin-right:4px}
+.src{font-size:14px;color:#8a7356;font-style:italic;display:block;margin-bottom:4px}
+.readout .frac>span:first-child{border-bottom-color:#ffe9c4}
+
+</style>
+</head>
+<body>
+<header>
+  <h1>Equilibrium (Kc) 3 – Calculating Kc from Equilibrium Amounts</h1>
+  <p>AQA A-level Chemistry · Equilibria walkthrough</p>
+</header>
+<nav id="nav"></nav>
+<main>
+<!-- ============ PAGE 1 ============ -->
+<section class="page" data-title="1. From concentrations">
+<h2>1. Calculating K<sub>c</sub> from equilibrium concentrations</h2>
+<div class="card key">
+  <p>If you're given the <b>equilibrium concentrations</b>, it's just substitution:</p>
+  <ol>
+    <li>Write the K<sub>c</sub> expression.</li>
+    <li>Put each equilibrium concentration in its square bracket. Apply the powers.</li>
+    <li>Work out the value (calculator: use brackets!) and the units.</li>
+  </ol>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Worked example</h3>
+  <p>H₂(g) + I₂(g) ⇌ 2HI(g). At equilibrium [H₂] = 0.0115, [I₂] = 0.0115 and [HI] = 0.0770 mol dm⁻³. Calculate K<sub>c</sub>.</p>
+  <button class="b alt" onclick="stepReveal('we1')">Show next step</button>
+  <ol class="steps" id="we1">
+    <li class="reveal">K<sub>c</sub> = <span class="frac"><span>[HI]²</span><span>[H₂] [I₂]</span></span></li>
+    <li class="reveal">K<sub>c</sub> = <span class="frac"><span>(0.0770)²</span><span>(0.0115) × (0.0115)</span></span> = <span class="frac"><span>5.929 × 10⁻³</span><span>1.3225 × 10⁻⁴</span></span></li>
+    <li class="reveal">K<sub>c</sub> = <b>44.8</b></li>
+    <li class="reveal">Units: 2 − 2 = 0 → <b>no units</b></li>
+  </ol>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 1</span>
+  <p>N₂(g) + 3H₂(g) ⇌ 2NH₃(g). At equilibrium [N₂] = 0.50, [H₂] = 1.20 and [NH₃] = 0.30 mol dm⁻³. Calculate K<sub>c</sub>.</p>
+  <input class="ans" id="c1"> <button class="b" onclick="numCheck('c1',0.104,0.01)">Check</button><span class="fb" id="c1fb"></span>
+  <button class="b alt" onclick="tog('c1w')">Working</button>
+  <div class="work" id="c1w">K<sub>c</sub> = <span class="frac"><span>(0.30)²</span><span>(0.50) × (1.20)³</span></span> = <span class="frac"><span>0.09</span><span>0.864</span></span> = <b>0.104 mol⁻² dm⁶</b><br>Common slip: cubing 1.20 but forgetting to square 0.30.</div>
+</div>
+</section>
+
+<!-- ============ PAGE 2 ============ -->
+<section class="page" data-title="2. From moles and volume">
+<h2>2. From moles: divide by the volume first</h2>
+<div class="card key">
+  <p>Exam questions usually give you <b>moles</b>, not concentrations. K<sub>c</sub> needs <b>concentrations</b>, so:</p>
+  <div class="eq">concentration (mol dm⁻³) = <span class="frac"><span>moles</span><span>volume in <b>dm³</b></span></span></div>
+  <p>Volume in cm³? <b>Divide by 1000</b> first. 250 cm³ = 0.250 dm³.</p>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Animation: moles → concentration</h3>
+  <p>The same moles in a smaller container are more crowded, so the concentration is higher. Change the volume.</p>
+  <label class="s">Volume of container: <span id="vV"></span> cm³</label>
+  <input type="range" class="slider" id="vS" min="100" max="1000" step="50" value="250">
+  <div class="row">
+    <div style="flex:1 1 300px;text-align:center"><canvas id="vCv" width="320" height="260"></canvas></div>
+    <div style="flex:1 1 380px"><div class="readout" id="vOut"></div></div>
+  </div>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Worked example</h3>
+  <span class="src">June 2018 AS Paper 2 Q8.3 (3 marks)</span>
+  <p>CO(g) + 2H₂(g) ⇌ CH₃OH(g). An equilibrium mixture in a container of volume <b>250 cm³</b> contains 0.340 mol CO, 0.190 mol H₂ and 0.0610 mol CH₃OH. Calculate K<sub>c</sub>.</p>
+  <button class="b alt" onclick="stepReveal('we2')">Show next step</button>
+  <ol class="steps" id="we2">
+    <li class="reveal">Volume = 250 ÷ 1000 = <b>0.250 dm³</b></li>
+    <li class="reveal">[CO] = 0.340 ÷ 0.250 = 1.36 &nbsp; [H₂] = 0.190 ÷ 0.250 = 0.760 &nbsp; [CH₃OH] = 0.0610 ÷ 0.250 = 0.244 mol dm⁻³</li>
+    <li class="reveal">K<sub>c</sub> = <span class="frac"><span>[CH₃OH]</span><span>[CO] [H₂]²</span></span> = <span class="frac"><span>0.244</span><span>1.36 × 0.760²</span></span> = <span class="frac"><span>0.244</span><span>0.7855</span></span></li>
+    <li class="reveal">K<sub>c</sub> = <b>0.311 mol⁻² dm⁶</b></li>
+  </ol>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Interactive: K<sub>c</sub> calculator with full working</h3>
+  <p>Change the amounts or the volume and watch every line of the working update.</p>
+  <select class="s" id="kcSel" style="max-width:100%"></select>
+  <div id="kcIn" style="margin:10px 0"></div>
+  <div class="readout" id="kcOut" style="font-size:18px"></div>
+</div>
+</section>
+
+<!-- ============ PAGE 3 ============ -->
+<section class="page" data-title="3. Exam questions">
+<h2>3. Past-paper practice</h2>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 2</span>
+  <span class="src">November 2020 AS Paper 2 Q8.2 (3 marks)</span>
+  <p>C₂H₅OH(g) + H₂O(g) ⇌ 2CO(g) + 4H₂(g). An equilibrium mixture in a container of volume <b>750 cm³</b> contains:</p>
+  <table class="t"><tr><th>Substance</th><td>C₂H₅OH</td><td>H₂O</td><td>CO</td><td>H₂</td></tr><tr><th>Amount / mol</th><td>0.0750</td><td>0.156</td><td>0.110</td><td>0.220</td></tr></table>
+  <p>Calculate K<sub>c</sub>. Give your answer in standard form, e.g. 1.23 × 10⁻³ or 1.23e-3.</p>
+  <input class="ans" id="c2"> <button class="b" onclick="numCheck('c2',7.66e-3,0.01)">Check</button><span class="fb" id="c2fb"></span>
+  <button class="b alt" onclick="tog('c2w')">Working</button>
+  <div class="work" id="c2w">V = 0.750 dm³<br>[C₂H₅OH] = 0.100, [H₂O] = 0.208, [CO] = 0.1467, [H₂] = 0.2933 mol dm⁻³<br>
+  K<sub>c</sub> = <span class="frac"><span>[CO]² [H₂]⁴</span><span>[C₂H₅OH] [H₂O]</span></span> = <span class="frac"><span>(0.1467)² × (0.2933)⁴</span><span>0.100 × 0.208</span></span> = <b>7.66 × 10⁻³ mol⁴ dm⁻¹²</b></div>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 3</span>
+  <span class="src">June 2024 AS Paper 2 Q7.7 (4 marks)</span>
+  <p>C₂H₄(g) + CO(g) + H₂O(g) ⇌ CH₃CH₂COOH(g). The equilibrium mixture in a <b>1200 cm³</b> container contains 0.078 mol C₂H₄, 0.062 mol CO, 0.062 mol H₂O and 0.420 mol CH₃CH₂COOH. Calculate K<sub>c</sub>.</p>
+  <input class="ans" id="c3"> <button class="b" onclick="numCheck('c3',2017,0.012)">Check</button><span class="fb" id="c3fb"></span>
+  <button class="b alt" onclick="tog('c3w')">Working</button>
+  <div class="work" id="c3w">V = 1.2 dm³ → [CH₃CH₂COOH] = 0.350, [C₂H₄] = 0.065, [CO] = [H₂O] = 0.0517 mol dm⁻³<br>
+  K<sub>c</sub> = <span class="frac"><span>0.350</span><span>0.065 × 0.0517 × 0.0517</span></span> = <b>2.02 × 10³ mol⁻² dm⁶</b> (mark scheme allows 1990–2020)<br><i>If you forget the volume you get 1401: that scores only 2 of the 4 marks.</i></div>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 4</span>
+  <span class="src">June 2020 Paper 2 Q9.2 (4 marks)</span>
+  <p>A(aq) + 2B(aq) ⇌ C(aq). An equilibrium mixture contains 0.30 mol A, 0.25 mol B and 0.020 mol C in <b>350 cm³</b> of solution. Calculate K<sub>c</sub> and deduce its units.</p>
+  <input class="ans" id="c4"> <button class="b" onclick="numCheck('c4',0.1307,0.02)">Check</button><span class="fb" id="c4fb"></span>
+  <div style="margin-top:6px">Units: <span id="c4u"></span><span class="fb" id="c4uf"></span></div>
+  <button class="b alt" onclick="tog('c4w')">Working</button>
+  <div class="work" id="c4w">K<sub>c</sub> = <span class="frac"><span>[C]</span><span>[A] [B]²</span></span> = <span class="frac"><span>(0.020/0.35)</span><span>(0.30/0.35) × (0.25/0.35)²</span></span> = <b>0.13 mol⁻² dm⁶</b></div>
+</div>
+</section>
+
+<!-- ============ PAGE 4 ============ -->
+<section class="page" data-title="4. What went wrong?">
+<h2>4. What went wrong?</h2>
+<p>These are real wrong answers that AQA mark schemes list for June 2020 Paper 2 Q9.2 (correct answer K<sub>c</sub> = 0.13 mol⁻² dm⁶). Diagnose each one.</p>
+<div id="diag"></div>
+<div class="card key">
+  <h3 style="margin-top:0">Your checklist</h3>
+  <ol>
+    <li>Volume converted to dm³?</li>
+    <li>Every amount divided by the volume?</li>
+    <li>Products on top?</li>
+    <li>Powers applied to the <b>whole</b> concentration, e.g. (0.25/0.35)², not 0.25²/0.35?</li>
+    <li>Units worked out from your expression?</li>
+  </ol>
+</div>
+</section>
+
+<!-- ============ PAGE 5 ============ -->
+<section class="page" data-title="5. Quiz">
+<h2>5. End-of-walkthrough quiz</h2>
+<p>Click an answer. You get one go at each question.</p>
+<div id="quiz"></div>
+<div class="card" id="score" style="font-size:22px;text-align:center"></div>
+<button class="b alt" onclick="buildQuiz()">Reset quiz</button>
+<p class="small">Next: Walkthrough 4 – finding equilibrium amounts with ICE tables.</p>
+</section>
+
+<div class="pager"><button class="b alt" id="prevB">◀ Previous</button><button class="b" id="nextB">Next ▶</button></div>
+</main>
+<script>
+/* ---------- navigation ---------- */
+const pages=[...document.querySelectorAll('.page')];let cur=0;
+const nav=document.getElementById('nav');
+pages.forEach((p,i)=>{const b=document.createElement('button');b.textContent=p.dataset.title;b.onclick=()=>go(i);nav.appendChild(b)});
+function go(i){cur=i;pages.forEach((p,j)=>p.classList.toggle('on',j===i));[...nav.children].forEach((b,j)=>b.classList.toggle('on',j===i));
+ document.getElementById('prevB').disabled=i===0;document.getElementById('nextB').disabled=i===pages.length-1;window.scrollTo(0,0);
+ if(typeof onPage==='function')onPage(i)}
+document.getElementById('prevB').onclick=()=>go(Math.max(0,cur-1));
+document.getElementById('nextB').onclick=()=>go(Math.min(pages.length-1,cur+1));
+
+/* ---------- helpers ---------- */
+const $=id=>document.getElementById(id);
+function tog(id){$(id).classList.toggle('on')}
+function stepReveal(id){const r=[...document.querySelectorAll('#'+id+' .reveal:not(.on)')];if(r.length)r[0].classList.add('on')}
+function parseNum(s){
+ s=s.trim().replace(/\s/g,'');const sp={'⁰':'0','¹':'1','²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9','⁻':'-'};
+ s=s.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁻]/g,c=>sp[c]).replace(/[−–]/g,'-').replace(/,/g,'');
+ let m=s.match(/^(-?[\d.]+)[x×X*]10\^?(-?\d+)$/);if(m)return parseFloat(m[1])*Math.pow(10,parseInt(m[2]));
+ m=s.match(/^(-?[\d.]+)[eE](-?\d+)$/);if(m)return parseFloat(s);
+ const v=Number(s);return (s===''||isNaN(v))?null:v}
+function numCheck(id,target,tol){const v=parseNum($(id).value);const fb=$(id+'fb');
+ if(v===null){fb.textContent='Enter a number';fb.className='fb no';return false}
+ if(Math.abs(v-target)<=Math.abs(target)*tol){fb.textContent='✔ Correct';fb.className='fb ok';return true}
+ fb.textContent='✘ Not quite, check your working';fb.className='fb no';return false}
+function pick(btn,ok,id){const f=$(id);f.textContent=ok?'✔ Correct':'✘ Try again';f.className='fb '+(ok?'ok':'no')}
+const sup=n=>String(n).split('').map(c=>({'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'})[c]).join('');
+/* format number to n s.f.; standard form for very small/large */
+function sf(x,n=3){if(x===0)return '0';let e=Math.floor(Math.log10(Math.abs(x)));
+ if(e<-3||e>=5){let m=(x/Math.pow(10,e)).toFixed(n-1);if(Math.abs(+m)>=10){e++;m=(x/Math.pow(10,e)).toFixed(n-1)}return m+' × 10'+sup(e)}
+ return x.toFixed(Math.max(0,n-1-e))}
+/* units of Kc from Δn = (moles top − moles bottom) */
+function kcUnits(dn){if(dn===0)return 'no units';const m=dn===1?'mol':'mol'+sup(dn);return `${m} dm${sup(-3*dn)}`}
+/* render a fraction */
+const fr=(t,b)=>`<span class="frac"><span>${t}</span><span>${b}</span></span>`;
+
+/* ---------- SVG plotting ---------- */
+const NS='http://www.w3.org/2000/svg';
+function E(tag,a,p){const e=document.createElementNS(NS,tag);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e}
+function plot(svg,o){
+ svg.innerHTML='';const W=660,H=400,ml=80,mr=20,mt=18,mb=60,pw=W-ml-mr,ph=H-mt-mb;
+ const X=x=>ml+x/o.xmax*pw,Y=y=>mt+ph-y/o.ymax*ph;
+ const id='cl'+Math.random().toString(36).slice(2);
+ const d=E('defs',{},svg);const cp=E('clipPath',{id},d);E('rect',{x:ml,y:mt,width:pw,height:ph},cp);
+ E('rect',{x:ml,y:mt,width:pw,height:ph,fill:'#fff'},svg);
+ const gx=o.gx||o.xt,gy=o.gy||o.yt;
+ for(let x=0;x<=o.xmax+1e-9;x+=gx)E('line',{x1:X(x),x2:X(x),y1:mt,y2:mt+ph,stroke:'#efe3cc'},svg);
+ for(let y=0;y<=o.ymax+1e-9;y+=gy)E('line',{x1:ml,x2:ml+pw,y1:Y(y),y2:Y(y),stroke:'#efe3cc'},svg);
+ if(!o.noxt)for(let x=0;x<=o.xmax+1e-9;x+=o.xt){E('line',{x1:X(x),x2:X(x),y1:mt+ph,y2:mt+ph+6,stroke:'#3b2a1a'},svg);const t=E('text',{x:X(x),y:mt+ph+24,'text-anchor':'middle','font-size':15,fill:'#3b2a1a'},svg);t.textContent=+x.toFixed(4)}
+ if(!o.noyt)for(let y=0;y<=o.ymax+1e-9;y+=o.yt){E('line',{x1:ml-6,x2:ml,y1:Y(y),y2:Y(y),stroke:'#3b2a1a'},svg);const t=E('text',{x:ml-10,y:Y(y)+5,'text-anchor':'end','font-size':15,fill:'#3b2a1a'},svg);t.textContent=(o.yfmt?o.yfmt(y):+y.toFixed(3))}
+ E('line',{x1:ml,x2:ml+pw,y1:mt+ph,y2:mt+ph,stroke:'#3b2a1a','stroke-width':2},svg);
+ E('line',{x1:ml,x2:ml,y1:mt,y2:mt+ph,stroke:'#3b2a1a','stroke-width':2},svg);
+ let t=E('text',{x:ml+pw/2,y:H-12,'text-anchor':'middle','font-size':17,fill:'#6b4423'},svg);t.textContent=o.xlab;
+ t=E('text',{x:18,y:mt+ph/2,'text-anchor':'middle','font-size':17,fill:'#6b4423',transform:`rotate(-90 18 ${mt+ph/2})`},svg);t.textContent=o.ylab;
+ const g=E('g',{'clip-path':`url(#${id})`},svg);
+ return {X,Y,g,svg,curve(f,col='#6b4423',w=3,dash,x0=0,x1=o.xmax){let dd='';for(let i=0;i<=300;i++){const x=x0+(x1-x0)*i/300;dd+=(i?'L':'M')+X(x)+' '+Y(f(x))}return E('path',{d:dd,fill:'none',stroke:col,'stroke-width':w,'stroke-dasharray':dash||''},g)},
+  text(x,y,s,col='#3b2a1a',sz=15,anc='start'){const t=E('text',{x:X(x),y:Y(y),'font-size':sz,fill:col,'text-anchor':anc},g);t.textContent=s;return t}};
+}
+
+/* ---------- quiz ---------- */
+let qs=0,qa=0;
+function buildQuiz(){const w=$('quiz');w.innerHTML='';qs=0;qa=0;
+ Q.forEach((q,i)=>{const c=document.createElement('div');c.className='card mcq';c.innerHTML=`<b>Q${i+1}.</b> ${q[0]}`;
+  q[1].forEach((o,j)=>{const b=document.createElement('button');b.className='opt';b.innerHTML=o;
+   b.onclick=()=>{if(c.classList.contains('done'))return;c.classList.add('done');qa++;
+    if(j===q[2]){b.classList.add('right');qs++}else{b.classList.add('wrong');c.querySelectorAll('.opt')[q[2]].classList.add('right')}score()};c.appendChild(b)});
+  const e=document.createElement('div');e.className='exp';e.innerHTML='💡 '+q[3];c.appendChild(e);w.appendChild(c)});score()}
+function score(){const n=Q.length;$('score').innerHTML=`Score: <b>${qs}</b> / ${n}`+(qa===n?(qs>=n-1?' – excellent!':qs>=Math.ceil(n*0.7)?' – good, review the ones you missed':' – go back through the walkthrough and try again'):'')}
+
+/* ---------- shared: equation bank and Kc rendering ---------- */
+const BANK=[
+ {eq:'N₂(g) + 3H₂(g) ⇌ 2NH₃(g)',r:[[1,'N₂'],[3,'H₂']],p:[[2,'NH₃']],src:'Haber process'},
+ {eq:'2SO₂(g) + O₂(g) ⇌ 2SO₃(g)',r:[[2,'SO₂'],[1,'O₂']],p:[[2,'SO₃']],src:'November 2021 AS Paper 1 Q10'},
+ {eq:'2NO(g) + Cl₂(g) ⇌ 2NOCl(g)',r:[[2,'NO'],[1,'Cl₂']],p:[[2,'NOCl']],src:'June 2019 AS Paper 1 Q5'},
+ {eq:'H₂(g) + I₂(g) ⇌ 2HI(g)',r:[[1,'H₂'],[1,'I₂']],p:[[2,'HI']],src:'June 2025 AS Paper 1 Q7'},
+ {eq:'CO₂(g) + 3H₂(g) ⇌ CH₃OH(g) + H₂O(g)',r:[[1,'CO₂'],[3,'H₂']],p:[[1,'CH₃OH'],[1,'H₂O']],src:'June 2025 AS Paper 1 Q7.3'},
+ {eq:'C₂H₅OH(g) + H₂O(g) ⇌ 2CO(g) + 4H₂(g)',r:[[1,'C₂H₅OH'],[1,'H₂O']],p:[[2,'CO'],[4,'H₂']],src:'November 2020 AS Paper 2 Q8'},
+ {eq:'2CHClF₂(g) ⇌ C₂F₄(g) + 2HCl(g)',r:[[2,'CHClF₂']],p:[[1,'C₂F₄'],[2,'HCl']],src:'June 2022 Paper 2 Q2'},
+ {eq:'2A + B ⇌ 3C + D',r:[[2,'A'],[1,'B']],p:[[3,'C'],[1,'D']],src:'June 2018 Paper 2 Q4'},
+ {eq:'A(aq) + 2B(aq) ⇌ C(aq)',r:[[1,'A'],[2,'B']],p:[[1,'C']],src:'June 2023 AS Paper 1 Q8'},
+ {eq:'2P(aq) + Q(aq) ⇌ R(aq) + 3S(aq)',r:[[2,'P'],[1,'Q']],p:[[1,'R'],[3,'S']],src:'June 2024 Paper 2 Q2'},
+ {eq:'C₂H₄(g) + CO(g) + H₂O(g) ⇌ CH₃CH₂COOH(g)',r:[[1,'C₂H₄'],[1,'CO'],[1,'H₂O']],p:[[1,'CH₃CH₂COOH']],src:'June 2024 AS Paper 2 Q7'},
+ {eq:'2CH₃COOH(l) + HOCH₂CH₂OH(l) ⇌ C₆H₁₀O₄(l) + 2H₂O(l)',r:[[2,'CH₃COOH'],[1,'HOCH₂CH₂OH']],p:[[1,'C₆H₁₀O₄'],[2,'H₂O']],src:'June 2017 Paper 2 Q5'},
+ {eq:'2Fe³⁺(aq) + 2I⁻(aq) ⇌ 2Fe²⁺(aq) + I₂(aq)',r:[[2,'Fe³⁺'],[2,'I⁻']],p:[[2,'Fe²⁺'],[1,'I₂']],src:'June 2025 Paper 3 Q4'},
+ {eq:'CH₄(g) + H₂O(g) ⇌ CO(g) + 3H₂(g)',r:[[1,'CH₄'],[1,'H₂O']],p:[[1,'CO'],[3,'H₂']],src:'November 2021 AS Paper 1 Q9'}
+];
+const term=([c,f])=>`[${f}]${c>1?sup(c):''}`;
+const side=a=>a.map(term).join(' ');
+function kcHTML(rx){return `K<sub>c</sub> = ${fr(side(rx.p),side(rx.r))}`}
+
+
+/* ---------- page 2: volume animation ---------- */
+const VM=[['CO',0.340,'#2c4a7a'],['H₂',0.190,'#8a8a8a'],['CH₃OH',0.0610,'#b5651d']];
+let vDots=[];VM.forEach(([f,n,c])=>{for(let i=0;i<Math.round(n*100);i++)vDots.push({c,x:Math.random(),y:Math.random()})});
+function vDraw(){const V=+$('vS').value;$('vV').textContent=V;const cv=$('vCv'),c=cv.getContext('2d');c.clearRect(0,0,320,260);
+ const s=Math.sqrt(V/1000),w=300*s,h=240*s,x0=(320-w)/2,y0=(260-h)/2;
+ c.fillStyle='#fff';c.fillRect(x0,y0,w,h);c.strokeStyle='#6b4423';c.lineWidth=3;c.strokeRect(x0,y0,w,h);
+ vDots.forEach(d=>{c.beginPath();c.arc(x0+6+d.x*(w-12),y0+6+d.y*(h-12),4,0,7);c.fillStyle=d.c;c.fill()});
+ const Vd=V/1000;$('vOut').innerHTML=`V = ${V} cm³ = <b>${Vd.toFixed(3)} dm³</b><br>`+VM.map(([f,n,col])=>`<span style="color:${col==='#8a8a8a'?'#ddd':col}">●</span> [${f}] = ${n} ÷ ${Vd.toFixed(3)} = <b>${sf(n/Vd,3)}</b> mol dm⁻³`).join('<br>')+'<br><br>Same moles, smaller volume → higher concentration.'}
+$('vS').oninput=vDraw;vDraw();
+setInterval(()=>{vDots.forEach(d=>{d.x=Math.min(1,Math.max(0,d.x+(Math.random()-.5)*.03));d.y=Math.min(1,Math.max(0,d.y+(Math.random()-.5)*.03))});if(cur===1)vDraw()},120);
+
+/* ---------- page 2: Kc calculator ---------- */
+const CALC=[
+ {eq:'CO(g) + 2H₂(g) ⇌ CH₃OH(g)',r:[[1,'CO'],[2,'H₂']],p:[[1,'CH₃OH']],n:{'CO':0.340,'H₂':0.190,'CH₃OH':0.0610},V:250},
+ {eq:'2SO₂(g) + O₂(g) ⇌ 2SO₃(g)',r:[[2,'SO₂'],[1,'O₂']],p:[[2,'SO₃']],n:{'SO₂':0.176,'O₂':0.823,'SO₃':0.461},V:1800},
+ {eq:'H₂(g) + I₂(g) ⇌ 2HI(g)',r:[[1,'H₂'],[1,'I₂']],p:[[2,'HI']],n:{'H₂':0.0115,'I₂':0.0115,'HI':0.0770},V:1000},
+ {eq:'2CHClF₂(g) ⇌ C₂F₄(g) + 2HCl(g)',r:[[2,'CHClF₂']],p:[[1,'C₂F₄'],[2,'HCl']],n:{'CHClF₂':0.270,'C₂F₄':0.865,'HCl':1.73},V:23200},
+ {eq:'A(aq) + 2B(aq) ⇌ C(aq)',r:[[1,'A'],[2,'B']],p:[[1,'C']],n:{'A':0.30,'B':0.25,'C':0.020},V:350}];
+CALC.forEach((b,i)=>{const o=document.createElement('option');o.value=i;o.textContent=b.eq;$('kcSel').appendChild(o)});
+function kcBuild(){const b=CALC[+$('kcSel').value];const sp=[...b.r,...b.p].map(x=>x[1]);
+ $('kcIn').innerHTML=sp.map(f=>`<label style="margin-right:14px">n(${f}) = <input class="ans" style="width:110px" id="ki_${f}" value="${b.n[f]}"> mol</label>`).join('')+`<label>V = <input class="ans" style="width:110px" id="ki_V" value="${b.V}"> cm³</label>`;
+ document.querySelectorAll('#kcIn input').forEach(i=>i.oninput=kcCalc);kcCalc()}
+function kcCalc(){const b=CALC[+$('kcSel').value];const V=parseNum($('ki_V').value)/1000;const c={};let bad=!(V>0);
+ [...b.r,...b.p].forEach(([k,f])=>{const n=parseNum($('ki_'+f).value);if(!(n>0))bad=true;c[f]=n/V});
+ if(bad){$('kcOut').innerHTML='Enter positive numbers in every box.';return}
+ const tp=b.p.map(([k,f])=>`(${sf(c[f])})${k>1?sup(k):''}`).join(' × '),bt=b.r.map(([k,f])=>`(${sf(c[f])})${k>1?sup(k):''}`).join(' × ');
+ const val=b.p.reduce((s,[k,f])=>s*Math.pow(c[f],k),1)/b.r.reduce((s,[k,f])=>s*Math.pow(c[f],k),1);
+ const dn=b.p.reduce((s,x)=>s+x[0],0)-b.r.reduce((s,x)=>s+x[0],0);
+ $('kcOut').innerHTML=`1. V = ${$('ki_V').value} ÷ 1000 = ${sf(V,3)} dm³<br>2. `+[...b.r,...b.p].map(([k,f])=>`[${f}] = ${sf(c[f])}`).join(', ')+` mol dm⁻³<br>3. ${kcHTML(b).replace('K<sub>c</sub> =','K<sub>c</sub> =')}<br>4. K<sub>c</sub> = ${fr(tp,bt)}<br>5. <b>K<sub>c</sub> = ${sf(val,3)} ${dn===0?'(no units)':kcUnits(dn)}</b>`}
+$('kcSel').onchange=kcBuild;kcBuild();
+
+/* ---------- page 3 ---------- */
+function optBlock(id,opts,ans,fb){const w=$(id);opts.forEach((o,i)=>{const b=document.createElement('button');b.className='b alt';b.innerHTML=o;b.onclick=()=>pick(b,i===ans,fb);w.appendChild(b)})}
+optBlock('c4u',['mol² dm⁻⁶','mol⁻² dm⁶','mol⁻¹ dm³','no units'],1,'c4uf');
+
+/* ---------- page 4: diagnose ---------- */
+const DG=[['K<sub>c</sub> = 1.07',0,'They used moles instead of concentrations. 0.020 ÷ (0.30 × 0.25²) = 1.07. Max 3 marks.'],
+ ['K<sub>c</sub> = 7.65',1,'Reactants on top: (0.857 × 0.714²) ÷ 0.0571 = 7.65. Max 3 marks.'],
+ ['K<sub>c</sub> = 0.373',3,'They worked out 0.25² ÷ 0.35 for [B]². It must be (0.25 ÷ 0.35)². The power goes on the whole concentration.'],
+ ['K<sub>c</sub> = 1.31 × 10⁵ mol⁻² cm⁶',2,'Trick! They used cm³ all the way through and gave matching units. The mark scheme actually <b>allows</b> this, but it is much safer to use dm³.']];
+const DO=['Didn\'t divide by the volume','Expression upside down','Used cm³ (with matching units)','Squared the moles but divided by V only once'];
+DG.forEach(([a,ans,ex],i)=>{const d=document.createElement('div');d.className='check';d.innerHTML=`<span class="tag">STUDENT ${i+1}</span><p>Answer: <b>${a}</b>. What did they do?</p>`;
+ DO.forEach((o,j)=>{const b=document.createElement('button');b.className='b alt';b.textContent=o;b.onclick=()=>{const f=d.querySelector('.fb');f.className='fb '+(j===ans?'ok':'no');f.innerHTML=j===ans?'✔ '+ex:'✘ Try again'};d.appendChild(b)});
+ const f=document.createElement('div');f.className='fb';f.style.marginTop='6px';d.appendChild(f);$('diag').appendChild(d)});
+
+/* ---------- quiz ---------- */
+const Q=[
+ ["What must you do to an amount in moles before putting it in a K<sub>c</sub> expression?",["Multiply by the volume","Divide by the volume in dm³","Divide by M<sub>r</sub>","Nothing, use moles directly"],1,"K<sub>c</sub> uses concentrations: c = n / V, with V in dm³."],
+ ["An equilibrium mixture is in a 500 cm³ flask and contains 0.20 mol of X. What is [X]?",["0.10 mol dm⁻³","0.40 mol dm⁻³","0.0004 mol dm⁻³","100 mol dm⁻³"],1,"0.20 ÷ 0.500 = 0.40 mol dm⁻³."],
+ ["For H₂ + I₂ ⇌ 2HI, [H₂] = [I₂] = 0.10 and [HI] = 0.70 mol dm⁻³. What is K<sub>c</sub>?",["7.0","49","70","0.49"],1,"0.70² ÷ (0.10 × 0.10) = 0.49 ÷ 0.01 = 49."],
+ ["For A ⇌ 2B, [A] = 0.40 and [B] = 0.20 mol dm⁻³. What is K<sub>c</sub>?",["0.50","0.10","1.0","0.20"],1,"0.20² ÷ 0.40 = 0.04 ÷ 0.40 = 0.10 mol dm⁻³."],
+ ["Which of these is the correct way to write [B]² when B = 0.25 mol in 0.35 dm³?",["0.25² ÷ 0.35","(0.25 ÷ 0.35)²","0.25 ÷ 0.35²","2 × (0.25 ÷ 0.35)"],1,"Find the concentration first, then square the whole thing."],
+ ["A student calculates K<sub>c</sub> but forgets to divide by the volume. For which equation would they still get the right answer?",["N₂ + 3H₂ ⇌ 2NH₃","H₂ + I₂ ⇌ 2HI","2SO₂ + O₂ ⇌ 2SO₃","PCl₅ ⇌ PCl₃ + Cl₂"],1,"When the total power on top equals the total power on the bottom, the volume cancels. More on this in Walkthrough 6."],
+ ["The equilibrium mixture has volume 23.2 dm³. What do you divide each amount by?",["23.2","0.0232","23 200","1"],0,"It's already in dm³, so divide by 23.2."],
+ ["K<sub>c</sub> = [CH₃OH] / ([CO][H₂]²) = 0.244 / (1.36 × 0.760²). What is K<sub>c</sub>?",["0.236","0.311","0.179","3.22"],1,"1.36 × 0.5776 = 0.7855, and 0.244 ÷ 0.7855 = 0.311."],
+ ["A student's K<sub>c</sub> expression is upside down. How will their answer compare with the correct one?",["It will be the same","It will be the reciprocal (1 / correct)","It will be twice as big","It will be negative"],1,"Turning the fraction over gives 1 / K<sub>c</sub>."],
+ ["Which is the best way to type (0.1467)² × (0.2933)⁴ ÷ (0.100 × 0.208) into a calculator?",["0.1467² × 0.2933⁴ ÷ 0.100 × 0.208","(0.1467² × 0.2933⁴) ÷ (0.100 × 0.208)","0.1467² × 0.2933⁴ ÷ 0.100 ÷ 0.208 × 2","(0.1467 × 0.2933)⁶ ÷ 0.0208"],1,"Put the whole top and the whole bottom in brackets. Without brackets, the calculator multiplies by 0.208 instead of dividing."]
+];
+
+buildQuiz();
+go(0);
+</script>
+</body>
+</html>
