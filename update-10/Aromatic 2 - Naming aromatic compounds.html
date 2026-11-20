@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aromatic 2 – Naming Aromatic Compounds</title>
+<style>
+:root{
+  --bg:#f6efe1; --card:#fffaf0; --ink:#3b2a1a; --brown:#6b4423; --brown2:#8b5a2b;
+  --accent:#b5651d; --soft:#ead9bd; --line:#d8c4a0; --good:#2f7d4a; --bad:#b03a2e; --blue:#2c4a7a;
+  --i1:#2c6e8f; --i2:#b5651d; --i3:#6a4c93; --i4:#2f7d4a;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Arial,sans-serif;font-size:19px;line-height:1.55}
+header{background:var(--brown);color:#fff8ec;padding:14px 24px}
+header h1{margin:0;font-family:Georgia,serif;font-size:28px;font-weight:normal}
+header p{margin:2px 0 0;opacity:.85;font-size:16px}
+nav{display:flex;flex-wrap:wrap;gap:6px;padding:10px 24px;background:var(--soft);border-bottom:2px solid var(--line);position:sticky;top:0;z-index:5}
+nav button{border:2px solid var(--brown2);background:var(--card);color:var(--brown);padding:7px 14px;border-radius:20px;font-size:16px;cursor:pointer}
+nav button.on{background:var(--brown2);color:#fff}
+main{max-width:1100px;margin:0 auto;padding:20px 24px 60px}
+.page{display:none}.page.on{display:block}
+h2{font-family:Georgia,serif;color:var(--brown);font-size:30px;margin:6px 0 12px;font-weight:normal}
+h3{color:var(--brown2);font-size:22px;margin:22px 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:14px 0;box-shadow:0 2px 0 var(--line)}
+.key{border-left:6px solid var(--accent)}
+.eq{font-family:Georgia,serif;font-size:23px;text-align:center;padding:10px;background:#fff;border:1px dashed var(--line);border-radius:8px;margin:10px 0}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 6px}
+.frac span:first-child{border-bottom:2px solid var(--ink);padding:0 6px}
+.row{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+.row>*{flex:1 1 380px}
+button.b{background:var(--brown2);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:17px;cursor:pointer;margin:4px 6px 4px 0}
+button.b.alt{background:var(--card);color:var(--brown);border:2px solid var(--brown2)}
+button.b.on,button.b.alt.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+button.b:disabled{opacity:.45;cursor:default}
+.check{background:#fdf6e6;border:2px solid var(--accent);border-radius:12px;padding:14px 18px;margin:18px 0}
+.check .tag{display:inline-block;background:var(--accent);color:#fff;font-size:14px;padding:2px 10px;border-radius:12px;margin-bottom:6px;letter-spacing:.5px}
+.check .src{font-size:14px;color:#8a7356;font-style:italic;margin-left:6px}
+input.ans{font-size:18px;padding:6px 10px;width:130px;border:2px solid var(--line);border-radius:6px}
+.fb{font-weight:600;margin-left:8px}
+.fb.ok{color:var(--good)}.fb.no{color:var(--bad)}
+.work{display:none;background:#fff;border-left:4px solid var(--brown2);padding:8px 14px;margin-top:8px;border-radius:4px}
+.work.on{display:block;animation:fade .4s}
+table.t{border-collapse:collapse;margin:8px 0;background:#fff}
+table.t th,table.t td{border:1px solid var(--line);padding:6px 14px;text-align:center}
+table.t th{background:var(--soft);color:var(--brown)}
+svg text{font-family:"Segoe UI",Arial,sans-serif}
+.readout{font-family:Consolas,monospace;background:#2b1d10;color:#ffe9c4;padding:10px 14px;border-radius:8px;font-size:17px;line-height:1.6;overflow-x:auto}
+label.s{display:block;font-weight:600;color:var(--brown);margin-top:8px}
+input[type=range]{width:100%}
+.stepper .st{display:none;margin:6px 0;padding:8px 14px;background:#fff;border-left:4px solid var(--accent);border-radius:4px}
+.stepper .st.on{display:block;animation:fade .45s}
+.stepper .st .why{font-size:15px;color:#7a6448;display:block}
+.alg{font-family:Georgia,serif;font-size:21px}
+.hl{background:#ffe2b8;border-radius:4px;padding:0 3px}
+.hx{color:var(--i3);font-weight:bold}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+.pager{display:flex;justify-content:space-between;margin-top:30px}
+.mcq button.opt{display:block;width:100%;text-align:left;margin:6px 0;padding:10px 14px;font-size:17px;border:2px solid var(--line);background:#fff;border-radius:8px;cursor:pointer;color:var(--ink)}
+.mcq button.opt.right{border-color:var(--good);background:#e6f4ea}
+.mcq button.opt.wrong{border-color:var(--bad);background:#fbe9e7}
+.mcq .exp{display:none;margin-top:6px;font-size:17px}
+.mcq.done .exp{display:block}
+.warn{background:#fbeee4;border-left:6px solid var(--bad);padding:10px 16px;border-radius:6px;margin:12px 0}
+.tip{background:#eef3f8;border-left:6px solid var(--blue);padding:10px 16px;border-radius:6px;margin:12px 0}
+.small{font-size:15px;color:#7a6448}
+.svgbox{background:#fff;border:1px solid var(--line);border-radius:10px;padding:6px}
+.svgbox svg{width:100%;height:auto;display:block}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+#score{font-size:20px;margin-top:14px}
+sup,sub{line-height:0}
+.stepper tr.st{display:none;padding:0;border:none}.stepper tr.st.on{display:table-row;animation:fade .45s}
+.stepper tr.st{background:#fff}
+svg.mol{width:100%;height:auto;display:block;margin:0 auto}
+svg.mol .bd{stroke:#3b2a1a;stroke-width:2.2;stroke-linecap:round}
+svg.mol text{font-family:"Segoe UI",Arial,sans-serif}
+svg.skel .bd{stroke-width:2.6}
+.tgt{fill:transparent;cursor:pointer}.tgt:hover{fill:#ffe2b855}.tgt.got{fill:#b5651d}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.fcard{background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 12px;min-height:120px;display:flex;flex-direction:column}
+.fcard h4{margin:0 0 4px;color:var(--brown2);font-size:16px;text-transform:uppercase;letter-spacing:.5px}
+.fcard .body{flex:1;display:flex;align-items:center;justify-content:center;}.fcard .body>div{width:100%;font-family:Georgia,serif;font-size:22px;text-align:center}
+.fcard.hid .body{filter:blur(9px);cursor:pointer}
+.opts4{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin:8px 0}
+.opts4 .ob{background:#fff;border:2px solid var(--line);border-radius:10px;padding:6px;cursor:pointer;min-height:110px;display:flex;align-items:center;justify-content:center;position:relative}
+.opts4 .ob:hover{border-color:var(--brown2)}
+.opts4 .ob.right{border-color:var(--good);background:#e6f4ea}.opts4 .ob.wrong{border-color:var(--bad);background:#fbe9e7}
+.opts4 .ob .lt{position:absolute;top:4px;left:8px;font-weight:bold;color:var(--brown2)}
+.pq{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px;margin:8px 0;min-height:130px;display:flex;align-items:center;justify-content:center}
+.streak{float:right;background:var(--soft);border-radius:14px;padding:3px 12px;font-size:16px;color:var(--brown)}
+.stagebox{background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px}
+.stg{display:none;border-top:1px dashed var(--line);padding:6px 0}.stg.on{display:block;animation:fade .5s}
+.stg .lab{font-size:15px;color:var(--brown2);font-weight:600}
+.alg2{font-family:Georgia,serif;font-size:24px;letter-spacing:.5px}
+input.wide{width:330px}
+.bigname{font-family:Georgia,serif;font-size:26px;color:var(--brown);text-align:center;margin:6px 0}
+.pill{display:inline-block;border-radius:12px;padding:1px 10px;font-size:15px;margin:2px;background:var(--soft);color:var(--brown)}
+.mini svg.mol{max-height:120px}
+.readout:empty{display:none}
+</style>
+</head>
+<body>
+<header>
+  <h1>Aromatic 2 – Naming Aromatic Compounds</h1>
+  <p>AQA A-level Chemistry · 3.3.10 Aromatic chemistry · walkthrough 2</p>
+</header>
+<nav id="nav"></nav>
+<main>
+<section class="page" data-title="1. One substituent">
+<h2>1. Benzene with one group</h2>
+<div class="card key"><p>Most groups are added as a <b>prefix</b> to <b>benzene</b>. A few groups change the <b>parent name</b> instead.</p></div>
+<div class="card"><p>Click a card to reveal the name.</p><div id="g1" style="display:flex;flex-wrap:wrap;gap:12px"></div></div>
+</section>
+
+<section class="page" data-title="2. Numbering">
+<h2>2. Two groups: numbering the ring</h2>
+<div class="card key">
+  <ul><li>Number round the ring to give the <b>lowest locants</b>.</li>
+  <li>If one group changes the parent name (OH, NH₂, COOH, CHO), that carbon is <b>C1</b>.</li>
+  <li>Otherwise, the group that comes <b>first alphabetically</b> gets C1. List prefixes alphabetically.</li>
+  <li>Two of the same group: <b>di</b>-, e.g. 1,3-dinitrobenzene.</li></ul>
+</div>
+<div class="card">
+  <p>Group A: <span class="chips" id="nbA"></span></p>
+  <p>Group B: <span class="chips" id="nbB"></span></p>
+  <p>Click a ring position for group B:</p>
+  <div class="svgbox"><svg id="nbG" viewBox="0 0 700 300"></svg></div>
+  <div class="eq" id="nbN"></div>
+</div>
+<div class="tip">AQA mark schemes often also accept names like 4-nitromethylbenzene for 1-methyl-4-nitrobenzene – but learn the systematic form.</div>
+</section>
+
+<section class="page" data-title="3. Name it">
+<h2>3. Practice: name the structure</h2>
+<div class="card">
+  <span class="streak" id="n1S">0/0</span>
+  <div class="svgbox"><svg id="n1G" viewBox="0 0 300 240" style="max-width:320px;display:block;margin:auto"></svg></div>
+  <div id="n1Q"></div>
+  <p><button class="b" id="n1N">Next ▶</button></p>
+</div>
+</section>
+
+<section class="page" data-title="4. Draw it">
+<h2>4. Practice: pick the structure</h2>
+<div class="card">
+  <span class="streak" id="n2S">0/0</span>
+  <div id="n2Q"></div>
+  <p><button class="b" id="n2N">Next ▶</button></p>
+</div>
+</section>
+
+<section class="page" data-title="5. Phenyl and big names">
+<h2>5. "Phenyl" and three-group names</h2>
+<div class="card key"><p>When the ring is attached to a chain carrying the main functional group, the ring becomes a <b>phenyl</b> group (C₆H₅–).</p></div>
+<div class="card"><div id="g5" style="display:flex;flex-wrap:wrap;gap:12px"></div></div>
+<div class="card">
+  <span class="streak" id="n5S">0/0</span>
+  <div id="n5Q"></div>
+  <p><button class="b" id="n5N">Next ▶</button></p>
+</div>
+</section>
+
+<section class="page" data-title="6. Quiz">
+<h2>6. Quick quiz</h2>
+<div id="quiz"></div><div id="score"></div>
+<button class="b alt" onclick="buildQuiz(Q)">Reset quiz</button>
+</section>
+
+<div class="pager"><button class="b alt" id="prevB">◀ Previous</button><button class="b" id="nextB">Next ▶</button></div>
+</main>
+<script>
+
+/* ---------- navigation ---------- */
+const pages=[...document.querySelectorAll('.page')];
+const nav=document.getElementById('nav');
+pages.forEach((p,i)=>{const b=document.createElement('button');b.textContent=p.dataset.title;b.onclick=()=>go(i);nav.appendChild(b)});
+let cur=0;
+function go(i){cur=Math.max(0,Math.min(pages.length-1,i));
+ pages.forEach((p,j)=>p.classList.toggle('on',j===cur));
+ [...nav.children].forEach((b,j)=>b.classList.toggle('on',j===cur));
+ document.getElementById('prevB').disabled=cur===0;
+ document.getElementById('nextB').disabled=cur===pages.length-1;
+ window.scrollTo(0,0);
+ if(window.onPage)window.onPage(cur);}
+document.getElementById('prevB').onclick=()=>go(cur-1);
+document.getElementById('nextB').onclick=()=>go(cur+1);
+
+/* ---------- numeric checks, working, steppers ---------- */
+document.addEventListener('click',e=>{
+ const t=e.target;
+ if(t.dataset.chk){const inp=document.getElementById(t.dataset.chk),fb=document.getElementById(t.dataset.chk+'f');
+  const v=parseFloat(inp.value.replace(',','.').replace('%',''));const ans=parseFloat(t.dataset.v),tol=parseFloat(t.dataset.t||0.05);
+  if(isNaN(v)){fb.textContent='Enter a number';fb.className='fb no';return}
+  if(Math.abs(v-ans)<=tol+1e-9){fb.textContent='✓ Correct';fb.className='fb ok';inp.style.borderColor='var(--good)'}
+  else{fb.textContent='✗ Not quite – try again, or show the working';fb.className='fb no';inp.style.borderColor='var(--bad)'}}
+ if(t.classList.contains('sw')){const ns=t.nextElementSibling,w=ns&&ns.classList.contains('work')?ns:t.parentElement.querySelector('.work');w.classList.toggle('on');t.textContent=w.classList.contains('on')?'Hide working':(t.dataset.l||'Show working')}
+ if(t.classList.contains('nextst')){const s=t.closest('.stepper');const hid=[...s.querySelectorAll('.st:not(.on)')];if(hid.length){hid[0].classList.add('on')}
+  if(hid.length<=1){t.disabled=true}}
+ if(t.classList.contains('allst')){const s=t.closest('.stepper');s.querySelectorAll('.st').forEach(x=>x.classList.add('on'));s.querySelector('.nextst').disabled=true}
+ if(t.classList.contains('resetst')){const s=t.closest('.stepper');s.querySelectorAll('.st').forEach(x=>x.classList.remove('on'));s.querySelector('.nextst').disabled=false}
+});
+
+/* ---------- quiz ---------- */
+let qs=0,qa=0;
+function buildQuiz(Q){const w=document.getElementById('quiz');w.innerHTML='';qs=0;qa=0;
+ Q.forEach((q,i)=>{const c=document.createElement('div');c.className='card mcq';c.innerHTML=`<b>Q${i+1}.</b> ${q[0]}`;
+  q[1].forEach((o,j)=>{const b=document.createElement('button');b.className='opt';b.innerHTML=o;
+   b.onclick=()=>{if(c.classList.contains('done'))return;c.classList.add('done');qa++;
+    if(j===q[2]){b.classList.add('right');qs++}else{b.classList.add('wrong');c.querySelectorAll('.opt')[q[2]].classList.add('right')}score(Q)};c.appendChild(b)});
+  const e=document.createElement('div');e.className='exp';e.innerHTML='💡 '+q[3];c.appendChild(e);w.appendChild(c)});score(Q)}
+function score(Q){document.getElementById('score').innerHTML=`Score: <b>${qs}</b> / ${Q.length}`+(qa===Q.length?(qs>=Q.length-1?' – excellent!':qs>=Q.length-3?' – good, review the ones you missed':' – go back through the walkthrough and try again'):'')}
+const NS='http://www.w3.org/2000/svg';
+function E(tag,attrs,parent){const el=document.createElementNS(NS,tag);for(const k in attrs)el.setAttribute(k,attrs[k]);if(parent)parent.appendChild(el);return el}
+function sf(v,d=3){if(v===0)return '0';const a=Math.abs(v);if(a>=1e5||a<1e-2){const e=Math.floor(Math.log10(a));let m=(v/10**e).toPrecision(d);if(+m>=10){m=(+m/10).toPrecision(d);return m+' × 10'+sup(e+1)}return m+' × 10'+sup(e)}return (+v.toPrecision(d)).toLocaleString('en-GB',{maximumSignificantDigits:d}).replace(/,/g,' ')}
+function sup(e){const m={'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};return String(e).split('').map(c=>m[c]).join('')}
+function subs(f){return f.replace(/(\d+)/g,'<sub>$1</sub>')}
+function mkMCQ(id,q){const c=document.getElementById(id);c.innerHTML='';
+ q[0].forEach((o,j)=>{const b=document.createElement('button');b.className='opt';b.innerHTML=o;b.onclick=()=>{if(c.classList.contains('done'))return;c.classList.add('done');
+  b.classList.add(j===q[1]?'right':'wrong');c.querySelectorAll('.opt')[q[1]].classList.add('right')};c.appendChild(b)});
+ const e=document.createElement('div');e.className='exp';e.innerHTML='💡 '+q[2];c.appendChild(e)}
+function normF(s){const m={'₀':'0','₁':'1','₂':'2','₃':'3','₄':'4','₅':'5','₆':'6','₇':'7','₈':'8','₉':'9'};return s.replace(/[₀-₉]/g,c=>m[c]).replace(/\s/g,'')}
+document.addEventListener('click',e=>{const t=e.target;if(!t.dataset.fchk)return;const i=document.getElementById(t.dataset.fchk),f=document.getElementById(t.dataset.fchk+'f');
+ const ok=t.dataset.f.split('|').some(a=>normF(i.value)===a);f.textContent=ok?'✓ Correct':'✗ Not quite – try again (or show the working)';f.className='fb '+(ok?'ok':'no');i.style.borderColor=ok?'var(--good)':'var(--bad)'});
+
+/* ================= molecule engine (shared by the Intro Organic walkthroughs) ================= */
+const VAL={C:4,O:2,N:3};
+const HAL=['Cl','Br','I','F'];
+const PREF={Me:'methyl',Et:'ethyl',Cl:'chloro',Br:'bromo',I:'iodo',F:'fluoro'};
+const STEM=['','meth','eth','prop','but','pent','hex','hept','oct','non','dec'];
+const MULT=['','','di','tri','tetra'];
+const ARM={C:12.0,H:1.0,O:16.0,N:14.0,Cl:35.5,Br:79.9,I:126.9,F:19.0};
+const ELC={C:'#3b2a1a',H:'#8a7356',O:'#b03a2e',Cl:'#2f7d4a',Br:'#8b3a1a',I:'#6a4c93',F:'#2c6e8f',N:'#2c4a7a'};
+
+/* M('CCCC',{d:[2],s:[[2,'Me'],[3,'Cl']],ring:true,name:'...'}) */
+function M(chain,o={}){
+  const at=chain.split('').map(e=>({el:e,subs:[]}));
+  const n=at.length,ring=!!o.ring;
+  const bo=Array(ring?n:Math.max(n-1,0)).fill(1);
+  (o.d||[]).forEach(p=>bo[p-1]=2);
+  (o.s||[]).forEach(([p,g])=>at[p-1].subs.push(g));
+  const ord=['=O','Me','Et','Cl','Br','I','F','OH'];
+  at.forEach(a=>a.subs.sort((x,y)=>ord.indexOf(x)-ord.indexOf(y)));
+  const m={at,bo,ring,n,o};
+  at.forEach((a,i)=>{let u=a.subs.reduce((s,g)=>s+(g==='=O'?2:1),0);
+    if(ring){u+=bo[i]+bo[(i-1+n)%n]}else{if(i>0)u+=bo[i-1];if(i<n-1)u+=bo[i]}
+    a.h=VAL[a.el]-u;if(a.h<0)throw new Error('valence '+chain+JSON.stringify(o))});
+  return m;
+}
+function spec(m){return {c:m.at.map(a=>a.el).join(''),d:m.bo.map((b,i)=>b===2?i+1:0).filter(x=>x),s:m.at.flatMap((a,i)=>a.subs.map(g=>[i+1,g])),ring:m.ring}}
+function rev(m){if(m.ring)return m;const s=spec(m),n=m.n;return M(s.c.split('').reverse().join(''),{d:s.d.map(p=>n-p),s:s.s.map(([p,g])=>[n+1-p,g]),name:m.o.name,alt:m.o.alt})}
+
+/* ---------- formulae ---------- */
+function count(m){const c={C:0,H:0,Br:0,Cl:0,F:0,I:0,N:0,O:0};
+  m.at.forEach(a=>{c[a.el]++;c.H+=a.h;a.subs.forEach(g=>{if(g==='Me'){c.C++;c.H+=3}else if(g==='Et'){c.C+=2;c.H+=5}else if(g==='OH'){c.O++;c.H++}else if(g==='=O')c.O++;else c[g]++})});return c}
+function fstr(c){let s='';['C','H'].forEach(e=>{if(c[e])s+=e+(c[e]>1?c[e]:'')});Object.keys(c).filter(e=>e!=='C'&&e!=='H').sort().forEach(e=>{if(c[e])s+=e+(c[e]>1?c[e]:'')});return s}
+const gcd=(a,b)=>b?gcd(b,a%b):a;
+function molF(m){return fstr(count(m))}
+function empF(m){const c=count(m),g=Object.values(c).filter(x=>x).reduce(gcd);const d={};for(const k in c)d[k]=c[k]/g;return fstr(d)}
+function Mr(m){const c=count(m);let s=0;for(const k in c)s+=c[k]*ARM[k];return Math.round(s*10)/10}
+const hT=h=>h?'H'+(h>1?h:''):'';
+function atomTxt(a,term){if(a.el!=='C')return a.el+hT(a.h);let s='C'+hT(a.h);
+  const seen={};a.subs.forEach(g=>seen[g]=(seen[g]||0)+1);
+  for(const g in seen){const k=seen[g];
+    if(g==='=O'){s+='O';continue}
+    const t={Me:'CH3',Et:'CH2CH3',OH:'OH'}[g]||g;
+    if(term&&(HAL.includes(g)||g==='OH'))s+=(k>1?(g==='OH'?'(OH)'+k:t+k):t);
+    else s+='('+t+')'+(k>1?k:'')}
+  return s}
+function structF(m){if(m.ring)return null;const t=a=>a.subs.length>0;if(m.n>1&&t(m.at[0])&&!t(m.at[m.n-1]))return structRaw(rev(m));return structRaw(m)}
+function structRaw(m){if(m.ring)return null;if(m.n===1)return atomTxt(m.at[0],true);
+  return m.at.map((a,i)=>atomTxt(a,i===0||i===m.n-1)+(i<m.n-1?(m.bo[i]===2?'=':''):'')).join('')}
+function structVariants(m){if(m.ring)return [];const out=new Set();
+  [m,rev(m)].forEach(x=>{const base=structRaw(x);out.add(base);
+    const a0=x.at[0],a1=x.at[1];
+    if(x.n>=3&&a0.h===3&&!a0.subs.length&&x.bo[0]===1&&a1.subs.length&&a1.subs.every(g=>g==='Me')){
+      const k=a1.subs.length+1;const rest=x.at.slice(2).map((a,i)=>atomTxt(a,i+2===x.n-1)+(i+2<x.n-1?(x.bo[i+2]===2?'=':''):'')).join('');
+      out.add('(CH3)'+k+'C'+hT(a1.h)+(x.bo[1]===2?'=':'')+rest)}
+    const an=x.at[x.n-1],ap=x.at[x.n-2];
+    if(x.n>=3&&an.h===3&&!an.subs.length&&x.bo[x.n-2]===1&&ap.subs.length&&ap.subs.every(g=>g==='Me')){
+      const head=x.at.slice(0,x.n-2).map((a,i)=>atomTxt(a,i===0)+(x.bo[i]===2?'=':'')).join('');
+      out.add(head+'C'+hT(ap.h)+'(CH3)'+(ap.subs.length+1))}
+  });
+  [...out].forEach(s=>{if(s.includes('CH2CH3'))out.add(s.replace(/\(CH2CH3\)/g,'(C2H5)'))});
+  return [...out]}
+const subHTML=s=>s?s.replace(/(\d+)/g,'<sub>$1</sub>'):s;
+function normS(s){const m={'₀':'0','₁':'1','₂':'2','₃':'3','₄':'4','₅':'5','₆':'6','₇':'7','₈':'8','₉':'9'};return s.replace(/[₀-₉]/g,c=>m[c]).replace(/[\s\-–—]/g,'').toLowerCase()}
+function checkStruct(m,inp){const v=normS(inp);return structVariants(m).some(x=>normS(x)===v)}
+
+/* ---------- naming ---------- */
+function cmpArr(a,b){for(let i=0;i<Math.max(a.length,b.length);i++){const x=a[i]??-1,y=b[i]??-1;if(x!==y)return x-y}return 0}
+function numberings(m){const n=m.n,out=[];
+  if(!m.ring){out.push([...Array(n).keys()].map(i=>i+1));out.push([...Array(n).keys()].map(i=>n-i));return out}
+  for(let s=0;s<n;s++)for(const d of [1,-1]){const loc=Array(n);for(let k=0;k<n;k++)loc[(s+d*k+n*n)%n]=k+1;out.push(loc)}return out}
+function locData(m,loc){const n=m.n;const oh=[],db=[],pre=[],alpha=[];
+  m.at.forEach((a,i)=>a.subs.forEach(g=>{if(g==='OH')oh.push(loc[i]);else if(PREF[g]){pre.push(loc[i]);alpha.push([PREF[g],loc[i]])}}));
+  m.bo.forEach((b,i)=>{if(b===2){const x=loc[i],y=loc[(i+1)%n];db.push((Math.abs(x-y)===n-1)?Math.max(x,y):Math.min(x,y))}});
+  alpha.sort((p,q)=>p[0]<q[0]?-1:p[0]>q[0]?1:p[1]-q[1]);
+  return {oh:oh.sort((a,b)=>a-b),db:db.sort((a,b)=>a-b),pre:pre.sort((a,b)=>a-b),alpha:alpha.map(x=>x[1]),groups:alpha}}
+function bestNumbering(m){let best=null;
+  numberings(m).forEach(loc=>{const d=locData(m,loc);
+    if(m.ring&&d.db.length&&!(d.db[0]===1))return;
+    const key=[d.oh,d.db,d.pre,d.alpha];
+    if(!best||key.reduce((r,k,i)=>r!==0?r:cmpArr(k,best.key[i]),0)<0)best={loc,key,d}});
+  return best}
+function nameOf(m){if(m.o.name)return m.o.name;
+  if(m.at.some(a=>a.el!=='C'||a.subs.includes('=O')))return '?';
+  const b=bestNumbering(m),d=b.d,n=m.n;
+  const totalPre=d.pre.length;
+  const grp={};d.groups.forEach(([nm,l])=>{(grp[nm]=grp[nm]||[]).push(l)});
+  const names=Object.keys(grp).sort();
+  const omit=(!m.ring&&n===1)||(m.ring&&totalPre===1&&!d.db.length&&!d.oh.length)||(!m.ring&&n<=2&&totalPre+d.oh.length===1);
+  const prefix=names.map(nm=>(omit?'':grp[nm].join(',')+'-')+MULT[grp[nm].length]+nm).join(omit?'':'-');
+  const cyc=m.ring?'cyclo':'',st=STEM[n];let parent;
+  if(d.oh.length){const k=d.oh.length;
+    if(k===1)parent=cyc+st+'an'+((!m.ring&&n<=2)||m.ring?'ol':'-'+d.oh[0]+'-ol');
+    else parent=cyc+st+'ane-'+d.oh.join(',')+'-'+MULT[k]+'ol'}
+  else if(!d.db.length)parent=cyc+st+'ane';
+  else if(d.db.length===1)parent=(m.ring||n<=3)?cyc+st+'ene':st+'-'+d.db[0]+'-ene';
+  else parent=cyc+st+'a-'+d.db.join(',')+'-'+MULT[d.db.length]+'ene';
+  let nm=prefix?prefix+parent:parent;
+  return nm.replace(/-([a-z])/,'-$1')}
+function nameAlts(m){const nm=nameOf(m),out=new Set([nm]);(m.o.alt||[]).forEach(a=>out.add(a));
+  if(/^2-methylprop/.test(nm))out.add(nm.slice(2));
+  if(nm==='2-methylpropene'||nm==='methylpropene'){out.add('2-methylprop-1-ene')}
+  if(m.ring&&/cyclo[a-z]+ene$/.test(nm)&&!/diene$/.test(nm))out.add(nm.replace(/ene$/,'').replace(/(cyclo[a-z]+)$/,'$1-1-ene'));
+  if(/^propene$|^ethene$/.test(nm))out.add(nm.replace('ene','-1-ene').replace('prop-1','prop-1'));
+  return [...out]}
+function checkName(m,inp){const v=inp.trim().toLowerCase().replace(/\s+/g,'').replace(/[–—]/g,'-');
+  const al=nameAlts(m).map(x=>x.toLowerCase());
+  if(al.includes(v))return 'ok';
+  const strip=s=>s.replace(/[-,]/g,'');if(al.some(x=>strip(x)===strip(v)))return 'punct';
+  return 'no'}
+
+/* ---------- geometry helpers ---------- */
+const rot=([x,y],deg)=>{const r=deg*Math.PI/180,c=Math.cos(r),s=Math.sin(r);return [x*c-y*s,x*s+y*c]};
+const unit=([x,y])=>{const l=Math.hypot(x,y)||1;return [x/l,y/l]};
+const fmtLabel=t=>t.replace(/(\d+)/g,'<tspan dy="5" font-size="75%">$1</tspan><tspan dy="-5"></tspan>');
+function svgWrap(inner,bb,pad=22,cls=''){const x=bb[0]-pad,y=bb[1]-pad,w=bb[2]-bb[0]+2*pad,h=bb[3]-bb[1]+2*pad;
+  return `<svg class="mol ${cls}" viewBox="${x.toFixed(1)} ${y.toFixed(1)} ${w.toFixed(1)} ${h.toFixed(1)}" style="max-width:${Math.round(w*1.05)}px">${inner}</svg>`}
+function bbox(pts){let a=[1e9,1e9,-1e9,-1e9];pts.forEach(([x,y])=>{a=[Math.min(a[0],x),Math.min(a[1],y),Math.max(a[2],x),Math.max(a[3],y)]});return a}
+
+/* ---------- displayed formula ---------- */
+const DV={r:[1,0],l:[-1,0],u:[0,-1],d:[0,1],ul:[-.87,-.5],dl:[-.87,.5],ur:[.87,-.5],dr:[.87,.5]};
+function layoutDisplayed(m,opt={}){
+  const A=[],B=[],LC=opt.LC||74,LH=44;
+  const add=(x,y,t,ex={})=>{A.push(Object.assign({x,y,t},ex));return A.length-1};
+  const bond=(a,b,o=1)=>B.push({a,b,o});
+  function group(ci,g,v,tag){const P=A[ci],[dx,dy]=v;
+    if(g==='H'){bond(ci,add(P.x+dx*LH,P.y+dy*LH,'H',{tag:tag+'h'}));return}
+    if(HAL.includes(g)){bond(ci,add(P.x+dx*LC*.85,P.y+dy*LC*.85,g,{tag:tag+'x'}));return}
+    if(g==='OH'){const o=add(P.x+dx*LC*.85,P.y+dy*LC*.85,'O',{tag:tag+'x'});bond(ci,o);bond(o,add(A[o].x+dx*LH,A[o].y+dy*LH,'H',{tag:tag+'x'}));return}
+    if(g==='=O'){bond(ci,add(P.x+dx*LC*.85,P.y+dy*LC*.85,'O',{tag:tag+'x'}),2);return}
+    const nC=g==='Me'?1:2;let prev=ci;
+    for(let k=0;k<nC;k++){const p=A[prev];const c=add(p.x+dx*LC,p.y+dy*LC,'C',{tag:tag+'b',bid:tag+k});bond(prev,c);
+      const pp=[-dy,dx];[1,-1].forEach(s=>bond(c,add(A[c].x+pp[0]*s*LH,A[c].y+pp[1]*s*LH,'H',{tag:tag+'h'})));
+      if(k===nC-1)bond(c,add(A[c].x+dx*LH,A[c].y+dy*LH,'H',{tag:tag+'h'}));prev=c}}
+  const n=m.n;
+  if(m.ring){const R=LC/(2*Math.sin(Math.PI/n)),st=-90+(n%2?0:180/n)*(n===4?1:0);
+    const idx=m.at.map((a,i)=>{const th=(st+360*i/n)*Math.PI/180;return add(R*Math.cos(th),R*Math.sin(th),a.el,{ch:i,tag:'c'})});
+    m.bo.forEach((b,i)=>bond(idx[i],idx[(i+1)%n],b));
+    m.at.forEach((a,i)=>{const th=(st+360*i/n);const rad=[Math.cos(th*Math.PI/180),Math.sin(th*Math.PI/180)];
+      const items=[...a.subs,...Array(a.h).fill('H')];
+      const dirs=items.length===1?[rad]:items.length===2?[rot(rad,-38),rot(rad,38)]:[rad];
+      items.forEach((g,k)=>group(idx[i],g,dirs[k],'s'+i+'_'+k+'_'))});
+    return {A,B}}
+  // assign directions
+  const plan=m.at.map(()=>[]);let prevUp=false;
+  m.at.forEach((a,i)=>{const first=i===0,last=i===n-1;
+    const endD=n===1?null:first?'l':last?'r':null;
+    const endBond=n===1?1:first?m.bo[0]:last?m.bo[n-2]:0;
+    let free;
+    if(n===1)free=['r','u','d','l'];
+    else if((first||last)&&endBond===2)free=first?['ul','dl']:['ur','dr'];
+    else if(first||last)free=[endD,'u','d'];
+    else free=(m.bo[i-1]===2||m.bo[i]===2)?['u','d'].slice(0,1).concat(['d']):['u','d'];
+    if(!first&&!last&&(m.bo[i-1]===2||m.bo[i]===2))free=['u','d'];
+    const take=pref=>{for(const p of pref){const j=free.indexOf(p);if(j>=0){free.splice(j,1);return p}}return free.shift()};
+    let upUsed=false;
+    a.subs.forEach(g=>{let d;
+      if(g==='=O')d=take(['u','ur','ul',endD]);
+      else if(first||last)d=take([endD,prevUp?'d':'u','u','d']);
+      else d=take(prevUp?['d','u']:['u','d']);
+      if(d==='u'&&(g==='Me'||g==='Et'||g==='OH'||HAL.includes(g)))upUsed=true;plan[i].push([g,d])});
+    for(let k=0;k<a.h;k++)plan[i].push(['H',free.shift()]);
+    prevUp=upUsed;
+  });
+  const big=(i,s)=>plan[i].some(([g,d])=>d===s&&(g==='Me'||g==='Et'));
+  const any=(i,s)=>plan[i].some(([g,d])=>d===s&&g!=='H');
+  let x=0;const xs=[];
+  m.at.forEach((a,i)=>{if(i>0){let gap=LC;['u','d'].forEach(s=>{if(big(i-1,s)&&big(i,s))gap=Math.max(gap,LC+52);else if((big(i-1,s)&&any(i,s))||(any(i-1,s)&&big(i,s)))gap=Math.max(gap,LC+30);else if(any(i-1,s)&&any(i,s))gap=Math.max(gap,LC+12)});x+=gap}xs.push(x)});
+  const idx=m.at.map((a,i)=>add(xs[i],0,a.el,{ch:i,tag:'c'}));
+  m.bo.forEach((b,i)=>bond(idx[i],idx[i+1],b));
+  plan.forEach((p,i)=>p.forEach(([g,d],k)=>group(idx[i],g,DV[d],'s'+i+'_'+k+'_')));
+  return {A,B,xs}}
+function drawDisplayed(m,opt={}){const {A,B}=layoutDisplayed(m,opt);let s='';
+  const hl=opt.hl||{};
+  B.forEach(({a,b,o})=>{const P=A[a],Q=A[b];const [ux,uy]=unit([Q.x-P.x,Q.y-P.y]);const r=12;
+    const x1=P.x+ux*r,y1=P.y+uy*r,x2=Q.x-ux*r,y2=Q.y-uy*r;
+    if(o===2){const px=-uy*4,py=ux*4;s+=`<line x1="${x1+px}" y1="${y1+py}" x2="${x2+px}" y2="${y2+py}" class="bd"/><line x1="${x1-px}" y1="${y1-py}" x2="${x2-px}" y2="${y2-py}" class="bd"/>`}
+    else s+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" class="bd"/>`});
+  A.forEach((p,i)=>{const h=(p.ch!==undefined&&hl['c'+p.ch])||(p.bid&&hl[p.bid]);
+    if(h)s+=`<circle cx="${p.x}" cy="${p.y}" r="15" fill="${h===true?'#ffe2b8':h}" stroke="#b5651d" stroke-width="2"/>`;
+    s+=`<text x="${p.x}" y="${p.y+7}" text-anchor="middle" font-size="21" fill="${ELC[p.t]||'#3b2a1a'}" ${p.t==='C'?'font-weight="600"':''}>${p.t}</text>`;
+    if(opt.nums&&p.ch!==undefined){const v=opt.nums['c'+p.ch]??opt.nums[p.ch];if(v!==undefined)s+=`<text x="${p.x+13}" y="${p.y+26}" font-size="14" fill="#b5651d" font-weight="bold">${v}</text>`}
+    if(opt.nums&&p.bid&&opt.nums[p.bid]!==undefined)s+=`<text x="${p.x+13}" y="${p.y+26}" font-size="14" fill="#b5651d" font-weight="bold">${opt.nums[p.bid]}</text>`});
+  return svgWrap(s,bbox(A.map(p=>[p.x,p.y])),24,'disp')}
+
+/* ---------- skeletal formula ---------- */
+function layoutSkeletal(m,opt={}){
+  const L=opt.L||48,n=m.n;const P=[];const segs=[],labels=[],extra=[];
+  let dx=L*.866,dy=L*.5;
+  if(m.ring){const R=L/(2*Math.sin(Math.PI/n));const st=n===4?-45:-90;
+    for(let i=0;i<n;i++){const th=(st+360*i/n)*Math.PI/180;P.push([R*Math.cos(th),R*Math.sin(th)])}}
+  else if(opt.xs){const g=opt.xs[1]-opt.xs[0]||L;dy=g*.5774*(opt.amp||1);opt.xs.forEach((x,i)=>P.push([x,i%2?-dy:0]))}
+  else for(let i=0;i<n;i++)P.push([i*dx,i%2?-dy:0]);
+  const segL=m.ring?L:Math.hypot(P[1]?P[1][0]-P[0][0]:dx,dy);
+  const outward=i=>{if(m.ring)return unit(P[i]);
+    if(n===1)return [1,0];
+    if(i===0){const v=[P[0][0]-P[1][0],P[0][1]-P[1][1]];return unit(rot(v,-60*(1)))}
+    if(i===n-1){const v=[P[n-1][0]-P[n-2][0],P[n-1][1]-P[n-2][1]];return unit(rot(v,(n%2?-60:60)))}
+    return i%2?[0,-1]:[0,1]};
+  // end direction continuing zigzag
+  const endDir=i=>{if(i===0){const v=unit([P[0][0]-P[1][0],P[0][1]-P[1][1]]);return unit(rot(v,60))}const v=unit([P[n-1][0]-P[n-2][0],P[n-1][1]-P[n-2][1]]);return unit(rot(v,(n%2?60:-60)))};
+  const vlab={};
+  m.at.forEach((a,i)=>{if(a.el!=='C')vlab[i]=a.el+hT(a.h)});
+  // chain segments
+  m.bo.forEach((b,i)=>{const j=(i+1)%n;segs.push({a:P[i],b:P[j],o:b,ia:i,ib:j,ch:true})});
+  // substituents
+  m.at.forEach((a,i)=>{const subs=[...a.subs];
+    if(a.subs.includes('=O')&&a.h===1&&!m.ring)subs.push('Hx');
+    if(!subs.length)return;
+    let dirs;const term=!m.ring&&(i===0||i===n-1)&&n>1;
+    if(term){const inc=unit(i===0?[P[1][0]-P[0][0],P[1][1]-P[0][1]]:[P[n-2][0]-P[n-1][0],P[n-2][1]-P[n-1][1]]);
+      const e=endDir(i);
+      if(subs.length===1)dirs=[e];else if(subs.length===2){const o2=unit(rot(inc,cmpRot(inc,e)));dirs=[e,o2]}
+      else dirs=[rot(inc,180),rot(inc,90),rot(inc,-90)]}
+    else if(n===1)dirs=[[1,0],[-1,0],[0,-1],[0,1]];
+    else{const o=outward(i);dirs=subs.length===1?[o]:[rot(o,-38),rot(o,38)]}
+    // =O prefers the more 'up' direction
+    subs.forEach((g,k)=>{const d=unit(dirs[k]),p0=P[i];
+      if(g==='Me'){segs.push({a:p0,b:[p0[0]+d[0]*segL,p0[1]+d[1]*segL],o:1,br:i+'_'+k,bi:i})}
+      else if(g==='Et'){const p1=[p0[0]+d[0]*segL,p0[1]+d[1]*segL];const d2=rot(d,(d[1]<=0?60:-60)*(d[0]<-.1?-1:1));const p2=[p1[0]+d2[0]*segL,p1[1]+d2[1]*segL];
+        segs.push({a:p0,b:p1,o:1,br:i+'_'+k,bi:i});segs.push({a:p1,b:p2,o:1,br:i+'_'+k,bi:i})}
+      else{const t=g==='=O'?'O':g==='Hx'?'H':g;const q=[p0[0]+d[0]*segL*.85,p0[1]+d[1]*segL*.85];
+        segs.push({a:p0,b:q,o:g==='=O'?2:1,lb:true,bi:i,sym:g==='=O'});labels.push({p:q,t,d,g})}})});
+  return {P,segs,labels,vlab,outward,segL}}
+function cmpRot(inc,e){const a=rot(inc,120),b=rot(inc,-120);const da=Math.hypot(a[0]-e[0],a[1]-e[1]);return da<0.1?-120:120}
+function drawSkeletal(m,opt={}){const {P,segs,labels,vlab,outward,segL}=layoutSkeletal(m,opt);let s='';const n=m.n;
+  const stage=opt.stage||9;const pts=[...P];
+  const cut=(p,q,r)=>{const [ux,uy]=unit([q[0]-p[0],q[1]-p[1]]);return [p[0]+ux*r,p[1]+uy*r]};
+  const center=m.ring?[0,0]:null;
+  if(stage>=6)segs.forEach(sg=>{if(sg.br!==undefined&&stage<7)return;if(sg.lb&&stage<7)return;
+    let a=sg.a,b=sg.b;if(sg.ch&&vlab[sg.ia])a=cut(a,b,12);if(sg.ch&&vlab[sg.ib])b=cut(b,a,12);if(sg.lb)b=cut(b,a,11);
+    const col=opt.hlBranch&&sg.br!==undefined?'#b5651d':(opt.hlChain&&sg.ch?'#b5651d':null);
+    const cls=col?`style="stroke:${col}"`:'';
+    if(sg.o===2){const [ux,uy]=unit([b[0]-a[0],b[1]-a[1]]);let nx=-uy,ny=ux;
+      if(sg.sym){const k=3.5;s+=`<line x1="${a[0]+nx*k}" y1="${a[1]+ny*k}" x2="${b[0]+nx*k}" y2="${b[1]+ny*k}" class="bd" ${cls}/><line x1="${a[0]-nx*k}" y1="${a[1]-ny*k}" x2="${b[0]-nx*k}" y2="${b[1]-ny*k}" class="bd" ${cls}/>`}
+      else{let mid=[(a[0]+b[0])/2,(a[1]+b[1])/2];let tgt=center||[mid[0],-segL*.25];
+        if(!m.ring){const ia=sg.ia,ib=sg.ib;const oa=(ia>0&&ia<n-1)?outward(ia):null,ob=(ib>0&&ib<n-1)?outward(ib):null;const o=oa||ob;if(o){tgt=[mid[0]-o[0]*10,mid[1]-o[1]*10]}else tgt=[mid[0],mid[1]+(mid[1]<-segL*.25?10:-10)]}
+        if((tgt[0]-mid[0])*nx+(tgt[1]-mid[1])*ny<0){nx=-nx;ny=-ny}const k=7;const sh=.16;
+        const a2=[a[0]+(b[0]-a[0])*sh+nx*k,a[1]+(b[1]-a[1])*sh+ny*k],b2=[b[0]-(b[0]-a[0])*sh+nx*k,b[1]-(b[1]-a[1])*sh+ny*k];
+        s+=`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" class="bd" ${cls}/><line x1="${a2[0]}" y1="${a2[1]}" x2="${b2[0]}" y2="${b2[1]}" class="bd" ${cls}/>`}}
+    else s+=`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" class="bd" ${cls}/>`;
+    pts.push(sg.b)});
+  if(stage>=7)labels.forEach(l=>{s+=`<text x="${l.p[0]+(l.t.length>1&&Math.abs(l.d[0])>.5?l.d[0]*8:0)}" y="${l.p[1]+7}" text-anchor="middle" font-size="20" fill="${ELC[l.t.replace(/H$/,'')]||'#3b2a1a'}">${l.t}</text>`;pts.push([l.p[0]+l.d[0]*12,l.p[1]+l.d[1]*10])});
+  Object.entries(vlab).forEach(([i,t])=>{const p=P[i];s+=`<text x="${p[0]}" y="${p[1]+7}" text-anchor="middle" font-size="20" fill="${ELC[t[0]]}">${t}</text>`});
+  if(opt.dots){const dp=[...P.map((p,i)=>({p,ch:i}))];if(stage>=7||opt.dotsAll)segs.forEach(sg=>{if(sg.br!==undefined)dp.push({p:sg.b,br:1})});
+    dp.forEach(({p,ch})=>{if(vlab[ch])return;s+=`<circle cx="${p[0]}" cy="${p[1]}" r="${opt.dotR||5}" fill="${opt.dotCol||'#b5651d'}"/>`})}
+  if(opt.nums)P.forEach((p,i)=>{if(opt.nums[i]===undefined)return;const o=m.ring?unit(p):outward(i);const q=(m.ring||i===0||i===n-1)&&!m.ring?[p[0]-o[0]*0+0,p[1]+(i%2?-16:22)]:[p[0]-o[0]*20,p[1]-o[1]*20+6];
+    const qq=m.ring?[p[0]-o[0]*18,p[1]-o[1]*18+5]:(i===0||i===n-1)?[p[0],p[1]+(i%2?-12:24)]:q;s+=`<text x="${qq[0]}" y="${qq[1]}" text-anchor="middle" font-size="14" font-weight="bold" fill="${opt.numCol||'#2c6e8f'}">${opt.nums[i]}</text>`;pts.push(qq)});
+  if(opt.clickDots){/* invisible targets */const tg=[...P.map((p,i)=>({p,id:'c'+i,skip:!!vlab[i]}))];segs.forEach((sg,k)=>{if(sg.br!==undefined)tg.push({p:sg.b,id:'b'+k})});
+    tg.forEach(t=>{if(t.skip)return;s+=`<circle class="tgt" data-id="${t.id}" cx="${t.p[0]}" cy="${t.p[1]}" r="13"/>`})}
+  const bb=bbox(pts);if(opt.xr){bb[0]=opt.xr[0];bb[2]=opt.xr[1]}return svgWrap(s,bb,opt.pad||20,'skel'+(opt.xr?' fixw':''))}
+function carbonCount(m){return count(m).C}
+
+/* ---------- E/Z alkene drawing: groups [topLeft, bottomLeft, topRight, bottomRight] ---------- */
+function drawEZ(g,opt={}){const L=56;const c1=[0,0],c2=[62,0];let s='';
+  const pos=[[c1,-120],[c1,120],[c2,-60],[c2,60]];const pts=[c1,c2];
+  s+=`<line x1="${c1[0]+12}" y1="-4" x2="${c2[0]-12}" y2="-4" class="bd"/><line x1="${c1[0]+12}" y1="4" x2="${c2[0]-12}" y2="4" class="bd"/>`;
+  s+=`<text x="0" y="7" text-anchor="middle" font-size="21" font-weight="600">C</text><text x="62" y="7" text-anchor="middle" font-size="21" font-weight="600">C</text>`;
+  g.forEach((t,k)=>{const [c,ang]=pos[k];const d=[Math.cos(ang*Math.PI/180),Math.sin(ang*Math.PI/180)];const q=[c[0]+d[0]*L,c[1]+d[1]*L];
+    const a=[c[0]+d[0]*13,c[1]+d[1]*13],b=[q[0]-d[0]*13,q[1]-d[1]*13];
+    const hi=opt.hi&&opt.hi[k];
+    s+=`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" class="bd"/>`;
+    const anchor=d[0]<0?'end':'start',tx=q[0]+(d[0]<0?14:-14);
+    if(hi)s+=`<rect x="${d[0]<0?tx-12*t.length-6:tx-6}" y="${q[1]-15}" width="${12*t.replace(/\d/g,'').length+8*(t.match(/\d/g)||[]).length+12}" height="28" rx="7" fill="${hi}" opacity=".55"/>`;
+    s+=`<text x="${tx}" y="${q[1]+7}" text-anchor="${anchor}" font-size="20" fill="${ELC[t]||'#3b2a1a'}" data-k="${k}" class="${opt.click?'ezg':''}">${fmtLabel(t)}</text>`;
+    pts.push([tx+(d[0]<0?-12*t.length:12*t.length),q[1]-12],[tx,q[1]+12])});
+  if(opt.line){const [a,b]=opt.line;const P=k=>{const [c,ang]=pos[k];return [c[0]+Math.cos(ang*Math.PI/180)*(L-6),c[1]+Math.sin(ang*Math.PI/180)*(L-6)]};const p=P(a),q=P(b);s+=`<line x1="${p[0]}" y1="${p[1]}" x2="${q[0]}" y2="${q[1]}" stroke="#b5651d" stroke-width="3" stroke-dasharray="6 5"/>`}
+  return svgWrap(s,bbox(pts),16,'ez')}
+/* CIP keys for common groups */
+const CIP={H:[1],D:[1.5],F:[9],Cl:[17],Br:[35],I:[53],OH:[8,1],OCH3:[8,6],NH2:[7,1,1],CH3:[6,1,1,1],CH2CH3:[6,6,1,1,1,1,1],C2H5:[6,6,1,1,1,1,1],CH2CH2CH3:[6,6,1,1,6,1,1],'CH(CH3)2':[6,6,6,1],CH2OH:[6,8,1,1],CH2Cl:[6,17,1,1],CH2Br:[6,35,1,1],CHO:[6,8,8,1],COOH:[6,8,8,8],CN:[6,7,7,7],'CH=CH2':[6,6,6,1]};
+function cipHigher(a,b){return cmpArr(CIP[a],CIP[b])>0?a:b}
+function ezOf(g){const [tl,bl,tr,br]=g;if(tl===bl||tr===br)return null;const L=cipHigher(tl,bl)===tl?'t':'b',R=cipHigher(tr,br)===tr?'t':'b';return L===R?'Z':'E'}
+
+/* ---------- random molecules for practice ---------- */
+const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function randMol(o={}){const groups=o.groups||['Me','Me','Cl','Br','OH'];
+  for(let t=0;t<200;t++){const n=rnd(o.min||3,o.max||6);const alk=Math.random()<(o.alkene??0.3);
+    const d=alk?[rnd(1,n-1)]:[];const k=rnd(o.minSubs??0,o.maxSubs??2);const s=[];
+    for(let j=0;j<k;j++){const g=pick(groups);if(g==='OH'&&alk)continue;const p=g==='Me'?rnd(2,n-1):rnd(1,n);if(g==='Me'&&n<3)continue;s.push([p,g])}
+    if(s.filter(x=>x[1]==='OH').length>1)continue;
+    if(o.needSub&&!s.length)continue;
+    if(!etOK(n,d,s))continue;
+    try{const m=M('C'.repeat(n),{d,s});if(o.alkene===1&&!d.length)continue;return m}catch(e){}}
+  return M('CCCC')}
+function etOK(n,d,s){const empty=arm=>!s.some(([p,h])=>arm.includes(p))&&!d.some(p=>arm.includes(p)||arm.includes(p+1));
+  return s.every(([k,g])=>{if(g!=='Et')return true;const a=k-1,b=n-k;if(Math.min(a,b)<2)return false;if(Math.min(a,b)>2)return true;
+    const arms=[];if(a===2)arms.push([1,2]);if(b===2)arms.push([n-1,n]);return arms.some(empty)})}
+function mutate(m,o={}){const sp=spec(m),ring=sp.ring;for(let t=0;t<60;t++){const s=sp.s.map(x=>[...x]);let d=[...sp.d];let n=sp.c.length;const r=Math.random();
+    const mePos=()=>ring?rnd(1,n):rnd(2,n-1);
+    if(r<.35&&s.length){const j=rnd(0,s.length-1);s[j][0]=s[j][1]==='Me'||s[j][1]==='Et'?mePos():rnd(1,n)}
+    else if(r<.55&&d.length){d=[rnd(1,ring?n:n-1)]}
+    else if(r<.75){n=n+(Math.random()<.5&&n>(ring?4:3)?-1:1);s.forEach(x=>{if(x[0]>n)x[0]=n;if(!ring&&(x[1]==='Me'||x[1]==='Et')&&x[0]>=n)x[0]=n-1});d=d.map(p=>Math.min(p,ring?n:n-1))}
+    else if(s.length){const j=rnd(0,s.length-1);const opts=['Me','Cl','Br'].concat(ring?[]:['OH']).filter(g=>g!==s[j][1]);s[j][1]=pick(opts);if(!ring&&s[j][1]==='Me'&&(s[j][0]===1||s[j][0]===n))s[j][0]=2}
+    else{s.push([ring?rnd(1,n):rnd(2,Math.max(2,n-1)),'Me'])}
+    if(!ring&&!etOK(n,d,s))continue;try{const x=M('C'.repeat(n),{d,s,ring});if(x.at.some(a=>a.subs.includes('OH'))&&d.length)continue;if(!ring&&x.at.some((a,i)=>(i===0||i===n-1)&&(a.subs.includes('Me')||a.subs.includes('Et'))))continue;return x}catch(e){}}
+  return null}
+function randRing(){for(let t=0;t<200;t++){const n=rnd(3,6);const d=(n>=5&&Math.random()<.45)?[1]:[];const k=rnd(1,2);const s=[];for(let j=0;j<k;j++)s.push([rnd(1,n),pick(['Me','Me','Et','Cl','Br'])]);
+  try{return M('C'.repeat(n),{ring:true,d,s})}catch(e){}}return M('CCCCCC',{ring:true})}
+function distractors(m,k=3){const key=nameOf(m),seen=new Set([key]),out=[];for(let t=0;t<300&&out.length<k;t++){const x=mutate(m);if(!x)continue;const nk=nameOf(x);if(seen.has(nk))continue;seen.add(nk);out.push(x)}return out}
+function isoDistractors(m,k=3){/* same molecular formula where possible */const f=molF(m),key=nameOf(m),seen=new Set([key]),out=[];
+  for(let t=0;t<600&&out.length<k;t++){const x=mutate(m);if(!x)continue;const nk=nameOf(x);if(seen.has(nk))continue;if(t<400&&molF(x)!==f)continue;seen.add(nk);out.push(x)}return out}
+
+/* ---------- reusable widgets ---------- */
+function picMCQ(el,{q,opts,ans,exp,onDone}){/* opts: array of svg strings */el.innerHTML=(q?`<p>${q}</p>`:'')+'<div class="opts4"></div><div class="exp small" style="display:none"></div>';
+  const box=el.querySelector('.opts4'),ex=el.querySelector('.exp');let done=false;
+  opts.forEach((o,j)=>{const d=document.createElement('div');d.className='ob';d.innerHTML=`<span class="lt">${'ABCD'[j]}</span>`+o;
+    d.onclick=()=>{if(done)return;done=true;d.classList.add(j===ans?'right':'wrong');box.children[ans].classList.add('right');if(exp){ex.style.display='block';ex.innerHTML='💡 '+exp}if(onDone)onDone(j===ans)};box.appendChild(d)});}
+function fbSet(fb,inp,state,msg){fb.textContent=msg;fb.className='fb '+(state==='ok'?'ok':'no');if(inp)inp.style.borderColor=state==='ok'?'var(--good)':'var(--bad)'}
+
+/* ---------- practice machine ---------- */
+const PMODES={
+ d2s:{l:'Displayed → structural',q:'Write the <b>structural formula</b> of this molecule.',show:'d',ask:'struct'},
+ k2s:{l:'Skeletal → structural',q:'Write the <b>structural formula</b> of this molecule.',show:'k',ask:'struct'},
+ k2m:{l:'Skeletal → molecular',q:'Write the <b>molecular formula</b> of this molecule.',show:'k',ask:'mol'},
+ s2k:{l:'Structural → skeletal',q:'Which is the <b>skeletal formula</b> of',show:'s',ask:'pick'},
+ d2k:{l:'Displayed → skeletal',q:'Which <b>skeletal formula</b> matches this displayed formula?',show:'d',ask:'pick'},
+ k2n:{l:'Name it',q:'Give the <b>IUPAC name</b> of this molecule.',show:'k',ask:'name'},
+ n2k:{l:'Draw it (pick)',q:'Which skeletal formula is',show:'n',ask:'pick'},
+ d2n:{l:'Name it (displayed)',q:'Give the <b>IUPAC name</b> of this molecule.',show:'d',ask:'name'}};
+function Practice(el,cfg){const st={mode:cfg.modes[0],right:0,tot:0,streak:0,m:null};
+  el.innerHTML=`<span class="streak"></span><div class="chips pm-modes"></div><div class="pm-q"></div><div class="pq pm-pic"></div><div class="pm-a"></div><p><button class="b pm-new">New question ▶</button></p>`;
+  const modes=el.querySelector('.pm-modes'),qd=el.querySelector('.pm-q'),pic=el.querySelector('.pm-pic'),ad=el.querySelector('.pm-a'),sk=el.querySelector('.streak');
+  const all=cfg.modes.length>1?[...cfg.modes,'mix']:cfg.modes;
+  if(all.length>1)all.forEach(k=>{const b=document.createElement('button');b.className='b alt';b.textContent=k==='mix'?'Mixed':PMODES[k].l;b.onclick=()=>{st.mode=k;[...modes.children].forEach(x=>x.classList.toggle('on',x===b));nq()};modes.appendChild(b)});
+  if(modes.children.length)modes.children[0].classList.add('on');
+  const score=ok=>{st.tot++;if(ok){st.right++;st.streak++}else st.streak=0;sk.innerHTML=`${st.right}/${st.tot} correct · streak ${st.streak}${st.streak>=5?' 🔥':''}`};
+  sk.textContent='0/0 correct';
+  function nq(){const k=st.mode==='mix'?pick(cfg.modes):st.mode,P=PMODES[k];let m=cfg.gen(k);st.m=m;let answered=false;
+    const sf=structF(m);
+    qd.innerHTML=`<p>${P.q}${P.show==='s'?` <span class="alg2">${subHTML(sf)}</span>?`:P.show==='n'?` <b>${nameOf(m)}</b>?`:''}</p>`;
+    pic.style.display=(P.show==='d'||P.show==='k')?'flex':'none';
+    if(P.show==='d')pic.innerHTML=drawDisplayed(m);else if(P.show==='k')pic.innerHTML=drawSkeletal(m);
+    if(P.ask==='pick'){const ds=(cfg.iso?isoDistractors:distractors)(m,3);const all=shuffle([m,...ds]);
+      const box=document.createElement('div');ad.innerHTML='';ad.appendChild(box);
+      picMCQ(box,{opts:all.map(x=>drawSkeletal(x)),ans:all.indexOf(m),exp:`This is ${nameOf(m)}${sf?', '+subHTML(sf):''}. Dot the carbons in each option and compare.`,onDone:score});return}
+    const id='pm'+Math.random().toString(36).slice(2,7);
+    const want=P.ask==='struct'?subHTML(structVariants(m)[0]?structF(m):''):P.ask==='mol'?subHTML(molF(m)):nameOf(m);
+    ad.innerHTML=`<p><input class="ans wide" id="${id}" autocomplete="off" spellcheck="false" placeholder="${P.ask==='name'?'e.g. 2-methylbutane':P.ask==='mol'?'e.g. C4H10':'e.g. CH3CH(CH3)CH3'}"> <button class="b pm-chk">Check</button><span class="fb"></span></p><button class="b alt pm-show">Show answer</button><div class="work"></div>`;
+    const inp=ad.querySelector('input'),fb=ad.querySelector('.fb'),wk=ad.querySelector('.work');
+    const explain=()=>{if(P.ask==='struct')return `Answer: <b>${want}</b><br><span class="small">Also fine written the other way round: ${structVariants(m).slice(1,3).map(subHTML).join(' or ')}</span>`;
+      if(P.ask==='mol'){const c=count(m);return `Answer: <b>${want}</b><br>Carbons: ${c.C} (count every corner, end and branch end). Hydrogens: ${m.at.map(a=>a.h).join(' + ')}${m.at.some(a=>a.subs.includes('Me')||a.subs.includes('Et'))?' + branches':''}${m.at.some(a=>a.subs.includes('OH'))?' + OH':''} = ${c.H}`}
+      return `Answer: <b>${want}</b>`+(nameAlts(m).length>1?`<br><span class="small">Also accepted: ${nameAlts(m).slice(1).join(', ')}</span>`:'')};
+    const chk=()=>{if(!inp.value.trim())return;let r;
+      if(P.ask==='struct')r=checkStruct(m,inp.value)?'ok':'no';
+      else if(P.ask==='mol'){const v=normF(inp.value).toUpperCase();r=(v===molF(m).toUpperCase()||(cfg.altMol&&v===cfg.altMol(m)))?'ok':'no'}
+      else r=checkName(m,inp.value);
+      fbSet(fb,inp,r,r==='ok'?'✓ Correct':r==='punct'?'Nearly – check your commas and hyphens':'✗ Not quite – try again');
+      if(!answered){answered=true;score(r==='ok')}};
+    ad.querySelector('.pm-chk').onclick=chk;inp.onkeydown=e=>{if(e.key==='Enter')chk()};
+    ad.querySelector('.pm-show').onclick=e=>{wk.innerHTML=explain();wk.classList.toggle('on');if(!answered){answered=true;score(false)}}}
+  el.querySelector('.pm-new').onclick=nq;nq()}
+
+/* ---------- amine helpers ---------- */
+const RG={Me:{fl:'CH3',fr:'CH3',n:'methyl',st:'methan',c:1},Et:{fl:'CH3CH2',fr:'CH2CH3',n:'ethyl',st:'ethan',c:2},Pr:{fl:'CH3CH2CH2',fr:'CH2CH2CH3',n:'propyl',st:'propan-1-',c:3},Bu:{fl:'CH3CH2CH2CH2',fr:'CH2CH2CH2CH3',n:'butyl',st:'butan-1-',c:4},Ph:{fl:'C6H5',fr:'C6H5',n:'phenyl',st:'',c:6},iPr:{fl:'(CH3)2CH',fr:'CH(CH3)2',n:'propan-2-yl',st:'propan-2-',c:3}};
+const MULT2=['','','di','tri','tetra'];
+const HX2={Cl:'chloride',Br:'bromide',I:'iodide'};
+const fH=s=>s.replace(/²⁻/g,'§').replace(/(\d+)/g,'<sub>$1</sub>').replace(/⁺/g,'<sup>+</sup>').replace(/⁻/g,'<sup>−</sup>').replace(/§/g,'<sup>2−</sup>');
+function amineClass(rs){return ['','primary','secondary','tertiary','quaternary'][rs.length]}
+function amineFormula(rs,X){const n=rs.length;const cnt={};rs.forEach(r=>cnt[r]=(cnt[r]||0)+1);const ks=Object.keys(cnt);
+  if(n===1){return RG[rs[0]].fl+'NH2'}
+  if(n===2){return RG[rs[0]].fl+'NH'+RG[rs[1]].fr}
+  if(n===3){if(ks.length===1)return '('+RG[ks[0]].fl+')3N';const two=ks.find(k=>cnt[k]===2);if(two){const one=ks.find(k=>k!==two);return '('+RG[two].fl+')2N'+RG[one].fr}return RG[rs[0]].fl+'N('+RG[rs[1]].fr+')'+RG[rs[2]].fr}
+  let core;if(ks.length===1)core='('+RG[ks[0]].fl+')4N';else{const big=ks.sort((a,b)=>cnt[b]-cnt[a]);core='('+RG[big[0]].fl+')'+(cnt[big[0]]>1?cnt[big[0]]:'')+'N'+big.slice(1).map(k=>cnt[k]>1?'('+RG[k].fr+')'+cnt[k]:RG[k].fr).join('');core=core.replace(/^\((CH3)\)N/,'$1N')}
+  return '['+core+']⁺ '+(X||'Br')+'⁻'}
+function amineName(rs,X){const n=rs.length;
+  if(n===1){const r=rs[0];return r==='Ph'?'phenylamine':r==='iPr'?'propan-2-amine':RG[r].n+'amine'}
+  const cnt={};rs.forEach(r=>cnt[r]=(cnt[r]||0)+1);
+  if(rs.includes('Ph')&&n===2){const o=rs.find(r=>r!=='Ph');return 'N-'+RG[o].n+'phenylamine'}
+  const parts=Object.keys(cnt).sort((a,b)=>RG[a].n<RG[b].n?-1:1).map(k=>MULT2[cnt[k]]+RG[k].n).join('');
+  return n===4?parts+'ammonium '+HX2[X||'Br']:parts+'amine'}
+function amineIUPAC(rs){if(rs.length===1){const r=rs[0];return r==='Ph'?'phenylamine':RG[r].st+(r==='Me'||r==='Et'?'amine':'amine')}
+  if(rs.length>3||rs.includes('Ph'))return null;const sorted=[...rs].sort((a,b)=>RG[b].c-RG[a].c);const parent=sorted[0],subs=sorted.slice(1);
+  const cnt={};subs.forEach(s=>cnt[s]=(cnt[s]||0)+1);const pre=Object.keys(cnt).sort((a,b)=>RG[a].n<RG[b].n?-1:1).map(k=>(cnt[k]>1?'N,N-'+MULT2[cnt[k]]:'N-')+RG[k].n);
+  return pre.join('-')+RG[parent].st+'amine'}
+function randAmine(o={}){const pool=o.pool||['Me','Et','Pr','Me','Et'];const n=o.n||rnd(1,4);let rs=[];
+  if(n===1)rs=[pick(o.p1||['Me','Et','Pr','Bu','Ph','iPr'])];
+  else if(n===2){rs=[pick(pool),pick(pool)];if(Math.random()<.15)rs=['Ph',pick(['Me','Et'])]}
+  else for(let i=0;i<n;i++)rs.push(pick(pool.slice(0,2)));
+  return rs}
+function optMCQ(el,q,ans,opts,why,score){el.innerHTML=(q?`<p class="bigname">${q}</p>`:'')+'<div class="mcq"></div>';const c=el.querySelector('.mcq');let done=false;
+  shuffle([...new Set([ans,...opts])].slice(0,4).concat()).forEach(t=>{const b=document.createElement('button');b.className='opt';b.innerHTML=t;b.onclick=()=>{if(done)return;done=true;c.classList.add('done');const ok=t===ans;b.classList.add(ok?'right':'wrong');[...c.querySelectorAll('.opt')].forEach(x=>{if(x.innerHTML===b.innerHTML&&!ok){} if(x.dataset.a)x.classList.add('right')});if(score)score(ok)};if(t===ans)b.dataset.a=1;c.appendChild(b)});
+  const e=document.createElement('div');e.className='exp';e.innerHTML='💡 '+why;c.appendChild(e)}
+function Scorer(id){let r=0,t=0;return ok=>{t++;if(ok)r++;document.getElementById(id).textContent=`${r}/${t}`}}
+/* ---------- curly-arrow mechanism drawings ---------- */
+let MKI=0,MKID='cah0';const MKf=()=>{MKID='cah'+(++MKI);return MK.replace('cah',MKID)};const MK='<defs><marker id="cah" markerWidth="12" markerHeight="12" refX="9" refY="5" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L10,5 L0,10 z" fill="#b03a2e"/></marker></defs>';
+const T=(x,y,t,o={})=>`<text x="${x}" y="${y}" text-anchor="${o.a||'middle'}" font-size="${o.s||21}" fill="${o.c||'#3b2a1a'}" ${o.b?'font-weight="bold"':''}>${fmtLabel(t)}</text>`;
+const Ln=(x1,y1,x2,y2,o={})=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${o.c||'#3b2a1a'}" stroke-width="${o.w||2.2}"/>`;
+const CA=(x0,y0,cx,cy,x1,y1)=>`<path d="M${x0},${y0} Q${cx},${cy} ${x1},${y1}" fill="none" stroke="#b03a2e" stroke-width="2.4" marker-end="url(#${MKID})"/>`;
+const LP=(x,y)=>`<circle cx="${x-4}" cy="${y}" r="2.3" fill="#3b2a1a"/><circle cx="${x+4}" cy="${y}" r="2.3" fill="#3b2a1a"/>`;
+const NUC={OH:{t:'HO',ch:'−',lp:[108,178],p:'OH'},CN:{t:'NC',ch:'−',lp:[110,178],p:'CN'},NH3:{t:'H3N',ch:'',lp:[118,178],p:'NH3'}};
+/* SN: o={R,up,dn,X,nu,stage} */
+function drawSN(o){const st=o.stage??9,N=NUC[o.nu];let s=MKf();
+  const C=[190,105];
+  s+=T(150,112,o.R,{a:'end'})+Ln(154,105,176,105)+T(190,112,'C',{b:1})+Ln(190,90,190,66)+T(190,58,o.up)+Ln(190,120,190,146)+T(190,168,o.dn)+Ln(204,105,244,105)+T(258,112,o.X,{c:ELC[o.X]});
+  if(st>=2)s+=T(172,86,'δ+',{s:16,c:'#2c6e8f'})+T(288,98,'δ−',{s:16,c:'#b03a2e'});
+  if(st>=2)s+=T(N.t==='H3N'?96:100,205,N.t,{a:'middle'})+(N.ch?T(122,192,N.ch,{s:18}):'')+LP(N.lp[0],N.lp[1]+6);
+  if(st>=3)s+=CA(N.lp[0],N.lp[1],122,130,178,117);
+  if(st>=4)s+=CA(226,100,238,62,258,90);
+  if(st>=5){s+=T(330,112,'→',{s:28});const P=[470,105];
+    if(o.nu!=='NH3'){s+=T(430,112,o.R,{a:'end'})+Ln(434,105,456,105)+T(470,112,'C',{b:1})+Ln(470,90,470,66)+T(470,58,o.up)+Ln(470,120,470,146)+T(470,168,o.dn)+Ln(484,105,512,105)+T(516,112,N.p,{a:'start'})+T(600,112,'+',{s:22})+T(650,112,o.X,{c:ELC[o.X]})+T(668,96,'−',{s:16})}
+    else{s+=T(430,112,o.R,{a:'end'})+Ln(434,105,456,105)+T(470,112,'C',{b:1})+Ln(470,90,470,66)+T(470,58,o.up)+Ln(470,120,470,146)+T(470,168,o.dn)+Ln(484,105,530,105)+T(545,112,'N',{c:ELC.N,b:1})+T(531,90,'+',{s:18})+Ln(545,90,545,66)+T(545,58,'H')+Ln(545,120,545,146)+T(545,168,'H')+Ln(559,105,592,105)+T(604,112,'H')+T(690,58,'+  '+o.X,{s:19})+T(718,46,'−',{s:14});
+      if(st>=6)s+=T(672,212,'H3N',{s:20})+LP(682,190)+CA(684,184,712,112,620,96)+CA(576,110,586,148,556,122)}}
+  return `<svg class="mol" viewBox="40 20 700 205" style="max-width:820px">${s}</svg>`}
+/* E2: o={Rb (left on Cb), ub, ua, ra (right on Ca), X, stage} ; H on Cb is down, X on Ca is down */
+function drawE2(o){const st=o.stage??9;let s=MKf();
+  s+=T(126,112,o.Rb,{a:'end'})+Ln(130,105,156,105)+T(170,112,'C',{b:1})+Ln(170,90,170,66)+T(170,58,o.ub)+Ln(170,120,170,146)+T(170,168,'H',{c:st>=3?'#b03a2e':'#3b2a1a'})
+   +Ln(184,105,256,105)+T(270,112,'C',{b:1})+Ln(270,90,270,66)+T(270,58,o.ua)+Ln(284,105,306,105)+T(310,112,o.ra,{a:'start'})+Ln(270,120,270,146)+T(272,170,o.X,{c:ELC[o.X]});
+  if(st>=2)s+=T(254,138,'δ+',{s:15,c:'#2c6e8f'})+T(300,168,'δ−',{s:15,c:'#b03a2e'});
+  if(st>=2)s+=T(96,212,'HO')+T(118,198,'−',{s:18})+LP(104,190);
+  if(st>=3)s+=CA(104,186,120,170,158,164);
+  if(st>=4)s+=CA(176,132,212,138,218,110);
+  if(st>=5)s+=CA(276,130,304,140,284,152);
+  if(st>=6){s+=T(400,112,'→',{s:28});s+=T(486,112,o.Rb,{a:'end'})+Ln(490,105,512,105)+T(525,112,'C',{b:1})+Ln(525,90,525,66)+T(525,58,o.ub)
+     +Ln(539,101,597,101)+Ln(539,109,597,109)+T(611,112,'C',{b:1})+Ln(611,90,611,66)+T(611,58,o.ua)+Ln(625,105,645,105)+T(648,112,o.ra,{a:'start'})
+     +T(560,180,'+ H2O + '+o.X+'⁻',{s:19})}
+  return `<svg class="mol" viewBox="40 20 700 205" style="max-width:820px">${s}</svg>`}
+/* addition–elimination: o={acyl:'CH3', nR:'H'|'CH3'|'CH2CH3', stage} */
+function drawAE(o){const st=o.stage??9,A=o.acyl||'CH3',R=o.nR||'CH3';let s=MKf();
+ const NN=(x,y)=>T(x,y+7,'N',{c:ELC.N,b:1});
+ /* acyl chloride */
+ s+=T(128,147,A,{a:'end'})+Ln(132,140,166,140)+T(180,147,'C',{b:1})+Ln(176,125,176,82)+Ln(184,125,184,82)+T(180,74,'O',{c:ELC.O})+Ln(194,140,232,140)+T(250,147,'Cl',{c:ELC.Cl});
+ if(st>=2)s+=T(160,124,'δ+',{s:15,c:'#2c6e8f'})+T(206,66,'δ−',{s:15,c:'#b03a2e'});
+ /* nucleophile */
+ if(st>=2){s+=T(124,247,R,{a:'end'})+Ln(128,240,166,240)+NN(180,240)+Ln(194,240,222,240)+T(234,247,'H')+Ln(180,255,180,278)+T(180,298,'H')+LP(180,216)}
+ if(st>=3)s+=CA(180,210,206,182,184,156)+CA(170,104,146,92,166,72);
+ if(st>=4){s+=T(320,147,'→',{s:28});
+  s+=T(448,147,A,{a:'end'})+Ln(452,140,486,140)+T(500,147,'C',{b:1})+Ln(500,125,500,86)+T(500,76,'O',{c:ELC.O})+T(516,62,'−',{s:18})+LP(482,72)+Ln(514,140,552,140)+T(570,147,'Cl',{c:ELC.Cl})+Ln(500,155,500,196)+NN(500,212)+T(484,196,'+',{s:18})+Ln(486,212,456,212)+T(452,219,R,{a:'end'})+Ln(514,212,546,212)+T(558,219,'H')+Ln(500,227,500,252)+T(500,272,'H')}
+ if(st>=5)s+=CA(478,78,470,110,494,106)+CA(532,135,546,108,566,126)+CA(532,218,532,244,510,224);
+ if(st>=6){s+=T(640,147,'→',{s:28});const p=R==='H'?A+'CONH2':A+'CONH'+R;s+=T(790,147,p,{s:20})+T(790,185,'+ HCl',{s:20})}
+ return `<svg viewBox="0 0 900 310">${s}</svg>`}
+/* ---------- aromatic helpers ---------- */
+function ringPts(cx,cy,r,rot=0){const p=[];for(let i=0;i<6;i++){const a=(-90+rot+60*i)*Math.PI/180;p.push([cx+r*Math.cos(a),cy+r*Math.sin(a)])}return p}
+function RING(cx,cy,r,o={}){const p=ringPts(cx,cy,r);let s=`<path d="M${p.map(q=>q[0].toFixed(1)+','+q[1].toFixed(1)).join(' L')}z" fill="none" stroke="#3b2a1a" stroke-width="2.2"/>`;
+ if(o.kek){(o.kekAlt?[[1,2],[3,4],[5,0]]:[[0,1],[2,3],[4,5]]).forEach(([a,b])=>{const f=v=>[cx+(v[0]-cx)*.78,cy+(v[1]-cy)*.78];let A=f(p[a]),B=f(p[b]);const dx=B[0]-A[0],dy=B[1]-A[1];A=[A[0]+dx*.12,A[1]+dy*.12];B=[B[0]-dx*.12,B[1]-dy*.12];s+=`<line x1="${A[0]}" y1="${A[1]}" x2="${B[0]}" y2="${B[1]}" stroke="#3b2a1a" stroke-width="2.2"/>`})}
+ else if(!o.none)s+=`<circle cx="${cx}" cy="${cy}" r="${r*.58}" fill="none" stroke="#3b2a1a" stroke-width="2"/>`;return s}
+function subAt(cx,cy,r,i,lab,o={}){const p=ringPts(cx,cy,r)[i];const ux=(p[0]-cx)/r,uy=(p[1]-cy)/r;const L=o.len||26;const e=[p[0]+ux*L,p[1]+uy*L];
+ const tx=p[0]+ux*(L+8)+(Math.abs(ux)>.3?ux*(lab.length*5):0),ty=p[1]+uy*(L+16)+7;
+ return `<line x1="${p[0]}" y1="${p[1]}" x2="${e[0]}" y2="${e[1]}" stroke="#3b2a1a" stroke-width="2.2"/><text x="${tx}" y="${uy<-.5?ty-4:ty}" text-anchor="middle" font-size="${o.fs||19}" fill="#3b2a1a">${fmtLabel(lab)}</text>`}
+/* electrophilic substitution: o={E:'NO2', Eplus:'NO2', stage} */
+function drawES(o){const st=o.stage??9,E=o.E,EL=o.EL||E;let s=MKf();const Lw=EL.length*11;
+ s+=RING(130,175,58)+T(130,62,EL,{c:'#2c6e8f',b:1})+T(130+Lw/2+8,50,'+',{s:18,c:'#2c6e8f'});
+ if(st>=2)s+=CA(116,148,92,104,118,74);
+ if(st>=3){s+=T(268,182,'→',{s:28});
+  const cx=430,cy=185,r=58,p=ringPts(cx,cy,r);s+=`<path d="M${p.map(q=>q[0].toFixed(1)+','+q[1].toFixed(1)).join(' L')}z" fill="none" stroke="#3b2a1a" stroke-width="2.2"/>`;
+  const a1=(-90-60+18)*Math.PI/180,a2=(-90+60-18)*Math.PI/180,R=36;const P1=[cx+R*Math.cos(a1),cy+R*Math.sin(a1)],P2=[cx+R*Math.cos(a2),cy+R*Math.sin(a2)];
+  s+=`<path d="M${P1[0].toFixed(1)},${P1[1].toFixed(1)} A${R},${R} 0 1 0 ${P2[0].toFixed(1)},${P2[1].toFixed(1)}" fill="none" stroke="#3b2a1a" stroke-width="2"/>`+T(cx,cy+12,'+',{s:24});
+  const t=p[0];s+=Ln(t[0],t[1],t[0]-24,t[1]-34)+T(t[0]-32,t[1]-40,'H')+Ln(t[0],t[1],t[0]+24,t[1]-34)+T(t[0]+28,t[1]-40,E,{a:'start',c:'#2c6e8f'});
+  if(st>=4)s+=CA(t[0]-14,t[1]-22,t[0]-52,t[1]+6,t[0]-10,t[1]+30)}
+ if(st>=5){s+=T(588,182,'→',{s:28})+RING(730,185,58)+subAt(730,185,58,0,E,{len:28})+T(850,192,'+  H',{s:21})+T(874,176,'+',{s:16})}
+ return `<svg viewBox="0 0 900 290">${s}</svg>`}
+function numQ(el,q,ans,unit,why,score,tol=0.6){el.innerHTML=`<p class="bigname">${q}</p><p><input class="inp" style="width:140px"> ${unit} <button class="b">Check</button></p><div class="readout"></div>`;
+ const i=el.querySelector('input'),b=el.querySelector('button'),f=el.querySelector('.readout');let done=false;
+ const go=()=>{if(done)return;const v=parseFloat(i.value.replace('−','-'));if(isNaN(v))return;done=true;const ok=Math.abs(v-ans)<=tol;f.innerHTML=(ok?'✅ ':'❌ Answer: '+ans+' '+unit+'<br>')+why;if(score)score(ok)};b.onclick=go;i.onkeydown=e=>{if(e.key==='Enter')go()}}
+const SUB={CH3:['methyl',0],CH2CH3:['ethyl',0],Cl:['chloro',0],Br:['bromo',0],NO2:['nitro',0],OH:['phenol',1],NH2:['phenylamine',2],COOH:['benzoic acid',3],CHO:['benzaldehyde',4]};
+const MONO={CH3:'methylbenzene',CH2CH3:'ethylbenzene',Cl:'chlorobenzene',Br:'bromobenzene',NO2:'nitrobenzene',OH:'phenol',NH2:'phenylamine',COOH:'benzoic acid',CHO:'benzaldehyde',COCH3:'phenylethanone'};
+const svgRing=(subs,o={})=>{const cx=o.cx||150,cy=o.cy||120,r=o.r||48;let s=RING(cx,cy,r);subs.forEach(([i,l])=>s+=subAt(cx,cy,r,i,l,{fs:o.fs||19}));return s};
+/* name for two subs a at locant 1-based logic: d = ring distance 1..3 */
+
+function name2(a,b,d){const A=SUB[a],B=SUB[b];
+ if(a===b)return `1,${1+d}-di${A[0]}benzene`.replace('dinitro','dinitro');
+ if(A[1]&&B[1])return null;
+ if(A[1]||B[1]){const [p,q]=A[1]?[a,b]:[b,a];return `${1+d}-${SUB[q][0]}${SUB[p][0]}`}
+ const [f,s]=[a,b].sort((x,y)=>SUB[x][0]<SUB[y][0]?-1:1);return `1-${SUB[f][0]}-${1+d}-${SUB[s][0]}benzene`}
+/* p1 gallery */
+document.getElementById('g1').innerHTML=Object.keys(MONO).map(k=>`<div class="check" style="width:200px;cursor:pointer;text-align:center" onclick="this.querySelector('.nm').style.visibility='visible'"><svg viewBox="0 0 300 240" style="width:180px">${svgRing([[0,k]],{cy:140})}</svg><div class="nm" style="visibility:hidden;font-weight:bold">${MONO[k]}${SUB[k]&&SUB[k][1]?' <span class="small">(parent)</span>':''}</div></div>`).join('');
+/* p2 numbering */
+let nbA='CH3',nbB='NO2',nbP=3;
+function nbD(){const g=document.getElementById('nbG');const cx=350,cy=150,r=70;let s=RING(cx,cy,r)+subAt(cx,cy,r,0,nbA);const p=ringPts(cx,cy,r);
+ if(nbP)s+=subAt(cx,cy,r,nbP,nbB);
+ [1,2,3,4,5].forEach(i=>{if(i===nbP)return;s+=`<circle cx="${p[i][0]}" cy="${p[i][1]}" r="11" fill="#e8dcc8" stroke="#8b5a2b" style="cursor:pointer" onclick="nbP=${i};nbD()"/>`});
+ const d=Math.min(nbP,6-nbP);const n=name2(nbA,nbB,d);
+ const A=SUB[nbA],B=SUB[nbB];let c1=nbA;if(nbA!==nbB&&!(A[1]||B[1])&&SUB[nbB][0]<SUB[nbA][0])c1=nbB;if(B[1]&&!A[1])c1=nbB;
+ const start=c1===nbA?0:nbP,dir=c1===nbA?(nbP<=3?1:-1):((6-nbP)%6<=3&&nbP>3?1:-1);
+ for(let k=0;k<6;k++){const i=((start+dir*k)%6+6)%6;const ux=(p[i][0]-cx)/r,uy=(p[i][1]-cy)/r;s+=`<text x="${cx+ux*(r-20)}" y="${cy+uy*(r-20)+5}" text-anchor="middle" font-size="13" fill="#2c6e8f">${k+1}</text>`}
+ g.innerHTML=s;document.getElementById('nbN').innerHTML=n?`<b>${n}</b>`:'Two parent-changing groups – beyond A-level.'}
+const opts=[['CH3','CH₃'],['Cl','Cl'],['Br','Br'],['NO2','NO₂'],['OH','OH'],['NH2','NH₂'],['COOH','COOH']];
+const chip=(id,cb,def)=>{const el=document.getElementById(id);opts.forEach(([k,l])=>{const b=document.createElement('button');b.className='b alt'+(k===def?' on':'');b.innerHTML=l;b.onclick=()=>{[...el.children].forEach(x=>x.classList.toggle('on',x===b));cb(k)};el.appendChild(b)})};
+chip('nbA',k=>{nbA=k;nbD()},'CH3');chip('nbB',k=>{nbB=k;nbD()},'NO2');nbD();
+/* random disubstituted */
+const PRE=['CH3','Cl','Br','NO2','CH2CH3'],PAR=['OH','NH2','COOH'];
+function rand2(){let a,b;const t=rnd(0,2);if(t===0){a=pick(PRE);b=pick(PRE)}else if(t===1){a=pick(PAR);b=pick(PRE)}else{a=pick(PRE);b=a}if(a===b&&t!==2)b=pick(PRE.filter(x=>x!==a));return [a,b,rnd(1,3)]}
+function draw2(a,b,d,o={}){const i0=o.i0??rnd(0,5),dir=o.dir??pick([1,-1]);return svgRing([[i0,a],[((i0+dir*d)%6+6)%6,b]],o)}
+function wrong2(a,b,d){const out=new Set();[1,2,3].filter(x=>x!==d).forEach(x=>out.add(name2(a,b,x)));
+ if(a!==b&&!SUB[a][1]&&!SUB[b][1]){const [f,s]=[a,b].sort((x,y)=>SUB[x][0]<SUB[y][0]?-1:1);out.add(`1-${SUB[s][0]}-${1+d}-${SUB[f][0]}benzene`)}
+ if(SUB[a][1]||SUB[b][1]){const [p,q]=SUB[a][1]?[a,b]:[b,a];out.add(`${7-(1+d)===1+d?1+d:7-(1+d)}-${SUB[q][0]}${SUB[p][0]}`);out.add(`1-${SUB[q][0]}-${1+d}-${p==='OH'?'hydroxy':p==='NH2'?'amino':'carboxy'}benzene`)}
+ if(a===b)out.add(`1,${2+d>4?d:1+d+1}-di${SUB[a][0]}benzene`);
+ out.delete(name2(a,b,d));return [...out].slice(0,3)}
+const n1Sc=Scorer('n1S');
+function n1(){const [a,b,d]=rand2();document.getElementById('n1G').innerHTML=draw2(a,b,d);const n=name2(a,b,d);
+ optMCQ(document.getElementById('n1Q'),'Name this compound.',n,wrong2(a,b,d),`${SUB[a][1]||SUB[b][1]?'The group that sets the parent name is C1.':a===b?'Same group twice: di-, lowest locants.':'Prefixes in alphabetical order; the first gets C1.'} Count the shortest way round: <b>${n}</b>.`,n1Sc)}
+document.getElementById('n1N').onclick=n1;n1();
+const n2Sc=Scorer('n2S');
+function n2(){const [a,b,d]=rand2();const n=name2(a,b,d);const others=[1,2,3].filter(x=>x!==d);
+ const svgs=[draw2(a,b,d,{cx:100,cy:100,r:42,fs:17}),...others.map(x=>draw2(a,b,x,{cx:100,cy:100,r:42,fs:17}))];
+ let alt=a!==b?draw2(pick(PRE.filter(x=>x!==a&&x!==b)),b,d,{cx:100,cy:100,r:42,fs:17}):draw2(a,pick(PRE.filter(x=>x!==a)),d,{cx:100,cy:100,r:42,fs:17});svgs.push(alt);
+ const ord=shuffle([0,1,2,3]);picMCQ(document.getElementById('n2Q'),{q:`Which structure is <b>${n}</b>?`,opts:ord.map(i=>`<svg viewBox="0 0 200 200">${svgs[i]}</svg>`),ans:ord.indexOf(0),exp:`Locants ${n.match(/\d(,\d)?/g).join(' and ')}: count round the ring from C1.`,onDone:n2Sc})}
+document.getElementById('n2N').onclick=n2;n2();
+/* p5 */
+const G5=[['C6H5CH=CH2','phenylethene',[[0,'CH=CH2']]],['C6H5CH(OH)CH3','1-phenylethanol',[[0,'CH(OH)CH3']]],['C6H5COCH3','phenylethanone',[[0,'COCH3']]],['C6H5CH2OH','phenylmethanol',[[0,'CH2OH']]],['C6H5CH2CH2NH2','2-phenylethylamine',[[0,'CH2CH2NH2']]],['TNT','2-methyl-1,3,5-trinitrobenzene',[[0,'CH3'],[1,'NO2'],[3,'NO2'],[5,'NO2']]],['','2,4,6-tribromophenol',[[0,'OH'],[1,'Br'],[3,'Br'],[5,'Br']]],['','1,3,5-trimethylbenzene',[[0,'CH3'],[2,'CH3'],[4,'CH3']]]];
+document.getElementById('g5').innerHTML=G5.map(g=>`<div class="check" style="width:230px;cursor:pointer;text-align:center" onclick="this.querySelector('.nm').style.visibility='visible'"><svg viewBox="0 0 300 260" style="width:210px">${svgRing(g[2],{cy:135,r:46,fs:17})}</svg><div class="nm" style="visibility:hidden;font-weight:bold">${g[1]}${g[0]==='TNT'?' (TNT)':''}</div></div>`).join('');
+const n5Sc=Scorer('n5S');
+const N5=[['C₆H₅CH₂CH₂OH','2-phenylethanol',['1-phenylethanol','phenylethanol','2-ethylphenol']],['C₆H₅CH(CH₃)₂','(1-methylethyl)benzene / 2-phenylpropane',['1-phenylpropane','propylbenzene','2-methylphenylethane']],['C₆H₅COCH₂CH₃','1-phenylpropan-1-one',['phenylpropanal','1-phenylpropan-2-one','ethyl phenyl ketone ester']],['C₆H₅CH₂COOH','phenylethanoic acid',['benzoic acid','2-phenylethanol','phenylmethanoic acid']],['C₆H₅COOCH₃','methyl benzoate',['phenyl ethanoate','methyl phenylethanoate','benzyl methanoate']],['CH₃COOC₆H₅','phenyl ethanoate',['methyl benzoate','phenylethanoic acid','benzyl ethanoate']],['C₆H₅CHO','benzaldehyde',['phenylmethanol','benzoic acid','phenylethanal']],['C₆H₅NHCOCH₃','N-phenylethanamide',['phenylethanamide','N-methylbenzamide','ethylphenylamine']]];
+function n5(){const q=pick(N5);optMCQ(document.getElementById('n5Q'),`Name <b>${q[0]}</b>`,q[1],q[2],`<b>${q[1]}</b>.`,n5Sc)}
+document.getElementById('n5N').onclick=n5;n5();
+const Q=[
+ ["C₆H₅OH is named…",["hydroxybenzene","phenol","benzyl alcohol","phenylmethanol"],1,"Parent name changes."],
+ ["C₆H₅NH₂ is named…",["aminobenzene","phenylamine","benzylamine","aniline amide"],1,"AQA uses phenylamine."],
+ ["Cl at C1 and NO₂ at C3:",["1-chloro-3-nitrobenzene","1-nitro-3-chlorobenzene","3-chloro-1-nitrobenzene","1-chloro-5-nitrobenzene"],0,"Alphabetical; lowest locants."],
+ ["NO₂ next to OH on the ring:",["1-nitrophenol","2-nitrophenol","6-nitrophenol","3-nitrophenol"],1,"OH is C1."],
+ ["CH₃ opposite COOH:",["4-methylbenzoic acid","1-methyl-4-carboxybenzene","3-methylbenzoic acid","para-methylbenzoic acid"],0,"COOH is C1."],
+ ["C₆H₅COCH₃:",["phenylethanal","phenylethanone","methyl benzoate","benzaldehyde"],1,"Ketone."],
+ ["C₆H₅CH=CH₂:",["ethenylbenzene / phenylethene","phenylethane","styrene oxide","vinylphenol"],0,"Phenyl as substituent."],
+ ["How many isomers of dichlorobenzene?",["2","3","4","6"],1,"1,2 / 1,3 / 1,4."]
+];
+buildQuiz(Q);go(0);
+
+</script>
+</body>
+</html>
