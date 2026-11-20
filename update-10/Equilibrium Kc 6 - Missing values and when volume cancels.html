@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Equilibrium (Kc) 6 – Finding Missing Values and When Volume Cancels</title>
+<style>
+:root{
+  --bg:#f6efe1; --card:#fffaf0; --ink:#3b2a1a; --brown:#6b4423; --brown2:#8b5a2b;
+  --accent:#b5651d; --soft:#ead9bd; --line:#d8c4a0; --good:#2f7d4a; --bad:#b03a2e; --blue:#2c4a7a;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Arial,sans-serif;font-size:19px;line-height:1.55}
+header{background:var(--brown);color:#fff8ec;padding:14px 24px}
+header h1{margin:0;font-family:Georgia,serif;font-size:28px;font-weight:normal}
+header p{margin:2px 0 0;opacity:.85;font-size:16px}
+nav{display:flex;flex-wrap:wrap;gap:6px;padding:10px 24px;background:var(--soft);border-bottom:2px solid var(--line);position:sticky;top:0;z-index:5}
+nav button{border:2px solid var(--brown2);background:var(--card);color:var(--brown);padding:7px 14px;border-radius:20px;font-size:16px;cursor:pointer}
+nav button.on{background:var(--brown2);color:#fff}
+main{max-width:1100px;margin:0 auto;padding:20px 24px 60px}
+.page{display:none}.page.on{display:block}
+h2{font-family:Georgia,serif;color:var(--brown);font-size:30px;margin:6px 0 12px;font-weight:normal}
+h3{color:var(--brown2);font-size:22px;margin:22px 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:14px 0;box-shadow:0 2px 0 var(--line)}
+.key{border-left:6px solid var(--accent)}
+.eq{font-family:Georgia,serif;font-size:24px;text-align:center;padding:10px;background:#fff;border:1px dashed var(--line);border-radius:8px;margin:10px 0}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 6px}
+.frac>span:first-child{border-bottom:2px solid var(--ink);padding:0 6px}
+.row{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+.row>*{flex:1 1 380px}
+button.b{background:var(--brown2);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:17px;cursor:pointer;margin:4px 6px 4px 0}
+button.b.alt{background:var(--card);color:var(--brown);border:2px solid var(--brown2)}
+button.b:disabled{opacity:.45;cursor:default}
+.check{background:#fdf6e6;border:2px solid var(--accent);border-radius:12px;padding:14px 18px;margin:16px 0}
+.check .tag{display:inline-block;background:var(--accent);color:#fff;font-size:14px;padding:2px 10px;border-radius:12px;margin-bottom:6px;letter-spacing:.5px}
+.check .src{font-size:14px;color:#8a7356;font-style:italic}
+input.ans{font-size:18px;padding:6px 10px;width:200px;border:2px solid var(--line);border-radius:6px}
+.fb{font-weight:600;margin-left:8px}
+.fb.ok{color:var(--good)}.fb.no{color:var(--bad)}
+.work{display:none;background:#fff;border-left:4px solid var(--brown2);padding:8px 14px;margin-top:8px;border-radius:4px}
+.work.on{display:block}
+table.t{border-collapse:collapse;margin:8px 0;background:#fff}
+table.t th,table.t td{border:1px solid var(--line);padding:6px 12px;text-align:center}
+table.t th{background:var(--soft);color:var(--brown)}
+svg text{font-family:"Segoe UI",Arial,sans-serif}
+.readout{font-family:Consolas,monospace;background:#2b1d10;color:#ffe9c4;padding:10px 14px;border-radius:8px;font-size:17px;line-height:1.6}
+.slider{width:100%}
+label.s{display:block;font-weight:600;color:var(--brown);margin-top:8px}
+.steps li{margin:6px 0}
+.reveal{display:none}.reveal.on{display:block;animation:fade .4s}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+.pager{display:flex;justify-content:space-between;margin-top:30px}
+.mcq button.opt{display:block;width:100%;text-align:left;margin:6px 0;padding:10px 14px;font-size:17px;border:2px solid var(--line);background:#fff;border-radius:8px;cursor:pointer;color:var(--ink)}
+.mcq button.opt.right{border-color:var(--good);background:#e6f4ea}
+.mcq button.opt.wrong{border-color:var(--bad);background:#fbe9e7}
+.mcq .exp{display:none;margin-top:6px;font-size:17px}
+.mcq.done .exp{display:block}
+.warn{background:#fbeee4;border-left:6px solid var(--bad);padding:10px 16px;border-radius:6px;margin:12px 0}
+.small{font-size:15px;color:#7a6448}
+canvas{background:#fff;border:1px solid var(--line);border-radius:8px;max-width:100%}
+.chip{display:inline-block;padding:2px 10px;border-radius:12px;background:var(--soft);margin:2px;font-size:16px}
+.big{font-size:22px}
+table.ice{border-collapse:collapse;margin:10px auto;background:#fff;font-size:18px}
+table.ice th,table.ice td{border:1px solid var(--line);padding:8px 14px;text-align:center;min-width:90px}
+table.ice th{background:var(--soft);color:var(--brown)}
+table.ice td.lab{background:#fbf3e3;font-weight:600;color:var(--brown);text-align:left}
+table.ice td.hl{background:#fde9c8;transition:background .4s}
+table.ice td.done{color:var(--good);font-weight:700}
+table.ice input{width:100px;font-size:17px;padding:3px 6px;border:2px solid var(--line);border-radius:6px;text-align:center}
+.slot{display:inline-block;min-width:60px;border-bottom:2px dashed var(--brown2);margin:0 4px;text-align:center}
+select.s{font-size:18px;padding:4px 6px;border:2px solid var(--line);border-radius:6px;background:#fff}
+.tick{color:var(--good);font-weight:700}.cross{color:var(--bad);font-weight:700}
+.legend span{display:inline-block;margin-right:14px;font-size:15px}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:-2px;margin-right:4px}
+.src{font-size:14px;color:#8a7356;font-style:italic;display:block;margin-bottom:4px}
+.readout .frac>span:first-child{border-bottom-color:#ffe9c4}
+
+</style>
+</head>
+<body>
+<header>
+  <h1>Equilibrium (Kc) 6 – Finding Missing Values and When Volume Cancels</h1>
+  <p>AQA A-level Chemistry · Equilibria walkthrough</p>
+</header>
+<nav id="nav"></nav>
+<main>
+<!-- ============ PAGE 1 ============ -->
+<section class="page" data-title="1. Rearranging Kc">
+<h2>1. Finding a missing concentration from K<sub>c</sub></h2>
+<div class="card key">
+  <p>If you know K<sub>c</sub> and every equilibrium concentration except one, you can find the missing one.</p>
+  <ol>
+    <li>Write the K<sub>c</sub> expression.</li>
+    <li><b>Rearrange</b> so the unknown term is on its own.</li>
+    <li>Substitute the numbers you know.</li>
+    <li>If the unknown is squared, <b>square root</b> at the end (cubed → cube root).</li>
+  </ol>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Interactive: rearranging machine</h3>
+  <p>Pick an equation and the substance you want to find.</p>
+  <select class="s" id="raEq" style="max-width:100%"></select> <select class="s" id="raSp"></select>
+  <div style="margin:8px 0"><button class="b alt" onclick="raStep()">Show next step</button><button class="b alt" onclick="raDraw(0)">Start again</button></div>
+  <div id="raBox" style="font-size:21px"></div>
+  <p class="small">Rule: whatever is on the bottom with the unknown moves to the top on the other side, and K<sub>c</sub> moves to the bottom.</p>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Worked example</h3>
+  <span class="src">June 2023 AS Paper 1 Q8.4 (3 marks)</span>
+  <p>A(aq) + 2B(aq) ⇌ C(aq). At equilibrium [A] = 0.48 mol dm⁻³ and [C] = 0.62 mol dm⁻³. K<sub>c</sub> = 7.8 mol⁻² dm⁶. Calculate [B], to an appropriate number of significant figures.</p>
+  <button class="b alt" onclick="stepReveal('we1')">Show next step</button>
+  <ol class="steps" id="we1">
+    <li class="reveal">K<sub>c</sub> = <span class="frac"><span>[C]</span><span>[A] [B]²</span></span> &nbsp; → &nbsp; [B]² = <span class="frac"><span>[C]</span><span>[A] × K<sub>c</sub></span></span></li>
+    <li class="reveal">[B]² = <span class="frac"><span>0.62</span><span>0.48 × 7.8</span></span> = 0.1656</li>
+    <li class="reveal">[B] = √0.1656 = 0.4069…</li>
+    <li class="reveal">The data are to 2 s.f., so <b>[B] = 0.41 mol dm⁻³</b></li>
+  </ol>
+</div>
+</section>
+
+<!-- ============ PAGE 2 ============ -->
+<section class="page" data-title="2. Missing amounts">
+<h2>2. Finding a missing <i>amount</i> in moles</h2>
+<div class="card key">
+  <p>When the question gives moles and a volume and asks for an <b>amount</b>, there's one extra step at the end:</p>
+  <div class="eq">moles → ÷ V → concentrations → rearrange K<sub>c</sub> → missing concentration → <b>× V</b> → missing moles</div>
+  <p>The commonest lost mark is forgetting to <b>multiply back by the volume</b>.</p>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Worked example</h3>
+  <span class="src">November 2021 AS Paper 1 Q10.2 (3 marks)</span>
+  <p>2SO₂(g) + O₂(g) ⇌ 2SO₃(g). An equilibrium mixture in a <b>1800 cm³</b> container contains 0.176 mol SO₂ and 0.461 mol SO₃. K<sub>c</sub> = 15.0 mol⁻¹ dm³. Calculate the amount of oxygen.</p>
+  <button class="b alt" onclick="stepReveal('we2')">Show next step</button>
+  <ol class="steps" id="we2">
+    <li class="reveal"><b>M1</b> V = 1.80 dm³ → [SO₂] = 0.0978, [SO₃] = 0.256 mol dm⁻³</li>
+    <li class="reveal"><b>M2</b> [O₂] = <span class="frac"><span>[SO₃]²</span><span>[SO₂]² × K<sub>c</sub></span></span> = <span class="frac"><span>0.256²</span><span>0.0978² × 15.0</span></span> = 0.457 mol dm⁻³</li>
+    <li class="reveal"><b>M3</b> n(O₂) = 0.457 × 1.80 = <b>0.823 mol</b></li>
+  </ol>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 1</span>
+  <span class="src">June 2019 AS Paper 1 Q5.3 (4 marks)</span>
+  <p>2NO(g) + Cl₂(g) ⇌ 2NOCl(g). In a flask of volume <b>800 cm³</b> an equilibrium mixture contains 0.850 mol NO and 0.458 mol Cl₂. K<sub>c</sub> = 1.32 × 10⁻² mol⁻¹ dm³. Find the amount of NOCl in moles.</p>
+  <input class="ans" id="c1"> mol <button class="b" onclick="numCheck('c1',0.0739,0.015)">Check</button><span class="fb" id="c1fb"></span>
+  <button class="b alt" onclick="tog('c1w')">Working</button>
+  <div class="work" id="c1w">[NOCl]² = K<sub>c</sub> × [NO]² × [Cl₂] = 1.32 × 10⁻² × (0.850/0.800)² × (0.458/0.800) = 8.53 × 10⁻³<br>
+  [NOCl] = 0.0924 mol dm⁻³ → n = 0.0924 × 0.800 = <b>0.0739 mol</b><br><i>Without the volume you'd get 0.0529 mol (max 3 marks).</i></div>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 2</span>
+  <span class="src">June 2022 AS Paper 1 Q7.4 (5 marks)</span>
+  <p>3H₂(g) + N₂(g) ⇌ 2NH₃(g), K<sub>c</sub> = 0.118 mol⁻² dm⁶ at 745 K. <b>0.150 dm³</b> of an equilibrium mixture contains 0.0285 mol H₂ and 0.0870 mol N₂. Calculate the amount of ammonia.</p>
+  <input class="ans" id="c2"> mol <button class="b" onclick="numCheck('c2',0.00325,0.015)">Check</button><span class="fb" id="c2fb"></span>
+  <button class="b alt" onclick="tog('c2w')">Working</button>
+  <div class="work" id="c2w">[H₂] = 0.190, [N₂] = 0.580 mol dm⁻³<br>[NH₃]² = 0.118 × 0.190³ × 0.580 = 4.69 × 10⁻⁴ → [NH₃] = 0.0217 mol dm⁻³<br>n(NH₃) = 0.0217 × 0.150 = <b>3.25 × 10⁻³ mol</b></div>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 3</span>
+  <span class="src">June 2018 Paper 2 Q4.3 (3 marks)</span>
+  <p>2A + B ⇌ 3C + D, K<sub>c</sub> = 116 mol dm⁻³. A different equilibrium mixture with a total volume of <b>500 cm³</b> contains 0.21 mol B, 1.05 mol C and 0.076 mol D. Calculate [A] to 2 s.f.</p>
+  <input class="ans" id="c3"> mol dm⁻³ <button class="b" onclick="numCheck('c3',0.17,0.03)">Check</button><span class="fb" id="c3fb"></span>
+  <button class="b alt" onclick="tog('c3w')">Working</button>
+  <div class="work" id="c3w">[A]² = <span class="frac"><span>[C]³ [D]</span><span>K<sub>c</sub> [B]</span></span> = <span class="frac"><span>(1.05/0.5)³ × (0.076/0.5)</span><span>116 × (0.21/0.5)</span></span> = 0.0289<br>[A] = <b>0.17 mol dm⁻³</b></div>
+</div>
+</section>
+
+<!-- ============ PAGE 3 ============ -->
+<section class="page" data-title="3. Total volume">
+<h2>3. Which volume do I use?</h2>
+<div class="card key">
+  <table class="t" style="margin:auto">
+    <tr><th>Situation</th><th>Volume to use</th></tr>
+    <tr><td>Gases in a sealed container</td><td>the volume of the <b>container</b></td></tr>
+    <tr><td>Two (or more) solutions mixed</td><td>the <b>sum</b> of all the volumes</td></tr>
+    <tr><td>Water added to an equilibrium mixture</td><td>the <b>new total</b>, including the water</td></tr>
+    <tr><td>"Assume the total volume stays at 100 cm³"</td><td>just use <b>100 cm³</b></td></tr>
+    <tr><td>Concentration of an <b>original</b> solution before mixing</td><td>the volume of <b>that solution only</b></td></tr>
+  </table>
+</div>
+<div class="check">
+  <span class="tag">QUICK CHECK 4 – pick the volume</span>
+  <div id="vq"></div>
+</div>
+</section>
+
+<!-- ============ PAGE 4 ============ -->
+<section class="page" data-title="4. When volume cancels">
+<h2>4. When the volume doesn't matter</h2>
+<div class="card key">
+  <p>Every concentration is n ÷ V. Put that into K<sub>c</sub> and the V's collect together:</p>
+  <div class="eq">K<sub>c</sub> = (ratio of moles) × V<sup>−n</sup> &nbsp;&nbsp; where n = (powers on top) − (powers on bottom)</div>
+  <p>If <b>n = 0</b>, i.e. the <b>total number of moles on each side of the equation is the same</b>, every V cancels:</p>
+  <ul><li>you don't need the volume. Use moles straight in.</li><li>K<sub>c</sub> has <b>no units</b> (the same test!).</li></ul>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Animation: watch the V's cancel</h3>
+  <select class="s" id="vcSel" style="max-width:100%"></select>
+  <div style="margin:8px 0"><button class="b" onclick="vcPlay()">▶ Cancel</button></div>
+  <div id="vcBox" style="font-size:22px;text-align:center;min-height:170px"></div>
+  <div class="readout" id="vcOut"></div>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 5 – does the volume matter?</span>
+  <div id="dvq"></div>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 6</span>
+  <span class="src">June 2017 Paper 2 Q5.3–5.4 (5 marks)</span>
+  <p>2CH₃COOH(l) + HOCH₂CH₂OH(l) ⇌ C₆H₁₀O₄(l) + 2H₂O(l)</p>
+  <p>(a) The total volume of the mixture does not need to be measured to calculate K<sub>c</sub>. Justify this statement.</p>
+  <button class="b alt" onclick="tog('c6aw')">Mark scheme</button>
+  <div class="work" id="c6aw">The volume cancels out in the K<sub>c</sub> expression <b>or</b> there are equal numbers of moles on each side of the equation.</div>
+  <p>(b) At a different temperature K<sub>c</sub> = 6.45. A new equilibrium mixture contains 0.264 mol diol, 0.802 mol diester and 1.15 mol water. Calculate the amount of ethanoic acid, to 3 s.f.</p>
+  <input class="ans" id="c6"> mol <button class="b" onclick="numCheck('c6',0.789,0.003)">Check</button><span class="fb" id="c6fb"></span>
+  <button class="b alt" onclick="tog('c6w')">Working</button>
+  <div class="work" id="c6w">n(acid)² = <span class="frac"><span>n(diester) × n(H₂O)²</span><span>K<sub>c</sub> × n(diol)</span></span> = <span class="frac"><span>0.802 × 1.15²</span><span>6.45 × 0.264</span></span> = 0.623<br>n(acid) = √0.623 = <b>0.789 mol</b> (must be 3 s.f.)<br><i>Upside-down rearrangement gives 1.27 (1 mark only).</i></div>
+</div>
+</section>
+
+<!-- ============ PAGE 5 ============ -->
+<section class="page" data-title="5. Using x">
+<h2>5. Stretch: finding the extent of reaction, x</h2>
+<div class="card key">
+  <p>Sometimes you only know the starting amounts and K<sub>c</sub>. Call the amount that reacts <b>x</b>, write every equilibrium amount in terms of x, and solve. At A-level these are set up so that you can <b>square root both sides</b>.</p>
+</div>
+<div class="card">
+  <span class="src">June 2017 AS Paper 1 Q4.2 (3 marks)</span>
+  <p>P(g) + Q(g) ⇌ 2R(g). 1.0 mol P and 1.0 mol Q are mixed in a <b>1.0 dm³</b> container. K<sub>c</sub> = 3.6 at 298 K. Calculate [R] at equilibrium.</p>
+  <button class="b alt" onclick="stepReveal('we3')">Show next step</button>
+  <ol class="steps" id="we3">
+    <li class="reveal">At equilibrium: P = (1 − x), Q = (1 − x), R = 2x. V = 1.0 dm³, so these are also the concentrations.</li>
+    <li class="reveal">K<sub>c</sub> = <span class="frac"><span>(2x)²</span><span>(1 − x)(1 − x)</span></span> = <span class="frac"><span>(2x)²</span><span>(1 − x)²</span></span> = 3.6</li>
+    <li class="reveal">Both sides are squares, so square root: <span class="frac"><span>2x</span><span>1 − x</span></span> = √3.6 = 1.897</li>
+    <li class="reveal">2x = 1.897 − 1.897x → 3.897x = 1.897 → x = 0.487</li>
+    <li class="reveal">[R] = 2x = <b>0.97 mol dm⁻³</b></li>
+  </ol>
+</div>
+<div class="card">
+  <h3 style="margin-top:0">Interactive: find x by trial</h3>
+  <p>Slide x until the K<sub>c</sub> from your mixture matches 3.6.</p>
+  <label class="s">x = <span id="xV"></span></label>
+  <input type="range" class="slider" id="xS" min="0.01" max="0.95" step="0.001" value="0.2">
+  <div class="readout" id="xOut"></div>
+</div>
+</section>
+
+<!-- ============ PAGE 6 ============ -->
+<section class="page" data-title="6. Quiz">
+<h2>6. End-of-walkthrough quiz</h2>
+<p>Click an answer. You get one go at each question.</p>
+<div id="quiz"></div>
+<div class="card" id="score" style="font-size:22px;text-align:center"></div>
+<button class="b alt" onclick="buildQuiz()">Reset quiz</button>
+<p class="small">Next: Walkthrough 7 – Le Chatelier's principle.</p>
+</section>
+
+<div class="pager"><button class="b alt" id="prevB">◀ Previous</button><button class="b" id="nextB">Next ▶</button></div>
+</main>
+<script>
+/* ---------- navigation ---------- */
+const pages=[...document.querySelectorAll('.page')];let cur=0;
+const nav=document.getElementById('nav');
+pages.forEach((p,i)=>{const b=document.createElement('button');b.textContent=p.dataset.title;b.onclick=()=>go(i);nav.appendChild(b)});
+function go(i){cur=i;pages.forEach((p,j)=>p.classList.toggle('on',j===i));[...nav.children].forEach((b,j)=>b.classList.toggle('on',j===i));
+ document.getElementById('prevB').disabled=i===0;document.getElementById('nextB').disabled=i===pages.length-1;window.scrollTo(0,0);
+ if(typeof onPage==='function')onPage(i)}
+document.getElementById('prevB').onclick=()=>go(Math.max(0,cur-1));
+document.getElementById('nextB').onclick=()=>go(Math.min(pages.length-1,cur+1));
+
+/* ---------- helpers ---------- */
+const $=id=>document.getElementById(id);
+function tog(id){$(id).classList.toggle('on')}
+function stepReveal(id){const r=[...document.querySelectorAll('#'+id+' .reveal:not(.on)')];if(r.length)r[0].classList.add('on')}
+function parseNum(s){
+ s=s.trim().replace(/\s/g,'');const sp={'⁰':'0','¹':'1','²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9','⁻':'-'};
+ s=s.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁻]/g,c=>sp[c]).replace(/[−–]/g,'-').replace(/,/g,'');
+ let m=s.match(/^(-?[\d.]+)[x×X*]10\^?(-?\d+)$/);if(m)return parseFloat(m[1])*Math.pow(10,parseInt(m[2]));
+ m=s.match(/^(-?[\d.]+)[eE](-?\d+)$/);if(m)return parseFloat(s);
+ const v=Number(s);return (s===''||isNaN(v))?null:v}
+function numCheck(id,target,tol){const v=parseNum($(id).value);const fb=$(id+'fb');
+ if(v===null){fb.textContent='Enter a number';fb.className='fb no';return false}
+ if(Math.abs(v-target)<=Math.abs(target)*tol){fb.textContent='✔ Correct';fb.className='fb ok';return true}
+ fb.textContent='✘ Not quite, check your working';fb.className='fb no';return false}
+function pick(btn,ok,id){const f=$(id);f.textContent=ok?'✔ Correct':'✘ Try again';f.className='fb '+(ok?'ok':'no')}
+const sup=n=>String(n).split('').map(c=>({'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'})[c]).join('');
+/* format number to n s.f.; standard form for very small/large */
+function sf(x,n=3){if(x===0)return '0';let e=Math.floor(Math.log10(Math.abs(x)));
+ if(e<-3||e>=5){let m=(x/Math.pow(10,e)).toFixed(n-1);if(Math.abs(+m)>=10){e++;m=(x/Math.pow(10,e)).toFixed(n-1)}return m+' × 10'+sup(e)}
+ return x.toFixed(Math.max(0,n-1-e))}
+/* units of Kc from Δn = (moles top − moles bottom) */
+function kcUnits(dn){if(dn===0)return 'no units';const m=dn===1?'mol':'mol'+sup(dn);return `${m} dm${sup(-3*dn)}`}
+/* render a fraction */
+const fr=(t,b)=>`<span class="frac"><span>${t}</span><span>${b}</span></span>`;
+
+/* ---------- SVG plotting ---------- */
+const NS='http://www.w3.org/2000/svg';
+function E(tag,a,p){const e=document.createElementNS(NS,tag);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e}
+function plot(svg,o){
+ svg.innerHTML='';const W=660,H=400,ml=80,mr=20,mt=18,mb=60,pw=W-ml-mr,ph=H-mt-mb;
+ const X=x=>ml+x/o.xmax*pw,Y=y=>mt+ph-y/o.ymax*ph;
+ const id='cl'+Math.random().toString(36).slice(2);
+ const d=E('defs',{},svg);const cp=E('clipPath',{id},d);E('rect',{x:ml,y:mt,width:pw,height:ph},cp);
+ E('rect',{x:ml,y:mt,width:pw,height:ph,fill:'#fff'},svg);
+ const gx=o.gx||o.xt,gy=o.gy||o.yt;
+ for(let x=0;x<=o.xmax+1e-9;x+=gx)E('line',{x1:X(x),x2:X(x),y1:mt,y2:mt+ph,stroke:'#efe3cc'},svg);
+ for(let y=0;y<=o.ymax+1e-9;y+=gy)E('line',{x1:ml,x2:ml+pw,y1:Y(y),y2:Y(y),stroke:'#efe3cc'},svg);
+ if(!o.noxt)for(let x=0;x<=o.xmax+1e-9;x+=o.xt){E('line',{x1:X(x),x2:X(x),y1:mt+ph,y2:mt+ph+6,stroke:'#3b2a1a'},svg);const t=E('text',{x:X(x),y:mt+ph+24,'text-anchor':'middle','font-size':15,fill:'#3b2a1a'},svg);t.textContent=+x.toFixed(4)}
+ if(!o.noyt)for(let y=0;y<=o.ymax+1e-9;y+=o.yt){E('line',{x1:ml-6,x2:ml,y1:Y(y),y2:Y(y),stroke:'#3b2a1a'},svg);const t=E('text',{x:ml-10,y:Y(y)+5,'text-anchor':'end','font-size':15,fill:'#3b2a1a'},svg);t.textContent=(o.yfmt?o.yfmt(y):+y.toFixed(3))}
+ E('line',{x1:ml,x2:ml+pw,y1:mt+ph,y2:mt+ph,stroke:'#3b2a1a','stroke-width':2},svg);
+ E('line',{x1:ml,x2:ml,y1:mt,y2:mt+ph,stroke:'#3b2a1a','stroke-width':2},svg);
+ let t=E('text',{x:ml+pw/2,y:H-12,'text-anchor':'middle','font-size':17,fill:'#6b4423'},svg);t.textContent=o.xlab;
+ t=E('text',{x:18,y:mt+ph/2,'text-anchor':'middle','font-size':17,fill:'#6b4423',transform:`rotate(-90 18 ${mt+ph/2})`},svg);t.textContent=o.ylab;
+ const g=E('g',{'clip-path':`url(#${id})`},svg);
+ return {X,Y,g,svg,curve(f,col='#6b4423',w=3,dash,x0=0,x1=o.xmax){let dd='';for(let i=0;i<=300;i++){const x=x0+(x1-x0)*i/300;dd+=(i?'L':'M')+X(x)+' '+Y(f(x))}return E('path',{d:dd,fill:'none',stroke:col,'stroke-width':w,'stroke-dasharray':dash||''},g)},
+  text(x,y,s,col='#3b2a1a',sz=15,anc='start'){const t=E('text',{x:X(x),y:Y(y),'font-size':sz,fill:col,'text-anchor':anc},g);t.textContent=s;return t}};
+}
+
+/* ---------- quiz ---------- */
+let qs=0,qa=0;
+function buildQuiz(){const w=$('quiz');w.innerHTML='';qs=0;qa=0;
+ Q.forEach((q,i)=>{const c=document.createElement('div');c.className='card mcq';c.innerHTML=`<b>Q${i+1}.</b> ${q[0]}`;
+  q[1].forEach((o,j)=>{const b=document.createElement('button');b.className='opt';b.innerHTML=o;
+   b.onclick=()=>{if(c.classList.contains('done'))return;c.classList.add('done');qa++;
+    if(j===q[2]){b.classList.add('right');qs++}else{b.classList.add('wrong');c.querySelectorAll('.opt')[q[2]].classList.add('right')}score()};c.appendChild(b)});
+  const e=document.createElement('div');e.className='exp';e.innerHTML='💡 '+q[3];c.appendChild(e);w.appendChild(c)});score()}
+function score(){const n=Q.length;$('score').innerHTML=`Score: <b>${qs}</b> / ${n}`+(qa===n?(qs>=n-1?' – excellent!':qs>=Math.ceil(n*0.7)?' – good, review the ones you missed':' – go back through the walkthrough and try again'):'')}
+
+/* ---------- shared: equation bank and Kc rendering ---------- */
+const BANK=[
+ {eq:'N₂(g) + 3H₂(g) ⇌ 2NH₃(g)',r:[[1,'N₂'],[3,'H₂']],p:[[2,'NH₃']],src:'Haber process'},
+ {eq:'2SO₂(g) + O₂(g) ⇌ 2SO₃(g)',r:[[2,'SO₂'],[1,'O₂']],p:[[2,'SO₃']],src:'November 2021 AS Paper 1 Q10'},
+ {eq:'2NO(g) + Cl₂(g) ⇌ 2NOCl(g)',r:[[2,'NO'],[1,'Cl₂']],p:[[2,'NOCl']],src:'June 2019 AS Paper 1 Q5'},
+ {eq:'H₂(g) + I₂(g) ⇌ 2HI(g)',r:[[1,'H₂'],[1,'I₂']],p:[[2,'HI']],src:'June 2025 AS Paper 1 Q7'},
+ {eq:'CO₂(g) + 3H₂(g) ⇌ CH₃OH(g) + H₂O(g)',r:[[1,'CO₂'],[3,'H₂']],p:[[1,'CH₃OH'],[1,'H₂O']],src:'June 2025 AS Paper 1 Q7.3'},
+ {eq:'C₂H₅OH(g) + H₂O(g) ⇌ 2CO(g) + 4H₂(g)',r:[[1,'C₂H₅OH'],[1,'H₂O']],p:[[2,'CO'],[4,'H₂']],src:'November 2020 AS Paper 2 Q8'},
+ {eq:'2CHClF₂(g) ⇌ C₂F₄(g) + 2HCl(g)',r:[[2,'CHClF₂']],p:[[1,'C₂F₄'],[2,'HCl']],src:'June 2022 Paper 2 Q2'},
+ {eq:'2A + B ⇌ 3C + D',r:[[2,'A'],[1,'B']],p:[[3,'C'],[1,'D']],src:'June 2018 Paper 2 Q4'},
+ {eq:'A(aq) + 2B(aq) ⇌ C(aq)',r:[[1,'A'],[2,'B']],p:[[1,'C']],src:'June 2023 AS Paper 1 Q8'},
+ {eq:'2P(aq) + Q(aq) ⇌ R(aq) + 3S(aq)',r:[[2,'P'],[1,'Q']],p:[[1,'R'],[3,'S']],src:'June 2024 Paper 2 Q2'},
+ {eq:'C₂H₄(g) + CO(g) + H₂O(g) ⇌ CH₃CH₂COOH(g)',r:[[1,'C₂H₄'],[1,'CO'],[1,'H₂O']],p:[[1,'CH₃CH₂COOH']],src:'June 2024 AS Paper 2 Q7'},
+ {eq:'2CH₃COOH(l) + HOCH₂CH₂OH(l) ⇌ C₆H₁₀O₄(l) + 2H₂O(l)',r:[[2,'CH₃COOH'],[1,'HOCH₂CH₂OH']],p:[[1,'C₆H₁₀O₄'],[2,'H₂O']],src:'June 2017 Paper 2 Q5'},
+ {eq:'2Fe³⁺(aq) + 2I⁻(aq) ⇌ 2Fe²⁺(aq) + I₂(aq)',r:[[2,'Fe³⁺'],[2,'I⁻']],p:[[2,'Fe²⁺'],[1,'I₂']],src:'June 2025 Paper 3 Q4'},
+ {eq:'CH₄(g) + H₂O(g) ⇌ CO(g) + 3H₂(g)',r:[[1,'CH₄'],[1,'H₂O']],p:[[1,'CO'],[3,'H₂']],src:'November 2021 AS Paper 1 Q9'}
+];
+const term=([c,f])=>`[${f}]${c>1?sup(c):''}`;
+const side=a=>a.map(term).join(' ');
+function kcHTML(rx){return `K<sub>c</sub> = ${fr(side(rx.p),side(rx.r))}`}
+
+
+const tot=a=>a.reduce((s,x)=>s+x[0],0);
+const tm=([c,f])=>`[${f}]${c>1?sup(c):''}`;
+/* ---------- page 1: rearranging machine ---------- */
+BANK.forEach((b,i)=>{const o=document.createElement('option');o.value=i;o.textContent=b.eq;$('raEq').appendChild(o)});
+function raFill(){const b=BANK[+$('raEq').value];$('raSp').innerHTML='';[...b.r,...b.p].forEach((x,i)=>{const o=document.createElement('option');o.value=i;o.textContent='find ['+x[1]+']';$('raSp').appendChild(o)});raDraw(0)}
+let raS=0;
+function raDraw(s){raS=s;const b=BANK[+$('raEq').value],all=[...b.r,...b.p],k=+$('raSp').value,u=all[k],onTop=k>=b.r.length;
+ const top=b.p.map(tm).join(' '),bot=b.r.map(tm).join(' ');const L=[kcHTML(b)];
+ L.push(`Multiply both sides by the bottom: K<sub>c</sub> × ${bot} = ${top}`);
+ const others=(arr)=>arr.filter(x=>x!==u).map(tm).join(' ');
+ if(onTop){const ot=others(b.p);L.push(`Divide by the other top terms${ot?'':' (there are none)'}: <b>${tm(u)} = ${ot?fr('K<sub>c</sub> × '+bot,ot):'K<sub>c</sub> × '+bot}</b>`)}
+ else{const ob=others(b.r);L.push(`Divide by K<sub>c</sub>${ob?' and the other bottom terms':''}: <b>${tm(u)} = ${fr(top,'K<sub>c</sub>'+(ob?' × '+ob:''))}</b>`)}
+ if(u[0]>1)L.push(`Then take the ${u[0]===2?'square':u[0]===3?'cube':u[0]+'th'} root to get [${u[1]}].`);
+ $('raBox').innerHTML=L.slice(0,s+1).map((l,i)=>`<div style="margin:12px 0">${i+1}. ${l}</div>`).join('');$('raBox').dataset.max=L.length}
+function raStep(){if(raS<+$('raBox').dataset.max-1)raDraw(raS+1)}
+$('raEq').onchange=raFill;$('raSp').onchange=()=>raDraw(0);$('raEq').value=8;raFill();
+
+/* ---------- page 3: which volume ---------- */
+const VQ=[["0.50 mol H₂ and 0.50 mol I₂ react in a sealed 2.0 dm³ flask.",["2.0 dm³","1.0 dm³","0.50 dm³"],0],
+ ["25.0 cm³ of Fe³⁺ solution is mixed with 25.0 cm³ of I⁻ solution and 50.0 cm³ of water.",["25.0 cm³","50.0 cm³","100 cm³"],2],
+ ["25.0 cm³ of P solution and 20.0 cm³ of Q solution are mixed. You're asked for the concentration of the original P solution.",["45.0 cm³","25.0 cm³","20.0 cm³"],1],
+ ["The question says: assume the total volume of the mixture remains constant at 100 cm³.",["100 cm³","the sum of the volumes added","you can't tell"],0],
+ ["An ester, an acid, an alcohol and water (all liquids) are mixed; no volume is given. 2 + 1 ⇌ 1 + 2.",["you must guess the volume","the volume cancels, so you don't need it","use 1 dm³ always"],1]];
+VQ.forEach(([q,o,a],i)=>{const p=document.createElement('div');p.style.margin='10px 0';p.innerHTML=`<p style="margin:4px 0">${i+1}. ${q}</p>`;o.forEach((t,j)=>{const b=document.createElement('button');b.className='b alt';b.textContent=t;b.onclick=()=>pick(b,j===a,'vq'+i);p.appendChild(b)});
+ const f=document.createElement('span');f.className='fb';f.id='vq'+i;p.appendChild(f);$('vq').appendChild(p)});
+
+/* ---------- page 4: V cancelling animation ---------- */
+BANK.forEach((b,i)=>{const o=document.createElement('option');o.value=i;o.textContent=b.eq;$('vcSel').appendChild(o)});
+let vcT=[];
+function vcPlay(){vcT.forEach(clearTimeout);vcT=[];const b=BANK[+$('vcSel').value],T=tot(b.p),B=tot(b.r),n=T-B;
+ const nv=([c,f])=>`(<span style="color:#2c4a7a">n<sub>${f}</sub></span>/<span class="vv" style="color:#b03a2e">V</span>)${c>1?sup(c):''}`;
+ const box=$('vcBox');const L=[];
+ L.push(`K<sub>c</sub> = ${fr(b.p.map(nv).join(' '),b.r.map(nv).join(' '))}`);
+ const nt=([c,f])=>`n<sub>${f}</sub>${c>1?sup(c):''}`;
+ L.push(`= ${fr(b.p.map(nt).join(' '),b.r.map(nt).join(' '))} × ${fr('<span style="color:#b03a2e">V'+(B>1?sup(B):'')+'</span>','<span style="color:#b03a2e">V'+(T>1?sup(T):'')+'</span>')}`);
+ if(n===0)L.push(`= ${fr(b.p.map(nt).join(' '),b.r.map(nt).join(' '))} × <span style="opacity:.3">${fr('V'+(B>1?sup(B):''),'V'+(T>1?sup(T):''))}</span> = ${fr(b.p.map(nt).join(' '),b.r.map(nt).join(' '))} × 1 &nbsp; <b style="color:#2f7d4a">The V's cancel!</b>`);
+ else L.push(`= ${fr(b.p.map(nt).join(' '),b.r.map(nt).join(' '))} × ${n>0?fr('1','<span style="color:#b03a2e">V'+(n>1?sup(n):'')+'</span>'):'<span style="color:#b03a2e">V'+(-n>1?sup(-n):'')+'</span>'} &nbsp; <b style="color:#b03a2e">V does not cancel</b>`);
+ box.innerHTML='';$('vcOut').innerHTML='';
+ L.forEach((l,i)=>vcT.push(setTimeout(()=>{const d=document.createElement('div');d.className='reveal on';d.style.margin='10px 0';d.innerHTML=l;box.appendChild(d)},i*1200)));
+ vcT.push(setTimeout(()=>{$('vcOut').innerHTML=`Powers on top = ${T}, powers on bottom = ${B}, n = ${n}.<br>`+(n===0?'Equal moles on each side → volume not needed, K<sub>c</sub> has <b>no units</b>.':`Volume <b>is</b> needed. Units of K<sub>c</sub>: ${kcUnits(n)}.`)},L.length*1200))}
+$('vcSel').value=3;
+
+/* does volume matter */
+(function(){const pickN=BANK.slice().sort(()=>Math.random()-.5).slice(0,6);const w=$('dvq');
+ pickN.forEach((b,i)=>{const n=tot(b.p)-tot(b.r);const p=document.createElement('div');p.style.margin='8px 0';p.innerHTML=`<span style="display:inline-block;min-width:380px">${b.eq}</span>`;
+  [['Volume needed',n!==0],['Volume cancels',n===0]].forEach(([t,ok])=>{const bt=document.createElement('button');bt.className='b alt';bt.textContent=t;bt.onclick=()=>{const f=$('dv'+i);f.className='fb '+(ok?'ok':'no');f.textContent=ok?`✔ (${tot(b.p)} on top, ${tot(b.r)} on bottom)`:'✘ Add up the balancing numbers on each side'};p.appendChild(bt)});
+  const f=document.createElement('span');f.className='fb';f.id='dv'+i;p.appendChild(f);w.appendChild(p)})})();
+
+/* ---------- page 5: x slider ---------- */
+function xs(){const x=+$('xS').value;$('xV').textContent=x.toFixed(3);const K=Math.pow(2*x,2)/Math.pow(1-x,2);
+ const ok=Math.abs(K-3.6)<0.05;$('xOut').innerHTML=`P = Q = 1 − x = ${(1-x).toFixed(3)} &nbsp; R = 2x = ${(2*x).toFixed(3)} mol dm⁻³<br>K<sub>c</sub> = (${(2*x).toFixed(3)})² ÷ (${(1-x).toFixed(3)})² = <b>${K.toFixed(2)}</b> ${ok?'<span style="color:#9be3b0">✔ matches 3.6!</span>':K<3.6?'→ too small, increase x':'→ too big, decrease x'}`}
+$('xS').oninput=xs;xs();
+
+/* ---------- quiz ---------- */
+const Q=[
+ ["K<sub>c</sub> = [C] / ([A][B]). Which is the correct rearrangement for [B]?",["[B] = K<sub>c</sub>[C] / [A]","[B] = [C] / (K<sub>c</sub>[A])","[B] = K<sub>c</sub>[A] / [C]","[B] = [A][C] / K<sub>c</sub>"],1,"[B] is on the bottom, so K<sub>c</sub> joins [A] on the bottom: [C] / (K<sub>c</sub>[A])."],
+ ["K<sub>c</sub> = [HI]² / ([H₂][I₂]) = 49. [H₂] = [I₂] = 0.10 mol dm⁻³. What is [HI]?",["0.49","4.9","0.70","0.049"],2,"[HI]² = 49 × 0.10 × 0.10 = 0.49, so [HI] = 0.70."],
+ ["You find [O₂] = 0.457 mol dm⁻³ in a 1.80 dm³ container. How many moles of O₂ is that?",["0.254 mol","0.823 mol","0.457 mol","3.94 mol"],1,"n = c × V = 0.457 × 1.80 = 0.823 mol."],
+ ["For which equilibrium can you calculate K<sub>c</sub> without knowing the volume?",["2SO₂ + O₂ ⇌ 2SO₃","N₂ + 3H₂ ⇌ 2NH₃","H₂ + Cl₂ ⇌ 2HCl","PCl₅ ⇌ PCl₃ + Cl₂"],2,"2 moles on each side, so V cancels."],
+ ["Why does V cancel for CO + H₂O ⇌ CO₂ + H₂?",["Because all are gases","Because there are equal moles on each side of the equation","Because K<sub>c</sub> is large","Because water is a liquid"],1,"Two V's on top and two on the bottom."],
+ ["If the volume cancels, what are the units of K<sub>c</sub>?",["mol dm⁻³","dm³","No units","It depends on the temperature"],2,"Same test: equal powers top and bottom, so no units."],
+ ["20 cm³ of solution X is mixed with 30 cm³ of solution Y and 50 cm³ of water. What volume do you use for K<sub>c</sub>?",["50 cm³","100 cm³","0.050 dm³","30 cm³"],1,"Everything is in one mixture: 20 + 30 + 50 = 100 cm³ = 0.100 dm³."],
+ ["(2x)² / (1 − x)² = 9. What is x?",["0.60","0.50","0.75","0.33"],0,"Square root: 2x/(1 − x) = 3 → 2x = 3 − 3x → x = 0.60."],
+ ["A student rearranges K<sub>c</sub> = [C]/([A][B]²) to [B]² = K<sub>c</sub>[A]/[C]. What's gone wrong?",["Nothing","They've flipped it: it should be [C]/(K<sub>c</sub>[A])","They forgot to square root","They should have multiplied by V"],1,"This upside-down rearrangement is a common slip and loses most of the marks."],
+ ["[B]² = 0.1656. The data were given to 2 s.f. What should you write?",["0.4069","0.41","0.407","0.17"],1,"Square root gives 0.4069…, then round to 2 s.f. to match the data."]
+];
+function onPage(i){if(i===3)vcPlay()}
+
+buildQuiz();
+go(0);
+</script>
+</body>
+</html>

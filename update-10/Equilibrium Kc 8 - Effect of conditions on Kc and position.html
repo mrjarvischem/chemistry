@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Equilibrium (Kc) 8 – Effect of Conditions on Kc and Position</title>
+<style>
+:root{
+  --bg:#f6efe1; --card:#fffaf0; --ink:#3b2a1a; --brown:#6b4423; --brown2:#8b5a2b;
+  --accent:#b5651d; --soft:#ead9bd; --line:#d8c4a0; --good:#2f7d4a; --bad:#b03a2e; --blue:#2c4a7a;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Arial,sans-serif;font-size:19px;line-height:1.55}
+header{background:var(--brown);color:#fff8ec;padding:14px 24px}
+header h1{margin:0;font-family:Georgia,serif;font-size:28px;font-weight:normal}
+header p{margin:2px 0 0;opacity:.85;font-size:16px}
+nav{display:flex;flex-wrap:wrap;gap:6px;padding:10px 24px;background:var(--soft);border-bottom:2px solid var(--line);position:sticky;top:0;z-index:5}
+nav button{border:2px solid var(--brown2);background:var(--card);color:var(--brown);padding:7px 14px;border-radius:20px;font-size:16px;cursor:pointer}
+nav button.on{background:var(--brown2);color:#fff}
+main{max-width:1100px;margin:0 auto;padding:20px 24px 60px}
+.page{display:none}.page.on{display:block}
+h2{font-family:Georgia,serif;color:var(--brown);font-size:30px;margin:6px 0 12px;font-weight:normal}
+h3{color:var(--brown2);font-size:22px;margin:22px 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:14px 0;box-shadow:0 2px 0 var(--line)}
+.key{border-left:6px solid var(--accent)}
+.eq{font-family:Georgia,serif;font-size:24px;text-align:center;padding:10px;background:#fff;border:1px dashed var(--line);border-radius:8px;margin:10px 0}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 6px}
+.frac>span:first-child{border-bottom:2px solid var(--ink);padding:0 6px}
+.row{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+.row>*{flex:1 1 380px}
+button.b{background:var(--brown2);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:17px;cursor:pointer;margin:4px 6px 4px 0}
+button.b.alt{background:var(--card);color:var(--brown);border:2px solid var(--brown2)}
+button.b:disabled{opacity:.45;cursor:default}
+.check{background:#fdf6e6;border:2px solid var(--accent);border-radius:12px;padding:14px 18px;margin:16px 0}
+.check .tag{display:inline-block;background:var(--accent);color:#fff;font-size:14px;padding:2px 10px;border-radius:12px;margin-bottom:6px;letter-spacing:.5px}
+.check .src{font-size:14px;color:#8a7356;font-style:italic}
+input.ans{font-size:18px;padding:6px 10px;width:200px;border:2px solid var(--line);border-radius:6px}
+.fb{font-weight:600;margin-left:8px}
+.fb.ok{color:var(--good)}.fb.no{color:var(--bad)}
+.work{display:none;background:#fff;border-left:4px solid var(--brown2);padding:8px 14px;margin-top:8px;border-radius:4px}
+.work.on{display:block}
+table.t{border-collapse:collapse;margin:8px 0;background:#fff}
+table.t th,table.t td{border:1px solid var(--line);padding:6px 12px;text-align:center}
+table.t th{background:var(--soft);color:var(--brown)}
+svg text{font-family:"Segoe UI",Arial,sans-serif}
+.readout{font-family:Consolas,monospace;background:#2b1d10;color:#ffe9c4;padding:10px 14px;border-radius:8px;font-size:17px;line-height:1.6}
+.slider{width:100%}
+label.s{display:block;font-weight:600;color:var(--brown);margin-top:8px}
+.steps li{margin:6px 0}
+.reveal{display:none}.reveal.on{display:block;animation:fade .4s}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+.pager{display:flex;justify-content:space-between;margin-top:30px}
+.mcq button.opt{display:block;width:100%;text-align:left;margin:6px 0;padding:10px 14px;font-size:17px;border:2px solid var(--line);background:#fff;border-radius:8px;cursor:pointer;color:var(--ink)}
+.mcq button.opt.right{border-color:var(--good);background:#e6f4ea}
+.mcq button.opt.wrong{border-color:var(--bad);background:#fbe9e7}
+.mcq .exp{display:none;margin-top:6px;font-size:17px}
+.mcq.done .exp{display:block}
+.warn{background:#fbeee4;border-left:6px solid var(--bad);padding:10px 16px;border-radius:6px;margin:12px 0}
+.small{font-size:15px;color:#7a6448}
+canvas{background:#fff;border:1px solid var(--line);border-radius:8px;max-width:100%}
+.chip{display:inline-block;padding:2px 10px;border-radius:12px;background:var(--soft);margin:2px;font-size:16px}
+.big{font-size:22px}
+table.ice{border-collapse:collapse;margin:10px auto;background:#fff;font-size:18px}
+table.ice th,table.ice td{border:1px solid var(--line);padding:8px 14px;text-align:center;min-width:90px}
+table.ice th{background:var(--soft);color:var(--brown)}
+table.ice td.lab{background:#fbf3e3;font-weight:600;color:var(--brown);text-align:left}
+table.ice td.hl{background:#fde9c8;transition:background .4s}
+table.ice td.done{color:var(--good);font-weight:700}
+table.ice input{width:100px;font-size:17px;padding:3px 6px;border:2px solid var(--line);border-radius:6px;text-align:center}
+.slot{display:inline-block;min-width:60px;border-bottom:2px dashed var(--brown2);margin:0 4px;text-align:center}
+select.s{font-size:18px;padding:4px 6px;border:2px solid var(--line);border-radius:6px;background:#fff}
+.tick{color:var(--good);font-weight:700}.cross{color:var(--bad);font-weight:700}
+.legend span{display:inline-block;margin-right:14px;font-size:15px}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:-2px;margin-right:4px}
+.src{font-size:14px;color:#8a7356;font-style:italic;display:block;margin-bottom:4px}
+.readout .frac>span:first-child{border-bottom-color:#ffe9c4}
+
+</style>
+</head>
+<body>
+<header>
+  <h1>Equilibrium (Kc) 8 – Effect of Conditions on Kc and Position</h1>
+  <p>AQA A-level Chemistry · Equilibria walkthrough</p>
+</header>
+<nav id="nav"></nav>
+<main>
+<!-- ============ PAGE 1 ============ -->
+<section class="page" data-title="1. Position v Kc">
+<h2>1. Position of equilibrium v the value of K<sub>c</sub></h2>
+<div class="card key">
+  <p class="big" style="text-align:center"><b>Only a change in temperature changes the value of K<sub>c</sub>.</b></p>
+  <table class="t" style="margin:10px auto">
+    <tr><th>Change</th><th>Position of equilibrium</th><th>Value of K<sub>c</sub></th></tr>
+    <tr><td>Concentration</td><td>shifts</td><td><b>no change</b></td></tr>
+    <tr><td>Pressure (or volume)</td><td>shifts if gas moles differ</td><td><b>no change</b></td></tr>
+    <tr><td>Catalyst</td><td>no shift</td><td><b>no change</b></td></tr>
+    <tr><td><b>Temperature</b></td><td>shifts</td><td><b>changes</b></td></tr>
+  </table>
+  <p>So the position can move while K<sub>c</sub> stays the same. How? The mixture changes its amounts until the K<sub>c</sub> expression gives the <b>same number</b> again.</p>
+</div>
+<div class="check">
+  <span class="tag">QUICK CHECK 1</span>
+  <span class="src">June 2023 Paper 3 Q25</span>
+  <p>Which statement about catalysts used in reactions at equilibrium, at constant temperature, is correct?</p>
+  <button class="b alt" style="display:block" onclick="pick(this,false,'c1')">A They are always used in the solid state.</button>
+  <button class="b alt" style="display:block" onclick="pick(this,false,'c1')">B They increase the rate of the forward reaction but decrease the rate of the reverse reaction.</button>
+  <button class="b alt" style="display:block" onclick="pick(this,true,'c1')">C They have no effect on the value of the equilibrium constant.</button>
+  <button class="b alt" style="display:block" onclick="pick(this,false,'c1')">D They make the forward reaction more exothermic.</button>
+  <span class="fb" id="c1"></span>
+</div>
+</section>
+
+<!-- ============ PAGE 2 ============ -->
+<section class="page" data-title="2. Concentration">
+<h2>2. Why changing concentration doesn't change K<sub>c</sub></h2>
+<div class="card">
+  <p>A + B ⇌ C &nbsp;&nbsp; K<sub>c</sub> = <span class="frac"><span>[C]</span><span>[A] [B]</span></span> = 5.0 mol⁻¹ dm³</p>
+  <p>The lower graph shows the value of the fraction [C] / ([A][B]) at every moment. Add some A and watch it.</p>
+  <div style="margin-bottom:6px">
+    <button class="b alt" onclick="kin('addA')">Add more A</button>
+    <button class="b alt" onclick="kin('remC')">Remove some C</button>
+    <button class="b alt" onclick="kin('addC')">Add more C</button>
+  </div>
+  <svg id="kinSvg" viewBox="0 0 660 400" width="100%"></svg>
+  <div class="legend"><span><i style="background:#2c4a7a"></i>[A]</span><span><i style="background:#8a8a8a"></i>[B]</span><span><i style="background:#b5651d"></i>[C]</span></div>
+  <svg id="ratSvg" viewBox="0 0 660 400" width="100%"></svg>
+  <div class="readout" id="kinOut"></div>
+</div>
+<div class="card key">
+  <ol>
+    <li>Adding A makes the bottom of the fraction bigger, so the fraction drops <b>below</b> K<sub>c</sub>.</li>
+    <li>The mixture is no longer at equilibrium. The forward reaction is now faster, making more C and using up A and B.</li>
+    <li>This continues until the fraction is <b>back to 5.0</b>. The position has moved right, but K<sub>c</sub> is the same.</li>
+  </ol>
+</div>
+</section>
+
+<!-- ============ PAGE 3 ============ -->
+<section class="page" data-title="3. Pressure and dilution">
+<h2>3. Why changing pressure or volume doesn't change K<sub>c</sub></h2>
+<div class="card key">
+  <p>Write each concentration as n / V (Walkthrough 6):</p>
+  <div class="eq">K<sub>c</sub> = (ratio of moles) × <span class="frac"><span>1</span><span>V<sup>n</sup></span></span> &nbsp;&nbsp; n = (powers on top) − (powers on bottom)</div>
+  <p>If V changes, K<sub>c</sub> can't, so the <b>ratio of moles must change</b> to make up for it. That <i>is</i> the shift in position.</p>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Interactive: change the volume, K<sub>c</sub> stays fixed</h3>
+  <p>N₂O₄(g) ⇌ 2NO₂(g) &nbsp;&nbsp; K<sub>c</sub> = <span class="frac"><span>[NO₂]²</span><span>[N₂O₄]</span></span> = <span class="frac"><span>n(NO₂)²</span><span>n(N₂O₄)</span></span> × <span class="frac"><span>1</span><span>V</span></span> = 0.10 mol dm⁻³ (fixed)</p>
+  <label class="s">Volume: <span id="dvV"></span> dm³</label>
+  <input type="range" class="slider" id="dvS" min="0.5" max="10" step="0.5" value="2">
+  <div class="row"><div><svg id="dvSvg" viewBox="0 0 400 230" width="100%"></svg></div><div><div class="readout" id="dvOut"></div></div></div>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 2</span>
+  <span class="src">June 2024 Paper 2 Q2.3 (2 marks)</span>
+  <p>2P(aq) + Q(aq) ⇌ R(aq) + 3S(aq). Explain why the amount of S increases when water is added to the equilibrium mixture.</p>
+  <button class="b alt" onclick="tog('c2w')">Mark scheme</button>
+  <div class="work" id="c2w"><b>Either</b> (Le Chatelier):<br>M1 the equilibrium shifts to the side with more moles (4 on the right v 3 on the left)<br>M2 to oppose the decrease in concentration of all the reactants and products (dilution)<br><br><b>Or</b> (K<sub>c</sub>):<br>M1 K<sub>c</sub> = (n<sub>R</sub> n<sub>S</sub>³ / n<sub>P</sub>² n<sub>Q</sub>) × 1/V, since concentration = amount / volume<br>M2 if V increases, the amounts of R and S must increase to keep K<sub>c</sub> constant</div>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 3</span>
+  <span class="src">November 2020 AS Paper 2 Q8.3 (final mark)</span>
+  <p>C₂H₅OH(g) + H₂O(g) ⇌ 2CO(g) + 4H₂(g). The pressure is increased at constant temperature. Predict the effect on the value of K<sub>c</sub>.</p>
+  <button class="b alt" onclick="pick(this,false,'c3')">increases</button><button class="b alt" onclick="pick(this,false,'c3')">decreases</button><button class="b alt" onclick="pick(this,true,'c3')">no effect</button><span class="fb" id="c3"></span>
+  <p class="small">The yield of H₂ falls, but K<sub>c</sub> doesn't change. The temperature is constant.</p>
+</div>
+</section>
+
+<!-- ============ PAGE 4 ============ -->
+<section class="page" data-title="4. Temperature">
+<h2>4. Temperature: the one thing that changes K<sub>c</sub></h2>
+<div class="card key">
+  <p>A temperature change shifts the position, and the new equilibrium mixture gives a <b>different</b> value of K<sub>c</sub>.</p>
+  <ul>
+    <li>Shift to the <b>right</b> → more products on top → K<sub>c</sub> <b>increases</b>.</li>
+    <li>Shift to the <b>left</b> → K<sub>c</sub> <b>decreases</b>.</li>
+  </ul>
+  <table class="t" style="margin:auto"><tr><th>Forward reaction</th><th>Increase T</th><th>Decrease T</th></tr>
+  <tr><td>exothermic (ΔH −)</td><td>K<sub>c</sub> decreases</td><td>K<sub>c</sub> increases</td></tr>
+  <tr><td>endothermic (ΔH +)</td><td>K<sub>c</sub> increases</td><td>K<sub>c</sub> decreases</td></tr></table>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Interactive: K<sub>c</sub> against temperature</h3>
+  <label class="s">Temperature: <span id="ktV"></span> K</label>
+  <input type="range" class="slider" id="ktS" min="400" max="900" step="10" value="600">
+  <svg id="ktSvg" viewBox="0 0 660 400" width="100%"></svg>
+  <div class="legend"><span><i style="background:#2c4a7a"></i>exothermic forward (ΔH = −40 kJ mol⁻¹)</span><span><i style="background:#b5651d"></i>endothermic forward (ΔH = +40 kJ mol⁻¹)</span></div>
+  <div class="readout" id="ktOut"></div>
+  <p class="small">Both reactions have K<sub>c</sub> = 1 at 600 K so you can compare them. The y-axis is logarithmic.</p>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 4</span>
+  <span class="src">June 2023 AS Paper 1 Q8.3 (3 marks)</span>
+  <p>A(aq) + 2B(aq) ⇌ C(aq) &nbsp; ΔH = −32 kJ mol⁻¹. The temperature of the equilibrium mixture is decreased. Predict the effect on the value of K<sub>c</sub> and give a reason.</p>
+  <button class="b alt" onclick="pick(this,true,'c4')">increases</button><button class="b alt" onclick="pick(this,false,'c4')">decreases</button><button class="b alt" onclick="pick(this,false,'c4')">no change</button><span class="fb" id="c4"></span>
+  <button class="b alt" onclick="tog('c4w')">Mark scheme</button>
+  <div class="work" id="c4w"><b>M1</b> K<sub>c</sub> is greater / increases<br><b>M2</b> the equilibrium shifts in the exothermic direction (to the right)<br><b>M3</b> to oppose the decrease in temperature / to raise the temperature</div>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 5</span>
+  <span class="src">June 2023 AS Paper 2 Q16</span>
+  <p>C₂H₄(g) + H₂O(g) ⇌ C₂H₅OH(g) &nbsp; ΔH = −46 kJ mol⁻¹ at 300 °C. Which statement is correct?</p>
+  <button class="b alt" style="display:block" onclick="pick(this,false,'c5')">A An increase in pressure decreases the equilibrium yield of ethanol.</button>
+  <button class="b alt" style="display:block" onclick="pick(this,false,'c5')">B An increase in pressure increases the value of K<sub>c</sub>.</button>
+  <button class="b alt" style="display:block" onclick="pick(this,false,'c5')">C An increase in temperature increases the equilibrium yield of ethanol.</button>
+  <button class="b alt" style="display:block" onclick="pick(this,true,'c5')">D An increase in temperature decreases the value of K<sub>c</sub>.</button>
+  <span class="fb" id="c5"></span>
+</div>
+</section>
+
+<!-- ============ PAGE 5 ============ -->
+<section class="page" data-title="5. Double drill">
+<h2>5. Double drill: position <i>and</i> K<sub>c</sub></h2>
+<p>For each change, decide what happens to the <b>position</b> and to the <b>value of K<sub>c</sub></b>. Both must be right.</p>
+<div class="card">
+  <div class="eq" id="ddEq"></div>
+  <p class="big" style="text-align:center" id="ddCh"></p>
+  <div style="text-align:center"><b>Position:</b> <span id="ddP"></span></div>
+  <div style="text-align:center;margin-top:6px"><b>K<sub>c</sub>:</b> <span id="ddK"></span></div>
+  <div style="text-align:center;margin-top:8px"><button class="b" onclick="ddCheck()">Check</button><button class="b alt" onclick="ddNew()">Next</button> <span class="small" id="ddSc"></span></div>
+  <div id="ddOut" style="margin-top:8px"></div>
+</div>
+</section>
+
+<!-- ============ PAGE 6 ============ -->
+<section class="page" data-title="6. Quiz">
+<h2>6. End-of-walkthrough quiz</h2>
+<p>Click an answer. You get one go at each question.</p>
+<div id="quiz"></div>
+<div class="card" id="score" style="font-size:22px;text-align:center"></div>
+<button class="b alt" onclick="buildQuiz()">Reset quiz</button>
+<p class="small">That's the end of the K<sub>c</sub> series. Next topic: K<sub>p</sub> (gas equilibria).</p>
+</section>
+
+<div class="pager"><button class="b alt" id="prevB">◀ Previous</button><button class="b" id="nextB">Next ▶</button></div>
+</main>
+<script>
+/* ---------- navigation ---------- */
+const pages=[...document.querySelectorAll('.page')];let cur=0;
+const nav=document.getElementById('nav');
+pages.forEach((p,i)=>{const b=document.createElement('button');b.textContent=p.dataset.title;b.onclick=()=>go(i);nav.appendChild(b)});
+function go(i){cur=i;pages.forEach((p,j)=>p.classList.toggle('on',j===i));[...nav.children].forEach((b,j)=>b.classList.toggle('on',j===i));
+ document.getElementById('prevB').disabled=i===0;document.getElementById('nextB').disabled=i===pages.length-1;window.scrollTo(0,0);
+ if(typeof onPage==='function')onPage(i)}
+document.getElementById('prevB').onclick=()=>go(Math.max(0,cur-1));
+document.getElementById('nextB').onclick=()=>go(Math.min(pages.length-1,cur+1));
+
+/* ---------- helpers ---------- */
+const $=id=>document.getElementById(id);
+function tog(id){$(id).classList.toggle('on')}
+function stepReveal(id){const r=[...document.querySelectorAll('#'+id+' .reveal:not(.on)')];if(r.length)r[0].classList.add('on')}
+function parseNum(s){
+ s=s.trim().replace(/\s/g,'');const sp={'⁰':'0','¹':'1','²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9','⁻':'-'};
+ s=s.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁻]/g,c=>sp[c]).replace(/[−–]/g,'-').replace(/,/g,'');
+ let m=s.match(/^(-?[\d.]+)[x×X*]10\^?(-?\d+)$/);if(m)return parseFloat(m[1])*Math.pow(10,parseInt(m[2]));
+ m=s.match(/^(-?[\d.]+)[eE](-?\d+)$/);if(m)return parseFloat(s);
+ const v=Number(s);return (s===''||isNaN(v))?null:v}
+function numCheck(id,target,tol){const v=parseNum($(id).value);const fb=$(id+'fb');
+ if(v===null){fb.textContent='Enter a number';fb.className='fb no';return false}
+ if(Math.abs(v-target)<=Math.abs(target)*tol){fb.textContent='✔ Correct';fb.className='fb ok';return true}
+ fb.textContent='✘ Not quite, check your working';fb.className='fb no';return false}
+function pick(btn,ok,id){const f=$(id);f.textContent=ok?'✔ Correct':'✘ Try again';f.className='fb '+(ok?'ok':'no')}
+const sup=n=>String(n).split('').map(c=>({'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'})[c]).join('');
+/* format number to n s.f.; standard form for very small/large */
+function sf(x,n=3){if(x===0)return '0';let e=Math.floor(Math.log10(Math.abs(x)));
+ if(e<-3||e>=5){let m=(x/Math.pow(10,e)).toFixed(n-1);if(Math.abs(+m)>=10){e++;m=(x/Math.pow(10,e)).toFixed(n-1)}return m+' × 10'+sup(e)}
+ return x.toFixed(Math.max(0,n-1-e))}
+/* units of Kc from Δn = (moles top − moles bottom) */
+function kcUnits(dn){if(dn===0)return 'no units';const m=dn===1?'mol':'mol'+sup(dn);return `${m} dm${sup(-3*dn)}`}
+/* render a fraction */
+const fr=(t,b)=>`<span class="frac"><span>${t}</span><span>${b}</span></span>`;
+
+/* ---------- SVG plotting ---------- */
+const NS='http://www.w3.org/2000/svg';
+function E(tag,a,p){const e=document.createElementNS(NS,tag);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e}
+function plot(svg,o){
+ svg.innerHTML='';const W=660,H=400,ml=80,mr=20,mt=18,mb=60,pw=W-ml-mr,ph=H-mt-mb;
+ const X=x=>ml+x/o.xmax*pw,Y=y=>mt+ph-y/o.ymax*ph;
+ const id='cl'+Math.random().toString(36).slice(2);
+ const d=E('defs',{},svg);const cp=E('clipPath',{id},d);E('rect',{x:ml,y:mt,width:pw,height:ph},cp);
+ E('rect',{x:ml,y:mt,width:pw,height:ph,fill:'#fff'},svg);
+ const gx=o.gx||o.xt,gy=o.gy||o.yt;
+ for(let x=0;x<=o.xmax+1e-9;x+=gx)E('line',{x1:X(x),x2:X(x),y1:mt,y2:mt+ph,stroke:'#efe3cc'},svg);
+ for(let y=0;y<=o.ymax+1e-9;y+=gy)E('line',{x1:ml,x2:ml+pw,y1:Y(y),y2:Y(y),stroke:'#efe3cc'},svg);
+ if(!o.noxt)for(let x=0;x<=o.xmax+1e-9;x+=o.xt){E('line',{x1:X(x),x2:X(x),y1:mt+ph,y2:mt+ph+6,stroke:'#3b2a1a'},svg);const t=E('text',{x:X(x),y:mt+ph+24,'text-anchor':'middle','font-size':15,fill:'#3b2a1a'},svg);t.textContent=+x.toFixed(4)}
+ if(!o.noyt)for(let y=0;y<=o.ymax+1e-9;y+=o.yt){E('line',{x1:ml-6,x2:ml,y1:Y(y),y2:Y(y),stroke:'#3b2a1a'},svg);const t=E('text',{x:ml-10,y:Y(y)+5,'text-anchor':'end','font-size':15,fill:'#3b2a1a'},svg);t.textContent=(o.yfmt?o.yfmt(y):+y.toFixed(3))}
+ E('line',{x1:ml,x2:ml+pw,y1:mt+ph,y2:mt+ph,stroke:'#3b2a1a','stroke-width':2},svg);
+ E('line',{x1:ml,x2:ml,y1:mt,y2:mt+ph,stroke:'#3b2a1a','stroke-width':2},svg);
+ let t=E('text',{x:ml+pw/2,y:H-12,'text-anchor':'middle','font-size':17,fill:'#6b4423'},svg);t.textContent=o.xlab;
+ t=E('text',{x:18,y:mt+ph/2,'text-anchor':'middle','font-size':17,fill:'#6b4423',transform:`rotate(-90 18 ${mt+ph/2})`},svg);t.textContent=o.ylab;
+ const g=E('g',{'clip-path':`url(#${id})`},svg);
+ return {X,Y,g,svg,curve(f,col='#6b4423',w=3,dash,x0=0,x1=o.xmax){let dd='';for(let i=0;i<=300;i++){const x=x0+(x1-x0)*i/300;dd+=(i?'L':'M')+X(x)+' '+Y(f(x))}return E('path',{d:dd,fill:'none',stroke:col,'stroke-width':w,'stroke-dasharray':dash||''},g)},
+  text(x,y,s,col='#3b2a1a',sz=15,anc='start'){const t=E('text',{x:X(x),y:Y(y),'font-size':sz,fill:col,'text-anchor':anc},g);t.textContent=s;return t}};
+}
+
+/* ---------- quiz ---------- */
+let qs=0,qa=0;
+function buildQuiz(){const w=$('quiz');w.innerHTML='';qs=0;qa=0;
+ Q.forEach((q,i)=>{const c=document.createElement('div');c.className='card mcq';c.innerHTML=`<b>Q${i+1}.</b> ${q[0]}`;
+  q[1].forEach((o,j)=>{const b=document.createElement('button');b.className='opt';b.innerHTML=o;
+   b.onclick=()=>{if(c.classList.contains('done'))return;c.classList.add('done');qa++;
+    if(j===q[2]){b.classList.add('right');qs++}else{b.classList.add('wrong');c.querySelectorAll('.opt')[q[2]].classList.add('right')}score()};c.appendChild(b)});
+  const e=document.createElement('div');e.className='exp';e.innerHTML='💡 '+q[3];c.appendChild(e);w.appendChild(c)});score()}
+function score(){const n=Q.length;$('score').innerHTML=`Score: <b>${qs}</b> / ${n}`+(qa===n?(qs>=n-1?' – excellent!':qs>=Math.ceil(n*0.7)?' – good, review the ones you missed':' – go back through the walkthrough and try again'):'')}
+
+/* ---------- shared: equation bank and Kc rendering ---------- */
+const BANK=[
+ {eq:'N₂(g) + 3H₂(g) ⇌ 2NH₃(g)',r:[[1,'N₂'],[3,'H₂']],p:[[2,'NH₃']],src:'Haber process'},
+ {eq:'2SO₂(g) + O₂(g) ⇌ 2SO₃(g)',r:[[2,'SO₂'],[1,'O₂']],p:[[2,'SO₃']],src:'November 2021 AS Paper 1 Q10'},
+ {eq:'2NO(g) + Cl₂(g) ⇌ 2NOCl(g)',r:[[2,'NO'],[1,'Cl₂']],p:[[2,'NOCl']],src:'June 2019 AS Paper 1 Q5'},
+ {eq:'H₂(g) + I₂(g) ⇌ 2HI(g)',r:[[1,'H₂'],[1,'I₂']],p:[[2,'HI']],src:'June 2025 AS Paper 1 Q7'},
+ {eq:'CO₂(g) + 3H₂(g) ⇌ CH₃OH(g) + H₂O(g)',r:[[1,'CO₂'],[3,'H₂']],p:[[1,'CH₃OH'],[1,'H₂O']],src:'June 2025 AS Paper 1 Q7.3'},
+ {eq:'C₂H₅OH(g) + H₂O(g) ⇌ 2CO(g) + 4H₂(g)',r:[[1,'C₂H₅OH'],[1,'H₂O']],p:[[2,'CO'],[4,'H₂']],src:'November 2020 AS Paper 2 Q8'},
+ {eq:'2CHClF₂(g) ⇌ C₂F₄(g) + 2HCl(g)',r:[[2,'CHClF₂']],p:[[1,'C₂F₄'],[2,'HCl']],src:'June 2022 Paper 2 Q2'},
+ {eq:'2A + B ⇌ 3C + D',r:[[2,'A'],[1,'B']],p:[[3,'C'],[1,'D']],src:'June 2018 Paper 2 Q4'},
+ {eq:'A(aq) + 2B(aq) ⇌ C(aq)',r:[[1,'A'],[2,'B']],p:[[1,'C']],src:'June 2023 AS Paper 1 Q8'},
+ {eq:'2P(aq) + Q(aq) ⇌ R(aq) + 3S(aq)',r:[[2,'P'],[1,'Q']],p:[[1,'R'],[3,'S']],src:'June 2024 Paper 2 Q2'},
+ {eq:'C₂H₄(g) + CO(g) + H₂O(g) ⇌ CH₃CH₂COOH(g)',r:[[1,'C₂H₄'],[1,'CO'],[1,'H₂O']],p:[[1,'CH₃CH₂COOH']],src:'June 2024 AS Paper 2 Q7'},
+ {eq:'2CH₃COOH(l) + HOCH₂CH₂OH(l) ⇌ C₆H₁₀O₄(l) + 2H₂O(l)',r:[[2,'CH₃COOH'],[1,'HOCH₂CH₂OH']],p:[[1,'C₆H₁₀O₄'],[2,'H₂O']],src:'June 2017 Paper 2 Q5'},
+ {eq:'2Fe³⁺(aq) + 2I⁻(aq) ⇌ 2Fe²⁺(aq) + I₂(aq)',r:[[2,'Fe³⁺'],[2,'I⁻']],p:[[2,'Fe²⁺'],[1,'I₂']],src:'June 2025 Paper 3 Q4'},
+ {eq:'CH₄(g) + H₂O(g) ⇌ CO(g) + 3H₂(g)',r:[[1,'CH₄'],[1,'H₂O']],p:[[1,'CO'],[3,'H₂']],src:'November 2021 AS Paper 1 Q9'}
+];
+const term=([c,f])=>`[${f}]${c>1?sup(c):''}`;
+const side=a=>a.map(term).join(' ');
+function kcHTML(rx){return `K<sub>c</sub> = ${fr(side(rx.p),side(rx.r))}`}
+
+
+/* ---------- page 2: kinetics + ratio ---------- */
+const k1=0.5,k2=0.1;let ka=1,kb=0.8,kc=0,kt=0,kH=[],kNext=0,kEv=[];
+function kin(a){if(a==='addA')ka+=0.5;if(a==='remC')kc*=0.4;if(a==='addC')kc+=0.5;kEv.push([kt,{addA:'A added',remC:'C removed',addC:'C added'}[a]]);kH.push([kt,ka,kb,kc])}
+function kinStep(dt){const n=20;for(let i=0;i<n;i++){const r=(k1*ka*kb-k2*kc)*dt/n;ka-=r;kb-=r;kc+=r}kt+=dt;if(kt>=kNext){kH.push([kt,ka,kb,kc]);kNext=kt+0.25}}
+function kinDraw(){const W=60,t0=Math.max(0,kt-W);
+ const p=plot($('kinSvg'),{xmax:W,ymax:1.6,xt:10,yt:0.2,xlab:'time / s',ylab:'concentration / mol dm⁻³',noxt:true});
+ const q=plot($('ratSvg'),{xmax:W,ymax:10,xt:10,yt:1,xlab:'time / s',ylab:'[C] / ([A][B])',noxt:true});
+ [[1,'#2c4a7a'],[2,'#8a8a8a'],[3,'#b5651d']].forEach(([j,col])=>{let d='';kH.filter(h=>h[0]>=t0).forEach((h,i)=>{d+=(i?'L':'M')+p.X(h[0]-t0)+' '+p.Y(h[j])});E('path',{d,fill:'none',stroke:col,'stroke-width':3},p.g)});
+ let d='';kH.filter(h=>h[0]>=t0).forEach((h,i)=>{d+=(i?'L':'M')+q.X(h[0]-t0)+' '+q.Y(Math.min(10,h[3]/(h[1]*h[2])))});E('path',{d,fill:'none',stroke:'#6b4423','stroke-width':3},q.g);
+ q.curve(()=>5,'#2f7d4a',2,'7 5');q.text(1,5.3,'Kc = 5.0','#2f7d4a',16);
+ kEv.filter(e=>e[0]>=t0).forEach(e=>{[p,q].forEach((P,i)=>{E('line',{x1:P.X(e[0]-t0),x2:P.X(e[0]-t0),y1:P.Y(0),y2:P.Y(i?10:1.6),stroke:'#b03a2e','stroke-dasharray':'4 4'},P.g)});p.text(e[0]-t0+0.5,1.52,e[1],'#b03a2e',14)});
+ const r=kc/(ka*kb);$('kinOut').innerHTML=`[A] = ${ka.toFixed(3)} &nbsp; [B] = ${kb.toFixed(3)} &nbsp; [C] = ${kc.toFixed(3)}<br>[C] / ([A][B]) = <b>${r.toFixed(2)}</b> &nbsp; K<sub>c</sub> = 5.00<br>`+(Math.abs(r-5)<0.05?'<span style="color:#9be3b0">Fraction = K<sub>c</sub>: at equilibrium</span>':r<5?'<span style="color:#e8a860">Fraction < K<sub>c</sub> → shifts RIGHT until it equals K<sub>c</sub></span>':'<span style="color:#e8a860">Fraction > K<sub>c</sub> → shifts LEFT until it equals K<sub>c</sub></span>')}
+
+/* ---------- page 3: dilution ---------- */
+function dv(){const V=+$('dvS').value;$('dvV').textContent=V.toFixed(1);const b=0.05*V,x=(-b+Math.sqrt(b*b+0.4*V))/2,y=1-x/2;
+ const s=$('dvSvg');s.innerHTML='';[[y,'N₂O₄','#999'],[x,'NO₂','#8a3b10']].forEach(([v,l,c],i)=>{const h=v/1.6*170;E('rect',{x:80+i*150,y:190-h,width:90,height:h,fill:c,rx:4},s);
+  let t=E('text',{x:125+i*150,y:212,'text-anchor':'middle','font-size':16},s);t.textContent=l;t=E('text',{x:125+i*150,y:184-h,'text-anchor':'middle','font-size':15},s);t.textContent=v.toFixed(3)+' mol'});
+ $('dvOut').innerHTML=`V = ${V.toFixed(1)} dm³<br>n(NO₂) = ${x.toFixed(3)} mol, n(N₂O₄) = ${y.toFixed(3)} mol<br>mole ratio n(NO₂)² / n(N₂O₄) = <b>${(x*x/y).toFixed(3)}</b><br>× 1/V = ${(x*x/y).toFixed(3)} ÷ ${V.toFixed(1)} = <b>${(x*x/y/V).toFixed(3)}</b> = K<sub>c</sub> ✔<br><br><span style="color:#e8a860">Bigger V → the mole ratio must grow → more NO₂ (the side with more moles), and K<sub>c</sub> stays at 0.100.</span>`}
+$('dvS').oninput=dv;dv();
+
+/* ---------- page 4: Kc v T ---------- */
+const Kx=(T,h)=>Math.exp(-h*4813*(1/T-1/600));
+function kt4(){const T=+$('ktS').value;$('ktV').textContent=T;
+ const p=plot($('ktSvg'),{xmax:500,ymax:8,xt:100,yt:2,xlab:'temperature / K',ylab:'Kc (log scale)',noxt:true,yfmt:y=>'10'+sup(y-4)});
+ [400,500,600,700,800,900].forEach(v=>{const t=E('text',{x:p.X(v-400),y:366,'text-anchor':'middle','font-size':15,fill:'#3b2a1a'},p.svg);t.textContent=v});
+ [[-1,'#2c4a7a'],[1,'#b5651d']].forEach(([h,c])=>{p.curve(x=>Math.log10(Kx(400+x,h))+4,c,3);E('circle',{cx:p.X(T-400),cy:p.Y(Math.log10(Kx(T,h))+4),r:7,fill:c},p.g)});
+ $('ktOut').innerHTML=`T = ${T} K<br>exothermic forward: K<sub>c</sub> = <b>${sf(Kx(T,-1))}</b> &nbsp; endothermic forward: K<sub>c</sub> = <b>${sf(Kx(T,1))}</b><br>${T>600?'Above 600 K: exothermic K<sub>c</sub> has fallen, endothermic K<sub>c</sub> has risen.':T<600?'Below 600 K: exothermic K<sub>c</sub> has risen, endothermic K<sub>c</sub> has fallen.':'At 600 K both are 1.'}`}
+$('ktS').oninput=kt4;kt4();
+
+/* ---------- page 5: double drill ---------- */
+const PR=[{eq:'N₂(g) + 3H₂(g) ⇌ 2NH₃(g)',dH:-92,gl:4,gr:2,re:'N₂',pr:'NH₃'},{eq:'H₂(g) + I₂(g) ⇌ 2HI(g)',dH:52,gl:2,gr:2,re:'H₂',pr:'HI'},
+ {eq:'N₂O₄(g) ⇌ 2NO₂(g)',dH:58,gl:1,gr:2,re:'N₂O₄',pr:'NO₂'},{eq:'CH₄(g) + H₂O(g) ⇌ CO(g) + 3H₂(g)',dH:206,gl:2,gr:4,re:'CH₄',pr:'H₂'},
+ {eq:'2SO₂(g) + O₂(g) ⇌ 2SO₃(g)',dH:-196,gl:3,gr:2,re:'O₂',pr:'SO₃'},{eq:'C₂H₄(g) + H₂O(g) ⇌ C₂H₅OH(g)',dH:-46,gl:2,gr:1,re:'H₂O',pr:'C₂H₅OH'},
+ {eq:'A(aq) + 2B(aq) ⇌ C(aq)',dH:-32,gl:null,gr:null,re:'A',pr:'C'}];
+const CH=[['incT','The temperature is increased'],['decT','The temperature is decreased'],['incP','The pressure is increased'],['decP','The pressure is decreased'],['addR','More reactant is added'],['remP','Product is removed'],['cat','A catalyst is added']];
+let D=null,ddN=0,ddOk=0,selP=null,selK=null;
+function ddAns(r,k){const exo=r.dH<0;let p,K='0',why;
+ if(k==='incT'){p=exo?'L':'R';K=exo?'D':'U';why=`Shifts in the endothermic direction (${exo?'left':'right'}) to oppose the temperature rise. The new mixture has ${exo?'less':'more'} product, so K<sub>c</sub> ${exo?'decreases':'increases'}.`}
+ if(k==='decT'){p=exo?'R':'L';K=exo?'U':'D';why=`Shifts in the exothermic direction (${exo?'right':'left'}) to oppose the temperature fall, so K<sub>c</sub> ${exo?'increases':'decreases'}.`}
+ if(k==='incP'||k==='decP'){const up=k==='incP';p=r.gl>r.gr?(up?'R':'L'):r.gl<r.gr?(up?'L':'R'):'0';why=(p==='0'?'Equal gas moles on each side: no shift. ':`Shifts to the side with ${up?'fewer':'more'} gas moles. `)+'Temperature is unchanged, so K<sub>c</sub> is unchanged.'}
+ if(k==='addR'){p='R';why='Shifts right to use up the added reactant until the K<sub>c</sub> fraction is back to the same value. K<sub>c</sub> is unchanged.'}
+ if(k==='remP'){p='R';why='Shifts right to replace the product. K<sub>c</sub> is unchanged.'}
+ if(k==='cat'){p='0';why='Forward and reverse rates increase equally: no shift, and K<sub>c</sub> is unchanged.'}
+ return {p,K,why}}
+function btns(id,opts,cb){const w=$(id);w.innerHTML='';opts.forEach(([t,v])=>{const b=document.createElement('button');b.className='b alt';b.textContent=t;b.onclick=()=>{w.querySelectorAll('button').forEach(x=>x.classList.add('alt'));b.classList.remove('alt');cb(v)};w.appendChild(b)})}
+function ddNew(){let r,c;do{r=PR[Math.floor(Math.random()*PR.length)];c=CH[Math.floor(Math.random()*CH.length)]}while(r.gl===null&&(c[0]==='incP'||c[0]==='decP'));
+ D={r,c};selP=selK=null;$('ddEq').innerHTML=`${r.eq} &nbsp; ΔH = ${r.dH>0?'+':'−'}${Math.abs(r.dH)} kJ mol⁻¹`;$('ddCh').textContent=c[1];$('ddOut').innerHTML='';
+ btns('ddP',[['⬅ left','L'],['no shift','0'],['right ➡','R']],v=>selP=v);btns('ddK',[['increases','U'],['no change','0'],['decreases','D']],v=>selK=v)}
+function ddCheck(){if(!selP||!selK){$('ddOut').innerHTML='<div class="warn">Choose both answers.</div>';return}
+ const a=ddAns(D.r,D.c[0]),ok=selP===a.p&&selK===a.K;ddN++;if(ok)ddOk++;$('ddSc').textContent=`Both right: ${ddOk} / ${ddN}`;
+ const P={L:'shifts left',R:'shifts right','0':'no shift'},K={U:'K<sub>c</sub> increases',D:'K<sub>c</sub> decreases','0':'K<sub>c</sub> unchanged'};
+ $('ddOut').innerHTML=`<div class="card" style="border-left:6px solid ${ok?'#2f7d4a':'#b03a2e'}"><b style="color:${ok?'#2f7d4a':'#b03a2e'}">${ok?'✔ Both correct':'✘ Not quite'}</b> &nbsp; Answer: ${P[a.p]}, ${K[a.K]}<br>${a.why}</div>`}
+ddNew();
+
+/* ---------- loop ---------- */
+let lastT=performance.now();
+function loop(ts){const dt=Math.min(.05,(ts-lastT)/1000);lastT=ts;if(cur===1){kinStep(dt*2);kinDraw()}requestAnimationFrame(loop)}
+requestAnimationFrame(loop);
+
+/* ---------- quiz ---------- */
+const Q=[
+ ["Which change alters the value of K<sub>c</sub>?",["Adding more reactant","Increasing the pressure","Adding a catalyst","Changing the temperature"],3,"Only temperature changes K<sub>c</sub>."],
+ ["More H₂ is added to N₂ + 3H₂ ⇌ 2NH₃ at constant temperature. What happens to K<sub>c</sub>?",["Increases","Decreases","No change","Doubles"],2,"The position shifts right, but K<sub>c</sub> stays the same."],
+ ["For an exothermic forward reaction, what happens to K<sub>c</sub> when the temperature is increased?",["Increases","Decreases","No change","Becomes zero"],1,"The equilibrium shifts left (endothermic direction), so there is less product and K<sub>c</sub> falls."],
+ ["N₂O₄ ⇌ 2NO₂, ΔH = +58 kJ mol⁻¹. The temperature is lowered. What happens to K<sub>c</sub>?",["Increases","Decreases","No change","Can't tell"],1,"Shifts in the exothermic direction (left), so K<sub>c</sub> decreases."],
+ ["Just after extra A is added to A + B ⇌ C, how does [C]/([A][B]) compare with K<sub>c</sub>?",["Bigger than K<sub>c</sub>","Smaller than K<sub>c</sub>","Equal to K<sub>c</sub>","Zero"],1,"The bottom of the fraction has grown, so the fraction is smaller than K<sub>c</sub>. The reaction shifts right to restore it."],
+ ["The pressure on 2SO₂ + O₂ ⇌ 2SO₃ is increased at constant T. Which is correct?",["Yield of SO₃ rises, K<sub>c</sub> rises","Yield of SO₃ rises, K<sub>c</sub> unchanged","Yield of SO₃ falls, K<sub>c</sub> unchanged","No change to either"],1,"Shifts to fewer gas moles (right), but K<sub>c</sub> only depends on T."],
+ ["Why does adding water increase the amount of S in 2P + Q ⇌ R + 3S (all aqueous)?",["Water is a reactant","K<sub>c</sub> increases on dilution","The mole ratio must increase to keep K<sub>c</sub> constant as V increases","The temperature falls"],2,"K<sub>c</sub> = (mole ratio) × 1/V. If V increases, the mole ratio must increase."],
+ ["K<sub>c</sub> for a reaction increases when the temperature rises. What does this tell you?",["The forward reaction is exothermic","The forward reaction is endothermic","There are more gas moles on the right","A catalyst was added"],1,"A higher K<sub>c</sub> at higher T means the equilibrium shifted right, which is the endothermic direction."],
+ ["A catalyst is added to an equilibrium mixture. Which is true?",["Position shifts right; K<sub>c</sub> unchanged","No shift; K<sub>c</sub> increases","No shift; K<sub>c</sub> unchanged","Position shifts right; K<sub>c</sub> increases"],2,"Catalysts change neither."],
+ ["C₂H₄ + H₂O ⇌ C₂H₅OH, ΔH = −46 kJ mol⁻¹. Which change increases <b>both</b> the yield of ethanol and K<sub>c</sub>?",["Increasing the pressure","Decreasing the temperature","Adding more steam","Adding a catalyst"],1,"Lower T shifts right (exothermic direction) and increases K<sub>c</sub>. Pressure and steam increase the yield but not K<sub>c</sub>."]
+];
+
+buildQuiz();
+go(0);
+</script>
+</body>
+</html>
