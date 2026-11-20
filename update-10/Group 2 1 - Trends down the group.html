@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Group 2 1 – Trends down the group</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,750&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style>[hidden]{display:none!important}
+
+/* Layout: one reading column (~760px) with wider interactive "bench" panels; sticky progress strip; positive ions blue-violet, negative ions green throughout */
+:root{
+  --bg:#f5efe3; --surface:#fffaf0; --sunk:#ece2cf; --ink:#2a2017; --muted:#6c5d4b; --line:#dccdb3;
+  --accent:#7a4a22; --accent-soft:#f0e0cb; --accent-ink:#fff8ee;
+  --cation:#4a4fa3; --cation-soft:#e3e3f6; --anion:#2c7743; --anion-soft:#dcefe1;
+  --oxy:#c0463a; --hyd:#f7f3ea;
+  --ok:#2b7a4b; --okbg:#e2f1e6; --bad:#b0392d; --badbg:#f8e1dc;
+  --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#1b1713; --surface:#25201a; --sunk:#2f2820; --ink:#efe6d7; --muted:#b4a590; --line:#463b2f;
+  --accent:#dba06a; --accent-soft:#3a2b1d; --accent-ink:#1b1713;
+  --cation:#9ea3f2; --cation-soft:#2c2d4a; --anion:#7fca92; --anion-soft:#1f3a28;
+  --oxy:#e0776b; --hyd:#e9e2d4;
+  --ok:#7fca92; --okbg:#1f3427; --bad:#ec8a7e; --badbg:#3d211d; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#1b1713; --surface:#25201a; --sunk:#2f2820; --ink:#efe6d7; --muted:#b4a590; --line:#463b2f;
+  --accent:#dba06a; --accent-soft:#3a2b1d; --accent-ink:#1b1713;
+  --cation:#9ea3f2; --cation-soft:#2c2d4a; --anion:#7fca92; --anion-soft:#1f3a28;
+  --oxy:#e0776b; --hyd:#e9e2d4;
+  --ok:#7fca92; --okbg:#1f3427; --bad:#ec8a7e; --badbg:#3d211d; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:820px;margin:0 auto}
+h1,h2,h3{font-family:var(--display);line-height:1.15;text-wrap:balance;margin:0}
+h1{font-size:clamp(2.2rem,6vw,3.4rem);font-weight:750;letter-spacing:-.02em}
+h2{font-size:clamp(1.5rem,3.6vw,2rem);font-weight:750;letter-spacing:-.01em}
+h3{font-size:1.15rem;font-weight:600}
+p{margin:0}
+sub,sup{font-size:.72em;line-height:0}
+.eyebrow{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.cat{color:var(--cation);font-weight:700}.an{color:var(--anion);font-weight:700}
+
+/* masthead */
+header.top{padding-block:40px 18px;display:grid;gap:14px}
+.lede{max-width:62ch;color:var(--muted);font-size:1.08rem}
+.spec{display:flex;flex-wrap:wrap;gap:8px}
+.tag{font-family:var(--mono);font-size:.78rem;padding:3px 9px;border:1px solid var(--line);border-radius:999px;color:var(--muted)}
+
+/* sticky progress */
+.progress{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding-block:10px;margin-bottom:8px}
+.progress .row{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.bar{flex:1 1 180px;height:8px;background:var(--sunk);border-radius:99px;overflow:hidden;min-width:120px}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .4s}
+.progress .stat{font-size:.88rem;color:var(--muted);font-variant-numeric:tabular-nums}
+nav.toc{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+nav.toc a{font-size:.82rem;text-decoration:none;color:var(--ink);padding:3px 10px;border-radius:999px;background:var(--surface);border:1px solid var(--line);white-space:nowrap}
+nav.toc a:hover,nav.toc a:focus-visible{border-color:var(--accent);color:var(--accent)}
+
+/* sections */
+section{padding-block:44px 8px;display:grid;gap:18px;scroll-margin-top:110px}
+.sechead{display:grid;gap:6px;border-top:2px solid var(--ink);padding-top:14px}
+.sechead .num{font-family:var(--mono);font-size:.82rem;color:var(--accent)}
+.prose{display:grid;gap:12px;max-width:66ch}
+.key{background:var(--accent-soft);border-left:4px solid var(--accent);padding:12px 16px;border-radius:0 8px 8px 0;max-width:66ch}
+.key b{color:var(--accent)}
+.warn{background:var(--badbg);border-left:4px solid var(--bad);padding:12px 16px;border-radius:0 8px 8px 0;max-width:66ch}
+.bench{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;gap:12px;min-width:0}
+.bench .lab{font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button,.btn{font:inherit;font-size:.92rem;font-weight:600;border:1px solid var(--line);background:var(--bg);color:var(--ink);padding:6px 12px;border-radius:8px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+select{font:inherit;font-size:.95rem;padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);max-width:100%}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.95rem}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.two>*{min-width:0}
+.caption{font-size:.9rem;color:var(--muted)}
+svg text{font-family:var(--body)}
+
+/* MCQ */
+.mcq{display:grid;gap:14px}
+.q{border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--surface);display:grid;gap:10px}
+.q .qh{display:flex;gap:10px;align-items:baseline}
+.q .qn{font-family:var(--mono);font-size:.78rem;color:var(--accent);white-space:nowrap}
+.q .qt{font-weight:600}
+.opts{display:grid;gap:6px}
+.opt{text-align:left;font-weight:400;display:grid;grid-template-columns:28px 1fr;gap:8px;align-items:start;padding:8px 10px;background:var(--bg)}
+.opt .l{font-family:var(--mono);font-weight:500;color:var(--muted)}
+.opt.right{background:var(--okbg);border-color:var(--ok)}
+.opt.wrong{background:var(--badbg);border-color:var(--bad);opacity:.85}
+.fb{font-size:.95rem;padding:10px 12px;border-radius:8px}
+.fb.right{background:var(--okbg);border-left:4px solid var(--ok)}
+.fb.wrong{background:var(--badbg);border-left:4px solid var(--bad)}
+.mcqhead{display:flex;align-items:center;gap:10px}
+.mcqhead h3{font-size:1rem}
+
+/* checklist */
+.check{display:grid;gap:8px;list-style:none;padding:0;margin:0}
+.check label{display:flex;gap:10px;align-items:flex-start;cursor:pointer}
+.check input{width:20px;height:20px;margin-top:3px;accent-color:var(--accent);flex:none}
+
+footer{margin-top:40px;color:var(--muted);font-size:.85rem;border-top:1px solid var(--line);padding-top:14px}
+/* additions for the Group 2 / RP4 run-throughs: cations blue-violet, anions green (as Period 3 series) */
+:root{--liq:#e2edf2;--pptw:#fbfaf6;--pptc:#efe0ae;--ppty:#f2d23c;--glow:#fff6c8}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--liq:#2a3a44;--pptw:#f3f1ea;--pptc:#e8d79c;--ppty:#efcd34}}
+:root[data-theme="dark"]{--liq:#2a3a44;--pptw:#f3f1ea;--pptc:#e8d79c;--ppty:#efcd34}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{min-width:58px}
+.eq{font-family:var(--display);font-size:clamp(1.02rem,2.5vw,1.3rem);font-weight:600;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 14px;overflow-x:auto;white-space:nowrap}
+.eq small{font-family:var(--body);font-weight:400;font-size:.8rem;color:var(--muted)}
+.eqs{display:grid;gap:8px}
+.readout{display:grid;gap:10px;align-content:start}
+.readout h3{font-size:1.3rem}
+.big{font-family:var(--display);font-size:1.9rem;font-weight:750;font-variant-numeric:tabular-nums}
+.card{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--bg);display:grid;gap:6px;align-content:start}
+.card h3{font-size:1.05rem}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr));gap:12px}
+.two{grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr))}
+.two>*{min-width:0}
+.fig svg{display:block;width:100%;height:auto}
+details{border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:10px 14px}
+details summary{cursor:pointer;font-weight:700}
+details[open] summary{margin-bottom:8px}
+.obs{margin:0;padding-left:20px;display:grid;gap:4px}
+.pill{display:inline-block;font-size:.78rem;font-weight:700;padding:2px 9px;border-radius:999px;background:var(--sunk);color:var(--ink);margin-right:4px}
+.pill.cat{background:var(--cation-soft);color:var(--cation)}.pill.an{background:var(--anion-soft);color:var(--anion)}
+.ok{color:var(--ok);font-weight:700}.bad{color:var(--bad);font-weight:700}
+/* trend bars */
+.trend{display:grid;gap:8px}
+.trow{display:grid;grid-template-columns:44px minmax(0,1fr) 110px;gap:10px;align-items:center}
+.trow b{font-family:var(--display);font-size:1.15rem}
+.tbar{height:26px;background:var(--sunk);border-radius:6px;overflow:hidden}
+.tbar i{display:block;height:100%;width:0;background:var(--cation);border-radius:6px;transition:width .8s cubic-bezier(.2,.8,.2,1)}
+.tbar i.odd{background:var(--oxy)}
+.trow span{font-variant-numeric:tabular-nums;font-weight:600;text-align:right}
+/* tubes */
+.tubes svg{display:block;width:100%;height:auto;max-height:340px}
+.glass{fill:none;stroke:var(--muted);stroke-width:2.2}
+.liq{fill:var(--liq)}
+.cloud{animation:cloudin 1.4s ease both}
+@keyframes cloudin{from{opacity:0}}
+.settle{animation:settle 1.6s ease .7s both;transform-box:fill-box;transform-origin:50% 100%}
+@keyframes settle{from{transform:scaleY(0);opacity:0}}
+.bub{animation:rise 1.3s linear infinite;fill:none;stroke:var(--muted);stroke-width:1.2}
+@keyframes rise{from{transform:translateY(0);opacity:.9}to{transform:translateY(-78px);opacity:0}}
+.drop{animation:drop .7s ease-in both;fill:var(--liq);stroke:var(--muted)}
+@keyframes drop{from{transform:translateY(-40px);opacity:1}to{transform:translateY(40px);opacity:0}}
+.tl{fill:var(--ink);font-weight:700;font-size:15px;font-family:var(--display)}
+.ts{fill:var(--muted);font-size:12.5px}
+.litmus{transition:fill 1.2s}
+/* predict grid */
+.pgrid{display:grid;gap:4px;font-size:.92rem}
+.pgrid .h{font-weight:700;display:grid;place-items:center;text-align:center;padding:4px;font-size:.88rem}
+.pgrid .r{font-weight:700;display:flex;align-items:center;padding-right:6px}
+.pgrid button{padding:8px 4px;font-size:.84rem;min-height:44px}
+.pgrid button.shown{background:var(--surface);cursor:default}
+/* atoms and lattices */
+.shell{fill:none;stroke:var(--line);stroke-width:1.5}
+.shield{fill:var(--sunk);opacity:.7}
+.nuc{fill:var(--cation)}
+.e{fill:var(--muted)}.eo{fill:var(--accent)}
+.rad{stroke:var(--accent);stroke-width:2;stroke-dasharray:6 5}
+.away{animation:away 1.4s ease-in both}
+@keyframes away{to{transform:translate(170px,-130px);opacity:0}}
+.ion2{fill:var(--cation-soft);stroke:var(--cation);stroke-width:2;transition:r .6s}
+.dl{fill:var(--accent);animation:jig 2.4s ease-in-out infinite alternate}
+@keyframes jig{to{transform:translate(9px,-7px)}}
+@media (prefers-reduced-motion: reduce){.cloud,.settle,.bub,.drop,.away,.dl{animation:none}.tbar i{transition:none}}
+.readout .eq{font-size:1.02rem;white-space:normal}
+.card svg{display:block;width:100%;height:auto;max-height:170px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <p class="eyebrow">A-level Chemistry · Inorganic · Group 2 · Run-through 1</p>
+  <h1>Group 2: trends down the group</h1>
+  <p class="lede">Work through the trends in atomic radius, first ionisation energy and melting point from magnesium to barium, and how to explain each one. Then add sodium hydroxide and sulfuric acid to Group 2 solutions to see the two solubility trends, which go in opposite directions.</p>
+  <div class="spec"><span class="tag">AQA 3.2.2</span><span class="tag">7 sections</span><span class="tag">about 45 minutes</span></div>
+</header>
+
+<div class="progress" aria-label="Progress">
+  <div class="row"><div class="bar" aria-hidden="true"><i id="pbar"></i></div><span class="stat" id="pstat">0 questions answered</span></div>
+  <nav class="toc" aria-label="Sections">
+    <a href="#s1">1 The data</a><a href="#s2">2 Atomic radius</a><a href="#s3">3 Ionisation energy</a><a href="#s4">4 Melting point</a><a href="#s5">5 Hydroxides</a><a href="#s6">6 Sulfates</a><a href="#s7">7 Check yourself</a>
+  </nav>
+</div>
+
+<!-- 1 -->
+<section id="s1">
+  <div class="sechead"><span class="num">Section 1</span><h2>Start with the data</h2></div>
+  <div class="prose">
+    <p>Group 2 elements are in the s block. Each one has <b>two electrons in its outer s sub-shell</b>, which it loses to form a <span class="cat">2+ ion</span>.</p>
+    <p>Mg [Ne] 3s² · Ca [Ar] 4s² · Sr [Kr] 5s² · Ba [Xe] 6s²</p>
+    <p>Choose a property and look at the trend before you try to explain it.</p>
+  </div>
+  <div class="bench">
+    <span class="lab">Choose a property</span>
+    <div class="chips" id="pPick" role="group" aria-label="Choose a property"></div>
+    <div class="trend" id="trend"></div>
+    <div class="key" id="pOut" aria-live="polite"></div>
+  </div>
+  <div class="mcq" data-set="s1"></div>
+</section>
+
+<!-- 2 -->
+<section id="s2">
+  <div class="sechead"><span class="num">Section 2</span><h2>Atomic radius increases down the group</h2></div>
+  <div class="prose">
+    <p>Click through the elements. Each step down the group adds a whole new shell (energy level) of electrons, so the outer electrons are further from the nucleus.</p>
+  </div>
+  <div class="bench">
+    <span class="lab">Choose an element</span>
+    <div class="chips" id="aPick" role="group" aria-label="Choose an element"></div>
+    <div class="two">
+      <div class="fig" id="atomA"></div>
+      <div class="readout" id="aOut" aria-live="polite"></div>
+    </div>
+  </div>
+  <div class="key"><b>Full-mark answer:</b> atomic radius increases down the group because each element has <b>one more shell</b> of electrons, so the outer electrons are further from the nucleus.</div>
+  <div class="warn">"More electrons" on its own doesn't get the mark. Say <b>more shells</b> (or more energy levels).</div>
+  <div class="mcq" data-set="s2"></div>
+</section>
+
+<!-- 3 -->
+<section id="s3">
+  <div class="sechead"><span class="num">Section 3</span><h2>First ionisation energy decreases down the group</h2></div>
+  <div class="prose">
+    <p>First ionisation energy is the energy needed to remove one electron from each atom in one mole of gaseous atoms, forming one mole of gaseous 1+ ions.</p>
+  </div>
+  <div class="eq">Ca(g) → Ca<sup>+</sup>(g) + e<sup>−</sup> <small>&nbsp;state symbols (g) are needed</small></div>
+  <div class="bench">
+    <span class="lab">Choose an element, then remove its outer electron</span>
+    <div class="controls"><div class="chips" id="iPick" role="group" aria-label="Choose an element"></div><button class="primary" id="iGo">Remove an outer electron</button></div>
+    <div class="two">
+      <div class="fig" id="atomI"></div>
+      <div class="readout" id="iOut" aria-live="polite"></div>
+    </div>
+  </div>
+  <div class="prose">
+    <p>Nuclear charge <i>increases</i> down the group, which on its own would make the electron harder to remove. But two effects outweigh it: the outer electron is <b>further from the nucleus</b> and there is <b>more shielding</b> from the extra inner shells.</p>
+  </div>
+  <div class="key"><b>Full-mark answer:</b> going down the group the outer electron is in a shell further from the nucleus and is more shielded by inner electrons. This outweighs the increase in nuclear charge, so the attraction between the nucleus and the outer electron is weaker and less energy is needed to remove it.</div>
+  <div class="prose"><p>This is also why <b>reactivity increases</b> down the group: Group 2 metals react by losing their two outer electrons, and that gets easier. You'll see this with water in run-through 2.</p></div>
+  <div class="mcq" data-set="s3"></div>
+</section>
+
+<!-- 4 -->
+<section id="s4">
+  <div class="sechead"><span class="num">Section 4</span><h2>Melting point: metallic bonding gets weaker</h2></div>
+  <div class="prose">
+    <p>Group 2 metals have <b>metallic bonding</b>: a giant lattice of <span class="cat">2+ ions</span> in a sea of delocalised electrons. To melt the metal you need to overcome the attraction between the positive ions and the delocalised electrons.</p>
+  </div>
+  <div class="bench">
+    <span class="lab">Choose a metal</span>
+    <div class="chips" id="mPick" role="group" aria-label="Choose a metal"></div>
+    <div class="two">
+      <div class="fig" id="lattice"></div>
+      <div class="readout" id="mOut" aria-live="polite"></div>
+    </div>
+  </div>
+  <div class="key"><b>Full-mark answer:</b> going down the group the metal ions get bigger (the charge stays 2+). The delocalised electrons are further from the nucleus of each ion, so the attraction between the positive ions and the delocalised electrons gets weaker. Less energy is needed to overcome it, so melting point generally decreases.</div>
+  <div class="warn"><b>Magnesium doesn't fit the trend:</b> its melting point is lower than calcium's because it has a different crystal structure. Don't mention intermolecular forces or ionic bonds anywhere in this answer: it's metallic bonding.</div>
+  <div class="mcq" data-set="s4"></div>
+</section>
+
+<!-- 5 -->
+<section id="s5">
+  <div class="sechead"><span class="num">Section 5</span><h2>Hydroxides: solubility increases down the group</h2></div>
+  <div class="prose">
+    <p>Each tube holds a solution of a Group 2 chloride. Add sodium hydroxide solution. If the Group 2 hydroxide is not very soluble, it comes out as a <b>white precipitate</b>.</p>
+  </div>
+  <div class="bench">
+    <span class="lab">Add NaOH(aq) to each solution</span>
+    <div class="controls"><button class="primary" id="hGo">Add NaOH(aq)</button><button id="hReset">Reset</button></div>
+    <div class="tubes" id="hTubes"></div>
+    <div class="readout" id="hOut" aria-live="polite"></div>
+  </div>
+  <div class="eq">Mg<sup>2+</sup>(aq) + 2OH<sup>−</sup>(aq) → Mg(OH)<sub>2</sub>(s)</div>
+  <div class="key"><b>The solubility of Group 2 hydroxides increases down the group.</b> Mg(OH)<sub>2</sub> is sparingly soluble, so you get the most precipitate. Ba(OH)<sub>2</sub> is soluble enough that no precipitate forms. A solution of Ca(OH)<sub>2</sub> is limewater.</div>
+  <div class="mcq" data-set="s5"></div>
+</section>
+
+<!-- 6 -->
+<section id="s6">
+  <div class="sechead"><span class="num">Section 6</span><h2>Sulfates: solubility decreases down the group</h2></div>
+  <div class="prose">
+    <p>Same solutions, but this time add dilute sulfuric acid (any solution containing sulfate ions does the same job). Now the precipitate gets <b>heavier</b> down the group.</p>
+  </div>
+  <div class="bench">
+    <span class="lab">Add dilute H₂SO₄(aq) to each solution</span>
+    <div class="controls"><button class="primary" id="sGo">Add dilute H₂SO₄</button><button id="sReset">Reset</button></div>
+    <div class="tubes" id="sTubes"></div>
+    <div class="readout" id="sOut" aria-live="polite"></div>
+  </div>
+  <div class="eq">Ba<sup>2+</sup>(aq) + SO<sub>4</sub><sup>2−</sup>(aq) → BaSO<sub>4</sub>(s)</div>
+  <div class="key"><b>The solubility of Group 2 sulfates decreases down the group.</b> MgSO<sub>4</sub> is soluble; BaSO<sub>4</sub> is insoluble. That is the opposite of the hydroxide trend, so learn the two together.</div>
+  <div class="bench">
+    <span class="lab">Predict, then click to check</span>
+    <div class="pgrid" id="pg" style="grid-template-columns:minmax(90px,auto) repeat(4,minmax(0,1fr))"></div>
+    <p class="caption">Use the two reagents together: NaOH(aq) picks out Mg²⁺, H₂SO₄(aq) picks out Ba²⁺, and Ca²⁺ and Sr²⁺ are told apart by how much sulfate precipitate forms.</p>
+  </div>
+  <div class="mcq" data-set="s6"></div>
+</section>
+
+<!-- 7 -->
+<section id="s7">
+  <div class="sechead"><span class="num">Section 7</span><h2>Check yourself</h2></div>
+  <div class="mcq" data-set="s7" data-title="End-of-topic quiz"></div>
+  <div class="bench">
+    <span class="lab">Tick off what you can now do</span>
+    <ul class="check" id="check"></ul>
+  </div>
+</section>
+<footer>Group 2 run-throughs · Part 1. Next: reactions and uses. Then: RP4, tests for ions.</footer>
+</div>
+
+<script>
+/* shared: helpers, MCQ engine, checklist. Expects globals Q (question sets) and CK (checklist), CKKEY */
+const $=s=>document.querySelector(s);
+const $$=s=>Array.from(document.querySelectorAll(s));
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const RM=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function fit(cv){const r=cv.getBoundingClientRect(),d=window.devicePixelRatio||1;cv.width=Math.max(1,Math.round(r.width*d));cv.height=Math.max(1,Math.round(r.height*d));const c=cv.getContext('2d');c.setTransform(d,0,0,d,0,0);return {c,W:r.width,H:r.height};}
+function lerp(a,b,t){return a+(b-a)*t}
+function hex2rgb(h){h=h.replace('#','');if(h.length===3)h=h.split('').map(x=>x+x).join('');const n=parseInt(h,16);return [n>>16&255,n>>8&255,n&255];}
+function mix(a,b,t){const A=hex2rgb(a),B=hex2rgb(b);return 'rgb('+A.map((v,i)=>Math.round(lerp(v,B[i],t))).join(',')+')';}
+/* universal indicator colour for a pH */
+const UI=[[0,'#c8231b'],[2,'#e0401f'],[3,'#ee7420'],[4,'#f2a022'],[5,'#e8c92c'],[6,'#b8c534'],[7,'#4fa83b'],[8,'#2e9a77'],[9,'#2b86a3'],[10,'#2c5fb3'],[11,'#3e44a8'],[12,'#53338f'],[14,'#4b1f75']];
+function uiColour(pH){for(let i=0;i<UI.length-1;i++){if(pH<=UI[i+1][0]){const t=(pH-UI[i][0])/(UI[i+1][0]-UI[i][0]);return mix(UI[i][1],UI[i+1][1],Math.max(0,Math.min(1,t)));}}return UI[UI.length-1][1];}
+
+function initMCQ(){
+  const state={answered:0,first:0,total:0};
+  Object.values(Q).forEach(a=>state.total+=a.length);
+  function upd(){$('#pbar').style.width=(100*state.answered/state.total)+'%';$('#pstat').textContent=state.answered+' of '+state.total+' questions answered · '+state.first+' right first time';}
+  let qnum=0;
+  $$('.mcq').forEach(box=>{
+    const set=Q[box.dataset.set];if(!set)return;
+    const head=document.createElement('div');head.className='mcqhead';
+    head.innerHTML='<h3>'+(box.dataset.title||(set.length<=2?'Quick check':'Questions'))+'</h3><span class="caption">'+set.length+' question'+(set.length>1?'s':'')+'</span>';
+    box.appendChild(head);
+    set.forEach(item=>{
+      qnum++;
+      const el=document.createElement('div');el.className='q';
+      el.innerHTML='<div class="qh"><span class="qn">Q'+qnum+'</span><span class="qt">'+item.q+'</span></div><div class="opts"></div><div class="fb" hidden></div>';
+      const opts=el.querySelector('.opts'),fb=el.querySelector('.fb');let tries=0,done=false;
+      const sh=item.o.slice();for(let i=sh.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[sh[i],sh[j]]=[sh[j],sh[i]];}
+      sh.forEach((o,oi)=>{
+        const b=document.createElement('button');b.className='opt';b.type='button';
+        b.innerHTML='<span class="l">'+'ABCDE'[oi]+'</span><span>'+o[0]+'</span>';
+        b.addEventListener('click',()=>{
+          if(done||b.classList.contains('wrong'))return;tries++;fb.hidden=false;fb.innerHTML=o[2];
+          if(o[1]){b.classList.add('right');fb.className='fb right';done=true;state.answered++;if(tries===1)state.first++;upd();opts.querySelectorAll('.opt').forEach(x=>x.disabled=true);}
+          else{b.classList.add('wrong');fb.className='fb wrong';fb.innerHTML=o[2]+' <b>Try again.</b>';}
+        });
+        opts.appendChild(b);
+      });
+      box.appendChild(el);
+    });
+  });
+  upd();
+  let saved={};try{saved=JSON.parse(localStorage.getItem(CKKEY)||'{}');}catch(e){}
+  $('#check').innerHTML=CK.map((t,i)=>'<li><label><input type="checkbox" id="ck'+i+'"'+(saved[i]?' checked':'')+'><span>'+t+'</span></label></li>').join('');
+  $('#check').addEventListener('change',e=>{saved[e.target.id.slice(2)]=e.target.checked;try{localStorage.setItem(CKKEY,JSON.stringify(saved));}catch(err){}});
+}
+
+/* test tube renderer. o: {ppt:0-1, pc:'w'|'c'|'y', bub:n, label, sub, fresh, liq} */
+const PC={w:'var(--pptw)',c:'var(--pptc)',y:'var(--ppty)'};
+function tube(x,o){
+  o=o||{};const top=o.level||78,col=PC[o.pc||'w'];let s='';
+  s+='<path class="liq" d="M'+(x-18)+' '+top+' V170 a18 18 0 0 0 36 0 V'+top+'Z"'+(o.liq?' style="fill:'+o.liq+'"':'')+'/>';
+  if(o.ppt>0){
+    s+='<path class="'+(o.fresh?'cloud':'')+'" fill="'+col+'" opacity="'+(0.25+0.45*o.ppt).toFixed(2)+'" d="M'+(x-18)+' '+(top+4)+' V170 a18 18 0 0 0 36 0 V'+(top+4)+'Z"/>';
+    const h=4+30*o.ppt;
+    s+='<path class="'+(o.fresh?'settle':'')+'" fill="'+col+'" stroke="var(--muted)" stroke-width=".8" d="M'+(x-18)+' '+(170-h)+' V170 a18 18 0 0 0 36 0 V'+(170-h)+'Z"/>';
+  }
+  for(let i=0;i<(o.bub||0);i++){const bx=x-12+((i*37)%24),r=1.8+(i%3)*.8;s+='<circle class="bub" cx="'+bx+'" cy="182" r="'+r+'" style="animation-delay:'+(i*0.17).toFixed(2)+'s"/>';}
+  if(o.fresh&&o.drop)s+='<circle class="drop" cx="'+x+'" cy="30" r="4"/>';
+  s+='<path class="glass" d="M'+(x-20)+' 14 V170 a20 20 0 0 0 40 0 V14"/><line class="glass" x1="'+(x-24)+'" y1="14" x2="'+(x+24)+'" y2="14"/>';
+  if(o.label)s+='<text class="tl" x="'+x+'" y="216" text-anchor="middle">'+o.label+'</text>';
+  if(o.sub)s+='<text class="ts" x="'+x+'" y="234" text-anchor="middle">'+o.sub+'</text>';
+  return s;
+}
+function rack(n,fn,h){const W=Math.max(320,n*110);let s='<svg viewBox="0 0 '+W+' '+(h||244)+'" role="img" aria-label="Test tubes">';for(let i=0;i<n;i++)s+=fn(W/n*(i+.5),i);return s+'</svg>';}
+
+const CKKEY='g2-1-check';
+const EL=[
+ {s:'Mg',n:'Magnesium',Z:12,cfg:'[Ne] 3s²',sh:[2,8,2],r:160,ie:738,mp:923,ion:72},
+ {s:'Ca',n:'Calcium',Z:20,cfg:'[Ar] 4s²',sh:[2,8,8,2],r:197,ie:590,mp:1115,ion:100},
+ {s:'Sr',n:'Strontium',Z:38,cfg:'[Kr] 5s²',sh:[2,8,18,8,2],r:215,ie:550,mp:1050,ion:118},
+ {s:'Ba',n:'Barium',Z:56,cfg:'[Xe] 6s²',sh:[2,8,18,18,8,2],r:222,ie:503,mp:1000,ion:135}];
+function chips(id,list,cb,start){const box=$(id);box.innerHTML=list.map((t,i)=>'<button aria-pressed="'+(i===start)+'" data-i="'+i+'">'+t+'</button>').join('');
+ box.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;box.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));cb(+b.dataset.i);});cb(start||0);}
+
+/* 1 trend bars */
+const PROPS=[
+ {l:'Atomic radius',k:'r',u:'pm',max:240,t:'<b>Increases</b> down the group: one extra shell each time.'},
+ {l:'First ionisation energy',k:'ie',u:'kJ mol⁻¹',max:800,t:'<b>Decreases</b> down the group: the outer electron is further away and more shielded.'},
+ {l:'Melting point',k:'mp',u:'K',max:1200,t:'<b>Generally decreases</b> from Ca to Ba: weaker metallic bonding. <b>Mg is lower than expected</b> because it has a different crystal structure.'}];
+chips('#pPick',PROPS.map(p=>p.l),i=>{const p=PROPS[i];
+ $('#trend').innerHTML=EL.map(e=>'<div class="trow"><b>'+e.s+'</b><div class="tbar"><i'+(p.k==='mp'&&e.s==='Mg'?' class="odd"':'')+'></i></div><span>'+e[p.k]+' '+p.u+'</span></div>').join('');
+ requestAnimationFrame(()=>requestAnimationFrame(()=>$$('#trend i').forEach((b,j)=>b.style.width=(100*EL[j][p.k]/p.max)+'%')));
+ $('#pOut').innerHTML=p.t;},0);
+
+/* atom diagrams */
+function atom(e,opt){
+ const n=e.sh.length,C=210,R=190*e.r/222,step=(R-24)/n;let s='<svg viewBox="0 0 420 420" role="img" aria-label="Shell diagram of '+e.n+'">';
+ if(opt.shield)s+='<circle class="shield" cx="'+C+'" cy="'+C+'" r="'+(24+step*(n-1)+step*.45)+'"/>';
+ for(let i=0;i<n;i++){const r=24+step*(i+1);s+='<circle class="shell" cx="'+C+'" cy="'+C+'" r="'+r+'"/>';
+  const k=e.sh[i];for(let j=0;j<k;j++){const a=j*2*Math.PI/k-Math.PI/2+(i%2?.3:0),x=C+r*Math.cos(a),y=C+r*Math.sin(a);
+   const outer=i===n-1;s+='<circle class="'+(outer?'eo':'e')+(outer&&j===0&&opt.remove?' away':'')+'" cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="'+(outer?6:3.4)+'" style="transform-box:fill-box"/>';}}
+ s+='<circle class="nuc" cx="'+C+'" cy="'+C+'" r="20"/><text x="'+C+'" y="'+(C+5)+'" text-anchor="middle" style="fill:#fff;font-weight:700;font-size:14px">+'+e.Z+'</text>';
+ const ro=24+step*n;
+ if(opt.radius)s+='<line class="rad" x1="'+C+'" y1="'+C+'" x2="'+(C+ro)+'" y2="'+C+'"/><text x="'+(C+ro/2+10)+'" y="'+(C-8)+'" text-anchor="middle" style="fill:var(--accent);font-weight:700;font-size:14px">'+e.r+' pm</text>';
+ if(opt.shield)s+='<text x="'+C+'" y="'+(C+ro+24>414?414:C+ro+24)+'" text-anchor="middle" style="fill:var(--muted);font-size:13px">shaded: inner shells that shield the outer electrons</text>';
+ return s+'</svg>';
+}
+chips('#aPick',EL.map(e=>e.s),i=>{const e=EL[i];$('#atomA').innerHTML=atom(e,{radius:1});
+ $('#aOut').innerHTML='<h3>'+e.n+'</h3><p>'+e.cfg+'</p><p class="big">'+e.r+' pm</p><p>Shells of electrons: <b>'+e.sh.length+'</b> ('+e.sh.join(', ')+')</p><p class="caption">Diagram radii are drawn to scale with the atomic radius.</p>';},0);
+
+let iSel=0;
+function drawI(rem){const e=EL[iSel];$('#atomI').innerHTML=atom(e,{shield:1,remove:rem});
+ $('#iOut').innerHTML='<h3>'+e.n+'</h3><table><tr><th>Factor</th><th>'+e.s+'</th><th>Effect on IE</th></tr>'+
+ '<tr><td>Nuclear charge</td><td>+'+e.Z+'</td><td>'+(iSel?'bigger: pulls harder ↑':'smallest in group')+'</td></tr>'+
+ '<tr><td>Outer shell</td><td>shell '+e.sh.length+'</td><td>'+(iSel?'further away: weaker pull ↓':'closest')+'</td></tr>'+
+ '<tr><td>Inner shells shielding</td><td>'+(e.sh.length-1)+'</td><td>'+(iSel?'more shielding: weaker pull ↓':'least shielding')+'</td></tr></table>'+
+ (rem?'<p class="big">'+e.ie+' kJ mol⁻¹</p><p class="caption">'+e.s+'(g) → '+e.s+'⁺(g) + e⁻</p>':'<p class="caption">Press the button to remove one outer electron.</p>');}
+chips('#iPick',EL.map(e=>e.s),i=>{iSel=i;drawI(false);},0);
+$('#iGo').addEventListener('click',()=>{drawI(false);requestAnimationFrame(()=>drawI(true));});
+
+/* lattice */
+chips('#mPick',EL.map(e=>e.s),i=>{const e=EL[i],r=e.ion*.4;let s='<svg viewBox="0 0 420 330" role="img" aria-label="Metallic lattice of '+e.n+'">';
+ const P=[];for(let y=0;y<3;y++)for(let x=0;x<3;x++)P.push([90+x*120,45+y*120]);
+ let k=0;for(let y=0;y<2;y++)for(let x=0;x<2;x++){[[150,105],[150,45],[90,105]].forEach(([dx,dy],j)=>{const cx=dx+x*120+(j?0:0),cy=dy+y*120;s+='<circle class="dl" cx="'+cx+'" cy="'+cy+'" r="5" style="animation-delay:'+(k++%5*.4)+'s;transform-box:fill-box"/>';});}
+ [[330,105],[330,225],[150,285],[270,285],[270,45],[90,225]].forEach(([cx,cy])=>{s+='<circle class="dl" cx="'+cx+'" cy="'+cy+'" r="5" style="animation-delay:'+(k++%5*.4)+'s;transform-box:fill-box"/>';});
+ P.forEach(([cx,cy])=>{s+='<circle class="ion2" cx="'+cx+'" cy="'+cy+'" r="'+r.toFixed(1)+'"/><text x="'+cx+'" y="'+(cy+6)+'" text-anchor="middle" style="fill:var(--cation);font-weight:700;font-size:17px">2+</text>';});
+ $('#lattice').innerHTML=s+'</svg><p class="caption">Orange dots: delocalised electrons. Ion sizes drawn to scale.</p>';
+ $('#mOut').innerHTML='<h3>'+e.n+'</h3><p class="big">'+e.mp+' K</p><p>'+(e.mp-273)+' °C · ion radius '+e.ion+' pm</p>'+(i===0?'<div class="warn">Lower than calcium: magnesium has a different crystal structure, so it is the exception to the trend.</div>':'<p>'+(i===1?'Highest melting point of these four.':'Bigger ion than the one above, so weaker attraction to the delocalised electrons.')+'</p>');},0);
+
+/* tubes */
+const SALT=['MgCl₂','CaCl₂','SrCl₂','BaCl₂'];
+const HYD=[[1,'white precipitate'],[.45,'slight white precipitate'],[.25,'slight white precipitate'],[0,'no visible change']];
+const SUL=[[0,'no visible change'],[.3,'slight white precipitate'],[.7,'white precipitate'],[1,'white precipitate (dense)']];
+function bench(tid,oid,data,fresh,eqf){
+ $(tid).innerHTML=rack(4,(x,i)=>tube(x,{ppt:fresh!=null?data[i][0]:0,fresh:fresh,drop:1,label:EL[i].s+'²⁺',sub:SALT[i]+'(aq)'}));
+ $(oid).innerHTML=fresh!=null?'<ul class="obs">'+data.map((d,i)=>'<li><b>'+EL[i].s+'²⁺</b>: '+d[1]+(d[0]>0?' <span class="caption">'+eqf(EL[i].s)+'</span>':'')+'</li>').join('')+'</ul>':'<p class="caption">All four solutions are colourless.</p>';}
+const hEq=s=>s+'²⁺(aq) + 2OH⁻(aq) → '+s+'(OH)₂(s)', sEq=s=>s+'²⁺(aq) + SO₄²⁻(aq) → '+s+'SO₄(s)';
+bench('#hTubes','#hOut',HYD,null,hEq);bench('#sTubes','#sOut',SUL,null,sEq);
+$('#hGo').addEventListener('click',()=>bench('#hTubes','#hOut',HYD,true,hEq));
+$('#hReset').addEventListener('click',()=>bench('#hTubes','#hOut',HYD,null,hEq));
+$('#sGo').addEventListener('click',()=>bench('#sTubes','#sOut',SUL,true,sEq));
+$('#sReset').addEventListener('click',()=>bench('#sTubes','#sOut',SUL,null,sEq));
+
+/* predict grid */
+(function(){let h='<div></div>'+EL.map(e=>'<div class="h">'+e.s+'²⁺</div>').join('');
+ [['NaOH(aq)',HYD],['H₂SO₄(aq)',SUL]].forEach(([r,d])=>{h+='<div class="r">'+r+'</div>'+d.map(x=>'<button data-a="'+x[1]+'">?</button>').join('');});
+ $('#pg').innerHTML=h;$('#pg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.classList.contains('shown'))return;b.textContent=b.dataset.a;b.classList.add('shown');});})();
+
+const CK=[
+ 'State and explain the trend in atomic radius from Mg to Ba',
+ 'Write the equation for the first ionisation energy of a Group 2 element, with state symbols',
+ 'Explain why first ionisation energy decreases down the group, even though nuclear charge increases',
+ 'Explain the trend in melting point using metallic bonding, and say why Mg is the exception',
+ 'Describe what you see when NaOH(aq) is added to solutions of Mg²⁺, Ca²⁺, Sr²⁺ and Ba²⁺',
+ 'Describe what you see when dilute H₂SO₄ is added to the same solutions',
+ 'State the opposite solubility trends for the hydroxides and the sulfates, and write ionic equations for the precipitates'];
+
+const Q={
+s1:[
+ {q:'Which statement about the trends from Mg to Ba is correct?',o:[
+  ['Atomic radius increases and first ionisation energy decreases',1,'Correct. As the radius gets bigger the outer electron is held less tightly.'],
+  ['Atomic radius decreases and first ionisation energy decreases',0,'Radius increases down a group: there are more shells.'],
+  ['Atomic radius increases and first ionisation energy increases',0,'A bigger atom holds its outer electron less tightly, so IE goes down.'],
+  ['Both stay roughly the same',0,'Both change clearly. Look back at the bars.']]},
+ {q:'Which element in the bar chart does not fit the melting point trend?',o:[
+  ['Magnesium',1,'Correct. Its melting point is lower than calcium\'s because of its different crystal structure.'],
+  ['Calcium',0,'Calcium has the highest melting point, but it is magnesium that breaks the pattern: it should be higher still.'],
+  ['Strontium',0,'Strontium fits: lower than Ca, higher than Ba.'],
+  ['Barium',0,'Barium fits: it has the weakest metallic bonding of Ca, Sr and Ba.']]}
+],
+s2:[
+ {q:'Why is the atomic radius of strontium larger than that of calcium?',o:[
+  ['Strontium has an extra shell of electrons.',1,'Correct. Sr has 5 shells; Ca has 4.'],
+  ['Strontium has more electrons.',0,'True, but not enough for the mark. The point is that they fill an extra shell.'],
+  ['Strontium has a smaller nuclear charge.',0,'Sr has a bigger nuclear charge (+38 vs +20).'],
+  ['Strontium has weaker metallic bonding.',0,'That explains melting point, not atomic radius.']]}
+],
+s3:[
+ {q:'Which equation represents the first ionisation energy of barium?',o:[
+  ['Ba(g) → Ba⁺(g) + e⁻',1,'Correct. One electron removed from a gaseous atom.'],
+  ['Ba(s) → Ba⁺(g) + e⁻',0,'Ionisation energies start from gaseous atoms.'],
+  ['Ba(g) → Ba²⁺(g) + 2e⁻',0,'That is the first and second ionisation energies together.'],
+  ['Ba(g) + e⁻ → Ba⁻(g)',0,'That is gaining an electron, not ionisation.']]},
+ {q:'Nuclear charge increases from Mg to Ba. Why does first ionisation energy still decrease?',o:[
+  ['The outer electron is further from the nucleus and more shielded, which outweighs the extra nuclear charge.',1,'Correct. You need all three ideas: distance, shielding and outweighs.'],
+  ['The extra protons repel the outer electron.',0,'Protons attract electrons. Think about distance and shielding.'],
+  ['The outer electron is in a p orbital.',0,'Group 2 outer electrons are in an s orbital.'],
+  ['The atoms have fewer shells.',0,'They have more shells going down.']]},
+ {q:'Why does the reactivity of Group 2 metals increase down the group?',o:[
+  ['The outer electrons are lost more easily.',1,'Correct. Lower ionisation energies mean the 2+ ion forms more easily.'],
+  ['The metallic bonding is stronger.',0,'Metallic bonding gets weaker down the group, and it is not why reactivity changes.'],
+  ['The atoms gain electrons more easily.',0,'Metals react by losing electrons.'],
+  ['The hydroxides are less soluble.',0,'Hydroxides get more soluble, and that doesn\'t explain reactivity.']]}
+],
+s4:[
+ {q:'Which explanation for the decrease in melting point from Ca to Ba gets full marks?',o:[
+  ['The ions get larger, so the attraction between the positive ions and the delocalised electrons is weaker.',1,'Correct. Mention the ions, the delocalised electrons and the weaker attraction.'],
+  ['The intermolecular forces get weaker as the atoms get bigger.',0,'Metals have metallic bonding, not intermolecular forces.'],
+  ['The ionic bonds get weaker as the charge on the ions decreases.',0,'All the ions are 2+, and this is metallic bonding.'],
+  ['There are fewer delocalised electrons per ion.',0,'Each atom still gives two delocalised electrons.']]}
+],
+s5:[
+ {q:'NaOH(aq) is added to a solution of Ba²⁺ ions. What do you see?',o:[
+  ['No visible change',1,'Correct. Ba(OH)₂ is soluble enough to stay in solution.'],
+  ['White precipitate',0,'That is Mg²⁺. Hydroxide solubility increases down the group.'],
+  ['Slight white precipitate',0,'That is Ca²⁺ or Sr²⁺.'],
+  ['Effervescence',0,'No gas is produced.']]},
+ {q:'Which ionic equation, with state symbols, shows the precipitate formed when NaOH(aq) is added to MgCl₂(aq)?',o:[
+  ['Mg²⁺(aq) + 2OH⁻(aq) → Mg(OH)₂(s)',1,'Correct. The (s) shows the precipitate.'],
+  ['Mg²⁺(aq) + OH⁻(aq) → MgOH(s)',0,'Mg²⁺ needs two OH⁻ ions.'],
+  ['MgCl₂(aq) + 2NaOH(aq) → Mg(OH)₂(aq) + 2NaCl(aq)',0,'Not ionic, and Mg(OH)₂ is a precipitate, so (s).'],
+  ['Mg²⁺(aq) + 2OH⁻(aq) → Mg(OH)₂(aq)',0,'It is a precipitate, so the state symbol is (s).']]}
+],
+s6:[
+ {q:'Which pair of statements is correct, going down Group 2?',o:[
+  ['Hydroxides get more soluble; sulfates get less soluble',1,'Correct. Opposite trends.'],
+  ['Hydroxides get less soluble; sulfates get more soluble',0,'The wrong way round. Mg(OH)₂ and BaSO₄ are the insoluble ends.'],
+  ['Both get more soluble',0,'BaSO₄ is insoluble, so sulfates get less soluble.'],
+  ['Both get less soluble',0,'Mg(OH)₂ is the least soluble hydroxide, so hydroxides get more soluble.']]},
+ {q:'A colourless solution gives a white precipitate with dilute H₂SO₄ but no visible change with NaOH(aq). Which ion is present?',o:[
+  ['Ba²⁺',1,'Correct. Insoluble sulfate, soluble hydroxide.'],
+  ['Mg²⁺',0,'Mg²⁺ gives a white precipitate with NaOH and nothing with H₂SO₄.'],
+  ['Ca²⁺',0,'Ca²⁺ gives a slight white precipitate with NaOH.'],
+  ['Sr²⁺',0,'Sr²⁺ gives a slight white precipitate with NaOH.']]}
+],
+s7:[
+ {q:'Which Group 2 element has the lowest first ionisation energy?',o:[
+  ['Ba',1,'Correct. Its outer electron is furthest from the nucleus and most shielded.'],['Mg',0,'Mg has the highest.'],['Ca',0,'Ba is lower still.'],['Sr',0,'Ba is lower still.']]},
+ {q:'Which substance is described as <i>sparingly soluble</i> in the specification?',o:[
+  ['Mg(OH)₂',1,'Correct. That is why it is used as an antacid (run-through 2).'],['BaSO₄',0,'BaSO₄ is described as insoluble.'],['Ba(OH)₂',0,'Ba(OH)₂ is the most soluble hydroxide.'],['MgSO₄',0,'MgSO₄ is soluble.']]},
+ {q:'Solutions of Ca²⁺ and Sr²⁺ both give a slight white precipitate with NaOH(aq). How could you tell them apart?',o:[
+  ['Add dilute H₂SO₄: Sr²⁺ gives more white precipitate than Ca²⁺',1,'Correct. SrSO₄ is less soluble than CaSO₄.'],
+  ['Add more NaOH: Ca²⁺ gives more precipitate',0,'The hydroxides look too similar to separate this way.'],
+  ['Add dilute H₂SO₄: Ca²⁺ gives a dense white precipitate, Sr²⁺ gives none',0,'Sulfates get less soluble down the group, so Sr²⁺ gives more precipitate.'],
+  ['They cannot be told apart',0,'The sulfate test does it.']]},
+ {q:'Why does calcium have a larger atomic radius than magnesium but a <i>higher</i> melting point?',o:[
+  ['Magnesium has a different crystal structure, so it doesn\'t fit the melting point trend.',1,'Correct. Mg is the exception.'],
+  ['Calcium has stronger intermolecular forces.',0,'Metals don\'t have intermolecular forces.'],
+  ['Calcium ions have a 3+ charge.',0,'All Group 2 ions are 2+.'],
+  ['Larger atoms always have higher melting points.',0,'From Ca to Ba melting point decreases as the atoms get bigger.']]},
+ {q:'Which ionic equation shows the precipitate that forms when dilute sulfuric acid is added to strontium chloride solution?',o:[
+  ['Sr²⁺(aq) + SO₄²⁻(aq) → SrSO₄(s)',1,'Correct.'],
+  ['Sr²⁺(aq) + 2OH⁻(aq) → Sr(OH)₂(s)',0,'That is the reaction with NaOH, not sulfuric acid.'],
+  ['2H⁺(aq) + SO₄²⁻(aq) → H₂SO₄(s)',0,'The precipitate is strontium sulfate.'],
+  ['Sr²⁺(aq) + SO₄²⁻(aq) → SrSO₄(aq)',0,'A precipitate needs (s).']]},
+ {q:'Which change happens down Group 2 from Mg to Ba?',o:[
+  ['The number of electron shells increases',1,'Correct. That drives the radius and ionisation energy trends.'],
+  ['The charge on the ion increases',0,'Every Group 2 ion is 2+.'],
+  ['The number of outer electrons increases',0,'They all have two outer electrons.'],
+  ['The strength of metallic bonding increases',0,'It decreases (from Ca to Ba).']]}
+]};
+
+initMCQ();
+</script>
+</body>
+</html>
