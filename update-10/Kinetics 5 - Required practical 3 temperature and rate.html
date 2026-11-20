@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kinetics 5 – Required Practical 3: Temperature and Rate</title>
+<style>
+:root{
+  --bg:#f6efe1; --card:#fffaf0; --ink:#3b2a1a; --brown:#6b4423; --brown2:#8b5a2b;
+  --accent:#b5651d; --soft:#ead9bd; --line:#d8c4a0; --good:#2f7d4a; --bad:#b03a2e; --blue:#2c4a7a;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Arial,sans-serif;font-size:19px;line-height:1.55}
+header{background:var(--brown);color:#fff8ec;padding:14px 24px}
+header h1{margin:0;font-family:Georgia,serif;font-size:28px;font-weight:normal}
+header p{margin:2px 0 0;opacity:.85;font-size:16px}
+nav{display:flex;flex-wrap:wrap;gap:6px;padding:10px 24px;background:var(--soft);border-bottom:2px solid var(--line);position:sticky;top:0;z-index:5}
+nav button{border:2px solid var(--brown2);background:var(--card);color:var(--brown);padding:7px 14px;border-radius:20px;font-size:16px;cursor:pointer}
+nav button.on{background:var(--brown2);color:#fff}
+main{max-width:1100px;margin:0 auto;padding:20px 24px 60px}
+.page{display:none}.page.on{display:block}
+h2{font-family:Georgia,serif;color:var(--brown);font-size:30px;margin:6px 0 12px;font-weight:normal}
+h3{color:var(--brown2);font-size:22px;margin:22px 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:14px 0;box-shadow:0 2px 0 var(--line)}
+.key{border-left:6px solid var(--accent)}
+.eq{font-family:Georgia,serif;font-size:24px;text-align:center;padding:10px;background:#fff;border:1px dashed var(--line);border-radius:8px;margin:10px 0}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 6px}
+.frac>span:first-child{border-bottom:2px solid var(--ink);padding:0 6px}
+.row{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+.row>*{flex:1 1 380px}
+button.b{background:var(--brown2);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:17px;cursor:pointer;margin:4px 6px 4px 0}
+button.b.alt{background:var(--card);color:var(--brown);border:2px solid var(--brown2)}
+button.b:disabled{opacity:.45;cursor:default}
+.check{background:#fdf6e6;border:2px solid var(--accent);border-radius:12px;padding:14px 18px;margin:16px 0}
+.check .tag{display:inline-block;background:var(--accent);color:#fff;font-size:14px;padding:2px 10px;border-radius:12px;margin-bottom:6px;letter-spacing:.5px}
+.check .src{font-size:14px;color:#8a7356;font-style:italic}
+input.ans{font-size:18px;padding:6px 10px;width:200px;border:2px solid var(--line);border-radius:6px}
+.fb{font-weight:600;margin-left:8px}
+.fb.ok{color:var(--good)}.fb.no{color:var(--bad)}
+.work{display:none;background:#fff;border-left:4px solid var(--brown2);padding:8px 14px;margin-top:8px;border-radius:4px}
+.work.on{display:block}
+table.t{border-collapse:collapse;margin:8px 0;background:#fff}
+table.t th,table.t td{border:1px solid var(--line);padding:6px 12px;text-align:center}
+table.t th{background:var(--soft);color:var(--brown)}
+svg text{font-family:"Segoe UI",Arial,sans-serif}
+.readout{font-family:Consolas,monospace;background:#2b1d10;color:#ffe9c4;padding:10px 14px;border-radius:8px;font-size:17px;line-height:1.6}
+.slider{width:100%}
+label.s{display:block;font-weight:600;color:var(--brown);margin-top:8px}
+.steps li{margin:6px 0}
+.reveal{display:none}.reveal.on{display:block;animation:fade .4s}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+.pager{display:flex;justify-content:space-between;margin-top:30px}
+.mcq button.opt{display:block;width:100%;text-align:left;margin:6px 0;padding:10px 14px;font-size:17px;border:2px solid var(--line);background:#fff;border-radius:8px;cursor:pointer;color:var(--ink)}
+.mcq button.opt.right{border-color:var(--good);background:#e6f4ea}
+.mcq button.opt.wrong{border-color:var(--bad);background:#fbe9e7}
+.mcq .exp{display:none;margin-top:6px;font-size:17px}
+.mcq.done .exp{display:block}
+.warn{background:#fbeee4;border-left:6px solid var(--bad);padding:10px 16px;border-radius:6px;margin:12px 0}
+.small{font-size:15px;color:#7a6448}
+canvas{background:#fff;border:1px solid var(--line);border-radius:8px;max-width:100%}
+.chip{display:inline-block;padding:2px 10px;border-radius:12px;background:var(--soft);margin:2px;font-size:16px}
+.big{font-size:22px}
+table.ice{border-collapse:collapse;margin:10px auto;background:#fff;font-size:18px}
+table.ice th,table.ice td{border:1px solid var(--line);padding:8px 14px;text-align:center;min-width:90px}
+table.ice th{background:var(--soft);color:var(--brown)}
+table.ice td.lab{background:#fbf3e3;font-weight:600;color:var(--brown);text-align:left}
+table.ice td.hl{background:#fde9c8;transition:background .4s}
+table.ice td.done{color:var(--good);font-weight:700}
+table.ice input{width:100px;font-size:17px;padding:3px 6px;border:2px solid var(--line);border-radius:6px;text-align:center}
+.slot{display:inline-block;min-width:60px;border-bottom:2px dashed var(--brown2);margin:0 4px;text-align:center}
+select.s{font-size:18px;padding:4px 6px;border:2px solid var(--line);border-radius:6px;background:#fff}
+.tick{color:var(--good);font-weight:700}.cross{color:var(--bad);font-weight:700}
+.legend span{display:inline-block;margin-right:14px;font-size:15px}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:-2px;margin-right:4px}
+.src{font-size:14px;color:#8a7356;font-style:italic;display:block;margin-bottom:4px}
+.readout .frac>span:first-child{border-bottom-color:#ffe9c4}
+
+</style>
+</head>
+<body>
+<header>
+  <h1>Kinetics 5 – Required Practical 3: Temperature and Rate</h1>
+  <p>AQA A-level Chemistry · Kinetics walkthrough</p>
+</header>
+<nav id="nav"></nav>
+<main>
+<!-- ============ PAGE 1 ============ -->
+<section class="page" data-title="1. Do the experiment">
+<h2>1. Required Practical 3: the effect of temperature on rate</h2>
+<div class="card key">
+  <p>Na₂S₂O₃(aq) + 2HCl(aq) → 2NaCl(aq) + SO₂(g) + S(s) + H₂O(l)</p>
+  <ol>
+    <li>Measure 10 cm³ of sodium thiosulfate and 10 cm³ of HCl into <b>separate</b> test tubes. Warm both in a water bath to the chosen temperature.</li>
+    <li>Put a conical flask on a paper cross. Pour in both solutions and <b>start the timer</b> as they mix.</li>
+    <li>Look down through the flask. <b>Stop the timer</b> when the cross disappears.</li>
+    <li>Measure the temperature at the start and end and take the <b>mean</b>.</li>
+    <li>Repeat at 4–5 more temperatures. Keep volumes, concentrations, flask and cross the same.</li>
+  </ol>
+  <table class="t" style="margin:auto"><tr><th>Independent</th><td>temperature</td></tr><tr><th>Dependent</th><td>time for the cross to disappear (rate ∝ 1/t)</td></tr><tr><th>Control</th><td>volumes, concentrations, same cross, same flask, same observer</td></tr></table>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Virtual experiment: you stop the clock</h3>
+  <div class="row">
+    <div style="flex:1 1 260px;text-align:center">
+      <canvas id="vxCv" width="260" height="240"></canvas>
+      <div class="readout" id="vxOut" style="text-align:left"></div>
+    </div>
+    <div style="flex:1 1 300px">
+      <label class="s">Water bath temperature: <span id="vxTV"></span> °C</label>
+      <input type="range" class="slider" id="vxT" min="15" max="60" step="5" value="20">
+      <label style="display:block;margin:6px 0"><input type="checkbox" id="vxFast" checked> speed up slow runs ×4 (the timer still shows experiment seconds)</label>
+      <button class="b" id="vxMix">▶ Mix and start the timer</button>
+      <button class="b alt" id="vxStop" disabled>■ Stop: cross has gone</button>
+      <table class="t" id="vxTab" style="margin-top:8px"><tr><th>T / °C (mean)</th><th>t / s</th><th>1/t / s⁻¹</th></tr></table>
+      <button class="b alt" onclick="vxClear()">Clear</button>
+    </div>
+  </div>
+  <svg id="vxSvg" viewBox="0 0 660 400" width="100%" style="max-width:640px"></svg>
+  <p class="small">Your results include your own reaction time, and the temperature drops a little during each run. That's why the plotted points scatter.</p>
+</div>
+</section>
+
+<!-- ============ PAGE 2 ============ -->
+<section class="page" data-title="2. Processing results">
+<h2>2. Processing the results</h2>
+<div class="check">
+  <span class="tag">EXAM QUESTION</span>
+  <span class="src">November 2020 AS Paper 2 Q2</span>
+  <table class="t"><tr><th>Temperature / °C</th><td>22</td><td>31</td><td>36</td><td>42</td><td>49</td><td>54</td></tr>
+  <tr><th>Time t / s</th><td>87</td><td>48</td><td>36</td><td>26</td><td>44</td><td>12</td></tr>
+  <tr><th>1/t / s⁻¹</th><td>0.0115</td><td>0.0208</td><td>0.0278</td><td>0.0385</td><td>0.0227</td><td><b>?</b></td></tr></table>
+  <p><b>2.1</b> The stopwatch reads to 0.01 s. Why are times recorded to the nearest second?</p>
+  <button class="b alt" onclick="tog('n1')">Mark scheme</button><div class="work" id="n1">It's hard to judge the exact moment the cross disappears / human reaction time is much bigger than 0.01 s.</div>
+  <p><b>2.2</b> Complete the table. <input class="ans" id="n2" style="width:110px"> s⁻¹ <button class="b" onclick="if(numCheck('n2',0.0833,0.01)){n54=true;nPlot()}">Check</button><span class="fb" id="n2fb"></span></p>
+  <p><b>2.3</b> Plot 1/t against temperature. <b>Click the anomalous point</b>, then draw the best-fit curve.</p>
+  <svg id="nSvg" viewBox="0 0 660 400" width="100%" style="max-width:640px;cursor:pointer"></svg>
+  <div><span class="fb" id="nAn"></span></div>
+  <button class="b alt" onclick="nFit()">Draw best-fit curve (ignoring the anomaly)</button>
+  <p><b>2.4</b> Use your line to estimate the time for the cross to disappear at 40 °C.</p>
+  <input class="ans" id="n4" style="width:110px"> s <button class="b" onclick="n4Check()">Check</button><span class="fb" id="n4fb"></span>
+  <div class="work" id="n4w">Read 1/t at 40 °C from the line (≈ 0.034–0.035), then t = 1 ÷ value ≈ <b>29 s</b>. The mark scheme example: 1 ÷ 0.0345 = 29 s.</div>
+  <p class="small">Mark scheme for 2.3: the best-fit curve misses the 49 °C point and passes within a small square of the other five. Don't force it through the origin.</p>
+</div>
+</section>
+
+<!-- ============ PAGE 3 ============ -->
+<section class="page" data-title="3. Uncertainty and evaluation">
+<h2>3. Uncertainty and evaluation</h2>
+<div class="card key">
+  <div class="eq">% uncertainty = <span class="frac"><span>uncertainty</span><span>measured value</span></span> × 100</div>
+  <ul>
+    <li>Reaction time is about ± 0.5 s whatever the time. So a <b>short</b> time has a much <b>bigger</b> % uncertainty. At high temperatures the results get less reliable.</li>
+    <li>A thermometer reading ±0.5 °C. Each value is read twice (start and end), but you take a mean.</li>
+    <li>When a value is found from a <b>difference</b> of two readings, add the two uncertainties.</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Interactive: % uncertainty in the time</h3>
+  <label class="s">Uncertainty from reaction time: ± <span id="puV"></span> s</label><input type="range" class="slider" id="puS" min="0.2" max="1.0" step="0.1" value="0.5">
+  <table class="t" id="puTab" style="margin:auto"></table>
+</div>
+
+<div class="check">
+  <span class="tag">UNCERTAINTY DRILL</span>
+  <p class="big" id="udQ"></p>
+  <input class="ans" id="udA"> % <button class="b" onclick="numCheck('udA',UD.a,0.02)">Check</button><span class="fb" id="udAfb"></span>
+  <button class="b alt" onclick="tog('udW')">Working</button><button class="b" onclick="udNew()">Next</button>
+  <div class="work" id="udW"></div>
+</div>
+
+<div class="check">
+  <span class="tag">WHY?</span>
+  <p>Match each exam question to its answer.</p>
+  <div id="whyQ"></div>
+</div>
+</section>
+
+<!-- ============ PAGE 4 ============ -->
+<section class="page" data-title="4. 6-mark method">
+<h2>4. The 6-mark method question</h2>
+<div class="check">
+  <span class="tag">6-MARK QUESTION</span>
+  <span class="src">June 2019 Paper 3 Q1.4 (6 marks)</span>
+  <p>The initial rate of the reaction between sodium thiosulfate and hydrochloric acid can be monitored by measuring the time taken for a fixed amount of sulfur to form. Describe an experiment to investigate the effect of temperature on the initial rate. Include an outline of your method, how you'll measure the time, how you'll present your results as a graph, and a sketch of the expected graph.</p>
+  <p>Write your answer, then tick each point you included.</p>
+  <div id="lr"></div>
+  <div class="readout" id="lrOut"></div>
+  <svg id="lrSvg" viewBox="0 0 660 400" width="100%" style="max-width:460px"></svg>
+  <p class="small">The sketch: rate (1/t) on the y-axis, temperature on the x-axis, a curve rising more and more steeply.</p>
+</div>
+</section>
+
+<!-- ============ PAGE 5 ============ -->
+<section class="page" data-title="5. Quiz">
+<h2>5. End-of-walkthrough quiz</h2>
+<p>Click an answer. You get one go at each question.</p>
+<div id="quiz"></div>
+<div class="card" id="score" style="font-size:22px;text-align:center"></div>
+<button class="b alt" onclick="buildQuiz()">Reset quiz</button>
+<p class="small">Next: Kinetics 6 – mixed maths practice.</p>
+</section>
+
+<div class="pager"><button class="b alt" id="prevB">◀ Previous</button><button class="b" id="nextB">Next ▶</button></div>
+</main>
+<script>
+/* ---------- navigation ---------- */
+const pages=[...document.querySelectorAll('.page')];let cur=0;
+const nav=document.getElementById('nav');
+pages.forEach((p,i)=>{const b=document.createElement('button');b.textContent=p.dataset.title;b.onclick=()=>go(i);nav.appendChild(b)});
+function go(i){cur=i;pages.forEach((p,j)=>p.classList.toggle('on',j===i));[...nav.children].forEach((b,j)=>b.classList.toggle('on',j===i));
+ document.getElementById('prevB').disabled=i===0;document.getElementById('nextB').disabled=i===pages.length-1;window.scrollTo(0,0);
+ if(typeof onPage==='function')onPage(i)}
+document.getElementById('prevB').onclick=()=>go(Math.max(0,cur-1));
+document.getElementById('nextB').onclick=()=>go(Math.min(pages.length-1,cur+1));
+
+/* ---------- helpers ---------- */
+const $=id=>document.getElementById(id);
+function tog(id){$(id).classList.toggle('on')}
+function stepReveal(id){const r=[...document.querySelectorAll('#'+id+' .reveal:not(.on)')];if(r.length)r[0].classList.add('on')}
+function parseNum(s){
+ s=s.trim().replace(/\s/g,'');const sp={'⁰':'0','¹':'1','²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9','⁻':'-'};
+ s=s.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁻]/g,c=>sp[c]).replace(/[−–]/g,'-').replace(/,/g,'');
+ let m=s.match(/^(-?[\d.]+)[x×X*]10\^?(-?\d+)$/);if(m)return parseFloat(m[1])*Math.pow(10,parseInt(m[2]));
+ m=s.match(/^(-?[\d.]+)[eE](-?\d+)$/);if(m)return parseFloat(s);
+ const v=Number(s);return (s===''||isNaN(v))?null:v}
+function numCheck(id,target,tol){const v=parseNum($(id).value);const fb=$(id+'fb');
+ if(v===null){fb.textContent='Enter a number';fb.className='fb no';return false}
+ if(Math.abs(v-target)<=Math.abs(target)*tol){fb.textContent='✔ Correct';fb.className='fb ok';return true}
+ fb.textContent='✘ Not quite, check your working';fb.className='fb no';return false}
+function pick(btn,ok,id){const f=$(id);f.textContent=ok?'✔ Correct':'✘ Try again';f.className='fb '+(ok?'ok':'no')}
+const sup=n=>String(n).split('').map(c=>({'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'})[c]).join('');
+/* format number to n s.f.; standard form for very small/large */
+function sf(x,n=3){if(x===0)return '0';let e=Math.floor(Math.log10(Math.abs(x)));
+ if(e<-3||e>=5){let m=(x/Math.pow(10,e)).toFixed(n-1);if(Math.abs(+m)>=10){e++;m=(x/Math.pow(10,e)).toFixed(n-1)}return m+' × 10'+sup(e)}
+ return x.toFixed(Math.max(0,n-1-e))}
+/* units of Kc from Δn = (moles top − moles bottom) */
+function kcUnits(dn){if(dn===0)return 'no units';const m=dn===1?'mol':'mol'+sup(dn);return `${m} dm${sup(-3*dn)}`}
+/* render a fraction */
+const fr=(t,b)=>`<span class="frac"><span>${t}</span><span>${b}</span></span>`;
+
+/* ---------- SVG plotting ---------- */
+const NS='http://www.w3.org/2000/svg';
+function E(tag,a,p){const e=document.createElementNS(NS,tag);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e}
+function plot(svg,o){
+ svg.innerHTML='';const W=660,H=400,ml=80,mr=20,mt=18,mb=60,pw=W-ml-mr,ph=H-mt-mb;
+ const X=x=>ml+x/o.xmax*pw,Y=y=>mt+ph-y/o.ymax*ph;
+ const id='cl'+Math.random().toString(36).slice(2);
+ const d=E('defs',{},svg);const cp=E('clipPath',{id},d);E('rect',{x:ml,y:mt,width:pw,height:ph},cp);
+ E('rect',{x:ml,y:mt,width:pw,height:ph,fill:'#fff'},svg);
+ const gx=o.gx||o.xt,gy=o.gy||o.yt;
+ for(let x=0;x<=o.xmax+1e-9;x+=gx)E('line',{x1:X(x),x2:X(x),y1:mt,y2:mt+ph,stroke:'#efe3cc'},svg);
+ for(let y=0;y<=o.ymax+1e-9;y+=gy)E('line',{x1:ml,x2:ml+pw,y1:Y(y),y2:Y(y),stroke:'#efe3cc'},svg);
+ if(!o.noxt)for(let x=0;x<=o.xmax+1e-9;x+=o.xt){E('line',{x1:X(x),x2:X(x),y1:mt+ph,y2:mt+ph+6,stroke:'#3b2a1a'},svg);const t=E('text',{x:X(x),y:mt+ph+24,'text-anchor':'middle','font-size':15,fill:'#3b2a1a'},svg);t.textContent=+x.toFixed(4)}
+ if(!o.noyt)for(let y=0;y<=o.ymax+1e-9;y+=o.yt){E('line',{x1:ml-6,x2:ml,y1:Y(y),y2:Y(y),stroke:'#3b2a1a'},svg);const t=E('text',{x:ml-10,y:Y(y)+5,'text-anchor':'end','font-size':15,fill:'#3b2a1a'},svg);t.textContent=(o.yfmt?o.yfmt(y):+y.toFixed(3))}
+ E('line',{x1:ml,x2:ml+pw,y1:mt+ph,y2:mt+ph,stroke:'#3b2a1a','stroke-width':2},svg);
+ E('line',{x1:ml,x2:ml,y1:mt,y2:mt+ph,stroke:'#3b2a1a','stroke-width':2},svg);
+ let t=E('text',{x:ml+pw/2,y:H-12,'text-anchor':'middle','font-size':17,fill:'#6b4423'},svg);t.textContent=o.xlab;
+ t=E('text',{x:18,y:mt+ph/2,'text-anchor':'middle','font-size':17,fill:'#6b4423',transform:`rotate(-90 18 ${mt+ph/2})`},svg);t.textContent=o.ylab;
+ const g=E('g',{'clip-path':`url(#${id})`},svg);
+ return {X,Y,g,svg,curve(f,col='#6b4423',w=3,dash,x0=0,x1=o.xmax){let dd='';for(let i=0;i<=300;i++){const x=x0+(x1-x0)*i/300;dd+=(i?'L':'M')+X(x)+' '+Y(f(x))}return E('path',{d:dd,fill:'none',stroke:col,'stroke-width':w,'stroke-dasharray':dash||''},g)},
+  text(x,y,s,col='#3b2a1a',sz=15,anc='start'){const t=E('text',{x:X(x),y:Y(y),'font-size':sz,fill:col,'text-anchor':anc},g);t.textContent=s;return t}};
+}
+
+/* ---------- quiz ---------- */
+let qs=0,qa=0;
+function buildQuiz(){const w=$('quiz');w.innerHTML='';qs=0;qa=0;
+ Q.forEach((q,i)=>{const c=document.createElement('div');c.className='card mcq';c.innerHTML=`<b>Q${i+1}.</b> ${q[0]}`;
+  q[1].forEach((o,j)=>{const b=document.createElement('button');b.className='opt';b.innerHTML=o;
+   b.onclick=()=>{if(c.classList.contains('done'))return;c.classList.add('done');qa++;
+    if(j===q[2]){b.classList.add('right');qs++}else{b.classList.add('wrong');c.querySelectorAll('.opt')[q[2]].classList.add('right')}score()};c.appendChild(b)});
+  const e=document.createElement('div');e.className='exp';e.innerHTML='💡 '+q[3];c.appendChild(e);w.appendChild(c)});score()}
+function score(){const n=Q.length;$('score').innerHTML=`Score: <b>${qs}</b> / ${n}`+(qa===n?(qs>=n-1?' – excellent!':qs>=Math.ceil(n*0.7)?' – good, review the ones you missed':' – go back through the walkthrough and try again'):'')}
+
+const pickA=a=>a[Math.floor(Math.random()*a.length)];
+function cross(P,x,y,col='#3b2a1a'){const X=P.X(x),Y=P.Y(y);E('path',{d:`M${X-5} ${Y-5}L${X+5} ${Y+5}M${X-5} ${Y+5}L${X+5} ${Y-5}`,stroke:col,'stroke-width':2.2},P.g)}
+function xLabels(P,vals,off){vals.forEach(v=>{const t=E('text',{x:P.X(v-off),y:366,'text-anchor':'middle','font-size':15,fill:'#3b2a1a'},P.svg);t.textContent=v})}
+
+/* ---------- page 1: virtual experiment ---------- */
+const t0=T=>60/Math.pow(2,(T-20)/10);let vx={run:false,t:0,T:20,stopAt:null},vxRes=[];
+function flask(c,cloud){c.clearRect(0,0,260,240);c.strokeStyle='#3b2a1a';c.lineWidth=7;c.beginPath();c.moveTo(80,170);c.lineTo(180,230);c.moveTo(180,170);c.lineTo(80,230);c.stroke();
+ c.fillStyle=`rgba(240,232,190,${Math.min(1,cloud)})`;c.beginPath();c.moveTo(105,30);c.lineTo(155,30);c.lineTo(155,80);c.lineTo(220,215);c.lineTo(40,215);c.lineTo(105,80);c.closePath();c.fill();
+ c.strokeStyle='#6b4423';c.lineWidth=3;c.stroke()}
+function vxDraw(){const c=$('vxCv').getContext('2d');const p=vx.run?vx.t/t0(vx.T):0;flask(c,p*0.97);
+ $('vxOut').innerHTML=vx.run?`timer: <b>${vx.t.toFixed(1)} s</b><br>Click stop when you can't see the cross.`:'Choose a temperature and mix.'}
+function vxPlot(){const P=plot($('vxSvg'),{xmax:50,ymax:0.5,xt:10,yt:0.1,xlab:'temperature / °C',ylab:'1/t / s⁻¹',noxt:true,yfmt:y=>y.toFixed(1)});xLabels(P,[10,20,30,40,50,60],10);vxRes.forEach(r=>cross(P,r.T-10,1/r.t))}
+function vxClear(){vxRes=[];vxTab();vxPlot()}
+function vxTab(){$('vxTab').innerHTML='<tr><th>T / °C (mean)</th><th>t / s</th><th>1/t / s⁻¹</th></tr>'+vxRes.map(r=>`<tr><td>${r.T.toFixed(1)}</td><td>${r.t.toFixed(0)}</td><td>${(1/r.t).toFixed(4)}</td></tr>`).join('')}
+$('vxT').oninput=()=>$('vxTV').textContent=$('vxT').value;$('vxTV').textContent=20;
+$('vxMix').onclick=()=>{vx={run:true,t:0,T:+$('vxT').value};$('vxStop').disabled=false;$('vxMix').disabled=true};
+$('vxStop').onclick=()=>{if(!vx.run)return;vx.run=false;const drop=0.06*(vx.T-20),Tm=vx.T-drop/2+(Math.random()-.5)*0.4;
+ vxRes.push({T:Tm,t:Math.max(1,Math.round(vx.t))});vxTab();vxPlot();$('vxStop').disabled=true;$('vxMix').disabled=false;
+ $('vxOut').innerHTML=`Recorded t = ${Math.round(vx.t)} s (true value ${t0(vx.T).toFixed(0)} s at ${vx.T} °C)<br>Mean temperature ${Tm.toFixed(1)} °C`;flask($('vxCv').getContext('2d'),1)};
+let vxLast=performance.now();function vxLoop(ts){const dt=Math.min(.05,(ts-vxLast)/1000);vxLast=ts;if(vx.run){vx.t+=dt*(($('vxFast').checked&&t0(vx.T)>20)?4:1);if(vx.t>t0(vx.T)*3){vx.t=t0(vx.T)*3}vxDraw()}requestAnimationFrame(vxLoop)}
+flask($('vxCv').getContext('2d'),0);vxDraw();vxPlot();requestAnimationFrame(vxLoop);
+
+/* ---------- page 2: Nov 2020 data ---------- */
+const ND=[[22,87],[31,48],[36,36],[42,26],[49,44],[54,12]];
+const good=ND.filter(d=>d[0]!==49);let fitA,fitB;(function(){const xs=good.map(d=>d[0]),ys=good.map(d=>Math.log(1/d[1])),n=xs.length,mx=xs.reduce((a,b)=>a+b)/n,my=ys.reduce((a,b)=>a+b)/n;
+ let sxy=0,sxx=0;xs.forEach((x,i)=>{sxy+=(x-mx)*(ys[i]-my);sxx+=(x-mx)**2});fitB=sxy/sxx;fitA=my-fitB*mx})();
+const fit=T=>Math.exp(fitA+fitB*T);let nFitOn=false,nAnOk=false,n54=false;
+function nPlot(){const P=plot($('nSvg'),{xmax:40,ymax:0.09,xt:10,yt:0.01,gx:2,gy:0.002,xlab:'temperature / °C',ylab:'1/t / s⁻¹',noxt:true,yfmt:y=>y.toFixed(2)});xLabels(P,[20,30,40,50,60],20);
+ ND.filter(d=>d[0]!==54||n54||nFitOn).forEach(([T,t])=>cross(P,T-20,1/t,nAnOk&&T===49?'#b03a2e':'#3b2a1a'));if(nAnOk){E('circle',{cx:P.X(29),cy:P.Y(1/44),r:12,fill:'none',stroke:'#b03a2e','stroke-width':2.5},P.g)}
+ if(nFitOn){P.curve(x=>fit(x+20),'#6b4423',2.5,'',1,36);const y=fit(40);E('path',{d:`M${P.X(20)} ${P.Y(0)}L${P.X(20)} ${P.Y(y)}L${P.X(0)} ${P.Y(y)}`,fill:'none',stroke:'#2c4a7a','stroke-dasharray':'6 4','stroke-width':2},P.g);P.text(0.5,y+0.002,'≈ '+y.toFixed(4),'#2c4a7a',14)}
+ P.svg.onclick=ev=>{const r=P.svg.getBoundingClientRect(),sx=(ev.clientX-r.left)/r.width*660,sy=(ev.clientY-r.top)/r.height*400;let best=null,bd=1e9;ND.filter(d=>d[0]!==54||n54||nFitOn).forEach(([T,t])=>{const d=Math.hypot(P.X(T-20)-sx,P.Y(1/t)-sy);if(d<bd){bd=d;best=T}});
+  const f=$('nAn');if(bd>30){f.textContent='Click on a point';f.className='fb no';return}
+  if(best===49){nAnOk=true;f.textContent='✔ Yes: 49 °C (44 s) is far off the trend. It should be about 16 s.';f.className='fb ok';nPlot()}else{f.textContent='✘ That point fits the trend. Look for the one that doesn\'t.';f.className='fb no'}}}
+function nFit(){nFitOn=true;nPlot()}nPlot();
+function n4Check(){const v=parseNum($('n4').value),f=$('n4fb');if(v===null){f.textContent='Enter a number';f.className='fb no';return}
+ if(v>=26&&v<=32){f.textContent='✔ Good';f.className='fb ok';$('n4w').classList.add('on')}else{f.textContent='✘ Read 1/t at 40 °C, then t = 1 ÷ that';f.className='fb no'}}
+
+/* ---------- page 3: uncertainty ---------- */
+function pu(){const u=+$('puS').value;$('puV').textContent=u.toFixed(1);$('puTab').innerHTML='<tr><th>t / s</th><th>% uncertainty</th></tr>'+[87,48,36,26,12,5].map(t=>`<tr><td>${t}</td><td>${(100*u/t).toFixed(1)}%</td></tr>`).join('')}
+$('puS').oninput=pu;pu();
+let UD=null;function udNew(){const k=pickA([0,1,2,3]);
+ if(k===0){const t=pickA([12,18,25,36,48,60,87]),u=pickA([0.5,1]);UD={q:`A time of ${t} s is measured with an uncertainty of ±${u} s. Calculate the % uncertainty.`,a:100*u/t,w:`${u} ÷ ${t} × 100 = ${(100*u/t).toFixed(2)}%`}}
+ if(k===1){const T1=+(18+Math.random()*4).toFixed(1),T2=+(T1+20+Math.random()*25).toFixed(1);UD={q:`A thermometer (±0.1 °C) reads ${T1} °C then ${T2} °C. Calculate the % uncertainty in the temperature change.`,a:100*0.2/(T2-T1),w:`ΔT = ${(T2-T1).toFixed(1)} °C. Two readings, so uncertainty = 2 × 0.1 = 0.2 °C.<br>0.2 ÷ ${(T2-T1).toFixed(1)} × 100 = ${(100*0.2/(T2-T1)).toFixed(2)}%`}}
+ if(k===2){const v=pickA([10.0,20.0,25.0,50.0]),u=pickA([0.1,0.2,0.5]);UD={q:`A measuring cylinder measures ${v.toFixed(1)} cm³ with an uncertainty of ±${u} cm³. Calculate the % uncertainty.`,a:100*u/v,w:`${u} ÷ ${v} × 100 = ${(100*u/v).toFixed(2)}%`}}
+ if(k===3){const t=pickA([20,30,40]);UD={q:`At 60 °C the time is only ${t/4} s; at 20 °C it is ${t*2} s. Uncertainty ±0.5 s for both. What is the % uncertainty at 60 °C?`,a:100*0.5/(t/4),w:`0.5 ÷ ${t/4} × 100 = ${(100*0.5/(t/4)).toFixed(1)}% (compare ${(100*0.5/(t*2)).toFixed(1)}% at 20 °C)`}}
+ $('udQ').innerHTML=UD.q;$('udA').value='';$('udAfb').textContent='';$('udW').classList.remove('on');$('udW').innerHTML=UD.w}udNew();
+const WHY=[['Why are small amounts of reactants used?','SO₂ is a toxic gas, so limit how much forms (Nov 2020 AS 2.5)'],['Why not do experiments at 1–10 °C?','The reaction would be too slow / take too long (Nov 2020 AS 2.6)'],
+ ['Why use the mean of the start and end temperatures?','The temperature changes during the reaction'],['Why record times to the nearest second, not 0.01 s?','Human reaction time / it\'s hard to judge the exact moment (Nov 2020 AS 2.1)'],
+ ['Why use the same cross and the same observer each time?','So the end point (amount of sulfur) is judged the same way each time']];
+const opts=WHY.map(w=>w[1]).sort(()=>Math.random()-.5);
+WHY.forEach(([q,a],i)=>{const p=document.createElement('div');p.style.margin='10px 0';p.innerHTML=`<b>${q}</b><br><select class="s" id="wy${i}" style="max-width:100%"><option value="">choose…</option>${opts.map(o=>`<option>${o}</option>`).join('')}</select> <span class="fb" id="wyf${i}"></span>`;$('whyQ').appendChild(p);
+ $('wy'+i).onchange=e=>{const ok=e.target.value===a;$('wyf'+i).className='fb '+(ok?'ok':'no');$('wyf'+i).textContent=ok?'✔':'✘'}});
+
+/* ---------- page 4: 6-mark ---------- */
+const LR=[['Stage 1: method',['Uses the disappearing cross (or a colorimeter)','Puts one reactant in a flask on the cross','Adds the second reactant and starts timing']],
+ ['Stage 2: measurements',['Repeats at different temperatures (more than two)','Records the time t for the cross to disappear','Keeps other variables constant (cross, volumes, concentrations)']],
+ ['Stage 3: use of results',['States 1/t (or 1000/t) is a measure of rate','Plots rate (1/t) on y against temperature on x','Sketch: curve rising more and more steeply']]];
+LR.forEach(([h,pts],i)=>{const d=document.createElement('div');d.innerHTML=`<b>${h}</b>`;pts.forEach(p=>{d.innerHTML+=`<label style="display:block;margin:3px 0 3px 10px"><input type="checkbox" class="lrc" data-s="${i}"> ${p}</label>`});$('lr').appendChild(d)});
+function lrUpd(){const n=[0,0,0];document.querySelectorAll('.lrc').forEach(c=>{if(c.checked)n[+c.dataset.s]++});const vc=n.filter(x=>x>=2).length,cov=n.filter(x=>x>=1).length;
+ const L=vc===3?'Level 3 (5–6 marks)':(cov===3||vc===2)?'Level 2 (3–4 marks)':(cov>=2||vc===1)?'Level 1 (1–2 marks)':'0 marks';$('lrOut').innerHTML=`Points per stage: ${n.join(' / ')}<br>Estimated: <b>${L}</b>`}
+document.querySelectorAll('.lrc').forEach(c=>c.onchange=lrUpd);lrUpd();
+const LP=plot($('lrSvg'),{xmax:10,ymax:10,xt:20,yt:20,xlab:'temperature',ylab:'rate (1/t)',noxt:true,noyt:true});LP.curve(x=>0.6*Math.exp(0.27*x),'#6b4423',3,'',0.5,9.6);
+
+/* ---------- quiz ---------- */
+const Q=[
+ ["In RP3, what is the independent variable?",["Time","Temperature","Volume of acid","Concentration of thiosulfate"],1,"You choose and change the temperature."],
+ ["Why is the cross hidden?",["SO₂ gas forms","A precipitate of sulfur makes the mixture cloudy","The solution turns blue","NaCl crystals form"],1,"S(s) is the cloudy precipitate."],
+ ["Why is 1/t used as a measure of rate?",["Because the same amount of sulfur forms each time, rate = amount/t","Because time is always 1 s","Because it's a straight line","Because the reaction is first order"],0,"Fixed amount ÷ time ∝ 1/t."],
+ ["Why should the solutions be warmed separately before mixing?",["So the reaction starts at the chosen temperature","To make SO₂","To stop the reaction","To dissolve the sulfur"],0,"Otherwise the reaction would start at a lower temperature."],
+ ["A time of 12 s has an uncertainty of ±0.5 s. What is the % uncertainty?",["0.5%","4.2%","6.0%","24%"],1,"0.5 ÷ 12 × 100 = 4.2%."],
+ ["Why are results at high temperature less reliable?",["The times are short, so reaction time is a bigger % of the time","Thermometers don't work","The cross disappears more slowly","SO₂ dissolves"],0,"Same ±0.5 s on a smaller time."],
+ ["How should you deal with an anomalous point when drawing a best-fit line?",["Draw the line through it","Ignore it when drawing the line (and repeat if possible)","Delete all the other points","Draw a line through the origin"],1,"Mark schemes want the line to miss the anomaly."],
+ ["What shape is a graph of 1/t against temperature?",["Straight line through the origin","Curve rising more and more steeply","Horizontal line","Curve levelling off"],1,"Rate rises steeply with T."],
+ ["Why aren't large volumes of thiosulfate and acid used?",["They are expensive","SO₂ is toxic","The cross would be too dark","It would be too fast"],1,"Limit the toxic SO₂ formed."],
+ ["Temperatures at start and end are 41.0 °C and 39.0 °C. What temperature do you record?",["41.0 °C","39.0 °C","40.0 °C","2.0 °C"],2,"Use the mean."]
+];
+
+buildQuiz();
+go(0);
+</script>
+</body>
+</html>

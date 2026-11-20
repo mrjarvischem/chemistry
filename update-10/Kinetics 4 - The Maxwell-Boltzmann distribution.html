@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kinetics 4 – The Maxwell–Boltzmann Distribution</title>
+<style>
+:root{
+  --bg:#f6efe1; --card:#fffaf0; --ink:#3b2a1a; --brown:#6b4423; --brown2:#8b5a2b;
+  --accent:#b5651d; --soft:#ead9bd; --line:#d8c4a0; --good:#2f7d4a; --bad:#b03a2e; --blue:#2c4a7a;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Arial,sans-serif;font-size:19px;line-height:1.55}
+header{background:var(--brown);color:#fff8ec;padding:14px 24px}
+header h1{margin:0;font-family:Georgia,serif;font-size:28px;font-weight:normal}
+header p{margin:2px 0 0;opacity:.85;font-size:16px}
+nav{display:flex;flex-wrap:wrap;gap:6px;padding:10px 24px;background:var(--soft);border-bottom:2px solid var(--line);position:sticky;top:0;z-index:5}
+nav button{border:2px solid var(--brown2);background:var(--card);color:var(--brown);padding:7px 14px;border-radius:20px;font-size:16px;cursor:pointer}
+nav button.on{background:var(--brown2);color:#fff}
+main{max-width:1100px;margin:0 auto;padding:20px 24px 60px}
+.page{display:none}.page.on{display:block}
+h2{font-family:Georgia,serif;color:var(--brown);font-size:30px;margin:6px 0 12px;font-weight:normal}
+h3{color:var(--brown2);font-size:22px;margin:22px 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:14px 0;box-shadow:0 2px 0 var(--line)}
+.key{border-left:6px solid var(--accent)}
+.eq{font-family:Georgia,serif;font-size:24px;text-align:center;padding:10px;background:#fff;border:1px dashed var(--line);border-radius:8px;margin:10px 0}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 6px}
+.frac>span:first-child{border-bottom:2px solid var(--ink);padding:0 6px}
+.row{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+.row>*{flex:1 1 380px}
+button.b{background:var(--brown2);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:17px;cursor:pointer;margin:4px 6px 4px 0}
+button.b.alt{background:var(--card);color:var(--brown);border:2px solid var(--brown2)}
+button.b:disabled{opacity:.45;cursor:default}
+.check{background:#fdf6e6;border:2px solid var(--accent);border-radius:12px;padding:14px 18px;margin:16px 0}
+.check .tag{display:inline-block;background:var(--accent);color:#fff;font-size:14px;padding:2px 10px;border-radius:12px;margin-bottom:6px;letter-spacing:.5px}
+.check .src{font-size:14px;color:#8a7356;font-style:italic}
+input.ans{font-size:18px;padding:6px 10px;width:200px;border:2px solid var(--line);border-radius:6px}
+.fb{font-weight:600;margin-left:8px}
+.fb.ok{color:var(--good)}.fb.no{color:var(--bad)}
+.work{display:none;background:#fff;border-left:4px solid var(--brown2);padding:8px 14px;margin-top:8px;border-radius:4px}
+.work.on{display:block}
+table.t{border-collapse:collapse;margin:8px 0;background:#fff}
+table.t th,table.t td{border:1px solid var(--line);padding:6px 12px;text-align:center}
+table.t th{background:var(--soft);color:var(--brown)}
+svg text{font-family:"Segoe UI",Arial,sans-serif}
+.readout{font-family:Consolas,monospace;background:#2b1d10;color:#ffe9c4;padding:10px 14px;border-radius:8px;font-size:17px;line-height:1.6}
+.slider{width:100%}
+label.s{display:block;font-weight:600;color:var(--brown);margin-top:8px}
+.steps li{margin:6px 0}
+.reveal{display:none}.reveal.on{display:block;animation:fade .4s}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+.pager{display:flex;justify-content:space-between;margin-top:30px}
+.mcq button.opt{display:block;width:100%;text-align:left;margin:6px 0;padding:10px 14px;font-size:17px;border:2px solid var(--line);background:#fff;border-radius:8px;cursor:pointer;color:var(--ink)}
+.mcq button.opt.right{border-color:var(--good);background:#e6f4ea}
+.mcq button.opt.wrong{border-color:var(--bad);background:#fbe9e7}
+.mcq .exp{display:none;margin-top:6px;font-size:17px}
+.mcq.done .exp{display:block}
+.warn{background:#fbeee4;border-left:6px solid var(--bad);padding:10px 16px;border-radius:6px;margin:12px 0}
+.small{font-size:15px;color:#7a6448}
+canvas{background:#fff;border:1px solid var(--line);border-radius:8px;max-width:100%}
+.chip{display:inline-block;padding:2px 10px;border-radius:12px;background:var(--soft);margin:2px;font-size:16px}
+.big{font-size:22px}
+table.ice{border-collapse:collapse;margin:10px auto;background:#fff;font-size:18px}
+table.ice th,table.ice td{border:1px solid var(--line);padding:8px 14px;text-align:center;min-width:90px}
+table.ice th{background:var(--soft);color:var(--brown)}
+table.ice td.lab{background:#fbf3e3;font-weight:600;color:var(--brown);text-align:left}
+table.ice td.hl{background:#fde9c8;transition:background .4s}
+table.ice td.done{color:var(--good);font-weight:700}
+table.ice input{width:100px;font-size:17px;padding:3px 6px;border:2px solid var(--line);border-radius:6px;text-align:center}
+.slot{display:inline-block;min-width:60px;border-bottom:2px dashed var(--brown2);margin:0 4px;text-align:center}
+select.s{font-size:18px;padding:4px 6px;border:2px solid var(--line);border-radius:6px;background:#fff}
+.tick{color:var(--good);font-weight:700}.cross{color:var(--bad);font-weight:700}
+.legend span{display:inline-block;margin-right:14px;font-size:15px}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:-2px;margin-right:4px}
+.src{font-size:14px;color:#8a7356;font-style:italic;display:block;margin-bottom:4px}
+.readout .frac>span:first-child{border-bottom-color:#ffe9c4}
+
+</style>
+</head>
+<body>
+<header>
+  <h1>Kinetics 4 – The Maxwell–Boltzmann Distribution</h1>
+  <p>AQA A-level Chemistry · Kinetics walkthrough</p>
+</header>
+<nav id="nav"></nav>
+<main>
+<!-- ============ PAGE 1 ============ -->
+<section class="page" data-title="1. Reading the curve">
+<h2>1. The Maxwell–Boltzmann distribution</h2>
+<div class="card key">
+  <p>In a gas, the molecules don't all have the same energy. The Maxwell–Boltzmann distribution shows <b>how many molecules have each energy</b> at a given temperature.</p>
+  <ul>
+    <li><b>y-axis:</b> number (or fraction) of molecules. <b>x-axis:</b> (kinetic) energy.</li>
+    <li>It <b>starts at the origin</b>: no molecules have zero energy.</li>
+    <li>The <b>peak</b> is the <b>most probable energy</b>.</li>
+    <li>The <b>mean energy</b> is a little to the <b>right</b> of the peak, because the curve isn't symmetrical.</li>
+    <li>The curve <b>never touches the x-axis</b> on the right: there's no maximum energy.</li>
+    <li>The <b>area under the curve</b> = the <b>total number of molecules</b>.</li>
+    <li>Only molecules to the <b>right of E<sub>a</sub></b> have enough energy to react.</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Interactive: click a feature to highlight it</h3>
+  <div style="margin-bottom:6px">
+    <button class="b alt ft" data-f="origin">starts at origin</button><button class="b alt ft" data-f="peak">most probable energy</button><button class="b alt ft" data-f="mean">mean energy</button>
+    <button class="b alt ft" data-f="tail">never touches the axis</button><button class="b alt ft" data-f="area">area = total molecules</button><button class="b alt ft" data-f="ea">E ≥ Eₐ</button>
+  </div>
+  <svg id="ftSvg" viewBox="0 0 660 400" width="100%"></svg>
+  <div class="readout" id="ftOut">Click a button.</div>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 1</span>
+  <span class="src">November 2021 AS Paper 2 Q1.1–1.3</span>
+  <p>(a) Label the vertical axis.</p>
+  <button class="b alt" onclick="tog('c1a')">Answer</button><div class="work" id="c1a">Number of molecules (with a particular energy). "Amount", "fraction" or "proportion" were also allowed. Atoms/particles were ignored.</div>
+  <p>(b) Why does the curve start at the origin?</p>
+  <button class="b alt" onclick="tog('c1b')">Answer</button><div class="work" id="c1b">There are <b>no molecules with zero energy</b>. All molecules have some energy.</div>
+  <p>(c) What does the energy at the peak represent?</p>
+  <button class="b alt" onclick="pick(this,false,'c1c')">mean energy</button><button class="b alt" onclick="pick(this,true,'c1c')">most probable energy</button><button class="b alt" onclick="pick(this,false,'c1c')">activation energy</button><span class="fb" id="c1c"></span>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 2</span>
+  <span class="src">June 2024 Paper 3 Q14 and June 2023 Paper 3 Q11</span>
+  <p>What is represented by the total area under the curve?</p>
+  <button class="b alt" style="display:block" onclick="pick(this,false,'c2')">The total energy of the molecules</button>
+  <button class="b alt" style="display:block" onclick="pick(this,false,'c2')">The activation energy</button>
+  <button class="b alt" style="display:block" onclick="pick(this,false,'c2')">The total number of reacting molecules</button>
+  <button class="b alt" style="display:block" onclick="pick(this,true,'c2')">The total number of molecules present</button>
+  <span class="fb" id="c2"></span>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 3</span>
+  <span class="src">November 2021 Paper 3 Q19</span>
+  <p>Which statement about the distribution of molecular energies in a gas is correct?</p>
+  <button class="b alt" style="display:block" onclick="pick(this,true,'c3')">A There are no molecules with zero energy.</button>
+  <button class="b alt" style="display:block" onclick="pick(this,false,'c3')">B The curve is symmetrical about the maximum.</button>
+  <button class="b alt" style="display:block" onclick="pick(this,false,'c3')">C Changing the temperature has no effect on the position of the maximum.</button>
+  <button class="b alt" style="display:block" onclick="pick(this,false,'c3')">D Most molecules have the mean energy.</button>
+  <span class="fb" id="c3"></span>
+</div>
+</section>
+
+<!-- ============ PAGE 2 ============ -->
+<section class="page" data-title="2. Change the temperature">
+<h2>2. Manipulate the curve: temperature and E<sub>a</sub></h2>
+<div class="card">
+  <div class="row">
+    <div style="flex:2 1 460px"><svg id="mbSvg" viewBox="0 0 660 400" width="100%"></svg>
+      <div class="legend"><span><i style="background:#2c4a7a"></i>T₁</span><span><i style="background:#b03a2e"></i>T₂ (if shown)</span><span><i style="background:#f2c48d"></i>molecules with E ≥ Eₐ</span></div></div>
+    <div style="flex:1 1 250px">
+      <label class="s">T₁: <span id="t1V"></span> K</label><input type="range" class="slider" id="t1S" min="200" max="900" step="10" value="300">
+      <label style="display:block;margin-top:6px"><input type="checkbox" id="t2On" checked> show a second temperature T₂</label>
+      <label class="s">T₂: <span id="t2V"></span> K</label><input type="range" class="slider" id="t2S" min="200" max="900" step="10" value="400">
+      <label class="s">E<sub>a</sub>: <span id="eaV"></span> (energy units)</label><input type="range" class="slider" id="eaS" min="3" max="19" step="0.5" value="12">
+      <label style="display:block;margin-top:6px"><input type="checkbox" id="dotOn"> show 400 molecules as dots</label>
+    </div>
+  </div>
+  <div class="readout" id="mbOut"></div>
+</div>
+<div class="card key">
+  <h3 style="margin-top:0">At a higher temperature the curve…</h3>
+  <ol>
+    <li>has its <b>peak moved to the right</b> (higher most probable energy) <b>and lower</b>;</li>
+    <li>has the <b>same area</b> (same number of molecules), so it's flatter and more spread out;</li>
+    <li><b>crosses the original curve only once</b>;</li>
+    <li>has a <b>much bigger area beyond E<sub>a</sub></b>. That's why rate rises so steeply with temperature.</li>
+  </ol>
+</div>
+</section>
+
+<!-- ============ PAGE 3 ============ -->
+<section class="page" data-title="3. Fewer molecules, catalysts">
+<h2>3. Changing the number of molecules, and adding a catalyst</h2>
+<div class="card">
+  <h3 style="margin-top:0">Same temperature, different number of molecules</h3>
+  <label class="s">Number of molecules: <span id="nV"></span>% of the original</label>
+  <input type="range" class="slider" id="nS" min="25" max="150" step="5" value="50">
+  <svg id="nSvg" viewBox="0 0 660 400" width="100%" style="max-width:640px"></svg>
+  <p>Same temperature → same shape and <b>same peak energy</b>. Fewer molecules → every point is <b>scaled down</b>, so the area is smaller.</p>
+</div>
+<div class="check">
+  <span class="tag">QUICK CHECK 4</span>
+  <span class="src">November 2021 AS Paper 2 Q1.4 (2 marks)</span>
+  <p>Sketch the curve for <b>half</b> the number of molecules at the same temperature. What two features earn the marks?</p>
+  <button class="b alt" onclick="tog('c4w')">Mark scheme</button>
+  <div class="work" id="c4w"><b>M1</b> the peak is at the <b>same energy</b> (directly below the original peak)<br><b>M2</b> the area is about <b>half</b>; after leaving the origin the new line stays below the original and doesn't touch it</div>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Adding a catalyst</h3>
+  <label style="display:block"><input type="checkbox" id="catOn"> add a catalyst</label>
+  <svg id="catSvg" viewBox="0 0 660 400" width="100%" style="max-width:640px"></svg>
+  <div class="readout" id="catOut"></div>
+  <p>The <b>curve doesn't change</b> (same temperature). E<sub>a</sub> moves to the <b>left</b>, so a bigger proportion of molecules have E ≥ E<sub>a</sub>.</p>
+</div>
+</section>
+
+<!-- ============ PAGE 4 ============ -->
+<section class="page" data-title="4. The maths">
+<h2>4. The maths: how many molecules have E ≥ E<sub>a</sub>?</h2>
+<div class="card key">
+  <p>The fraction of molecules with energy of at least E<sub>a</sub> is approximately:</p>
+  <div class="eq">fraction ≈ e<sup>−E<sub>a</sub> / RT</sup> &nbsp;&nbsp; (E<sub>a</sub> in J mol⁻¹, R = 8.31 J K⁻¹ mol⁻¹, T in K)</div>
+  <p>This is an <b>extension</b>. You won't be asked to use it at AS, but it explains <b>why</b> the rate is so sensitive to temperature. You'll meet it again in Year 2 as part of the <b>Arrhenius equation</b>.</p>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Calculator</h3>
+  <div class="row">
+    <div>
+      <label class="s">E<sub>a</sub>: <span id="mEV"></span> kJ mol⁻¹</label><input type="range" class="slider" id="mE" min="10" max="150" step="5" value="50">
+      <label class="s">T₁: <span id="mT1V"></span> K</label><input type="range" class="slider" id="mT1" min="250" max="600" step="1" value="298">
+      <label class="s">T₂: <span id="mT2V"></span> K</label><input type="range" class="slider" id="mT2" min="250" max="600" step="1" value="308">
+    </div>
+    <div><div class="readout" id="mOut"></div></div>
+  </div>
+</div>
+
+<div class="card key">
+  <h3 style="margin-top:0">What the numbers show</h3>
+  <ul>
+    <li>Only a <b>tiny fraction</b> of molecules can react. At 298 K with E<sub>a</sub> = 50 kJ mol⁻¹ it's about 2 in a billion.</li>
+    <li>A 10 K rise increases the mean energy by only about 3%, and the collision frequency by under 2%. But the fraction with E ≥ E<sub>a</sub> roughly <b>doubles</b>.</li>
+    <li>That's why exam answers say "<b>many more</b> molecules have E ≥ E<sub>a</sub>", not just "more collisions".</li>
+  </ul>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 5</span>
+  <p>E<sub>a</sub> = 60 kJ mol⁻¹. By what factor does the fraction of molecules with E ≥ E<sub>a</sub> increase from 300 K to 320 K? Give your answer to 2 s.f.</p>
+  <input class="ans" id="c5"> <button class="b" onclick="numCheck('c5',4.5,0.03)">Check</button><span class="fb" id="c5fb"></span>
+  <button class="b alt" onclick="tog('c5w')">Working</button>
+  <div class="work" id="c5w">ratio = e<sup>−Ea/RT₂</sup> ÷ e<sup>−Ea/RT₁</sup> = e<sup>(Ea/R)(1/T₁ − 1/T₂)</sup><br>= e<sup>(60 000 / 8.31)(1/300 − 1/320)</sup> = e<sup>7220 × 2.083 × 10⁻⁴</sup> = e<sup>1.504</sup> = <b>4.5</b></div>
+</div>
+</section>
+
+<!-- ============ PAGE 5 ============ -->
+<section class="page" data-title="5. Exam answers">
+<h2>5. Writing the exam answer</h2>
+<div class="check">
+  <span class="tag">QUICK CHECK 6</span>
+  <span class="src">June 2017 AS Paper 2 Q1.3 (2 marks)</span>
+  <p>Explain why an increase in temperature increases the rate at which a gas decomposes.</p>
+  <button class="b alt" onclick="tog('c6w')">Mark scheme</button>
+  <div class="work" id="c6w"><b>M1</b> more molecules have E ≥ E<sub>a</sub> (an increase in the number/proportion of molecules with enough energy)<br><b>M2</b> more successful collisions in a given time (higher frequency of successful collisions)<br><i>Ignored: "molecules have more energy", "more energetic collisions", "more collisions", "chance of collision". Penalised: saying E<sub>a</sub> increases.</i></div>
+</div>
+
+<div class="check">
+  <span class="tag">6-MARK QUESTION</span>
+  <span class="src">June 2023 AS Paper 2 Q8 (6 marks)</span>
+  <p>Draw the Maxwell–Boltzmann distribution curves for a fixed mass of a gas at two different temperatures. By reference to these curves, explain why the rate of decomposition of this gas increases at higher temperatures.</p>
+  <p>Write your answer, then tick each point you included.</p>
+  <div id="lr"></div>
+  <div class="readout" id="lrOut"></div>
+</div>
+
+<div class="check">
+  <span class="tag">QUICK CHECK 7</span>
+  <span class="src">June 2023 Paper 2 Q9.4 (5 marks)</span>
+  <p>Sketch the distribution at T₁ and a higher temperature T₂. Label both axes and mark a typical E<sub>a</sub>. Explain why the rate is faster at T₂.</p>
+  <button class="b alt" onclick="tog('c7w')">Mark scheme</button>
+  <div class="work" id="c7w"><b>M1</b> x-axis energy AND y-axis number of molecules<br><b>M2</b> E<sub>a</sub> marked on the x-axis<br><b>M3</b> correct shape for T₁<br><b>M4</b> T₂ peak lower and shifted right, crossing only once<br><b>M5</b> at T₂ (many) more particles have E ≥ E<sub>a</sub></div>
+</div>
+</section>
+
+<!-- ============ PAGE 6 ============ -->
+<section class="page" data-title="6. Quiz">
+<h2>6. End-of-walkthrough quiz</h2>
+<p>Click an answer. You get one go at each question.</p>
+<div id="quiz"></div>
+<div class="card" id="score" style="font-size:22px;text-align:center"></div>
+<button class="b alt" onclick="buildQuiz()">Reset quiz</button>
+<p class="small">Next: Kinetics 5 – Required Practical 3.</p>
+</section>
+
+<div class="pager"><button class="b alt" id="prevB">◀ Previous</button><button class="b" id="nextB">Next ▶</button></div>
+</main>
+<script>
+/* ---------- navigation ---------- */
+const pages=[...document.querySelectorAll('.page')];let cur=0;
+const nav=document.getElementById('nav');
+pages.forEach((p,i)=>{const b=document.createElement('button');b.textContent=p.dataset.title;b.onclick=()=>go(i);nav.appendChild(b)});
+function go(i){cur=i;pages.forEach((p,j)=>p.classList.toggle('on',j===i));[...nav.children].forEach((b,j)=>b.classList.toggle('on',j===i));
+ document.getElementById('prevB').disabled=i===0;document.getElementById('nextB').disabled=i===pages.length-1;window.scrollTo(0,0);
+ if(typeof onPage==='function')onPage(i)}
+document.getElementById('prevB').onclick=()=>go(Math.max(0,cur-1));
+document.getElementById('nextB').onclick=()=>go(Math.min(pages.length-1,cur+1));
+
+/* ---------- helpers ---------- */
+const $=id=>document.getElementById(id);
+function tog(id){$(id).classList.toggle('on')}
+function stepReveal(id){const r=[...document.querySelectorAll('#'+id+' .reveal:not(.on)')];if(r.length)r[0].classList.add('on')}
+function parseNum(s){
+ s=s.trim().replace(/\s/g,'');const sp={'⁰':'0','¹':'1','²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9','⁻':'-'};
+ s=s.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁻]/g,c=>sp[c]).replace(/[−–]/g,'-').replace(/,/g,'');
+ let m=s.match(/^(-?[\d.]+)[x×X*]10\^?(-?\d+)$/);if(m)return parseFloat(m[1])*Math.pow(10,parseInt(m[2]));
+ m=s.match(/^(-?[\d.]+)[eE](-?\d+)$/);if(m)return parseFloat(s);
+ const v=Number(s);return (s===''||isNaN(v))?null:v}
+function numCheck(id,target,tol){const v=parseNum($(id).value);const fb=$(id+'fb');
+ if(v===null){fb.textContent='Enter a number';fb.className='fb no';return false}
+ if(Math.abs(v-target)<=Math.abs(target)*tol){fb.textContent='✔ Correct';fb.className='fb ok';return true}
+ fb.textContent='✘ Not quite, check your working';fb.className='fb no';return false}
+function pick(btn,ok,id){const f=$(id);f.textContent=ok?'✔ Correct':'✘ Try again';f.className='fb '+(ok?'ok':'no')}
+const sup=n=>String(n).split('').map(c=>({'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'})[c]).join('');
+/* format number to n s.f.; standard form for very small/large */
+function sf(x,n=3){if(x===0)return '0';let e=Math.floor(Math.log10(Math.abs(x)));
+ if(e<-3||e>=5){let m=(x/Math.pow(10,e)).toFixed(n-1);if(Math.abs(+m)>=10){e++;m=(x/Math.pow(10,e)).toFixed(n-1)}return m+' × 10'+sup(e)}
+ return x.toFixed(Math.max(0,n-1-e))}
+/* units of Kc from Δn = (moles top − moles bottom) */
+function kcUnits(dn){if(dn===0)return 'no units';const m=dn===1?'mol':'mol'+sup(dn);return `${m} dm${sup(-3*dn)}`}
+/* render a fraction */
+const fr=(t,b)=>`<span class="frac"><span>${t}</span><span>${b}</span></span>`;
+
+/* ---------- SVG plotting ---------- */
+const NS='http://www.w3.org/2000/svg';
+function E(tag,a,p){const e=document.createElementNS(NS,tag);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e}
+function plot(svg,o){
+ svg.innerHTML='';const W=660,H=400,ml=80,mr=20,mt=18,mb=60,pw=W-ml-mr,ph=H-mt-mb;
+ const X=x=>ml+x/o.xmax*pw,Y=y=>mt+ph-y/o.ymax*ph;
+ const id='cl'+Math.random().toString(36).slice(2);
+ const d=E('defs',{},svg);const cp=E('clipPath',{id},d);E('rect',{x:ml,y:mt,width:pw,height:ph},cp);
+ E('rect',{x:ml,y:mt,width:pw,height:ph,fill:'#fff'},svg);
+ const gx=o.gx||o.xt,gy=o.gy||o.yt;
+ for(let x=0;x<=o.xmax+1e-9;x+=gx)E('line',{x1:X(x),x2:X(x),y1:mt,y2:mt+ph,stroke:'#efe3cc'},svg);
+ for(let y=0;y<=o.ymax+1e-9;y+=gy)E('line',{x1:ml,x2:ml+pw,y1:Y(y),y2:Y(y),stroke:'#efe3cc'},svg);
+ if(!o.noxt)for(let x=0;x<=o.xmax+1e-9;x+=o.xt){E('line',{x1:X(x),x2:X(x),y1:mt+ph,y2:mt+ph+6,stroke:'#3b2a1a'},svg);const t=E('text',{x:X(x),y:mt+ph+24,'text-anchor':'middle','font-size':15,fill:'#3b2a1a'},svg);t.textContent=+x.toFixed(4)}
+ if(!o.noyt)for(let y=0;y<=o.ymax+1e-9;y+=o.yt){E('line',{x1:ml-6,x2:ml,y1:Y(y),y2:Y(y),stroke:'#3b2a1a'},svg);const t=E('text',{x:ml-10,y:Y(y)+5,'text-anchor':'end','font-size':15,fill:'#3b2a1a'},svg);t.textContent=(o.yfmt?o.yfmt(y):+y.toFixed(3))}
+ E('line',{x1:ml,x2:ml+pw,y1:mt+ph,y2:mt+ph,stroke:'#3b2a1a','stroke-width':2},svg);
+ E('line',{x1:ml,x2:ml,y1:mt,y2:mt+ph,stroke:'#3b2a1a','stroke-width':2},svg);
+ let t=E('text',{x:ml+pw/2,y:H-12,'text-anchor':'middle','font-size':17,fill:'#6b4423'},svg);t.textContent=o.xlab;
+ t=E('text',{x:18,y:mt+ph/2,'text-anchor':'middle','font-size':17,fill:'#6b4423',transform:`rotate(-90 18 ${mt+ph/2})`},svg);t.textContent=o.ylab;
+ const g=E('g',{'clip-path':`url(#${id})`},svg);
+ return {X,Y,g,svg,curve(f,col='#6b4423',w=3,dash,x0=0,x1=o.xmax){let dd='';for(let i=0;i<=300;i++){const x=x0+(x1-x0)*i/300;dd+=(i?'L':'M')+X(x)+' '+Y(f(x))}return E('path',{d:dd,fill:'none',stroke:col,'stroke-width':w,'stroke-dasharray':dash||''},g)},
+  text(x,y,s,col='#3b2a1a',sz=15,anc='start'){const t=E('text',{x:X(x),y:Y(y),'font-size':sz,fill:col,'text-anchor':anc},g);t.textContent=s;return t}};
+}
+
+/* ---------- quiz ---------- */
+let qs=0,qa=0;
+function buildQuiz(){const w=$('quiz');w.innerHTML='';qs=0;qa=0;
+ Q.forEach((q,i)=>{const c=document.createElement('div');c.className='card mcq';c.innerHTML=`<b>Q${i+1}.</b> ${q[0]}`;
+  q[1].forEach((o,j)=>{const b=document.createElement('button');b.className='opt';b.innerHTML=o;
+   b.onclick=()=>{if(c.classList.contains('done'))return;c.classList.add('done');qa++;
+    if(j===q[2]){b.classList.add('right');qs++}else{b.classList.add('wrong');c.querySelectorAll('.opt')[q[2]].classList.add('right')}score()};c.appendChild(b)});
+  const e=document.createElement('div');e.className='exp';e.innerHTML='💡 '+q[3];c.appendChild(e);w.appendChild(c)});score()}
+function score(){const n=Q.length;$('score').innerHTML=`Score: <b>${qs}</b> / ${n}`+(qa===n?(qs>=n-1?' – excellent!':qs>=Math.ceil(n*0.7)?' – good, review the ones you missed':' – go back through the walkthrough and try again'):'')}
+
+const XM=20,YM=0.26;
+const fMB=(E,T,N=1)=>{const k=T/100;return E<=0?0:N*2/Math.sqrt(Math.PI)*Math.pow(k,-1.5)*Math.sqrt(E)*Math.exp(-E/k)};
+function frac(Ea,T){const a=Ea,b=150,n=3000,h=(b-a)/n;let s=fMB(a,T)+fMB(b,T);for(let i=1;i<n;i++)s+=(i%2?4:2)*fMB(a+i*h,T);return s*h/3}
+const opt=(lab)=>({xmax:XM,ymax:YM,xt:2,yt:0.05,xlab:lab||'energy',ylab:'number of molecules',noyt:true});
+function shade(P,T,Ea,col,N=1){let d=`M${P.X(Ea)} ${P.Y(0)}`;for(let i=0;i<=120;i++){const x=Ea+(XM-Ea)*i/120;d+=`L${P.X(x)} ${P.Y(fMB(x,T,N))}`}d+=`L${P.X(XM)} ${P.Y(0)}Z`;E('path',{d,fill:col,stroke:'none'},P.g)}
+function eaLine(P,Ea,lab='Eₐ',col='#3b2a1a'){E('line',{x1:P.X(Ea),x2:P.X(Ea),y1:P.Y(0),y2:P.Y(YM*0.9),stroke:col,'stroke-width':2,'stroke-dasharray':'6 4'},P.g);P.text(Ea+0.15,YM*0.86,lab,col,16)}
+
+/* ---------- page 1: features ---------- */
+const FT={origin:'The curve starts at (0, 0): <b>no molecules have zero energy</b>.',peak:'The peak is the <b>most probable energy</b>: more molecules have this energy than any other. It is <b>not</b> the mean.',
+ mean:'The <b>mean energy</b> is to the <b>right</b> of the peak. The long tail of high-energy molecules pulls the average up.',tail:'The curve gets closer and closer to the x-axis but <b>never touches it</b>. There is no maximum energy. Drawing it touching or crossing the axis loses the mark.',
+ area:'The <b>total area</b> under the curve is the <b>total number of molecules</b>. It stays the same if only the temperature changes.',ea:'The shaded area to the right of E<sub>a</sub> is the number of molecules with <b>E ≥ E<sub>a</sub></b>, the only ones that can react when they collide.'};
+function ft(f){const T=300,P=plot($('ftSvg'),opt('energy'));const k=T/100;
+ if(f==='area'){let d=`M${P.X(0)} ${P.Y(0)}`;for(let i=0;i<=200;i++){const x=XM*i/200;d+=`L${P.X(x)} ${P.Y(fMB(x,T))}`}d+=`L${P.X(XM)} ${P.Y(0)}Z`;E('path',{d,fill:'#cfe0f5'},P.g)}
+ if(f==='ea'){shade(P,T,10,'#f2c48d');eaLine(P,10)}
+ P.curve(x=>fMB(x,T),'#2c4a7a',3.5);
+ if(f==='origin')E('circle',{cx:P.X(0),cy:P.Y(0),r:12,fill:'none',stroke:'#b03a2e','stroke-width':3},P.g);
+ if(f==='peak'){E('line',{x1:P.X(k/2),x2:P.X(k/2),y1:P.Y(0),y2:P.Y(fMB(k/2,T)),stroke:'#b03a2e','stroke-width':2,'stroke-dasharray':'5 4'},P.g);P.text(k/2+0.2,0.02,'Eₘₚ','#b03a2e',16)}
+ if(f==='mean'){[[k/2,'#999','peak'],[1.5*k,'#b03a2e','mean']].forEach(([x,c,l])=>{E('line',{x1:P.X(x),x2:P.X(x),y1:P.Y(0),y2:P.Y(fMB(x,T)),stroke:c,'stroke-width':2,'stroke-dasharray':'5 4'},P.g);P.text(x+0.2,0.02,l,c,15)})}
+ if(f==='tail')E('ellipse',{cx:P.X(15),cy:P.Y(0.008),rx:110,ry:22,fill:'none',stroke:'#b03a2e','stroke-width':3},P.g);
+ $('ftOut').innerHTML=f?FT[f]:'Click a button.';document.querySelectorAll('.ft').forEach(b=>b.classList.toggle('alt',b.dataset.f!==f))}
+document.querySelectorAll('.ft').forEach(b=>b.onclick=()=>ft(b.dataset.f));ft(null);
+
+/* ---------- page 2: manipulate ---------- */
+const gam=()=>{let s=0;for(let i=0;i<3;i++){let u=0,v=0;while(!u)u=Math.random();v=Math.random();const z=Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);s+=z*z}return s/2};
+let dots=[];for(let i=0;i<400;i++)dots.push({g:gam(),r:Math.random()});
+function mb(){const T1=+$('t1S').value,T2=+$('t2S').value,Ea=+$('eaS').value,two=$('t2On').checked;$('t1V').textContent=T1;$('t2V').textContent=T2;$('eaV').textContent=Ea;
+ const P=plot($('mbSvg'),opt('energy'));
+ if(two)shade(P,T2,Ea,'rgba(176,58,46,0.25)');shade(P,T1,Ea,'#f2c48d');
+ P.curve(x=>fMB(x,T1),'#2c4a7a',3.5);if(two)P.curve(x=>fMB(x,T2),'#b03a2e',3.5);eaLine(P,Ea);
+ if($('dotOn').checked){dots.forEach(d=>{const x=d.g*T1/100;if(x>XM)return;const y=d.r*fMB(x,T1);E('circle',{cx:P.X(x),cy:P.Y(y),r:2.6,fill:x>=Ea?'#b03a2e':'#2c4a7a',opacity:.75},P.g)})}
+ const f1=frac(Ea,T1),f2=frac(Ea,T2),cnt=dots.filter(d=>d.g*T1/100>=Ea).length;
+ let s=`T₁ = ${T1} K: peak at ${(T1/200).toFixed(2)}, mean ${(1.5*T1/100).toFixed(2)} energy units<br>fraction with E ≥ Eₐ at T₁: <b>${(100*f1).toFixed(f1<0.01?3:1)}%</b>`;
+ if($('dotOn').checked)s+=` &nbsp; (dots: ${cnt} of 400 are red)`;
+ if(two)s+=`<br>fraction with E ≥ Eₐ at T₂ = ${T2} K: <b>${(100*f2).toFixed(f2<0.01?3:1)}%</b><br>T₂ / T₁ = ${(T2/T1).toFixed(2)} but the fraction that can react changes by × <b>${(f2/f1).toFixed(1)}</b>`;
+ $('mbOut').innerHTML=s}
+['t1S','t2S','eaS'].forEach(i=>$(i).oninput=mb);['t2On','dotOn'].forEach(i=>$(i).onchange=mb);mb();
+
+/* ---------- page 3 ---------- */
+function nd(){const n=+$('nS').value;$('nV').textContent=n;const P=plot($('nSvg'),opt('energy'));P.curve(x=>fMB(x,300),'#2c4a7a',3,'6 4');P.curve(x=>fMB(x,300,n/100),'#b03a2e',3.5);
+ E('line',{x1:P.X(1.5),x2:P.X(1.5),y1:P.Y(0),y2:P.Y(fMB(1.5,300)),stroke:'#999','stroke-dasharray':'3 3'},P.g);P.text(10,0.2,'dashed = original (100%)','#2c4a7a',15);P.text(10,0.18,'red = '+n+'%','#b03a2e',15)}
+$('nS').oninput=nd;nd();
+function cat(){const on=$('catOn').checked,Ea=13,Ec=8;const P=plot($('catSvg'),opt('energy'));shade(P,300,on?Ec:Ea,'#f2c48d');P.curve(x=>fMB(x,300),'#2c4a7a',3.5);
+ eaLine(P,Ea,'Eₐ (uncatalysed)',on?'#999':'#3b2a1a');if(on)eaLine(P,Ec,'Eₐ (catalysed)','#2f7d4a');
+ $('catOut').innerHTML=`fraction with E ≥ Eₐ: uncatalysed ${(100*frac(Ea,300)).toFixed(2)}%`+(on?` → catalysed <b>${(100*frac(Ec,300)).toFixed(1)}%</b> (× ${(frac(Ec,300)/frac(Ea,300)).toFixed(0)})`:'')}
+$('catOn').onchange=cat;cat();
+
+/* ---------- page 4: maths ---------- */
+function mm(){const Ea=+$('mE').value,T1=+$('mT1').value,T2=+$('mT2').value;$('mEV').textContent=Ea;$('mT1V').textContent=T1;$('mT2V').textContent=T2;
+ const f=T=>Math.exp(-Ea*1000/(8.31*T)),f1=f(T1),f2=f(T2);
+ $('mOut').innerHTML=`fraction at T₁ = e<sup>−${Ea*1000}/(8.31 × ${T1})</sup> = <b>${sf(f1)}</b><br>fraction at T₂ = <b>${sf(f2)}</b><br>increase in fraction: × <b>${(f2/f1).toFixed(2)}</b><br>increase in T: × ${(T2/T1).toFixed(3)} &nbsp; collision frequency (∝ √T): × ${Math.sqrt(T2/T1).toFixed(3)}`}
+['mE','mT1','mT2'].forEach(i=>$(i).oninput=mm);mm();
+
+/* ---------- page 5: levels ---------- */
+const LR=[['Stage 1: single curve',['Axes labelled: number of molecules (y) and (kinetic) energy (x)','Correct shape: starts at/near origin; right-hand end does not touch the axis or rise']],
+ ['Stage 2: curve at higher temperature',['Peak moves to the right and down','Area under the curve about the same','The two curves cross only once']],
+ ['Stage 3: why faster',['Molecules have more energy','More molecules have energy ≥ the activation energy','Higher proportion of collisions are successful / more frequent successful collisions']]];
+LR.forEach(([h,pts],i)=>{const d=document.createElement('div');d.innerHTML=`<b>${h}</b>`;pts.forEach(p=>{d.innerHTML+=`<label style="display:block;margin:3px 0 3px 10px"><input type="checkbox" class="lrc" data-s="${i}"> ${p}</label>`});$('lr').appendChild(d)});
+function lrUpd(){const n=[0,0,0],need=[2,3,3];document.querySelectorAll('.lrc').forEach(c=>{if(c.checked)n[+c.dataset.s]++});const vc=n.filter((x,i)=>x>=need[i]-1&&x>0).length,cov=n.filter(x=>x>=1).length;
+ const L=vc===3?'Level 3 (5–6 marks)':(cov===3||vc===2)?'Level 2 (3–4 marks)':(cov>=2||vc===1)?'Level 1 (1–2 marks)':'0 marks';
+ $('lrOut').innerHTML=`Points per stage: ${n.join(' / ')}<br>Estimated: <b>${L}</b>`}
+document.querySelectorAll('.lrc').forEach(c=>c.onchange=lrUpd);lrUpd();
+
+/* ---------- quiz ---------- */
+const Q=[
+ ["What is on the x-axis of a Maxwell–Boltzmann distribution?",["Number of molecules","(Kinetic) energy","Time","Temperature"],1,"Energy on x, number of molecules on y."],
+ ["Why does the curve never touch the x-axis at high energy?",["There is no maximum energy","All molecules have the same energy","The temperature is constant","It does touch it"],0,"A few molecules always have very high energy."],
+ ["At a higher temperature, the peak of the curve…",["moves right and up","moves right and down","moves left and down","stays in the same place"],1,"More spread out, same area, so the peak is lower and further right."],
+ ["What stays the same when the temperature of a fixed mass of gas is increased?",["The height of the peak","The most probable energy","The area under the curve","The fraction with E ≥ E<sub>a</sub>"],2,"Area = total number of molecules."],
+ ["Which point is the mean energy?",["At the peak","To the left of the peak","To the right of the peak","Where the curve meets E<sub>a</sub>"],2,"The tail pulls the mean to the right."],
+ ["How does a catalyst change the Maxwell–Boltzmann diagram?",["The peak moves right","E<sub>a</sub> moves to the left; the curve is unchanged","The curve gets taller","E<sub>a</sub> moves right"],1,"The temperature hasn't changed, so the curve hasn't either."],
+ ["Half as many molecules at the same temperature. The new curve…",["has its peak at the same energy and half the area","has its peak at half the energy","is the same curve","has its peak further right"],0,"Same T, same shape, scaled down."],
+ ["Why does a small rise in temperature cause a large rise in rate?",["Collision frequency doubles","Many more molecules have E ≥ E<sub>a</sub>","E<sub>a</sub> decreases","The mean energy doubles"],1,"The area beyond E<sub>a</sub> grows dramatically."],
+ ["Which phrase would NOT score the mark for explaining a temperature rise?",["More molecules have E ≥ E<sub>a</sub>","More frequent successful collisions","More collisions","Higher proportion of collisions are successful"],2,"\"More collisions\" on its own is ignored by AQA."],
+ ["E<sub>a</sub> = 50 kJ mol⁻¹. Roughly how does the fraction with E ≥ E<sub>a</sub> change from 298 K to 308 K?",["× 1.03","× 1.2","× 2","× 10"],2,"e<sup>(50 000/8.31)(1/298 − 1/308)</sup> ≈ 1.9: it roughly doubles."]
+];
+
+buildQuiz();
+go(0);
+</script>
+</body>
+</html>
