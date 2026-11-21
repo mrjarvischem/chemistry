@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script src="gate.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Electrophilic Substitution Mechanism</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Layout: instrument bench, matching Atom Viewer and Bonding Simulator. Six step chips across the top,
+     3D stage over the written curly-arrow mechanism on the left, an explain rail on the right. */
+  --bg:#EDF0F5; --surface:#FFFFFF; --soft:#E6EAF2; --ink:#0D1424; --muted:#566076; --line:#D7DDE8;
+  --accent:#2348F5; --accent-ink:#FFFFFF;
+  --stage:#FAFBFE; --stage2:#E3E8F2; --stage-line:#93A0B8;
+  --dot:#E23B2E; --pair:#F5A700; --bond:#6A7488; --bond-hi:#C3CAD8;
+  --font-display:"Bricolage Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;
+  --font-body:"Instrument Sans","Segoe UI",system-ui,-apple-system,sans-serif;
+  --r:14px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#080C15; --surface:#111828; --soft:#1A2337; --ink:#EDF1FA; --muted:#98A3BA; --line:#242E46;
+    --accent:#8198FF; --accent-ink:#0A0F1C;
+    --stage:#0E1527; --stage2:#05080F; --stage-line:#5A6884;
+    --dot:#FF6A5C; --pair:#FFC53D; --bond:#8E99B0; --bond-hi:#DCE2EE;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#080C15; --surface:#111828; --soft:#1A2337; --ink:#EDF1FA; --muted:#98A3BA; --line:#242E46;
+  --accent:#8198FF; --accent-ink:#0A0F1C;
+  --stage:#0E1527; --stage2:#05080F; --stage-line:#5A6884;
+  --dot:#FF6A5C; --pair:#FFC53D; --bond:#8E99B0; --bond-hi:#DCE2EE;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.45;
+  display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+button:disabled{cursor:default;opacity:.4}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3,p,ul{margin:0}
+[hidden]{display:none!important}
+
+.top{display:flex;align-items:center;gap:10px 14px;padding:12px 18px 8px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto}
+.brand svg{width:30px;height:30px;flex:none}
+.brand h1{font-family:var(--font-display);font-weight:700;font-size:24px;letter-spacing:-.02em;line-height:1}
+.pick{display:flex;align-items:center;gap:7px}
+.pick>span{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.seg{display:inline-flex;background:var(--soft);border-radius:999px;padding:3px;gap:2px}
+.seg button{border:0;background:transparent;padding:6px 14px;border-radius:999px;font-weight:600;font-size:13.5px;color:var(--muted);white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(10,20,40,.18)}
+.seg.strong button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+
+.timeline{display:flex;gap:6px;padding:4px 18px 12px;overflow-x:auto;scrollbar-width:none}
+.timeline::-webkit-scrollbar{display:none}
+.timeline button{flex:1 0 auto;min-width:128px;text-align:left;border:1px solid var(--line);background:var(--surface);
+  border-radius:12px;padding:8px 12px 9px;display:flex;flex-direction:column;gap:1px}
+.timeline .yr{font-size:11.5px;font-weight:600;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.timeline .nm{font-family:var(--font-display);font-weight:700;font-size:15.5px;letter-spacing:-.01em;line-height:1.15}
+.timeline button.done{background:var(--soft)}
+.timeline button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.timeline button[aria-pressed="true"] .yr{color:inherit;opacity:.7}
+
+.bench{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 370px;gap:14px;padding:0 18px 16px}
+.col{display:flex;flex-direction:column;gap:10px;min-height:0;min-width:0}
+.panel{position:relative;border-radius:var(--r);overflow:hidden;border:1px solid var(--line);background:var(--surface)}
+.stagebox{flex:1.7 1 0;min-height:260px;
+  background:radial-gradient(circle at 1px 1px,color-mix(in srgb,var(--stage-line) 22%,transparent) 1px,transparent 1.5px) 0 0/22px 22px,
+             radial-gradient(ellipse at 50% 45%,var(--stage),var(--stage2))}
+#stage{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+#stage:active{cursor:grabbing}
+.ov{position:absolute;display:flex;gap:8px;align-items:center;flex-wrap:wrap;pointer-events:none}
+.ov>*{pointer-events:auto}
+.ov.tl{top:12px;left:12px}.ov.tr{top:12px;right:12px}.ov.bl{bottom:12px;left:12px}
+.pill{border:1px solid var(--line);background:color-mix(in srgb,var(--surface) 82%,transparent);backdrop-filter:blur(8px);
+  border-radius:999px;padding:5px 12px;font-size:13px;font-weight:600}
+.pill[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.pill.sq{width:34px;height:34px;padding:0;display:grid;place-items:center;font-size:17px;line-height:1}
+.tag{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:5px 10px;border-radius:999px;
+  background:color-mix(in srgb,var(--surface) 78%,transparent)}
+.key{display:flex;gap:12px;font-size:12.5px;font-weight:600;color:var(--muted);padding:5px 12px;border-radius:999px;
+  background:color-mix(in srgb,var(--surface) 78%,transparent);flex-wrap:wrap}
+.key i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+
+.ctrl{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 16px;font-weight:600;font-size:14px;
+  display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+.btn svg{width:14px;height:14px;fill:currentColor}
+.btn.go{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);min-width:118px;justify-content:center}
+.ctrl .sp{margin-left:auto;display:flex;align-items:center;gap:8px}
+.ctrl .sp>span{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+
+.mechbox{flex:1 1 0;min-height:210px;display:flex}
+#mech{width:100%;height:100%;display:block}
+#mech .at{font:600 23px var(--font-body);fill:var(--ink);dominant-baseline:central}
+#mech .rg{fill:var(--accent)}
+#mech .ch{font:700 20px var(--font-body);fill:var(--dot);dominant-baseline:central}
+#mech .dl{font:700 17px var(--font-body);fill:var(--muted);dominant-baseline:central}
+#mech .cap{font:600 15.5px var(--font-body);fill:var(--muted)}
+#mech .cap.b{fill:var(--ink)}
+#mech .bd{stroke:var(--ink);stroke-width:2.2;stroke-linecap:round}
+#mech .ca{stroke:var(--dot);stroke-width:2.8;fill:none;stroke-linecap:round}
+#mech .lp{fill:var(--dot)}
+
+.rail{display:flex;flex-direction:column;gap:12px;min-height:0;overflow-y:auto}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px}
+.card .eyebrow{font-size:11.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--accent)}
+.card h2{font-family:var(--font-display);font-weight:700;font-size:25px;letter-spacing:-.02em;line-height:1.1;margin:4px 0 10px;text-wrap:balance}
+.card p{font-size:16.5px;line-height:1.5}
+.card p+p{margin-top:9px}
+.card h3{font-size:11.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.pts{list-style:none;padding:0;display:flex;flex-direction:column;gap:8px}
+.pts li{font-size:15.5px;line-height:1.4;padding-left:16px;border-left:3px solid var(--dot)}
+.eq{font-size:18px;font-weight:600;line-height:1.5}
+.eq small{display:block;font-size:14px;font-weight:500;color:var(--muted)}
+.badge{display:inline-block;margin-top:8px;font-size:12.5px;font-weight:700;padding:3px 10px;border-radius:999px;background:var(--soft);color:var(--ink)}
+.badge.maj{background:var(--accent);color:var(--accent-ink)}
+.note{font-size:13px;color:var(--muted)}
+
+@media (max-width:980px){
+  html,body{height:auto}
+  .bench{grid-template-columns:1fr}
+  .stagebox{flex:none;height:380px}
+  .mechbox{flex:none;height:auto;overflow-x:auto}
+  #mech{min-width:760px;height:auto}
+  .rail{overflow:visible}
+}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="brand">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><polygon points="16,3 27.3,9.5 27.3,22.5 16,29 4.7,22.5 4.7,9.5" fill="none" stroke="var(--ink)" stroke-width="2.4" stroke-linejoin="round"/><circle cx="16" cy="16" r="6" fill="none" stroke="var(--dot)" stroke-width="2.4"/></svg>
+    <h1>Electrophilic Substitution</h1>
+  </div>
+  <div class="pick"><span>Reaction with benzene</span>
+    <div class="seg strong" id="segRx">
+      <button data-v="N" id="rxN">Nitration · NO₂⁺</button>
+      <button data-v="A" id="rxA">Acylation · CH₃CO⁺</button>
+    </div>
+  </div>
+</div>
+
+<div class="timeline" id="tl"></div>
+
+<div class="bench">
+  <div class="col">
+    <div class="panel stagebox">
+      <canvas id="stage" aria-label="3D model of the reaction. Drag to rotate."></canvas>
+      <div class="ov tl"><span class="tag">3D model · drag to rotate</span></div>
+      <div class="ov tr">
+        <button class="pill" id="tgPairs" aria-pressed="true">Electron pairs</button>
+        <button class="pill" id="tgSym" aria-pressed="true">Symbols</button>
+        <button class="pill sq" id="zOut" aria-label="Zoom out">−</button>
+        <button class="pill sq" id="zIn" aria-label="Zoom in">+</button>
+        <button class="pill" id="vReset">Reset view</button>
+      </div>
+      <div class="ov bl"><div class="key"><span><i style="background:var(--pair)"></i>electron pair</span><span><i style="background:var(--accent);opacity:.45"></i>delocalised ring</span></div></div>
+    </div>
+
+    <div class="ctrl">
+      <button class="btn" id="bRestart"><svg viewBox="0 0 16 16"><path d="M2 2h2v12H2zM14 2v12L5 8z"/></svg>Restart</button>
+      <button class="btn" id="bBack"><svg viewBox="0 0 16 16"><path d="M12 2v12L3 8z"/></svg>Back</button>
+      <button class="btn go" id="bPlay"></button>
+      <button class="btn" id="bNext">Next step<svg viewBox="0 0 16 16"><path d="M4 2v12l9-6z"/></svg></button>
+      <div class="sp"><span>Speed</span>
+        <div class="seg" id="segSp">
+          <button data-v="0.4" id="sp04">Slow</button>
+          <button data-v="1" id="sp1">Normal</button>
+          <button data-v="2" id="sp2">Fast</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel mechbox">
+      <div class="ov tl"><span class="tag">Curly arrow mechanism</span></div>
+      <svg id="mech" viewBox="-70 0 1190 306" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Curly arrow mechanism"></svg>
+    </div>
+  </div>
+
+  <aside class="rail">
+    <div class="card" id="explain"></div>
+    <div class="card" id="points"></div>
+    <div class="card" id="overall"></div>
+    <p class="note">Keys: → next step, ← back, space to play or pause.</p>
+  </aside>
+</div>
+
+<script>
+(function(){
+"use strict";
+const add=(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]], sub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]],
+ mul=(a,s)=>[a[0]*s,a[1]*s,a[2]*s], len=a=>Math.hypot(a[0],a[1],a[2]), norm=a=>mul(a,1/(len(a)||1)),
+ cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]],
+ lerp=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t], mid=(a,b)=>lerp(a,b,.5);
+const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+const rad=a=>a*Math.PI/180, T=1/3;
+function ring(a,k){const v=norm(Math.abs(a[1])>.9?cross(a,[1,0,0]):cross(a,[0,1,0])),w=cross(a,v),s=Math.sqrt(1-k*k);
+  return [90,210,330].map(d=>{const t=rad(d);return add(mul(a,-k),add(mul(v,s*Math.cos(t)),mul(w,s*Math.sin(t))));});}
+
+const EL={C:{r:.40,c:['#939DB3','#3F4759','#1A1F2B'],t:'#fff'},H:{r:.25,c:['#FFFFFF','#E7EBF3','#A3ADC0'],t:'#1a2030'},
+ O:{r:.37,c:['#FF9C92','#E0392B','#8A180F'],t:'#fff'},N:{r:.38,c:['#9DB4FF','#3257E8','#152C96'],t:'#fff'},
+ Cl:{r:.52,c:['#A6F0A0','#2FA83A','#14601C'],t:'#fff'},Al:{r:.5,c:['#F4E3E7','#C9A7B0','#7C5A63'],t:'#2a1a1f'}};
+
+const cfg={rx:'N'};
+let M=null, step=0, anim=null, playing=false, dwellUntil=0, speed=1, dirty=true;
+let yaw=-.3, pitch=.5, zoom=1, showPairs=true, showSym=true;
+
+/* stage roles: 0 reagents, 1 protonated HNO3 (nitration only), 2 electrophile made, 3 approach, 4 intermediate, 5 product */
+function build(){
+  const nit=cfg.rx==='N', el={ctr:null}, gb=[], stages=[];
+  const rp=(k,R)=>[R*Math.cos(rad(60*k)),0,R*Math.sin(rad(60*k))];
+  for(let k=0;k<6;k++){el['C'+k]='C';el['H'+k]='H';gb.push(['C'+k,'C'+((k+1)%6),1]);if(k)gb.push(['C'+k,'H'+k,1]);}
+  el.E=nit?'N':'C';el.a1='O';el.a2=nit?'O':'C';
+  if(nit)Object.assign(el,{Oc:'O',Hn:'H',Hp:'H'});
+  else Object.assign(el,{m0:'H',m1:'H',m2:'H',Clx:'Cl',Al:'Al',K0:'Cl',K1:'Cl',K2:'Cl'});
+  const dE=[.577,.816,0], LCE=nit?1.47:1.49;
+  (nit?[0,1,2,3,4,5]:[0,2,3,4,5]).forEach(r=>{
+    const P={ctr:[0,0,0]},A={};
+    for(let k=0;k<6;k++){P['C'+k]=rp(k,1.39);P['H'+k]=rp(k,2.48);}
+    const C0=P.C0;
+    if(r===4)P.H0=add(C0,mul([.577,-.816,0],1.09));
+    if(r===5)P.H0=[3.3,-1.9,0];
+    P.E=r<=1?[4.6,1.6,0]:r===2?[4.3,1.9,0]:r===3?add(C0,[.5,2.5,0]):r===4?add(C0,mul(dE,LCE)):add(C0,[LCE,0,0]);
+    const ad=r<=1?[[-.5,0,.866],[-.5,0,-.866]]:r<=3?[[0,0,1],[0,0,-1]]:r===4?[norm(add(mul(dE,.5),[0,0,.866])),norm(add(mul(dE,.5),[0,0,-.866]))]:[[.5,0,.866],[.5,0,-.866]];
+    P.a1=add(P.E,mul(ad[0],nit?1.21:1.2));P.a2=add(P.E,mul(ad[1],nit?1.21:1.5));
+    if(nit){
+      const out=r>=2;P.Oc=out?[7.4,2.5,0]:add(P.E,[1.41,0,0]);
+      P.Hn=add(P.Oc,mul(norm([.5,.8,0]),.97));P.Hp=add(P.Oc,mul(norm([.5,-.8,0]),r===0?2.6:.97));
+      A.Oc=A.Hn=out?0:1;A.Hp=r===1?1:0;
+    }else{
+      ring(mul(ad[1],-1),T).forEach((q,i)=>P['m'+i]=add(P.a2,mul(q,1.09)));
+      P.Al=r===0?[9.4,1.6,0]:[8.7,1.6,0];P.Clx=r===0?add(P.E,[1.79,0,0]):sub(P.Al,[2.1,0,0]);
+      ring([-1,0,0],r===0?0:T).forEach((q,i)=>P['K'+i]=add(P.Al,mul(q,2.07)));
+    }
+    stages.push({P,A,r});
+  });
+  const bonds=i=>{const r=stages[i].r,b=gb.slice();
+    if(r<=4)b.push(['C0','H0',1]);if(r>=4)b.push(['C0','E',1]);
+    b.push(['E','a1',nit?1.5:2],['E','a2',nit?1.5:1]);
+    if(nit){b.push(['Oc','Hn',1]);if(r<=1)b.push(['E','Oc',1]);if(r>=1)b.push(['Oc','Hp',1]);}
+    else{[0,1,2].forEach(k=>b.push(['a2','m'+k,1],['Al','K'+k,1]));b.push(r===0?['E','Clx',1]:['Al','Clx',1]);}
+    return b;};
+  const L=nit?{0:{},1:{Oc:'+'},2:{E:'+'},3:{E:'+'},4:{ctr:'+'},5:{H0:'+'}}:{0:{},2:{E:'+',Al:'−'},3:{E:'+',Al:'−'},4:{ctr:'+',Al:'−'},5:{H0:'+',Al:'−'}};
+  const labels=stages.map(s=>L[s.r]);
+  const spot=[1.02,.42,0];
+  const pairs=[
+    {f:(i,P)=>stages[i].r<4?spot:mid(P.C0,P.E),a:i=>stages[i].r>=3?1:0},
+    {f:(i,P)=>stages[i].r<5?mid(P.C0,P.H0):spot,a:i=>stages[i].r===4?1:0}];
+  let lo=[9,9],hi=[-9,-9];
+  stages.forEach(st=>{for(const k in st.P){if(st.A[k]===0)continue;const p=st.P[k];lo[0]=Math.min(lo[0],p[0]);hi[0]=Math.max(hi[0],p[0]);lo[1]=Math.min(lo[1],p[1]);hi[1]=Math.max(hi[1],p[1]);}});
+  M={nit,el,stages,bonds,labels,pairs,cx:(lo[0]+hi[0])/2,cy:(lo[1]+hi[1])/2,w:hi[0]-lo[0]+2,h:hi[1]-lo[1]+1.8,
+     path:nit?[[0],[0,1,2],[2,3],[3,4],[4],[4,5],[5]]:[[0],[0,1],[1,2],[2,3],[3],[3,4],[4]],
+     dur:[0,nit?4.4:3.2,2.2,3.0,1.0,2.8,1.0],last:6};
+}
+
+function scene(){
+  let a,b,e=0;const end=p=>p[p.length-1];
+  if(!anim){a=b=end(M.path[step]);}
+  else{const p=M.path[anim.to];if(p.length<2){a=b=p[0];}else{const n=p.length-1,t=Math.min(anim.f*n,n-1e-6),k=Math.floor(t);a=p[k];b=p[k+1];e=ease(t-k);}}
+  const A=M.stages[a], B=M.stages[b], P={}, AL={};
+  for(const k in A.P){P[k]=lerp(A.P[k],B.P[k],e);const x=A.A[k]===undefined?1:A.A[k],y=B.A[k]===undefined?1:B.A[k];AL[k]=x+(y-x)*e;}
+  const bm=new Map();
+  M.bonds(a).forEach(([x,y,o])=>bm.set(x+'|'+y,{a:x,b:y,o0:o,o1:0}));
+  M.bonds(b).forEach(([x,y,o])=>{const k=x+'|'+y;if(bm.has(k))bm.get(k).o1=o;else bm.set(k,{a:x,b:y,o0:0,o1:o});});
+  const bonds=[...bm.values()].map(q=>({a:q.a,b:q.b,o:q.o0+(q.o1-q.o0)*e,al:Math.min(AL[q.a],AL[q.b])}));
+  const pairs=M.pairs.map(p=>({p:lerp(p.f(a,P),p.f(b,P),e),al:p.a(a)+(p.a(b)-p.a(a))*e}));
+  const labels=[], LA=M.labels[a], LB=M.labels[b];
+  new Set([...Object.keys(LA),...Object.keys(LB)]).forEach(id=>{
+    if(LA[id]&&LA[id]===LB[id])labels.push({id,t:LA[id],a:1});
+    else{if(LA[id])labels.push({id,t:LA[id],a:Math.max(0,1-2*e)});if(LB[id])labels.push({id,t:LB[id],a:Math.max(0,2*e-1)});}
+  });
+  const g=r=>r===4?1:0;
+  return {P,AL,bonds,pairs,labels,gap:g(A.r)*(1-e)+g(B.r)*e};
+}
+
+const cv=document.getElementById('stage'), ctx=cv.getContext('2d');
+function css(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim();}
+function draw(){
+  const W=cv.width,H=cv.height,dpr=W/(cv.clientWidth||1);
+  ctx.clearRect(0,0,W,H);
+  if(!W||!H)return;
+  const S=scene(), sc=Math.min(W/M.w,H/M.h)*zoom, cy=Math.cos(yaw),sy=Math.sin(yaw),cp=Math.cos(pitch),sp=Math.sin(pitch), D=26;
+  const pr=p=>{const x=p[0]-M.cx,y=p[1]-M.cy,z=p[2];const x1=x*cy+z*sy,z1=-x*sy+z*cy;const y2=y*cp-z1*sp,z2=y*sp+z1*cp;
+    const k=D/(D-z2);return {x:W/2+x1*sc*k,y:H/2-y2*sc*k,z:z2,k:k*sc};};
+  const col={bond:css('--bond'),hi:css('--bond-hi'),dot:css('--dot'),pair:css('--pair'),surf:css('--surface'),line:css('--stage-line')};
+  const items=[], Q={};
+  if(S.mir>.01){const c=[[0,-2.9,-1.7],[0,3.1,-1.7],[0,3.1,1.7],[0,-2.9,1.7]].map(pr);ctx.save();ctx.beginPath();c.forEach((q,i)=>i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y));ctx.closePath();
+    ctx.globalAlpha=.10*S.mir;ctx.fillStyle=css('--accent');ctx.fill();ctx.globalAlpha=.8*S.mir;ctx.setLineDash([7*dpr,6*dpr]);ctx.lineWidth=1.6*dpr;ctx.strokeStyle=css('--accent');ctx.stroke();
+    ctx.setLineDash([]);ctx.fillStyle=css('--accent');ctx.font='700 '+14*dpr+'px "Instrument Sans",system-ui,sans-serif';ctx.textAlign='center';ctx.fillText('MIRROR',(c[1].x+c[2].x)/2,Math.min(c[1].y,c[2].y)-8*dpr);ctx.restore();}
+  for(const id in S.P){const e=EL[M.el[id]],q=pr(S.P[id]),al=S.AL[id];Q[id]=q;if(!e||al<=.01)continue;
+    items.push({z:q.z,f(){const r=e.r*q.k,g=ctx.createRadialGradient(q.x-r*.35,q.y-r*.4,r*.08,q.x,q.y,r);
+      g.addColorStop(0,e.c[0]);g.addColorStop(.55,e.c[1]);g.addColorStop(1,e.c[2]);
+      ctx.save();ctx.globalAlpha=al;ctx.beginPath();ctx.arc(q.x,q.y,r,0,7);ctx.fillStyle=g;ctx.fill();
+      ctx.lineWidth=Math.max(1,dpr);ctx.strokeStyle=col.line;ctx.globalAlpha=.55*al;ctx.stroke();ctx.globalAlpha=al;
+      if(showSym&&r>7*dpr){ctx.fillStyle=e.t;ctx.font='700 '+Math.round(Math.min(r*(M.el[id].length>1?.95:1.05),22*dpr))+'px "Instrument Sans",system-ui,sans-serif';
+        ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(M.el[id],q.x,q.y+r*.04);}ctx.restore();}});}
+  S.bonds.forEach(b=>{if(b.o<=.02||b.al<=.01)return;
+    const A=S.P[b.a],B=S.P[b.b],u=norm(sub(B,A));
+    const p=pr(add(A,mul(u,EL[M.el[b.a]].r*.7))),q=pr(sub(B,mul(u,EL[M.el[b.b]].r*.7)));
+    items.push({z:(p.z+q.z)/2,f(){const k=(p.k+q.k)/2,w=(b.o>2.5?.12:.17)*k;let dx=q.x-p.x,dy=q.y-p.y;const L=Math.hypot(dx,dy)||1;
+      const off=(b.o>2.5?.2:.15)*k*Math.max(0,Math.min(1,b.o-1)),nx=-dy/L*off,ny=dx/L*off;
+      ctx.save();ctx.globalAlpha=b.al*Math.min(1,b.o<1?.25+.75*b.o:1);
+      if(b.o<.98){ctx.setLineDash([w*.9,w*.9]);ctx.lineCap='butt';}else ctx.lineCap='round';
+      (b.o>2.5?[1,0,-1]:off>.5?[1,-1]:[0]).forEach(s=>{
+        ctx.beginPath();ctx.moveTo(p.x+nx*s,p.y+ny*s);ctx.lineTo(q.x+nx*s,q.y+ny*s);
+        ctx.strokeStyle=col.bond;ctx.lineWidth=w;ctx.stroke();
+        ctx.strokeStyle=col.hi;ctx.lineWidth=w*.38;ctx.stroke();});
+      ctx.restore();}});});
+  if(showPairs)S.pairs.forEach(c=>{if(c.al<=.01)return;const q=pr(c.p);
+    items.push({z:q.z+.45,f(){const r=.13*q.k;ctx.save();ctx.globalAlpha=c.al;ctx.shadowColor=col.pair;ctx.shadowBlur=r*2.2;
+      [-1,1].forEach(s=>{ctx.beginPath();ctx.arc(q.x+s*r*1.25,q.y,r,0,7);ctx.fillStyle=col.pair;ctx.fill();});
+      ctx.shadowBlur=0;ctx.lineWidth=dpr;ctx.strokeStyle='rgba(60,35,0,.7)';
+      [-1,1].forEach(s=>{ctx.beginPath();ctx.arc(q.x+s*r*1.25,q.y,r,0,7);ctx.stroke();});ctx.restore();}});});
+  [.42,-.42].forEach(y=>{const g=S.gap*rad(64),pts=[];for(let t=g;t<=2*Math.PI-g+1e-6;t+=Math.PI/30)pts.push(pr([.98*Math.cos(t),y,.98*Math.sin(t)]));
+    const c=pr([0,y,0]);items.push({z:c.z,f(){ctx.save();ctx.globalAlpha=.3;ctx.strokeStyle=css('--accent');ctx.lineWidth=.3*c.k;ctx.lineCap='round';ctx.lineJoin='round';
+      ctx.beginPath();pts.forEach((q,i)=>i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y));if(S.gap<.02)ctx.closePath();ctx.stroke();ctx.restore();}});});
+  items.sort((a,b)=>a.z-b.z).forEach(i=>i.f());
+  S.labels.forEach(l=>{const a=l.a*S.AL[l.id];if(a<=.01)return;const q=Q[l.id],r=(EL[M.el[l.id]]?EL[M.el[l.id]].r:0)*q.k,fs=17*dpr;
+    const x=q.x+r*.72+fs*.75,y=q.y-r*.72-fs*.55;
+    ctx.save();ctx.globalAlpha=a;ctx.font='700 '+fs+'px "Instrument Sans",system-ui,sans-serif';
+    const tw=ctx.measureText(l.t).width+fs*.7,th=fs*1.35;
+    ctx.fillStyle=col.surf;ctx.strokeStyle=col.dot;ctx.lineWidth=1.5*dpr;
+    ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x-tw/2,y-th/2,tw,th,th/2);else ctx.rect(x-tw/2,y-th/2,tw,th);ctx.fill();ctx.stroke();
+    ctx.fillStyle=col.dot;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(l.t,x,y+fs*.04);ctx.restore();});
+}
+function fit(){const d=Math.min(window.devicePixelRatio||1,2),w=cv.clientWidth,h=cv.clientHeight;
+  if(cv.width!==Math.round(w*d)||cv.height!==Math.round(h*d)){cv.width=Math.round(w*d);cv.height=Math.round(h*d);}dirty=true;}
+if(window.ResizeObserver)new ResizeObserver(fit).observe(cv);window.addEventListener('resize',fit);
+let drag=null;
+cv.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY};try{cv.setPointerCapture(e.pointerId);}catch(_){}});
+cv.addEventListener('pointermove',e=>{if(!drag)return;yaw+=(e.clientX-drag.x)*.01;pitch=Math.max(-1.3,Math.min(1.3,pitch+(e.clientY-drag.y)*.01));
+  drag={x:e.clientX,y:e.clientY};dirty=true;});
+['pointerup','pointercancel'].forEach(n=>cv.addEventListener(n,()=>drag=null));
+cv.addEventListener('wheel',e=>{e.preventDefault();zoom=Math.max(.6,Math.min(2.4,zoom*(e.deltaY<0?1.08:.93)));dirty=true;},{passive:false});
+
+/* ---------- 2D mechanism ---------- */
+const mech=document.getElementById('mech');
+function renderMech(){
+  const st=anim?anim.to:step, f=anim?anim.f:1, y0=160, nit=M.nit, R=46;
+  const op=k=>st>k?1:st===k?f:0;
+  const T=(x,y,t,an,cls)=>'<text x="'+x+'" y="'+y+'" text-anchor="'+(an||'middle')+'" class="'+(cls||'at')+'">'+t+'</text>';
+  const ln=(x1,y1,x2,y2,g1,g2)=>{const dx=x2-x1,dy=y2-y1,L=Math.hypot(dx,dy);g1=g1||0;g2=g2||0;
+    return '<line class="bd" x1="'+(x1+dx/L*g1)+'" y1="'+(y1+dy/L*g1)+'" x2="'+(x2-dx/L*g2)+'" y2="'+(y2-dy/L*g2)+'"/>';};
+  const arrow=(d,p)=>p<=0?'':'<path class="ca" d="'+d+'" pathLength="1" stroke-dasharray="1" stroke-dashoffset="'+(1-p)+'"'+(p>.97?' marker-end="url(#ah)"':'')+'/>';
+  const rxn=(x,o)=>'<g opacity="'+o+'"><line class="bd" x1="'+x+'" y1="'+y0+'" x2="'+(x+46)+'" y2="'+y0+'" marker-end="url(#rh)"/></g>';
+  const hex=(cx)=>{let p='';for(let k=0;k<6;k++){const a=rad(90+60*k);p+=(cx+R*Math.cos(a))+','+(y0-R*Math.sin(a))+' ';}
+    return '<polygon points="'+p+'" style="fill:none;stroke:var(--ink);stroke-width:2.2;stroke-linejoin:round"/>';};
+  const circ=cx=>'<circle cx="'+cx+'" cy="'+y0+'" r="26" style="fill:none;stroke:var(--ink);stroke-width:2.2"/>';
+  const eLab=nit?'NO₂':'COCH₃';
+  let s='<defs><marker id="ah" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5.4" markerHeight="5.4" orient="auto"><path d="M0 0L10 5L0 10Z" style="fill:var(--dot)"/></marker>'+
+        '<marker id="rh" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10Z" style="fill:var(--ink)"/></marker></defs>';
+  /* Block A */
+  {const cx=150,ex=300,ey=y0-80;
+   s+=hex(cx)+circ(cx);
+   const o1=op(1);
+   if(o1>0){s+='<g opacity="'+o1+'">';
+     if(nit)s+=T(ex-9,ey,'NO₂','start','at rg')+T(ex,ey-21,'+','middle','ch');
+     else s+=T(ex,ey,'C','middle','at rg')+T(ex,ey-21,'+','middle','ch')+ln(ex,ey,ex-52,ey,13,13)+T(ex-43,ey,'H₃C','end','at rg')+
+       '<line class="bd" x1="'+(ex+13)+'" y1="'+(ey-4.5)+'" x2="'+(ex+43)+'" y2="'+(ey-4.5)+'"/><line class="bd" x1="'+(ex+13)+'" y1="'+(ey+4.5)+'" x2="'+(ex+43)+'" y2="'+(ey+4.5)+'"/>'+T(ex+56,ey,'O','middle','at rg');
+     s+='</g>';}
+   s+=arrow('M'+(cx+20)+' '+(y0-16)+' Q'+(ex-28)+' '+(y0-6)+' '+(ex-1)+' '+(ey+16),op(3));
+   s+=T(cx+70,256,'benzene + '+(nit?'nitronium ion':'acylium ion'),'middle','cap');}
+  const oB=op(4);
+  if(oB>0){const cx=520,ty=y0-R,c=26*Math.cos(rad(52)),sn=26*Math.sin(rad(52));
+   s+=rxn(390,oB)+'<g opacity="'+oB+'">'+hex(cx);
+   s+='<path d="M'+(cx+c)+' '+(y0-sn)+' A26 26 0 1 1 '+(cx-c)+' '+(y0-sn)+'" style="fill:none;stroke:var(--ink);stroke-width:2.2;stroke-linecap:round"/>'+T(cx,y0+3,'+','middle','ch');
+   s+=ln(cx,ty,cx-34,ty-40,2,13)+T(cx-34,ty-40,'H')+ln(cx,ty,cx+34,ty-40,2,13)+T(cx+34-9,ty-40,eLab,'start','at rg');
+   s+=T(cx,256,'intermediate','middle','cap')+'</g>';
+   s+=arrow('M'+(cx-20)+' '+(ty-17)+' C'+(cx-42)+' '+(ty-2)+' '+(cx-24)+' '+(ty+18)+' '+(cx-5)+' '+(ty+18),op(5));}
+  const oC=op(6);
+  if(oC>0){const cx=820,ty=y0-R;
+   s+=rxn(668,oC)+'<g opacity="'+oC+'">'+hex(cx)+circ(cx)+ln(cx,ty,cx,ty-50,2,13)+T(cx-9,ty-50,eLab,'start','at rg');
+   s+=T(cx+92,y0,'+')+T(cx+130,y0,'H')+T(cx+145,y0-14,'+','middle','ch');
+   s+=T(cx+30,256,nit?'nitrobenzene':'phenylethanone','middle','cap b')+'</g>';}
+  const o1=op(1);
+  if(o1>0)s+='<g opacity="'+o1+'">'+T(-50,296,'Electrophile made:  '+(nit?'HNO₃ + H₂SO₄ → NO₂⁺ + HSO₄⁻ + H₂O':'CH₃COCl + AlCl₃ → CH₃CO⁺ + AlCl₄⁻'),'start','cap b')+'</g>';
+  if(oC>0)s+='<g opacity="'+oC+'">'+T(1100,296,'Catalyst re-formed:  '+(nit?'H⁺ + HSO₄⁻ → H₂SO₄':'H⁺ + AlCl₄⁻ → AlCl₃ + HCl'),'end','cap b')+'</g>';
+  mech.innerHTML=s;
+}
+
+/* ---------- words ---------- */
+function product(){return M.nit?{name:'nitrobenzene',eq:'C₆H₆ + HNO₃ → C₆H₅NO₂ + H₂O',cond:'Conc. HNO₃ and conc. H₂SO₄, 50 °C'}
+  :{name:'phenylethanone',eq:'C₆H₆ + CH₃COCl → C₆H₅COCH₃ + HCl',cond:'Anhydrous AlCl₃ catalyst, heat under reflux'};}
+const chips=()=>[['Start','Reactants'],['Electrophile',M.nit?'Making NO₂⁺':'Making CH₃CO⁺'],['Approach','Ring attracts '+(M.nit?'NO₂⁺':'CH₃CO⁺')],['Step 1','Electrophilic attack'],['Intermediate','Ring broken'],['Step 2','H⁺ lost'],['Finish','Product']];
+function words(i){
+  const nit=M.nit,E=nit?'NO₂⁺':'CH₃CO⁺',en=nit?'nitronium ion':'acylium ion',at=nit?'N':'C',pr=product();
+  return [
+   {h:'Reactants',p:['<b>Benzene</b> has a ring of delocalised electrons above and below the plane of the carbon atoms. This region of high electron density attracts electrophiles.',
+     nit?'Nitration uses a mixture of concentrated nitric acid and concentrated sulfuric acid at about 50 °C.':'Friedel-Crafts acylation uses an acyl chloride, here ethanoyl chloride, with an anhydrous aluminium chloride catalyst.'],
+    pts:nit?['Both acids must be concentrated','Keep to about 50 °C to avoid further nitration']:['AlCl₃ must be anhydrous','It is a catalyst: it is re-formed at the end']},
+   nit?{h:'Making the nitronium ion',p:['Sulfuric acid is the stronger acid, so it donates a proton to nitric acid.','The protonated nitric acid loses a water molecule, leaving the <b>nitronium ion, NO₂⁺</b>. This is the electrophile.'],
+     pts:['HNO₃ + H₂SO₄ → NO₂⁺ + HSO₄⁻ + H₂O','Also accepted: HNO₃ + 2H₂SO₄ → NO₂⁺ + 2HSO₄⁻ + H₃O⁺']}
+      :{h:'Making the acylium ion',p:['Aluminium chloride accepts a chloride ion from ethanoyl chloride.','This leaves the <b>acylium ion, CH₃CO⁺</b>, with the positive charge on the carbon. This is the electrophile. The other product is AlCl₄⁻.'],
+     pts:['CH₃COCl + AlCl₃ → CH₃CO⁺ + AlCl₄⁻','Put the + charge on the C of the C=O']},
+   {h:'Approach',p:['The '+en+' is attracted to the delocalised ring of electrons.','It approaches from above the plane of the ring.'],pts:[]},
+   {h:'Step 1: electrophilic attack',p:['A pair of electrons from the delocalised ring forms a bond to the '+at+' of '+E+'.','That ring carbon now has four bonds, so it can no longer be part of the delocalised system.'],
+    pts:['Arrow starts inside the hexagon, from the ring, and goes to the '+at+' of '+E]},
+   {h:'Intermediate',p:['The delocalised ring is <b>broken</b>: it now covers only five carbons and carries a positive charge.','The sixth carbon is bonded to both H and the new group. This intermediate is unstable because it has lost the stability of the full delocalised ring.'],
+    pts:['Draw the horseshoe over five carbons, open towards the carbon with H and the new group','Put the + inside the horseshoe','The horseshoe must not extend past carbons 2 and 6']},
+   {h:'Step 2: H⁺ lost',p:['The pair of electrons in the C–H bond moves back into the ring.','H⁺ leaves and the delocalised ring is <b>restored</b>.'],pts:['Arrow from the C–H bond into the hexagon']},
+   {h:'Product',p:['The product is <b>'+pr.name+'</b>. A hydrogen has been swapped for '+(nit?'an NO₂ group':'a CH₃CO group')+': this is <b>substitution</b>, not addition.',
+     'Benzene substitutes instead of adding because substitution keeps the stable delocalised ring.',
+     nit?'The H⁺ re-forms the sulfuric acid catalyst: H⁺ + HSO₄⁻ → H₂SO₄. Nitration is the first step in making aromatic amines for dyes, and explosives such as TNT.'
+        :'The H⁺ re-forms the catalyst: H⁺ + AlCl₄⁻ → AlCl₃ + HCl. Acylation adds a carbon chain to the ring, which is useful in synthesis.'],
+    pts:nit?['H₂SO₄ is a catalyst: used to make NO₂⁺, re-formed at the end']:['AlCl₃ is a catalyst: used to make CH₃CO⁺, re-formed at the end','HCl is the other product']}][i];
+}
+
+/* ---------- UI ---------- */
+const $=id=>document.getElementById(id);
+const ICON_PLAY='<svg viewBox="0 0 16 16"><path d="M4 2v12l9-6z"/></svg>', ICON_PAUSE='<svg viewBox="0 0 16 16"><path d="M3 2h4v12H3zM9 2h4v12H9z"/></svg>';
+function syncUI(){
+  const st=anim?anim.to:step, w=words(st), pr=product(), ch=chips(), L=M.last;
+  $('tl').innerHTML=ch.map((c,i)=>'<button id="chip'+i+'" data-i="'+i+'" aria-pressed="'+(i===st)+'" class="'+(i<st?'done':'')+'"><span class="yr">'+c[0]+'</span><span class="nm">'+c[1]+'</span></button>').join('');
+  $('explain').innerHTML='<div class="eyebrow">'+ch[st][0]+' · '+(st+1)+' of '+(L+1)+'</div><h2>'+w.h+'</h2>'+w.p.map(x=>'<p>'+x+'</p>').join('');
+  $('points').hidden=!w.pts.length;
+  $('points').innerHTML='<h3>On the exam paper</h3><ul class="pts">'+w.pts.map(x=>'<li>'+x+'</li>').join('')+'</ul>';
+  $('overall').innerHTML='<h3>Overall reaction</h3><div class="eq">'+pr.eq+'<small>'+pr.name+'</small></div><span class="badge">'+pr.cond+'</span>';
+  $('bPlay').innerHTML=playing?ICON_PAUSE+'Pause':ICON_PLAY+(st===L&&!anim?'Replay':'Play all');
+  $('bBack').disabled=st===0&&!anim; $('bNext').disabled=st===L&&!anim; $('bRestart').disabled=st===0&&!anim;
+  [['segRx',cfg.rx],['segSp',String(speed)]].forEach(([id,v])=>
+    $(id).querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===v)));
+  $('tgPairs').setAttribute('aria-pressed',showPairs);$('tgSym').setAttribute('aria-pressed',showSym);
+  dirty=true;
+}
+function start(to,ts){anim={from:step,to,t0:ts||performance.now(),dur:M.dur[to]/speed*1000,f:0};syncUI();}
+function next(){playing=false;if(anim){step=anim.to;anim=null;}else if(step<M.last){start(step+1);return;}syncUI();}
+function back(){playing=false;if(anim){step=anim.from;anim=null;}else step=Math.max(0,step-1);syncUI();}
+function restart(){playing=false;anim=null;step=0;syncUI();}
+function play(){if(playing)playing=false;else{if(step===M.last&&!anim)step=0;playing=true;dwellUntil=performance.now()+(step===0?500:0);}syncUI();}
+function reconfig(){build();playing=false;anim=null;step=0;syncUI();}
+
+$('tl').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const i=+b.dataset.i;
+  playing=false;anim=null;if(i===step+1){start(i);return;}step=i;syncUI();});
+$('segRx').addEventListener('click',e=>{const b=e.target.closest('button');if(b){cfg.rx=b.dataset.v;reconfig();}});
+$('segSp').addEventListener('click',e=>{const b=e.target.closest('button');if(b){speed=+b.dataset.v;syncUI();}});
+$('bPlay').onclick=play;$('bNext').onclick=next;$('bBack').onclick=back;$('bRestart').onclick=restart;
+$('tgPairs').onclick=()=>{showPairs=!showPairs;syncUI();};$('tgSym').onclick=()=>{showSym=!showSym;syncUI();};
+$('zIn').onclick=()=>{zoom=Math.min(2.4,zoom*1.15);dirty=true;};$('zOut').onclick=()=>{zoom=Math.max(.6,zoom/1.15);dirty=true;};
+$('vReset').onclick=()=>{yaw=-.3;pitch=.5;zoom=1;dirty=true;};
+document.addEventListener('keydown',e=>{
+  if(e.target.matches&&e.target.matches('input,textarea'))return;
+  if(e.key==='ArrowRight'){e.preventDefault();next();}
+  else if(e.key==='ArrowLeft'){e.preventDefault();back();}
+  else if(e.key===' '&&(e.target===document.body||e.target===document.documentElement)){e.preventDefault();play();}
+});
+if(window.matchMedia)window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change',()=>dirty=true);
+new MutationObserver(()=>dirty=true).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>dirty=true);
+
+function tick(ts){
+  if(anim){anim.f=Math.min(1,(ts-anim.t0)/anim.dur);
+    if(anim.f>=1){step=anim.to;anim=null;dwellUntil=ts+1500/speed;if(playing&&step===M.last)playing=false;syncUI();}
+    dirty=true;}
+  else if(playing&&ts>=dwellUntil){if(step<M.last)start(step+1,ts);else{playing=false;syncUI();}}
+  if(dirty){dirty=false;draw();renderMech();}
+  requestAnimationFrame(tick);
+}
+build();fit();syncUI();requestAnimationFrame(tick);
+window.__sim={go(i){playing=false;anim=null;step=i;syncUI();},set(r){cfg.rx=r;reconfig();},mid(i,f){playing=false;step=i-1;anim={from:i-1,to:i,t0:performance.now()-f*1e9,dur:1e9,f:f};syncUI();}};
+})();
+</script>
+</body>
+</html>
