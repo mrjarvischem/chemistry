@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Photosynthesis Practical Simulator</title>
+<style>
+/* Layout idea: lab bench on the left (lamp on a ruler, pondweed, clock and counter), lab book on the right (set-up, results table, graph). Single light green theme for projectors. */
+:root{
+  color-scheme: light;
+  --bg:#eef5ea;
+  --paper:#fafdf7;
+  --ink:#1f3324;
+  --accent:#2f6b46;
+  --line:#c3d9c0;
+  --soft:#dfeeda;
+  --good:#0f7a4f;
+  --warn:#9a3b1f;
+  --display: Georgia, "Times New Roman", serif;
+  --body: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.45}
+header{padding:16px 20px 8px;display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline}
+h1{font-family:var(--display);font-size:1.6rem;margin:0;text-wrap:balance}
+header p{margin:0;color:var(--accent)}
+main{display:grid;gap:16px;padding:8px 16px 24px;grid-template-columns:1fr}
+@media (min-width:980px){main{grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);align-items:start}}
+.col{display:flex;flex-direction:column;gap:16px;min-width:0}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+h2{font-family:var(--display);font-size:1.1rem;margin:0 0 10px}
+.row{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+.row + .row{margin-top:10px}
+.lab{font-weight:600;min-width:7.5em}
+.seg{display:flex;flex-wrap:wrap;gap:4px}
+button{font:inherit;color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:7px;padding:6px 12px;cursor:pointer;min-height:38px}
+button:hover{border-color:var(--accent)}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600;padding:8px 20px}
+button:disabled{opacity:.45;cursor:not-allowed}
+button.x{min-height:30px;padding:2px 9px}
+.scene{overflow-x:auto}
+.scene svg{width:100%;min-width:340px;height:auto;display:block}
+.under{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:flex-start;margin-top:10px}
+.lcd{font-family:"Courier New",monospace;font-weight:700;font-size:2.1rem;letter-spacing:.06em;background:#1c2b20;color:#d6f0c8;border-radius:8px;padding:4px 14px;font-variant-numeric:tabular-nums;min-width:3.2em;text-align:center}
+.lcdlab{font-size:.85rem;color:var(--accent)}
+.status{min-height:3.1em;padding:8px 12px;border-left:5px solid var(--accent);background:var(--soft);border-radius:4px;margin-top:12px}
+.status.good{border-color:var(--good)}
+.status.warn{border-color:var(--warn)}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:center}
+th{background:var(--soft);font-weight:600;font-size:.9rem}
+tbody tr{cursor:pointer}
+tbody tr.sel td{background:#cfe6c8}
+.graphwrap{overflow-x:auto}
+.graphwrap svg{width:100%;min-width:320px;height:auto;display:block}
+details summary{cursor:pointer;font-family:var(--display);font-size:1.1rem;font-weight:700}
+details ul{margin:8px 0 0;padding-left:1.2em}
+details li{margin:4px 0;max-width:68ch}
+details h3{font-size:1rem;margin:12px 0 0}
+.note{font-size:.85rem;color:var(--accent);margin:8px 0 0}
+</style>
+</head>
+<body>
+<header>
+  <h1>Light intensity and photosynthesis</h1>
+  <p>AQA GCSE Biology required practical 6: counting bubbles from pondweed</p>
+</header>
+
+<main>
+  <div class="col">
+    <section class="panel" aria-label="Apparatus">
+      <h2>Pondweed, lamp and metre ruler</h2>
+      <div class="scene" id="scene"></div>
+      <div class="under">
+        <div><div class="lcd" id="clock">00:00</div><div class="lcdlab">stop clock</div></div>
+        <div><div class="lcd" id="count">0</div><div class="lcdlab">bubbles counted</div></div>
+        <div>
+          <div class="row">
+            <button class="primary" id="startBtn">Start 1-minute count</button>
+            <button id="resetBtn">Cancel count</button>
+          </div>
+          <div class="row"><span>Clock speed</span><div class="seg" id="speedSeg"></div></div>
+        </div>
+      </div>
+      <div class="status" id="status" aria-live="polite"></div>
+    </section>
+
+    <section class="panel" aria-label="Set up">
+      <h2>Set up</h2>
+      <div class="row"><span class="lab">Lamp distance</span><div class="seg" id="distSeg"></div></div>
+      <div class="row"><span class="lab">Hydrogencarbonate</span><div class="seg" id="co2Seg"></div></div>
+      <div class="row"><span class="lab">Display</span>
+        <div class="seg">
+          <button id="showBtn" aria-pressed="true">Live bubble counter: on</button>
+          <button id="varBtn" aria-pressed="true">Natural variation: on</button>
+        </div>
+      </div>
+      <p class="note">Sodium hydrogencarbonate solution supplies carbon dioxide. Each solution keeps its own results table, and all three are drawn on the graph.</p>
+    </section>
+  </div>
+
+  <div class="col">
+    <section class="panel" aria-label="Results">
+      <h2 id="tableTitle">Results</h2>
+      <div class="tablewrap"><table>
+        <thead><tr><th>Distance, d (cm)</th><th>Light intensity, 1 ÷ d² (d in m)</th><th>Trial 1</th><th>Trial 2</th><th>Trial 3</th><th>Mean bubbles per minute</th><th><span aria-hidden="true">Clear</span></th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table></div>
+      <div class="row">
+        <button id="fillBtn">Fill table instantly</button>
+        <button id="clearBtn">Clear this table</button>
+      </div>
+      <p class="note">Tap a row to move the lamp to that distance.</p>
+    </section>
+
+    <section class="panel" aria-label="Graph">
+      <div class="row" style="justify-content:space-between">
+        <h2 style="margin:0">Graph</h2>
+        <div class="seg" id="xSeg"></div>
+      </div>
+      <div class="graphwrap" id="graph" style="margin-top:8px"></div>
+    </section>
+
+    <section class="panel">
+      <details>
+        <summary>Teacher notes</summary>
+        <h3>Variables</h3>
+        <ul>
+          <li>Independent: distance of the lamp from the pondweed (which sets the light intensity).</li>
+          <li>Dependent: number of bubbles of oxygen released in one minute.</li>
+          <li>Control: same piece of pondweed, temperature (beaker of water as a heat shield, LED lamp), concentration of hydrogencarbonate, counting time.</li>
+        </ul>
+        <h3>Method this models</h3>
+        <ul>
+          <li>Pondweed, cut end uppermost, in a boiling tube of sodium hydrogencarbonate solution inside a beaker of water.</li>
+          <li>Lamp at 10 cm. Leave the pondweed to adjust, then count the bubbles for one minute. Repeat twice.</li>
+          <li>Move the lamp to 20, 30, 40 and 50 cm and repeat.</li>
+        </ul>
+        <h3>Questions to draw out</h3>
+        <ul>
+          <li>Count along at ×1 with the live counter off. How far apart are the class counts at 10 cm, and why?</li>
+          <li>Why is counting bubbles a weak measure of oxygen volume? Bubbles differ in size; a gas syringe is better.</li>
+          <li>Higher tier: doubling the distance from 10 cm to 20 cm quarters the light intensity. Check it against the 1 ÷ d² column.</li>
+          <li>Plot against light intensity. Why does the line curve over at high intensity? Compare the three hydrogencarbonate solutions to show carbon dioxide becoming the limiting factor.</li>
+        </ul>
+        <p class="note">The data are simulated from a limiting-factor model; real pondweed is far less predictable.</p>
+      </details>
+    </section>
+  </div>
+</main>
+
+<script>
+(function(){
+  "use strict";
+  var DIST=[10,20,30,40,50], PX=9, X0=80;
+  var CO2={
+    low:{name:"Dilute", rmax:30, col:"#7fae8c", shape:"ring"},
+    std:{name:"Standard", rmax:67.5, col:"#2f6b46", shape:"dot"},
+    high:{name:"Concentrated", rmax:95, col:"#1f3324", shape:"square"}
+  };
+  var st={d:10, co2:"std", speed:1, show:true, vary:true, xmode:"dist", results:{low:{},std:{},high:{}}};
+  var run=null, nextIn=0, bubbles=[], last=0;
+
+  function $(id){return document.getElementById(id);}
+  function intensity(d){return 10000/(d*d);}
+  function rate(d,co2){var I=intensity(d); return CO2[co2].rmax*I/(I+50);}
+  function gap(){
+    var r=rate(st.d,st.co2)*(run?run.factor:1), g=60/r;
+    return st.vary ? g*(0.6+0.8*Math.random()) : g;
+  }
+  function trials(){var r=st.results[st.co2]; if(!r[st.d]) r[st.d]=[]; return r[st.d];}
+  function setStatus(msg,cls){var el=$("status"); el.textContent=msg; el.className="status"+(cls?" "+cls:"");}
+  function idle(){setStatus("Lamp at "+st.d+" cm. Give the pondweed time to adjust, then start a 1-minute count.");}
+
+  function buildScene(){
+    var s='<svg viewBox="0 0 640 262" role="img" aria-label="Pondweed in a boiling tube inside a beaker of water, with a lamp on a metre ruler">';
+    s+='<polygon id="beam" fill="#ffe36b"/>';
+    s+='<rect x="0" y="216" width="640" height="6" fill="#6f8a73"/>';
+    // beaker of water
+    s+='<rect x="40" y="100" width="80" height="114" fill="#bfe0ea" opacity=".55"/>';
+    s+='<path d="M38 84 v130 h84 v-130" fill="none" stroke="#4f6b55" stroke-width="2.5"/>';
+    // boiling tube
+    s+='<path d="M66 74 v122 a14 14 0 0 0 28 0 v-122 z" fill="#d9f0dc" opacity=".8"/>';
+    s+='<path d="M64 56 v140 a16 16 0 0 0 32 0 v-140" fill="none" stroke="#4f6b55" stroke-width="2.5"/>';
+    // pondweed
+    s+='<line x1="80" y1="200" x2="80" y2="116" stroke="#2e7d3a" stroke-width="3" stroke-linecap="round"/>';
+    for(var y=124;y<=196;y+=9){
+      s+='<ellipse cx="74" cy="'+y+'" rx="6" ry="2.2" fill="#3f9a4b" transform="rotate(-25 74 '+y+')"/>';
+      s+='<ellipse cx="86" cy="'+y+'" rx="6" ry="2.2" fill="#3f9a4b" transform="rotate(25 86 '+y+')"/>';
+    }
+    s+='<g id="bub"></g>';
+    // ruler
+    s+='<rect x="'+X0+'" y="226" width="'+(55*PX)+'" height="20" fill="#f3e9b8" stroke="#8a7d3c" stroke-width="1"/>';
+    for(var c=0;c<=55;c+=5){
+      var x=X0+c*PX, big=c%10===0;
+      s+='<line x1="'+x+'" x2="'+x+'" y1="226" y2="'+(big?236:232)+'" stroke="#5a5126" stroke-width="1.2"/>';
+      if(big) s+='<text x="'+(x+(c===0?4:0))+'" y="244" text-anchor="'+(c===0?"start":"middle")+'" font-size="10" fill="#5a5126" font-family="system-ui,Arial">'+c+'</text>';
+    }
+    s+='<text x="'+(X0+55*PX+6)+'" y="241" font-size="11" fill="#5a5126" font-family="system-ui,Arial">cm</text>';
+    // lamp
+    s+='<g id="lamp">';
+    s+='<line x1="16" y1="150" x2="16" y2="212" stroke="#33423a" stroke-width="4"/>';
+    s+='<rect x="2" y="208" width="30" height="8" rx="3" fill="#33423a"/>';
+    s+='<path d="M0 124 L26 116 V164 L0 156 Z" fill="#33423a"/>';
+    s+='<rect x="-3" y="124" width="4" height="32" rx="2" fill="#fff3a6"/>';
+    s+='<text id="lampLab" x="16" y="106" text-anchor="middle" font-size="13" font-weight="700" fill="#1f3324" font-family="system-ui,Arial"></text>';
+    s+='</g></svg>';
+    $("scene").innerHTML=s;
+  }
+  function renderLamp(){
+    var x=X0+st.d*PX;
+    $("lamp").setAttribute("transform","translate("+x+" 0)");
+    $("lampLab").textContent=st.d+" cm";
+    $("beam").setAttribute("points",x+",126 "+x+",154 96,204 96,80");
+    $("beam").setAttribute("opacity",(0.06+0.5*Math.sqrt(intensity(st.d)/100)).toFixed(2));
+  }
+  function renderBubbles(now){
+    var h="";
+    bubbles=bubbles.filter(function(b){return now-b.t0<650;});
+    bubbles.forEach(function(b){
+      var p=(now-b.t0)/650;
+      h+='<circle cx="'+(80+b.dx+Math.sin(p*6+b.dx)*1.5).toFixed(1)+'" cy="'+(114-p*38).toFixed(1)+'" r="'+b.r+'" fill="#ffffff" stroke="#6aa9bd" stroke-width="1"/>';
+    });
+    $("bub").innerHTML=h;
+  }
+  function fmt(t){var s=Math.floor(t); return "0"+Math.floor(s/60)+":"+(s%60<10?"0":"")+(s%60);}
+  function renderReadout(){
+    $("clock").textContent=fmt(run?run.t:0);
+    $("count").textContent = !run ? "0" : (st.show||run.done ? run.n : "?");
+  }
+
+  function startCount(){
+    if(trials().length>=3){ setStatus("This distance already has 3 trials. Clear the row to repeat it.","warn"); return; }
+    run={t:0,n:0,done:false,factor: st.vary ? 1+(Math.random()-0.5)*0.12 : 1};
+    nextIn=gap();
+    $("startBtn").disabled=true;
+    setStatus(st.show ? "Counting bubbles for 60 seconds." : "Counting for 60 seconds. The counter is hidden: count the bubbles yourself.");
+  }
+  function finishCount(){
+    run.done=true; run.t=60;
+    trials().push(run.n);
+    $("startBtn").disabled=false;
+    setStatus("Time up: "+run.n+" bubbles in one minute at "+st.d+" cm. Recorded as trial "+trials().length+".","good");
+    renderTable(); renderGraph();
+  }
+  function cancel(){ run=null; nextIn=gap(); $("startBtn").disabled=false; renderReadout(); idle(); }
+
+  function frame(now){
+    var dt=Math.min(0.25,(now-last)/1000); last=now;
+    var counting = run && !run.done;
+    var sdt = dt*(counting?st.speed:1);
+    if(counting) sdt=Math.min(sdt,60-run.t);
+    nextIn-=sdt;
+    while(nextIn<=0){
+      if(counting) run.n++;
+      if(bubbles.length<40) bubbles.push({t0:now, dx:(Math.random()-0.5)*4, r:(1.6+Math.random()*1.4).toFixed(1)});
+      nextIn+=gap();
+    }
+    if(counting){ run.t+=sdt; if(run.t>=60-1e-9) finishCount(); }
+    renderBubbles(now); renderReadout();
+    requestAnimationFrame(frame);
+  }
+
+  function mean(arr){ if(!arr||!arr.length) return null; return arr.reduce(function(a,b){return a+b;},0)/arr.length; }
+  function renderTable(){
+    var res=st.results[st.co2], html="";
+    DIST.forEach(function(d){
+      var arr=res[d]||[], m=mean(arr), I=intensity(d);
+      html+='<tr data-v="'+d+'"'+(d===st.d?' class="sel"':'')+'><td><strong>'+d+'</strong></td><td>'+(I%1===0?I:I.toFixed(2))+'</td>';
+      for(var i=0;i<3;i++) html+='<td>'+(i<arr.length?arr[i]:'')+'</td>';
+      html+='<td>'+(m===null?'':m.toFixed(1))+'</td>';
+      html+='<td>'+(arr.length?'<button class="x" data-clear="'+d+'" aria-label="Clear row '+d+' cm">×</button>':'')+'</td></tr>';
+    });
+    $("tbody").innerHTML=html;
+    $("tableTitle").textContent="Results: "+CO2[st.co2].name.toLowerCase()+" hydrogencarbonate solution";
+  }
+  function marker(shape,x,y,col){
+    if(shape==="square") return '<rect x="'+(x-5)+'" y="'+(y-5)+'" width="10" height="10" fill="'+col+'"/>';
+    if(shape==="ring") return '<circle cx="'+x+'" cy="'+y+'" r="5" fill="#fafdf7" stroke="'+col+'" stroke-width="2.5"/>';
+    return '<circle cx="'+x+'" cy="'+y+'" r="5.5" fill="'+col+'"/>';
+  }
+  function renderGraph(){
+    var W=560,H=320,L=62,R=540,T=18,B=262, byI=st.xmode==="int";
+    var xmax=byI?100:60, xstep=byI?20:10, ymax=50, series=[];
+    Object.keys(CO2).forEach(function(k){
+      var pts=[];
+      DIST.forEach(function(d){ var m=mean(st.results[k][d]); if(m!==null){ pts.push([byI?intensity(d):d,m]); ymax=Math.max(ymax,Math.ceil(m/10)*10); } });
+      pts.sort(function(a,b){return a[0]-b[0];});
+      if(pts.length) series.push({k:k,pts:pts});
+    });
+    function X(v){return L+v/xmax*(R-L-14);}
+    function Y(v){return B-v/ymax*(B-T);}
+    var s='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Graph of bubbles per minute">';
+    for(var y=0;y<=ymax;y+=10){
+      s+='<line x1="'+L+'" x2="'+R+'" y1="'+Y(y)+'" y2="'+Y(y)+'" stroke="#d5e6d0" stroke-width="1"/>';
+      s+='<text x="'+(L-8)+'" y="'+(Y(y)+5)+'" text-anchor="end" font-size="14" fill="#1f3324">'+y+'</text>';
+    }
+    for(var x=0;x<=xmax;x+=xstep){
+      s+='<line x1="'+X(x)+'" x2="'+X(x)+'" y1="'+B+'" y2="'+(B+6)+'" stroke="#1f3324" stroke-width="1.5"/>';
+      s+='<text x="'+X(x)+'" y="'+(B+22)+'" text-anchor="middle" font-size="14" fill="#1f3324">'+x+'</text>';
+    }
+    s+='<line x1="'+L+'" x2="'+R+'" y1="'+B+'" y2="'+B+'" stroke="#1f3324" stroke-width="2"/>';
+    s+='<line x1="'+L+'" x2="'+L+'" y1="'+T+'" y2="'+B+'" stroke="#1f3324" stroke-width="2"/>';
+    s+='<text x="'+((L+R)/2)+'" y="'+(H-8)+'" text-anchor="middle" font-size="15" font-weight="600" fill="#1f3324">'+(byI?"Light intensity, 1 ÷ d² (d in m)":"Distance of lamp from pondweed (cm)")+'</text>';
+    s+='<text transform="translate(16 '+((T+B)/2)+') rotate(-90)" text-anchor="middle" font-size="15" font-weight="600" fill="#1f3324">Mean bubbles per minute</text>';
+    series.forEach(function(se){
+      var c=CO2[se.k];
+      s+='<polyline points="'+se.pts.map(function(p){return X(p[0]).toFixed(1)+","+Y(p[1]).toFixed(1);}).join(" ")+'" fill="none" stroke="'+c.col+'" stroke-width="2.5" stroke-linejoin="round"/>';
+      se.pts.forEach(function(p){ s+=marker(c.shape,+X(p[0]).toFixed(1),+Y(p[1]).toFixed(1),c.col); });
+    });
+    if(series.length>1){
+      var lx=byI?L+14:R-150;
+      series.forEach(function(se,i){
+        var c=CO2[se.k], ly=T+14+i*20;
+        s+=marker(c.shape,lx,ly,c.col)+'<text x="'+(lx+12)+'" y="'+(ly+5)+'" font-size="13" fill="#1f3324">'+c.name+'</text>';
+      });
+    }
+    if(!series.length) s+='<text x="'+((L+R)/2)+'" y="'+((T+B)/2)+'" text-anchor="middle" font-size="15" fill="#2f6b46">Finish a count to plot the first point</text>';
+    s+='</svg>';
+    $("graph").innerHTML=s;
+  }
+
+  function seg(id, items, get, set){
+    var el=$(id);
+    function draw(){
+      el.innerHTML=items.map(function(it){
+        return '<button data-v="'+it[0]+'" aria-pressed="'+(String(get())===String(it[0]))+'">'+it[1]+'</button>';
+      }).join("");
+    }
+    el.addEventListener("click",function(e){ var b=e.target.closest("button"); if(!b) return; set(b.getAttribute("data-v")); draw(); });
+    draw(); return draw;
+  }
+  function changed(){ renderLamp(); renderTable(); cancel(); }
+
+  var drawDist=seg("distSeg",DIST.map(function(d){return [d,d+" cm"];}),function(){return st.d;},function(v){st.d=Number(v); changed();});
+  seg("co2Seg",[["low","Dilute"],["std","Standard"],["high","Concentrated"]],function(){return st.co2;},function(v){st.co2=v; changed();});
+  seg("speedSeg",[[1,"×1"],[4,"×4"],[10,"×10"]],function(){return st.speed;},function(v){st.speed=Number(v);});
+  seg("xSeg",[["dist","Against distance"],["int","Against light intensity"]],function(){return st.xmode;},function(v){st.xmode=v; renderGraph();});
+
+  $("startBtn").addEventListener("click",startCount);
+  $("resetBtn").addEventListener("click",cancel);
+  $("showBtn").addEventListener("click",function(){ st.show=!st.show; this.setAttribute("aria-pressed",st.show); this.textContent="Live bubble counter: "+(st.show?"on":"off"); });
+  $("varBtn").addEventListener("click",function(){ st.vary=!st.vary; this.setAttribute("aria-pressed",st.vary); this.textContent="Natural variation: "+(st.vary?"on":"off"); });
+  $("tbody").addEventListener("click",function(e){
+    var c=e.target.closest("[data-clear]");
+    if(c){ delete st.results[st.co2][c.getAttribute("data-clear")]; renderTable(); renderGraph(); return; }
+    var tr=e.target.closest("tr"); if(!tr) return;
+    st.d=Number(tr.getAttribute("data-v")); drawDist(); changed();
+  });
+  $("fillBtn").addEventListener("click",function(){
+    var res=st.results[st.co2];
+    DIST.forEach(function(d){
+      var arr=res[d]||(res[d]=[]);
+      while(arr.length<3) arr.push(Math.round(rate(d,st.co2)*(st.vary?1+(Math.random()-0.5)*0.12:1)));
+    });
+    renderTable(); renderGraph();
+    setStatus("Table filled with 3 trials at every distance.");
+  });
+  $("clearBtn").addEventListener("click",function(){ st.results[st.co2]={}; renderTable(); renderGraph(); });
+
+  buildScene(); renderLamp(); renderTable(); renderGraph(); nextIn=gap(); idle();
+  last=performance.now(); requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

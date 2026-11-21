@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Osmosis Practical Simulator</title>
+<style>
+/* Layout idea: lab bench on the left (rack of boiling tubes, clock, one step button), lab book on the right (set-up, results table, graph). Single light green theme for projectors. */
+:root{
+  color-scheme: light;
+  --bg:#eef5ea;
+  --paper:#fafdf7;
+  --ink:#1f3324;
+  --accent:#2f6b46;
+  --line:#c3d9c0;
+  --soft:#dfeeda;
+  --good:#0f7a4f;
+  --warn:#9a3b1f;
+  --display: Georgia, "Times New Roman", serif;
+  --body: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.45}
+header{padding:16px 20px 8px;display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline}
+h1{font-family:var(--display);font-size:1.6rem;margin:0;text-wrap:balance}
+header p{margin:0;color:var(--accent)}
+main{display:grid;gap:16px;padding:8px 16px 24px;grid-template-columns:1fr}
+@media (min-width:980px){main{grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);align-items:start}}
+.col{display:flex;flex-direction:column;gap:16px;min-width:0}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+h2{font-family:var(--display);font-size:1.1rem;margin:0 0 10px}
+.row{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+.row + .row{margin-top:10px}
+.lab{font-weight:600;min-width:7.5em}
+.seg{display:flex;flex-wrap:wrap;gap:4px}
+button{font:inherit;color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:7px;padding:6px 12px;cursor:pointer;min-height:38px}
+button:hover{border-color:var(--accent)}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600;padding:8px 20px}
+button:disabled{opacity:.45;cursor:not-allowed}
+.scene{overflow-x:auto}
+.scene svg{width:100%;min-width:330px;height:auto;display:block}
+.cyl{transition:transform .7s ease}
+@media (prefers-reduced-motion:reduce){.cyl{transition:none}}
+.under{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;margin-top:10px}
+.clock{font-family:"Courier New",monospace;font-weight:700;font-size:2.1rem;letter-spacing:.06em;background:#1c2b20;color:#d6f0c8;border-radius:8px;padding:4px 14px;font-variant-numeric:tabular-nums}
+.clocklab{font-size:.85rem;color:var(--accent)}
+.status{min-height:3.1em;padding:8px 12px;border-left:5px solid var(--accent);background:var(--soft);border-radius:4px;margin-top:12px}
+.status.good{border-color:var(--good)}
+.status.warn{border-color:var(--warn)}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:center}
+th{background:var(--soft);font-weight:600;font-size:.9rem}
+td.q{color:var(--accent);font-weight:700}
+.graphwrap{overflow-x:auto}
+.graphwrap svg{width:100%;min-width:320px;height:auto;display:block}
+details summary{cursor:pointer;font-family:var(--display);font-size:1.1rem;font-weight:700}
+details ul{margin:8px 0 0;padding-left:1.2em}
+details li{margin:4px 0;max-width:68ch}
+details h3{font-size:1rem;margin:12px 0 0}
+.note{font-size:.85rem;color:var(--accent);margin:8px 0 0}
+</style>
+</head>
+<body>
+<header>
+  <h1>Osmosis in plant tissue</h1>
+  <p>AQA GCSE Biology required practical 3: change in mass in sugar solutions</p>
+</header>
+
+<main>
+  <div class="col">
+    <section class="panel" aria-label="Apparatus">
+      <h2 id="sceneTitle">Potato cylinders and sucrose solutions</h2>
+      <div class="scene" id="scene"></div>
+      <div class="under">
+        <div><div class="clock" id="clock">0:00</div><div class="clocklab">hours : minutes in solution</div></div>
+        <button class="primary" id="stepBtn">Weigh the cylinders</button>
+        <button id="resetBtn">Reset this run</button>
+      </div>
+      <div class="status" id="status" aria-live="polite"></div>
+    </section>
+
+    <section class="panel" aria-label="Set up">
+      <h2>Set up</h2>
+      <div class="row"><span class="lab">Plant tissue</span><div class="seg" id="tissueSeg"></div></div>
+      <div class="row"><span class="lab">Time in solution</span><div class="seg" id="soakSeg"></div></div>
+      <div class="row"><span class="lab">Technique</span>
+        <div class="seg">
+          <button id="blotBtn" aria-pressed="true">Blot dry before reweighing: on</button>
+          <button id="varBtn" aria-pressed="true">Natural variation: on</button>
+        </div>
+      </div>
+      <p class="note">Changing the tissue or the time in solution clears the results, so every run in the table is a fair repeat.</p>
+    </section>
+  </div>
+
+  <div class="col">
+    <section class="panel" aria-label="Results">
+      <div class="row" style="justify-content:space-between">
+        <h2 style="margin:0" id="tableTitle">Results: run 1</h2>
+        <div class="seg"><button id="calcBtn" aria-pressed="true">Show calculations</button></div>
+      </div>
+      <div class="tablewrap" style="margin-top:10px"><table>
+        <thead><tr><th>Sucrose (mol/dm³)</th><th>Initial mass (g)</th><th>Final mass (g)</th><th>Change in mass (g)</th><th>% change</th><th>Mean % change, all runs</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table></div>
+      <div class="row">
+        <button id="clearBtn">Clear all results</button>
+        <span class="note" id="runNote" style="margin:0"></span>
+      </div>
+    </section>
+
+    <section class="panel" aria-label="Graph">
+      <div class="row" style="justify-content:space-between">
+        <h2 style="margin:0">Graph</h2>
+        <div class="seg"><button id="fitBtn" aria-pressed="false">Line of best fit</button></div>
+      </div>
+      <div class="graphwrap" id="graph" style="margin-top:8px"></div>
+    </section>
+
+    <section class="panel">
+      <details>
+        <summary>Teacher notes</summary>
+        <h3>Variables</h3>
+        <ul>
+          <li>Independent: concentration of the sucrose solution.</li>
+          <li>Dependent: percentage change in mass of the cylinder.</li>
+          <li>Control: tissue (same potato), cylinder length and diameter, volume of solution, time in solution, temperature.</li>
+        </ul>
+        <h3>Method this models</h3>
+        <ul>
+          <li>Cut six cylinders with a cork borer, trim to the same length, blot and weigh each one.</li>
+          <li>Put one cylinder in each boiling tube of sucrose solution, 0.0 to 1.0 mol/dm³.</li>
+          <li>After a fixed time, remove, blot dry, reweigh and calculate the percentage change in mass.</li>
+        </ul>
+        <h3>Questions to draw out</h3>
+        <ul>
+          <li>The cylinders start at different masses. Why does that make percentage change the fair comparison?</li>
+          <li>Turn blotting off and repeat. Which way does every point move, and why?</li>
+          <li>Compare 30 minutes with 24 hours. Why are the short-run changes smaller?</li>
+          <li>Where does the line cross zero, and what does that say about the concentration inside the cells?</li>
+          <li>How could the estimate be improved? More concentrations between the two either side of zero, and repeats.</li>
+        </ul>
+        <p class="note">The data are simulated. The crossing points for the three tissues are typical values chosen for the model; real vegetables vary.</p>
+      </details>
+    </section>
+  </div>
+</main>
+
+<script>
+(function(){
+  "use strict";
+  var CONC=[0,0.2,0.4,0.6,0.8,1.0], N=CONC.length, TAU=50, ANIM=6000;
+  var TISSUE={
+    potato:{name:"Potato", c0:0.27, fill:"#f1e3a8", edge:"#b9a55a"},
+    sweet:{name:"Sweet potato", c0:0.50, fill:"#eeb074", edge:"#b5753a"},
+    carrot:{name:"Carrot", c0:0.40, fill:"#f39a45", edge:"#b9651c"}
+  };
+  var st={tissue:"potato", soak:120, blot:true, vary:true, calc:true, fit:false, runs:[]};
+  var run=null, stage=0, animStart=0;
+
+  function $(id){return document.getElementById(id);}
+  function cx(i){return 62+i*95;}
+  function deltaEq(c){
+    var c0=TISSUE[st.tissue].c0;
+    return c<c0 ? 46*(c0-c) : -35*(1-Math.exp(-1.5*(c-c0)));
+  }
+  function frac(t){return 1-Math.exp(-t/TAU);}
+  function newRun(){
+    run={init:[],noise:[],final:[],t:0};
+    for(var i=0;i<N;i++){
+      run.init.push(Math.round((2.2+Math.random()*0.6)*100)/100);
+      run.noise.push(st.vary ? (Math.random()-0.5)*2 : 0);
+    }
+    stage=0;
+  }
+  function pctNow(i){return (deltaEq(CONC[i])+run.noise[i])*frac(run.t);}
+  function setStatus(msg,cls){var el=$("status"); el.textContent=msg; el.className="status"+(cls?" "+cls:"");}
+  function fmtClock(m){m=Math.round(m); var h=Math.floor(m/60), mm=m%60; return h+":"+(mm<10?"0":"")+mm;}
+
+  function buildScene(){
+    var s='<svg viewBox="0 0 600 322" role="img" aria-label="Six boiling tubes of sucrose solution, each with a cylinder of plant tissue">';
+    s+='<rect x="14" y="128" width="572" height="10" rx="4" fill="#6f8a73"/>';
+    s+='<rect x="14" y="272" width="572" height="10" rx="4" fill="#6f8a73"/>';
+    for(var i=0;i<N;i++){
+      var x=cx(i);
+      s+='<clipPath id="tc'+i+'"><path d="M'+(x-20)+' 96 v152 a20 20 0 0 0 40 0 v-152 z"/></clipPath>';
+      s+='<rect x="'+(x-22)+'" y="156" width="44" height="120" fill="#bfe0ea" opacity="'+(0.45+0.4*CONC[i]).toFixed(2)+'" clip-path="url(#tc'+i+')"/>';
+      s+='<path d="M'+(x-22)+' 94 v154 a22 22 0 0 0 44 0 v-154" fill="#ffffff" fill-opacity=".25" stroke="#4f6b55" stroke-width="2.5"/>';
+      s+='<text id="tag'+i+'" x="'+x+'" y="16" text-anchor="middle" font-size="14" font-weight="700" fill="#1f3324" font-family="system-ui,Arial"></text>';
+      s+='<g class="cyl" id="cyl'+i+'"><rect id="rc'+i+'" rx="4" stroke-width="1.5"/></g>';
+      s+='<text x="'+x+'" y="300" text-anchor="middle" font-size="15" font-weight="700" fill="#1f3324" font-family="system-ui,Arial">'+CONC[i].toFixed(1)+'</text>';
+    }
+    s+='<text x="300" y="318" text-anchor="middle" font-size="13" fill="#2f6b46" font-family="system-ui,Arial">sucrose concentration (mol/dm³)</text>';
+    s+='</svg>';
+    $("scene").innerHTML=s;
+  }
+  function renderScene(){
+    var tz=TISSUE[st.tissue], inTube=(stage===2||stage===3);
+    for(var i=0;i<N;i++){
+      var d=(stage>=2 ? pctNow(i) : 0)/100;
+      var w=16*(1+d*1.8), h=56*(1+d*0.8);
+      var r=$("rc"+i);
+      r.setAttribute("x",(-w/2).toFixed(1)); r.setAttribute("y",(-h/2).toFixed(1));
+      r.setAttribute("width",w.toFixed(1)); r.setAttribute("height",h.toFixed(1));
+      r.setAttribute("fill",tz.fill); r.setAttribute("stroke",tz.edge);
+      $("cyl"+i).style.transform="translate("+cx(i)+"px,"+(inTube?218:56)+"px)";
+      var tag="";
+      if(stage===1) tag=run.init[i].toFixed(2)+" g";
+      if(stage===4) tag=run.final[i].toFixed(2)+" g";
+      $("tag"+i).textContent=tag;
+    }
+    $("clock").textContent=fmtClock(run.t);
+  }
+
+  function rowCalc(r,i){
+    var ch=Math.round((r.final[i]-r.init[i])*100)/100;
+    return {ch:ch, pct:ch/r.init[i]*100};
+  }
+  function means(){
+    var out=[];
+    for(var i=0;i<N;i++){
+      if(!st.runs.length){out.push(null); continue;}
+      var s=0; st.runs.forEach(function(r){s+=rowCalc(r,i).pct;});
+      out.push(s/st.runs.length);
+    }
+    return out;
+  }
+  function sign(v,dp){return (v>0?"+":"")+v.toFixed(dp);}
+  function renderTable(){
+    var html="", m=means();
+    for(var i=0;i<N;i++){
+      html+='<tr><td><strong>'+CONC[i].toFixed(1)+'</strong></td>';
+      html+='<td>'+(stage>=1?run.init[i].toFixed(2):'')+'</td>';
+      if(stage===4){
+        var c=rowCalc(run,i);
+        html+='<td>'+run.final[i].toFixed(2)+'</td>';
+        html+= st.calc ? '<td>'+sign(c.ch,2)+'</td><td>'+sign(c.pct,1)+'</td>' : '<td class="q">?</td><td class="q">?</td>';
+      } else html+='<td></td><td></td><td></td>';
+      html+='<td>'+(m[i]===null?'':(st.calc?sign(m[i],1):'<span class="q">?</span>'))+'</td></tr>';
+    }
+    $("tbody").innerHTML=html;
+    var n=st.runs.length + (stage===4?0:1);
+    $("tableTitle").textContent="Results: run "+Math.min(n,3);
+    $("runNote").textContent=st.runs.length+" of 3 runs completed";
+  }
+
+  function renderGraph(){
+    var W=560,H=330,L=62,R=540,T=18,B=276;
+    var m=means(), all=[];
+    st.runs.forEach(function(r){for(var i=0;i<N;i++) all.push([CONC[i],rowCalc(r,i).pct]);});
+    var lo=-30, hi=20;
+    all.forEach(function(p){lo=Math.min(lo,Math.floor(p[1]/10)*10); hi=Math.max(hi,Math.ceil(p[1]/10)*10);});
+    function X(c){return L+c*(R-L-20);}
+    function Y(v){return B-(v-lo)/(hi-lo)*(B-T);}
+    var s='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Graph of percentage change in mass against sucrose concentration">';
+    s+='<clipPath id="plot"><rect x="'+L+'" y="'+T+'" width="'+(R-L)+'" height="'+(B-T)+'"/></clipPath>';
+    for(var y=lo;y<=hi;y+=10){
+      s+='<line x1="'+L+'" x2="'+R+'" y1="'+Y(y)+'" y2="'+Y(y)+'" stroke="'+(y===0?'#1f3324':'#d5e6d0')+'" stroke-width="'+(y===0?2:1)+'"/>';
+      s+='<text x="'+(L-8)+'" y="'+(Y(y)+5)+'" text-anchor="end" font-size="14" fill="#1f3324">'+(y>0?"+":"")+y+'</text>';
+    }
+    CONC.forEach(function(c){
+      s+='<line x1="'+X(c)+'" x2="'+X(c)+'" y1="'+B+'" y2="'+(B+6)+'" stroke="#1f3324" stroke-width="1.5"/>';
+      s+='<text x="'+X(c)+'" y="'+(B+22)+'" text-anchor="middle" font-size="14" fill="#1f3324">'+c.toFixed(1)+'</text>';
+    });
+    s+='<line x1="'+L+'" x2="'+L+'" y1="'+T+'" y2="'+B+'" stroke="#1f3324" stroke-width="2"/>';
+    s+='<line x1="'+L+'" x2="'+R+'" y1="'+B+'" y2="'+B+'" stroke="#1f3324" stroke-width="1"/>';
+    s+='<text x="'+((L+R)/2)+'" y="'+(H-8)+'" text-anchor="middle" font-size="15" font-weight="600" fill="#1f3324">Sucrose concentration (mol/dm³)</text>';
+    s+='<text transform="translate(16 '+((T+B)/2)+') rotate(-90)" text-anchor="middle" font-size="15" font-weight="600" fill="#1f3324">Percentage change in mass (%)</text>';
+    if(st.runs.length && st.fit){
+      var sx=0,sy=0,sxx=0,sxy=0;
+      for(var i=0;i<N;i++){sx+=CONC[i];sy+=m[i];sxx+=CONC[i]*CONC[i];sxy+=CONC[i]*m[i];}
+      var b=(N*sxy-sx*sy)/(N*sxx-sx*sx), a=(sy-b*sx)/N, xi=-a/b;
+      s+='<line clip-path="url(#plot)" x1="'+X(0)+'" y1="'+Y(a)+'" x2="'+X(1.05)+'" y2="'+Y(a+b*1.05)+'" stroke="#2f6b46" stroke-width="2.5"/>';
+      if(xi>0 && xi<1){
+        s+='<line x1="'+X(xi)+'" x2="'+X(xi)+'" y1="'+Y(0)+'" y2="'+B+'" stroke="#9a3b1f" stroke-width="2" stroke-dasharray="5 4"/>';
+        s+='<circle cx="'+X(xi)+'" cy="'+Y(0)+'" r="5" fill="none" stroke="#9a3b1f" stroke-width="2.5"/>';
+        s+='<text x="'+(X(xi)+10)+'" y="'+(Y(0)-10)+'" font-size="14" font-weight="700" fill="#9a3b1f">no change at about '+xi.toFixed(2)+' mol/dm³</text>';
+      }
+    }
+    if(st.runs.length>1) all.forEach(function(p){ s+='<circle cx="'+X(p[0]).toFixed(1)+'" cy="'+Y(p[1]).toFixed(1)+'" r="4" fill="none" stroke="#7fae8c" stroke-width="1.5"/>'; });
+    if(st.runs.length) m.forEach(function(v,i){ s+='<circle cx="'+X(CONC[i]).toFixed(1)+'" cy="'+Y(v).toFixed(1)+'" r="5.5" fill="#2f6b46"/>'; });
+    else s+='<text x="'+((L+R)/2)+'" y="'+(T+40)+'" text-anchor="middle" font-size="15" fill="#2f6b46">Finish a run to plot the points</text>';
+    s+='</svg>';
+    $("graph").innerHTML=s;
+  }
+
+  var LABELS=["Weigh the cylinders","Put into solutions and start clock","In solution…","","Start the next run"];
+  function renderAll(){
+    var b=$("stepBtn");
+    b.textContent = stage===3 ? (st.blot?"Remove, blot dry and reweigh":"Remove and reweigh without blotting") : LABELS[stage];
+    b.disabled = stage===2 || (stage===4 && st.runs.length>=3) || (stage===0 && st.runs.length>=3);
+    if(stage===4 && st.runs.length>=3) b.textContent="3 runs completed";
+    $("sceneTitle").textContent=TISSUE[st.tissue].name+" cylinders and sucrose solutions";
+    renderScene(); renderTable(); renderGraph();
+  }
+  function soakText(){return st.soak>=60 ? (st.soak/60)+(st.soak===60?" hour":" hours") : st.soak+" minutes";}
+  function idle(){
+    if(st.runs.length>=3) setStatus("3 runs completed. Clear all results to start again.","warn");
+    else setStatus("Six cylinders cut with the same cork borer and trimmed to the same length. Weigh each one before it goes into its solution.");
+  }
+  function animate(now){
+    if(stage!==2) return;
+    var p=Math.max(0,Math.min(1,(now-animStart)/ANIM));
+    run.t=st.soak*p;
+    renderScene();
+    if(p<1) requestAnimationFrame(animate);
+    else { stage=3; setStatus(soakText()+" are up. Take each cylinder out and reweigh it."); renderAll(); }
+  }
+  function step(){
+    if(stage===0){ stage=1; setStatus("Initial masses recorded. They are all slightly different, even though the cylinders look the same."); }
+    else if(stage===1){ stage=2; run.t=0; animStart=performance.now()+700; setStatus("Cylinders are in the solutions for "+soakText()+". Watch which ones swell and which shrink."); renderAll(); requestAnimationFrame(animate); return; }
+    else if(stage===3){
+      for(var i=0;i<N;i++){
+        var f=run.init[i]*(1+pctNow(i)/100);
+        if(!st.blot) f+=0.06+Math.random()*0.06;
+        run.final.push(Math.round(f*100)/100);
+      }
+      st.runs.push(run); stage=4;
+      setStatus(st.blot ? "Final masses recorded. Work out the change in mass and the percentage change for each cylinder." : "Final masses recorded, but the cylinders were still wet. The extra water on the surface is included in every mass.", st.blot?"good":"warn");
+    }
+    else if(stage===4){ newRun(); idle(); }
+    renderAll();
+  }
+  function resetRun(){
+    if(stage===4) return newRunAndIdle();
+    newRun(); idle(); renderAll();
+  }
+  function newRunAndIdle(){ newRun(); idle(); renderAll(); }
+  function clearAll(){ st.runs=[]; newRunAndIdle(); }
+
+  function seg(id, items, get, set){
+    var el=$(id);
+    function draw(){
+      el.innerHTML=items.map(function(it){
+        return '<button data-v="'+it[0]+'" aria-pressed="'+(String(get())===String(it[0]))+'">'+it[1]+'</button>';
+      }).join("");
+    }
+    el.addEventListener("click",function(e){ var b=e.target.closest("button"); if(!b) return; set(b.getAttribute("data-v")); draw(); });
+    draw();
+  }
+  function toggle(id,key,label,after){
+    $(id).addEventListener("click",function(){
+      st[key]=!st[key]; this.setAttribute("aria-pressed",st[key]);
+      if(label) this.textContent=label+(st[key]?"on":"off");
+      after();
+    });
+  }
+
+  seg("tissueSeg",[["potato","Potato"],["sweet","Sweet potato"],["carrot","Carrot"]],function(){return st.tissue;},function(v){st.tissue=v; clearAll();});
+  seg("soakSeg",[[30,"30 min"],[120,"2 hours"],[1440,"24 hours"]],function(){return st.soak;},function(v){st.soak=Number(v); clearAll();});
+  toggle("blotBtn","blot","Blot dry before reweighing: ",renderAll);
+  toggle("varBtn","vary","Natural variation: ",function(){});
+  toggle("calcBtn","calc",null,renderTable);
+  toggle("fitBtn","fit",null,renderGraph);
+  $("stepBtn").addEventListener("click",step);
+  $("resetBtn").addEventListener("click",resetRun);
+  $("clearBtn").addEventListener("click",clearAll);
+
+  buildScene(); newRunAndIdle();
+})();
+</script>
+</body>
+</html>
