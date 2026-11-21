@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Standard Solution and Titration Lab</title>
+<style>
+/* VOICE: calm, precise A-level practical bench; teacher-led, projector-friendly
+   IDEA: RP1 write-up beside the bench: balance, beaker, volumetric flask, then burette over a white tile
+   PICTURE: large drawn apparatus with magnified meniscus views for the flask neck and burette
+   COLOUR and TYPE: cream-and-brown classroom palette, indicator colours, system sans
+   LAYOUT: two stages as tabs; apparatus + controls, then results table, then calculation */
+:root{color-scheme:light dark;
+--bg:light-dark(#f3eadb,#1b140e);--panel:light-dark(#fbf6ec,#261c14);--ink:light-dark(#2e2116,#f0e4d0);
+--mute:light-dark(#6e5a45,#b9a68c);--line:light-dark(#d8c7aa,#4a3a2a);--brown:light-dark(#7a4a22,#d9a66f);
+--brown2:light-dark(#efe1c8,#3a2b1e);--red:#c8372d;--blue:light-dark(#2b6fae,#7fb6e6);--good:light-dark(#2f6b3a,#8fd19b);
+--lcd:#c7d1b4;--lcdInk:#1c2616}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;overflow-x:clip}
+header{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;justify-content:space-between;padding:18px max(3vw,14px) 10px}
+h1{font-size:clamp(24px,3vw,34px);line-height:1.1;margin:0;text-wrap:balance}
+h2{font-size:19px;margin:0 0 10px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tab{border:2px solid var(--brown);background:transparent;color:var(--brown);font:600 16px/1 inherit;padding:12px 16px;border-radius:999px;cursor:pointer;min-height:44px}
+.tab[aria-selected=true]{background:var(--brown);color:var(--panel)}
+main{padding:0 max(3vw,14px) 40px;max-width:1500px;margin:0 auto}
+.grid{display:grid;gap:16px;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}
+.fig{position:relative;aspect-ratio:560/420;max-height:62vh;margin:0 auto}
+.fig>svg{position:absolute;inset:0;width:100%;height:100%}
+.readouts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:10px}
+.ro{border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--brown2)}
+.ro .lab{font-size:13px;color:var(--mute)}
+.lcd{background:var(--lcd);color:var(--lcdInk);font:700 clamp(26px,3vw,34px)/1.1 ui-monospace,"Cascadia Mono",Consolas,monospace;font-variant-numeric:tabular-nums;border-radius:6px;padding:6px 10px;text-align:right;box-shadow:inset 0 2px 4px #0003;white-space:nowrap}
+.lcd small{font-size:.5em}
+.zoom{width:100%;max-width:150px;height:200px;display:block;margin:4px auto 0;background:#eef6fa;border-radius:6px}
+fieldset{border:0;padding:0;margin:0}
+fieldset:disabled select{opacity:.6}
+.row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:8px;align-items:center;margin:6px 0}
+.row label{font-size:15px}
+select{font:16px inherit;padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);min-height:44px;width:100%}
+input[type=checkbox]{width:20px;height:20px;accent-color:var(--brown)}
+.eq{font-size:15px;background:var(--brown2);border-radius:8px;padding:8px 10px;margin:6px 0 10px}
+.btns{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+button.b{font:600 15px/1.1 inherit;padding:11px 14px;min-height:44px;border-radius:10px;border:2px solid var(--brown);background:var(--panel);color:var(--brown);cursor:pointer}
+button.b.p,button.b[aria-pressed=true]{background:var(--brown);color:var(--panel)}
+button.b:disabled{opacity:.35;cursor:not-allowed}
+.seg{display:flex;flex-wrap:wrap}
+.seg button.b{border-radius:0;margin-left:-2px}.seg button.b:first-child{border-radius:10px 0 0 10px;margin-left:0}.seg button.b:last-child{border-radius:0 10px 10px 0}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.sec{border-top:1px solid var(--line);margin-top:12px;padding-top:12px}
+.step{font-size:13px;color:var(--mute);margin:10px 0 2px;font-weight:600}
+.hint{font-size:14px;color:var(--mute);margin:6px 0}
+.status{font-size:15px;color:var(--red);min-height:22px;margin:6px 0;font-weight:600}
+.ok{color:var(--good)}
+.scroll{overflow:auto}
+table{border-collapse:collapse;width:100%;font-size:15px;font-variant-numeric:tabular-nums}
+th,td{padding:6px 10px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th{background:var(--panel);font-size:14px;color:var(--mute);font-weight:600}
+td.l,th.l{text-align:left;white-space:normal}
+td.conc{font-weight:700;color:var(--good)}
+.calc{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:12px}
+.box{background:var(--brown2);border-radius:10px;padding:12px}
+.box h3{margin:0 0 6px;font-size:16px}
+.box p{margin:4px 0}
+.k{font-weight:700;font-variant-numeric:tabular-nums}
+.warn{color:var(--red);font-size:14px}
+details{margin-top:16px}summary{cursor:pointer;font-weight:600;min-height:32px}
+.flex{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.chk{display:flex;gap:8px;align-items:center;font-size:15px;min-height:44px}
+.drip{animation:drip .5s ease-in infinite}
+@keyframes drip{from{transform:translateY(0);opacity:1}to{transform:translateY(40px);opacity:.3}}
+.inv{animation:inv 1s ease-in-out 1}
+@keyframes inv{50%{transform:rotate(180deg)}}
+@media(prefers-reduced-motion:reduce){.drip,.inv{animation:none}}
+@media(max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:600px){.row{grid-template-columns:minmax(0,1fr)}table{font-size:13px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Standard solution and acid–base titration</h1>
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" id="tabA" aria-selected="true">1 · Make the standard solution</button>
+    <button class="tab" role="tab" id="tabB" aria-selected="false">2 · Titration</button>
+  </div>
+</header>
+<main>
+<!-- ============ STAGE 1 ============ -->
+<div id="paneA">
+<div class="grid">
+  <section class="card">
+    <div class="fig" id="figA"></div>
+    <div class="readouts">
+      <div class="ro"><div class="lab">Balance</div><div class="lcd" id="lcdBal">0.00<small> g</small></div></div>
+      <div class="ro"><div class="lab">Volumetric flask neck (magnified)</div><svg class="zoom" id="zNeck" viewBox="0 0 150 200"></svg></div>
+      <div class="ro"><div class="lab">Flask</div><div id="flaskInfo" class="hint" style="font-size:15px"></div></div>
+    </div>
+  </section>
+  <section class="card">
+    <h2>Set up</h2>
+    <fieldset id="fsA">
+      <div class="row"><label for="sSub">Primary standard</label><select id="sSub"></select></div>
+      <div class="eq" id="sEq"></div>
+      <div class="row"><label for="sDp">Balance</label><select id="sDp"><option value="2">2 decimal places</option><option value="3">3 decimal places</option></select></div>
+    </fieldset>
+    <p class="hint" id="target"></p>
+    <div class="sec"><h2>Procedure</h2>
+      <div class="step">Weigh by difference</div>
+      <div class="btns"><button class="b" id="aAdd">Add a spatula of solid</button><button class="b" id="aRem">Remove a little</button><button class="b p" id="aRec1">Record mass of bottle + solid</button></div>
+      <div class="btns"><button class="b" id="aTip">Tip solid into beaker</button><button class="b p" id="aRec2">Record mass of bottle after tipping</button></div>
+      <div class="step">Dissolve and transfer</div>
+      <div class="btns"><button class="b" id="aWater">Add about 100 cm³ distilled water</button><button class="b" id="aStir">Stir with glass rod</button><button class="b" id="aPour">Pour into flask through funnel</button></div>
+      <div class="btns"><button class="b" id="aRinseB">Rinse beaker into flask</button><button class="b" id="aRinseF">Rinse funnel into flask</button><button class="b" id="aFun">Remove funnel</button></div>
+      <div class="step">Make up to the mark</div>
+      <div class="btns"><button class="b" id="aPourW">Pour water (about 10 cm³)</button><button class="b" id="aFew">Add a few drops</button><button class="b" id="aDrop">Add 1 drop</button></div>
+      <div class="btns"><button class="b p" id="aInv">Stopper and invert</button><button class="b" id="aReset">Start again</button></div>
+      <div class="status" id="statusA" aria-live="polite"></div>
+    </div>
+  </section>
+</div>
+<section class="card" style="margin-top:16px">
+  <h2>Weighings</h2>
+  <div class="scroll"><table id="wtbl"></table></div>
+</section>
+</div>
+
+<!-- ============ STAGE 2 ============ -->
+<div id="paneB" hidden>
+<div class="grid">
+  <section class="card">
+    <div class="fig" id="figB"></div>
+    <div class="readouts">
+      <div class="ro"><div class="lab">Burette (magnified)</div><svg class="zoom" id="zBur" viewBox="0 0 150 200"></svg></div>
+      <div class="ro"><div class="lab">Conical flask</div><div id="flaskB" class="hint" style="font-size:15px"></div><div class="hint" id="pHshow" hidden></div></div>
+    </div>
+  </section>
+  <section class="card">
+    <div id="needSol"><p class="status" style="color:var(--brown)">Make the standard solution in stage 1 first — or use a ready-made one.</p>
+      <div class="btns"><button class="b p" id="bPre">Use a ready-made standard solution</button></div></div>
+    <h2>Technique</h2>
+    <fieldset id="fsB">
+      <div class="row"><label for="tBur">Burette rinsed with</label><select id="tBur"><option value="tit">The titrant</option><option value="water">Distilled water only</option><option value="none">Not rinsed (wet)</option></select></div>
+      <div class="row"><label for="tPip">Pipette rinsed with</label><select id="tPip"><option value="std">Standard solution</option><option value="water">Distilled water only</option></select></div>
+      <div class="row"><label for="tFlask">Conical flask rinsed with</label><select id="tFlask"><option value="water">Distilled water</option><option value="std">Standard solution</option></select></div>
+      <div class="row"><label for="tBub">Air bubble below the tap</label><select id="tBub"><option value="out">Run out before starting</option><option value="in">Left in</option></select></div>
+      <div class="row"><label for="tInd">Indicator</label><select id="tInd"><option value="mo">Methyl orange</option><option value="ph">Phenolphthalein</option><option value="btb">Bromothymol blue</option></select></div>
+    </fieldset>
+    <div class="sec"><h2>Procedure</h2>
+      <div class="btns"><button class="b" id="bFill">Fill burette</button><button class="b" id="bPip">Pipette 25.0 cm³ into a clean flask</button><button class="b" id="bInd">Add 3 drops of indicator</button></div>
+      <div class="btns"><button class="b p" id="bInit">Record initial reading</button></div>
+      <div class="hint">Burette tap</div>
+      <div class="seg" id="tap"><button class="b" data-t="0">Closed</button><button class="b" data-t="1">Dropwise</button><button class="b" data-t="2">Open</button></div>
+      <div class="btns"><button class="b" id="bDrop">Add 1 drop</button><button class="b" id="bSwirl">Swirl</button><label class="chk"><input type="checkbox" id="autoSw" checked> <span>Swirl continuously</span></label></div>
+      <div class="btns"><button class="b p" id="bFin">Record final reading</button><button class="b" id="bDisc">Discard this titration</button></div>
+      <div class="status" id="statusB" aria-live="polite"></div>
+      <label class="chk"><input type="checkbox" id="showpH"> <span>Show pH of flask (teacher)</span></label>
+      <p class="hint">Keyboard: <b>D</b> add one drop · <b>S</b> swirl.</p>
+    </div>
+  </section>
+</div>
+<section class="card" style="margin-top:16px">
+  <div class="flex"><h2>Results table</h2><button class="b" id="bCopy">Copy data</button></div>
+  <div class="scroll"><table id="rtbl"></table></div>
+  <p class="hint" id="concNote"></p>
+</section>
+</div>
+
+<section class="card" style="margin-top:16px">
+  <div class="flex"><h2>Calculation</h2><button class="b" id="bWork">Show worked calculation</button></div>
+  <div id="ana"></div>
+  <details><summary>Notes on the model (for teachers)</summary><div class="hint" id="about"></div></details>
+</section>
+</main>
+
+<script>
+{
+const $=id=>document.getElementById(id);
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const gauss=()=>{let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)};
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const sf=(x,n=3)=>isFinite(x)?x.toPrecision(n).replace('-','−'):'—';
+const r05=x=>Math.round(x/.05)*.05;
+
+const SUB={
+ na2co3:{name:'Anhydrous sodium carbonate',f:'Na₂CO₃',M:105.99,mass:1.30,tn:'hydrochloric acid',tf:'HCl',ratio:2,type:'carb',ind:'mo',
+  eq:'Na₂CO₃(aq) + 2HCl(aq) → 2NaCl(aq) + H₂O(l) + CO₂(g)'},
+ sulf:{name:'Sulfamic acid',f:'H₂NSO₃H',M:97.09,mass:2.40,tn:'sodium hydroxide',tf:'NaOH',ratio:1,type:'strong',ind:'ph',
+  eq:'H₂NSO₃H(aq) + NaOH(aq) → H₂NSO₃Na(aq) + H₂O(l)'},
+ khp:{name:'Potassium hydrogen phthalate',f:'KHC₈H₄O₄',M:204.22,mass:5.10,tn:'sodium hydroxide',tf:'NaOH',ratio:1,type:'khp',ind:'ph',
+  eq:'KHC₈H₄O₄(aq) + NaOH(aq) → KNaC₈H₄O₄(aq) + H₂O(l)'}
+};
+const IND={mo:'Methyl orange',ph:'Phenolphthalein',btb:'Bromothymol blue'};
+let sub='na2co3',dp=2,tab='A',showWork=false,dirty=true;
+let A,B;
+
+/* ---------- chemistry ---------- */
+function pHof(s,nS,nT,V){
+ const Kw=1e-14;
+ const f=lh=>{const h=10**lh,oh=Kw/h;let pos=h,neg=oh;
+  if(s.type==='carb'){const C=nS/V,K1=10**-6.35,K2=10**-10.33,D=h*h+K1*h+K1*K2;pos+=2*C;neg+=nT/V+C*(K1*h+2*K1*K2)/D}
+  else if(s.type==='strong'){pos+=nT/V;neg+=nS/V}
+  else{const P=nS/V,K1=10**-2.95,K2=10**-5.41,D=h*h+K1*h+K1*K2;pos+=P+nT/V;neg+=P*(K1*h+2*K1*K2)/D}
+  return pos-neg};
+ let lo=-14.5,hi=1;for(let i=0;i<60;i++){const m=(lo+hi)/2;f(m)>0?hi=m:lo=m}
+ return -(lo+hi)/2;
+}
+const lerp=(a,b,t)=>a.map((v,i)=>v+(b[i]-v)*t);
+const sm=x=>{x=clamp(x,0,1);return x*x*(3-2*x)};
+function indCol(ind,pH){ // returns [r,g,b,a]
+ if(ind==='mo'){const t=sm((pH-3.1)/1.3);return t<.5?[...lerp([214,40,40],[240,130,30],t*2),.8]:[...lerp([240,130,30],[240,205,40],(t-.5)*2),.75]}
+ if(ind==='ph'){const t=sm((pH-8.2)/1.8);return [228,50,150,t*.8]}
+ const t=sm((pH-6.0)/1.6);return t<.5?[...lerp([226,204,40],[70,160,90],t*2),.7]:[...lerp([70,160,90],[40,90,205],(t-.5)*2),.75];
+}
+const rgba=c=>`rgba(${c.slice(0,3).map(Math.round).join(',')},${c[3].toFixed(2)})`;
+
+/* ---------- stage 1 state ---------- */
+function newA(){
+ A={bottle:rnd(9.5,14.5),solid:0,weigh:[],tipped:false,beakerSolid:0,undis:0,water:0,poured:false,funnel:false,
+  bLeftV:0,bLeftS:0,fLeftV:0,fLeftS:0,flaskS:0,flaskV:0,inv:0,premade:false,msg:'',ok:''};
+ dirty=true;
+}
+function balReading(){return A.tipped?A.bottle+A.solid:A.bottle+A.solid}
+const fmtBal=m=>m.toFixed(dp);
+function act(fn){return()=>{A.msg='';A.ok='';fn();dirty=true;renderA();renderAna()}}
+$('aAdd').onclick=act(()=>{A.solid+=rnd(.12,.32)});
+$('aRem').onclick=act(()=>{A.solid=Math.max(0,A.solid-rnd(.03,.08))});
+$('aRec1').onclick=act(()=>{A.weigh.push({lab:'Bottle + solid',m:+fmtBal(balReading())})});
+$('aTip').onclick=act(()=>{if(A.solid<.05){A.msg='Add some solid first.';return}
+ const res=Math.min(A.solid,rnd(.004,.014));A.beakerSolid=A.solid-res;A.undis=A.beakerSolid;A.solid=res;A.tipped=true;
+ if(!A.weigh.length)A.msg='You did not record the mass before tipping!'});
+$('aRec2').onclick=act(()=>{A.weigh.push({lab:'Bottle after tipping',m:+fmtBal(balReading())})});
+$('aWater').onclick=act(()=>{A.water=100});
+$('aStir').onclick=act(()=>{A.undis*=.4;if(A.undis<.002){A.undis=0;A.ok='All the solid has dissolved.'}});
+$('aPour').onclick=act(()=>{if(A.undis>0){A.msg='Stir until all the solid has dissolved first.';return}
+ A.funnel=true;A.poured=true;const S=A.beakerSolid,W=A.water;
+ A.bLeftV=4;A.bLeftS=S*4/W;A.fLeftV=.6;A.fLeftS=S*.6/W;A.flaskV=W-4.6;A.flaskS=S-A.bLeftS-A.fLeftS;A.water=4;
+ A.ok='Some solution is still clinging to the beaker and funnel.'});
+$('aRinseB').onclick=act(()=>{const T=A.bLeftV+15,moveV=T-4,moveS=A.bLeftS*moveV/T;
+ if(A.funnel){A.flaskV+=moveV;A.flaskS+=moveS}else{A.flaskV+=moveV;A.flaskS+=moveS}A.bLeftS-=moveS;A.bLeftV=4;
+ if(A.flaskV>250.05)A.msg='Too much rinse water — the flask is over the mark!'});
+$('aRinseF').onclick=act(()=>{A.flaskV+=A.fLeftV+4.4;A.flaskS+=A.fLeftS;A.fLeftV=0;A.fLeftS=0});
+$('aFun').onclick=act(()=>{A.funnel=false;if(A.flaskV>244){A.flaskV+=rnd(.08,.18);A.msg='Drops from the funnel ran into the flask as you removed it.'}});
+$('aPourW').onclick=act(()=>{A.flaskV+=rnd(8,12);if(A.flaskV>250.05)A.msg='Overshot the mark — the solution is now too dilute. Start again.'});
+$('aFew').onclick=act(()=>{A.flaskV+=rnd(.15,.35);if(A.flaskV>250.05)A.msg='Overshot the mark — the solution is now too dilute. Start again.'});
+$('aDrop').onclick=act(()=>{A.flaskV+=.05;if(A.flaskV>250.05)A.msg='Overshot the mark — the solution is now too dilute. Start again.'});
+$('aInv').onclick=act(()=>{A.inv++;const g=$('flaskGrp');if(g){g.classList.remove('inv');void g.getBBox();g.classList.add('inv')}
+ if(A.funnel)A.msg='Remove the funnel before stoppering.';
+ else if(A.inv>=10)A.ok='Mixed thoroughly — ready for the titration.';else A.ok=`Inverted ${A.inv} time${A.inv>1?'s':''}.`});
+$('aReset').onclick=()=>{newA();renderA();renderAna()};
+$('sSub').innerHTML=Object.entries(SUB).map(([k,s])=>`<option value="${k}">${s.name} (${s.f})</option>`).join('');
+$('sSub').onchange=e=>{sub=e.target.value;$('tInd').value=SUB[sub].ind;tcfg.ind=SUB[sub].ind;newA();newB();renderA();renderAna()};
+$('sDp').onchange=e=>{dp=+e.target.value;renderA()};
+
+function stageAStep(){ // which actions are allowed
+ const made=A.inv>0&&!A.funnel;
+ return{add:!A.tipped,rem:!A.tipped&&A.solid>0,rec1:!A.tipped&&A.solid>0,tip:!A.tipped&&A.solid>0,rec2:A.tipped&&!A.poured,
+  water:A.tipped&&A.water===0&&!A.poured,stir:A.water>0&&A.undis>0,pour:A.tipped&&A.water>0&&!A.poured,
+  rinseB:A.poured&&A.inv===0&&A.bLeftS>1e-7,rinseF:A.poured&&A.funnel&&A.fLeftV>0,fun:A.funnel&&A.inv===0,
+  fill:A.poured&&A.inv===0&&A.flaskV<=250.05,inv:A.poured&&A.flaskV>200,made};
+}
+function renderA(){
+ const s=SUB[sub],st=stageAStep();
+ $('sEq').textContent=s.eq;
+ $('target').innerHTML=`Aim: about <b>${s.mass.toFixed(2)} g</b> of ${s.name.toLowerCase()} (M<sub>r</sub> = ${s.M}) made up to <b>250.0 cm³</b>.`;
+ $('fsA').disabled=A.weigh.length>0;
+ const en={aAdd:st.add,aRem:st.rem,aRec1:st.rec1,aTip:st.tip,aRec2:st.rec2,aWater:st.water,aStir:st.stir,aPour:st.pour,aRinseB:st.rinseB,aRinseF:st.rinseF,aFun:st.fun,aPourW:st.fill,aFew:st.fill,aDrop:st.fill,aInv:st.inv};
+ for(const k in en)$(k).disabled=!en[k];
+ $('statusA').innerHTML=A.msg?A.msg:A.ok?`<span class="ok">${A.ok}</span>`:'';
+ $('lcdBal').innerHTML=fmtBal(balReading())+'<small> g</small>';
+ $('wtbl').innerHTML='<thead><tr><th class="l">Weighing</th><th>Mass / g</th></tr></thead><tbody>'+(A.weigh.length?A.weigh.map(w=>`<tr><td class="l">${w.lab}</td><td>${w.m.toFixed(dp)}</td></tr>`).join(''):'<tr><td class="l" colspan="2" style="color:var(--mute)">No masses recorded yet.</td></tr>')+'</tbody>';
+ $('flaskInfo').innerHTML=!A.poured?'Empty 250 cm³ volumetric flask':A.inv?`Stoppered, inverted ${A.inv}×${A.inv<10?'<br><span class="warn">Invert at least 10 times to mix</span>':''}`:A.funnel?'Funnel in the neck':'Ready to make up to the mark';
+ drawA();drawNeck();
+}
+function drawA(){
+ const s=SUB[sub];
+ const bulbTop=262,bot=372;
+ const v=A.flaskV,lev=v<=240?376-(v/240)*114:bulbTop-(v-240)/20*172;
+ const solidH=clamp(A.solid*14,0,26);
+ const beakL=A.poured?clamp(A.bLeftV*1.2,2,6):A.water?70:0;
+ const flaskCol='rgba(160,205,232,.45)';
+ $('figA').innerHTML=`<svg viewBox="0 0 560 420" role="img" aria-label="Balance, beaker and volumetric flask">
+ <defs><linearGradient id="woodA" x2="0" y2="1"><stop offset="0" stop-color="#b98a5a"/><stop offset="1" stop-color="#8a6038"/></linearGradient>
+ <clipPath id="vf"><path d="M407 90 L407 262 A58 58 0 1 0 423 262 L423 90 Z"/></clipPath>
+ <clipPath id="bk"><rect x="222" y="258" width="76" height="114"/></clipPath></defs>
+ <rect x="0" y="374" width="560" height="46" fill="url(#woodA)"/>
+ <rect x="18" y="300" width="170" height="74" rx="8" fill="#e9e6df" stroke="#aaa"/><rect x="40" y="330" width="126" height="30" rx="4" fill="#3a3a3a"/>
+ <text x="158" y="352" text-anchor="end" font-family="ui-monospace,Consolas,monospace" font-weight="700" font-size="20" fill="#c7d1b4">${fmtBal(balReading())}</text>
+ <rect x="50" y="292" width="106" height="8" rx="3" fill="#bbb"/>
+ <rect x="80" y="244" width="46" height="48" rx="4" fill="#e6f2f855" stroke="#8fa9b8" stroke-width="2"/><rect x="78" y="238" width="50" height="8" rx="3" fill="#8fa9b8" opacity=".6"/>
+ <rect x="82" y="${290-solidH}" width="42" height="${solidH}" fill="#f4f2ec" stroke="#ccc"/>
+ <text x="103" y="232" text-anchor="middle" font-size="12" fill="currentColor">weighing bottle</text>
+ <g clip-path="url(#bk)"><rect x="222" y="${372-beakL}" width="76" height="${beakL}" fill="${flaskCol}"/>
+  ${A.undis>0?`<ellipse cx="260" cy="369" rx="${8+A.undis*14}" ry="${2+A.undis*3}" fill="#f4f2ec" stroke="#bbb"/>`:''}</g>
+ <path d="M220 256 L220 368 Q220 374 226 374 L294 374 Q300 374 300 368 L300 256" fill="#e6f2f833" stroke="#8fa9b8" stroke-width="2.5"/>
+ <line x1="${A.water?248:300}" y1="${A.water?240:300}" x2="${A.water?272:340}" y2="${A.water?368:372}" stroke="#9fb3bd" stroke-width="4" stroke-linecap="round"/>
+ <text x="260" y="248" text-anchor="middle" font-size="12" fill="currentColor">beaker</text>
+ <g id="flaskGrp" style="transform-origin:415px 300px;transform-box:view-box">
+ <g clip-path="url(#vf)"><rect x="350" y="${lev}" width="130" height="${400-lev}" fill="${flaskCol}"/></g>
+ <path d="M407 90 L407 262 A58 58 0 1 0 423 262 L423 90" fill="#e6f2f833" stroke="#8fa9b8" stroke-width="2.5"/>
+ <line x1="403" x2="427" y1="176" y2="176" stroke="#333" stroke-width="1.5"/>
+ ${A.inv>0?'<rect x="404" y="76" width="22" height="18" rx="4" fill="#3d8fd1"/>':''}
+ ${A.funnel?'<path d="M385 52 L445 52 L419 92 L419 120 L411 120 L411 92 Z" fill="#e6f2f855" stroke="#8fa9b8" stroke-width="2"/>':''}
+ </g>
+ <text x="415" y="396" text-anchor="middle" font-size="12" fill="#fff9">volumetric flask</text>
+ <path d="M500 300 L540 300 L536 372 L504 372 Z" fill="#f0f0f0" stroke="#999"/><path d="M520 300 L520 282 L548 262" fill="none" stroke="#999" stroke-width="3"/>
+ <text x="520" y="396" text-anchor="middle" font-size="12" fill="#fff9">wash bottle</text>
+ <text x="103" y="396" text-anchor="middle" font-size="12" fill="#fff9">balance</text>
+ <text x="260" y="396" text-anchor="middle" font-size="12" fill="#fff9">${s.f}</text>
+ </svg>`;
+}
+function zoomTube(svg,center,level,opts){
+ // vertical zoom: opts.px per unit, labels(fn), dir (+1 readings increase downward)
+ const {px,ticks,label,mark,fill}=opts;let g='<rect x="45" y="0" width="60" height="200" fill="#f7fbfd" stroke="#8fa9b8" stroke-width="2"/>';
+ const yOf=v=>100+(v-center)*px*opts.dir;
+ if(level!==null){const y=clamp(yOf(level),-10,210);const top=opts.dir>0?y:y;
+  g+=`<path d="M46 ${top-6} Q75 ${top+3} 104 ${top-6} L104 ${opts.dir>0?210:210} L46 210 Z" fill="${fill}"/>
+  <path d="M46 ${top-6} Q75 ${top+3} 104 ${top-6}" fill="none" stroke="#2d5f80" stroke-width="2"/>`}
+ g+=ticks(yOf);
+ if(mark!==undefined)g+=`<line x1="45" x2="105" y1="${yOf(mark)}" y2="${yOf(mark)}" stroke="#222" stroke-width="2"/><text x="108" y="${yOf(mark)+4}" font-size="11" fill="#222">mark</text>`;
+ g+='<line x1="0" x2="150" y1="100" y2="100" stroke="#c8372d" stroke-dasharray="3 4" stroke-width="1" opacity=".6"/>';
+ svg.innerHTML=g;
+}
+function drawNeck(){
+ const svg=$('zNeck');
+ if(!A.poured||A.flaskV<248.6){svg.innerHTML=`<rect x="45" y="0" width="60" height="200" fill="#f7fbfd" stroke="#8fa9b8" stroke-width="2"/><line x1="45" x2="105" y1="100" y2="100" stroke="#222" stroke-width="2"/><text x="75" y="160" text-anchor="middle" font-size="12" fill="#555">liquid below</text><text x="75" y="175" text-anchor="middle" font-size="12" fill="#555">the neck</text>`;return}
+ zoomTube(svg,250,A.flaskV,{px:60,dir:-1,mark:250,fill:'rgba(140,195,228,.55)',ticks:()=>''});
+}
+
+/* ---------- stage 2 state ---------- */
+const tcfg={bur:'tit',pip:'std',flask:'water',bub:'out',ind:'mo'};
+['tBur','tPip','tFlask','tBub','tInd'].forEach((id,i)=>$(id).onchange=e=>{tcfg[['bur','pip','flask','bub','ind'][i]]=e.target.value;if(id==='tBub')B.bubble=e.target.value==='in'?.15:0;dirty=true;renderB()});
+function newB(){B={cT:rnd(.09,.11),L:null,fills:0,bubble:tcfg.bub==='in'?.15:0,runs:[],cur:null,tap:0,swirlT:0,msg:'',ok:''};dirty=true}
+function stdReady(){return A.premade||(A.inv>0&&!A.funnel&&A.poured)}
+function cStd(){const s=SUB[sub];return A.premade?(s.mass/s.M)/.25:(A.flaskS/s.M)/(A.flaskV/1000)}
+$('bPre').onclick=()=>{newA();A.premade=true;dirty=true;renderA();renderB();renderAna()};
+function actB(fn){return()=>{B.msg='';B.ok='';fn();dirty=true;renderB();renderAna()}}
+$('bFill').onclick=actB(()=>{if(B.cur&&B.cur.init!==null&&B.cur.fin===null){B.msg='Finish this titration before refilling.';return}
+ B.L=rnd(0,1.4);B.fills++;B.ok='Burette filled to near the zero mark — read it carefully.'});
+$('bPip').onclick=actB(()=>{if(!stdReady()){B.msg='No standard solution yet.';return}
+ if(B.cur&&B.cur.init!==null&&B.cur.fin===null){B.msg='Finish this titration first.';return}
+ const inv=A.premade?10:A.inv,inhom=inv>=10?1:1+gauss()*.02*(1-inv/10);
+ const c=cStd();let n=c*(25+gauss()*.02)/1000*(tcfg.pip==='water'?.988:1)*inhom;if(tcfg.flask==='std')n+=c*rnd(.3,.6)/1000;
+ B.cur={nS:n,nTm:0,nTu:0,vU:0,vT:0,ind:false,init:null,fin:null};B.ok='25.0 cm³ of standard solution pipetted into a clean conical flask.'});
+$('bInd').onclick=actB(()=>{if(B.cur)B.cur.ind=tcfg.ind});
+$('bInit').onclick=actB(()=>{if(B.L===null){B.msg='Fill the burette first.';return}if(!B.cur){B.msg='Pipette the standard solution into a flask first.';return}
+ B.cur.init=+r05(B.L).toFixed(2);if(!B.cur.ind)B.msg='Remember to add the indicator.'});
+$('bFin').onclick=actB(()=>{const c=B.cur;if(!c||c.init===null)return;c.fin=+r05(B.L).toFixed(2);B.tap=0;
+ const lab=B.runs.length?String(B.runs.length):'Rough';B.runs.push({lab,init:c.init,fin:c.fin,titre:+(c.fin-c.init).toFixed(2),ind:c.ind,pH:pHof(SUB[sub],c.nS,c.nTm+c.nTu,(25+c.vT)/1000)});
+ B.ok=`Titre recorded: ${(c.fin-c.init).toFixed(2)} cm³`;B.cur=null});
+$('bDisc').onclick=actB(()=>{B.cur=null;B.tap=0;B.ok='Titration discarded — refill the burette and pipette a fresh portion.'});
+$('tap').onclick=e=>{const b=e.target.closest('button');if(!b)return;const t=+b.dataset.t;
+ if(t>0&&!canFlow())return;B.tap=t;B.msg='';renderB()};
+function canFlow(){if(B.L===null){B.msg='Fill the burette first.';renderB();return false}if(!B.cur){B.msg='Put a conical flask with standard solution under the burette first.';renderB();return false}
+ if(B.cur.fin!==null)return false;if(B.L>=49.95){B.msg='The burette is empty — refill it.';renderB();return false}return true}
+function deliver(dv){
+ const c=B.cur;dv=Math.min(dv,50-B.L);if(dv<=0){B.tap=0;B.msg='The burette is empty. Discard this titration, refill and start again.';dirty=true;return}
+ B.L+=dv;const ab=Math.min(B.bubble,dv);B.bubble-=ab;const d=dv-ab;
+ const f=B.fills===1?(tcfg.bur==='water'?.985:tcfg.bur==='none'?.995:1):1;
+ c.nTu+=B.cT*f*d/1000;c.vU+=d;c.vT+=d;
+}
+$('bDrop').onclick=()=>{if(!canFlow())return;deliver(.05);dirty=true};
+$('bSwirl').onclick=()=>{B.swirlT=1.2};
+$('showpH').onchange=()=>renderB();
+document.addEventListener('keydown',e=>{if(tab!=='B'||/INPUT|SELECT/.test(e.target.tagName))return;if(e.key==='d'||e.key==='D')$('bDrop').click();if(e.key==='s'||e.key==='S')$('bSwirl').click()});
+
+function renderB(){
+ const s=SUB[sub],ready=stdReady();
+ $('needSol').hidden=ready;
+ $('fsB').disabled=B.fills>0;
+ const busy=B.cur&&B.cur.init!==null&&B.cur.fin===null;
+ $('bFill').disabled=busy;$('bPip').disabled=!ready||busy;$('bInd').disabled=!B.cur||!!B.cur.ind||B.cur.fin!==null;
+ $('bInit').disabled=!B.cur||B.cur.init!==null||B.L===null;$('bFin').disabled=!busy;$('bDisc').disabled=!B.cur;
+ [...$('tap').children].forEach(b=>b.setAttribute('aria-pressed',+b.dataset.t===B.tap));
+ $('statusB').innerHTML=B.msg?B.msg:B.ok?`<span class="ok">${B.ok}</span>`:'';
+ const c=B.cur;
+ $('flaskB').innerHTML=c?`25.0 cm³ ${s.f}(aq)${c.ind?` + ${IND[c.ind].toLowerCase()}`:' — no indicator'}<br>Titrant added: ${c.init!==null?'see burette':'—'}`:'No flask under the burette';
+ $('pHshow').hidden=!$('showpH').checked||!c;
+ renderRuns();
+}
+function renderRuns(){
+ const r=B.runs,s=SUB[sub];
+ if(!r.length){$('rtbl').innerHTML='<tbody><tr><td class="l" style="color:var(--mute)">No titrations yet. Fill the burette, pipette the standard solution, add indicator, record the initial reading, then titrate to the end point.</td></tr></tbody>';$('concNote').textContent='';return}
+ const con=concordant();
+ $('rtbl').innerHTML=`<thead><tr><th class="l">Titration</th>${r.map(x=>`<th>${x.lab}</th>`).join('')}</tr></thead><tbody>
+ <tr><td class="l">Final burette reading / cm³</td>${r.map(x=>`<td>${x.fin.toFixed(2)}</td>`).join('')}</tr>
+ <tr><td class="l">Initial burette reading / cm³</td>${r.map(x=>`<td>${x.init.toFixed(2)}</td>`).join('')}</tr>
+ <tr><td class="l">Titre / cm³</td>${r.map((x,i)=>`<td class="${con.idx.includes(i)?'conc':''}">${x.titre.toFixed(2)}</td>`).join('')}</tr></tbody>`;
+ $('concNote').innerHTML=con.idx.length>=2?`Concordant titres (within 0.10 cm³) in green. Mean titre = <b>${con.mean.toFixed(2)} cm³</b>.`:'Repeat until you have at least two concordant titres (within 0.10 cm³ of each other). The rough titration is not used.';
+}
+function concordant(){
+ const r=B.runs.map((x,i)=>({t:x.titre,i})).filter(x=>x.i>0).sort((a,b)=>a.t-b.t);let best=[];
+ for(let a=0;a<r.length;a++){const g=r.filter(x=>x.t>=r[a].t-1e-9&&x.t-r[a].t<=.1+1e-9);if(g.length>best.length||(g.length===best.length&&g.length&&(g.at(-1).t-g[0].t)<(best.at(-1).t-best[0].t)))best=g}
+ return{idx:best.length>=2?best.map(x=>x.i):[],mean:best.length>=2?best.reduce((a,b)=>a+b.t,0)/best.length:NaN};
+}
+
+/* ---------- titration drawing ---------- */
+function drawB(){
+ const c=B.cur,s=SUB[sub];
+ const yB=v=>40+v*4.8,L=B.L;
+ let col='rgba(200,225,240,.5)',patch='',pH=null;
+ if(c){const V=(25+c.vT)/1000;pH=pHof(s,c.nS,c.nTm,V);if(c.ind)col=rgba(indCol(c.ind,pH));
+  if(c.ind&&c.vU>.01){const Vl=(1+c.vU)/1000,pl=pHof(s,c.nS/((25+c.vT-c.vU))*1,c.nTm/((25+c.vT-c.vU))+c.nTu,Vl);const cc=indCol(c.ind,pl);cc[3]=Math.min(cc[3],.95)*clamp(c.vU/.08,0,1);patch=`<ellipse cx="270" cy="${372-liqH(c)+8}" rx="16" ry="6" fill="${rgba(cc)}"/>`}}
+ const ticks=[];for(let v=0;v<=50;v+=5)ticks.push(`<line x1="262" x2="${v%10?268:271}" y1="${yB(v)}" y2="${yB(v)}" stroke="#555"/>${v%10===0?`<text x="258" y="${yB(v)+4}" text-anchor="end" font-size="10" fill="currentColor">${v}</text>`:''}`);
+ const tapAng=[0,45,90][B.tap];
+ $('figB').innerHTML=`<svg viewBox="0 0 560 420" role="img" aria-label="Burette and conical flask">
+ <defs><linearGradient id="woodB" x2="0" y2="1"><stop offset="0" stop-color="#b98a5a"/><stop offset="1" stop-color="#8a6038"/></linearGradient>
+ <clipPath id="cf"><path d="M262 318 L262 336 L230 382 Q228 386 234 386 L306 386 Q312 386 310 382 L278 336 L278 318 Z"/></clipPath></defs>
+ <rect x="0" y="388" width="560" height="32" fill="url(#woodB)"/>
+ <rect x="120" y="376" width="110" height="12" rx="3" fill="#3b3b3b"/><rect x="150" y="12" width="7" height="364" fill="#8d949a"/>
+ <rect x="154" y="120" width="104" height="6" fill="#777"/><rect x="254" y="112" width="8" height="22" rx="2" fill="#555"/>
+ <rect x="208" y="384" width="124" height="4" fill="#fff" stroke="#ccc"/>
+ ${L!==null?`<rect x="263" y="${yB(Math.min(L,50))}" width="14" height="${yB(52.5)-yB(Math.min(L,50))}" fill="rgba(200,225,240,.7)"/>`:''}
+ <rect x="262" y="22" width="16" height="${yB(52.5)-22}" fill="#e6f2f833" stroke="#8fa9b8" stroke-width="2"/>
+ ${ticks.join('')}
+ <path d="M266 ${yB(52.5)} L266 302 M274 ${yB(52.5)} L274 302" stroke="#8fa9b8" stroke-width="2"/>
+ <rect x="258" y="298" width="24" height="10" rx="2" fill="#2b2b2b"/><rect x="${270-11}" y="300" width="22" height="5" fill="#444" transform="rotate(${tapAng} 270 302.5)"/>
+ <path d="M267 308 L269 322 L271 322 L273 308" fill="#e6f2f8" stroke="#8fa9b8" stroke-width="1.5"/>
+ ${B.bubble>0&&L!==null?'<circle cx="270" cy="314" r="2.2" fill="#fff" stroke="#8fa9b8"/>':''}
+ <circle id="drip" class="drip" cx="270" cy="324" r="2.3" fill="#cfe6f4" stroke="#89a" opacity="${B.tap>0?1:0}" style="animation-duration:${B.tap===2?'.18s':'.5s'}"/>
+ ${c?`<g clip-path="url(#cf)"><rect x="220" y="${386-liqH(c)}" width="100" height="${liqH(c)}" fill="${col}"/>${patch}</g>`:''}
+ ${c?`<path d="M262 312 L262 336 L230 382 Q228 386 234 386 L306 386 Q312 386 310 382 L278 336 L278 312" fill="#e6f2f822" stroke="#8fa9b8" stroke-width="2.5"/>`:''}
+ <path d="M400 290 L400 270 Q400 262 410 262 L440 262 Q450 262 450 270 L450 386 L400 386 Z" fill="#cfe1ea66" stroke="#8fa9b8" stroke-width="2"/><rect x="415" y="248" width="20" height="16" fill="#444"/>
+ <rect x="404" y="300" width="42" height="40" fill="#fff" stroke="#bbb"/><text x="425" y="318" text-anchor="middle" font-size="11" fill="#333">${s.tf}(aq)</text><text x="425" y="332" text-anchor="middle" font-size="9" fill="#333">≈0.1 M</text>
+ <path d="M490 386 L490 330 A18 18 0 0 1 491 300 L491 240 L499 240 L499 300 A18 18 0 0 1 500 330 L500 386" fill="none" stroke="#8fa9b8" stroke-width="2"/>
+ <text x="495" y="406" text-anchor="middle" font-size="11" fill="#fff9">${s.f} std</text>
+ <text x="270" y="406" text-anchor="middle" font-size="12" fill="#fff9">50 cm³ burette · conical flask on a white tile</text>
+ </svg>`;
+ if(c&&$('showpH').checked)$('pHshow').textContent=`pH of flask = ${pH.toFixed(2)}`;
+ // zoom
+ const svg=$('zBur');
+ if(L===null){svg.innerHTML='<text x="75" y="105" text-anchor="middle" font-size="12" fill="#555">Burette empty</text>';return}
+ zoomTube(svg,L,L,{px:60,dir:1,fill:'rgba(140,195,228,.45)',ticks:yOf=>{let t='';for(let i=Math.floor((L-1.8)*10);i<=Math.ceil((L+1.8)*10);i++){if(i<0||i>500)continue;const v=i/10,y=yOf(v),maj=i%10===0,half=i%5===0;
+  t+=`<line x1="45" x2="${maj?80:half?70:60}" y1="${y}" y2="${y}" stroke="#222" stroke-width="${maj?1.6:1}"/>`;if(maj)t+=`<text x="84" y="${y+4}" font-size="13" fill="#222">${i/10}</text>`}return t}});
+}
+const liqH=c=>clamp((25+c.vT)*.55,10,48);
+
+/* ---------- analysis ---------- */
+function renderAna(){
+ const s=SUB[sub];let h='<div class="calc">';
+ const w=A.weigh,m1=w.find(x=>x.lab==='Bottle + solid'),m2=[...w].reverse().find(x=>x.lab==='Bottle after tipping');
+ let mass=NaN,cS=NaN;
+ if(A.premade){mass=s.mass;cS=mass/s.M/.25;h+=`<div class="box"><h3>Standard solution (ready-made)</h3><p>${s.mass.toFixed(3)} g ${s.f} made up to 250.0 cm³</p></div>`}
+ else{
+  h+=`<div class="box"><h3>Standard solution</h3>`;
+  if(m1&&m2){mass=m1.m-m2.m;h+=`<p>Mass of solid = ${m1.m.toFixed(dp)} − ${m2.m.toFixed(dp)} = <span class="k">${mass.toFixed(dp)} g</span></p>`}
+  else h+=`<p class="hint">Record the mass of the bottle + solid and of the bottle after tipping.</p>`;
+  if(m1&&!m2&&A.tipped)h+='<p class="warn">Without reweighing the bottle, you cannot account for solid left behind.</p>';
+  h+='</div>';
+ }
+ const con=concordant();
+ if(showWork&&isFinite(mass)){
+  const n=mass/s.M;cS=n/.25;
+  h+=`<div class="box"><h3>Concentration of the standard</h3><p>n(${s.f}) = ${mass.toFixed(dp)} / ${s.M} = <span class="k">${sf(n,4)} mol</span></p>
+   <p>c = ${sf(n,4)} / 0.2500 = <span class="k">${sf(cS,4)} mol dm⁻³</span></p></div>`;
+  if(con.idx.length>=2){const n25=cS*.025,nT=n25*s.ratio,cT=nT/(con.mean/1000);
+   h+=`<div class="box"><h3>Concentration of the ${s.tn}</h3><p class="hint">${s.eq}</p>
+   <p>n(${s.f}) in 25.0 cm³ = ${sf(cS,4)} × 0.0250 = <span class="k">${sf(n25,4)} mol</span></p>
+   <p>n(${s.tf}) = ${s.ratio>1?s.ratio+' × ':''}${sf(n25,4)} = <span class="k">${sf(nT,4)} mol</span></p>
+   <p>c(${s.tf}) = ${sf(nT,4)} / (${con.mean.toFixed(2)} / 1000) = <span class="k">${sf(cT,3)} mol dm⁻³</span></p></div>`;
+   const bal=dp===2?.005:.0005,u=[['Balance',2*bal/mass*100,`2 × ±${bal} g`],['Volumetric flask',.3/250*100,'±0.30 cm³'],['Pipette',.06/25*100,'±0.06 cm³'],['Burette',.1/con.mean*100,'2 × ±0.05 cm³']];
+   const tot=u.reduce((a,b)=>a+b[1],0);
+   h+=`<div class="box"><h3>Percentage uncertainties</h3><table><tbody>${u.map(x=>`<tr><td class="l">${x[0]} (${x[2]})</td><td>${x[1].toFixed(2)}%</td></tr>`).join('')}<tr><td class="l"><b>Total</b></td><td><b>${tot.toFixed(1)}%</b></td></tr></tbody></table>
+   <p class="hint">c(${s.tf}) = ${sf(cT,3)} ± ${sf(cT*tot/100,1)} mol dm⁻³</p></div>`;
+   const err=(cT-B.cT)/B.cT*100;
+   h+=`<div class="box"><h3>Teacher check</h3><p>True concentration of the ${s.tn}: <span class="k">${B.cT.toFixed(4)} mol dm⁻³</span></p><p>Student value is <span class="k">${err>0?'+':'−'}${Math.abs(err).toFixed(1)}%</span> from the true value.</p>${diagnose(err)}</div>`;
+  }else h+=`<div class="box"><p class="hint">Get at least two concordant titres to finish the calculation.</p></div>`;
+ }
+ h+='</div>';$('ana').innerHTML=h;
+}
+function diagnose(err){
+ const s=SUB[sub],out=[];
+ if(s.type==='carb'&&B.runs.some(r=>r.ind==='ph'))out.push('Phenolphthalein changes at the first end point (CO₃²⁻ → HCO₃⁻), so the titre is about half — the calculated concentration is about double. Use methyl orange.');
+ if(s.type!=='carb'&&B.runs.some(r=>r.ind==='mo'))out.push('Methyl orange changes before the equivalence point when NaOH is the titrant, so titres are low.');
+ if(tcfg.bur!=='tit')out.push('The burette was not rinsed with the titrant, so the first filling was slightly diluted.');
+ if(tcfg.pip==='water')out.push('The pipette was rinsed with water, so each 25.0 cm³ portion was slightly diluted.');
+ if(tcfg.flask==='std')out.push('Rinsing the conical flask with standard solution added extra moles to every flask.');
+ if(tcfg.bub==='in')out.push('The air bubble below the tap made the first titre read too large.');
+ if(!A.premade){if(A.flaskV>250.06)out.push('The flask was filled past the mark, so the standard is more dilute than calculated.');
+  if(A.bLeftS>5e-4*SUB[sub].mass||A.fLeftS>0)out.push('Solute was left in the beaker or funnel (not enough rinsing).');
+  if(A.inv<10)out.push('The volumetric flask was not inverted enough times to mix it fully.');}
+ return out.length?'<p class="hint">Possible causes in this run:</p><ul class="hint">'+out.map(x=>`<li>${x}</li>`).join('')+'</ul>':'<p class="hint">No procedural errors detected — differences come from reading precision and end-point judgement.</p>';
+}
+$('bWork').onclick=()=>{showWork=!showWork;$('bWork').textContent=showWork?'Hide worked calculation':'Show worked calculation';renderAna()};
+$('bCopy').onclick=async()=>{const r=B.runs;const t=['Titration\t'+r.map(x=>x.lab).join('\t'),'Final reading / cm³\t'+r.map(x=>x.fin.toFixed(2)).join('\t'),'Initial reading / cm³\t'+r.map(x=>x.init.toFixed(2)).join('\t'),'Titre / cm³\t'+r.map(x=>x.titre.toFixed(2)).join('\t')].join('\n');
+ try{await navigator.clipboard.writeText(t);$('concNote').textContent='Copied — paste into Excel or a document.'}catch(e){$('concNote').textContent='Copy was blocked; select the table and copy it instead.'}};
+$('about').innerHTML=`<p>Stage 1 models weighing by difference (a little solid always stays in the bottle), dissolving, transfer losses (about 4 cm³ of solution clings to the beaker and 0.6 cm³ to the funnel until rinsed), and making up to the mark with a magnified neck view; 1 cm³ in the neck is about 7.5 mm. Overshooting, not removing the funnel, and fewer than ten inversions all feed through to the final answer.</p>
+<p>Stage 2 calculates the flask pH from a full charge balance (carbonate pK<sub>a</sub> 6.35 and 10.33; phthalate 2.95 and 5.41; sulfamic acid treated as strong), and the indicator colour follows the pH: methyl orange 3.1–4.4, bromothymol blue 6.0–7.6, phenolphthalein 8.2–10. While titrant is added without swirling, a local patch of colour appears where it lands. The true titrant concentration is random between 0.090 and 0.110 mol dm⁻³ each time. Burette readings are recorded to the nearest 0.05 cm³. Uncertainties use class B glassware: volumetric flask ±0.30 cm³, pipette ±0.06 cm³, burette ±0.05 cm³ per reading.</p>`;
+
+/* ---------- tabs & loop ---------- */
+function setTab(t){tab=t;$('tabA').setAttribute('aria-selected',t==='A');$('tabB').setAttribute('aria-selected',t==='B');$('paneA').hidden=t!=='A';$('paneB').hidden=t!=='B';
+ if(t==='B'){B.tap=0;renderB();drawB()}else renderA()}
+$('tabA').onclick=()=>setTab('A');$('tabB').onclick=()=>setTab('B');
+let last=performance.now(),acc=0;
+function frame(now){
+ const dt=Math.min(.1,(now-last)/1000);last=now;
+ if(tab==='B'&&B){
+  const c=B.cur;
+  if(B.tap>0){if(!c||c.fin!==null||B.L===null||B.L>=50){B.tap=0;dirty=true}else{deliver([0,.1,1.1][B.tap]*dt)}}
+  if(c&&c.nTu>0){const sw=$('autoSw').checked||B.swirlT>0,k=1-Math.exp(-dt/(sw?.5:8));const dn=c.nTu*k,dvv=c.vU*k;c.nTu-=dn;c.nTm+=dn;c.vU-=dvv;if(c.vU<1e-4){c.nTm+=c.nTu;c.nTu=0;c.vU=0}}
+  if(B.swirlT>0)B.swirlT-=dt;
+  acc+=dt;if(acc>.05||dirty){drawB();if(dirty)renderB();acc=0;dirty=false}
+ }
+ requestAnimationFrame(frame);
+}
+newA();newB();$('tInd').value=SUB[sub].ind;tcfg.ind=SUB[sub].ind;renderA();renderAna();requestAnimationFrame(frame);
+}
+</script>
+</body>
+</html>
