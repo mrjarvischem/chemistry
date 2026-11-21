@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NMR & IR Spectrum Simulator</title>
+<style>
+:root{
+  --bg:#f4ecdc; --panel:#fffaf0; --panel2:#f9f1e0; --ink:#35261a; --mut:#7a6650;
+  --line:#d8c5a3; --brown:#6b4423; --brown2:#8a5a2e; --acc:#1f6f78; --bad:#b3261e; --plot:#fffdf7;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.4 "Segoe UI",system-ui,-apple-system,Helvetica,Arial,sans-serif}
+header{background:var(--brown);color:#fff7e8;padding:12px 16px;display:flex;flex-wrap:wrap;gap:8px 18px;align-items:baseline}
+header h1{font:600 20px/1.2 Georgia,"Times New Roman",serif;margin:0;letter-spacing:.2px}
+header p{margin:0;font-size:13px;opacity:.85}
+main{display:grid;grid-template-columns:minmax(330px,430px) minmax(0,1fr);gap:14px;padding:14px;max-width:1500px;margin:0 auto}
+@media (max-width:900px){main{grid-template-columns:minmax(0,1fr);padding:10px;gap:10px}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;min-width:0}
+.card h2{font:600 15px Georgia,serif;margin:0 0 8px;color:var(--brown)}
+button,select{font:inherit;color:var(--ink)}
+.btn{background:#fff;border:1px solid var(--line);border-radius:7px;padding:6px 10px;min-width:36px;min-height:36px;cursor:pointer;font-weight:600}
+.btn:hover{border-color:var(--brown2)}
+.btn.on{background:var(--brown);color:#fff7e8;border-color:var(--brown)}
+.btn:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.sep{width:1px;align-self:stretch;background:var(--line);margin:0 2px}
+select{background:#fff;border:1px solid var(--line);border-radius:7px;padding:7px 8px;min-height:36px;max-width:100%}
+#presets{width:100%;margin-bottom:8px}
+#stage{position:relative;margin-top:8px;border:1px solid var(--line);border-radius:8px;background:var(--plot);overflow:hidden}
+#mol{display:block;width:100%;height:340px;touch-action:none;cursor:crosshair;user-select:none;-webkit-user-select:none}
+@media (max-width:900px){#mol{height:290px}}
+#cover{position:absolute;inset:0;background:var(--panel2);display:none;align-items:center;justify-content:center;text-align:center;padding:20px;color:var(--mut);font:600 16px Georgia,serif}
+#cover.show{display:flex}
+.hint{font-size:12.5px;color:var(--mut);margin:6px 0 0}
+#info{margin-top:8px;font-size:15px}
+#info b{font-weight:600}
+#warn{color:var(--bad);font-size:13px;margin-top:4px;min-height:0}
+.tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px}
+.tab{background:var(--panel2);border:1px solid var(--line);border-radius:8px 8px 0 0;padding:8px 14px;min-height:40px;cursor:pointer;font-weight:600}
+.tab.on{background:var(--brown);color:#fff7e8;border-color:var(--brown)}
+#chartWrap{position:relative;border:1px solid var(--line);border-radius:8px;background:var(--plot);overflow:hidden}
+#chart{display:block;width:100%;height:400px;touch-action:pan-y;cursor:grab}
+@media (max-width:900px){#chart{height:310px}}
+#readout{position:absolute;right:8px;top:6px;font-size:12px;color:var(--mut);background:rgba(255,253,247,.85);padding:1px 6px;border-radius:5px;pointer-events:none;font-variant-numeric:tabular-nums}
+.opts{margin:8px 0 0;gap:6px 14px}
+.opts label{display:inline-flex;gap:5px;align-items:center;font-size:13.5px;cursor:pointer;min-height:30px}
+.opts input{width:17px;height:17px;accent-color:var(--brown)}
+#minis{display:flex;gap:8px;overflow-x:auto;padding:10px 0 2px}
+.mini{flex:0 0 auto;background:var(--plot);border:1px solid var(--line);border-radius:8px;padding:4px 4px 2px;cursor:pointer;text-align:center;font-size:12px;color:var(--mut)}
+.mini canvas{display:block;width:124px;height:84px}
+.mini.sel{border-color:var(--brown);box-shadow:0 0 0 1px var(--brown)}
+.tblwrap{overflow-x:auto;margin-top:10px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-size:12.5px;color:var(--mut);font-weight:600;white-space:nowrap}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+tbody tr.pick{cursor:pointer}
+tbody tr.pick:hover{background:var(--panel2)}
+tbody tr.sel{background:#f1e2c4}
+.tag{display:inline-block;min-width:22px;text-align:center;color:#fff;border-radius:5px;padding:0 6px;font-weight:700}
+.small{font-size:12.5px;color:var(--mut)}
+.hidden{display:none!important}
+#sheet h3{font:600 14px Georgia,serif;color:var(--brown);margin:14px 0 4px}
+#sheet h3:first-child{margin-top:0}
+.locked{padding:14px;border:1px dashed var(--line);border-radius:8px;color:var(--mut);margin-top:10px;text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <h1>NMR &amp; IR Spectrum Simulator</h1>
+  <p>Build a molecule, then read its ¹H NMR, ¹³C NMR and infrared spectra · AQA A-level data sheet values</p>
+</header>
+<main>
+  <section class="card" id="builder">
+    <h2>1 · Build the molecule</h2>
+    <select id="presets" aria-label="Load an example molecule"></select>
+    <div class="row" id="tools">
+      <button class="btn el on" data-el="C">C</button>
+      <button class="btn el" data-el="O">O</button>
+      <button class="btn el" data-el="N">N</button>
+      <button class="btn el" data-el="Cl">Cl</button>
+      <button class="btn el" data-el="Br">Br</button>
+      <button class="btn el" data-el="F">F</button>
+      <button class="btn el" data-el="I">I</button>
+      <span class="sep"></span>
+      <button class="btn bo on" data-o="1" title="Single bond">─</button>
+      <button class="btn bo" data-o="2" title="Double bond">═</button>
+      <button class="btn bo" data-o="3" title="Triple bond">≡</button>
+      <span class="sep"></span>
+      <button class="btn tool" data-tool="ring" title="Benzene ring">⬡ Ring</button>
+      <button class="btn tool" data-tool="erase">Erase</button>
+      <button class="btn tool" data-tool="move">Move</button>
+      <span class="sep"></span>
+      <button class="btn" id="undo">Undo</button>
+      <button class="btn" id="clear">Clear</button>
+      <button class="btn" id="fit">Fit</button>
+    </div>
+    <div id="stage">
+      <svg id="mol" role="img" aria-label="Molecule drawing area"></svg>
+      <div id="cover">Structure hidden<br>Work it out from the spectra, then untick “Hide structure”.</div>
+    </div>
+    <p class="hint" id="hint"></p>
+    <div id="info"></div>
+    <div id="warn"></div>
+    <div class="row opts">
+      <label><input type="checkbox" id="showAns" checked> Show assignments</label>
+      <label><input type="checkbox" id="hideStruct"> Hide structure</label>
+    </div>
+    <div class="row opts">
+      <label>Chemical shifts&nbsp;
+        <select id="model">
+          <option value="aqa">Kept within AQA data sheet ranges</option>
+          <option value="real">Realistic estimates (may fall outside)</option>
+        </select>
+      </label>
+    </div>
+  </section>
+
+  <section class="card" id="spectra">
+    <div class="tabs" role="tablist">
+      <button class="tab on" data-tab="h">¹H NMR</button>
+      <button class="tab" data-tab="c">¹³C NMR</button>
+      <button class="tab" data-tab="ir">Infrared</button>
+      <button class="tab" data-tab="sheet">Data sheet</button>
+    </div>
+    <div id="specArea">
+      <div id="chartWrap"><canvas id="chart"></canvas><div id="readout"></div></div>
+      <div class="row" style="margin-top:8px">
+        <button class="btn" id="zin" title="Zoom in">＋</button>
+        <button class="btn" id="zout" title="Zoom out">－</button>
+        <button class="btn" id="zreset">Reset view</button>
+        <span class="sep nmrOnly"></span>
+        <button class="btn nmrOnly" id="yup" title="Taller peaks">Height ▲</button>
+        <button class="btn nmrOnly" id="ydn" title="Shorter peaks">Height ▼</button>
+        <span class="small" id="zoomHint">Scroll, pinch or drag on the spectrum to zoom and pan. Tap a peak label to zoom in on it.</span>
+      </div>
+      <div class="row opts" id="optH">
+        <label>Spectrometer&nbsp;<select id="mhz"><option>60</option><option>100</option><option selected>300</option><option>400</option><option>600</option></select>&nbsp;MHz</label>
+        <label><input type="checkbox" id="integ" checked> Integration trace</label>
+        <label><input type="checkbox" id="tms" checked> TMS</label>
+        <label><input type="checkbox" id="ranges"> Data sheet ranges</label>
+        <label><input type="checkbox" id="d2o"> D₂O shake</label>
+        <label title="Uses different coupling constants for different neighbours, giving patterns such as a doublet of quartets"><input type="checkbox" id="adv"> Beyond n+1 (real J values)</label>
+      </div>
+      <div class="row opts hidden" id="optC">
+        <label><input type="checkbox" id="tmsC" checked> TMS</label>
+        <label><input type="checkbox" id="rangesC"> Data sheet ranges</label>
+      </div>
+      <div class="row opts hidden" id="optIR">
+        <label><input type="checkbox" id="rangesIR"> Data sheet ranges</label>
+        <label><input type="checkbox" id="fpIR" checked> Shade fingerprint region</label>
+      </div>
+      <div id="minis"></div>
+      <div id="tableBox"></div>
+    </div>
+    <div id="sheet" class="hidden"></div>
+  </section>
+</main>
+
+<script id="engine">
+/* ===================== CHEMISTRY ENGINE (no DOM) ===================== */
+const VAL={C:4,N:3,O:2,F:1,Cl:1,Br:1,I:1};
+const AR={C:12.0,H:1.0,N:14.0,O:16.0,F:19.0,Cl:35.5,Br:79.9,I:126.9};
+const BL=40; // bond length in model units
+
+/* --- AQA data sheet tables --- */
+const HT={
+  ROH:{f:'ROH',lo:0.5,hi:5.0}, RCH3:{f:'RCH₃',lo:0.7,hi:1.2}, RNH2:{f:'RNH₂',lo:1.0,hi:4.5},
+  R2CH2:{f:'R₂CH₂',lo:1.2,hi:1.4}, R3CH:{f:'R₃CH',lo:1.4,hi:1.6},
+  RCOCH:{f:'R–CO–C–H  (H on C next to C=O)',lo:2.1,hi:2.6},
+  ROCH:{f:'R–O–C–H',lo:3.1,hi:3.9}, RCH2X:{f:'RCH₂Cl or Br',lo:3.1,hi:4.2},
+  RCOOCH:{f:'R–COO–C–H  (ester)',lo:3.7,hi:4.1}, ALKENE:{f:'R₂C=C–H  (alkene)',lo:4.5,hi:6.0},
+  RCHO:{f:'R–CHO  (aldehyde)',lo:9.0,hi:10.0}, RCOOH:{f:'R–COOH',lo:10.0,hi:12.0}
+};
+const CT={
+  CC:{f:'C–C  (alkyl)',lo:5,hi:40}, CX:{f:'R–C–Cl or Br',lo:10,hi:70},
+  CCO:{f:'R–C–C=O  (C next to C=O)',lo:20,hi:50}, CN:{f:'R–C–N  (amines)',lo:25,hi:60},
+  CO:{f:'C–O  (alcohols, ethers or esters)',lo:50,hi:90}, ALK:{f:'C=C  (alkenes)',lo:90,hi:150},
+  NITR:{f:'R–C≡N',lo:110,hi:125}, AROM:{f:'aromatic C (benzene ring)',lo:110,hi:160},
+  ESTER:{f:'R–C=O  (esters or acids)',lo:160,hi:185}, KET:{f:'R–C=O  (aldehydes or ketones)',lo:190,hi:220}
+};
+const IRT={
+  NH:{f:'N–H (amines)',lo:3300,hi:3500}, OHal:{f:'O–H (alcohols)',lo:3230,hi:3550},
+  CH:{f:'C–H',lo:2850,hi:3300}, OHac:{f:'O–H (acids)',lo:2500,hi:3000},
+  CN3:{f:'C≡N',lo:2220,hi:2260}, CO2:{f:'C=O',lo:1680,hi:1750}, CC2:{f:'C=C',lo:1620,hi:1680},
+  CO1:{f:'C–O',lo:1000,hi:1300}, CC1:{f:'C–C',lo:750,hi:1100}
+};
+
+/* --- building helpers --- */
+function newMol(){return {atoms:[],bonds:[],nid:1};}
+function addAtom(m,el,x,y){const a={id:m.nid++,el,x,y};m.atoms.push(a);return a;}
+function getBond(m,a,b){return m.bonds.find(k=>(k.a===a&&k.b===b)||(k.a===b&&k.b===a));}
+function addBond(m,a,b,o){const k=getBond(m,a,b);if(k){k.order=o;return k;}const n={a,b,order:o};m.bonds.push(n);return n;}
+function atomById(m,id){return m.atoms.find(a=>a.id===id);}
+function usedVal(m,id){let s=0;m.bonds.forEach(k=>{if(k.a===id||k.b===id)s+=k.order;});return s;}
+function freeVal(m,id){return VAL[atomById(m,id).el]-usedVal(m,id);}
+function sproutPos(m,a,order){
+  const nb=m.bonds.filter(k=>k.a===a.id||k.b===a.id).map(k=>({at:atomById(m,k.a===a.id?k.b:k.a),o:k.order}));
+  const ang=nb.map(n=>Math.atan2(n.at.y-a.y,n.at.x-a.x));
+  let c=[];const D=Math.PI/180;
+  if(!ang.length)c=[-30*D];
+  else if(ang.length===1){
+    if(order===3||nb[0].o===3||(order===2&&nb[0].o===2))c=[ang[0]+Math.PI];
+    else c=[ang[0]+120*D,ang[0]-120*D];
+  }else{
+    const s=ang.slice().sort((p,q)=>p-q);let best=-1,mid=0;
+    for(let i=0;i<s.length;i++){const p=s[i],q=i+1<s.length?s[i+1]:s[0]+2*Math.PI;if(q-p>best+1e-6){best=q-p;mid=(p+q)/2;}}
+    c=[mid];
+  }
+  let bp=null,bs=-1e9;
+  c.forEach(t=>{const x=a.x+BL*Math.cos(t),y=a.y+BL*Math.sin(t);let md=1e9;
+    m.atoms.forEach(o=>{if(o!==a)md=Math.min(md,Math.hypot(o.x-x,o.y-y));});
+    const sc=Math.round(Math.min(md,200))*10+Math.cos(t)+0.3*Math.sin(-t)*0;if(sc>bs){bs=sc;bp={x,y,t};}});
+  return bp;
+}
+function addRing(m,cx,cy,start,ipsoParent){
+  const ids=[];for(let k=0;k<6;k++){const t=start+k*Math.PI/3;ids.push(addAtom(m,'C',cx+BL*Math.cos(t),cy+BL*Math.sin(t)).id);}
+  for(let k=0;k<6;k++)addBond(m,ids[k],ids[(k+1)%6],k%2?1:2);
+  if(ipsoParent!=null)addBond(m,ipsoParent,ids[0],1);
+  return ids;
+}
+function attachRing(m,a){const p=sproutPos(m,a,1);return addRing(m,a.x+2*BL*Math.cos(p.t),a.y+2*BL*Math.sin(p.t),p.t+Math.PI,a.id);}
+function buildOps(str){
+  const m=newMol();const list=[];
+  str.trim().split(/\s+/).forEach(tok=>{
+    const r=/^([A-Z][a-z]?)(\d*)([=#]?)$/.exec(tok);const el=r[1],par=r[2]===''?null:list[+r[2]],o=r[3]==='='?2:r[3]==='#'?3:1;
+    if(el==='R'){const ids=par?attachRing(m,par):addRing(m,0,0,-Math.PI/2,null);ids.forEach(id=>list.push(atomById(m,id)));}
+    else if(!par){list.push(addAtom(m,el,0,0));}
+    else{const p=sproutPos(m,par,o);const a=addAtom(m,el,p.x,p.y);addBond(m,par.id,a.id,o);list.push(a);}
+  });
+  return m;
+}
+
+/* --- perception --- */
+function toIds(keys){const u=[...new Set(keys)].sort();const mp=new Map(u.map((k,i)=>[k,i]));return keys.map(k=>mp.get(k));}
+function perceive(mol){
+  const A=mol.atoms.map((a,i)=>({i,id:a.id,el:a.el,x:a.x,y:a.y,nb:[],h:0,arom:false,ring:null,kind:null}));
+  const ix=new Map(mol.atoms.map((a,i)=>[a.id,i]));
+  mol.bonds.forEach(b=>{const p=ix.get(b.a),q=ix.get(b.b);A[p].nb.push({i:q,o:b.order,ar:false});A[q].nb.push({i:p,o:b.order,ar:false});});
+  A.forEach(a=>{a.used=a.nb.reduce((s,n)=>s+n.o,0);a.h=Math.max(0,VAL[a.el]-a.used);a.bad=a.used>VAL[a.el];});
+  // six-membered aromatic rings (alternating single/double carbon rings)
+  const rings=[],seen=new Set();
+  const dfs=(s,path)=>{const last=path[path.length-1];
+    for(const n of A[last].nb){
+      if(path.length===6&&n.i===s){const key=path.slice().sort((p,q)=>p-q).join(',');if(!seen.has(key)){seen.add(key);rings.push(path.slice());}continue;}
+      if(path.length<6&&n.i>s&&!path.includes(n.i)&&A[n.i].el==='C')dfs(s,path.concat(n.i));
+    }};
+  A.forEach(a=>{if(a.el==='C')dfs(a.i,[a.i]);});
+  const arRings=rings.filter(r=>r.every((ai,k)=>{const prev=r[(k+5)%6],next=r[(k+1)%6];
+    const d=A[ai].nb.filter(n=>(n.i===prev||n.i===next)&&n.o===2).length;return d===1;}));
+  arRings.forEach(r=>r.forEach((ai,k)=>{A[ai].arom=true;if(!A[ai].ring)A[ai].ring={r,k};
+    const next=r[(k+1)%6];A[ai].nb.forEach(n=>{if(n.i===next)n.ar=true;});A[next].nb.forEach(n=>{if(n.i===ai)n.ar=true;});}));
+  // atom typing
+  A.forEach(a=>{
+    if(a.el!=='C')return;
+    if(a.arom)a.kind='arom';
+    else if(a.nb.some(n=>n.o===2&&A[n.i].el==='O'))a.kind='carbonyl';
+    else if(a.nb.some(n=>n.o===3&&A[n.i].el==='N'))a.kind='nitrile';
+    else if(a.nb.some(n=>n.o===3))a.kind='alkyne';
+    else if(a.nb.some(n=>n.o===2))a.kind='alkene';
+    else a.kind='sp3';
+  });
+  A.forEach(a=>{
+    if(a.kind!=='carbonyl')return;
+    const s=a.nb.filter(n=>n.o===1).map(n=>A[n.i]);
+    if(s.some(x=>x.el==='O'&&x.h>0))a.co='acid';
+    else if(s.some(x=>x.el==='O'))a.co='ester';
+    else if(s.some(x=>x.el==='N'))a.co='amide';
+    else if(s.some(x=>VAL[x.el]===1))a.co='acyl';
+    else if(a.h>0)a.co='aldehyde';
+    else a.co='ketone';
+    a.conj=s.some(x=>x.el==='C'&&(x.arom||x.kind==='alkene'));
+  });
+  A.forEach(a=>{
+    if(a.el==='O'){
+      if(a.nb.some(n=>n.o===2))a.kind='carbonylO';
+      else if(a.h>0){a.kind='oh';const c=a.nb[0]&&A[a.nb[0].i];a.ok=!c?'alcohol':c.kind==='carbonyl'?'acid':c.arom?'phenol':'alcohol';}
+      else{a.kind='ether';a.ok=a.nb.some(n=>A[n.i].kind==='carbonyl')?'ester':'ether';}
+    }else if(a.el==='N'){
+      if(a.nb.some(n=>n.o===3))a.kind='nitrileN';
+      else if(a.nb.some(n=>A[n.i].kind==='carbonyl'))a.kind='amideN';
+      else a.kind='amine';
+    }
+  });
+  // topological symmetry classes
+  let ids=toIds(A.map(a=>a.el+'.'+a.h+'.'+(a.arom?'a':'')+a.nb.length)),count=new Set(ids).size;
+  for(let it=0;it<A.length+2;it++){
+    const keys=A.map((a,i)=>String(ids[i]).padStart(4,'0')+'|'+a.nb.map(n=>(n.ar?'a':n.o)+':'+String(ids[n.i]).padStart(4,'0')).sort().join(','));
+    const nid=toIds(keys),c=new Set(nid).size;ids=nid;if(c===count)break;count=c;
+  }
+  // formula and Mr
+  const cnt={};let nH=0;A.forEach(a=>{cnt[a.el]=(cnt[a.el]||0)+1;nH+=a.h;});
+  const order=[];if(cnt.C)order.push('C');if(nH)order.push('H');Object.keys(cnt).filter(e=>e!=='C').sort().forEach(e=>order.push(e));
+  let mr=nH*AR.H;const parts=order.map(e=>{const k=e==='H'?nH:cnt[e];if(e!=='H')mr+=k*AR[e];return [e,k];});
+  // fragments
+  const comp=new Array(A.length).fill(-1);let nc=0;
+  A.forEach(a=>{if(comp[a.i]>=0)return;const st=[a.i];comp[a.i]=nc;while(st.length){const p=st.pop();A[p].nb.forEach(n=>{if(comp[n.i]<0){comp[n.i]=nc;st.push(n.i);}});}nc++;});
+  return {A,cls:ids,rings:arRings,formula:parts,mr,nH,frags:nc,bad:A.some(a=>a.bad)};
+}
+function subType(A,ci,xi){
+  const x=A[xi];
+  if(x.el==='C'){
+    switch(x.kind){
+      case 'sp3':return 'alkyl';case 'alkene':return 'vinyl';case 'arom':return 'aryl';
+      case 'alkyne':return 'alkynyl';case 'nitrile':return 'CN';
+      default:
+        if(x.co==='ketone'||x.co==='aldehyde')return x.nb.some(n=>n.i!==ci&&A[n.i].arom)?'ArCO':'CO';
+        if(x.co==='acid'||x.co==='ester')return 'COO';
+        if(x.co==='amide')return 'CON';
+        return 'COCl';
+    }
+  }
+  if(x.el==='O'){
+    if(x.h>0)return 'OH';
+    const o=x.nb.filter(n=>n.i!==ci).map(n=>A[n.i]);
+    if(o.some(y=>y.kind==='carbonyl'))return 'OCO';
+    if(o.some(y=>y.arom))return 'OAr';
+    return 'OR';
+  }
+  if(x.el==='N')return x.nb.some(n=>n.i!==ci&&A[n.i].kind==='carbonyl')?'NCO':'N';
+  return x.el;
+}
+function groupLabel(a){return a.el+(a.h?('H'+(a.h>1?'₀₁₂₃₄'[a.h]:'')):'');}
+const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+
+/* --- ring substituent effects --- */
+const AR_H={alkyl:[-.17,-.09,-.18],vinyl:[.06,-.03,-.1],aryl:[.18,0,-.08],CN:[.27,.11,.3],CO:[.58,.21,.27],ArCO:[.64,.09,.3],
+  COO:[.8,.14,.2],CON:[.5,.1,.17],COCl:[.83,.16,.3],OH:[-.5,-.14,-.4],OR:[-.43,-.09,-.37],OAr:[-.26,-.03,-.2],OCO:[-.21,-.02,-.13],
+  N:[-.75,-.24,-.63],NCO:[.2,-.07,-.28],F:[-.3,-.02,-.22],Cl:[.02,-.06,-.04],Br:[.22,-.13,-.03],I:[.4,-.26,-.03],alkynyl:[.15,-.02,-.01]};
+const AR_C={alkyl:[9.3,.6,0,-3.1],vinyl:[9.5,-2,.2,-.5],aryl:[13,-1.1,.5,-1],CN:[-15.4,3.6,.6,3.9],CO:[8.6,1.3,.6,5.5],ArCO:[9.1,.1,0,4.2],
+  COO:[2.1,1.5,0,5.1],CON:[5,-1.2,0,3.4],COCl:[4.6,2.9,.6,7],OH:[26.9,-12.7,1.4,-7.3],OR:[31.4,-14.4,1,-7.7],OAr:[29,-9.4,1.6,-5.3],
+  OCO:[23,-6.4,1.3,-2.3],N:[18,-13.3,.9,-9.8],NCO:[11,-9.9,.2,-5.6],F:[34.8,-12.9,1.4,-4.5],Cl:[6.2,.4,1.3,-1.9],Br:[-5.5,3.4,1.7,-1.6],
+  I:[-32,10,2.6,1],alkynyl:[-6.1,3.8,.4,-.2]};
+function ringEffect(P,a,tbl,off){
+  const A=P.A;let s=0;if(!a.ring)return 0;const {r,k}=a.ring;
+  r.forEach((ai,q)=>{const d=Math.min(Math.abs(k-q),6-Math.abs(k-q));
+    A[ai].nb.forEach(n=>{if(r.includes(n.i))return;const t=tbl[subType(A,ai,n.i)];if(t&&d-off>=0)s+=t[d-off]||0;});});
+  return s;
+}
+
+/* --- 1H shifts --- */
+const HA={alkyl:0,vinyl:.75,aryl:1.4,alkynyl:.9,CN:1.1,CO:1.15,ArCO:1.65,COO:1.05,CON:1.1,COCl:1.7,OH:2.4,OR:2.4,OAr:2.9,OCO:2.75,N:1.45,NCO:1.9,F:3.3,Cl:2.2,Br:2.1,I:1.9};
+const HB={vinyl:.1,aryl:.3,alkynyl:.15,CN:.35,CO:.2,ArCO:.25,COO:.2,CON:.2,COCl:.3,OH:.3,OR:.25,OAr:.4,OCO:.35,N:.2,NCO:.2,F:.4,Cl:.6,Br:.75,I:.9};
+const HCAT={OCO:'RCOOCH',OH:'ROCH',OR:'ROCH',OAr:'ROCH',Cl:'RCH2X',Br:'RCH2X',CO:'RCOCH',ArCO:'RCOCH',COO:'RCOCH',CON:'RCOCH',COCl:'RCOCH'};
+const HDESC={vinyl:'H on C next to C=C',aryl:'H on C next to a benzene ring',alkynyl:'H on C next to C≡C',CN:'H on C next to C≡N',N:'H on C next to N (amine)',NCO:'H on C next to amide N',F:'H on C–F',I:'H on C–I'};
+function hShift(P,a,opt){
+  const A=P.A;let d=1,cat=null,desc='',note='',clampOK=true;
+  if(a.el==='O'){
+    if(a.ok==='acid'){d=11.5;cat='RCOOH';desc='carboxylic acid O–H';}
+    else if(a.ok==='phenol'){d=5.0;cat='ROH';desc='phenol O–H';}
+    else{const c=a.nb[0]&&A[a.nb[0].i];const br=c?c.nb.filter(n=>A[n.i].el==='C').length:1;d=[2.0,2.6,2.2,1.7,1.7][br];cat='ROH';desc='alcohol O–H';}
+  }else if(a.el==='N'){
+    if(a.kind==='amideN'){d=a.h===2?6.0:6.6;desc='amide N–H';note='Amide N–H is not on the AQA data sheet (typically 5–8.5).';}
+    else{const ar=a.nb.some(n=>A[n.i].arom);d=ar?3.6:(a.h===2?1.3:1.1);cat='RNH2';desc='amine N–H';}
+  }else if(a.el!=='C'){d=1;desc='H–'+a.el;}
+  else if(a.kind==='carbonyl'){
+    if(a.co==='aldehyde'){d=a.conj?10.0:9.7;cat='RCHO';desc='aldehyde H';}
+    else{d=8.05;desc='H–C=O of a methanoate / methanoic acid / amide';note='Not on the AQA data sheet (about 8.0).';}
+  }else if(a.kind==='arom'){
+    d=7.27+ringEffect(P,a,AR_H,1);desc='H on a benzene ring';note='Aromatic H is not on the AQA data sheet (typically 6.5–8.0).';
+  }else if(a.kind==='alkene'){
+    d=5.25;const pn=a.nb.find(n=>n.o===2);
+    const G={alkyl:.45,aryl:1.4,CO:1.0,ArCO:1.0,COO:.8,CON:.8,OR:1.2,OCO:2.1,Cl:1.0,Br:1.05,CN:.25,vinyl:1.2};
+    const O={alkyl:-.25,aryl:.2,CO:1.0,ArCO:1.0,COO:.9,CON:.8,OR:-1.1,OCO:-.6,Cl:.1,Br:.5,CN:.65,vinyl:0};
+    a.nb.forEach(n=>{if(n!==pn)d+=G[subType(A,a.i,n.i)]||0;});
+    if(pn)A[pn.i].nb.forEach(n=>{if(n.i!==a.i)d+=O[subType(A,pn.i,n.i)]||0;});
+    cat='ALKENE';desc='H on C=C';
+  }else if(a.kind==='alkyne'||a.kind==='nitrile'){d=2.4;desc='H on C≡C';note='Not on the AQA data sheet.';}
+  else{
+    d=[0,1.5,1.3,0.9,0.23][a.h];const al=[];
+    a.nb.forEach(n=>{const t=subType(A,a.i,n.i);al.push(t);d+=HA[t]||0;const x=A[n.i];
+      if(x.el==='C'&&x.kind==='sp3')x.nb.forEach(m=>{if(m.i!==a.i)d+=HB[subType(A,x.i,m.i)]||0;});});
+    const non=al.filter(t=>t!=='alkyl'),ct=non.filter(t=>HCAT[t]);
+    if(!non.length){cat=a.h===3?'RCH3':a.h===2?'R2CH2':a.h===1?'R3CH':null;desc='alkyl H';if(!cat){note='Methane is not on the AQA data sheet.';}}
+    else if(!ct.length){desc=HDESC[non[0]]||'C–H';note='This environment is not on the AQA data sheet.';}
+    else{ct.sort((p,q)=>HA[q]-HA[p]);cat=HCAT[ct[0]];
+      desc={RCOOCH:'H on C next to ester O',ROCH:'H on C next to O',RCH2X:'H on C bonded to '+(ct[0]),RCOCH:'H on C next to C=O'}[cat];
+      if(non.length>1){clampOK=false;note='Two electron-withdrawing groups on this carbon, so it is shifted further than one data sheet range suggests.';}}
+  }
+  const raw=d;const range=cat?[HT[cat].lo,HT[cat].hi]:null;
+  if(opt.model==='aqa'&&range&&clampOK)d=clamp(d,range[0],range[1]);
+  return {d:Math.round(d*100)/100,raw,cat,range,desc,note};
+}
+/* --- coupling --- */
+function jval(P,a,b){
+  const A=P.A;
+  if(a.kind==='carbonyl'||b.kind==='carbonyl')return 2.5;
+  if(a.arom&&b.arom)return 8;
+  if(a.kind==='alkene'&&b.kind==='alkene'&&a.nb.some(n=>n.i===b.i&&n.o===2)){
+    if(a.h===1&&b.h===1){
+      const sa=a.nb.find(n=>n.i!==b.i),sb=b.nb.find(n=>n.i!==a.i);
+      if(sa&&sb){const vx=b.x-a.x,vy=b.y-a.y;const c1=vx*(A[sa.i].y-a.y)-vy*(A[sa.i].x-a.x),c2=vx*(A[sb.i].y-b.y)-vy*(A[sb.i].x-b.x);return c1*c2>0?10:16;}
+    }
+    return 13;
+  }
+  if(a.kind==='alkene'||b.kind==='alkene'||a.arom||b.arom)return 6.5;
+  return 7;
+}
+const MULT=['singlet','doublet','triplet','quartet','quintet','sextet','septet','octet','nonet'];
+function hEnvs(P,opt){
+  const {A,cls}=P;const groups=new Map();
+  A.forEach(a=>{if(a.h>0){if(!groups.has(cls[a.i]))groups.set(cls[a.i],[]);groups.get(cls[a.i]).push(a.i);}});
+  const envs=[];
+  groups.forEach((list)=>{
+    const rep=A[list[0]],s=hShift(P,rep,opt),nH=list.reduce((t,i)=>t+A[i].h,0),exch=rep.el!=='C';
+    const by=new Map();
+    if(!exch)rep.nb.forEach(n=>{const b=A[n.i];if(b.el!=='C'||b.h===0||cls[b.i]===cls[rep.i])return;
+      const J=opt.adv?jval(P,rep,b):7;const k=cls[b.i];if(!by.has(k))by.set(k,{n:0,J});by.get(k).n+=b.h;});
+    const byJ=new Map();by.forEach(g=>{byJ.set(g.J,(byJ.get(g.J)||0)+g.n);});
+    const coup=[...byJ.entries()].map(([J,n])=>({J,n})).sort((p,q)=>q.J-p.J);
+    const nNb=coup.reduce((t,g)=>t+g.n,0);
+    let mult;
+    if(exch)mult='singlet';
+    else if(coup.length<=1)mult=MULT[nNb]||'multiplet';
+    else mult=coup.map((g,k)=>(MULT[g.n]||'multiplet')+(k?'s':'')).join(' of ');
+    let lines=[{f:0,w:1}];
+    coup.forEach(g=>{for(let k=0;k<g.n;k++){const mp=new Map();
+      lines.forEach(L=>{[L.f-g.J/2,L.f+g.J/2].forEach(f=>{const key=Math.round(f*1000);mp.set(key,(mp.get(key)||0)+L.w/2);});});
+      lines=[...mp.entries()].map(([k2,w])=>({f:k2/1000,w}));}});
+    lines.sort((p,q)=>p.f-q.f);
+    envs.push({atoms:list,nH,d:s.d,cat:s.cat,range:s.range,desc:s.desc,note:s.note,exch,coup,nNb,mult,lines,
+      group:groupLabel(rep),broad:exch});
+  });
+  envs.sort((p,q)=>p.d-q.d||p.atoms[0]-q.atoms[0]);
+  envs.forEach((e,i)=>{e.letter=String.fromCharCode(97+i%26);e.ci=i;});
+  return envs;
+}
+
+/* --- 13C shifts --- */
+const CA={alkyl:9.1,vinyl:20,aryl:23,alkynyl:4.5,CN:4,CO:31,ArCO:28,COO:22.5,CON:22,COCl:35,OH:50,OR:51,OAr:57,OCO:53.7,N:30,NCO:28,F:70,Cl:31,Br:20,I:-7};
+const CB={alkyl:9.4,vinyl:7,aryl:9,alkynyl:5,CN:3,CO:1,ArCO:1,COO:2,CON:2,COCl:2,OH:11,OR:11,OAr:11,OCO:11,N:11,NCO:8,F:8,Cl:11,Br:11,I:12};
+function cShift(P,a,opt){
+  const A=P.A;let d=0,cat=null,desc='',note='';
+  const betaC=a.nb.filter(n=>n.o===1&&A[n.i].kind==='sp3').reduce((t,n)=>t+A[n.i].nb.filter(m=>m.i!==a.i&&A[m.i].el==='C').length,0);
+  if(a.kind==='carbonyl'){
+    if(a.co==='ketone'){d=(a.conj?197:206.5)+2.6*Math.min(betaC,4);cat='KET';desc='ketone C=O';}
+    else if(a.co==='aldehyde'){d=(a.conj?192:200)+2.5*Math.min(betaC,2);cat='KET';desc='aldehyde C=O';}
+    else if(a.co==='acid'){d=a.h?166:(a.conj?172:177)+3*Math.min(betaC,2);cat='ESTER';desc='carboxylic acid C=O';}
+    else if(a.co==='ester'){d=a.h?161:(a.conj?166:171)+3*Math.min(betaC,2);cat='ESTER';desc='ester C=O';}
+    else if(a.co==='amide'){d=(a.conj?168:172)+2.5*Math.min(betaC,2);desc='amide C=O';note='Amide C=O is not on the AQA data sheet (about 165–175).';}
+    else{d=170+2*Math.min(betaC,2);desc='acyl chloride C=O';note='Acyl chloride C=O is not on the AQA data sheet (about 170).';}
+  }else if(a.kind==='nitrile'){d=117+2*Math.min(betaC,3);cat='NITR';desc='nitrile carbon';}
+  else if(a.kind==='alkyne'){d=75+6*a.nb.filter(n=>n.o===1).length;desc='alkyne carbon';note='C≡C is not on the AQA data sheet (about 65–90).';}
+  else if(a.kind==='arom'){d=128.5+ringEffect(P,a,AR_C,0);cat='AROM';desc='benzene ring carbon';}
+  else if(a.kind==='alkene'){
+    d=123.3;const pn=a.nb.find(n=>n.o===2);
+    const S={alkyl:10.6,aryl:12,vinyl:13.6,CO:13,ArCO:13,COO:5,CON:5,OR:29,OCO:18,Cl:3,Br:-8,CN:-16};
+    const T={alkyl:-7.9,aryl:-11,vinyl:-7,CO:13,ArCO:13,COO:9,CON:7,OR:-39,OCO:-27,Cl:-6,Br:-1,CN:15};
+    a.nb.forEach(n=>{if(n!==pn){d+=S[subType(A,a.i,n.i)]||0;const x=A[n.i];if(x.kind==='sp3')d+=7*Math.min(2,x.nb.filter(m=>m.i!==a.i&&A[m.i].el==='C').length);}});
+    if(pn)A[pn.i].nb.forEach(n=>{if(n.i!==a.i)d+=T[subType(A,pn.i,n.i)]||0;});
+    cat='ALK';desc='alkene carbon';
+  }else{
+    d=-2.3;const het=[],types=[];
+    a.nb.forEach(n=>{const t=subType(A,a.i,n.i),x=A[n.i];types.push(t);
+      if(x.el==='C')d+=CA[t]||0;else het.push(CA[t]||0);
+      if(x.el==='C'&&x.kind==='sp3'){
+        x.nb.forEach(m=>{if(m.i===a.i)return;d+=CB[subType(A,x.i,m.i)]||0;const y=A[m.i];
+          if(y.el==='C'&&y.kind==='sp3')d-=2.5*y.nb.filter(k=>k.i!==x.i).length;});
+      }else if(t==='OR'||t==='N'){
+        x.nb.forEach(m=>{if(m.i!==a.i){d+=9.4;const y=A[m.i];if(y.kind==='sp3')d-=2.5*Math.min(2,y.nb.filter(k=>k.i!==x.i).length);}});
+      }});
+    het.sort((p,q)=>q-p).forEach((v,k)=>{d+=v*[1,.85,.7,.6][k];});
+    const deg=a.nb.length,BR={1:{3:-1.1,4:-3.4},2:{3:-2.5,4:-7.5},3:{2:-3.7,3:-9.5,4:-15},4:{1:-1.5,2:-8.4,3:-15,4:-25}};
+    a.nb.forEach(n=>{const x=A[n.i];if(x.el==='C'&&x.kind==='sp3')d+=(BR[deg]&&BR[deg][x.nb.length])||0;});
+    const has=l=>types.some(t=>l.includes(t));
+    if(has(['OH','OR','OAr','OCO'])){cat='CO';desc='carbon bonded to O';}
+    else if(has(['Cl','Br'])){cat='CX';desc='carbon bonded to Cl/Br';}
+    else if(has(['N'])){cat='CN';desc='carbon bonded to N (amine)';}
+    else if(has(['CO','ArCO','COO','CON','COCl'])){cat='CCO';desc='carbon next to C=O';}
+    else if(has(['F','I','NCO'])){desc='carbon bonded to '+(has(['F'])?'F':has(['I'])?'I':'amide N');note='This environment is not on the AQA data sheet.';}
+    else{cat='CC';desc='alkyl carbon';}
+  }
+  const raw=d;const range=cat?[CT[cat].lo,CT[cat].hi]:null;
+  if(opt.model==='aqa'&&range)d=clamp(d,range[0],range[1]);
+  return {d:Math.round(d*10)/10,raw,cat,range,desc,note};
+}
+function cEnvs(P,opt){
+  const {A,cls}=P;const groups=new Map();
+  A.forEach(a=>{if(a.el==='C'){if(!groups.has(cls[a.i]))groups.set(cls[a.i],[]);groups.get(cls[a.i]).push(a.i);}});
+  const envs=[];
+  groups.forEach(list=>{const rep=A[list[0]],s=cShift(P,rep,opt);
+    envs.push({atoms:list,nC:list.length,d:s.d,cat:s.cat,range:s.range,desc:s.desc,note:s.note,group:groupLabel(rep),h:rep.h});});
+  envs.sort((p,q)=>p.d-q.d||p.atoms[0]-q.atoms[0]);
+  envs.forEach((e,i)=>{e.letter=String.fromCharCode(97+i%26);e.ci=i;});
+  return envs;
+}
+
+/* --- infrared --- */
+function irBands(P){
+  const A=P.A,B=[];
+  const add=(c,w,a,lab,key,major,group)=>{const e=B.find(b=>b.lab===lab&&Math.abs(b.c-c)<1);
+    if(e){e.a=Math.min(e.amax||1.5,e.a*1.2);}else B.push({c,w,a,lab,key:key||null,major:!!major,group:group||''});};
+  let h3=0,nCH3=0,nCH2=0,hAlk=0,hAr=0,hYne=0,hAld=0;
+  A.forEach(a=>{if(a.el!=='C'||!a.h)return;
+    if(a.kind==='sp3'){h3+=a.h;if(a.h===3)nCH3++;if(a.h===2)nCH2++;}
+    else if(a.kind==='alkene')hAlk+=a.h;else if(a.kind==='arom')hAr+=a.h;else if(a.kind==='alkyne')hYne+=a.h;
+    else if(a.kind==='carbonyl'&&a.co==='aldehyde')hAld+=a.h;else if(a.kind==='carbonyl')h3+=0;});
+  if(h3){const s=Math.min(1.0,0.2+0.07*h3);
+    add(2962,13,s,'C–H','CH',true,'alkyl C–H stretch');if(nCH2)add(2928,12,s*.85,'C–H (CH₂)','CH',false,'alkyl C–H stretch');add(2874,12,s*.5,'C–H (sym)','CH',false,'alkyl C–H stretch');
+    add(1462,10,Math.min(.5,.15+.04*h3),'C–H bend',null,false,'CH₂/CH₃ bend (fingerprint)');if(nCH3)add(1378,8,Math.min(.4,.14+.06*nCH3),'CH₃ bend',null,false,'CH₃ bend (fingerprint)');}
+  if(hAlk)add(3082,11,.22+.03*hAlk,'=C–H','CH',!h3&&!hAr,'alkene C–H stretch');
+  if(hAr){add(3062,10,.2,'aromatic C–H','CH',false,'aromatic C–H stretch');add(3030,10,.24,'aromatic C–H ','CH',!h3,'aromatic C–H stretch');}
+  if(hYne)add(3305,11,.7,'≡C–H','CH',true,'alkyne C–H stretch (top of the C–H range)');
+  if(hAld){add(2822,14,.26,'aldehyde C–H',null,false,'aldehyde C–H stretch');add(2722,14,.24,'aldehyde C–H ',null,false,'aldehyde C–H stretch');}
+  A.forEach(a=>{
+    if(a.el==='O'&&a.kind==='oh'){
+      if(a.ok==='acid'){add(2900,270,.72,'O–H (acid)','OHac',true,'carboxylic acid O–H, very broad');add(1418,25,.3,'O–H bend',null,false,'acid O–H bend');add(935,30,.3,'O–H bend ',null,false,'acid O–H bend');add(1255,22,.75,'C–O','CO1',true,'acid C–O stretch');}
+      else if(a.ok==='phenol'){add(3340,115,.85,'O–H (alcohol)','OHal',true,'phenol O–H, broad');add(1225,20,.8,'C–O','CO1',true,'phenol C–O stretch');}
+      else{const c=a.nb[0]&&A[a.nb[0].i];const br=c?c.nb.filter(n=>A[n.i].el==='C').length:1;
+        add(3350,120,.9,'O–H (alcohol)','OHal',true,'alcohol O–H, broad');add([1035,1055,1105,1150,1150][br],20,.85,'C–O','CO1',true,['','primary','secondary','tertiary',''][br]+' alcohol C–O stretch');add(1340,35,.18,'O–H bend',null,false,'alcohol O–H bend');}
+    }else if(a.el==='O'&&a.kind==='ether'){
+      if(a.ok==='ester'){add(1242,20,.95,'C–O','CO1',true,'ester C–O stretch');add(1050,18,.6,'C–O ','CO1',false,'ester C–O stretch');}
+      else{const ar=a.nb.some(n=>A[n.i].arom);add(ar?1248:1122,20,.9,'C–O','CO1',true,'ether C–O stretch');if(ar)add(1040,16,.55,'C–O ','CO1',false,'ether C–O stretch');}
+    }else if(a.el==='N'){
+      if(a.kind==='nitrileN'){const c=A[a.nb[0].i];const cj=c.nb.some(n=>n.o===1&&(A[n.i].arom||A[n.i].kind==='alkene'));add(cj?2230:2250,9,.5,'C≡N','CN3',true,'nitrile C≡N stretch');}
+      else if(a.kind==='amine'){
+        if(a.h===2){add(3380,28,.36,'N–H','NH',true,'primary amine N–H (two peaks)');add(3305,28,.34,'N–H ','NH',false,'primary amine N–H (two peaks)');add(1612,22,.38,'N–H bend',null,false,'amine N–H bend');}
+        else if(a.h===1)add(3320,26,.26,'N–H','NH',true,'secondary amine N–H (one peak)');
+        add(a.nb.some(n=>A[n.i].arom)?1280:1130,18,.32,'C–N',null,false,'amine C–N stretch');
+      }else if(a.kind==='amideN'){
+        if(a.h===2){add(3360,40,.55,'N–H','NH',true,'amide N–H (two peaks)');add(3185,45,.5,'N–H ',null,false,'amide N–H (two peaks)');add(1622,16,.6,'N–H bend',null,false,'amide N–H bend');}
+        else if(a.h===1){add(3300,40,.5,'N–H','NH',true,'amide N–H');add(1550,16,.6,'N–H bend',null,false,'amide N–H bend');}
+      }
+    }else if(a.el==='C'&&a.kind==='carbonyl'){
+      const base={ketone:1715,aldehyde:1728,acid:1712,ester:1742,amide:1680,acyl:1800}[a.co];
+      let c=base-(a.conj&&a.co!=='amide'?(a.co==='acyl'?25:22):0);
+      const nm={ketone:'ketone',aldehyde:'aldehyde',acid:'carboxylic acid',ester:'ester',amide:'amide',acyl:'acyl chloride'}[a.co];
+      add(c,13,1.25,'C=O'+(B.some(b=>b.lab==='C=O'&&Math.abs(b.c-c)>=1)?' ':''),c>=1680&&c<=1750?'CO2':null,true,nm+' C=O stretch'+(a.conj?' (conjugated)':''));
+    }else if(a.el==='C'&&a.kind==='alkene'){
+      const pn=a.nb.find(n=>n.o===2);if(pn&&pn.i>a.i&&A[pn.i].el==='C'){const b=A[pn.i];
+        const sym=P.cls[a.i]===P.cls[b.i];const cj=[a,b].some(z=>z.nb.some(n=>n.o===1&&(A[n.i].kind==='carbonyl'||A[n.i].arom)));
+        add(cj?1628:1648,10,sym?.07:.32,'C=C','CC2',!sym,'alkene C=C stretch'+(sym?' (very weak: symmetrical)':''));
+        if(a.h===2||b.h===2){if(a.h+b.h===3){add(992,9,.45,'=C–H bend',null,false,'alkene C–H bend');add(912,9,.6,'=C–H bend ',null,false,'alkene C–H bend');}else add(890,9,.6,'=C–H bend',null,false,'alkene C–H bend');}
+        else if(a.h===1&&b.h===1)add(jval(P,a,b)===10?700:966,10,.5,'=C–H bend',null,false,'alkene C–H bend');}
+    }else if(a.el==='C'&&a.kind==='alkyne'){
+      const pn=a.nb.find(n=>n.o===3);if(pn&&pn.i>a.i){const b=A[pn.i];add(a.h||b.h?2120:2210,9,a.h||b.h?.22:.06,'C≡C',null,false,'alkyne C≡C stretch');}
+    }else if(VAL[a.el]===1&&a.nb.length){
+      const m={F:[1100,22,1.0],Cl:[735,16,.75],Br:[575,14,.65],I:[515,12,.55]}[a.el];add(m[0],m[1],m[2],'C–'+a.el,null,true,'C–'+a.el+' stretch');
+    }
+  });
+  P.rings.forEach(r=>{
+    add(1602,8,.32,'aromatic C=C',null,false,'benzene ring stretch');add(1584,7,.16,'aromatic C=C ',null,false,'benzene ring stretch');add(1496,8,.42,'aromatic C=C  ',null,false,'benzene ring stretch');add(1452,8,.3,'aromatic C=C   ',null,false,'benzene ring stretch');
+    const sub=r.map(ai=>A[ai].h===0);const n=sub.filter(Boolean).length;let pos=[850];
+    if(n===1)pos=[752,694];else if(n===2){const k=sub.indexOf(true);const d=sub[(k+1)%6]||sub[(k+5)%6]?1:sub[(k+3)%6]?3:2;pos=d===1?[750]:d===2?[782,692]:[822];}
+    pos.forEach((p,k)=>add(p,9,.75,'ring C–H bend'+' '.repeat(k),null,false,'aromatic C–H bend'));
+  });
+  // deterministic fingerprint detail
+  let seed=2166136261;const sig=P.formula.map(p=>p.join('')).join('')+P.cls.slice().sort().join('.')+A.map(a=>a.kind||a.el).sort().join('');
+  for(let i=0;i<sig.length;i++){seed^=sig.charCodeAt(i);seed=Math.imul(seed,16777619);}
+  const rnd=()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};
+  const heavy=A.length,ncc=A.reduce((t,a)=>t+a.nb.filter(n=>n.i>a.i&&a.el==='C'&&A[n.i].el==='C').length,0);
+  if(ncc){const k=Math.min(7,1+Math.round(ncc*.8));for(let i=0;i<k;i++)add(Math.round(760+rnd()*330),7+rnd()*8,.08+rnd()*.2,'C–C'+' '.repeat(i),'CC1',false,'C–C skeletal vibration');}
+  const k2=Math.min(6,Math.round(heavy*.5));for(let i=0;i<k2;i++)add(Math.round(1150+rnd()*240),7+rnd()*9,.05+rnd()*.14,'fp'+i,null,false,'fingerprint band');
+  B.sort((p,q)=>q.c-p.c);
+  return B;
+}
+function irT(B,x){let a=0;for(const b of B){const u=(x-b.c)/b.w;a+=b.a*(0.55/(1+u*u)+0.45*Math.exp(-0.693*u*u));}
+  return (97-1.5*(4000-x)/3500)*Math.pow(10,-a);}
+
+const PRESETS=[
+ ['Alcohols',[['Ethanol','C C0 O1'],['Propan-1-ol','C C0 C1 O2'],['Propan-2-ol','C C0 C1 O1'],['Butan-2-ol','C C0 C1 C2 O1'],['2-Methylpropan-2-ol','C C0 C1 C1 O1']]],
+ ['Aldehydes and ketones',[['Ethanal','C C0 O1='],['Propanal','C C0 C1 O2='],['Propanone','C C0 C1 O1='],['Butanone','C C0 C1 C2 O1='],['Pentan-3-one','C C0 C1 C2 C3 O2=']]],
+ ['Carboxylic acids and esters',[['Ethanoic acid','C C0 O1= O1'],['Propanoic acid','C C0 C1 O2= O2'],['Ethyl ethanoate','C C0 O1 C2 C3 O1='],['Methyl propanoate','C C0 C1 O2 C3 O2='],['Ethyl propanoate','C C0 C1 O2 C3 C4 O2='],['Methyl methanoate','C O0 C1 O2=']]],
+ ['Halogenoalkanes and ethers',[['Chloroethane','C C0 Cl1'],['1-Chloropropane','C C0 C1 Cl2'],['2-Bromopropane','C C0 C1 Br1'],['1,2-Dibromoethane','Br C0 C1 Br2'],['2-Chloro-2-methylpropane','C C0 C1 C1 Cl1'],['Ethoxyethane','C C0 O1 C2 C3']]],
+ ['Nitrogen compounds',[['Ethylamine','C C0 N1'],['Propanenitrile','C C0 C1 N2#'],['Ethanamide','C C0 O1= N1'],['N-Methylethanamide','C C0 O1= N1 C3']]],
+ ['Alkanes and alkenes',[['Propane','C C0 C1'],['2-Methylpropane','C C0 C1 C1'],['Propene','C C0 C1='],['But-2-ene','C C0 C1= C2'],['2-Methylpropene','C C0 C1= C1']]],
+ ['Aromatic',[['Benzene','R'],['Methylbenzene','C R0'],['Ethylbenzene','C C0 R1'],['Phenol','R O0'],['Phenylethanone','C C0 O1= R1'],['Benzoic acid','R C0 O6= O6'],['1,4-Dimethylbenzene','R C0 C3'],['Paracetamol','R O0 N3 C7 O8= C8'],['Aspirin','R C0 O6= O6 O1 C9 O10= C10']]]
+];
+</script>
+
+<script>
+/* ============================ UI ============================ */
+const $=id=>document.getElementById(id);
+const COL=['#b5482f','#1f6f8f','#5b7f2b','#8a4f9e','#c07c12','#1f8c7a','#a33b6b','#55606e','#7a5230','#3f55b0','#8f8a1f','#c2447a'];
+const state={mol:newMol(),el:'C',order:1,tool:'draw',tab:'h',sel:null,undo:[],view:{s:1,tx:0,ty:0},hover:null};
+const views={h:{lo:-0.6,hi:12.6,vlo:-0.6,vhi:12.6,yz:1,min:0.03},c:{lo:-12,hi:232,vlo:-12,vhi:232,yz:1,min:2},ir:{lo:500,hi:4000,vlo:500,vhi:4000,yz:1,min:120}};
+let P=null,envH=[],envC=[],bands=[],hLines=[],cLines=[],labelHits=[];
+const opt=()=>({model:$('model').value,adv:$('adv').checked,mhz:+$('mhz').value});
+
+/* ---------- presets ---------- */
+(function(){const s=$('presets');s.innerHTML='<option value="">Load an example molecule…</option>'+PRESETS.map(g=>'<optgroup label="'+g[0]+'">'+g[1].map(p=>'<option value="'+p[1]+'">'+p[0]+'</option>').join('')+'</optgroup>').join('');
+  s.onchange=()=>{if(!s.value)return;pushUndo();state.mol=buildOps(s.value);state.sel=null;fit();resetViews();update();};})();
+
+/* ---------- builder ---------- */
+const svg=$('mol');
+function pushUndo(){state.undo.push(JSON.stringify(state.mol));if(state.undo.length>80)state.undo.shift();}
+function fit(){
+  const w=svg.clientWidth||400,h=svg.clientHeight||300,at=state.mol.atoms;
+  if(!at.length){state.view={s:1,tx:w/2,ty:h/2};return;}
+  const xs=at.map(a=>a.x),ys=at.map(a=>a.y),x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+  const s=Math.max(.3,Math.min(1.15,(w-90)/Math.max(1,x1-x0),(h-70)/Math.max(1,y1-y0)));
+  state.view={s,tx:w/2-s*(x0+x1)/2,ty:h/2-s*(y0+y1)/2};
+}
+function ensureVisible(){const v=state.view,w=svg.clientWidth,h=svg.clientHeight;
+  if(state.mol.atoms.some(a=>{const x=a.x*v.s+v.tx,y=a.y*v.s+v.ty;return x<26||x>w-26||y<22||y>h-22;}))fit();}
+function toModel(ev){const r=svg.getBoundingClientRect(),v=state.view;return {x:(ev.clientX-r.left-v.tx)/v.s,y:(ev.clientY-r.top-v.ty)/v.s};}
+function hitAtom(p){let best=null,bd=20/state.view.s;state.mol.atoms.forEach(a=>{const d=Math.hypot(a.x-p.x,a.y-p.y);if(d<bd){bd=d;best=a;}});return best;}
+function hitBond(p){let best=null,bd=10/state.view.s;state.mol.bonds.forEach(k=>{const a=atomById(state.mol,k.a),b=atomById(state.mol,k.b);
+  const vx=b.x-a.x,vy=b.y-a.y,t=clamp(((p.x-a.x)*vx+(p.y-a.y)*vy)/(vx*vx+vy*vy),0.15,0.85);const d=Math.hypot(a.x+t*vx-p.x,a.y+t*vy-p.y);if(d<bd){bd=d;best=k;}});return best;}
+function flash(msg){$('warn').dataset.flash=msg;renderInfo();clearTimeout(flash.t);flash.t=setTimeout(()=>{delete $('warn').dataset.flash;renderInfo();},2400);}
+let drag=null;
+svg.addEventListener('pointerdown',ev=>{
+  if($('hideStruct').checked)return;svg.setPointerCapture(ev.pointerId);
+  const p=toModel(ev);drag={p0:p,sx:ev.clientX,sy:ev.clientY,atom:hitAtom(p),moved:false,cur:p};drag.bond=drag.atom?null:hitBond(p);
+  if(state.tool==='move'){pushUndo();drag.undoPushed=true;drag.v0={...state.view};if(drag.atom)drag.a0={x:drag.atom.x,y:drag.atom.y};}
+});
+svg.addEventListener('pointermove',ev=>{
+  if(!drag)return;const p=toModel(ev);
+  if(Math.hypot(ev.clientX-drag.sx,ev.clientY-drag.sy)>7)drag.moved=true;
+  if(!drag.moved)return;
+  if(state.tool==='move'){
+    if(drag.atom){drag.atom.x=drag.a0.x+(p.x-drag.p0.x);drag.atom.y=drag.a0.y+(p.y-drag.p0.y);}
+    else{state.view.tx=drag.v0.tx+(ev.clientX-drag.sx);state.view.ty=drag.v0.ty+(ev.clientY-drag.sy);}
+    renderMol();return;
+  }
+  if(state.tool==='draw'&&drag.atom){
+    const t=hitAtom(p);
+    if(t&&t!==drag.atom)drag.target={atom:t,x:t.x,y:t.y};
+    else{const ang=Math.round(Math.atan2(p.y-drag.atom.y,p.x-drag.atom.x)/(Math.PI/6))*(Math.PI/6);drag.target={atom:null,x:drag.atom.x+BL*Math.cos(ang),y:drag.atom.y+BL*Math.sin(ang)};}
+    renderMol();
+  }
+});
+svg.addEventListener('pointerup',ev=>{
+  if(!drag)return;const d=drag;drag=null;const m=state.mol;
+  if(state.tool==='move'){if(!d.moved)state.undo.pop();update();return;}
+  if(state.tool==='draw'&&d.moved&&d.atom&&d.target){
+    const o=state.order;
+    if(d.target.atom){const ex=getBond(m,d.atom.id,d.target.atom.id);const need=o-(ex?ex.order:0);
+      if(freeVal(m,d.atom.id)<need||freeVal(m,d.target.atom.id)<need){flash('Not enough free bonds for that.');renderMol();return;}
+      pushUndo();addBond(m,d.atom.id,d.target.atom.id,o);}
+    else{if(freeVal(m,d.atom.id)<o){flash('That atom has no free bonds left.');renderMol();return;}
+      if(VAL[state.el]<o){flash(state.el+' cannot form that bond.');renderMol();return;}
+      pushUndo();const a=addAtom(m,state.el,d.target.x,d.target.y);addBond(m,d.atom.id,a.id,o);}
+    state.sel=null;ensureVisible();update();return;
+  }
+  if(d.moved){renderMol();return;}
+  // taps
+  if(state.tool==='erase'){
+    if(d.atom){pushUndo();m.bonds=m.bonds.filter(k=>k.a!==d.atom.id&&k.b!==d.atom.id);m.atoms=m.atoms.filter(a=>a!==d.atom);}
+    else if(d.bond){pushUndo();m.bonds=m.bonds.filter(k=>k!==d.bond);}
+  }else if(state.tool==='ring'){
+    if(d.atom){if(freeVal(m,d.atom.id)<1){flash('That atom has no free bonds left.');return;}pushUndo();attachRing(m,d.atom);}
+    else if(!d.bond){pushUndo();addRing(m,d.p0.x,d.p0.y,-Math.PI/2,null);}
+  }else if(state.tool==='draw'){
+    if(d.atom){const o=state.order;
+      if(freeVal(m,d.atom.id)<o){flash('That atom has no free bonds left.');return;}
+      if(VAL[state.el]<o){flash(state.el+' cannot form that bond.');return;}
+      pushUndo();const p=sproutPos(m,d.atom,o);const a=addAtom(m,state.el,p.x,p.y);addBond(m,d.atom.id,a.id,o);}
+    else if(d.bond){const k=d.bond;const room=Math.min(freeVal(m,k.a),freeVal(m,k.b));pushUndo();k.order=(k.order<3&&room>=1)?k.order+1:1;}
+    else{pushUndo();addAtom(m,state.el,d.p0.x,d.p0.y);}
+  }
+  state.sel=null;ensureVisible();update();
+});
+svg.addEventListener('pointercancel',()=>{drag=null;renderMol();});
+
+function envOfAtom(){ // map atom index -> env for active tab
+  const mp=new Map();const list=state.tab==='c'?envC:state.tab==='h'?envH.filter(e=>!e.gone):[];
+  list.forEach(e=>e.atoms.forEach(i=>mp.set(i,e)));return mp;
+}
+function renderMol(){
+  const v=state.view,m=state.mol;let h='<g transform="translate('+v.tx+','+v.ty+') scale('+v.s+')">';
+  const show=$('showAns').checked;const em=show&&P?envOfAtom():new Map();
+  if(P)P.A.forEach(a=>{const e=em.get(a.i);if(!e)return;const sel=state.sel&&state.sel.tab===state.tab&&state.sel.i===e.ci;
+    h+='<circle cx="'+a.x+'" cy="'+a.y+'" r="'+(sel?19:16)+'" fill="'+COL[e.ci%COL.length]+'" fill-opacity="'+(sel?.5:.22)+'"'+(sel?' stroke="'+COL[e.ci%COL.length]+'" stroke-width="2"':'')+'/>';});
+  m.bonds.forEach(k=>{const a=atomById(m,k.a),b=atomById(m,k.b);const dx=b.x-a.x,dy=b.y-a.y,L=Math.hypot(dx,dy)||1,nx=-dy/L,ny=dx/L;
+    const offs=k.order===1?[0]:k.order===2?[-2.8,2.8]:[-4.4,0,4.4];
+    offs.forEach(o=>{h+='<line x1="'+(a.x+nx*o)+'" y1="'+(a.y+ny*o)+'" x2="'+(b.x+nx*o)+'" y2="'+(b.y+ny*o)+'" stroke="#35261a" stroke-width="1.8" stroke-linecap="round"/>';});});
+  if(drag&&drag.target&&drag.atom)h+='<line x1="'+drag.atom.x+'" y1="'+drag.atom.y+'" x2="'+drag.target.x+'" y2="'+drag.target.y+'" stroke="#1f6f78" stroke-width="2" stroke-dasharray="5 4"/><circle cx="'+drag.target.x+'" cy="'+drag.target.y+'" r="6" fill="none" stroke="#1f6f78" stroke-width="2"/>';
+  const ts='font:600 15px Segoe UI,system-ui,Arial,sans-serif;paint-order:stroke;stroke:#fffdf7;stroke-width:5px;stroke-linejoin:round';
+  m.atoms.forEach((a,i)=>{const pa=P&&P.A[i]&&P.A[i].id===a.id?P.A[i]:null;const hc=pa?pa.h:0;const bad=pa&&pa.bad;
+    const col=bad?'#b3261e':{O:'#b3261e',N:'#2447a8',Cl:'#2e7d32',Br:'#8a3b12',F:'#2e7d32',I:'#6a2c91'}[a.el]||'#35261a';
+    let ax=0;if(pa)pa.nb.forEach(n=>{ax+=P.A[n.i].x-a.x;});const left=ax>4;const sw=a.el.length>1?17:11;
+    const e=em.get(i);
+    h+='<text x="'+a.x+'" y="'+a.y+'" text-anchor="middle" dominant-baseline="central" style="'+ts+'" fill="'+col+'">'+a.el+'</text>';
+    if(hc){const sub=hc>1?'<tspan font-size="10.5" dy="4">'+hc+'</tspan>':'';
+      h+='<text x="'+(a.x+(left?-sw/2-1:sw/2+1))+'" y="'+a.y+'" text-anchor="'+(left?'end':'start')+'" dominant-baseline="central" style="'+ts+'" fill="'+col+'">H'+sub+'</text>';}
+    if(e&&show){h+='<text x="'+a.x+'" y="'+(a.y-21)+'" text-anchor="middle" style="font:700 12px Segoe UI,Arial,sans-serif;paint-order:stroke;stroke:#fffdf7;stroke-width:3px" fill="'+COL[e.ci%COL.length]+'">'+e.letter+'</text>';}
+    if(bad)h+='<circle cx="'+a.x+'" cy="'+a.y+'" r="15" fill="none" stroke="#b3261e" stroke-width="2" stroke-dasharray="3 3"/>';});
+  h+='</g>';
+  if(!m.atoms.length)h+='<text x="50%" y="50%" text-anchor="middle" fill="#7a6650" style="font:15px Segoe UI,Arial,sans-serif">Tap here to place your first atom, or load an example above</text>';
+  svg.innerHTML=h;
+}
+function renderInfo(){
+  const f=P&&P.A.length?P.formula.map(([e,k])=>e+(k>1?'<sub>'+k+'</sub>':'')).join(''):'—';
+  $('info').innerHTML=P&&P.A.length?'Molecular formula <b>'+f+'</b> &nbsp;·&nbsp; <i>M</i><sub>r</sub> <b>'+P.mr.toFixed(1)+'</b>':'';
+  const w=[];if($('warn').dataset.flash)w.push($('warn').dataset.flash);
+  if(P&&P.bad)w.push('An atom has too many bonds (circled in red).');
+  if(P&&P.frags>1)w.push('There are '+P.frags+' separate molecules drawn, so the spectra show a mixture.');
+  $('warn').textContent=w.join(' ');
+  $('hint').textContent={draw:'Tap an atom to grow the chain with the selected element. Drag from one atom to another to join them. Tap a bond to change single → double → triple. Hydrogens are added automatically.',
+    ring:'Tap an atom to attach a benzene ring, or tap empty space for a ring on its own.',erase:'Tap an atom or a bond to remove it.',move:'Drag an atom to tidy the drawing, or drag empty space to move the whole molecule.'}[state.tool];
+}
+document.querySelectorAll('.el').forEach(b=>b.onclick=()=>{state.el=b.dataset.el;state.tool='draw';syncTools();});
+document.querySelectorAll('.bo').forEach(b=>b.onclick=()=>{state.order=+b.dataset.o;state.tool='draw';syncTools();});
+document.querySelectorAll('.tool').forEach(b=>b.onclick=()=>{state.tool=state.tool===b.dataset.tool?'draw':b.dataset.tool;syncTools();});
+function syncTools(){document.querySelectorAll('.el').forEach(b=>b.classList.toggle('on',state.tool==='draw'&&b.dataset.el===state.el));
+  document.querySelectorAll('.bo').forEach(b=>b.classList.toggle('on',state.tool==='draw'&&+b.dataset.o===state.order));
+  document.querySelectorAll('.tool').forEach(b=>b.classList.toggle('on',b.dataset.tool===state.tool));
+  svg.style.cursor=state.tool==='move'?'grab':state.tool==='erase'?'not-allowed':'crosshair';renderInfo();}
+$('undo').onclick=()=>{const s=state.undo.pop();if(s){state.mol=JSON.parse(s);state.sel=null;update();}};
+$('clear').onclick=()=>{if(!state.mol.atoms.length)return;pushUndo();state.mol=newMol();state.sel=null;$('presets').value='';fit();update();};
+$('fit').onclick=()=>{fit();renderMol();};
+
+/* ---------- spectra data ---------- */
+function update(){
+  P=perceive(state.mol);const o=opt();
+  envH=hEnvs(P,o);envC=cEnvs(P,o);bands=irBands(P);
+  const d2o=$('d2o').checked;envH.forEach(e=>{e.gone=d2o&&e.exch;});
+  hLines=[];envH.forEach(e=>{if(e.gone)return;const w=(e.broad?3.2:0.55)/o.mhz;
+    e.L=e.lines.map(l=>({x:e.d+l.f/o.mhz,I:e.nH*l.w,w,w2:w*w,k:e.nH*l.w*w/Math.PI}));hLines.push(...e.L);});
+  cLines=[];envC.forEach(e=>{const w=0.045,I=(e.h?1:.6);e.L=[{x:e.d,I,w,w2:w*w,k:I*w/Math.PI}];cLines.push(...e.L);});
+  [['h',hLines,envH],['c',cLines,envC]].forEach(([k,L,E])=>{let mx=0;E.forEach(e=>{if(e.gone){e.top=0;return;}let em=0;e.L.forEach(l=>{em=Math.max(em,fAt(L,l.x));});e.top=em;mx=Math.max(mx,em);});views[k].norm=mx||1;});
+  const live=envH.filter(e=>!e.gone);let g=0;const gcd=(a,b)=>b?gcd(b,a%b):a;live.forEach(e=>{g=gcd(g,e.nH);});live.forEach(e=>{e.ratio=e.nH/(g||1);});
+  renderMol();renderInfo();renderChart();renderMinis();renderTable();
+}
+function fAt(L,x){let v=0;for(const l of L){const u=x-l.x;v+=l.k/(u*u+l.w2);}return v;}
+function trace(L,lo,hi,n,sub){const out=new Float32Array(n),dx=(hi-lo)/n;
+  for(let c=0;c<n;c++){let mx=0;for(let s=0;s<sub;s++){const v=fAt(L,hi-(c+(s+.5)/sub)*dx);if(v>mx)mx=v;}out[c]=mx;}
+  for(const l of L){if(l.x<lo||l.x>hi)continue;const c=Math.min(n-1,Math.floor((hi-l.x)/dx));const v=fAt(L,l.x);if(v>out[c])out[c]=v;}
+  return out;}
+function resetViews(){Object.values(views).forEach(v=>{v.vlo=v.lo;v.vhi=v.hi;v.yz=1;});}
+
+/* ---------- chart ---------- */
+const cv=$('chart'),ctx=cv.getContext('2d');
+function niceStep(r){const p=Math.pow(10,Math.floor(Math.log10(r))),f=r/p;return (f<1.5?1:f<3.5?2:f<7.5?5:10)*p;}
+function geom(){const W=cv.clientWidth,H=cv.clientHeight,ir=state.tab==='ir';return {W,H,l:ir?48:12,r:12,t:ir?46:30,b:40};}
+function renderChart(){
+  if(state.tab==='sheet')return;
+  const dpr=window.devicePixelRatio||1,g=geom(),{W,H}=g;if(!W)return;
+  if(cv.width!==Math.round(W*dpr)||cv.height!==Math.round(H*dpr)){cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);}
+  ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);
+  const V=views[state.tab],pw=W-g.l-g.r,ph=H-g.t-g.b,X=x=>g.l+(V.vhi-x)/(V.vhi-V.vlo)*pw,base=g.t+ph;
+  const show=$('showAns').checked,ir=state.tab==='ir';labelHits=[];
+  ctx.font='12px Segoe UI,system-ui,Arial,sans-serif';ctx.textBaseline='alphabetic';
+  // range shading
+  const wantR=$(ir?'rangesIR':state.tab==='c'?'rangesC':'ranges').checked;
+  ctx.save();ctx.beginPath();ctx.rect(g.l,0,pw,H);ctx.clip();
+  if(ir&&$('fpIR').checked){const a=X(1500),b=X(500);ctx.fillStyle='rgba(107,68,35,.06)';ctx.fillRect(a,g.t,b-a,ph);ctx.fillStyle='#7a6650';ctx.textAlign='center';ctx.fillText('fingerprint region',(Math.max(a,g.l)+Math.min(b,g.l+pw))/2,base-6);}
+  if(wantR){
+    if(ir){const present=new Set(bands.map(b=>b.key).filter(Boolean));let row=0;
+      Object.entries(IRT).forEach(([k,r])=>{if(!present.has(k))return;const a=X(r.hi),b=X(r.lo);ctx.fillStyle='rgba(31,111,120,.10)';ctx.fillRect(a,g.t,b-a,ph);
+        const tw=ctx.measureText(r.f).width+8,ty=base-24-16*(row++%3),tx=clamp((a+b)/2,g.l+tw/2,g.l+pw-tw/2);ctx.fillStyle='rgba(255,253,247,.92)';ctx.fillRect(tx-tw/2,ty-11,tw,15);
+        ctx.fillStyle='#1f6f78';ctx.textAlign='center';ctx.fillText(r.f,tx,ty);});}
+    else{const E=(state.tab==='h'?envH.filter(e=>!e.gone):envC),done=new Set();
+      E.forEach(e=>{if(!e.cat||done.has(e.cat))return;done.add(e.cat);const a=X(e.range[1]),b=X(e.range[0]);ctx.fillStyle='rgba(31,111,120,.10)';ctx.fillRect(a,g.t,b-a,ph);
+        ctx.strokeStyle='rgba(31,111,120,.45)';ctx.lineWidth=1;ctx.strokeRect(a+.5,g.t+.5,b-a-1,ph-1);});}
+  }
+  ctx.restore();
+  // axis
+  ctx.strokeStyle='#35261a';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(g.l,base+.5);ctx.lineTo(g.l+pw,base+.5);ctx.stroke();
+  const step=niceStep((V.vhi-V.vlo)/Math.max(3,pw/70)),dec=Math.max(0,-Math.floor(Math.log10(step)+1e-9));
+  ctx.fillStyle='#35261a';ctx.textAlign='center';
+  for(let t=Math.ceil(V.vlo/step)*step;t<=V.vhi+1e-9;t+=step){const x=X(t);ctx.beginPath();ctx.moveTo(x,base);ctx.lineTo(x,base+6);ctx.stroke();ctx.fillText((Math.abs(t)<1e-9?0:t).toFixed(dec),x,base+19);}
+  const ms=step/(String(step/Math.pow(10,Math.floor(Math.log10(step)+1e-9))).startsWith('2')?4:5);
+  for(let t=Math.ceil(V.vlo/ms)*ms;t<=V.vhi+1e-9;t+=ms){const x=X(t);ctx.beginPath();ctx.moveTo(x,base);ctx.lineTo(x,base+3);ctx.stroke();}
+  ctx.font='600 12.5px Segoe UI,system-ui,Arial,sans-serif';ctx.fillText(ir?'Wavenumber / cm⁻¹':'Chemical shift, δ / ppm',g.l+pw/2,H-5);ctx.font='12px Segoe UI,system-ui,Arial,sans-serif';
+  if(!P||!P.A.length){ctx.fillStyle='#7a6650';ctx.fillText('Build a molecule to see its spectrum',g.l+pw/2,g.t+ph/2);return;}
+  const n=Math.max(10,Math.round(pw));
+  if(ir){
+    ctx.strokeStyle='#35261a';ctx.beginPath();ctx.moveTo(g.l+.5,g.t);ctx.lineTo(g.l+.5,base);ctx.stroke();ctx.textAlign='right';
+    for(let t=0;t<=100;t+=20){const y=base-t/100*ph;ctx.beginPath();ctx.moveTo(g.l-5,y);ctx.lineTo(g.l,y);ctx.stroke();ctx.fillText(t,g.l-8,y+4);
+      if(t){ctx.save();ctx.strokeStyle='rgba(107,68,35,.10)';ctx.beginPath();ctx.moveTo(g.l,y+.5);ctx.lineTo(g.l+pw,y+.5);ctx.stroke();ctx.restore();}}
+    ctx.save();ctx.translate(13,g.t+ph/2);ctx.rotate(-Math.PI/2);ctx.textAlign='center';ctx.font='600 12.5px Segoe UI,system-ui,Arial,sans-serif';ctx.fillText('Transmittance / %',0,0);ctx.restore();
+    const Y=T=>base-T/100*ph;ctx.save();ctx.beginPath();ctx.rect(g.l,g.t-2,pw,ph+4);ctx.clip();
+    ctx.strokeStyle='#35261a';ctx.lineWidth=1.5;ctx.lineJoin='round';ctx.beginPath();
+    for(let c=0;c<=n*2;c++){const x=V.vhi-(c/(n*2))*(V.vhi-V.vlo),y=Y(irT(bands,x));c?ctx.lineTo(g.l+c/2,y):ctx.moveTo(g.l,y);}
+    ctx.stroke();ctx.restore();
+    if(show){const labs=bands.filter(b=>b.major&&b.c>=V.vlo&&b.c<=V.vhi).map(b=>({b,x:X(b.c)})).sort((p,q)=>p.x-q.x);const rowEnd=[-1e9,-1e9,-1e9];
+      ctx.font='600 12px Segoe UI,system-ui,Arial,sans-serif';
+      labs.forEach(o=>{const txt=o.b.lab.trim(),w=ctx.measureText(txt).width+8;let r=rowEnd.findIndex(e=>o.x-w/2>e+3);if(r<0)r=0;rowEnd[r]=o.x+w/2;
+        const y=12+r*13;const sel=state.sel&&state.sel.tab==='ir'&&bands[state.sel.i]===o.b;
+        ctx.fillStyle=sel?'#b5482f':'#1f6f78';ctx.textAlign='center';ctx.fillText(txt,clamp(o.x,g.l+w/2,g.l+pw-w/2),y);
+        ctx.strokeStyle=sel?'#b5482f':'rgba(31,111,120,.55)';ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(o.x,y+4);ctx.lineTo(o.x,Y(irT(bands,o.b.c))-3);ctx.stroke();ctx.setLineDash([]);
+        labelHits.push({x0:o.x-w/2,x1:o.x+w/2,y0:y-12,y1:y+4,tab:'ir',i:bands.indexOf(o.b)});});}
+    return;
+  }
+  // NMR
+  const isH=state.tab==='h',L=isH?hLines:cLines,E=isH?envH.filter(e=>!e.gone):envC,norm=V.norm/V.yz,hmax=ph*0.8;
+  const Y=v=>base-Math.min(v/norm,1.2)*hmax;
+  ctx.save();ctx.beginPath();ctx.rect(g.l,g.t-28,pw,ph+29);ctx.clip();
+  if($(isH?'tms':'tmsC').checked&&V.vlo<0.2){const w=isH?0.55/opt().mhz:0.045,k=0.3*V.norm*w*w;const x=X(0);
+    ctx.strokeStyle='#8a7860';ctx.lineWidth=1.3;ctx.beginPath();const tr=trace([{x:0,k,w2:w*w}],V.vlo,V.vhi,n,3);for(let c=0;c<n;c++){const y=Y(tr[c]);c?ctx.lineTo(g.l+c+.5,y):ctx.moveTo(g.l+.5,y);}ctx.stroke();
+    ctx.fillStyle='#8a7860';ctx.textAlign='center';ctx.fillText('TMS',x,Y(0.3*V.norm)-6);}
+  const tr=trace(L,V.vlo,V.vhi,n,3);
+  ctx.strokeStyle='#35261a';ctx.lineWidth=1.4;ctx.lineJoin='round';ctx.beginPath();
+  for(let c=0;c<n;c++){const y=Y(tr[c]);c?ctx.lineTo(g.l+c+.5,y):ctx.moveTo(g.l+.5,y);}ctx.stroke();
+  const integ=isH&&$('integ').checked;
+  if(integ){const tot=L.reduce((t,l)=>t+l.I,0)||1;ctx.strokeStyle='#1f6f78';ctx.lineWidth=1.3;ctx.beginPath();
+    for(let c=0;c<=n;c++){const x=V.vhi-(c/n)*(V.vhi-V.vlo);let s=0;for(const l of L)s+=l.I*(0.5-Math.atan((x-l.x)/l.w)/Math.PI);const y=base-ph*0.08-(s/tot)*ph*0.6;c?ctx.lineTo(g.l+c,y):ctx.moveTo(g.l,y);}ctx.stroke();}
+  ctx.restore();
+  // labels
+  const labs=E.filter(e=>e.d>=V.vlo&&e.d<=V.vhi).map(e=>({e,x:X(e.d)})).sort((p,q)=>p.x-q.x);let lastX=-1e9,row=0;
+  ctx.font='700 12px Segoe UI,system-ui,Arial,sans-serif';
+  labs.forEach(o=>{const e=o.e;let txt=show?e.letter:'';if(integ)txt+=(txt?' · ':'')+e.ratio;if(!txt)return;
+    const w=ctx.measureText(txt).width+10;row=(o.x-w/2<lastX+3)?row+1:0;lastX=Math.max(lastX,o.x+w/2);
+    const y=Math.max(4,Y(e.top)-22-row*18);const col=show?COL[e.ci%COL.length]:'#1f6f78';const sel=state.sel&&state.sel.tab===state.tab&&state.sel.i===e.ci;
+    ctx.fillStyle=col;ctx.beginPath();if(ctx.roundRect)ctx.roundRect(o.x-w/2,y,w,16,4);else ctx.rect(o.x-w/2,y,w,16);ctx.fill();
+    if(sel){ctx.strokeStyle='#35261a';ctx.lineWidth=1.5;ctx.stroke();}
+    ctx.fillStyle='#fff';ctx.textAlign='center';ctx.fillText(txt,o.x,y+12);
+    labelHits.push({x0:o.x-w/2-4,x1:o.x+w/2+4,y0:y-4,y1:y+20,tab:state.tab,i:e.ci});});
+}
+function zoomTo(tab,i){
+  const V=views[tab];
+  if(tab==='h'){const e=envH[i],m=opt().mhz;const span=(e.lines[e.lines.length-1].f-e.lines[0].f);const half=Math.max(span*0.9+8,16)/m;
+    setView(V,e.d-half,e.d+half);V.yz=clamp(V.norm/(e.top||1)*0.85,1,400);}
+  else if(tab==='c'){const e=envC[i];setView(V,e.d-12,e.d+12);V.yz=1;}
+  else{const b=bands[i];setView(V,b.c-Math.max(260,b.w*2.2),b.c+Math.max(260,b.w*2.2));}
+}
+function setView(V,lo,hi){let w=clamp(hi-lo,V.min,V.hi-V.lo);let c=(lo+hi)/2;lo=c-w/2;hi=c+w/2;if(lo<V.lo){hi+=V.lo-lo;lo=V.lo;}if(hi>V.hi){lo-=hi-V.hi;hi=V.hi;}V.vlo=Math.max(V.lo,lo);V.vhi=Math.min(V.hi,hi);}
+function zoomBy(f,cx){const V=views[state.tab];if(!V)return;const c=cx==null?(V.vlo+V.vhi)/2:cx;setView(V,c-(c-V.vlo)*f,c+(V.vhi-c)*f);renderChart();}
+function pxToX(px){const g=geom(),V=views[state.tab];return V.vhi-(px-g.l)/(g.W-g.l-g.r)*(V.vhi-V.vlo);}
+$('zin').onclick=()=>zoomBy(.5);$('zout').onclick=()=>zoomBy(2);
+$('zreset').onclick=()=>{const V=views[state.tab];V.vlo=V.lo;V.vhi=V.hi;V.yz=1;renderChart();};
+$('yup').onclick=()=>{views[state.tab].yz=Math.min(800,views[state.tab].yz*1.6);renderChart();};
+$('ydn').onclick=()=>{views[state.tab].yz=Math.max(.3,views[state.tab].yz/1.6);renderChart();};
+cv.addEventListener('wheel',ev=>{ev.preventDefault();const r=cv.getBoundingClientRect();zoomBy(ev.deltaY<0?0.8:1.25,pxToX(ev.clientX-r.left));},{passive:false});
+const ptrs=new Map();let cdrag=null;
+cv.addEventListener('pointerdown',ev=>{cv.setPointerCapture(ev.pointerId);ptrs.set(ev.pointerId,{x:ev.clientX,y:ev.clientY});
+  const V=views[state.tab];cdrag={sx:ev.clientX,sy:ev.clientY,vlo:V.vlo,vhi:V.vhi,moved:false};
+  if(ptrs.size===2){const p=[...ptrs.values()];cdrag.pinch=Math.abs(p[0].x-p[1].x)||1;cdrag.moved=true;}
+  cv.style.cursor='grabbing';});
+cv.addEventListener('pointermove',ev=>{
+  const r=cv.getBoundingClientRect(),V=views[state.tab],g=geom();
+  if(ev.pointerType==='mouse'&&!cdrag){const x=pxToX(ev.clientX-r.left);$('readout').textContent=state.tab==='ir'?Math.round(x)+' cm⁻¹':'δ '+x.toFixed(state.tab==='h'?2:1)+' ppm';}
+  if(!cdrag||!ptrs.has(ev.pointerId))return;ptrs.set(ev.pointerId,{x:ev.clientX,y:ev.clientY});
+  if(ptrs.size===2&&cdrag.pinch){const p=[...ptrs.values()];const d=Math.abs(p[0].x-p[1].x)||1;const f=clamp(cdrag.pinch/d,.2,5);const w0=cdrag.vhi-cdrag.vlo;
+    const midpx=(p[0].x+p[1].x)/2-r.left;const cx=cdrag.vhi-(midpx-g.l)/(g.W-g.l-g.r)*w0;setView(V,cx-(cx-cdrag.vlo)*f,cx+(cdrag.vhi-cx)*f);renderChart();return;}
+  const dx=ev.clientX-cdrag.sx;if(Math.abs(dx)>5)cdrag.moved=true;
+  if(cdrag.moved&&ptrs.size===1){const w=cdrag.vhi-cdrag.vlo,sh=dx/(g.W-g.l-g.r)*w;setView(V,cdrag.vlo+sh,cdrag.vhi+sh);renderChart();}
+});
+function endPtr(ev){const was=cdrag;ptrs.delete(ev.pointerId);if(ptrs.size===0){cdrag=null;cv.style.cursor='grab';}
+  else if(was){const V=views[state.tab];const p=[...ptrs.values()][0];cdrag={sx:p.x,sy:p.y,vlo:V.vlo,vhi:V.vhi,moved:true};}
+  if(was&&!was.moved&&ev.type==='pointerup'){const r=cv.getBoundingClientRect(),x=ev.clientX-r.left,y=ev.clientY-r.top;
+    const h=labelHits.find(k=>x>=k.x0&&x<=k.x1&&y>=k.y0&&y<=k.y1);if(h){select(h.tab,h.i,true);}}}
+cv.addEventListener('pointerup',endPtr);cv.addEventListener('pointercancel',endPtr);
+cv.addEventListener('pointerleave',()=>{$('readout').textContent='';});
+cv.addEventListener('dblclick',()=>$('zreset').onclick());
+
+function select(tab,i,zoom){const same=state.sel&&state.sel.tab===tab&&state.sel.i===i;
+  state.sel={tab,i};if(zoom&&(tab!=='c'))zoomTo(tab,i);else if(zoom&&tab==='c'&&!same)zoomTo(tab,i);
+  renderMol();renderChart();renderMinis();renderTable();}
+
+/* ---------- multiplet close-ups ---------- */
+function renderMinis(){
+  const box=$('minis');if(state.tab!=='h'||!P||!P.A.length){box.innerHTML='';box.classList.add('hidden');return;}
+  box.classList.remove('hidden');const show=$('showAns').checked,m=opt().mhz;box.innerHTML='';
+  envH.filter(e=>!e.gone).slice().reverse().forEach(e=>{
+    const d=document.createElement('div');d.className='mini'+(state.sel&&state.sel.tab==='h'&&state.sel.i===e.ci?' sel':'');
+    const c=document.createElement('canvas');d.appendChild(c);const cap=document.createElement('div');
+    cap.innerHTML=(show?'<span class="tag" style="background:'+COL[e.ci%COL.length]+'">'+e.letter+'</span> ':'')+'δ '+e.d.toFixed(2)+(show?' · '+e.mult:'');d.appendChild(cap);
+    d.onclick=()=>select('h',e.ci,true);box.appendChild(d);
+    const dpr=window.devicePixelRatio||1,W=124,H=84;c.width=W*dpr;c.height=H*dpr;const x=c.getContext('2d');x.scale(dpr,dpr);
+    const span=e.lines[e.lines.length-1].f-e.lines[0].f,half=Math.max(span*0.75+7,14)/m,lo=e.d-half,hi=e.d+half;
+    const tr=trace(hLines,lo,hi,W,3);let mx=0;tr.forEach(v=>{if(v>mx)mx=v;});
+    x.strokeStyle='#d8c5a3';x.beginPath();x.moveTo(0,H-8.5);x.lineTo(W,H-8.5);x.stroke();
+    x.strokeStyle=show?COL[e.ci%COL.length]:'#35261a';x.lineWidth=1.4;x.lineJoin='round';x.beginPath();
+    for(let k=0;k<W;k++){const y=H-9-(tr[k]/mx)*(H-18);k?x.lineTo(k+.5,y):x.moveTo(.5,y);}x.stroke();
+  });
+}
+
+/* ---------- tables ---------- */
+function fmtRange(r,dp){return r?r[0].toFixed(dp)+' – '+r[1].toFixed(dp):'';}
+function renderTable(){
+  const box=$('tableBox');if(state.tab==='sheet'){box.innerHTML='';return;}
+  if(!P||!P.A.length){box.innerHTML='';return;}
+  if(!$('showAns').checked){
+    const n=state.tab==='h'?envH.filter(e=>!e.gone).length:state.tab==='c'?envC.length:0;
+    box.innerHTML='<div class="locked">Assignments are hidden. '+(state.tab==='ir'?'Use the data sheet to identify the bonds present.':'Use the '+(state.tab==='h'?'shifts, integration and splitting':'number of peaks and their shifts')+' to work out the structure.')+' Tick “Show assignments” to check.</div>';return;}
+  const selI=state.sel&&state.sel.tab===state.tab?state.sel.i:-1;let h='';
+  if(state.tab==='h'){
+    const E=envH.filter(e=>!e.gone).slice().reverse();
+    h='<table><thead><tr><th>Peak</th><th>δ / ppm</th><th>Group</th><th>Integration</th><th>H on adjacent C</th><th>Splitting</th><th>Data sheet match</th></tr></thead><tbody>';
+    E.forEach(e=>{h+='<tr class="pick'+(selI===e.ci?' sel':'')+'" data-i="'+e.ci+'"><td><span class="tag" style="background:'+COL[e.ci%COL.length]+'">'+e.letter+'</span></td><td class="num">'+e.d.toFixed(2)+'</td><td>'+e.group+'</td><td class="num">'+e.ratio+(e.ratio!==e.nH?' <span class="small">('+e.nH+'H)</span>':'H')+'</td><td class="num">'+(e.exch?'–':e.nNb)+'</td><td>'+e.mult+(e.exch?' <span class="small">(O–H / N–H not split)</span>':e.coup.length>1?' <span class="small">('+e.coup.map(g=>'J = '+g.J+' Hz').join(', ')+')</span>':'')+'</td><td>'+(e.cat?HT[e.cat].f+' <span class="small">'+fmtRange(e.range,1)+'</span>':'<span class="small">'+e.desc+'</span>')+(e.note?'<div class="small">'+e.note+'</div>':'')+'</td></tr>';});
+    h+='</tbody></table><p class="small">'+E.length+' hydrogen environment'+(E.length===1?'':'s')+'. Integration ratio '+E.map(e=>e.ratio).join(' : ')+' (left to right). Splitting follows the n+1 rule; equivalent hydrogens and O–H / N–H do not split.</p>';
+  }else if(state.tab==='c'){
+    const E=envC.slice().reverse();
+    h='<table><thead><tr><th>Peak</th><th>δ / ppm</th><th>Carbon</th><th>No. of C</th><th>Environment</th><th>Data sheet match</th></tr></thead><tbody>';
+    E.forEach(e=>{h+='<tr class="pick'+(selI===e.ci?' sel':'')+'" data-i="'+e.ci+'"><td><span class="tag" style="background:'+COL[e.ci%COL.length]+'">'+e.letter+'</span></td><td class="num">'+e.d.toFixed(1)+'</td><td>'+e.group+'</td><td class="num">'+e.nC+'</td><td>'+e.desc+'</td><td>'+(e.cat?CT[e.cat].f+' <span class="small">'+fmtRange(e.range,0)+'</span>':'')+(e.note?'<div class="small">'+e.note+'</div>':'')+'</td></tr>';});
+    h+='</tbody></table><p class="small">'+E.length+' carbon environment'+(E.length===1?'':'s')+', so '+E.length+' peak'+(E.length===1?'':'s')+'. Peak height in ¹³C NMR does not show the number of carbons; carbons with no hydrogens attached usually give smaller peaks.</p>';
+  }else{
+    const Bm=bands.map((b,i)=>({b,i})).filter(o=>!/^fp\d/.test(o.b.lab)&&!(o.b.key==='CC1'));
+    h='<table><thead><tr><th>Wavenumber / cm⁻¹</th><th>Bond</th><th>Assignment</th><th>Data sheet range</th></tr></thead><tbody>';
+    Bm.forEach(o=>{const b=o.b;h+='<tr class="pick'+(selI===o.i?' sel':'')+'" data-i="'+o.i+'"><td class="num">'+b.c+'</td><td>'+b.lab.trim()+'</td><td>'+b.group+'</td><td>'+(b.key?IRT[b.key].f+' <span class="small">'+IRT[b.key].lo+' – '+IRT[b.key].hi+'</span>':'<span class="small">not on the AQA data sheet</span>')+'</td></tr>';});
+    h+='</tbody></table><p class="small">Below 1500 cm⁻¹ is the fingerprint region: its pattern is unique to each compound, and weak C–C absorptions (750–1100 cm⁻¹) fall here.</p>';
+  }
+  box.innerHTML='<div class="tblwrap">'+h+'</div>';
+  box.querySelectorAll('tr.pick').forEach(r=>r.onclick=()=>select(state.tab,+r.dataset.i,true));
+}
+function renderSheet(){
+  const tb=(T,unit,dp)=>'<div class="tblwrap"><table><thead><tr><th>Type of '+unit+'</th><th>'+(unit==='bond'?'Wavenumber / cm⁻¹':'δ / ppm')+'</th></tr></thead><tbody>'+Object.values(T).map(r=>'<tr><td>'+r.f+'</td><td class="num">'+r.lo.toFixed(dp)+' – '+r.hi.toFixed(dp)+'</td></tr>').join('')+'</tbody></table></div>';
+  $('sheet').innerHTML='<h3>Infrared absorption data</h3>'+tb(IRT,'bond',0)+'<h3>¹H NMR chemical shift data</h3>'+tb(HT,'proton',1)+'<h3>¹³C NMR chemical shift data</h3>'+tb(CT,'carbon',0)+'<p class="small">Values as given on the AQA A-level Chemistry data sheet. Shifts are relative to TMS. Always check against the current data booklet.</p>';
+}
+
+/* ---------- tabs and options ---------- */
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{state.tab=b.dataset.tab;document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t===b));
+  const sh=state.tab==='sheet';$('specArea').classList.toggle('hidden',sh);$('sheet').classList.toggle('hidden',!sh);
+  $('optH').classList.toggle('hidden',state.tab!=='h');$('optC').classList.toggle('hidden',state.tab!=='c');$('optIR').classList.toggle('hidden',state.tab!=='ir');
+  document.querySelectorAll('.nmrOnly').forEach(e=>e.classList.toggle('hidden',state.tab==='ir'));
+  if(sh)renderSheet();renderMol();renderChart();renderMinis();renderTable();});
+['model','adv','mhz','d2o'].forEach(id=>$(id).onchange=()=>{state.sel=null;update();});
+['integ','tms','ranges','tmsC','rangesC','rangesIR','fpIR'].forEach(id=>$(id).onchange=renderChart);
+$('showAns').onchange=()=>{renderMol();renderChart();renderMinis();renderTable();};
+$('hideStruct').onchange=()=>{$('cover').classList.toggle('show',$('hideStruct').checked);if($('hideStruct').checked&&$('showAns').checked){$('showAns').checked=false;$('showAns').onchange();}};
+window.addEventListener('resize',()=>{fit();renderMol();renderChart();});
+
+state.mol=buildOps('C C0 O1 C2 C3 O1=');$('presets').value='C C0 O1 C2 C3 O1=';
+syncTools();fit();update();
+</script>
+</body>
+</html>
