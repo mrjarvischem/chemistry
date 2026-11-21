@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script src="gate.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Transcription and Translation Simulator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Gabarito:wght@600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Layout: wide stage on the left (DNA, mRNA, ribosome), step panel on the right, gene editor and tables underneath.
+     Same stained-slide palette as the Cell Explorer and Krebs Cycle Simulator; each base has its own colour. */
+  --bg:#f4f0f6; --panel:#ffffff; --soft:#f1ebf4; --ink:#2b1b3f; --muted:#6c5d7e; --line:#dfd5e6; --accent:#c4317c;
+  --A:#86d6b0; --T:#f4a097; --U:#f6c670; --C:#97c4f0; --G:#bdb1f2; --tile-ink:#2b1b3f;
+  --bbD:#8d7ea3; --ribo:#e4d7ec; --riboL:#cdbbd9; --trna:#1a8f89; --nuc:#f6f0fa; --mem:#b9a6c9; --good:#1f8a5f; --bad:#c23b30;
+  --display:"Gabarito","Figtree",system-ui,sans-serif; --body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace; --r:14px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;
+  --bg:#130e1d; --panel:#1c152a; --soft:#251b37; --ink:#f0e9f8; --muted:#ab9bbf; --line:#372a4e; --accent:#ff6fb1;
+  --A:#6fcfa3; --T:#f28f85; --U:#f3bd5c; --C:#86b9ee; --G:#b0a3f0; --tile-ink:#1a1126;
+  --bbD:#7d6e96; --ribo:#33264a; --riboL:#4a3a66; --trna:#3fd6cc; --nuc:#231a35; --mem:#6a5886; --good:#5fd3a3; --bad:#ff8a7d;}}
+:root[data-theme="dark"]{color-scheme:dark;
+  --bg:#130e1d; --panel:#1c152a; --soft:#251b37; --ink:#f0e9f8; --muted:#ab9bbf; --line:#372a4e; --accent:#ff6fb1;
+  --A:#6fcfa3; --T:#f28f85; --U:#f3bd5c; --C:#86b9ee; --G:#b0a3f0; --tile-ink:#1a1126;
+  --bbD:#7d6e96; --ribo:#33264a; --riboL:#4a3a66; --trna:#3fd6cc; --nuc:#231a35; --mem:#6a5886; --good:#5fd3a3; --bad:#ff8a7d;}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45}
+button,select{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 22px 12px;max-width:1560px;margin:0 auto}
+.brand{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-right:auto}
+.brand h1{font-family:var(--display);font-weight:700;font-size:26px;margin:0;text-wrap:balance}
+.brand span{color:var(--muted);font-size:14px;font-weight:500}
+.seg{display:inline-flex;background:var(--soft);border:1px solid var(--line);border-radius:999px;padding:3px}
+.seg button{border:0;background:none;border-radius:999px;padding:7px 14px;font-weight:600;font-size:14.5px;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--panel)}
+.tog{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:7px 14px;font-weight:600;font-size:14.5px}
+.tog[aria-pressed="true"]{border-color:var(--accent);background:var(--accent);color:#fff}
+:root[data-theme="dark"] .tog[aria-pressed="true"]{color:#1a1126}
+.icon{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--panel);display:grid;place-items:center;padding:0}
+.icon svg{width:18px;height:18px}
+main{display:grid;grid-template-columns:minmax(0,1fr) 372px;grid-template-areas:"stage panel" "under panel";gap:16px 18px;padding:0 22px 30px;max-width:1560px;margin:0 auto;align-items:start}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r)}
+.stage{grid-area:stage;overflow:hidden}
+.bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid var(--line)}
+.phases{display:flex;gap:6px;flex-wrap:wrap;margin-right:auto}
+.ph{border:1px solid var(--line);background:none;border-radius:999px;padding:5px 12px;font-size:13.5px;font-weight:600;color:var(--muted)}
+.ph b{font-family:var(--mono);font-weight:700;margin-right:6px;opacity:.7}
+.ph[aria-current="step"]{background:var(--soft);color:var(--ink);border-color:var(--accent)}
+.ph.done{color:var(--ink)}
+.loc{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:var(--muted)}
+.loc svg{width:42px;height:28px;flex:none}
+.scroll{overflow-x:auto}
+#sv{display:block;width:100%;min-width:780px;height:auto}
+.under{grid-area:under;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+.under .wide{grid-column:1/-1}
+.card h3{font-family:var(--display);font-size:18px;margin:0 0 2px}
+.card h3 span{font-family:var(--body);font-weight:500;font-size:13.5px;color:var(--muted);margin-left:6px}
+.pad{padding:14px 16px 16px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0}
+select,.btn{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:8px 13px;font-weight:600;font-size:14.5px}
+.btn.pri{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.btn:disabled{opacity:.4;cursor:default}
+.strip{display:flex;flex-wrap:wrap;gap:3px;row-gap:8px;margin:6px 0 10px}
+.sb{width:26px;height:34px;border-radius:6px;border:0;font-family:var(--mono);font-weight:700;font-size:15px;color:var(--tile-ink);padding:0}
+.sb.gap{margin-right:7px}
+.sb.in{opacity:.55;outline:2px dashed var(--muted);outline-offset:-2px}
+.sb.lock{cursor:default;box-shadow:inset 0 -4px 0 rgba(0,0,0,.28)}
+.sb.sel{outline:3px solid var(--accent);outline-offset:2px;opacity:1}
+.sb.chg{box-shadow:0 0 0 2px var(--panel),0 0 0 4px var(--accent)}
+.bA{background:var(--A)}.bT{background:var(--T)}.bU{background:var(--U)}.bC{background:var(--C)}.bG{background:var(--G)}
+.edit{font-size:14.5px;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap;align-items:center;min-height:38px}
+.edit .sb{width:34px}
+.cmp{margin-top:12px;border-top:1px solid var(--line);padding-top:12px;font-size:14.5px}
+.cmp .ln{display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-bottom:6px}
+.cmp .ln>span:first-child{width:74px;color:var(--muted);font-weight:600;font-size:13px}
+.aa{display:inline-block;border-radius:999px;padding:2px 9px;font-weight:700;font-size:13px;color:#2b1b3f}
+.aa.diff{box-shadow:0 0 0 2px var(--panel),0 0 0 4px var(--accent)}
+.verdict{font-weight:600;margin:8px 0 0}
+table{border-collapse:collapse;width:100%;font-size:14.5px;font-variant-numeric:tabular-nums}
+.rec th{font-size:12.5px;text-align:left;color:var(--muted);font-weight:600;padding:6px 8px;border-bottom:1px solid var(--line)}
+.rec td{padding:5px 8px;border-bottom:1px solid var(--line);font-family:var(--mono);font-weight:700;letter-spacing:.08em}
+.rec td.q{color:var(--muted);font-weight:500}
+.rec tr.now td{background:var(--soft)}
+.rec td:last-child{font-family:var(--body);letter-spacing:0}
+.ct{font-family:var(--mono);font-size:12.5px;margin-top:8px}
+.ct th{color:var(--muted);font-weight:700;padding:3px 5px}
+.ct td{border:1px solid var(--line);padding:4px 6px;vertical-align:top;white-space:nowrap;line-height:1.5}
+.ct i{font-style:normal;font-family:var(--body);font-weight:600;color:var(--muted);margin-left:5px}
+.ct span{display:block;border-radius:4px;padding:0 3px}
+.ct span.hit{background:var(--accent);color:#fff}
+.ct span.hit i{color:#fff}
+.ct span.stp i{color:var(--bad)}
+.small{font-size:13px;color:var(--muted);margin:8px 0 0}
+.panel{grid-area:panel;position:sticky;top:12px;padding:16px 18px 18px;display:flex;flex-direction:column;gap:12px}
+.k{font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.panel h2{font-family:var(--display);font-size:24px;line-height:1.15;margin:2px 0 0;text-wrap:balance}
+.eq{font-family:var(--mono);font-size:14px;font-weight:500;background:var(--soft);border-radius:10px;padding:8px 11px;overflow-wrap:anywhere}
+.eq:empty{display:none}
+.panel ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+.tip{margin:0;font-size:14.5px;border-left:3px solid var(--accent);padding:2px 0 2px 11px;color:var(--muted)}
+.tip:empty{display:none}
+.ctl{display:grid;grid-template-columns:1fr 1.5fr 1fr 1fr;gap:8px}
+.ctl .btn{padding:10px 6px}
+.q{border:2px solid var(--accent);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.q[hidden]{display:none}
+.q p{margin:0;font-weight:600}
+.slots{display:flex;gap:6px}
+.slot{width:38px;height:42px;border-radius:8px;border:2px dashed var(--line);display:grid;place-items:center;font-family:var(--mono);font-weight:700;font-size:19px;color:var(--tile-ink)}
+.slot.f{border-style:solid;border-color:transparent}
+.keys{display:flex;gap:6px;flex-wrap:wrap}
+.keys .sb{width:42px;height:42px;font-size:18px}
+.keys .btn{padding:8px 11px}
+.opts{display:flex;flex-direction:column;gap:6px}
+.opts .btn{text-align:left}
+.fb{font-size:14px;font-weight:600;min-height:20px}
+.fb.ok{color:var(--good)}.fb.no{color:var(--bad)}
+/* stage drawing */
+.mv{transition:transform .65s cubic-bezier(.3,.7,.2,1),opacity .45s ease}
+.fade{transition:opacity .45s ease}
+.noanim .mv,.noanim .fade{transition:none}
+.bgN{fill:var(--nuc)}
+.bb{fill:var(--bbD)}.bb.r{fill:var(--accent)}
+.b.bA{fill:var(--A)}.b.bT{fill:var(--T)}.b.bU{fill:var(--U)}.b.bC{fill:var(--C)}.b.bG{fill:var(--G)}
+.bl{font-family:var(--mono);font-weight:700;fill:var(--tile-ink)}
+.hb{stroke:var(--muted);stroke-width:1.6;stroke-linecap:round}
+.end{font-family:var(--mono);font-weight:700;font-size:13px;fill:var(--muted)}
+.lbl{font-weight:600;font-size:14.5px;fill:var(--muted)}
+.lbl.s{font-size:13px}
+.intron .b{opacity:.45}
+.intron .bb{opacity:.45}
+.pol{fill:var(--accent);fill-opacity:.16;stroke:var(--accent);stroke-width:2;stroke-dasharray:5 4}
+.polt{font-weight:700;font-size:14px;fill:var(--accent)}
+.rL{fill:var(--ribo);stroke:var(--riboL);stroke-width:2}
+.trb{fill:var(--trna)}.trl{fill:none;stroke:var(--trna);stroke-width:7}
+.bond{fill:none;stroke:var(--ink);stroke-width:5;stroke-linecap:round;stroke-linejoin:round}
+.bead circle{stroke:var(--panel);stroke-width:2.5}
+.bead text{font-weight:700;font-size:13px;fill:#2b1b3f}
+.mem{fill:var(--soft);stroke:var(--mem);stroke-width:3}
+.stopb rect{fill:var(--bad)}.stopb text{fill:#fff;font-weight:700;font-size:14px}
+.brk{stroke:var(--muted);stroke-width:2;fill:none}
+.brk.i{stroke-dasharray:4 4}
+.fl{animation:drift 5s ease-in-out infinite alternate}
+@keyframes drift{from{transform:translate(0,0)}to{transform:translate(16px,-12px)}}
+@media (max-width:940px){
+  main{grid-template-columns:minmax(0,1fr);grid-template-areas:"stage" "panel" "under";padding:0 16px 24px}
+  .top{padding:12px 16px 10px}.brand h1{font-size:22px}
+  .panel{position:static}
+  .under{grid-template-columns:minmax(0,1fr)}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><h1>Transcription and Translation Simulator</h1><span>A-level Biology · protein synthesis</span></div>
+  <div class="seg" id="cell" role="group" aria-label="Type of cell">
+    <button type="button" data-c="euk">Eukaryote</button>
+    <button type="button" data-c="pro">Prokaryote</button>
+  </div>
+  <button type="button" class="tog" id="pred" aria-pressed="false">Predict first</button>
+  <button type="button" class="icon" id="theme" aria-label="Switch between light and dark" title="Light or dark">
+    <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10 2.5a7.5 7.5 0 0 1 0 15z" fill="currentColor"/></svg>
+  </button>
+</header>
+<main>
+  <section class="card stage">
+    <div class="bar"><div class="phases" id="phases"></div><div class="loc" id="loc"></div></div>
+    <div class="scroll" id="scroll"><svg id="sv" viewBox="0 0 1000 510" role="img" aria-label="Animated diagram of transcription and translation"></svg></div>
+  </section>
+  <aside class="card panel">
+    <div aria-live="polite"><span class="k" id="kick"></span><h2 id="ttl"></h2></div>
+    <div class="eq" id="eq"></div>
+    <ul id="pts"></ul>
+    <p class="tip" id="tip"></p>
+    <div class="q" id="q" hidden></div>
+    <div class="ctl">
+      <button type="button" class="btn" id="back">Back</button>
+      <button type="button" class="btn pri" id="next">Next step</button>
+      <button type="button" class="btn" id="play">Play</button>
+      <button type="button" class="btn" id="reset">Reset</button>
+    </div>
+    <p class="small">Arrow keys also step forwards and backwards.</p>
+  </aside>
+  <div class="under">
+    <section class="card pad wide">
+      <h3>The gene<span>DNA coding strand, 5′ to 3′</span></h3>
+      <div class="row">
+        <select id="preset" aria-label="Choose a gene">
+          <option value="0">Gene with one intron</option>
+          <option value="1">Gene with two introns</option>
+          <option value="2">Short gene, no introns</option>
+        </select>
+        <button type="button" class="btn" id="rand">Random gene</button>
+        <button type="button" class="btn" id="undo">Undo mutations</button>
+      </div>
+      <div class="strip" id="strip"></div>
+      <div class="edit" id="edit"></div>
+      <div class="cmp" id="cmp" hidden></div>
+    </section>
+    <section class="card pad">
+      <h3>Triplet to amino acid</h3>
+      <table class="rec"><thead><tr><th>DNA template</th><th>mRNA codon</th><th>tRNA anticodon</th><th>Amino acid</th></tr></thead><tbody id="rec"></tbody></table>
+      <p class="small">Fills in as each codon is translated.</p>
+    </section>
+    <section class="card pad">
+      <h3>Codon table<span>mRNA codons</span></h3>
+      <div class="scroll"><table class="ct" id="ct"></table></div>
+      <p class="small">Most amino acids have more than one codon: the genetic code is degenerate.</p>
+    </section>
+  </div>
+</main>
+<script>
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg',svg=$('sv');
+const E=(t,a,p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e};
+const TX=(p,x,y,s,a)=>{const t=E('text',Object.assign({x,y},a||{}),p);t.textContent=s;return t};
+const H=(t,c,s)=>{const e=document.createElement(t);if(c)e.className=c;if(s!=null)e.textContent=s;return e};
+const BO='UCAG',AAS='FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG';
+const AA={A:['Ala','alanine'],R:['Arg','arginine'],N:['Asn','asparagine'],D:['Asp','aspartic acid'],C:['Cys','cysteine'],Q:['Gln','glutamine'],E:['Glu','glutamic acid'],G:['Gly','glycine'],H:['His','histidine'],I:['Ile','isoleucine'],L:['Leu','leucine'],K:['Lys','lysine'],M:['Met','methionine'],F:['Phe','phenylalanine'],P:['Pro','proline'],S:['Ser','serine'],T:['Thr','threonine'],W:['Trp','tryptophan'],Y:['Tyr','tyrosine'],V:['Val','valine']};
+const AK=Object.keys(AA);
+const cAA=c=>AAS[16*BO.indexOf(c[0])+4*BO.indexOf(c[1])+BO.indexOf(c[2])];
+const hue=a=>'hsl('+(AK.indexOf(a)*137%360)+' 62% 72%)';
+const DC={A:'T',T:'A',C:'G',G:'C'},AC={A:'U',U:'A',C:'G',G:'C'};
+const PRE=['ATGGCATTCAAGgtacagGATTGGCCATAA','ATGTCTgtgaagCGTGAAgtatagTGCGGATAG','ATGAAAGGTCACTTGTGA'];
+const reduced=matchMedia('(prefers-reduced-motion:reduce)');
+const PHN={tx:'Transcription',sp:'Splicing',ex:'Leaving the nucleus',tl:'Translation'};
+
+let cell='euk',orig=PRE[0],gene=[],cur=0,steps=[],pred=false,qi=0,ent='',qc={},timer=0,sel=-1,raf=0;
+let N,p,w,fs,x0,mi,M,x0m,mrna,codons,stopI,L,hasIn,lastEx;
+let anims=[];let dT,dC,rT,hbs,tR,beads,bonds,ribo,pol,free,env,bgN,lT,lC,lR,lRs,lP,brk,stopB,tiNow=-2,relNow=false;
+
+const parse=s=>[...s].map(c=>({b:c.toUpperCase(),in:c!==c.toUpperCase()})).filter(g=>cell==='euk'||!g.in);
+const exons=g=>g.filter(x=>!x.in).map(x=>x.b).join('');
+function protein(ex){const r=[];let stop=false;for(let i=0;i+3<=ex.length;i+=3){const a=cAA(ex.slice(i,i+3).replace(/T/g,'U'));if(a==='*'){stop=true;break}r.push(a)}return{r,stop}}
+const xp=k=>x0+k*p,xm=m=>x0m+m*p,cx=i=>xm(3*i)+1.5*p;
+const rb=g=>g.b==='T'?'U':g.b;
+
+function build(){
+  N=gene.length;p=Math.min(34,920/N);w=p-3;fs=Math.min(17,p*.56);x0=(1000-N*p)/2;
+  mi=[];M=0;gene.forEach((g,k)=>{mi[k]=g.in?-1:M++});x0m=(1000-M*p)/2;
+  lastEx=mi.lastIndexOf(M-1);
+  mrna=gene.filter(g=>!g.in).map(rb).join('');
+  codons=[];for(let i=0;i+3<=mrna.length;i+=3)codons.push(mrna.slice(i,i+3));
+  stopI=codons.findIndex(c=>cAA(c)==='*');L=stopI<0?codons.length:stopI;
+  hasIn=gene.some(g=>g.in);
+  steps=[{ph:'tx',k:'intro'},{ph:'tx',k:'unzip'}];
+  for(let e=3;e<N+3;e+=3)steps.push({ph:'tx',k:'chunk',e:Math.min(e,N),e0:e-3});
+  steps.push({ph:'tx',k:'done'});
+  if(cell==='euk'){if(hasIn)steps.push({ph:'sp',k:'mark'});steps.push({ph:'sp',k:'cut'},{ph:'ex',k:'export'})}
+  steps.push({ph:'tl',k:'attach'});
+  for(let i=0;i<L;i++)steps.push({ph:'tl',k:'codon',i});
+  if(stopI>=0)steps.push({ph:'tl',k:'stop',i:stopI});
+  steps.push({ph:'tl',k:'release'});
+  qc={};buildSvg();buildPhases();buildStrip();buildCt();
+}
+
+function tile(par,b,kind){
+  const g=E('g',{class:'mv t'},par);
+  if(kind==='T'){E('rect',{x:-.5,y:0,width:p+1,height:7,class:'bb'},g);E('rect',{x:1.5,y:5,width:w,height:27,rx:4,class:'b b'+b},g)}
+  else{E('rect',{x:-.5,y:25,width:p+1,height:7,class:kind==='R'?'bb r':'bb'},g);E('rect',{x:1.5,y:0,width:w,height:27,rx:4,class:'b b'+b},g)}
+  TX(g,p/2,kind==='T'?24.5:19.5,b,{class:'bl','font-size':fs,'text-anchor':'middle'});
+  return g;
+}
+function hbond(g,b,y){const n=(b==='A'||b==='T'||b==='U')?2:3,h=E('g',{class:'fade'},g);for(let j=0;j<n;j++){const x=p/2+(j-(n-1)/2)*5;E('line',{x1:x,x2:x,y1:y,y2:y+8,class:'hb'},h)}return h}
+function label(s,c,anchor){const g=E('g',{class:'mv'},svg);TX(g,0,0,s,{class:'lbl'+(c||''),'text-anchor':anchor||'start'});return g}
+
+function buildSvg(){
+  svg.textContent='';svg.classList.add('noanim');
+  bgN=E('rect',{class:'bgN fade',x:0,y:0,width:1000,height:510},svg);
+  env=E('g',{class:'fade'},svg);
+  E('path',{class:'mem',d:'M-5 332H452a10 10 0 0 1 0 20H-5z'},env);E('path',{class:'mem',d:'M1005 332H548a10 10 0 0 0 0 20H1005z'},env);
+  TX(env,16,320,'Nucleus',{class:'lbl'});TX(env,16,378,'Cytoplasm',{class:'lbl'});
+  TX(env,984,320,'nuclear envelope',{class:'lbl s','text-anchor':'end'});TX(env,560,378,'nuclear pore',{class:'lbl s'});
+  ribo=E('g',{class:'mv'},svg);
+  E('rect',{class:'rL',x:-14,y:190,width:6*p+25,height:236,rx:70},ribo);
+  E('rect',{class:'rL',x:-24,y:420,width:6*p+45,height:70,rx:32},ribo);
+  TX(ribo,3*p,482,'ribosome',{class:'lbl s','text-anchor':'middle'});
+  dT=[];dC=[];rT=[];hbs=[];
+  gene.forEach((g,k)=>{
+    const t=tile(svg,DC[g.b],'T');hbs[k]=hbond(t,g.b,34);dT.push(t);
+    if(k===0)TX(t,-5,24,'3′',{class:'end','text-anchor':'end'});
+    if(k===N-1)TX(t,p+5,24,'5′',{class:'end'});
+  });
+  gene.forEach((g,k)=>{const t=tile(svg,g.b,'C');dC.push(t);
+    if(k===0)TX(t,-5,19,'5′',{class:'end','text-anchor':'end'});
+    if(k===N-1)TX(t,p+5,19,'3′',{class:'end'})});
+  gene.forEach((g,k)=>{const t=tile(svg,rb(g),'R');rT.push(t);
+    if(k===0)TX(t,-5,19,'5′',{class:'end','text-anchor':'end'});
+    if(k===lastEx)TX(t,p+5,19,'3′',{class:'end'})});
+  // exon and intron brackets under the pre-mRNA
+  brk=E('g',{class:'fade'},svg);
+  for(let a=0;a<N;){let b=a;while(b<N&&gene[b].in===gene[a].in)b++;
+    const xa=xp(a)+3,xb=xp(b)-3,i=gene[a].in;
+    E('path',{class:'brk'+(i?' i':''),d:`M${xa} 258v8H${xb}v-8`},brk);
+    TX(brk,(xa+xb)/2,284,i?'intron':'exon',{class:'lbl s','text-anchor':'middle'});a=b}
+  pol=E('g',{class:'mv'},svg);E('rect',{class:'pol',x:0,y:0,width:3*p+13,height:104,rx:26},pol);
+  TX(pol,(3*p+13)/2,124,'RNA polymerase',{class:'polt','text-anchor':'middle'});
+  free=E('g',{class:'fade'},svg);
+  for(let i=0;i<14;i++){const b='AUCG'[i%4],o=E('g',{transform:`translate(${70+i*64+(i*37%23)},${225+(i*53%120)}) rotate(${(i*41%50)-25})`,opacity:.8},free);
+    const f=E('g',{class:'fl',style:`animation-duration:${4+i%4}s;animation-delay:-${i*.7}s`},o);
+    E('rect',{x:-.5,y:25,width:p+1,height:7,class:'bb r'},f);E('rect',{x:1.5,y:0,width:w,height:27,rx:4,class:'b b'+b},f);
+    TX(f,p/2,19.5,b,{class:'bl','font-size':fs,'text-anchor':'middle'})}
+  tR=[];
+  for(let i=0;i<L;i++){const g=E('g',{class:'mv'},svg),W=3*p-3,c=codons[i];
+    E('rect',{class:'trb',x:W/2-8,y:266,width:19,height:112,rx:6},g);
+    E('ellipse',{class:'trl',cx:W/2-26,cy:320,rx:17,ry:11},g);E('ellipse',{class:'trl',cx:W/2+29,cy:320,rx:17,ry:11},g);
+    E('rect',{class:'trb',x:-1,y:372,width:W+5,height:20,rx:9},g);
+    for(let j=0;j<3;j++){const b=AC[c[j]];E('rect',{x:j*p+1.5,y:388,width:w,height:27,rx:4,class:'b b'+b},g);
+      TX(g,j*p+p/2,407.5,b,{class:'bl','font-size':fs,'text-anchor':'middle'});
+      const n=(b==='A'||b==='U')?2:3;for(let q=0;q<n;q++){const x=j*p+p/2+(q-(n-1)/2)*5;E('line',{x1:x,x2:x,y1:418,y2:427,class:'hb'},g)}}
+    tR.push(g)}
+  bonds=E('polyline',{class:'bond',points:''},svg);
+  beads=[];
+  for(let i=0;i<L;i++){const a=cAA(codons[i]),g=E('g',{class:'mv bead'},svg);
+    E('circle',{r:21,fill:hue(a)},g);TX(g,0,5,AA[a][0],{'text-anchor':'middle'});beads.push(g)}
+  stopB=E('g',{class:'mv stopb'},svg);E('rect',{x:-30,y:-14,width:60,height:28,rx:14},stopB);TX(stopB,0,5,'STOP',{'text-anchor':'middle'});
+  lT=label('DNA template strand');lC=label('DNA coding strand');lR=label('');lRs=label('mRNA','', 'end');lP=label('Polypeptide: this sequence of amino acids is the primary structure','','middle');
+}
+
+function setT(el,x,y,o){el.style.transform=`translate(${x}px,${y}px)`;el.style.opacity=o==null?1:o}
+
+function render(first){
+  const s=steps[cur],k=s.k,euk=cell==='euk';
+  let yT=200,zip=true,dna=1,e=0,rm='hid',polOn=false,envOn=false,ti=-2,rel=false,loc=euk?'nuc':'cyt',fx=500;
+  if(k==='unzip'||k==='chunk'){yT=90;zip=false;rm='pair';polOn=true;e=s.e||0}
+  else if(k==='done'){yT=60;rm='pre'}
+  else if(k==='mark'){yT=60;rm='mark'}
+  else if(k==='cut'){yT=60;rm='mat'}
+  else if(k==='export'){yT=60;rm='exp';envOn=true;loc='pore'}
+  else if(k==='attach'){dna=0;rm='tl';ti=-1;loc='cyt'}
+  else if(k==='codon'||k==='stop'){dna=0;rm='tl';ti=s.i;loc='cyt'}
+  else if(k==='release'){dna=0;rm='tl';ti=L;rel=true;loc='cyt'}
+  if(!dna)yT=-90;
+  const yC=zip?yT+44:400;
+  bgN.style.opacity=(loc==='cyt')?0:1;bgN.setAttribute('height',envOn?342:510);
+  env.style.opacity=envOn?1:0;
+  for(let i=0;i<N;i++){
+    setT(dT[i],xp(i),yT,dna);setT(dC[i],xp(i),yC,dna);
+    hbs[i].style.opacity=(zip||(rm==='pair'&&i<e))?1:0;
+    const r=rT[i],m=mi[i],ex=m>=0;
+    r.classList.toggle('intron',!ex&&(rm==='mark'||rm==='mat'||rm==='exp'||rm==='tl'));
+    if(rm==='hid')setT(r,xp(i),270,0);
+    else if(rm==='pair')i<e?setT(r,xp(i),yT+44,1):setT(r,xp(i)+((i*29)%40)-20,250+((i*17)%60),0);
+    else if(rm==='pre'||rm==='mark')setT(r,xp(i),220,1);
+    else if(!ex)setT(r,xp(i),300,0);
+    else setT(r,xm(m),rm==='mat'?220:rm==='exp'?440:430,1);
+  }
+  brk.style.opacity=rm==='mark'?1:0;
+  const pe=Math.max(e,3)-3;setT(pol,xp(Math.min(pe,Math.max(N-3,0)))-6.5,yT-12,polOn?1:0);if(polOn)fx=xp(pe)+1.5*p;
+  free.style.opacity=polOn?1:0;
+  setT(lT,xp(0)+2,yT-10,dna);setT(lC,xp(0)+2,yC+50,dna);
+  const rl=lR.firstChild;
+  if(rm==='pre'||rm==='mark'){rl.textContent=euk?'pre-mRNA':'mRNA';setT(lR,xp(0)+2,208,1)}
+  else if(rm==='mat'){rl.textContent='mRNA';setT(lR,xm(0)+2,208,1)}
+  else if(rm==='exp'){rl.textContent='mRNA';setT(lR,xm(0)+2,494,1)}
+  else setT(lR,xp(0),208,0);
+  setT(lRs,xm(0)-24,449.5,rm==='tl'&&x0m>=78?1:0);
+  // translation
+  const tl=rm==='tl',P=Math.max(ti-1,0);
+  setT(ribo,tl?xm(3*Math.min(P,Math.max(codons.length-2,0))):xm(0),0,tl&&!rel?1:0);
+  if(tl&&!rel)fx=xm(3*P)+3*p;
+  for(let j=0;j<L;j++){
+    const X=xm(3*j);
+    if(!tl||j>ti)setT(tR[j],X+150,-270,0);else if(rel||j<ti-1)setT(tR[j],X-150,-270,0);else setT(tR[j],X,0,1);
+    if(!tl||j>ti)setT(beads[j],cx(j)+150,244-270,0);
+    else if(rel)setT(beads[j],500+(j-(L-1)/2)*Math.min(46,900/L),150,1);
+    else if(j>=ti-1)setT(beads[j],cx(j),244,1);
+    else{let x=cx(ti-1),y=244;for(let q=0;q<ti-1-j;q++){if(y-34>=64){x-=30;y-=34}else x-=44}setT(beads[j],x,y,1)}
+  }
+  setT(stopB,stopI>=0?cx(stopI):500,300,k==='stop'?1:0);
+  setT(lP,500,206,rel?1:0);
+  tiNow=ti;relNow=rel;track(first);
+  if(first){requestAnimationFrame(()=>requestAnimationFrame(()=>svg.classList.remove('noanim')))}
+  const sc=$('scroll');if(sc.scrollWidth>sc.clientWidth+4){const l=fx/1000*sc.scrollWidth-sc.clientWidth/2;sc.scrollTo({left:l,behavior:first||reduced.matches?'auto':'smooth'})}
+  svg.setAttribute('aria-label','Diagram: '+info(s).t);
+  renderLoc(loc);renderPanel();renderRec();renderCt();renderPhases();
+}
+function track(first){
+  cancelAnimationFrame(raf);const t0=performance.now();
+  const draw=all=>{let n=relNow?L:Math.min(tiNow,L-1)+1;if(n<0)n=0;if(!all&&!relNow&&tiNow<L&&n>0)n--;
+    const pts=[];for(let j=0;j<n;j++){const m=new DOMMatrix(getComputedStyle(beads[j]).transform);pts.push(m.m41.toFixed(1)+','+m.m42.toFixed(1))}
+    bonds.setAttribute('points',pts.join(' '))};
+  if(first||reduced.matches){requestAnimationFrame(()=>draw(true));return}
+  const f=()=>{const t=performance.now()-t0;draw(t>480);if(t<1300)raf=requestAnimationFrame(f)};f();
+}
+function thread(){ // mRNA threads through the nuclear pore, 5′ end first
+  if(reduced.matches||!rT[0].animate)return;const px=500-p/2;anims=[];
+  for(let i=0;i<N;i++){const m=mi[i];if(m<0)continue;
+    anims.push(rT[i].animate([{transform:`translate(${xm(m)}px,220px)`},{transform:`translate(${px}px,296px)`,offset:.38},{transform:`translate(${px}px,372px)`,offset:.62},{transform:`translate(${xm(m)}px,440px)`}],{duration:1300,delay:m*55,fill:'backwards',easing:'ease-in-out'}))}
+}
+
+function info(s){
+  const euk=cell==='euk',k=s.k,place=euk?'nucleus':'cytoplasm';
+  if(k==='intro')return{t:'The gene',eq:'',pts:['A gene is a base sequence of DNA that codes for the amino acid sequence of a polypeptide','Hydrogen bonds between complementary bases hold the two strands together: A with T, C with G','Only the template strand is transcribed'],
+    tip:euk?'In eukaryotes the DNA is in the nucleus and genes contain non-coding introns.':'Prokaryotic DNA is not in a nucleus and has no introns.'};
+  if(k==='unzip')return{t:'The DNA strands separate',eq:'',pts:['Hydrogen bonds between the complementary bases break','The two strands separate, exposing the bases on the template strand','Free RNA nucleotides are present in the '+place],
+    tip:'RNA polymerase attaches at the start of the gene.'};
+  if(k==='chunk'){const a=gene.slice(s.e0,s.e);return{t:'RNA nucleotides pair with the template',eq:'template '+a.map(g=>DC[g.b]).join('')+' → RNA '+a.map(rb).join(''),
+    pts:['Free RNA nucleotides line up by complementary base pairing with the exposed template bases','In RNA, uracil pairs with adenine. There is no thymine in RNA','RNA polymerase joins adjacent RNA nucleotides with phosphodiester bonds'],
+    tip:'Compare the new strand with the coding strand: same sequence, with U in place of T.'}}
+  if(k==='done')return{t:euk?'Pre-mRNA is complete':'mRNA is complete',eq:'',pts:['RNA polymerase reaches the end of the gene and the RNA strand detaches','Hydrogen bonds reform between the two DNA strands',euk?'In eukaryotes the product is pre-mRNA, which still contains introns':'In prokaryotes transcription produces mRNA directly, with no splicing'],
+    tip:euk?'':'With no nucleus, ribosomes can attach to prokaryotic mRNA straight away.'};
+  if(k==='mark')return{t:'Exons and introns',eq:'',pts:['Exons are the base sequences that code for amino acids','Introns are non-coding sequences within the gene','Pre-mRNA is a copy of both'],tip:'Transcription copies the whole gene, introns included.'};
+  if(k==='cut')return hasIn?{t:'Splicing',eq:'',pts:['The introns are removed from the pre-mRNA','The exons are joined together to form mRNA','Splicing takes place in the nucleus'],tip:'Prokaryotic genes have no introns, so prokaryotes do not splice.'}
+    :{t:'No introns to remove',eq:'',pts:['This gene has no introns, so the pre-mRNA needs no splicing','Most eukaryotic genes do contain introns, which are removed by splicing to form mRNA'],tip:''};
+  if(k==='export')return{t:'mRNA leaves the nucleus',eq:'',pts:['mRNA is small enough to leave through a nuclear pore','It moves into the cytoplasm, where the ribosomes are','The DNA stays in the nucleus'],tip:'DNA is too large to pass through a nuclear pore.'};
+  if(k==='attach')return{t:'mRNA attaches to a ribosome',eq:'start codon '+codons[0],pts:['The ribosome attaches to the mRNA at the start codon','A codon is three bases. Codons are read one after another and do not overlap','The ribosome holds two tRNA molecules at a time'],tip:''};
+  if(k==='codon'){const c=codons[s.i],a=cAA(c),n=AA[a],ac=[...c].map(b=>AC[b]).join('');
+    const pts=['A tRNA with the anticodon '+ac+' binds to the codon '+c+' by complementary base pairing','Each tRNA carries a specific amino acid. This one carries '+n[1]];
+    if(s.i>0){pts.push('A peptide bond forms between '+AA[cAA(codons[s.i-1])][1]+' and '+n[1]+' in a condensation reaction, using energy from ATP');
+      pts.push(s.i>1?'The ribosome has moved along one codon and the empty tRNA has been released':'Next the ribosome moves along the mRNA by one codon')}
+    return{t:'tRNA brings '+n[1],eq:'codon '+c+' · anticodon '+ac+' · '+n[0],pts,tip:s.i===0?'AUG is the start codon, so every polypeptide begins with methionine.':''}}
+  if(k==='stop')return{t:'Stop codon',eq:'codon '+codons[s.i]+' · stop',pts:[codons[s.i]+' is a stop codon. It does not code for an amino acid','No tRNA brings an amino acid, so no more are added'],tip:'UAA, UAG and UGA are the three stop codons.'};
+  return{t:'Polypeptide released',eq:protein(exons(gene)).r.map(a=>AA[a][0]).join('–'),pts:[stopI>=0?'The polypeptide detaches from the last tRNA and the ribosome':'This mRNA has no stop codon, so the ribosome runs off the end','The sequence of '+L+' amino acids is the primary structure of the protein','The polypeptide then folds. The mRNA can be translated again'],tip:'The base sequence of the gene determined the amino acid sequence.'};
+}
+function renderPanel(){
+  const s=steps[cur],d=info(s);
+  $('kick').textContent=PHN[s.ph]+' · step '+(cur+1)+' of '+steps.length;
+  $('ttl').textContent=d.t;$('eq').textContent=d.eq;$('tip').textContent=d.tip;
+  const ul=$('pts');ul.textContent='';d.pts.forEach(t=>ul.appendChild(H('li','',t)));
+  $('back').disabled=cur===0;$('next').disabled=cur===steps.length-1;
+  renderQ();
+}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function questions(n){
+  if(qc[n])return qc[n];const s=steps[n],q=[];
+  if(s.k==='chunk'){const a=gene.slice(s.e0,s.e);q.push({type:'b',prompt:'The exposed template bases are '+a.map(g=>DC[g.b]).join(' ')+'. Which RNA bases pair with them, in order?',ans:a.map(rb).join(''),hint:'A pairs with U in RNA, T pairs with A, and C pairs with G.'})}
+  else if(s.k==='cut'&&hasIn)q.push({type:'m',prompt:'What is removed from pre-mRNA during splicing?',ans:'Introns',opts:shuffle(['Introns','Exons','Codons'])});
+  else if(s.k==='codon'){const c=codons[s.i],a=cAA(c);
+    q.push({type:'b',prompt:'The next codon is '+c+'. What is the anticodon on the tRNA that binds to it?',ans:[...c].map(b=>AC[b]).join(''),hint:'The anticodon is complementary to the codon.'});
+    const o=shuffle(AK.filter(x=>x!==a)).slice(0,3).concat(a);
+    q.push({type:'m',prompt:'Which amino acid does '+c+' code for? Use the codon table.',ans:AA[a][1],opts:shuffle(o.map(x=>AA[x][1]))})}
+  else if(s.k==='stop')q.push({type:'m',prompt:'The next codon is '+codons[s.i]+'. What happens?',ans:'Translation stops and the polypeptide is released',opts:shuffle(['Translation stops and the polypeptide is released','A tRNA brings methionine','The ribosome goes back to the start codon'])});
+  return qc[n]=q;
+}
+function renderQ(){
+  const box=$('q'),n=cur+1,nb=$('next');nb.textContent='Next step';
+  if(!pred||n>=steps.length){box.hidden=true;return}
+  const qs=questions(n);if(qi>=qs.length){box.hidden=true;return}
+  const q=qs[qi];box.hidden=false;box.textContent='';nb.textContent='Reveal';
+  box.appendChild(H('p','',q.prompt));
+  const fb=H('div','fb');fb.setAttribute('role','status');
+  const right=()=>{fb.className='fb ok';fb.textContent='Correct';qi++;ent='';setTimeout(()=>{if(qi>=qs.length)go(cur+1);else renderQ()},550)};
+  if(q.type==='b'){
+    const sl=H('div','slots'),draw=()=>{sl.textContent='';for(let i=0;i<q.ans.length;i++){const c=ent[i],d=H('div','slot'+(c?' f b'+c:''),c||'');sl.appendChild(d)}};draw();
+    const ks=H('div','keys');
+    [...'AUCG'].forEach(b=>{const k=H('button','sb b'+b,b);k.type='button';k.setAttribute('aria-label','Base '+b);k.onclick=()=>{if(ent.length>=q.ans.length)return;ent+=b;draw();
+      if(ent.length===q.ans.length){if(ent===q.ans)right();else{fb.className='fb no';fb.textContent='Not quite. '+q.hint;ent='';setTimeout(draw,500)}}};ks.appendChild(k)});
+    const del=H('button','btn','Clear');del.type='button';del.onclick=()=>{ent='';draw()};ks.appendChild(del);
+    box.append(sl,ks);
+  }else{
+    const os=H('div','opts');q.opts.forEach(o=>{const b=H('button','btn',o[0].toUpperCase()+o.slice(1));b.type='button';b.onclick=()=>{if(o===q.ans)right();else{fb.className='fb no';fb.textContent='Not quite. Try again.';b.disabled=true}};os.appendChild(b)});
+    box.appendChild(os);
+  }
+  box.appendChild(fb);
+}
+function renderLoc(loc){
+  const euk=cell==='euk',pos={nuc:[21,14],pore:[30,17],cyt:[35,9]}[loc];
+  const t=euk?{nuc:'In the nucleus',pore:'At a nuclear pore',cyt:'In the cytoplasm'}[loc]:'In the cytoplasm (no nucleus)';
+  $('loc').innerHTML=(euk?'<svg viewBox="0 0 42 28" aria-hidden="true"><rect x="1.5" y="1.5" width="39" height="25" rx="12" fill="var(--soft)" stroke="var(--mem)" stroke-width="1.5"/><circle cx="21" cy="14" r="8" fill="var(--nuc)" stroke="var(--mem)" stroke-width="1.5"/><circle cx="'+pos[0]+'" cy="'+pos[1]+'" r="3.2" fill="var(--accent)"/></svg>'
+   :'<svg viewBox="0 0 42 28" aria-hidden="true"><rect x="1.5" y="5.5" width="39" height="17" rx="8.5" fill="var(--soft)" stroke="var(--mem)" stroke-width="1.5"/><path d="M11 14q4-6 8 0t8 0" fill="none" stroke="var(--mem)" stroke-width="1.5"/><circle cx="31" cy="14" r="3.2" fill="var(--accent)"/></svg>')+'<span></span>';
+  $('loc').lastChild.textContent=t;
+}
+function buildPhases(){
+  const el=$('phases');el.textContent='';let n=0;
+  ['tx','sp','ex','tl'].forEach(ph=>{const i=steps.findIndex(s=>s.ph===ph);if(i<0)return;const b=H('button','ph');b.type='button';b.dataset.ph=ph;b.dataset.i=i;
+    b.appendChild(H('b','',String(++n)));b.appendChild(document.createTextNode(PHN[ph]));b.onclick=()=>{stop();go(i)};el.appendChild(b)});
+}
+function renderPhases(){const ph=steps[cur].ph;[...$('phases').children].forEach(b=>{if(b.dataset.ph===ph)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current');b.classList.toggle('done',+b.dataset.i<cur)})}
+function renderRec(){
+  const tb=$('rec'),s=steps[cur],at=steps.findIndex(x=>x.k==='attach'),show=cur>=at,ti=s.k==='release'?99:(s.i==null?-1:s.i);tb.textContent='';
+  const ex=exons(gene),n=stopI>=0?stopI+1:codons.length;
+  for(let i=0;i<n;i++){const tr=H('tr',show&&ti===i?'now':''),c=codons[i],a=cAA(c),done=show&&ti>=i;
+    const td=(v,ok)=>{tr.appendChild(H('td',ok?'':'q',ok?v:'?'))};
+    td([...ex.slice(3*i,3*i+3)].map(b=>DC[b]).join(''),show);td(c,show);
+    td(a==='*'?'none':[...c].map(b=>AC[b]).join(''),done);
+    const l=H('td',done?'':'q');if(!done)l.textContent='?';else if(a==='*')l.textContent='Stop';else{const ch=H('span','aa',AA[a][0]);ch.style.background=hue(a);l.append(ch,' '+AA[a][1])}
+    tr.appendChild(l);tb.appendChild(tr)}
+}
+function buildCt(){
+  const t=$('ct');t.textContent='';const hr=H('tr');hr.appendChild(H('th'));[...BO].forEach(b=>hr.appendChild(H('th','',b)));t.appendChild(hr);
+  [...BO].forEach(a=>{const tr=H('tr');tr.appendChild(H('th','',a));[...BO].forEach(b=>{const td=H('td');[...BO].forEach(c=>{const cd=a+b+c,x=cAA(cd),sp=H('span',x==='*'?'stp':'',cd);sp.dataset.c=cd;sp.appendChild(H('i','',x==='*'?'Stop':AA[x][0]));td.appendChild(sp)});tr.appendChild(td)});t.appendChild(tr)});
+}
+function renderCt(){const s=steps[cur],c=(s.k==='codon'||s.k==='stop')?codons[s.i]:'';$('ct').querySelectorAll('span').forEach(e=>e.classList.toggle('hit',e.dataset.c===c))}
+
+// gene editor
+function buildStrip(){
+  const el=$('strip'),o=parse(orig);el.textContent='';
+  const same=o.length===gene.length;
+  gene.forEach((g,k)=>{const b=H('button','sb b'+g.b+(g.in?' in':'')+(k<3?' lock':'')+(k===sel?' sel':'')+(!g.in&&mi[k]%3===2?' gap':'')+(same&&o[k].b!==g.b?' chg':''),g.b);b.type='button';
+    b.setAttribute('aria-label','Base '+(k+1)+', '+g.b+(g.in?', intron':'')+(k<3?', start codon, fixed':''));
+    if(k<3){b.disabled=true;b.title='The start codon is fixed'}else b.onclick=()=>{sel=sel===k?-1:k;buildStrip()};el.appendChild(b)});
+  const ed=$('edit');ed.textContent='';
+  if(sel<0||sel>=N){ed.textContent='Tap a base to substitute or delete it, then run the simulation again. Dashed bases are introns. The start codon is fixed.'}
+  else{const g=gene[sel];ed.appendChild(H('span','','Base '+(sel+1)+' is '+g.b+(g.in?' (intron)':'')+'. Change it to'));
+    [...'ATCG'].filter(b=>b!==g.b).forEach(b=>{const x=H('button','sb b'+b,b);x.type='button';x.onclick=()=>{gene[sel]={b,in:g.in};sel=-1;mutated()};ed.appendChild(x)});
+    const d=H('button','btn','Delete this base');d.type='button';d.disabled=!g.in&&M<=9;d.onclick=()=>{gene.splice(sel,1);sel=-1;mutated()};ed.appendChild(d)}
+  renderCmp();
+}
+function mutated(){stop();build();go(0,true)}
+function renderCmp(){
+  const el=$('cmp'),o=parse(orig),os=o.map(g=>g.b).join(''),ns=gene.map(g=>g.b).join('');
+  $('undo').disabled=os===ns;if(os===ns){el.hidden=true;return}
+  el.hidden=false;el.textContent='';const a=protein(exons(o)),b=protein(exons(gene));
+  const line=(lab,pr,ref)=>{const d=H('div','ln');d.appendChild(H('span','',lab));pr.r.forEach((x,i)=>{const c=H('span','aa'+(ref&&ref.r[i]!==x?' diff':''),AA[x][0]);c.style.background=hue(x);d.appendChild(c)});d.appendChild(H('span','small',pr.stop?'stop':'no stop codon'));el.appendChild(d)};
+  line('Original',a);line('Mutated',b,a);
+  const eo=exons(o),en=exons(gene);let v;
+  if(eo===en)v='No change to the polypeptide. The mutation is in an intron, which is removed during splicing.';
+  else if((eo.length-en.length)%3!==0)v='Frame shift. Deleting a base changes every triplet after the deletion, so the amino acid sequence changes from that point on.';
+  else if(a.r.join()===b.r.join()&&a.stop===b.stop)v='No change to the polypeptide. The genetic code is degenerate, so the new triplet still codes for the same amino acid.';
+  else if(b.stop&&b.r.length<a.r.length&&eo.length===en.length)v='A stop codon has been created early, so the polypeptide is shorter and unlikely to function.';
+  else if(!b.stop)v='The stop codon has been lost, so translation does not end where it should.';
+  else{const n=b.r.filter((x,i)=>x!==a.r[i]).length+Math.abs(a.r.length-b.r.length);v=n+' amino acid'+(n===1?' has':'s have')+' changed. A different primary structure can change how the protein folds, and so its tertiary structure and function.'}
+  el.appendChild(H('p','verdict',v));
+}
+function randomGene(){
+  const sense=[];for(const a of 'TCAG')for(const b of 'TCAG')for(const c of 'TCAG'){const d=a+b+c;if(cAA(d.replace(/T/g,'U'))!=='*'&&d!=='ATG')sense.push(d)}
+  const n=5+Math.floor(Math.random()*3),cd=['ATG'];for(let i=0;i<n;i++)cd.push(sense[Math.floor(Math.random()*sense.length)]);cd.push(['TAA','TAG','TGA'][Math.floor(Math.random()*3)]);
+  const at=2+Math.floor(Math.random()*(n-2)),r=()=>'acgt'[Math.floor(Math.random()*4)];
+  return cd.slice(0,at).join('')+'gt'+r()+r()+'ag'+cd.slice(at).join('');
+}
+function load(s){orig=s;gene=parse(orig);sel=-1;stop();build();go(0,true)}
+
+function go(n,first){
+  if(n<0||n>=steps.length)return;const fwd=n===cur+1;anims.forEach(a=>a.cancel());anims=[];cur=n;qi=0;ent='';render(first);
+  if(fwd&&steps[n].k==='export')thread();
+  if(cur===steps.length-1)stop();
+}
+function stop(){clearInterval(timer);timer=0;$('play').textContent='Play'}
+$('next').onclick=()=>{stop();go(cur+1)};
+$('back').onclick=()=>{stop();go(cur-1)};
+$('reset').onclick=()=>{stop();go(0)};
+$('play').onclick=()=>{if(timer){stop();return}if(cur===steps.length-1)go(0);$('play').textContent='Pause';timer=setInterval(()=>go(cur+1),steps[cur]&&reduced.matches?1400:1900)};
+$('pred').onclick=e=>{pred=!pred;e.currentTarget.setAttribute('aria-pressed',pred);qi=0;ent='';renderPanel()};
+$('preset').onchange=e=>load(PRE[+e.target.value]);
+$('rand').onclick=()=>{$('preset').selectedIndex=-1;load(randomGene())};
+$('undo').onclick=()=>load(orig);
+[...$('cell').children].forEach(b=>b.onclick=()=>{cell=b.dataset.c;setCell();load(orig)});
+function setCell(){[...$('cell').children].forEach(b=>b.setAttribute('aria-pressed',b.dataset.c===cell))}
+$('theme').onclick=()=>{const r=document.documentElement,d=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches;r.dataset.theme=d?'light':'dark'};
+document.addEventListener('keydown',e=>{if(/^(INPUT|SELECT|TEXTAREA|BUTTON)$/.test(e.target.tagName))return;if(e.key==='ArrowRight'){stop();go(cur+1)}else if(e.key==='ArrowLeft'){stop();go(cur-1)}});
+setCell();load(orig);
+})();
+</script>
+</body>
+</html>
