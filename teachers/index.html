@@ -11,9 +11,11 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{ --ink:#14213d; --ink-soft:#4a5571; --muted:#8a92a8; --bg:#f5f6fa; --card:#fff; --line:#e2e5ee;
-    --gcse:#0e8a8c; --gcse-soft:#e3f4f4; --alevel:#6b3fb6; --alevel-soft:#efe8fa;
-    --accent:var(--gcse); --accent-soft:var(--gcse-soft); --radius:14px; }
-  body[data-level="alevel"]{ --accent:var(--alevel); --accent-soft:var(--alevel-soft); }
+    --chem:#b5384a; --chem-soft:#fbecee; --phys:#2c63b8; --phys-soft:#e8effa; --bio:#2f8656; --bio-soft:#e6f4ec;
+    --accent:var(--chem); --accent-soft:var(--chem-soft); --radius:14px; }
+  [data-subject="chemistry"]{ --accent:var(--chem); --accent-soft:var(--chem-soft); }
+  [data-subject="physics"]{ --accent:var(--phys); --accent-soft:var(--phys-soft); }
+  [data-subject="biology"]{ --accent:var(--bio); --accent-soft:var(--bio-soft); }
   *{ box-sizing:border-box; }
   body{ margin:0; background:var(--bg); color:var(--ink); font:16px/1.55 Inter, system-ui, -apple-system, "Segoe UI", sans-serif; }
   header{ background:var(--ink); color:#fff; padding:44px 20px 0; }
@@ -26,10 +28,21 @@
     border-radius:12px 12px 0 0; color:#fff; background:rgba(255,255,255,.1); }
   .level-btn:hover{ background:rgba(255,255,255,.18); }
   .level-btn[aria-selected="true"]{ background:var(--bg); color:var(--ink); }
-  .level-btn:focus-visible, a.card:focus-visible{ outline:3px solid #f0b34b; outline-offset:2px; }
-  main{ padding:34px 20px 60px; }
-  section.topic{ margin-bottom:40px; }
-  section.topic h2{ font-family:Fraunces, Georgia, serif; font-size:1.45rem; margin:0 0 14px; padding-left:12px; border-left:4px solid var(--accent); }
+  .level-btn:focus-visible, a.card:focus-visible, .jump-btn:focus-visible{ outline:3px solid #f0b34b; outline-offset:2px; }
+  main{ padding:26px 20px 60px; }
+  .jump{ display:flex; flex-wrap:wrap; gap:10px; margin:0 0 26px; }
+  .jump-btn{ appearance:none; cursor:pointer; font:inherit; font-weight:600; font-size:.95rem; padding:8px 18px; border-radius:999px;
+    color:var(--accent); background:var(--accent-soft); border:1.5px solid var(--accent); display:inline-flex; align-items:center; gap:8px; }
+  .jump-btn::before{ content:""; width:9px; height:9px; border-radius:50%; background:var(--accent); }
+  .jump-btn:hover{ background:var(--accent); color:#fff; }
+  .jump-btn:hover::before{ background:#fff; }
+  section.subject{ background:var(--accent-soft); border:1px solid var(--line); border-top:6px solid var(--accent); border-radius:var(--radius);
+    padding:22px 22px 6px; margin-bottom:30px; scroll-margin-top:14px; }
+  .subject-head{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin:0 0 20px; }
+  .subject-head h2{ font-family:Fraunces, Georgia, serif; font-weight:700; font-size:clamp(1.6rem, 4vw, 2.1rem); line-height:1.1; margin:0; color:var(--accent); }
+  .subject-head .count{ font-size:.85rem; font-weight:600; color:var(--accent); white-space:nowrap; }
+  section.topic{ margin-bottom:26px; }
+  section.topic h3{ font-family:Fraunces, Georgia, serif; font-weight:600; font-size:1.2rem; margin:0 0 12px; padding-left:12px; border-left:4px solid var(--accent); }
   .grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:14px; }
   .card{ display:flex; flex-direction:column; gap:6px; text-decoration:none; color:inherit; background:var(--card);
     border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:var(--radius); padding:16px 18px; position:relative;
@@ -41,7 +54,7 @@
   .card .desc{ font-size:.9rem; color:var(--ink-soft); }
   .empty{ color:var(--muted); font-size:.95rem; margin:0; }
   footer{ text-align:center; color:var(--muted); font-size:.85rem; padding:0 20px 40px; }
-  @media (max-width:520px){ .level-btn{ padding:12px 18px; } }
+  @media (max-width:520px){ .level-btn{ padding:12px 18px; } section.subject{ padding:18px 14px 2px; } }
 </style>
 </head>
 <body data-level="alevel">
@@ -61,65 +74,120 @@
 <script>
 /* ============================================================
    TO ADD A RESOURCE: put the file in this folder, then add one
-   line to the right topic below, in this form:
+   line to the right level, subject and topic below, in this form:
    { title:"Name", kind:"Simulator", desc:"One line about it", href:"file-name.html" },
    ============================================================ */
+const ATOM = { title:"Atom viewer", kind:"Simulator", desc:"2D and 3D models of the atom: choose protons, neutrons and electrons, click parts to inspect them, with moving electrons for GCSE and probability dots and orbitals to 3d for A-level.", href:"atom-viewer.html" };
+const BONDING = { title:"Bonding simulator", kind:"Simulator", desc:"Step-by-step ionic and covalent dot and cross diagrams that build into small molecules or giant structures, with dative bonds, ion sizes and octet exceptions for A-level.", href:"bonding-simulator.html" };
+const ENERGY = { title:"Reaction energy simulator", kind:"Simulator", desc:"Bond breaking and bond making with energy moving between the system and the surroundings, a linked energy level diagram and reaction profile, and bond energy calculations for seven reactions.", href:"reaction-energy-simulator.html" };
 const RESOURCES = {
-  gcse: [
-    { topic:"Atomic structure and bonding", items:[
-      { title:"Atom viewer", kind:"Simulator", desc:"2D and 3D models of the atom: choose protons, neutrons and electrons, click parts to inspect them, with moving electrons for GCSE and probability dots and orbitals to 3d for A-level.", href:"atom-viewer.html" },
-      { title:"Bonding simulator", kind:"Simulator", desc:"Step-by-step ionic and covalent dot and cross diagrams that build into small molecules or giant structures, with dative bonds, ion sizes and octet exceptions for A-level.", href:"bonding-simulator.html" },
-    ]},
-    { topic:"Quantitative chemistry", items:[
-    ]},
-    { topic:"Chemical changes and energy", items:[
-      { title:"Reaction energy simulator", kind:"Simulator", desc:"Bond breaking and bond making with energy moving between the system and the surroundings, a linked energy level diagram and reaction profile, and bond energy calculations for seven reactions.", href:"reaction-energy-simulator.html" },
-    ]},
-    { topic:"Rates and equilibrium", items:[
-    ]},
-    { topic:"Organic chemistry and analysis", items:[
-    ]},
-    { topic:"Atmosphere and resources", items:[
-    ]},
-    { topic:"Required practicals", items:[
-    ]},
-    { topic:"Biology required practicals", items:[
-      { title:"Osmosis in plant tissue", kind:"Simulator", desc:"Required practical 3: change in mass of potato cylinders in sucrose solutions, with blotting and natural variation options.", href:"osmosis-simulator.html" },
-      { title:"Effect of pH on amylase", kind:"Simulator", desc:"Required practical 5: iodine spotting tile method with a water bath and stop clock, across a range of buffer pH values.", href:"amylase-ph-simulator.html" },
-      { title:"Light intensity and photosynthesis", kind:"Simulator", desc:"Required practical 6: count bubbles from pondweed at different lamp distances, with hydrogencarbonate and variation options.", href:"photosynthesis-simulator.html" },
-    ]}
-  ],
-  alevel: [
-    { topic:"Physical chemistry", items:[
-      { title:"Atom viewer", kind:"Simulator", desc:"2D and 3D models of the atom: choose protons, neutrons and electrons, click parts to inspect them, with moving electrons for GCSE and probability dots and orbitals to 3d for A-level.", href:"atom-viewer.html" },
-      { title:"Bonding simulator", kind:"Simulator", desc:"Step-by-step ionic and covalent dot and cross diagrams that build into small molecules or giant structures, with dative bonds, ion sizes and octet exceptions for A-level.", href:"bonding-simulator.html" },
-      { title:"Reaction energy simulator", kind:"Simulator", desc:"Bond breaking and bond making with energy moving between the system and the surroundings, a linked energy level diagram and reaction profile, and bond energy calculations for seven reactions.", href:"reaction-energy-simulator.html" },
-    ]},
-    { topic:"Inorganic chemistry", items:[
-    ]},
-    { topic:"Organic chemistry and analysis", items:[
-      { title:"Electrophilic addition mechanism", kind:"Simulator", desc:"3D reaction with the curly arrow mechanism building underneath: ethene and propene with HBr, H\u2082SO\u2084 and Br\u2082, major and minor products, played through or step by step.", href:"electrophilic-addition-simulator.html" },
-      { title:"Nucleophilic substitution mechanism", kind:"Simulator", desc:"3D reaction with the curly arrow mechanism building underneath: chloro-, bromo- and iodoethane with hydroxide, cyanide and ammonia, played through or step by step.", href:"nucleophilic-substitution-simulator.html" },
-      { title:"NMR and IR spectrum simulator", kind:"Simulator", desc:"Draw a molecule to generate its \u00b9H NMR, \u00b9\u00b3C NMR and infrared spectra, with zoomable splitting and AQA data sheet values.", href:"nmr-ir-simulator.html" },
-    ]},
-    { topic:"Required practicals", items:[
-    ]},
-    { topic:"Biology", items:[
-      { title:"Cell explorer", kind:"Simulator", desc:"Animal and plant cell ultrastructure: click any organelle for its structure and function with an animation, follow the protein route, and test yourself.", href:"cell-explorer.html" },
-      { title:"Krebs cycle simulator", kind:"Simulator", desc:"Step through the link reaction and Krebs cycle with named intermediates and a running tally of products per glucose.", href:"krebs-cycle-simulator.html" },
-      { title:"ATP energy simulator", kind:"Simulator", desc:"ATP hydrolysis and condensation atom by atom: bond breaking takes energy in, and energy is released as new bonds and stronger interactions with water form, with a linked energy profile.", href:"atp-energy-simulator.html" },
-    ]}
-  ]
+  gcse: {
+    chemistry: [
+      { topic:"Atomic structure and bonding", items:[
+        ATOM,
+        BONDING,
+      ]},
+      { topic:"Quantitative chemistry", items:[
+      ]},
+      { topic:"Chemical changes and energy", items:[
+        ENERGY,
+      ]},
+      { topic:"Rates and equilibrium", items:[
+      ]},
+      { topic:"Organic chemistry and analysis", items:[
+      ]},
+      { topic:"Atmosphere and resources", items:[
+      ]},
+      { topic:"Required practicals", items:[
+      ]}
+    ],
+    physics: [
+      { topic:"Energy and electricity", items:[
+      ]},
+      { topic:"Particles and atomic structure", items:[
+      ]},
+      { topic:"Forces and motion", items:[
+      ]},
+      { topic:"Waves and magnetism", items:[
+      ]},
+      { topic:"Required practicals", items:[
+      ]}
+    ],
+    biology: [
+      { topic:"Cells and organisation", items:[
+      ]},
+      { topic:"Infection and bioenergetics", items:[
+      ]},
+      { topic:"Homeostasis, inheritance and ecology", items:[
+      ]},
+      { topic:"Required practicals", items:[
+        { title:"Osmosis in plant tissue", kind:"Simulator", desc:"Required practical 3: change in mass of potato cylinders in sucrose solutions, with blotting and natural variation options.", href:"osmosis-simulator.html" },
+        { title:"Effect of pH on amylase", kind:"Simulator", desc:"Required practical 5: iodine spotting tile method with a water bath and stop clock, across a range of buffer pH values.", href:"amylase-ph-simulator.html" },
+        { title:"Light intensity and photosynthesis", kind:"Simulator", desc:"Required practical 6: count bubbles from pondweed at different lamp distances, with hydrogencarbonate and variation options.", href:"photosynthesis-simulator.html" },
+      ]}
+    ]
+  },
+  alevel: {
+    chemistry: [
+      { topic:"Physical chemistry", items:[
+        ATOM,
+        BONDING,
+        ENERGY,
+      ]},
+      { topic:"Inorganic chemistry", items:[
+      ]},
+      { topic:"Organic chemistry and analysis", items:[
+        { title:"Electrophilic addition mechanism", kind:"Simulator", desc:"3D reaction with the curly arrow mechanism building underneath: ethene and propene with HBr, H\u2082SO\u2084 and Br\u2082, major and minor products, played through or step by step.", href:"electrophilic-addition-simulator.html" },
+        { title:"Nucleophilic substitution mechanism", kind:"Simulator", desc:"3D reaction with the curly arrow mechanism building underneath: chloro-, bromo- and iodoethane with hydroxide, cyanide and ammonia, played through or step by step.", href:"nucleophilic-substitution-simulator.html" },
+        { title:"NMR and IR spectrum simulator", kind:"Simulator", desc:"Draw a molecule to generate its ¹H NMR, ¹³C NMR and infrared spectra, with zoomable splitting and AQA data sheet values.", href:"nmr-ir-simulator.html" },
+      ]},
+      { topic:"Required practicals", items:[
+      ]}
+    ],
+    physics: [
+      { topic:"Particles, quantum and waves", items:[
+      ]},
+      { topic:"Mechanics and materials", items:[
+      ]},
+      { topic:"Electricity and fields", items:[
+      ]},
+      { topic:"Required practicals", items:[
+      ]}
+    ],
+    biology: [
+      { topic:"Biological molecules", items:[
+        { title:"ATP energy simulator", kind:"Simulator", desc:"ATP hydrolysis and condensation atom by atom: bond breaking takes energy in, and energy is released as new bonds and stronger interactions with water form, with a linked energy profile.", href:"atp-energy-simulator.html" },
+      ]},
+      { topic:"Cells", items:[
+        { title:"Cell explorer", kind:"Simulator", desc:"Animal and plant cell ultrastructure: click any organelle for its structure and function with an animation, follow the protein route, and test yourself.", href:"cell-explorer.html" },
+      ]},
+      { topic:"Energy transfers and respiration", items:[
+        { title:"Krebs cycle simulator", kind:"Simulator", desc:"Step through the link reaction and Krebs cycle with named intermediates and a running tally of products per glucose.", href:"krebs-cycle-simulator.html" },
+      ]},
+      { topic:"Required practicals", items:[
+      ]}
+    ]
+  }
 };
+const SUBJECTS = [["chemistry","Chemistry"],["physics","Physics"],["biology","Biology"]];
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 function show(level){
   document.body.dataset.level = level;
   document.querySelectorAll(".level-btn").forEach(b => b.setAttribute("aria-selected", b.dataset.level === level));
-  document.getElementById("content").innerHTML = RESOURCES[level].map(t =>
-    '<section class="topic"><h2>' + esc(t.topic) + '</h2>' + (t.items.length
-      ? '<div class="grid">' + t.items.map(i => '<a class="card" href="' + esc(i.href) + '"><span class="kind">' + esc(i.kind || "Resource") +
-        '</span><span class="title">' + esc(i.title) + '</span><span class="desc">' + esc(i.desc || "") + '</span></a>').join("") + '</div>'
-      : '<p class="empty">Nothing here yet.</p>') + '</section>').join("");
+  const card = i => '<a class="card" href="' + esc(i.href) + '"><span class="kind">' + esc(i.kind || "Resource") +
+    '</span><span class="title">' + esc(i.title) + '</span><span class="desc">' + esc(i.desc || "") + '</span></a>';
+  const topic = t => '<section class="topic"><h3>' + esc(t.topic) + '</h3>' + (t.items.length
+    ? '<div class="grid">' + t.items.map(card).join("") + '</div>' : '<p class="empty">Nothing here yet.</p>') + '</section>';
+  document.getElementById("content").innerHTML =
+    '<nav class="jump" aria-label="Subjects">' + SUBJECTS.map(([id, name]) =>
+      '<button class="jump-btn" type="button" data-subject="' + id + '">' + name + '</button>').join("") + '</nav>' +
+    SUBJECTS.map(([id, name]) => {
+      const topics = RESOURCES[level][id], n = topics.reduce((a, t) => a + t.items.length, 0);
+      return '<section class="subject" id="' + id + '" data-subject="' + id + '"><div class="subject-head"><h2>' + name +
+        '</h2><span class="count">' + n + (n === 1 ? ' resource' : ' resources') + '</span></div>' + topics.map(topic).join("") + '</section>';
+    }).join("");
+  document.querySelectorAll(".jump-btn").forEach(b => b.onclick = () =>
+    document.getElementById(b.dataset.subject).scrollIntoView({ behavior:"smooth", block:"start" }));
   try{ history.replaceState(null, "", "#" + level); }catch(e){}
 }
 document.querySelectorAll(".level-btn").forEach(b => b.onclick = () => show(b.dataset.level));
