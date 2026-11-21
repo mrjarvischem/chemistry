@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>4 · Specific latent heat — GCSE Physics Particle model</title>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="core.css">
+</head>
+<body data-lesson="4" data-next="L5.html">
+<header class="top"><a class="home" href="index.html">← All Particle model walkthroughs</a>
+<h1>Lesson 4 · Heating curves and specific latent heat</h1>
+<p>AQA GCSE Physics / Combined Science · Particle model of matter 4.3.2.3 · about 25 minutes</p></header>
+<main>
+
+<section id="s1" data-title="Heating curves" data-mins="8">
+<h2>Heating and cooling curves</h2>
+<p class="lead">A heater supplies energy at a steady rate to some ice. Watch the temperature over time.</p>
+<div class="grid2">
+ <div class="card" style="padding:8px"><svg id="hc" viewBox="0 0 360 270" width="100%"></svg>
+  <div class="row"><button class="btn pri" id="go">▶ Heat</button><button class="btn" id="cl">Cooling curve instead</button></div></div>
+ <div class="card"><h3>What’s happening</h3><div class="read" id="hR" style="font-family:inherit">Press Heat.</div></div>
+</div>
+<div class="key">The <b>flat sections</b> are changes of state. Energy is still being supplied, but the temperature doesn’t change — the energy goes into breaking bonds between particles (increasing their potential energy), not making them move faster.</div>
+<div id="q1a"></div><div id="q1b"></div>
+</section>
+
+<section id="s2" data-title="Specific latent heat" data-mins="6">
+<h2>Specific latent heat</h2>
+<div class="key">The <b>specific latent heat</b> of a substance is the amount of energy needed to change the state of <b>1 kg</b> of it <b>with no change in temperature</b>.</div>
+<div class="card"><span class="eqbox">E = m L</span> <span class="tag" style="background:var(--good)">Given on the equation sheet</span>
+<table class="t" style="margin-top:10px"><tr><th>Symbol</th><th>Quantity</th><th>Unit</th></tr><tr><td>E</td><td>energy for a change of state</td><td>joules, J</td></tr><tr><td>m</td><td>mass</td><td>kilograms, kg</td></tr><tr><td>L</td><td>specific latent heat</td><td>joules per kilogram, J/kg</td></tr></table></div>
+<div class="grid2">
+ <div class="card"><h3>Specific latent heat of fusion</h3><p style="margin:0">Solid ⇄ liquid (melting or freezing).<br>Water: <b>334 000 J/kg</b></p></div>
+ <div class="card"><h3>Specific latent heat of vaporisation</h3><p style="margin:0">Liquid ⇄ gas (boiling or condensing).<br>Water: <b>2 260 000 J/kg</b></p></div>
+</div>
+<div class="note">Vaporisation needs far more energy than fusion because the particles must be pulled <b>completely apart</b>, not just freed from their fixed positions.</div>
+<div id="q2a"></div>
+</section>
+
+<section id="s3" data-title="Calculations" data-mins="6">
+<h2>Latent heat or heat capacity?</h2>
+<div class="grid2">
+ <div class="card"><h3>Temperature changes?</h3><p style="margin:0">Use <b>ΔE = m c Δθ</b> (specific heat capacity).</p></div>
+ <div class="card"><h3>State changes, temperature constant?</h3><p style="margin:0">Use <b>E = m L</b> (specific latent heat).</p></div>
+</div>
+<div id="q3a"></div><div id="q3b"></div><div id="q3c"></div>
+</section>
+
+<section id="s4" data-title="Exam practice" data-mins="5">
+<h2>Exam practice</h2>
+<div id="ex1"></div><div id="ex2"></div>
+<div class="summary"><h3>Lesson summary</h3><ul>
+<li>Flat sections on heating/cooling curves = changes of state; temperature constant.</li>
+<li>Specific latent heat: energy to change the state of 1 kg with no temperature change.</li>
+<li>E = m L (equation sheet). Fusion: solid ⇄ liquid. Vaporisation: liquid ⇄ gas.</li>
+<li>Temperature changing → m c Δθ. State changing → m L.</li></ul></div>
+</section>
+</main>
+<script src="core.js"></script>
+<script>
+// heating 0.5 kg ice from -20 at 500 W : times in s
+const P=500,m=0.5,ci=2100,cw=4200,Lf=334000,Lv=2260000;
+const seg=[{e:m*ci*20,a:-20,b:0,t:'Ice warming up. Temperature rises.'},{e:m*Lf,a:0,b:0,t:'<b>Melting</b> at 0 °C. Temperature constant — energy breaks the solid structure.'},{e:m*cw*100,a:0,b:100,t:'Water warming up. Temperature rises.'},{e:m*Lv,a:100,b:100,t:'<b>Boiling</b> at 100 °C. Temperature constant — energy separates the particles completely. This takes the longest.'},{e:m*2000*20,a:100,b:120,t:'Steam warming up.'}];
+const TT=seg.reduce((a,s)=>a+s.e,0)/P;
+function T(t){let E=t*P;for(const s of seg){if(E<=s.e)return[s.a+(s.b-s.a)*E/s.e,s];E-=s.e}return[120,seg[4]]}
+let cooling=false,stH=null;
+function draw(f){const x0=45,y0=230,X=t=>x0+t/TT*295,Y=th=>y0-(th+30)*1.4;let s=`<line x1="${x0}" y1="${y0}" x2="345" y2="${y0}" stroke="#556"/><line x1="${x0}" y1="${y0}" x2="${x0}" y2="15" stroke="#556"/>`;
+ for(let th=-20;th<=120;th+=20)s+=`<text x="${x0-5}" y="${Y(th)+4}" font-size="10" text-anchor="end" fill="#556">${th}</text><line x1="${x0}" y1="${Y(th)}" x2="345" y2="${Y(th)}" stroke="#eef0f6"/>`;
+ s+=`<text x="195" y="258" font-size="11" text-anchor="middle" fill="#556">time →</text><text x="8" y="12" font-size="11" fill="#556">temperature / °C</text>`;
+ let d='',cur=null;const N=300;for(let i=0;i<=N*f;i++){const t=i/N*TT;const tt=cooling?TT-t:t;const [th,sg]=T(tt);d+=(i?' L':'M')+X(t).toFixed(1)+' '+Y(th).toFixed(1);cur=[th,sg]}
+ s+=`<path d="${d}" fill="none" stroke="#c2410c" stroke-width="3"/>`;
+ if(f>=1){s+=cooling?`<text x="${X(TT*0.38)}" y="${Y(100)-8}" font-size="11" text-anchor="middle" fill="#2e86de" font-weight="700">condensing</text><text x="${X(TT*0.93)}" y="${Y(0)-8}" font-size="11" text-anchor="middle" fill="#2e86de" font-weight="700">freezing</text>`:`<text x="${X(TT*0.07)}" y="${Y(0)-8}" font-size="11" text-anchor="middle" fill="#c2410c" font-weight="700">melting</text><text x="${X(TT*0.6)}" y="${Y(100)-8}" font-size="11" text-anchor="middle" fill="#c2410c" font-weight="700">boiling</text>`}
+ $('hc').innerHTML=s;if(cur)$('hR').innerHTML=`${cooling?'Cooling. ':''}Temperature: <b>${cur[0].toFixed(0)} °C</b><br>${cooling?cur[1].t.replace('warming up','cooling down').replace('rises','falls').replace('<b>Melting</b>','<b>Freezing</b>').replace('<b>Boiling</b>','<b>Condensing</b>').replace(/breaks the solid structure|separates the particles completely\. This takes the longest/,'is released as particles come together'):cur[1].t}`}
+$('go').onclick=()=>{if(stH)stH();cooling=false;$('cl').classList.remove('on');stH=animate(7000,draw)};
+$('cl').onclick=()=>{if(stH)stH();cooling=true;$('cl').classList.add('on');stH=animate(7000,draw)};draw(0);
+MCQ('q1a',{q:'On a heating curve, why is the line flat while a substance melts?',opts:['The heater is switched off','The energy supplied increases the potential energy of the particles, not their kinetic energy','The substance loses energy','The particles stop moving'],a:1});
+MCQ('q1b',{q:'In the simulation, which flat section is longest, and why?',opts:['Melting — it needs the most energy per kg','Boiling — the specific latent heat of vaporisation is much bigger than that of fusion','They are the same length','Warming the water — water has a high specific heat capacity'],a:1});
+MCQ('q2a',{q:'Which is the correct unit for specific latent heat?',opts:['J/kg °C','J/kg','J °C','kg/J'],a:1});
+NumQ('q3a',{q:'Calculate the energy needed to melt 0.20 kg of ice at 0 °C. L<sub>f</sub> = 334 000 J/kg.',ans:66800,unit:'J',steps:['E = m L','= 0.20 × 334 000','= 66 800 J']});
+NumQ('q3b',{q:'A kettle boils away 0.050 kg of water. L<sub>v</sub> = 2 260 000 J/kg. How much energy was used to turn it to steam?',ans:113000,unit:'J',steps:['E = 0.050 × 2 260 000','= 113 000 J']});
+NumQ('q3c',{q:'It takes 24 000 J to melt 0.12 kg of a wax at its melting point. Calculate the specific latent heat of fusion of the wax.',ans:200000,unit:'J/kg',steps:['L = E ÷ m','= 24 000 ÷ 0.12','= 200 000 J/kg']});
+ExamQ('ex1',{title:'Question 1 · Steam burns',stem:'<p>Steam at 100 °C causes worse burns than the same mass of water at 100 °C.</p>',parts:[
+ {label:'1.1',q:'Explain why.',marks:2,ms:['When steam condenses on the skin it releases its latent heat (2 260 000 J/kg)','This is extra energy transferred to the skin, as well as the energy released as the water then cools']},
+ {label:'1.2',q:'Calculate the energy released when 2.0 g of steam condenses. L<sub>v</sub> = 2 260 000 J/kg.',marks:3,ms:['m = 2.0 g = 0.0020 kg','E = 0.0020 × 2 260 000','= 4520 J']}]});
+ExamQ('ex2',{title:'Question 2 · Cooling curve',stem:'<p>A student melts some stearic acid and lets it cool. She records the temperature every 30 seconds. The graph has a flat section at 69 °C.</p>',parts:[
+ {label:'2.1',q:'What is happening to the stearic acid during the flat section?',marks:1,ms:['It is freezing / changing from liquid to solid']},
+ {label:'2.2',q:'Explain why the temperature stays constant during this time even though energy is being transferred to the surroundings.',marks:2,ms:['Energy is released as bonds form between particles (latent heat)','This balances the energy transferred to the surroundings, so the kinetic energy of the particles (temperature) does not change']}]});
+</script>
+</body>
+</html>

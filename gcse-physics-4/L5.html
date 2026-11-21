@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>5 · Half-life — GCSE Physics Atomic structure</title>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="core.css">
+</head>
+<body data-lesson="5" data-next="L6.html">
+<header class="top"><a class="home" href="index.html">← All Atomic structure walkthroughs</a>
+<h1>Lesson 5 · Half-life and the random nature of decay</h1>
+<p>AQA GCSE Physics / Combined Science · Atomic structure 4.4.2.4 · about 25 minutes</p></header>
+<main>
+
+<section id="s1" data-title="Random decay" data-mins="8">
+<h2>Random, but predictable</h2>
+<p class="lead">Each of these 400 nuclei has the same chance of decaying in each time step. You can’t predict <b>which</b> will decay — but you can predict <b>how many</b>.</p>
+<div class="grid2">
+ <div class="card" style="padding:8px"><svg id="grid" viewBox="0 0 300 300" width="100%"></svg>
+  <div class="row"><button class="btn" id="one">One time step</button><button class="btn pri" id="run">▶ Run</button><button class="btn" id="rst">↺ Reset</button></div></div>
+ <div class="card" style="padding:8px"><svg id="gr" viewBox="0 0 320 260" width="100%"></svg><div class="read" id="rR" style="font-family:inherit"></div></div>
+</div>
+<div class="key">The <b>half-life</b> of a radioactive isotope is the time it takes for the <b>number of nuclei</b> of the isotope in a sample to <b>halve</b> — or the time it takes for the <b>count rate (or activity)</b> from a sample to fall to <b>half</b> its initial level.</div>
+<div id="q1a"></div>
+</section>
+
+<section id="s2" data-title="Reading a graph" data-mins="6">
+<h2>Finding half-life from a graph</h2>
+<p class="lead">Drag the slider to read the graph. Find when the activity has halved from 800 Bq.</p>
+<div class="grid2">
+ <div class="card" style="padding:8px"><svg id="hl" viewBox="0 0 320 250" width="100%"></svg><div class="sl">Time: <b id="tv"></b> hours<input type="range" id="t" min="0" max="24" step="0.5" value="0"></div></div>
+ <div class="card"><div class="read" id="hR" style="font-family:inherit"></div><div class="tip" style="margin-top:10px">Method: find half the starting value on the y-axis (400), go across to the curve, then down to the time axis. Check with the next half (200).</div></div>
+</div>
+<div id="q2a"></div>
+</section>
+
+<section id="s3" data-title="Calculations" data-mins="5">
+<h2>Half-life calculations</h2>
+<div class="card"><h3>Halving step by step</h3><p style="margin:0">A sample has 1600 Bq and a half-life of 3 days. After 9 days:<br>1600 → (3 days) 800 → (6 days) 400 → (9 days) <b>200 Bq</b>. That is 3 half-lives.</p></div>
+<div class="card"><h3>Net decline as a ratio <span class="tag ht">Higher tier</span></h3><p style="margin:0">After n half-lives, the fraction left is (½)ⁿ. After 3 half-lives: (½)³ = 1/8 remains, so the <b>net decline</b> is 7/8 of the original.</p></div>
+<div id="q3a"></div><div id="q3b"></div><div id="q3c"></div>
+</section>
+
+<section id="s4" data-title="Exam practice" data-mins="6">
+<h2>Exam practice</h2>
+<div id="ex1"></div><div id="ex2"></div>
+<div class="summary"><h3>Lesson summary</h3><ul>
+<li>Decay is random: you can’t predict which nucleus decays next, but large numbers follow a pattern.</li>
+<li>Half-life: time for the number of unstable nuclei (or count rate) to halve.</li>
+<li>Find it on a graph: start value → half → across → down. Check with another halving.</li>
+<li>After n half-lives, (½)ⁿ remains. HT: net decline = 1 − (½)ⁿ.</li></ul></div>
+</section>
+</main>
+<script src="core.js"></script>
+<script>
+const NN=400,PD=0.1;let alive,hist,stR=null;
+function reset(){if(stR){clearInterval(stR);stR=null;$('run').textContent='▶ Run'}alive=Array(NN).fill(1);hist=[NN];draw()}
+function step(){if(hist.length>40)return;let fresh=[];alive=alive.map(a=>a===1&&Math.random()<PD?2:a===2?0:a);hist.push(alive.filter(a=>a===1).length);draw()}
+function draw(){let g='';alive.forEach((a,i)=>{const x=8+(i%20)*14.4,y=8+Math.floor(i/20)*14.4;g+=`<circle cx="${x+5}" cy="${y+5}" r="5.5" fill="${a===1?'#c2410c':a===2?'#f1c40f':'#e2e6ef'}"/>`});$('grid').innerHTML=g;
+ const x0=40,y0=220,X=t=>x0+t*7,Y=n=>y0-n/NN*200;let s=`<line x1="${x0}" y1="${y0}" x2="${X(40)}" y2="${y0}" stroke="#556"/><line x1="${x0}" y1="${y0}" x2="${x0}" y2="15" stroke="#556"/>`;
+ [400,200,100,50].forEach(n=>s+=`<line x1="${x0}" y1="${Y(n)}" x2="${X(40)}" y2="${Y(n)}" stroke="#eef0f6"/><text x="${x0-4}" y="${Y(n)+4}" font-size="10" text-anchor="end" fill="#556">${n}</text>`);
+ for(let t=0;t<=40;t+=10)s+=`<text x="${X(t)}" y="${y0+14}" font-size="10" text-anchor="middle" fill="#556">${t}</text>`;
+ s+=`<text x="180" y="250" font-size="11" text-anchor="middle" fill="#556">time steps</text><text x="44" y="12" font-size="11" fill="#556">undecayed nuclei</text>`;
+ s+=`<path d="M${hist.map((n,t)=>X(t)+' '+Y(n)).join(' L')}" fill="none" stroke="#c2410c" stroke-width="2.5"/>`;$('gr').innerHTML=s;
+ const n=hist[hist.length-1];const half=hist.findIndex(v=>v<=200),q=hist.findIndex(v=>v<=100);
+ $('rR').innerHTML=`Time step ${hist.length-1}: <b>${n}</b> undecayed (orange). Yellow = just decayed.${half>0?`<br>Fell to half (200) after about <b>${half}</b> steps.`:''}${q>0?` Half again (100) after about <b>${q-half}</b> more — the half-life stays (roughly) the same.`:''}`}
+$('one').onclick=step;$('rst').onclick=reset;
+$('run').onclick=()=>{if(stR){clearInterval(stR);stR=null;$('run').textContent='▶ Run';return}$('run').textContent='❚❚ Pause';stR=setInterval(()=>{if(hist.length>40){clearInterval(stR);stR=null;$('run').textContent='▶ Run';return}step()},250)};reset();
+MCQ('q1a',{q:'Why can’t you predict when a particular nucleus will decay?',opts:['The nuclei are too small to see','Radioactive decay is a random process','The half-life keeps changing','Only some nuclei are radioactive'],a:1});
+const A0=800,T12=6;
+function hl(){const t=+$('t').value;$('tv').textContent=t;const A=A0*Math.pow(0.5,t/T12);const x0=45,y0=215,X=t=>x0+t*11,Y=a=>y0-a*0.24;
+ let s=`<line x1="${x0}" y1="${y0}" x2="${X(24)}" y2="${y0}" stroke="#556"/><line x1="${x0}" y1="${y0}" x2="${x0}" y2="15" stroke="#556"/>`;
+ for(let a=0;a<=800;a+=200)s+=`<line x1="${x0}" y1="${Y(a)}" x2="${X(24)}" y2="${Y(a)}" stroke="#eef0f6"/><text x="${x0-4}" y="${Y(a)+4}" font-size="10" text-anchor="end" fill="#556">${a}</text>`;
+ for(let k=0;k<=24;k+=3)s+=`<text x="${X(k)}" y="${y0+14}" font-size="10" text-anchor="middle" fill="#556">${k}</text><line x1="${X(k)}" y1="${y0}" x2="${X(k)}" y2="15" stroke="#f4f5fa"/>`;
+ let d='';for(let k=0;k<=24;k+=0.25)d+=(k?' L':'M')+X(k).toFixed(1)+' '+Y(A0*Math.pow(.5,k/T12)).toFixed(1);
+ s+=`<path d="${d}" fill="none" stroke="#c2410c" stroke-width="2.5"/><path d="M${x0} ${Y(A)} H${X(t)} V${y0}" stroke="#2e86de" stroke-dasharray="4 3" fill="none"/><circle cx="${X(t)}" cy="${Y(A)}" r="5" fill="#2e86de"/><text x="180" y="245" font-size="11" text-anchor="middle" fill="#556">time / hours</text><text x="48" y="12" font-size="11" fill="#556">activity / Bq</text>`;
+ $('hl').innerHTML=s;$('hR').innerHTML=`At ${t} hours the activity is <b>${Math.round(A)} Bq</b>.${Math.abs(A-400)<2?'<br><b style="color:var(--good)">Half of 800! The half-life is 6 hours.</b>':''}${Math.abs(A-200)<2?'<br><b style="color:var(--good)">Halved again after another 6 hours.</b>':''}`}
+$('t').oninput=hl;hl();
+NumQ('q2a',{q:'Use the graph: what is the half-life of this isotope?',ans:6,unit:'hours',steps:['Half of 800 Bq is 400 Bq','Go across from 400 to the curve, then down','6 hours']});
+NumQ('q3a',{q:'A source has an activity of 640 Bq. Its half-life is 5 minutes. What is the activity after 20 minutes?',ans:40,unit:'Bq',steps:['20 ÷ 5 = 4 half-lives','640 → 320 → 160 → 80 → 40','= 40 Bq']});
+NumQ('q3b',{q:'The count rate from a sample falls from 1200 to 150 counts per minute in 24 days. Calculate the half-life.',ans:8,unit:'days',steps:['1200 → 600 → 300 → 150: 3 half-lives','24 ÷ 3','= 8 days']});
+FillQ('q3c',{q:'HT: After 4 half-lives, what fraction of the original nuclei remain undecayed? Give it as 1/…',tpl:'1 / {}',ans:['16'],why:'(½)⁴ = 1/16. The net decline is 15/16.'});
+ExamQ('ex1',{title:'Question 1 · Iodine-131',stem:'<p>Iodine-131 has a half-life of 8 days. A hospital receives a sample with an activity of 4000 Bq.</p>',parts:[
+ {label:'1.1',q:'Define the term half-life.',marks:1,ms:['The time taken for the number of unstable nuclei (or the activity / count rate) to halve']},
+ {label:'1.2',q:'Calculate the activity of the sample after 24 days.',marks:2,ms:['24 ÷ 8 = 3 half-lives','4000 → 2000 → 1000 → 500 Bq']},
+ {label:'1.3',q:'HT: Calculate the ratio of the net decline in activity to the original activity after 24 days.',marks:2,ms:['Decline = 4000 − 500 = 3500 Bq','Ratio = 3500 : 4000 = 7/8']}]});
+ExamQ('ex2',{title:'Question 2 · Random decay',stem:'',parts:[
+ {label:'2.1',q:'A student measures the count rate from a source several times. Each measurement is slightly different. Explain why.',marks:2,ms:['Radioactive decay is random','So the number of decays in a given time varies (fluctuates)']}]});
+</script>
+</body>
+</html>

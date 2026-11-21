@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>5 · Gas pressure and temperature — GCSE Physics Particle model</title>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="core.css">
+</head>
+<body data-lesson="5" data-next="L6.html">
+<header class="top"><a class="home" href="index.html">← All Particle model walkthroughs</a>
+<h1>Lesson 5 · Particle motion in gases: pressure and temperature</h1>
+<p>AQA GCSE Physics / Combined Science · Particle model of matter 4.3.3.1 · about 25 minutes</p></header>
+<main>
+
+<section id="s1" data-title="Temperature" data-mins="6">
+<h2>Gas particles and temperature</h2>
+<p class="lead">The particles in a gas are in <b>constant random motion</b>. Heat the gas and watch them.</p>
+<div class="grid2">
+ <div class="card" style="padding:8px"><svg id="box1" viewBox="0 0 300 220" width="100%"></svg>
+  <div class="sl">Temperature: <b id="t1v"></b> °C<input type="range" id="t1" min="-50" max="250" step="10" value="20"></div></div>
+ <div class="card"><h3>Speed and energy</h3><div id="keB"></div></div>
+</div>
+<div class="key">The <b>temperature</b> of a gas is related to the <b>average kinetic energy</b> of its particles. Higher temperature → particles move faster on average → higher average kinetic energy.</div>
+<div id="q1a"></div>
+</section>
+
+<section id="s2" data-title="Pressure" data-mins="8">
+<h2>Where does gas pressure come from?</h2>
+<p class="lead">Every time a particle hits a wall it pushes on it. Billions of collisions every second add up to a steady force on the walls — the gas <b>pressure</b>. This container is sealed and rigid: its <b>volume is fixed</b>.</p>
+<div class="grid2">
+ <div class="card" style="padding:8px"><svg id="box2" viewBox="0 0 300 220" width="100%"></svg>
+  <div class="sl">Temperature: <b id="t2v"></b> °C<input type="range" id="t2" min="-50" max="250" step="10" value="20"></div></div>
+ <div class="card"><h3>Pressure gauge</h3><svg id="gauge" viewBox="0 0 220 140" width="100%"></svg><div class="read" id="pR" style="font-family:inherit"></div></div>
+</div>
+<div class="key">At <b>constant volume</b>, increasing the temperature of a gas increases its pressure: the particles move faster, so they hit the walls <b>more often</b> and <b>harder</b>.</div>
+<div id="q2a"></div>
+</section>
+
+<section id="s3" data-title="Explaining it" data-mins="5">
+<h2>Writing the explanation</h2>
+<p class="lead">Exam questions on this nearly always want the same chain of ideas. Put the steps in order.</p>
+<div id="order"></div>
+<div class="grid2">
+ <div class="card"><h3>🚗 Tyres on a hot day</h3><p style="margin:0">The air in the tyre gets hotter, so its pressure rises. Drivers check tyre pressures when the tyres are cold.</p></div>
+ <div class="card"><h3>🧴 Aerosol cans</h3><p style="margin:0">“Do not expose to temperatures above 50 °C” — heating the sealed can raises the pressure until it could burst.</p></div>
+</div>
+<div id="q3a"></div>
+</section>
+
+<section id="s4" data-title="Exam practice" data-mins="6">
+<h2>Exam practice</h2>
+<div id="ex1"></div><div id="ex2"></div>
+<div class="summary"><h3>Lesson summary</h3><ul>
+<li>Gas particles are in constant random motion.</li>
+<li>Temperature is related to the average kinetic energy of the particles.</li>
+<li>Pressure is caused by particles colliding with the walls of the container.</li>
+<li>Constant volume: higher temperature → faster particles → more frequent, harder collisions → higher pressure.</li></ul></div>
+</section>
+</main>
+<script src="core.js"></script>
+<script>
+const spd=T=>Math.sqrt((T+273)/293);
+const b1=ParticleBox('box1',{n:22,r:7,col:'#e4572e'});b1.set('gas');
+function t1(){const T=+$('t1').value;$('t1v').textContent=T;const s=spd(T);b1.speed(s);bars('keB',[{l:'average speed',c:'#2e86de',v:s,txt:'×'+s.toFixed(2)},{l:'average kinetic energy',c:'#e4572e',v:s*s,txt:'×'+(s*s).toFixed(2)}],spd(250)**2);}
+$('t1').oninput=t1;t1();
+MCQ('q1a',{q:'A gas is heated. What happens to the average kinetic energy of its particles?',opts:['It decreases','It stays the same','It increases','It becomes zero'],a:2});
+const b2=ParticleBox('box2',{n:22,r:7,col:'#e4572e'});b2.set('gas');let P=0,hist=[];
+function t2(){const T=+$('t2').value;$('t2v').textContent=T;b2.speed(spd(T))}$('t2').oninput=t2;t2();
+function gauge(){const k=b2.hits();hist.push(k);if(hist.length>12)hist.shift();const avg=hist.reduce((a,b)=>a+b,0)/hist.length;const press=avg*4;// per second-ish
+ const ang=-210+Math.min(240,press/220*240);const a=ang*Math.PI/180;
+ $('gauge').innerHTML=`<path d="M30 110 A80 80 0 1 1 190 110" fill="none" stroke="#e2e6ef" stroke-width="14"/><line x1="110" y1="110" x2="${110+70*Math.cos(a)}" y2="${110+70*Math.sin(a)}" stroke="#c2410c" stroke-width="4" stroke-linecap="round"/><circle cx="110" cy="110" r="7" fill="#1d2433"/><text x="110" y="135" text-anchor="middle" font-size="12" fill="#556">pressure</text>`;
+ $('pR').innerHTML=`Collisions with the walls: <b>${Math.round(press)}</b> per second (simulation)<br>Temperature ${$('t2').value} °C`}
+setInterval(gauge,250);
+Order('order',{q:'Order the explanation for why heating a sealed can increases the pressure inside.',items:['The gas is heated, so the temperature increases','The particles gain kinetic energy and move faster','The particles collide with the walls more often','Each collision exerts a bigger force','So the pressure increases']});
+MCQ('q2a',{q:'A sealed rigid container of gas is cooled. What happens to the pressure?',opts:['It increases','It decreases','It stays the same','It becomes zero'],a:1,why:'Slower particles hit the walls less often and less hard, so the pressure falls.'});
+MCQ('q3a',{q:'Which is <b>not</b> part of the reason a gas’s pressure rises when it is heated at constant volume?',opts:['Particles move faster','Particles collide with the walls more often','Particles get bigger','Collisions exert a bigger force'],a:2,why:'The particles don’t change size — they just move faster.'});
+ExamQ('ex1',{title:'Question 1 · Football',stem:'<p>A football is pumped up indoors and then left in hot sunshine. Assume the volume of the ball does not change.</p>',parts:[
+ {label:'1.1',q:'Explain, in terms of particles, why the pressure of the air inside the ball increases.',marks:4,ms:['Temperature of the air increases, so the particles gain kinetic energy / move faster','They collide with the inside of the ball more often (more frequently)','Each collision exerts a bigger force (harder collisions)','Greater total force on the same area → higher pressure']}]});
+ExamQ('ex2',{title:'Question 2 · Temperature',stem:'',parts:[
+ {label:'2.1',q:'Describe the motion of the particles in a gas.',marks:2,ms:['Constant / continuous','Random motion (in all directions, at a range of speeds)']},
+ {label:'2.2',q:'State what the temperature of a gas is related to.',marks:1,ms:['The average kinetic energy of its particles']}]});
+</script>
+</body>
+</html>

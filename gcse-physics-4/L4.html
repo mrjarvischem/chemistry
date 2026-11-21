@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>4 · Nuclear equations — GCSE Physics Atomic structure</title>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="core.css">
+<style>.nq{font-size:1.6rem;font-weight:700;display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center;padding:10px 0}.nz{display:inline-flex;align-items:center}.nz .st{display:inline-flex;flex-direction:column;font-size:.85rem;line-height:1.05;text-align:right;margin-right:2px}.nz.hl{color:var(--acc)}</style>
+</head>
+<body data-lesson="4" data-next="L5.html">
+<header class="top"><a class="home" href="index.html">← All Atomic structure walkthroughs</a>
+<h1>Lesson 4 · Nuclear equations</h1>
+<p>AQA GCSE Physics / Combined Science · Atomic structure 4.4.2.3 · about 25 minutes</p></header>
+<main>
+
+<section id="s1" data-title="The notation" data-mins="5">
+<h2>Writing nuclei</h2>
+<div class="grid2">
+ <div class="card"><div class="nq" id="ex0"></div><p style="margin:0"><b>Top number</b>: mass number (protons + neutrons).<br><b>Bottom number</b>: atomic number (protons).<br>Uranium-238 has 92 protons and 238 − 92 = 146 neutrons.</p></div>
+ <div class="card"><h3>The particles</h3><table class="t"><tr><th>Radiation</th><th>Symbol in an equation</th></tr><tr><td>Alpha</td><td id="sa"></td></tr><tr><td>Beta</td><td id="sb"></td></tr><tr><td>Gamma</td><td>γ (no mass, no charge)</td></tr><tr><td>Neutron</td><td id="sn"></td></tr></table></div>
+</div>
+<div class="key">In every nuclear equation the <b>top numbers balance</b> and the <b>bottom numbers balance</b>.</div>
+<div id="q1a"></div>
+</section>
+
+<section id="s2" data-title="Decay machine" data-mins="9">
+<h2>The decay machine</h2>
+<p class="lead">Pick a nucleus and let it decay. Watch what happens to the mass number and atomic number.</p>
+<div class="row" id="pick"></div>
+<div class="card" style="margin-top:10px"><div class="nq" id="eqn"></div><div id="eqS"></div><div class="read" id="eqR" style="font-family:inherit;margin-top:8px"></div></div>
+<div class="grid2">
+ <div class="card"><h3>Alpha decay</h3><p style="margin:0">Mass number <b>− 4</b>, atomic number <b>− 2</b>. A new element is formed, two places back in the periodic table.</p></div>
+ <div class="card"><h3>Beta decay</h3><p style="margin:0">Mass number <b>unchanged</b>, atomic number <b>+ 1</b> (a neutron became a proton). A new element, one place forward.</p></div>
+</div>
+<div class="note"><b>Gamma</b> emission doesn’t change the mass or the charge of the nucleus — it just gets rid of extra energy. <b>Neutron</b> emission lowers the mass number by 1; the element stays the same.</div>
+</section>
+
+<section id="s3" data-title="Your turn" data-mins="5">
+<h2>Complete the equations</h2>
+<div id="q3a"></div><div id="q3b"></div><div id="q3c"></div>
+</section>
+
+<section id="s4" data-title="Exam practice" data-mins="6">
+<h2>Exam practice</h2>
+<div id="ex1"></div><div id="ex2"></div>
+<div class="summary"><h3>Lesson summary</h3><ul>
+<li>Top = mass number; bottom = atomic number. Both must balance.</li>
+<li>Alpha (⁴₂He): mass − 4, atomic number − 2.</li>
+<li>Beta (⁰₋₁e): mass unchanged, atomic number + 1.</li>
+<li>Gamma: no change in mass or charge. Neutron: mass − 1.</li></ul></div>
+</section>
+</main>
+<script src="core.js"></script>
+<script>
+const nuc=(A,Z,S,hl)=>`<span class="nz ${hl?'hl':''}"><span class="st"><span>${A}</span><span>${Z}</span></span>${S}</span>`;
+$('ex0').innerHTML=nuc(238,92,'U');$('sa').innerHTML=nuc(4,2,'He')+' or '+nuc(4,2,'α');$('sb').innerHTML=nuc(0,'−1','e')+' or '+nuc(0,'−1','β');$('sn').innerHTML=nuc(1,0,'n');
+MCQ('q1a',{q:'How many neutrons are in a nucleus of <sup>14</sup><sub>6</sub>C?',opts:['6','8','14','20'],a:1,why:'14 − 6 = 8 neutrons.'});
+const ELS={84:'Po',86:'Rn',88:'Ra',90:'Th',91:'Pa',92:'U',82:'Pb',6:'C',7:'N',38:'Sr',39:'Y',53:'I',54:'Xe',27:'Co',28:'Ni',95:'Am',93:'Np',19:'K',20:'Ca'};
+const N=[['Uranium-238',238,92,'a'],['Radium-226',226,88,'a'],['Americium-241',241,95,'a'],['Carbon-14',14,6,'b'],['Strontium-90',90,38,'b'],['Iodine-131',131,53,'b']];let cur=0;
+$('pick').innerHTML=N.map((n,i)=>`<button class="btn ${i?'':'on'}" data-i="${i}">${n[0]}</button>`).join('');
+let stp;
+function render(s){const [nm,A,Z,t]=N[cur];const a=t==='a';const A2=a?A-4:A,Z2=a?Z-2:Z+1;
+ const parts=[nuc(A,Z,ELS[Z]),'→',s>=1?(s>=2?nuc(A2,Z2,ELS[Z2],1):`<span class="nz"><span class="st"><span>?</span><span>?</span></span>?</span>`):'',s>=1?'+':'',s>=1?(a?nuc(4,2,'He',1):nuc(0,'−1','e',1)):''];
+ $('eqn').innerHTML=parts.join(' ');
+ $('eqR').innerHTML=[`${nm}: ${Z} protons, ${A-Z} neutrons. It is unstable and decays by <b>${a?'alpha':'beta'}</b> emission.`,
+  a?'An alpha particle (2 protons + 2 neutrons) leaves the nucleus.':'Inside the nucleus a neutron turns into a proton, and a fast electron (beta particle) is ejected.',
+  `Balance the tops: ${A} = ${A2} + ${a?4:0} ✓<br>Balance the bottoms: ${Z} = ${Z2} + ${a?2:'(−1)'} ✓<br>Atomic number ${Z2} is <b>${ELS[Z2]}</b> — a new element.`][s]}
+function pick(i){cur=i;$('pick').querySelectorAll('.btn').forEach(b=>b.classList.toggle('on',+b.dataset.i===i));stp=Stepper('eqS',{n:3,render,auto:2600})}
+$('pick').onclick=e=>{const b=e.target.closest('.btn');if(b)pick(+b.dataset.i)};pick(0);
+FillQ('q3a',{q:'Polonium-210 decays by alpha emission. Complete the equation: <sup>210</sup><sub>84</sub>Po → <sup>?</sup><sub>?</sub>Pb + <sup>4</sup><sub>2</sub>He',tpl:'Pb: mass number {} &nbsp; atomic number {}',ans:['206','82'],why:'210 − 4 = 206; 84 − 2 = 82.'});
+FillQ('q3b',{q:'Strontium-90 decays by beta emission to yttrium (Y): <sup>90</sup><sub>38</sub>Sr → <sup>?</sup><sub>?</sub>Y + <sup>0</sup><sub>−1</sub>e',tpl:'Y: mass number {} &nbsp; atomic number {}',ans:['90','39'],why:'Mass unchanged; 38 + 1 = 39.'});
+MCQ('q3c',{q:'A nucleus emits a gamma ray. What happens to its mass number and atomic number?',opts:['Both decrease','Mass number decreases by 4','Atomic number increases by 1','Neither changes'],a:3});
+ExamQ('ex1',{title:'Question 1 · Radon',stem:'<p>Radon-222 (<sup>222</sup><sub>86</sub>Rn) decays by alpha emission to form an isotope of polonium (Po).</p>',parts:[
+ {label:'1.1',q:'Write the complete nuclear equation.',marks:3,ms:['<sup>222</sup><sub>86</sub>Rn → <sup>218</sup><sub>84</sub>Po + <sup>4</sup><sub>2</sub>He','218 and 84 correct for Po','alpha particle written correctly as ⁴₂He (or ⁴₂α)']},
+ {label:'1.2',q:'How many neutrons are in the polonium nucleus formed?',marks:1,ms:['218 − 84 = 134']}]});
+ExamQ('ex2',{title:'Question 2 · Beta decay',stem:'',parts:[
+ {label:'2.1',q:'Describe what happens inside the nucleus during beta decay.',marks:2,ms:['A neutron changes into a proton','An electron (beta particle) is ejected at high speed']},
+ {label:'2.2',q:'Explain why beta decay changes the element.',marks:2,ms:['The number of protons (atomic number) increases by 1','The element is determined by the number of protons']}]});
+</script>
+</body>
+</html>
