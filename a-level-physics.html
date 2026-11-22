@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>A-level Physics · Mr Jarvis</title>
-<meta name="description" content="A-level Physics: interactive topic walkthroughs and knowledge organisers.">
+<meta name="description" content="A-level Physics: interactive topic walkthroughs, 25-minute revision activities and knowledge organisers.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -41,7 +41,7 @@
   .level-intro h2{ font-family:Fraunces, Georgia, serif; font-size:1.9rem; margin:0; }
   .level-intro p{ margin:0; color:var(--ink-soft); }
 
-  .cat-nav{ display:grid; grid-template-columns:repeat(2, 1fr); gap:14px; margin-bottom:20px; }
+  .cat-nav{ display:grid; grid-template-columns:repeat(auto-fit, minmax(230px, 1fr)); gap:14px; margin-bottom:20px; }
   .cat-tile{ text-decoration:none; color:inherit; background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
     padding:18px; display:flex; flex-direction:column; gap:10px; transition:transform .15s, box-shadow .15s, border-color .15s; }
   .cat-tile:hover{ transform:translateY(-3px); box-shadow:0 10px 24px rgba(20,33,61,.08); border-color:var(--accent); }
@@ -113,7 +113,7 @@
     <a class="back" href="index.html">← Mr Jarvis' Chemistry &amp; Physics Page</a>
     <p class="eyebrow">AQA Physics</p>
     <h1>A-level Physics</h1>
-    <p class="tagline">Interactive 25-minute topic walkthroughs and knowledge organisers for AQA A-level Physics.</p>
+    <p class="tagline">Interactive 25-minute topic walkthroughs, printable 25-minute revision activities and knowledge organisers for AQA A-level Physics.</p>
   </div>
 </header>
 
@@ -151,6 +151,12 @@ const koP = (code, label = code) => [
   { title: `${label} – Self-test sheet`, url: `${KO_FOLDER}${code}-self-test.pdf` },
 ];
 const W1 = "a-physics-1/";
+/* 25-minute revision activities are PDFs in the a-physics-25min folder.
+   sheets("AQA 3.2.1 Particles", 3) adds Sheet 1 to Sheet 3 for files named
+   "AQA 3.2.1 Particles - Sheet 1.pdf" and so on. */
+const PDF_FOLDER = "a-physics-25min/";
+const sheets = (base, n) => Array.from({ length: n }, (_, i) =>
+  ({ title: `${base.replace(/^AQA\s+[\d.]+\s+/, "")} – Sheet ${i + 1}`, url: PDF_FOLDER + encodeURIComponent(`${base} - Sheet ${i + 1}`) + ".pdf" }));
 
 const PHYS = {
   name: "A-level Physics",
@@ -247,6 +253,19 @@ const PHYS = {
       { title: "10 · Alternating currents and transformers", url: "a-physics-5/L10.html" },
     ],
   },
+  /*ACT*/
+  activities: {
+    "3.1 Measurements and their errors": sheets("AQA 3.1 Measurements and their errors", 3),
+    "3.2.1 Particles": sheets("AQA 3.2.1 Particles", 3),
+    "3.2.2 Electromagnetic radiation and quantum phenomena": sheets("AQA 3.2.2 Electromagnetic radiation and quantum phenomena", 3),
+    "3.3.1 Progressive and stationary waves": sheets("AQA 3.3.1 Progressive and stationary waves", 3),
+    "3.3.2 Refraction, diffraction and interference": sheets("AQA 3.3.2 Refraction, diffraction and interference", 3),
+    "3.4.1 Force, energy and momentum": sheets("AQA 3.4.1 Force, energy and momentum", 3),
+    "3.4.2 Materials": sheets("AQA 3.4.2 Materials", 3),
+    "3.5.1 Current electricity": sheets("AQA 3.5.1 Current electricity", 3),
+    "3.6.1 Periodic motion": sheets("AQA 3.6.1 Periodic motion", 3),
+  },
+  /*END ACT*/
   koNote: "Everything can also come up on Paper 3.",
   kos: {},   // filled in automatically from the builder (see loadKOs below)
 };
@@ -254,10 +273,12 @@ const PHYS = {
 
 const ICONS = {
   walkthroughs: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2V5z"/><path d="M19 19v2H6M8 7h7M8 11h5"/></svg>',
+  activities: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M10 2h4M12 2v3"/></svg>',
   kos: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>',
 };
 const CATS = [
   { key: "walkthroughs", title: "Topic walkthroughs", blurb: "Interactive 25-minute walkthroughs with animations, simulations, quick checks as you go and exam practice with mark schemes at the end." },
+  { key: "activities", title: "25-minute revision activities", blurb: "Printable past-paper revision sheets for each topic, with the AQA mark scheme at the back. Download the PDF, set a 25-minute timer and work through it, then mark it.", paperLabels: true },
   { key: "kos", title: "Knowledge organisers", blurb: "Key facts, definitions and equations for every topic, in sets of 10. Learn from the Q&A sheet, then test yourself on the self-test sheet.", paperLabels: true },
 ];
 
