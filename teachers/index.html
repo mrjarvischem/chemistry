@@ -23,24 +23,23 @@
   .eyebrow{ text-transform:uppercase; letter-spacing:.14em; font-size:.78rem; font-weight:600; opacity:.75; margin:0 0 10px; }
   h1{ font-family:Fraunces, Georgia, serif; font-weight:700; font-size:clamp(1.9rem, 5vw, 3rem); line-height:1.1; margin:0 0 12px; }
   .tagline{ opacity:.85; max-width:640px; margin:0 0 30px; }
-  .level-switch{ display:flex; gap:8px; }
-  .level-btn{ appearance:none; border:0; cursor:pointer; font:inherit; font-weight:600; font-size:1.05rem; padding:14px 28px;
-    border-radius:12px 12px 0 0; color:#fff; background:rgba(255,255,255,.1); }
-  .level-btn:hover{ background:rgba(255,255,255,.18); }
-  .level-btn[aria-selected="true"]{ background:var(--bg); color:var(--ink); }
-  .level-btn:focus-visible, a.card:focus-visible, .jump-btn:focus-visible{ outline:3px solid #f0b34b; outline-offset:2px; }
+  .subject-switch{ display:flex; gap:8px; flex-wrap:wrap; }
+  .subject-btn{ appearance:none; border:0; cursor:pointer; font:inherit; font-weight:600; font-size:1.05rem; padding:14px 26px;
+    border-radius:12px 12px 0 0; color:#fff; background:rgba(255,255,255,.1); display:inline-flex; align-items:center; gap:10px; border-top:5px solid var(--accent); }
+  .subject-btn:hover{ background:rgba(255,255,255,.18); }
+  .subject-btn[aria-selected="true"]{ background:var(--bg); color:var(--accent); }
+  .subject-btn:focus-visible, a.card:focus-visible, .level-btn:focus-visible{ outline:3px solid #f0b34b; outline-offset:2px; }
+  .level-switch{ display:inline-flex; gap:4px; padding:4px; border-radius:999px; background:var(--card); border:1.5px solid var(--accent); }
+  .level-btn{ appearance:none; border:0; cursor:pointer; font:inherit; font-weight:600; font-size:1rem; padding:9px 24px; border-radius:999px;
+    color:var(--accent); background:none; }
+  .level-btn:hover{ background:var(--accent-soft); }
+  .level-btn[aria-selected="true"]{ background:var(--accent); color:#fff; }
   main{ padding:26px 20px 60px; }
-  .jump{ display:flex; flex-wrap:wrap; gap:10px; margin:0 0 26px; }
-  .jump-btn{ appearance:none; cursor:pointer; font:inherit; font-weight:600; font-size:.95rem; padding:8px 18px; border-radius:999px;
-    color:var(--accent); background:var(--accent-soft); border:1.5px solid var(--accent); display:inline-flex; align-items:center; gap:8px; }
-  .jump-btn::before{ content:""; width:9px; height:9px; border-radius:50%; background:var(--accent); }
-  .jump-btn:hover{ background:var(--accent); color:#fff; }
-  .jump-btn:hover::before{ background:#fff; }
   section.subject{ background:var(--accent-soft); border:1px solid var(--line); border-top:6px solid var(--accent); border-radius:var(--radius);
     padding:22px 22px 6px; margin-bottom:30px; scroll-margin-top:14px; }
-  .subject-head{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin:0 0 20px; }
+  .subject-head{ display:flex; align-items:center; flex-wrap:wrap; gap:12px 18px; margin:0 0 22px; }
   .subject-head h2{ font-family:Fraunces, Georgia, serif; font-weight:700; font-size:clamp(1.6rem, 4vw, 2.1rem); line-height:1.1; margin:0; color:var(--accent); }
-  .subject-head .count{ font-size:.85rem; font-weight:600; color:var(--accent); white-space:nowrap; }
+  .subject-head .count{ font-size:.85rem; font-weight:600; color:var(--accent); white-space:nowrap; margin-left:auto; }
   section.topic{ margin-bottom:26px; }
   section.topic h3{ font-family:Fraunces, Georgia, serif; font-weight:600; font-size:1.2rem; margin:0 0 12px; padding-left:12px; border-left:4px solid var(--accent); }
   .grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:14px; }
@@ -54,18 +53,19 @@
   .card .desc{ font-size:.9rem; color:var(--ink-soft); }
   .empty{ color:var(--muted); font-size:.95rem; margin:0; }
   footer{ text-align:center; color:var(--muted); font-size:.85rem; padding:0 20px 40px; }
-  @media (max-width:520px){ .level-btn{ padding:12px 18px; } section.subject{ padding:18px 14px 2px; } }
+  @media (max-width:520px){ .subject-btn{ padding:12px 14px; font-size:1rem; } .level-btn{ padding:8px 18px; } section.subject{ padding:18px 14px 2px; } }
 </style>
 </head>
-<body data-level="alevel">
+<body>
 <header>
   <div class="wrap">
     <p class="eyebrow">Mr Jarvis' Chemistry Page</p>
     <h1>Teacher resources</h1>
     <p class="tagline">Simulators and classroom tools for teachers. This page is not listed on the main site, so please only pass the link on to colleagues.</p>
-    <div class="level-switch" role="tablist" aria-label="Level">
-      <button class="level-btn" role="tab" data-level="gcse" aria-selected="false">GCSE</button>
-      <button class="level-btn" role="tab" data-level="alevel" aria-selected="true">A-level</button>
+    <div class="subject-switch" role="tablist" aria-label="Subject">
+      <button class="subject-btn" role="tab" data-subject="biology" aria-selected="false">Biology</button>
+      <button class="subject-btn" role="tab" data-subject="chemistry" aria-selected="true">Chemistry</button>
+      <button class="subject-btn" role="tab" data-subject="physics" aria-selected="false">Physics</button>
     </div>
   </div>
 </header>
@@ -123,9 +123,16 @@ const RESOURCES = {
       { topic:"Homeostasis, inheritance and ecology", items:[
       ]},
       { topic:"Required practicals", items:[
+        { title:"Using a light microscope", kind:"Simulator", desc:"Required practical 1: focus onion and cheek cells at three magnifications, estimate cell size with a ruler or scale bar, and practise magnification calculations.", href:"microscopy-simulator.html" },
+        { title:"Antiseptics and bacterial growth", kind:"Simulator", desc:"Required practical 2 (biology only): incubate an agar plate, measure the clear zone around each disc and calculate areas, with aseptic technique on or off.", href:"microbiology-simulator.html" },
         { title:"Osmosis in plant tissue", kind:"Simulator", desc:"Required practical 3: change in mass of potato cylinders in sucrose solutions, with blotting and natural variation options.", href:"osmosis-simulator.html" },
+        { title:"Food tests", kind:"Simulator", desc:"Required practical 4: Benedict’s, iodine, Biuret and Sudan III tests on eight foods, with a mystery samples mode.", href:"food-tests-simulator.html" },
         { title:"Effect of pH on amylase", kind:"Simulator", desc:"Required practical 5: iodine spotting tile method with a water bath and stop clock, across a range of buffer pH values.", href:"amylase-ph-simulator.html" },
         { title:"Light intensity and photosynthesis", kind:"Simulator", desc:"Required practical 6: count bubbles from pondweed at different lamp distances, with hydrogencarbonate and variation options.", href:"photosynthesis-simulator.html" },
+        { title:"Reaction time", kind:"Simulator", desc:"Required practical 7: catch a falling ruler for a real reaction time, or simulate a student, and compare hand, caffeine, distraction or practice.", href:"reaction-time-simulator.html" },
+        { title:"Plant responses to light and gravity", kind:"Simulator", desc:"Required practical 8 (biology only): seedlings in full light, one-sided light and dark, or beans in three positions, with daily heights and an auxin overlay.", href:"plant-responses-simulator.html" },
+        { title:"Field investigations", kind:"Simulator", desc:"Required practical 9: random quadrats with a population estimate checked against the true value, a sampling bias option, and a transect from under a tree.", href:"field-investigation-simulator.html" },
+        { title:"Effect of temperature on decay", kind:"Simulator", desc:"Required practical 10 (biology only): milk and lipase with cresol red in a water bath, timing the colour change from 5 to 60 °C.", href:"decay-simulator.html" },
       ]}
     ]
   },
@@ -179,29 +186,31 @@ const RESOURCES = {
     ]
   }
 };
-const SUBJECTS = [["chemistry","Chemistry"],["physics","Physics"],["biology","Biology"]];
+const SUBJECTS = { biology:"Biology", chemistry:"Chemistry", physics:"Physics" };
+const LEVELS = [["gcse","GCSE"],["alevel","A-level"]];
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-function show(level){
-  document.body.dataset.level = level;
-  document.querySelectorAll(".level-btn").forEach(b => b.setAttribute("aria-selected", b.dataset.level === level));
+let subject = "chemistry", level = "alevel";
+function show(){
+  document.querySelectorAll(".subject-btn").forEach(b => b.setAttribute("aria-selected", b.dataset.subject === subject));
   const card = i => '<a class="card" href="' + esc(i.href) + '"><span class="kind">' + esc(i.kind || "Resource") +
     '</span><span class="title">' + esc(i.title) + '</span><span class="desc">' + esc(i.desc || "") + '</span></a>';
   const topic = t => '<section class="topic"><h3>' + esc(t.topic) + '</h3>' + (t.items.length
     ? '<div class="grid">' + t.items.map(card).join("") + '</div>' : '<p class="empty">Nothing here yet.</p>') + '</section>';
+  const count = l => RESOURCES[l][subject].reduce((a, t) => a + t.items.length, 0);
+  const topics = RESOURCES[level][subject], n = count(level);
   document.getElementById("content").innerHTML =
-    '<nav class="jump" aria-label="Subjects">' + SUBJECTS.map(([id, name]) =>
-      '<button class="jump-btn" type="button" data-subject="' + id + '">' + name + '</button>').join("") + '</nav>' +
-    SUBJECTS.map(([id, name]) => {
-      const topics = RESOURCES[level][id], n = topics.reduce((a, t) => a + t.items.length, 0);
-      return '<section class="subject" id="' + id + '" data-subject="' + id + '"><div class="subject-head"><h2>' + name +
-        '</h2><span class="count">' + n + (n === 1 ? ' resource' : ' resources') + '</span></div>' + topics.map(topic).join("") + '</section>';
-    }).join("");
-  document.querySelectorAll(".jump-btn").forEach(b => b.onclick = () =>
-    document.getElementById(b.dataset.subject).scrollIntoView({ behavior:"smooth", block:"start" }));
-  try{ history.replaceState(null, "", "#" + level); }catch(e){}
+    '<section class="subject" data-subject="' + subject + '"><div class="subject-head"><h2>' + SUBJECTS[subject] + '</h2>' +
+    '<div class="level-switch" role="tablist" aria-label="Level">' + LEVELS.map(([id, name]) =>
+      '<button class="level-btn" type="button" role="tab" data-level="' + id + '" aria-selected="' + (id === level) + '">' + name + ' (' + count(id) + ')</button>').join("") + '</div>' +
+    '<span class="count">' + n + (n === 1 ? ' resource' : ' resources') + '</span></div>' + topics.map(topic).join("") + '</section>';
+  document.querySelectorAll(".level-btn").forEach(b => b.onclick = () => { level = b.dataset.level; show(); });
+  try{ history.replaceState(null, "", "#" + subject + "-" + level); }catch(e){}
 }
-document.querySelectorAll(".level-btn").forEach(b => b.onclick = () => show(b.dataset.level));
-show(location.hash === "#gcse" ? "gcse" : "alevel");
+document.querySelectorAll(".subject-btn").forEach(b => b.onclick = () => { subject = b.dataset.subject; show(); });
+(() => { const h = location.hash.slice(1).split("-");
+  if (SUBJECTS[h[0]]) { subject = h[0]; if (h[1] === "gcse" || h[1] === "alevel") level = h[1]; }
+  else if (h[0] === "gcse" || h[0] === "alevel") level = h[0];
+  show(); })();
 </script>
 </body>
 </html>

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="gate.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Plant Responses Practical Simulator</title>
+<style>
+/* Layout idea: lab bench on the left (apparatus you operate), lab book on the right (set-up, results table, graph, teacher notes). Light green biology palette, single light theme for projectors. */
+:root{color-scheme:light;--cream:#eef5ea;--paper:#fafdf7;--ink:#1f3324;--brown:#2f6b46;--line:#c3d9c0;--soft:#dfeeda;--good:#0f7a4f;--warn:#9a3b1f;
+  --display:Georgia,"Times New Roman",serif;--body:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--cream);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.45}
+header{padding:16px 20px 8px;display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline}
+h1{font-family:var(--display);font-size:1.6rem;margin:0;text-wrap:balance}
+header p{margin:0;color:var(--brown)}
+main{display:grid;gap:16px;padding:8px 16px 24px;grid-template-columns:1fr}
+@media (min-width:980px){main{grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);align-items:start}}
+.col{display:flex;flex-direction:column;gap:16px;min-width:0}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+h2{font-family:var(--display);font-size:1.1rem;margin:0 0 10px}
+.row{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+.row + .row{margin-top:10px}
+.lab{font-weight:600;min-width:7.5em}
+.seg{display:flex;flex-wrap:wrap;gap:4px}
+button{font:inherit;color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:7px;padding:6px 12px;cursor:pointer;min-height:38px}
+button:hover{border-color:var(--brown)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--brown);outline-offset:2px}
+button[aria-pressed="true"]{background:var(--brown);border-color:var(--brown);color:#fff}
+button.primary{background:var(--brown);border-color:var(--brown);color:#fff;font-weight:600;padding:8px 20px}
+button:disabled{opacity:.45;cursor:not-allowed}
+input[type=range]{flex:1;min-width:140px;accent-color:var(--brown)}
+input[type=number],input[type=text]{font:inherit;padding:6px 8px;border:1px solid var(--line);border-radius:7px;width:8em;background:#fff;color:var(--ink)}
+.status{min-height:3.1em;padding:8px 12px;border-left:5px solid var(--brown);background:var(--soft);border-radius:4px;margin-top:12px}
+.status.good{border-color:var(--good)}
+.status.warn{border-color:var(--warn)}
+.clock{font-family:"Courier New",monospace;font-weight:700;font-size:2.4rem;letter-spacing:.06em;background:#1c2b20;color:#d6f0c8;border-radius:8px;padding:6px 12px;text-align:center;font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:center}
+th{background:var(--soft);font-weight:600;font-size:.9rem}
+tr.sel td{background:#cfe6c8}
+tr.sum td{font-weight:700;background:#f0f7ec}
+td.none{color:var(--warn);font-size:.85rem}
+.graphwrap{overflow-x:auto}
+.graphwrap svg{width:100%;min-width:320px;height:auto;display:block}
+.bench svg,.bench canvas{max-width:100%;height:auto;display:block;margin:0 auto}
+details summary{cursor:pointer;font-family:var(--display);font-size:1.1rem;font-weight:700}
+details ul{margin:8px 0 0;padding-left:1.2em}
+details li{margin:4px 0;max-width:68ch}
+details h3{font-size:1rem;margin:12px 0 0}
+.note{font-size:.85rem;color:var(--brown);margin:8px 0 0}
+.big{font-family:var(--display);font-size:1.5rem;font-weight:700}
+.chip{display:inline-block;width:16px;height:16px;border-radius:50%;vertical-align:-3px;margin-right:6px;border:1px solid rgba(0,0,0,.25)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+#pots svg{width:100%;height:auto;display:block}</style>
+</head>
+<body>
+<header>
+  <h1>Plant responses to light and gravity</h1>
+  <p>AQA GCSE Biology required practical 8 (biology only): the effect of light or gravity on newly germinated seedlings</p>
+</header>
+<main>
+  <div class="col">
+<section class="panel bench" aria-label="Seedlings">
+  <h2 id="benchTitle">Seedlings</h2>
+  <div id="pots"></div>
+  <div class="row" style="margin-top:10px"><label class="lab" for="day" style="min-width:auto">Day <b id="dayN">0</b></label><input type="range" id="day" min="0" max="7" step="1" value="0">
+    <button class="primary" id="growBtn">Grow for a week</button></div>
+  <div class="row"><button id="auxBtn" aria-pressed="false">Show auxin</button><button id="resetBtn">New seeds</button></div>
+  <div class="status" id="status" aria-live="polite"></div>
+</section></div>
+  <div class="col">
+<section class="panel" aria-label="Set up">
+  <h2>Set up the investigation</h2>
+  <div class="row"><span class="lab">Investigate</span><div class="seg" id="modeSeg"></div></div>
+  <p class="note" id="setNote"></p>
+</section>
+<section class="panel" aria-label="Results">
+  <h2 id="resTitle">Results</h2>
+  <div class="tablewrap"><table><thead id="thead"></thead><tbody id="tbody"></tbody></table></div>
+  <p class="note">A row is recorded each day as the seedlings grow.</p>
+</section>
+<section class="panel" aria-label="Graph"><h2>Graph</h2><div class="graphwrap" id="graph"></div></section><section class="panel"><details><summary>Teacher notes</summary>
+<h3>Variables</h3>
+<ul><li>Independent: direction of light (or the direction of gravity relative to the seed).</li>
+<li>Dependent: height of the seedlings and the direction they grow.</li>
+<li>Control: number and type of seeds, volume of water, temperature, age of seedlings.</li></ul>
+<h3>Method this models</h3>
+<ul><li>Germinate mustard or cress seeds on damp cotton wool in three Petri dishes.</li>
+<li>Put one dish in full light, one in a box with a slit on one side, and one in a dark cupboard.</li>
+<li>Measure the height of each seedling every day for a week and draw labelled diagrams.</li></ul>
+<h3>Questions to draw out</h3>
+<ul><li>Which seedlings are tallest? Why are the seedlings in the dark tall, thin and yellow?</li>
+<li>Switch on auxin for the one-sided light. Where does auxin collect, and what does it do to those cells in a shoot?</li>
+<li>Why is a mean of several seedlings used?</li>
+<li>In the gravity investigation, roots and shoots respond in opposite directions to the same stimulus. How does auxin explain this?</li>
+<li>Why are these responses an advantage to the plant?</li></ul><p class="note">The data are simulated. Growth rates and bending angles are typical values for mustard seedlings and bean roots.</p></details></section></div>
+</main>
+<script>
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id);
+const el=(t,c,s)=>{const e=document.createElement(t);if(c)e.className=c;if(s!=null)e.textContent=s;return e};
+function seg(id,opts,get,set){const box=$(id);box.textContent='';opts.forEach(o=>{const v=Array.isArray(o)?o[0]:o,l=Array.isArray(o)?o[1]:String(o);const b=el('button','',l);b.type='button';b.setAttribute('aria-pressed',String(get()===v));b.onclick=()=>{set(v);seg(id,opts,get,set)};box.appendChild(b)})}
+const gauss=()=>{let u=0;for(let i=0;i<6;i++)u+=Math.random();return(u-3)/.7071};
+const mean=a=>a.reduce((x,y)=>x+y,0)/a.length;
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const reduced=matchMedia('(prefers-reduced-motion:reduce)').matches;
+function status(msg,cls){const s=$('status');s.textContent=msg;s.className='status'+(cls?' '+cls:'')}
+function ticks(a,b,n){const raw=(b-a)/(n||5),st=Math.pow(10,Math.floor(Math.log10(raw))),e=raw/st,s=st*(e>=5?5:e>=2?2:1),r=[];for(let v=Math.ceil(a/s-1e-9)*s;v<=b+1e-9;v+=s)r.push(+v.toFixed(6));return r}
+const COLS=['#2f6b46','#c4781e','#3a6ea5','#9a3b1f'];
+function plot(id,o){
+  const W=520,H=300,L=62,R=16,T=o.series.length>1?34:14,B=48;let xs=[],ys=[];
+  o.series.forEach(s=>s.pts.forEach(p=>{xs.push(p[0]);ys.push(p[1])}));
+  let x0=o.xmin!=null?o.xmin:Math.min.apply(null,xs.concat(0)),x1=o.xmax!=null?o.xmax:Math.max.apply(null,xs.concat(1)),y0=o.ymin||0,y1=o.ymax!=null?o.ymax:Math.max.apply(null,ys.concat(o.yfloor||1))*1.12;
+  if(o.cats){x0=-.6;x1=o.cats.length-.4}
+  const X=v=>L+(v-x0)/(x1-x0)*(W-L-R),Y=v=>H-B-(v-y0)/(y1-y0)*(H-T-B);
+  let s='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Graph of '+o.yl+' against '+o.xl+'" font-family="system-ui,Arial" font-size="12" fill="#1f3324">';
+  ticks(y0,y1,5).forEach(v=>{s+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+Y(v)+'" y2="'+Y(v)+'" stroke="#dbe8d6"/><text x="'+(L-7)+'" y="'+(Y(v)+4)+'" text-anchor="end">'+v+'</text>'});
+  if(o.cats)o.cats.forEach((c,i)=>{s+='<text x="'+X(i)+'" y="'+(H-B+17)+'" text-anchor="middle">'+c+'</text>'});
+  else ticks(x0,x1,6).forEach(v=>{s+='<line x1="'+X(v)+'" x2="'+X(v)+'" y1="'+T+'" y2="'+(H-B)+'" stroke="#e7f0e3"/><text x="'+X(v)+'" y="'+(H-B+17)+'" text-anchor="middle">'+v+'</text>'});
+  s+='<path d="M'+L+' '+T+'V'+(H-B)+'H'+(W-R)+'" fill="none" stroke="#1f3324" stroke-width="1.6"/>';
+  s+='<text x="'+((L+W-R)/2)+'" y="'+(H-8)+'" text-anchor="middle" font-size="13" font-weight="600">'+o.xl+'</text><text transform="translate(15 '+((T+H-B)/2)+') rotate(-90)" text-anchor="middle" font-size="13" font-weight="600">'+o.yl+'</text>';
+  o.series.forEach((se,i)=>{const col=se.color||COLS[i%4];
+    if(o.cats){const bw=(W-L-R)/o.cats.length*.55;se.pts.forEach(p=>{s+='<rect x="'+(X(p[0])-bw/2)+'" y="'+Y(p[1])+'" width="'+bw+'" height="'+(Y(y0)-Y(p[1]))+'" fill="'+col+'" rx="3"/>'})}
+    else{if(se.line!==false&&se.pts.length>1)s+='<polyline points="'+se.pts.map(p=>X(p[0])+','+Y(p[1])).join(' ')+'" fill="none" stroke="'+col+'" stroke-width="2.4"'+(se.dash?' stroke-dasharray="6 5"':'')+'/>';
+      if(!se.dash)se.pts.forEach(p=>{s+='<circle cx="'+X(p[0])+'" cy="'+Y(p[1])+'" r="4.5" fill="'+col+'" stroke="#fff" stroke-width="1.5"/>'})}
+    if(o.series.length>1){const lx=L+8+i*((W-L-R)/o.series.length);s+='<rect x="'+lx+'" y="8" width="14" height="14" rx="3" fill="'+col+'"/><text x="'+(lx+20)+'" y="20">'+se.name+'</text>'}});
+  if(!xs.length)s+='<text x="'+((L+W-R)/2)+'" y="'+((T+H-B)/2)+'" text-anchor="middle" fill="#2f6b46" font-size="14">Collect results to plot the graph</text>';
+  $(id).innerHTML=s+'</svg>';
+}
+
+let mode='light',day=0,maxDay=0,aux=false,vr=[],timer=0;
+const CN=['Light all round','Light from one side','Dark'],RATE=[4.2,4.8,8],GN=['Root pointing down','Root pointing sideways','Root pointing up'],A0=[90,0,-90],rad=Math.PI/180;
+function seeds(){vr=[0,1,2].map(()=>[0,1,2,3,4].map(()=>1+gauss()*.1));day=0;maxDay=0;$('day').value=0}
+const H=(c,d,i)=>d===0?2:RATE[c]*d*vr[c][i]+2;
+const meanH=(c,d)=>mean([0,1,2,3,4].map(i=>H(c,d,i)));
+const bend=d=>clamp(13*(d-1),0,52);
+const tipAng=(k,d)=>{const L=6*d;return Math.abs(90-(A0[k]+(90-A0[k])*(1-Math.exp(-L/9))))};
+function path(x,y,a0,a1,L,sc){let s='M'+x+' '+y,a;for(let q=0;q<L;q+=1){a=(a0+(a1-a0)*(1-Math.exp(-q/9)))*rad;x+=Math.cos(a)*sc;y+=Math.sin(a)*sc;s+='L'+x.toFixed(1)+' '+y.toFixed(1)}return[s,x,y]}
+function draw(){
+  let s='<svg viewBox="0 0 540 300" role="img" aria-label="Three sets of seedlings" font-family="system-ui,Arial" font-size="13" fill="#1f3324">';
+  for(let c=0;c<3;c++){const X=10+c*178,cx=X+80;
+    if(mode==='light'){
+      s+='<rect x="'+X+'" y="34" width="160" height="232" rx="8" fill="'+(c===2?'#3c463f':'#f4faf0')+'" stroke="'+(c===1?'#5d6b60':'#c3d9c0')+'" stroke-width="'+(c===1?5:2)+'"/>';
+      if(c===1)s+='<rect x="'+(X+156)+'" y="110" width="8" height="70" fill="#fff3b0"/>';
+      if(c===0)for(let k=0;k<4;k++)s+='<path d="M'+(X+32+k*32)+' 40v22m-5-7 5 7 5-7" stroke="#e0a800" stroke-width="2.5" fill="none"/>';
+      if(c===1)for(let k=0;k<3;k++)s+='<path d="M'+(X+154)+' '+(120+k*25)+'h-22m7-5-7 5 7 5" stroke="#e0a800" stroke-width="2.5" fill="none"/>';
+      s+='<rect x="'+(X+14)+'" y="246" width="132" height="14" rx="5" fill="#e9e3d2" stroke="#b9b09a"/>';
+      for(let i=0;i<5;i++){const x=X+30+i*25,h=H(c,day,i)*1.75,b=(c===1?bend(day):0)*rad,ex=x+Math.sin(b)*h*.55,ey=246-h*(.5+.5*Math.cos(b)),col=c===2?'#e3da8c':'#55a046';
+        s+='<path d="M'+x+' 246Q'+x+' '+(246-h*.55)+' '+ex+' '+ey+'" fill="none" stroke="'+col+'" stroke-width="'+(c===2?2.2:3.2)+'" stroke-linecap="round"/>';
+        if(aux&&c===1&&day>0)s+='<path d="M'+(x-3)+' '+(246-h*.2)+'Q'+(x-3)+' '+(246-h*.55)+' '+(ex-3)+' '+(ey+2)+'" fill="none" stroke="#8a3fc2" stroke-width="2" stroke-dasharray="1 4" stroke-linecap="round"/>';
+        if(aux&&c!==1&&day>0)s+='<path d="M'+(x-3)+' '+(246-h*.3)+'V'+(ey+3)+'M'+(x+3)+' '+(246-h*.3)+'V'+(ey+3)+'" stroke="#8a3fc2" stroke-width="1.6" stroke-dasharray="1 4" stroke-linecap="round"/>';
+        if(day>0){const r=c===2?3:5.5,ang=b/rad;s+='<g transform="translate('+ex+' '+ey+') rotate('+ang+')"><ellipse cx="'+(-r)+'" cy="-2" rx="'+r+'" ry="'+r*.6+'" fill="'+(c===2?'#e9df7a':'#3f8a35')+'"/><ellipse cx="'+r+'" cy="-2" rx="'+r+'" ry="'+r*.6+'" fill="'+(c===2?'#e9df7a':'#3f8a35')+'"/></g>'}
+        else s+='<circle cx="'+x+'" cy="245" r="3" fill="#8a6a2a"/>'}
+      s+='<text x="'+cx+'" y="22" text-anchor="middle" font-weight="600">'+CN[c]+'</text><text x="'+cx+'" y="288" text-anchor="middle">mean '+meanH(c,day).toFixed(0)+' mm</text>';
+    }else{
+      s+='<circle cx="'+cx+'" cy="150" r="78" fill="#f4faf0" stroke="#c3d9c0" stroke-width="2"/><circle cx="'+cx+'" cy="150" r="70" fill="#efe9d8" opacity=".7"/>';
+      const a0=A0[c],L=6*day,r=path(cx,150,a0,90,L,1.5);
+      if(day>2){const b0=a0===90?-90:a0===0?-180:90,sh=path(cx,150,b0,-90,5*(day-2),1.5);s+='<path d="'+sh[0]+'" fill="none" stroke="#55a046" stroke-width="4" stroke-linecap="round"/>'}
+      if(L>0)s+='<path d="'+r[0]+'" fill="none" stroke="#f3efe2" stroke-width="5" stroke-linecap="round"/><path d="'+r[0]+'" fill="none" stroke="#b5a988" stroke-width="1" />';
+      if(aux&&L>6)s+='<circle cx="'+r[1]+'" cy="'+(r[2]+ (tipAng(c,day)>8?5:0))+'" r="4" fill="#8a3fc2"/>';
+      s+='<ellipse cx="'+cx+'" cy="150" rx="13" ry="9" fill="#b98a4a" stroke="#7a5a2a" transform="rotate('+a0+' '+cx+' 150)"/>';
+      s+='<text x="'+cx+'" y="52" text-anchor="middle" font-weight="600">'+GN[c]+'</text><text x="'+cx+'" y="256" text-anchor="middle">root tip '+tipAng(c,day).toFixed(0)+'° from vertical</text>';
+    }}
+  if(mode==='gravity')s+='<path d="M528 110v70m-6-9 6 9 6-9" stroke="#1f3324" stroke-width="2.5" fill="none"/><text x="524" y="100" text-anchor="end">gravity</text>';
+  $('pots').innerHTML=s+'</svg>';$('dayN').textContent=day;
+  if(day===0)status(mode==='light'?'Day 0: the seeds have just germinated. Grow them for a week.':'Day 0: three germinating beans pinned in different positions. Grow them for a week.');
+  else if(mode==='light')status(aux?'Auxin is made in the shoot tip. In one-sided light it collects on the shaded side, where it makes cells elongate more, so the shoot bends towards the light.':day<3?'Day '+day+': all the shoots are growing. Look for differences in height and direction.':'Day '+day+': shoots in one-sided light bend towards the light (phototropism). Shoots in the dark are tallest, thin and yellow.','good');
+  else status(aux?'In a root, auxin collects on the lower side and slows cell elongation there, so the root bends down.':'Day '+day+': every root turns to grow down (gravitropism)'+(day>2?', and every shoot turns to grow up.':'.'),'good');
+  table();
+}
+function table(){const th=$('thead'),tb=$('tbody'),N=mode==='light'?CN:GN;th.textContent='';tb.textContent='';
+  const h=el('tr');h.appendChild(el('th','','Day'));N.forEach(n=>h.appendChild(el('th','',n)));if(mode==='light')h.appendChild(el('th','','Bend towards light (°)'));th.appendChild(h);
+  $('resTitle').textContent=mode==='light'?'Results: mean height of seedlings (mm)':'Results: angle of root tip from vertical (°)';
+  const se=N.map(n=>({name:n.replace('Root pointing ','Root '),pts:[]}));
+  for(let d=0;d<=maxDay;d++){const tr=el('tr',d===day?'sel':'');tr.appendChild(el('td','',String(d)));
+    N.forEach((n,c)=>{const v=mode==='light'?meanH(c,d):tipAng(c,d);tr.appendChild(el('td','',v.toFixed(0)));se[c].pts.push([d,+v.toFixed(1)])});
+    if(mode==='light')tr.appendChild(el('td','',String(bend(d))));tb.appendChild(tr)}
+  plot('graph',{series:se,xl:'Day',yl:mode==='light'?'Mean height (mm)':'Root tip angle from vertical (°)',xmin:0,xmax:7,ymax:mode==='light'?70:190})}
+function setDay(d){day=d;maxDay=Math.max(maxDay,d);$('day').value=d;draw()}
+function stop(){clearInterval(timer);timer=0;$('growBtn').textContent='Grow for a week'}
+$('day').oninput=e=>{stop();setDay(+e.target.value)};
+$('growBtn').onclick=()=>{if(timer){stop();return}if(day>=7)setDay(0);$('growBtn').textContent='Pause';timer=setInterval(()=>{setDay(day+1);if(day>=7)stop()},reduced?300:900)};
+$('auxBtn').onclick=e=>{aux=!aux;e.currentTarget.setAttribute('aria-pressed',aux);draw()};
+$('resetBtn').onclick=()=>{stop();seeds();draw()};
+function setMode(){$('benchTitle').textContent=mode==='light'?'Mustard seedlings in three light conditions':'Germinating beans in three positions';
+  $('setNote').textContent=mode==='light'?'Three dishes of seedlings: full light, a box with a slit on one side, and a dark cupboard.':'Three beans pinned to damp cotton wool in upright Petri dishes, kept in the dark so light has no effect.'}
+seg('modeSeg',[['light','Light'],['gravity','Gravity']],()=>mode,v=>{mode=v;stop();seeds();setMode();draw()});
+seeds();setMode();draw();
+})();
+</script>
+</body>
+</html>
