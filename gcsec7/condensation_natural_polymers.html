@@ -147,7 +147,7 @@ details.reveal summary{cursor:pointer;font-weight:700;color:var(--accent)}
 <section id="s1" data-title="Condensation polymers (HT)" data-mins="8">
 <h2>Condensation polymerisation <span class="co">CHEMISTRY ONLY</span><span class="ht">HT</span></h2>
 <p class="lead">Condensation polymerisation uses monomers with <b>two functional groups</b>. When the monomers react they join together and a <b>small molecule</b> (usually <b>water</b>) is lost each time.</p>
-<div class="card"><svg id="cp" class="stage" viewBox="0 0 680 230"></svg><div class="row" style="margin-top:8px"><button class="btn pri" id="cGo">▶ Join the monomers</button><button class="btn" id="cR">↺</button></div><div class="cap" id="cC"></div></div>
+<div class="card"><svg id="cp" class="stage" viewBox="0 0 680 200"></svg><div class="row" style="margin-top:8px"><button class="btn pri" id="cGo">▶ Join the monomers</button><button class="btn" id="cR">↺</button></div><div class="cap" id="cC"></div></div>
 <div class="key">The simplest example: a <b>diol</b> (two –OH groups) + a <b>dicarboxylic acid</b> (two –COOH groups) → a <b>polyester</b> + water. Monomers are often shown as blocks: HO–□–OH and HOOC–○–COOH.</div>
 <table class="t"><tr><th></th><th>Addition polymerisation</th><th>Condensation polymerisation</th></tr><tr><td>monomers</td><td>one type, with C=C</td><td>usually two types, each with two functional groups</td></tr><tr><td>products</td><td>polymer only</td><td>polymer + small molecule (e.g. water)</td></tr></table>
 <div id="q1a"></div><div id="q1b"></div>
@@ -371,19 +371,40 @@ document.addEventListener('DOMContentLoaded',()=>{if(document.body.dataset.lesso
 </script>
 <script>
 let ck=0,cA=null;
-function cp(){let s='';const N=4;const w=140;for(let i=0;i<N;i++){const isD=i%2===0;const x=30+i*(w-30*ck)+(ck>0?0:0);
- s+=`<g transform="translate(${x},90)"><text x="0" y="25" font-size="14" font-weight="700" style="fill:#d63c2f" opacity="${i===0||ck<.6?1:0}">${isD?'HO':'HOOC'}</text>
- ${isD?`<rect x="30" y="5" width="50" height="30" fill="#7fb3e0" stroke="currentColor"/>`:`<ellipse cx="${55+10}" cy="20" rx="26" ry="16" fill="#e8b47a" stroke="currentColor"/>`}
- <text x="${isD?84:94}" y="25" font-size="14" font-weight="700" style="fill:#d63c2f" opacity="${i===N-1||ck<.6?1:0}">${isD?'OH':'COOH'}</text></g>`;
- if(ck>.6&&i<N-1)s+=`<text x="${x+w-30*ck-20}" y="${70-40*(ck-.6)/.4}" font-size="15" font-weight="800" class="bd">H₂O</text>`}
- s+=`<text x="20" y="40" font-size="14" font-weight="700">${ck>.6?'polyester (ester links between blocks) + water':'diol (□) and dicarboxylic acid (○)'}</text>`;$('cp').innerHTML=s;$('cC').innerHTML=ck>.6?'Each time an –OH and a –COOH react, a link forms and a <b>water</b> molecule is lost. For n of each monomer, 2n water molecules are lost.':'Each monomer has two functional groups, one at each end.'}
+const atT=(x,y,t,c='currentColor')=>`<text x="${x}" y="${y+5}" text-anchor="middle" font-size="15" font-weight="700" style="fill:${c}">${t}</text>`;
+const bnd=(x1,y1,x2,y2)=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="currentColor" stroke-width="2.4"/>`;
+/* ester link drawn left→right: –O–C(=O)–  or –C(=O)–O– ; returns [svg,width] */
+function esterLink(x,y,oFirst){let s='';const hl=`<rect x="${x-4}" y="${y-44}" width="78" height="64" rx="8" fill="#f9d56e" opacity=".35"/>`;
+ if(oFirst){s+=bnd(x,y,x+12,y)+atT(x+20,y,'O','#d63c2f')+bnd(x+28,y,x+42,y)+atT(x+50,y,'C')+`<line x1="${x+47}" y1="${y-10}" x2="${x+47}" y2="${y-26}" stroke="currentColor" stroke-width="2.4"/><line x1="${x+53}" y1="${y-10}" x2="${x+53}" y2="${y-26}" stroke="currentColor" stroke-width="2.4"/>`+atT(x+50,y-34,'O','#d63c2f')+bnd(x+58,y,x+70,y)}
+ else{s+=bnd(x,y,x+12,y)+atT(x+20,y,'C')+`<line x1="${x+17}" y1="${y-10}" x2="${x+17}" y2="${y-26}" stroke="currentColor" stroke-width="2.4"/><line x1="${x+23}" y1="${y-10}" x2="${x+23}" y2="${y-26}" stroke="currentColor" stroke-width="2.4"/>`+atT(x+20,y-34,'O','#d63c2f')+bnd(x+28,y,x+42,y)+atT(x+50,y,'O','#d63c2f')+bnd(x+58,y,x+70,y)}
+ return[hl+s,70]}
+function cp(){const y=130;let s='';
+ if(ck<.6){const g=22*(1-ck/.6);let x=14;for(let i=0;i<4;i++){const D=i%2===0;
+  s+=atT(x+16,y,D?'HO':'HOOC','#d63c2f');x+=D?30:44;s+=bnd(x,y,x+10,y);x+=10;
+  s+=D?`<rect x="${x}" y="${y-15}" width="44" height="30" fill="#7fb3e0" stroke="currentColor"/>`:`<ellipse cx="${x+24}" cy="${y}" rx="24" ry="15" fill="#e8b47a" stroke="currentColor"/>`;x+=D?44:48;
+  s+=bnd(x,y,x+10,y);x+=10;s+=atT(x+(D?14:22),y,D?'OH':'COOH','#d63c2f');x+=(D?28:44)+g}
+  s+=`<text x="14" y="24" font-size="14" font-weight="700">diol (□) + dicarboxylic acid (○) monomers — two functional groups each</text>`}
+ else{let x=14;s+=atT(x+14,y,'HO','#d63c2f');x+=30;const links=[];for(let i=0;i<4;i++){const D=i%2===0;s+=bnd(x,y,x+8,y);x+=8;
+  s+=D?`<rect x="${x}" y="${y-15}" width="44" height="30" fill="#7fb3e0" stroke="currentColor"/>`:`<ellipse cx="${x+24}" cy="${y}" rx="24" ry="15" fill="#e8b47a" stroke="currentColor"/>`;x+=D?44:48;
+  if(i<3){const[l,w]=esterLink(x,y,D);s+=l;links.push(x+35);x+=w}}
+  s+=bnd(x,y,x+8,y)+atT(x+30,y,'COOH','#d63c2f');
+  links.forEach((lx,i)=>{s+=`<text x="${lx}" y="${y+40}" text-anchor="middle" font-size="12" font-weight="700" class="ac">ester link</text>`;const t=Math.min(1,(ck-.6)/.4);s+=`<text x="${lx}" y="${y-54-22*t}" text-anchor="middle" font-size="14" font-weight="800" opacity="${1-t*.3}" class="bd">H₂O</text>`});
+  s+=`<text x="14" y="24" font-size="14" font-weight="700">polyester — the monomers are joined by ester links; a water molecule is lost at each link</text>`}
+ $('cp').innerHTML=s;$('cC').innerHTML=ck>=.6?'Each –OH reacts with a –COOH. The new <b>ester link</b> (highlighted) joins the monomers and a molecule of <b>water</b> is lost. For n of each monomer, 2n water molecules are lost.':'Each monomer has two functional groups, one at each end.'}
 $('cGo').onclick=()=>{if(cA)cA();cA=animate(1600,t=>{ck=t;cp()})};$('cR').onclick=()=>{if(cA)cA();ck=0;cp()};cp();
 MCQ('q1a',{q:'What is lost when a polyester forms?',opts:['water','hydrogen','carbon dioxide','nothing'],a:0});
 MCQ('q1b',{q:'Which pair of monomers forms a polyester?',opts:['a diol and a dicarboxylic acid','two alkenes','an alkane and an alcohol','ethene and water'],a:0});
 let ak=0,aA=null;const AC=['#c0472d','#2b67cc','#3f8a33','#a05bc0','#d99a0b'];
-function aa(){let s='';for(let i=0;i<5;i++){const x=20+i*(130-28*ak);s+=`<g transform="translate(${x},80)"><text x="0" y="25" font-size="13" font-weight="700" style="fill:#3f6fd8" opacity="${i===0||ak<.6?1:0}">H₂N</text><rect x="32" y="6" width="44" height="28" rx="8" fill="${AC[i]}" opacity=".8"/><text x="80" y="25" font-size="13" font-weight="700" style="fill:#d63c2f" opacity="${i===4||ak<.6?1:0}">COOH</text></g>`;
- if(ak>.6&&i<4)s+=`<text x="${x+100-14*ak}" y="${60-30*(ak-.6)/.4}" font-size="13" font-weight="800" class="bd">H₂O</text>`}
- s+=`<text x="20" y="40" font-size="14" font-weight="700">${ak>.6?'polypeptide (part of a protein) + water':'five different amino acids'}</text>`;$('aa').innerHTML=s}
+function pepLink(x,y){let s=`<rect x="${x-4}" y="${y-44}" width="78" height="80" rx="8" fill="#f9d56e" opacity=".35"/>`;
+ s+=bnd(x,y,x+12,y)+atT(x+20,y,'C')+`<line x1="${x+17}" y1="${y-10}" x2="${x+17}" y2="${y-26}" stroke="currentColor" stroke-width="2.4"/><line x1="${x+23}" y1="${y-10}" x2="${x+23}" y2="${y-26}" stroke="currentColor" stroke-width="2.4"/>`+atT(x+20,y-34,'O','#d63c2f')+bnd(x+28,y,x+42,y)+atT(x+50,y,'N','#3f6fd8')+bnd(x+50,y+9,x+50,y+20)+atT(x+50,y+28,'H')+bnd(x+58,y,x+70,y);return[s,70]}
+function aa(){const y=120;let s='';
+ if(ak<.6){const g=24*(1-ak/.6);let x=10;for(let i=0;i<4;i++){s+=atT(x+16,y,'H₂N','#3f6fd8');x+=32;s+=bnd(x,y,x+8,y);x+=8;s+=`<rect x="${x}" y="${y-14}" width="40" height="28" rx="8" fill="${AC[i]}" opacity=".85"/>`;x+=40;s+=bnd(x,y,x+8,y);x+=8;s+=atT(x+22,y,'COOH','#d63c2f');x+=46+g}
+  s+=`<text x="10" y="22" font-size="14" font-weight="700">four different amino acids — amine group (–NH₂) and carboxylic acid group (–COOH)</text>`}
+ else{let x=10;s+=atT(x+16,y,'H₂N','#3f6fd8');x+=32;const L=[];for(let i=0;i<4;i++){s+=bnd(x,y,x+8,y);x+=8;s+=`<rect x="${x}" y="${y-14}" width="40" height="28" rx="8" fill="${AC[i]}" opacity=".85"/>`;x+=40;if(i<3){const[l,w]=pepLink(x,y);s+=l;L.push(x+35);x+=w}}
+  s+=bnd(x,y,x+8,y)+atT(x+30,y,'COOH','#d63c2f');const t=Math.min(1,(ak-.6)/.4);
+  L.forEach(lx=>s+=`<text x="${lx}" y="${y+56}" text-anchor="middle" font-size="12" font-weight="700" class="ac">peptide link</text><text x="${lx}" y="${y-54-18*t}" text-anchor="middle" font-size="14" font-weight="800" class="bd">H₂O</text>`);
+  s+=`<text x="10" y="22" font-size="14" font-weight="700">polypeptide — amino acids joined by peptide links (–CONH–); water lost at each link</text>`}
+ $('aa').innerHTML=s}
 $('aGo').onclick=()=>{if(aA)aA();aA=animate(1600,t=>{ak=t;aa()})};$('aR').onclick=()=>{if(aA)aA();ak=0;aa()};aa();
 MCQ('q2a',{q:'Which two functional groups does an amino acid contain?',opts:['amine (–NH₂) and carboxylic acid (–COOH)','two –OH groups','C=C and –OH','–COOH and C=C'],a:0});
 (function(){let s='';for(let i=0;i<=40;i++){const y=10+i*4.5,a=Math.sin(i/6)*80;s+=`<circle cx="${150+a}" cy="${y}" r="3.5" fill="#2b67cc"/><circle cx="${150-a}" cy="${y}" r="3.5" fill="#c0472d"/>`;if(i%3===0)s+=`<line x1="${150+a}" y1="${y}" x2="${150-a}" y2="${y}" stroke="var(--muted)" stroke-width="2"/>`}$('dna').innerHTML=s})();
