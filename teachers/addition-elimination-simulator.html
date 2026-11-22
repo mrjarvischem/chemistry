@@ -224,56 +224,66 @@ let yaw=-.55, pitch=.2, zoom=1, showPairs=true, showSym=true;
 const NU={W:{at:'O',B:'H',C:null},E:{at:'O',B:'Et',C:null},A:{at:'N',B:'H',C:'H'},M:{at:'N',B:'Me',C:'H'}};
 
 function build(){
-  const an=cfg.ac==='An', nu=NU[cfg.nu], el={C:'C',O:'O',R:'C',X:an?'O':'Cl',Nu:nu.at,Hx:'H'}, gb=[['C','R',1]], stages=[];
+  const an=cfg.ac==='An', nu=NU[cfg.nu], isN=nu.at==='N', el={C:'C',O:'O',R:'C',X:an?'O':'Cl',Nu:nu.at,Hx:'H'}, gb=[['C','R',1]], stages=[];
   let reg=true;
   const methyl=(P,id,c,d)=>{P[id]=c;ring(mul(d,-1),T).forEach((r,i)=>{P[id+'h'+i]=add(c,mul(r,1.09));if(reg){el[id+'h'+i]='H';gb.push([id,id+'h'+i,1]);}});};
-  const subst=(P,id,kind,d)=>{if(!kind)return;
-    if(kind==='H'){P[id]=add(P.Nu,mul(d,1.0));if(reg){el[id]='H';gb.push(['Nu',id,1]);}return;}
-    const c=add(P.Nu,mul(d,kind==='Me'?1.47:1.43));if(reg){el[id]='C';gb.push(['Nu',id,1]);}
+  const subst=(P,par,id,kind,d)=>{if(!kind)return;
+    if(kind==='H'){P[id]=add(P[par],mul(d,1.0));if(reg){el[id]='H';gb.push([par,id,1]);}return;}
+    const c=add(P[par],mul(d,kind==='Me'?1.47:1.43));if(reg){el[id]='C';gb.push([par,id,1]);}
     if(kind==='Me'){methyl(P,id,c,d);return;}
     P[id]=c;const q=ring(mul(d,-1),T);if(reg){el[id+'m']='C';gb.push([id,id+'m',1]);}
     methyl(P,id+'m',add(c,mul(q[0],1.53)),q[0]);
     [1,2].forEach(i=>{P[id+'x'+i]=add(c,mul(q[i],1.09));if(reg){el[id+'x'+i]='H';gb.push([id,id+'x'+i,1]);}});};
   const LX=an?1.38:1.79, LHX=an?.97:1.27;
   const e1=[0,-.5,.866], e2=[0,-.866,-.5], bq=norm(add(mul(e1,.5),mul(e2,.866)));
-  for(let i=0;i<4;i++){
-    const P={},sp3=i===2,fin=i===3;P.C=[0,0,0];
+  const NuF=mul([-.866,-.5,0],1.38), qF=ring([.866,.5,0],T), dH=qF[0], HxF=add(NuF,mul(dH,1.0));
+  if(isN)el.B2='N';
+  /* stages: 0 apart, 1 close, 2 tetrahedral intermediate, 3 C=O re-formed and X- gone, 4 H+ removed, 5 products */
+  for(let i=0;i<6;i++){
+    const P={},A={},sp3=i===2,fin=i>=3;P.C=[0,0,0];
     P.O=sp3?[T*1.4,.943*1.4,0]:[0,1.22,0];
     const dR=fin?[.866,-.5,0]:sp3?[T,-.471,-.816]:[0,-.5,-.866];
-    if(reg)el.R='C';methyl(P,'R',mul(dR,1.5),dR);
-    P.X=fin?[2.6,-2.0,.5]:mul(sp3?[T,-.471,.816]:[0,-.5,.866],LX);
+    methyl(P,'R',mul(dR,1.5),dR);
+    P.X=fin?(i===5&&!isN?[1.4,-3.4,.3]:[3.4,-1.8,.6]):mul(sp3?[T,-.471,.816]:[0,-.5,.866],LX);
     if(an){P.Cq=add(P.X,mul(bq,1.38));P.Oq=add(P.Cq,mul(e1,1.21));const dr=norm(add(mul(e1,-.5),mul(e2,.866)));
       if(reg){el.Cq='C';el.Oq='O';el.Cr='C';gb.push(['X','Cq',1],['Cq','Oq',2],['Cq','Cr',1]);}
       methyl(P,'Cr',add(P.Cq,mul(dr,1.5)),dr);}
-    P.Nu=i===0?[-4.2,0,0]:i===1?[-3.0,0,0]:i===2?[-1.47,0,0]:mul([-.866,-.5,0],1.38);
-    const q=ring([1,0,0],T);
-    P.Hx=fin?add(P.X,mul(norm([-1,.4,0]),LHX)):add(P.Nu,mul(q[0],1.0));
-    subst(P,'B',nu.B,fin?[0,-1,0]:q[1]);subst(P,'S',nu.C,fin?[-.866,.5,0]:q[2]);
-    reg=false;stages.push({P,A:{}});
+    P.Nu=i===0?[-4.2,0,0]:i===1?[-3.0,0,0]:i===2?[-1.47,0,0]:NuF;
+    const q=fin?qF:ring([1,0,0],T);
+    subst(P,'Nu','B',nu.B,i>=4?[0,-1,0]:q[1]);subst(P,'Nu','S',nu.C,i>=4?[-.866,.5,0]:q[2]);
+    if(isN){
+      P.B2=add(HxF,mul(dH,i<4?1.9:2.7));const r2=ring(mul(dH,-1),T);
+      subst(P,'B2','b0',cfg.nu==='M'?'Me':'H',r2[0]);subst(P,'B2','b1','H',r2[1]);subst(P,'B2','b2','H',r2[2]);
+      P.Hx=i<4?add(P.Nu,mul(q[0],1.0)):sub(P.B2,mul(dH,1.02));
+      for(const k in P)if(k==='B2'||k[0]==='b')A[k]=i<3?0:1;
+    }else P.Hx=i<4?add(P.Nu,mul(q[0],1.0)):i===4?add(NuF,mul(dH,2.5)):sub(P.X,[LHX,0,0]);
+    reg=false;stages.push({P,A});
   }
-  const bonds=i=>{const b=gb.slice();b.push(['C','O',i===2?1:2]);if(i<3)b.push(['C','X',1],['Nu','Hx',1]);else b.push(['X','Hx',1]);if(i>=2)b.push(['C','Nu',1]);return b;};
-  const labels=[{},{C:'δ+',O:'δ−',X:'δ−'},{O:'−',Nu:'+'},{}];
+  const bonds=i=>{const b=gb.slice();b.push(['C','O',i===2?1:2]);if(i<3)b.push(['C','X',1]);if(i>=2)b.push(['C','Nu',1]);
+    if(i<4)b.push(['Nu','Hx',1]);else if(isN)b.push(['B2','Hx',1]);else if(i===5)b.push(['X','Hx',1]);return b;};
+  const labels=[{},{C:'δ+',O:'δ−',X:'δ−'},{O:'−',Nu:'+'},{X:'−',Nu:'+'},isN?{X:'−',B2:'+'}:{X:'−',Hx:'+'},isN?{X:'−',B2:'+'}:{}];
   const rN=EL[nu.at].r, rX=EL[el.X].r;
   const pairs=[
     {f:(i,P)=>i<2?add(P.Nu,[rN+.2,0,0]):mid(P.Nu,P.C),a:()=>1},
     {f:(i,P)=>i===2?add(P.O,mul(norm([.4,1,0]),EL.O.r+.2)):mid(P.C,P.O),a:()=>1},
-    {f:(i,P)=>i<3?mid(P.C,P.X):mid(P.X,P.Hx),a:()=>1},
-    {f:(i,P)=>i<3?mid(P.Nu,P.Hx):add(P.Nu,[0,0,rN+.2]),a:i=>i>=2?1:0}];
+    {f:(i,P)=>i<3?mid(P.C,P.X):i===5&&!isN?mid(P.X,P.Hx):add(P.X,mul(norm([-1,.3,0]),rX+.2)),a:()=>1},
+    {f:(i,P)=>i<4?mid(P.Nu,P.Hx):add(P.Nu,[0,0,rN+.2]),a:i=>i>=2?1:0}];
+  if(isN)pairs.push({f:(i,P)=>i<4?sub(P.B2,mul(dH,EL.N.r+.2)):mid(P.B2,P.Hx),a:i=>i>=3?1:0});
   let lo=[9,9],hi=[-9,-9];
   stages.forEach(st=>{for(const k in st.P){const p=st.P[k];lo[0]=Math.min(lo[0],p[0]);hi[0]=Math.max(hi[0],p[0]);lo[1]=Math.min(lo[1],p[1]);hi[1]=Math.max(hi[1],p[1]);}});
-  M={an,nu,el,stages,bonds,labels,pairs,cx:(lo[0]+hi[0])/2,cy:(lo[1]+hi[1])/2,w:hi[0]-lo[0]+2.4,h:hi[1]-lo[1]+2.8,
-     stageOf:[0,1,2,2,3,3],dur:[0,2.2,3.0,1.0,3.4,1.0],last:5};
+  M={an,nu,isN,el,stages,bonds,labels,pairs,cx:(lo[0]+hi[0])/2,cy:(lo[1]+hi[1])/2,w:hi[0]-lo[0]+2.4,h:hi[1]-lo[1]+2.4,
+     stageOf:[0,1,2,2,3,4,5],dur:[0,2.2,3.0,1.0,3.0,3.0,isN?1.0:2.6],last:6};
 }
 
 function scene(){
   let a=M.stageOf[step], b=a, e=0;
   if(anim){a=M.stageOf[anim.from];b=M.stageOf[anim.to];e=a===b?0:ease(anim.f);}
   const A=M.stages[a], B=M.stages[b], P={}, AL={};
-  for(const k in A.P){P[k]=lerp(A.P[k],B.P[k],e);AL[k]=1;}
+  for(const k in A.P){P[k]=lerp(A.P[k],B.P[k],e);const x=A.A[k]===undefined?1:A.A[k],y=B.A[k]===undefined?1:B.A[k];AL[k]=x+(y-x)*e;}
   const bm=new Map();
   M.bonds(a).forEach(([x,y,o])=>bm.set(x+'|'+y,{a:x,b:y,o0:o,o1:0}));
   M.bonds(b).forEach(([x,y,o])=>{const k=x+'|'+y;if(bm.has(k))bm.get(k).o1=o;else bm.set(k,{a:x,b:y,o0:0,o1:o});});
-  const bonds=[...bm.values()].map(q=>({a:q.a,b:q.b,o:q.o0+(q.o1-q.o0)*e,al:1}));
+  const bonds=[...bm.values()].map(q=>({a:q.a,b:q.b,o:q.o0+(q.o1-q.o0)*e,al:Math.min(AL[q.a],AL[q.b])}));
   const pairs=M.pairs.map(p=>({p:lerp(p.f(a,P),p.f(b,P),e),al:p.a(a)+(p.a(b)-p.a(a))*e}));
   const labels=[], LA=M.labels[a], LB=M.labels[b];
   new Set([...Object.keys(LA),...Object.keys(LB)]).forEach(id=>{
@@ -377,12 +387,15 @@ function renderMech(){
    const p=op(4);
    s+=arrow('M'+(x-21)+' '+(y0-56)+' C'+(x-42)+' '+(y0-48)+' '+(x-36)+' '+(y0-29)+' '+(x-6)+' '+(y0-29),p);
    s+=arrow('M'+(x+35)+' '+(y0-5)+' C'+(x+39)+' '+(y0-40)+' '+(x+63)+' '+(y0-44)+' '+(x+67)+' '+(y0-18),p);
-   s+=arrow('M'+(x+35)+' '+(ny+5)+' C'+(x+36)+' '+(ny+34)+' '+(x+18)+' '+(ny+38)+' '+(x+11)+' '+(ny+15),p);}
-  const oC=op(5);
+   const p5=op(5);
+   s+=arrow('M'+(x+35)+' '+(ny+5)+' C'+(x+36)+' '+(ny+34)+' '+(x+18)+' '+(ny+38)+' '+(x+11)+' '+(ny+15),p5);
+   if(M.isN&&p5>0){const bx=x+152,by=ny+42;
+     s+='<g opacity="'+p5+'">'+T(bx-9,by,n==='A'?'NH₃':'NH₂CH₃','start','at')+dots(bx-17,by-6,.35,.94)+'</g>';
+     s+=arrow('M'+(bx-25)+' '+(by-9)+' Q'+(x+100)+' '+(ny+34)+' '+(x+70)+' '+(ny+9),p5);}}
+  const oC=op(6);
   if(oC>0){const x=890,pr=product();
    s+=rxn(722,oC)+'<g opacity="'+oC+'">'+base(x)+dbl(x)+ln(x,y0,x+66,y0)+T(x+57,y0,{W:'OH',E:'OCH₂CH₃',A:'NH₂',M:'NHCH₃'}[n],'start','at rg');
-   const bx=x+{W:118,E:176,A:122,M:160}[n];
-   s+=T(bx,y0,'+')+T(bx+24,y0,an?'CH₃COOH':'HCl','start');
+   s+=T(x+40,y0+64,'+  '+(M.isN?(n==='A'?'NH₄⁺':'CH₃NH₃⁺')+'  '+(an?'CH₃COO⁻':'Cl⁻'):(an?'CH₃COOH':'HCl')),'middle','at');
    s+=T(x+50,270,pr.name,'middle','cap b')+'</g>';}
   mech.innerHTML=s;
 }
@@ -394,7 +407,7 @@ function product(){const an=cfg.ac==='An',R=an?'(CH₃CO)₂O':'CH₃COCl';
     E:{name:'ethyl ethanoate',type:'an ester',eq:R+' + CH₃CH₂OH → CH₃COOCH₂CH₃ + '+(an?'CH₃COOH':'HCl')},
     A:{name:'ethanamide',type:'a primary amide',eq:R+' + 2NH₃ → CH₃CONH₂ + '+(an?'CH₃COONH₄':'NH₄Cl')},
     M:{name:'N-methylethanamide',type:'an N-substituted amide',eq:R+' + 2CH₃NH₂ → CH₃CONHCH₃ + '+(an?'CH₃COO⁻ CH₃NH₃⁺':'CH₃NH₃Cl')}}[cfg.nu];}
-const chips=()=>[['Start','Reactants'],['Approach','Polar bonds'],['Step 1','Addition'],['Intermediate','O⁻ and '+M.nu.at+'⁺'],['Step 2','Elimination'],['Finish','Products']];
+const chips=()=>[['Start','Reactants'],['Approach','Polar bonds'],['Step 1','Addition'],['Intermediate','O⁻ and '+M.nu.at+'⁺'],['Step 2','Elimination'],['Proton removed',M.isN?'Second '+(cfg.nu==='A'?'NH₃':'amine')+' takes H⁺':'H⁺ lost'],['Finish','Products']];
 function words(i){
   const an=M.an,n=cfg.nu,at=M.nu.at,pr=product(),nm=nuName(),lgn=an?'ethanoate ion':'chloride ion',X=an?'O':'Cl',by=an?'ethanoic acid':'hydrogen chloride';
   return [
@@ -407,14 +420,20 @@ function words(i){
     pts:['First arrow from the lone pair on '+at+' to the carbonyl carbon','Second arrow from the C=O bond to O']},
    {h:'Intermediate',p:['The carbon is now tetrahedral. Oxygen has a negative charge and a lone pair.','The '+at+' has used its lone pair to make a bond, so it now has a positive charge.'],
     pts:['Show the lone pair and − charge on O','Show the + charge on '+at]},
-   {h:'Step 2: elimination',p:['The lone pair on O⁻ moves back to re-form the C=O double bond.','The C–'+X+' bond breaks and a '+lgn+' leaves.','The '+at+'–H bond breaks, with its electrons moving onto '+at+'⁺. The H⁺ lost ends up as '+by+'.','A small molecule has been <b>eliminated</b>.'],
-    pts:['Arrow from the lone pair on O⁻ to re-form C=O','Arrow from the C–'+X+' bond to '+X,'Arrow from the '+at+'–H bond to '+at+'⁺']},
-   {h:'Products',p:['The product is <b>'+pr.name+'</b>, '+pr.type+', with '+by+'.',
-     at==='N'?(an?'With excess '+nm+', the ethanoic acid reacts further to give the salt, so two moles of '+nm+' are needed.':'HCl reacts with a second molecule of '+nm+' to give '+(n==='A'?'ammonium chloride':'methylammonium chloride')+', so two moles of '+nm+' are needed.')
-       :(n==='W'?'This is hydrolysis.':'This is a quick way to make an ester, and unlike esterification with a carboxylic acid it is not reversible.'),
+   {h:'Step 2: elimination',p:['The lone pair on O⁻ moves back to re-form the C=O double bond.','The C–'+X+' bond breaks and a <b>'+lgn+'</b> leaves, taking both bonding electrons.',
+     'The '+lgn+' does not remove the hydrogen. The '+at+' still carries its positive charge.'],
+    pts:['Arrow from the lone pair on O⁻ to re-form C=O','Arrow from the C–'+X+' bond to '+X]},
+   M.isN?{h:'Second '+nm+' removes H⁺',p:['A <b>second molecule of '+nm+'</b> acts as a base. Its lone pair forms a bond to a hydrogen on N⁺.',
+      'The N–H bonding pair moves onto nitrogen, removing the positive charge.','This makes '+(n==='A'?'an <b>ammonium ion, NH₄⁺</b>':'a <b>methylammonium ion, CH₃NH₃⁺</b>')+'. It is why <b>two moles</b> of '+nm+' are needed for each mole of '+(an?'anhydride':'acyl chloride')+'.'],
+      pts:['Arrow from the N–H bond to N⁺','Second '+(n==='A'?':NH₃':'amine')+' removes the H⁺, not the '+lgn,'On paper, all three arrows are usually drawn on the one intermediate']}
+    :{h:'H⁺ lost',p:['The O–H bond breaks, with its bonding pair moving onto O⁺. This removes the positive charge.','An H⁺ ion is released.'],
+      pts:['Arrow from the O–H bond to O⁺','On paper, all three arrows are usually drawn on the one intermediate']},
+   {h:'Products',p:['The product is <b>'+pr.name+'</b>, '+pr.type+'.',
+     M.isN?'The other product is ionic: '+(n==='A'?'NH₄⁺':'CH₃NH₃⁺')+' and '+(an?'CH₃COO⁻':'Cl⁻')+' make <b>'+(n==='A'?'ammonium ':'methylammonium ')+(an?'ethanoate':'chloride')+'</b>.'
+       :'The H⁺ and the '+lgn+' make <b>'+by+'</b>.'+(n==='W'?' This is hydrolysis.':' Unlike esterification with a carboxylic acid, this reaction is not reversible.'),
      an?'Industry prefers the anhydride: it is cheaper, less corrosive, reacts less violently with water and does not give off HCl fumes. It is used to make aspirin.'
-       :'Acyl chlorides react vigorously and give off misty fumes of HCl. The acid anhydride gives the same organic product more safely.'],
-    pts:at==='N'?['Use 2 moles of '+nm+' in the overall equation']:(an&&n==='W'?['Two molecules of ethanoic acid form']:[])}][i];
+       :(M.isN?'The acid anhydride gives the same amide more safely.':'Acyl chlorides react vigorously and give off misty fumes of HCl. The acid anhydride gives the same organic product more safely.')],
+    pts:M.isN?['Overall: 2 moles of '+nm+' per mole of '+(an?'anhydride':'acyl chloride'),'Name the salt: '+(n==='A'?'ammonium ':'methylammonium ')+(an?'ethanoate':'chloride')]:(an&&n==='W'?['Two molecules of ethanoic acid form']:[])}][i];
 }
 
 /* ---------- UI ---------- */
