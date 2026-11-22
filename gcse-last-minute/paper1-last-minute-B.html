@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Paper 1 last-minute walkthrough B</title>
+<style>
+:root{--cream:#fbf5e9;--card:#fffdf7;--brown:#5b3a1e;--mid:#8a5a2b;--line:#e2d3b8;--tan:#f1e4cb;--ink:#2e2218;--good:#2f7d4f;--goodbg:#e3f3e8;--bad:#b3402e;--badbg:#fbe6e1;--gold:#c98a1b}
+*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font:17px/1.5 "Segoe UI",Helvetica,Arial,sans-serif}
+header{background:var(--brown);color:#fff;padding:12px 16px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between}
+header h1{font-size:1.15rem;margin:0}header small{display:block;opacity:.85;font-weight:400;font-size:.85rem}
+#timer{display:flex;align-items:center;gap:8px}#clock{font:700 1.3rem ui-monospace,Consolas,monospace;background:#3d2612;padding:4px 10px;border-radius:6px;min-width:84px;text-align:center}
+#clock.over{background:var(--bad)}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--mid);background:var(--tan);color:var(--brown);padding:6px 12px}
+button:hover{background:#e9d6b1}header button{background:#fff;border-color:#fff}
+nav{display:flex;gap:6px;overflow-x:auto;padding:10px 12px;background:var(--tan);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+nav button{white-space:nowrap;background:var(--card)}nav button.on{background:var(--brown);color:#fff;border-color:var(--brown)}nav button.done::after{content:" ✓";color:var(--good)}nav button.on.done::after{color:#bfe8cd}
+main{max-width:860px;margin:0 auto;padding:16px 14px 60px}
+h2{color:var(--brown);margin:.2em 0 .3em;font-size:1.45rem}h3{color:var(--brown);margin:0 0 .4em;font-size:1.08rem}
+.why{color:var(--mid);margin:0 0 6px}.pills{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}.pill{background:var(--tan);border:1px solid var(--line);border-radius:99px;padding:1px 10px;font-size:.8rem;color:var(--brown)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:0 0 14px}
+.key{border-left:6px solid var(--gold)}.key ul,.card ul{margin:.2em 0;padding-left:1.2em}.key li{margin:.25em 0}
+.trap{background:#fff3d6;border:1px solid #edd08f;border-radius:8px;padding:8px 12px;margin:8px 0 0}
+table{border-collapse:collapse;width:100%;font-size:.95rem}th,td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}th{background:var(--tan);color:var(--brown)}
+.opts{display:grid;gap:8px;margin:8px 0}.opts button{text-align:left;background:#fff;color:var(--ink);border-color:var(--line);padding:9px 12px}
+.opts button.right{background:var(--goodbg);border-color:var(--good)}.opts button.wrong{background:var(--badbg);border-color:var(--bad)}
+.fb{font-size:.95rem;margin:6px 0 0;padding:8px 10px;border-radius:8px;background:var(--tan)}
+.step{display:none;border-top:1px dashed var(--line);padding:10px 0}.step.show{display:block}.step:first-of-type{border-top:0}
+.step input{font:inherit;width:120px;padding:5px 8px;border:1px solid var(--mid);border-radius:6px;margin-right:6px}
+.step.ok input{background:var(--goodbg);border-color:var(--good)}.step.no input{background:var(--badbg);border-color:var(--bad)}
+.work{display:none;color:var(--good);margin:6px 0 0;font-weight:600}.step.ok .work,.step.told .work{display:block}.step.told .work{color:var(--mid)}
+.mp{display:flex;gap:10px;align-items:flex-start;padding:6px 0;border-top:1px dashed var(--line)}.mp input{width:20px;height:20px;margin-top:3px;flex:none}
+.hid{display:none}.tag{display:inline-block;background:var(--brown);color:#fff;border-radius:6px;padding:0 8px;font-size:.8rem;margin-right:6px}
+.reveal li{color:transparent;background:var(--tan);border-radius:6px;margin:5px 0;padding:2px 6px;cursor:pointer;user-select:none}.reveal li.on{color:inherit;background:none;cursor:default}
+.next{display:flex;justify-content:space-between;gap:10px;margin-top:6px}.big{font-size:1.05rem;padding:10px 18px;background:var(--brown);color:#fff;border-color:var(--brown)}.big:hover{background:#3d2612}
+.score{font-size:1.6rem;font-weight:700;color:var(--brown)}svg{max-width:100%;height:auto;display:block;margin:6px auto}
+@media print{nav,#timer,.next{display:none}}
+</style></head><body>
+<header><h1 id="ttl"></h1><div id="timer"><span id="clock">25:00</span><button id="go">Start</button></div></header>
+<nav id="nav"></nav><main id="main"></main>
+<script>const WT=({
+file:'paper1-last-minute-B.html',
+title:'Paper 1 last-minute walkthrough B',
+sub:'Calculations, reactions and energy · AQA GCSE Chemistry and Trilogy (Higher) · 25 minutes',
+tabs:[
+{name:'Moles and reacting masses',mins:4,why:'A 3–6 mark reacting mass calculation is on every higher paper, usually near the end. The method never changes.',
+ seen:['Jun 22 (5 marks)','Jun 23','Nov 20 (limiting reactant)','Nov 21','Jun 24'],
+ blocks:[
+ {t:'key',title:'The three-step method',items:[
+  '<b>1. Moles of what you know</b> = mass in grams ÷ M<sub>r</sub>',
+  '<b>2. Use the ratio</b> from the coefficients (big numbers) in the balanced equation to get moles of what you want.',
+  '<b>3. Mass of what you want</b> = moles × M<sub>r</sub>',
+  'The <b>limiting reactant</b> is the one that is used up first. It decides how much product is made. The other reactant is in excess.',
+  'Concentration in g/dm³ = mass in g ÷ volume in dm³. To change cm³ into dm³, divide by 1000.'],
+  trap:'Forgetting to change kg into g (× 1000), and multiplying the M<sub>r</sub> by the coefficient (big number). Use the coefficient only in step 2.'},
+ {t:'calc',title:'Reacting mass',q:'Aluminium reacts with iron oxide: &nbsp; 2Al + Fe₂O₃ → 2Fe + Al₂O₃<br>Calculate the mass of aluminium needed to react completely with 4.8 kg of iron oxide.<br>A<sub>r</sub>: O = 16 &nbsp; Al = 27 &nbsp; Fe = 56',
+  steps:[
+  {p:'Work out the M<sub>r</sub> of Fe₂O₃.',a:160,tol:0,show:'(2 × 56) + (3 × 16) = 160'},
+  {p:'Convert 4.8 kg into grams.',a:4800,tol:0,u:'g',show:'4.8 × 1000 = 4800 g'},
+  {p:'Moles of Fe₂O₃ = mass ÷ M<sub>r</sub>',a:30,tol:0.01,u:'mol',show:'4800 ÷ 160 = 30 mol'},
+  {p:'Use the coefficients (big numbers): 2Al react with 1Fe₂O₃. Moles of Al?',a:60,tol:0.01,u:'mol',show:'30 × 2 = 60 mol'},
+  {p:'Mass of Al = moles × A<sub>r</sub>',a:1620,tol:1,u:'g',show:'60 × 27 = 1620 g'}]}],
+ checks:[
+ {q:'3.5 g of salt is dissolved to make 250 cm³ of solution. What is the concentration in g/dm³?',opts:['0.014','0.875','14','875'],a:2,why:'250 cm³ = 0.25 dm³. 3.5 ÷ 0.25 = 14 g/dm³.'},
+ {q:'0.5 mol of Mg is mixed with 0.8 mol of HCl.  Mg + 2HCl → MgCl₂ + H₂.  Which is the limiting reactant?',opts:['Mg, because there are fewer moles of it','HCl, because 0.5 mol of Mg needs 1.0 mol of HCl','Neither','MgCl₂'],a:1,why:'0.5 mol Mg needs 2 × 0.5 = 1.0 mol HCl. Only 0.8 mol is there, so HCl runs out first.'},
+ {q:'How many moles are in 22 g of CO₂? (A<sub>r</sub>: C = 12, O = 16)',opts:['0.5','2','0.79','968'],a:0,why:'M<sub>r</sub> = 44. 22 ÷ 44 = 0.5 mol.'}],
+ exam:{q:'Magnesium burns in oxygen: &nbsp; 2Mg + O₂ → 2MgO<br>Calculate the mass of magnesium oxide produced when 3.6 g of magnesium burns completely.<br>A<sub>r</sub>: O = 16 &nbsp; Mg = 24 &nbsp; [3]',
+  ms:['moles of Mg = 3.6 ÷ 24 = 0.15','moles of MgO = 0.15 (ratio 2 : 2) and M<sub>r</sub> of MgO = 40','mass = 0.15 × 40 = 6.0 g']}},
+
+{name:'Making a soluble salt',mins:4,why:'This required practical has been on every Paper 1 since 2021: as a six-mark plan, or as a method where you give the reason for each step.',
+ seen:['Jun 22','Jun 23 (6 marks)','Nov 21','Jun 24'],
+ blocks:[
+ {t:'model',q:'Plan a method to make pure, dry crystals of a soluble salt from an insoluble solid and a dilute acid. [6]',a:[
+  'Pour the dilute acid into a beaker and <b>warm it gently</b>.',
+  'Add the insoluble solid (metal oxide or carbonate) a little at a time and <b>stir</b>.',
+  'Keep adding until the solid is <b>in excess</b> (solid is left over; for a carbonate, the fizzing stops).',
+  '<b>Filter</b> the mixture to remove the excess solid.',
+  'Heat the filtrate gently in an evaporating basin (over a water bath) until <b>crystals start to form</b>.',
+  'Leave to cool and crystallise, then <b>pat the crystals dry</b> with filter paper.']},
+ {t:'key',title:'Reasons they ask for',items:[
+  '<b>Why warm the acid?</b> To speed up the reaction.',
+  '<b>Why add the solid in excess?</b> To make sure all the acid has reacted.',
+  '<b>Why excess solid rather than excess acid?</b> Excess solid can be removed by filtering. Excess acid cannot.',
+  '<b>Why filter?</b> To remove the excess (unreacted) solid.',
+  '<b>Naming the salt:</b> hydrochloric acid → chloride, sulfuric acid → sulfate, nitric acid → nitrate.',
+  'Acid + metal oxide → salt + water. &nbsp; Acid + metal carbonate → salt + water + carbon dioxide. &nbsp; Acid + metal → salt + hydrogen.'],
+  trap:'Evaporating all the water away. Stop heating when crystals start to form, then leave to cool.'}],
+ checks:[
+ {q:'Which salt is made from zinc oxide and sulfuric acid?',opts:['Zinc chloride','Zinc sulfide','Zinc sulfate','Zinc nitrate'],a:2,why:'Sulfuric acid makes sulfates.'},
+ {q:'Which solid can NOT be used with dilute hydrochloric acid to make copper chloride?',opts:['Copper oxide','Copper carbonate','Copper','Copper hydroxide'],a:2,why:'Copper is less reactive than hydrogen, so it does not react with dilute acids.'},
+ {q:'What would you see when copper carbonate has been added in excess?',opts:['The solution turns colourless','Solid remains and the fizzing stops','A gas is given off','Crystals appear'],a:1,why:'No acid is left to react, so solid is left over and no more gas is made.'}],
+ exam:{q:'Plan a method to make pure, dry crystals of copper sulfate from copper oxide and a dilute acid. [6]',
+  ms:['use (dilute) sulfuric acid, warmed gently','add copper oxide and stir','until copper oxide is in excess / no more dissolves','filter to remove the excess copper oxide','heat the filtrate gently until crystals start to form','leave to cool / crystallise and pat dry with filter paper']}},
+
+{name:'Electrolysis',mins:4,why:'Electrolysis has had its own question on every paper. Know the rules for the products and you can pick up most of the marks.',
+ seen:['Jun 22','Jun 23','Nov 20','Nov 21','Jun 24'],
+ blocks:[
+ {t:'key',title:'The rules',items:[
+  'Positive ions move to the <b>negative electrode</b> and <b>gain electrons</b> (reduction).',
+  'Negative ions move to the <b>positive electrode</b> and <b>lose electrons</b> (oxidation).',
+  '<b>Molten compound:</b> metal at the negative electrode, non-metal at the positive electrode.',
+  '<b>Solution, negative electrode:</b> hydrogen is produced, unless the metal is less reactive than hydrogen (copper, silver).',
+  '<b>Solution, positive electrode:</b> a halogen if halide ions are present. If not, oxygen (from hydroxide ions from the water).',
+  'Water provides H⁺ and OH⁻ ions.',
+  'Solid ionic compounds cannot be electrolysed because the ions cannot move.']},
+ {t:'tbl',title:'Products you should be able to predict',head:['Electrolyte','Negative electrode','Positive electrode'],rows:[
+  ['Molten lead bromide','lead','bromine'],['Sodium chloride solution','hydrogen','chlorine'],['Copper sulfate solution','copper','oxygen'],['Potassium iodide solution','hydrogen','iodine'],['Copper nitrate solution','copper','oxygen']]},
+ {t:'key',title:'Half equations (higher tier)',items:[
+  'Na⁺ + e⁻ → Na &nbsp;&nbsp; Al³⁺ + 3e⁻ → Al &nbsp;&nbsp; Cu²⁺ + 2e⁻ → Cu',
+  '2H⁺ + 2e⁻ → H₂',
+  '2Cl⁻ → Cl₂ + 2e⁻ &nbsp;&nbsp; 2Br⁻ → Br₂ + 2e⁻',
+  '4OH⁻ → O₂ + 2H₂O + 4e⁻',
+  'Aluminium is expensive to extract because electrolysis uses a large amount of energy. Cryolite lowers the melting point of aluminium oxide.']}],
+ checks:[
+ {q:'What is produced at the negative electrode when calcium chloride solution is electrolysed?',opts:['Calcium','Chlorine','Hydrogen','Oxygen'],a:2,why:'Calcium is more reactive than hydrogen, so hydrogen is produced.'},
+ {q:'Which half equation shows sodium being produced?',opts:['Na → Na⁺ + e⁻','Na⁺ + e⁻ → Na','Na⁺ → Na + e⁻','Na + e⁻ → Na⁺'],a:1,why:'Positive ions gain electrons at the negative electrode.'},
+ {q:'Copper sulfate solution is blue. Why does the colour fade during electrolysis with inert electrodes?',opts:['Sulfate ions are removed','Copper ions are removed from the solution as copper forms','Water is used up','Oxygen bleaches it'],a:1,why:'Cu²⁺ ions (blue) gain electrons and become copper atoms on the electrode.'}],
+ exam:{q:'Sodium chloride solution is electrolysed. Hydrogen and chlorine are produced.<br>(a) Explain how sodium hydroxide solution is produced. Refer to the processes at the electrodes. [3]<br>(b) Complete the half equation: &nbsp; Cu²⁺ + ____ → Cu &nbsp; [1]',
+  ms:['hydrogen ions (from water) are discharged / gain electrons at the negative electrode','chloride ions are discharged / lose electrons at the positive electrode','sodium ions and hydroxide ions are left in the solution','2e⁻']}},
+
+{name:'Energy changes',mins:5,why:'Reaction profiles have been on all five papers and a bond energy calculation on three. The temperature-change practical appears most years.',
+ seen:['Jun 22 (6-mark plan)','Jun 23','Nov 20','Nov 21','Jun 24'],
+ blocks:[
+ {t:'p',title:'Reaction profile for an exothermic reaction',h:`<svg viewBox="0 0 340 210" width="430" role="img" aria-label="Exothermic reaction profile with activation energy arrow pointing up and overall energy change arrow pointing down">
+ <defs><marker id="ah" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0 0L8 4L0 8z" fill="#c0392b"/></marker></defs>
+ <line x1="40" y1="10" x2="40" y2="185" stroke="#2e2218" stroke-width="1.5"/><line x1="40" y1="185" x2="330" y2="185" stroke="#2e2218" stroke-width="1.5"/>
+ <text transform="rotate(-90 16 100)" x="16" y="100" font-size="12" text-anchor="middle">Energy</text><text x="185" y="203" font-size="12" text-anchor="middle">Progress of reaction</text>
+ <path d="M50 90H110C140 90 150 25 175 25S215 150 250 150H320" fill="none" stroke="#5b3a1e" stroke-width="2.4"/>
+ <text x="52" y="84" font-size="11">reactants</text><text x="272" y="144" font-size="11">products</text>
+ <line x1="110" y1="90" x2="250" y2="90" stroke="#8a5a2b" stroke-dasharray="4 3"/>
+ <line x1="175" y1="88" x2="175" y2="31" stroke="#c0392b" stroke-width="1.8" marker-end="url(#ah)"/><text x="181" y="62" font-size="11" fill="#c0392b">activation energy</text>
+ <line x1="235" y1="92" x2="235" y2="144" stroke="#c0392b" stroke-width="1.8" marker-end="url(#ah)"/><text x="130" y="128" font-size="11" fill="#c0392b">overall energy change</text></svg>
+ <ul><li>Activation energy arrow: from the <b>reactants level up to the top of the curve</b>.</li><li>Overall energy change arrow: from the <b>reactants level to the products level</b>. It points <b>down</b> for exothermic and <b>up</b> for endothermic.</li><li>Exothermic: products are lower than reactants. The temperature of the surroundings rises.</li><li>Endothermic: products are higher than reactants. The temperature of the surroundings falls.</li></ul>`},
+ {t:'key',title:'Bond energies and the practical',items:[
+  'Breaking bonds takes energy in. Making bonds releases energy.',
+  '<b>Exothermic:</b> the energy released making new bonds is greater than the energy needed to break existing bonds.',
+  'Count every bond. A coefficient (big number) in front of a displayed structure multiplies all the bonds in it: 2NH₃ has 2 × 3 = 6 N–H bonds.',
+  'Practical: use a <b>polystyrene cup and lid</b>. Polystyrene is a better insulator, so less energy is transferred to the surroundings.',
+  'Method marks: measure the volume of solution, record the start temperature, add a weighed mass of solid, stir, record the highest (or lowest) temperature, repeat with different masses, keep the volume and concentration the same.']},
+ {t:'calc',title:'Bond energy calculation',q:'N₂ + 3H₂ → 2NH₃<br>Bond energies in kJ/mol: &nbsp; N≡N = 945 &nbsp;&nbsp; H–H = 436 &nbsp;&nbsp; N–H = 391<br>How much more energy does the reaction release than it absorbs?',
+  steps:[
+  {p:'Energy needed to break bonds: one N≡N and three H–H.',a:2253,tol:0,u:'kJ',show:'945 + (3 × 436) = 2253 kJ'},
+  {p:'How many N–H bonds are made in 2NH₃?',a:6,tol:0,show:'2 × 3 = 6 bonds'},
+  {p:'Energy released making bonds.',a:2346,tol:0,u:'kJ',show:'6 × 391 = 2346 kJ'},
+  {p:'Energy released − energy absorbed.',a:93,tol:0,u:'kJ/mol',show:'2346 − 2253 = 93 kJ/mol more released than absorbed, so the reaction is exothermic'}]}],
+ checks:[
+ {q:'A student dissolves ammonium nitrate in water. The temperature falls from 21 °C to 14 °C. What does this show?',opts:['The reaction is exothermic','The reaction is endothermic','No energy was transferred','The activation energy is zero'],a:1,why:'Energy is taken in from the surroundings, so the temperature falls.'},
+ {q:'What is meant by activation energy?',opts:['The energy released by a reaction','The minimum energy particles must have to react','The difference between reactants and products','The energy of the products'],a:1,why:'It is the minimum energy needed for a reaction to happen.'},
+ {q:'On a reaction profile, the overall energy change arrow goes from…',opts:['the reactants level to the top of the curve','the top of the curve to the products level','the reactants level to the products level','the x-axis to the products level'],a:2,why:'Reactants level to products level.'}],
+ exam:{q:'CH₄ + 2O₂ → CO₂ + 2H₂O<br>Bond energies in kJ/mol: &nbsp; C–H = 412 &nbsp;&nbsp; O=O = 498 &nbsp;&nbsp; O–H = 464 &nbsp;&nbsp; C=O = X<br>The reaction releases 818 kJ/mol more energy than it absorbs.<br>Calculate the bond energy X. (CH₄ has four C–H bonds, CO₂ has two C=O bonds, H₂O has two O–H bonds.) [5]',
+  ms:['bonds broken = (4 × 412) + (2 × 498) = 2644','bonds made = 2X + (4 × 464) = 2X + 1856','(2X + 1856) − 2644 = 818','2X = 1606','X = 803 (kJ/mol)']}},
+
+{name:'Acids, pH and redox',mins:4,why:'Strong and weak acids, pH and concentration, and “why is this oxidation?” are short questions that turn up on nearly every paper.',
+ seen:['Jun 22','Jun 23','Nov 20','Nov 21','Jun 24'],
+ blocks:[
+ {t:'key',title:'Acids',items:[
+  'Acids produce H⁺ ions in aqueous solution. Alkalis contain OH⁻ ions. Neutralisation: H⁺ + OH⁻ → H₂O',
+  'A <b>strong acid</b> is completely ionised in aqueous solution (hydrochloric, sulfuric, nitric).',
+  'A <b>weak acid</b> is only partially ionised in aqueous solution (ethanoic, citric, carbonic).',
+  '<b>Concentration</b> is how much acid is dissolved in a given volume. Strong/weak and concentrated/dilute are different things.',
+  'The higher the concentration of H⁺ ions, the lower the pH.',
+  'If the pH <b>falls by 1</b>, the H⁺ concentration is <b>10 times bigger</b>. Falls by 2 → 100 times bigger.',
+  'Diluting an acid lowers the H⁺ concentration, so the pH rises.']},
+ {t:'key',title:'Redox and displacement',items:[
+  '<b>OIL RIG:</b> Oxidation Is Loss of electrons, Reduction Is Gain of electrons.',
+  'In terms of oxygen: oxidation is gaining oxygen, reduction is losing oxygen.',
+  'A more reactive metal displaces a less reactive metal from a solution of its compound.',
+  'Ionic equation: Zn + Cu²⁺ → Zn²⁺ + Cu. Zinc atoms lose electrons (oxidised). Copper ions gain electrons (reduced).',
+  'The more reactive the metal, the more easily it forms positive ions.',
+  'Metals less reactive than carbon are extracted by reduction with carbon. More reactive metals need electrolysis.']}],
+ checks:[
+ {q:'A solution of hydrochloric acid has pH 3. Another has pH 1. How does the H⁺ concentration compare at pH 1?',opts:['2 times greater','3 times greater','20 times greater','100 times greater'],a:3,why:'pH down by 2 → 10 × 10 = 100 times greater.'},
+ {q:'1 g of hydrogen chloride is dissolved in 1 dm³ of water. All of it ionises. This is a…',opts:['concentrated solution of a strong acid','dilute solution of a strong acid','dilute solution of a weak acid','concentrated solution of a weak acid'],a:1,why:'Fully ionised = strong. Small amount in a large volume = dilute.'},
+ {q:'Mg + Zn²⁺ → Mg²⁺ + Zn. Which is reduced?',opts:['Mg','Zn²⁺','Mg²⁺','Zn'],a:1,why:'Zn²⁺ gains electrons to become Zn. Gain of electrons is reduction.'}],
+ exam:{q:'(a) What is meant by a ‘weak acid’? [2]<br>(b) Magnesium reacts with copper sulfate solution: &nbsp; Mg + Cu²⁺ → Mg²⁺ + Cu<br>Explain why this is a redox reaction. [2]',
+  ms:['partially ionised','in aqueous solution / in water','magnesium (atoms) lose electrons, so are oxidised','copper ions gain electrons, so are reduced']}}
+],
+quiz:[
+{q:'How many moles are in 80 g of NaOH? (M<sub>r</sub> = 40)',opts:['0.5','2','40','3200'],a:1,why:'80 ÷ 40 = 2 mol.'},
+{q:'2H₂ + O₂ → 2H₂O. How many moles of water are made from 3 mol of oxygen?',opts:['1.5','3','6','9'],a:2,why:'1 O₂ makes 2 H₂O, so 3 mol makes 6 mol.'},
+{q:'Why is the insoluble solid added in excess when making a salt?',opts:['To speed up the reaction','To make sure all the acid reacts','To make bigger crystals','To neutralise the water'],a:1,why:'All the acid must be used up, then the extra solid is filtered off.'},
+{q:'What forms at the positive electrode when copper sulfate solution is electrolysed?',opts:['Copper','Hydrogen','Oxygen','Sulfur'],a:2,why:'No halide ions, so oxygen from hydroxide ions.'},
+{q:'In electrolysis, positive ions…',opts:['move to the positive electrode and lose electrons','move to the negative electrode and gain electrons','move to the negative electrode and lose electrons','do not move'],a:1,why:'Opposites attract. They gain electrons (reduction).'},
+{q:'A reaction is exothermic when…',opts:['more energy is needed to break bonds than is released making bonds','more energy is released making bonds than is needed to break bonds','no bonds are broken','the products have more energy than the reactants'],a:1,why:'More released than absorbed.'},
+{q:'How many O–H bonds are there in 2H₂O?',opts:['2','3','4','6'],a:2,why:'Each H₂O has two O–H bonds. The coefficient (big number) 2 doubles it: 4.'},
+{q:'Which acid is a weak acid?',opts:['Hydrochloric acid','Nitric acid','Sulfuric acid','Ethanoic acid'],a:3,why:'Ethanoic acid is only partially ionised.'}
+]});</script>
+<script>
+const E=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e};
+const S={mc:{},ex:{},qz:{},done:{}};let cur=0;const N=WT.tabs.length;
+document.getElementById('ttl').innerHTML=WT.title+'<small>'+WT.sub+'</small>';
+// timer
+let left=1500,tick=null;const clock=document.getElementById('clock'),go=document.getElementById('go');
+function draw(){const a=Math.abs(left),m=Math.floor(a/60),s=a%60;clock.textContent=(left<0?'+':'')+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');clock.className=left<0?'over':''}
+go.onclick=()=>{if(tick){clearInterval(tick);tick=null;go.textContent='Resume'}else{tick=setInterval(()=>{left--;draw()},1000);go.textContent='Pause'}};
+function nav(){const n=document.getElementById('nav');n.innerHTML='';
+ const names=WT.tabs.map((t,i)=>(i+1)+'. '+t.name).concat(['Final quiz','My score']);
+ names.forEach((nm,i)=>{const b=E('button',(i===cur?'on ':'')+(S.done[i]?'done':''),nm);b.onclick=()=>show(i);n.appendChild(b)})}
+function mcq(q,store,id){const c=E('div','card');c.appendChild(E('div',null,'<b>'+q.q+'</b>'));const o=E('div','opts'),fb=E('div','fb hid');
+ q.opts.forEach((t,i)=>{const b=E('button',null,t);b.onclick=()=>{if(!(id in store))store[id]=(i===q.a)?1:0;
+  if(i===q.a){b.className='right';fb.innerHTML='✔ '+(q.why||'Correct.');fb.className='fb';[...o.children].forEach(x=>x.disabled=true)}
+  else{b.className='wrong';b.disabled=true;fb.innerHTML='✘ Not quite – try again.';fb.className='fb'}};o.appendChild(b)});
+ c.appendChild(o);c.appendChild(fb);return c}
+function calc(b){const c=E('div','card');c.appendChild(E('h3',null,'<span class="tag">Step by step</span>'+b.title));c.appendChild(E('div',null,b.q));
+ const steps=b.steps.map((s,i)=>{const d=E('div','step'+(i===0?' show':''));d.appendChild(E('div',null,'<b>Step '+(i+1)+':</b> '+s.p));
+  const inp=E('input');inp.inputMode='decimal';inp.setAttribute('aria-label','answer for step '+(i+1));const ck=E('button',null,'Check'),tell=E('button',null,'Show me');
+  const row=E('div');row.style.marginTop='6px';row.append(inp,document.createTextNode((s.u||'')+' '),ck,document.createTextNode(' '),tell);d.appendChild(row);
+  d.appendChild(E('div','work',s.show));
+  const nxt=()=>{if(steps[i+1])steps[i+1].classList.add('show')};
+  const chk=()=>{const v=parseFloat(inp.value.replace(/,/g,'').replace('×10^','e'));const tol=s.tol!=null?s.tol:Math.abs(s.a)*0.006;
+   if(!isNaN(v)&&Math.abs(v-s.a)<=tol){d.className='step show ok';nxt()}else d.className='step show no'};
+  ck.onclick=chk;inp.onkeydown=e=>{if(e.key==='Enter')chk()};tell.onclick=()=>{d.className='step show told';nxt()};return d});
+ steps.forEach(s=>c.appendChild(s));return c}
+function graph(g){const W=340,H=230,L=44,B=36,T=10,R=10,pw=W-L-R,ph=H-T-B,X=x=>L+x/g.xmax*pw,Y=y=>T+ph-y/g.ymax*ph;let s='<svg viewBox="0 0 '+W+' '+H+'" width="460" role="img" aria-label="'+(g.cap||'graph')+'">';
+ for(let i=0;i<=g.xn;i++){const x=g.xmax*i/g.xn;s+='<line x1="'+X(x)+'" y1="'+T+'" x2="'+X(x)+'" y2="'+(T+ph)+'" stroke="#e2d3b8"/><text x="'+X(x)+'" y="'+(T+ph+13)+'" font-size="10" text-anchor="middle" fill="#5b3a1e">'+x+'</text>'}
+ for(let i=0;i<=g.yn;i++){const y=g.ymax*i/g.yn;s+='<line x1="'+L+'" y1="'+Y(y)+'" x2="'+(L+pw)+'" y2="'+Y(y)+'" stroke="#e2d3b8"/><text x="'+(L-5)+'" y="'+(Y(y)+3)+'" font-size="10" text-anchor="end" fill="#5b3a1e">'+y+'</text>'}
+ let p='';for(let i=0;i<=80;i++){const x=g.xmax*i/80;p+=(i?'L':'M')+X(x).toFixed(1)+' '+Y(g.f(x)).toFixed(1)}
+ s+='<path d="'+p+'" fill="none" stroke="#5b3a1e" stroke-width="2.2"/>';
+ if(g.tan){const[a,b]=g.tan;s+='<line x1="'+X(a[0])+'" y1="'+Y(a[1])+'" x2="'+X(b[0])+'" y2="'+Y(b[1])+'" stroke="#c0392b" stroke-width="1.8"/>'+
+  '<path d="M'+X(a[0])+' '+Y(a[1])+'H'+X(b[0])+'V'+Y(b[1])+'" fill="none" stroke="#c0392b" stroke-dasharray="4 3"/>'+
+  '<circle cx="'+X(g.at)+'" cy="'+Y(g.f(g.at))+'" r="3.5" fill="#c0392b"/>'}
+ s+='<text x="'+(L+pw/2)+'" y="'+(H-4)+'" font-size="11" text-anchor="middle" fill="#2e2218">'+g.xl+'</text><text transform="rotate(-90 11 '+(T+ph/2)+')" x="11" y="'+(T+ph/2)+'" font-size="11" text-anchor="middle" fill="#2e2218">'+g.yl+'</text></svg>';
+ const c=E('div','card',s);if(g.cap)c.appendChild(E('div','why',g.cap));return c}
+function exam(x,i){const c=E('div','card');const tot=x.ms.length;c.appendChild(E('h3',null,'<span class="tag">Exam question</span>Answer on paper, then mark it yourself &nbsp;['+tot+' marks]'));
+ c.appendChild(E('div',null,x.q));const btn=E('button',null,'Show mark scheme');btn.style.marginTop='10px';const ms=E('div','hid'),out=E('div','fb','Tick each point you got: <b>0 / '+tot+'</b>');
+ x.ms.forEach(m=>{const l=E('label','mp');const cb=E('input');cb.type='checkbox';cb.onchange=()=>{const n=ms.querySelectorAll('input:checked').length;S.ex[i]=n;out.innerHTML='Tick each point you got: <b>'+n+' / '+tot+'</b>'};l.append(cb,E('span',null,m));ms.appendChild(l)});
+ ms.appendChild(out);btn.onclick=()=>{ms.className='';btn.className='hid';if(!(i in S.ex))S.ex[i]=0};c.append(btn,ms);return c}
+function block(b){if(b.t==='calc')return calc(b);if(b.t==='graph')return graph(b);
+ if(b.t==='key'){const c=E('div','card key');c.appendChild(E('h3',null,b.title));c.appendChild(E('ul',null,b.items.map(x=>'<li>'+x+'</li>').join('')));if(b.trap)c.appendChild(E('div','trap','⚠ <b>Mark loser:</b> '+b.trap));return c}
+ if(b.t==='model'){const c=E('div','card');c.appendChild(E('h3',null,'<span class="tag">Model answer</span>'+b.q));c.appendChild(E('div','why','Say each point out loud first, then tap to reveal.'));const u=E('ul','reveal');b.a.forEach(x=>{const li=E('li',null,x);li.onclick=()=>li.className='on';u.appendChild(li)});c.appendChild(u);return c}
+ if(b.t==='tbl'){const c=E('div','card');if(b.title)c.appendChild(E('h3',null,b.title));c.appendChild(E('table',null,'<tr>'+b.head.map(h=>'<th>'+h+'</th>').join('')+'</tr>'+b.rows.map(r=>'<tr>'+r.map(d=>'<td>'+d+'</td>').join('')+'</tr>').join('')));return c}
+ return E('div','card',(b.title?'<h3>'+b.title+'</h3>':'')+b.h)}
+function foot(m,i){const f=E('div','next');const a=E('button',null,'← Back');a.onclick=()=>show(i-1);if(i===0)a.style.visibility='hidden';
+ const b=E('button','big',i<N?'Done – next →':'See my score →');b.onclick=()=>{S.done[i]=1;show(i+1)};f.append(a,b);m.appendChild(f)}
+function show(i){cur=i;nav();const m=document.getElementById('main');m.innerHTML='';window.scrollTo(0,0);
+ if(i<N){const t=WT.tabs[i];m.appendChild(E('h2',null,(i+1)+'. '+t.name+' <span class="pill">about '+t.mins+' min</span>'));m.appendChild(E('p','why',t.why));
+  m.appendChild(E('div','pills',t.seen.map(s=>'<span class="pill">'+s+'</span>').join('')));
+  t.blocks.forEach(b=>m.appendChild(block(b)));
+  if(t.checks.length){m.appendChild(E('h3',null,'Quick checks'));t.checks.forEach((q,j)=>m.appendChild(mcq(q,S.mc,i+'-'+j)))}
+  if(t.exam)m.appendChild(exam(t.exam,i));foot(m,i)}
+ else if(i===N){m.appendChild(E('h2',null,'Final quiz <span class="pill">about 4 min</span>'));m.appendChild(E('p','why','No notes. Only your first click on each question counts.'));
+  WT.quiz.forEach((q,j)=>m.appendChild(mcq(q,S.qz,j)));foot(m,i)}
+ else{const sum=o=>Object.values(o).reduce((a,b)=>a+b,0);const mcT=WT.tabs.reduce((a,t)=>a+t.checks.length,0),exT=WT.tabs.reduce((a,t)=>a+(t.exam?t.exam.ms.length:0),0);
+  m.appendChild(E('h2',null,'My score'));
+  m.appendChild(E('div','card','<table><tr><th>Section</th><th>Score</th></tr><tr><td>Quick checks (first try)</td><td class="score">'+sum(S.mc)+' / '+mcT+'</td></tr><tr><td>Exam questions (self-marked)</td><td class="score">'+sum(S.ex)+' / '+exT+'</td></tr><tr><td>Final quiz (first try)</td><td class="score">'+sum(S.qz)+' / '+WT.quiz.length+'</td></tr></table>'));
+  let weak=WT.tabs.map((t,i)=>{let got=0,tot=t.checks.length+(t.exam?t.exam.ms.length:0);t.checks.forEach((q,j)=>got+=S.mc[i+'-'+j]||0);got+=S.ex[i]||0;return{n:t.name,p:tot?got/tot:1}}).filter(x=>x.p<0.7);
+  m.appendChild(E('div','card key','<h3>What to do next</h3>'+(weak.length?'<p>Go back over these before the exam:</p><ul>'+weak.map(w=>'<li>'+w.n+' ('+Math.round(w.p*100)+'%)</li>').join('')+'</ul>':'<p>Nothing below 70%. Try the other walkthrough for this paper.</p>')+'<p>Any exam question you dropped marks on: write the question out, leave a space, and answer it again tomorrow without looking.</p>'))}}
+show(0);
+</script></body></html>

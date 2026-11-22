@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Paper 2 last-minute walkthrough B</title>
+<style>
+:root{--cream:#fbf5e9;--card:#fffdf7;--brown:#5b3a1e;--mid:#8a5a2b;--line:#e2d3b8;--tan:#f1e4cb;--ink:#2e2218;--good:#2f7d4f;--goodbg:#e3f3e8;--bad:#b3402e;--badbg:#fbe6e1;--gold:#c98a1b}
+*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font:17px/1.5 "Segoe UI",Helvetica,Arial,sans-serif}
+header{background:var(--brown);color:#fff;padding:12px 16px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between}
+header h1{font-size:1.15rem;margin:0}header small{display:block;opacity:.85;font-weight:400;font-size:.85rem}
+#timer{display:flex;align-items:center;gap:8px}#clock{font:700 1.3rem ui-monospace,Consolas,monospace;background:#3d2612;padding:4px 10px;border-radius:6px;min-width:84px;text-align:center}
+#clock.over{background:var(--bad)}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--mid);background:var(--tan);color:var(--brown);padding:6px 12px}
+button:hover{background:#e9d6b1}header button{background:#fff;border-color:#fff}
+nav{display:flex;gap:6px;overflow-x:auto;padding:10px 12px;background:var(--tan);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+nav button{white-space:nowrap;background:var(--card)}nav button.on{background:var(--brown);color:#fff;border-color:var(--brown)}nav button.done::after{content:" ✓";color:var(--good)}nav button.on.done::after{color:#bfe8cd}
+main{max-width:860px;margin:0 auto;padding:16px 14px 60px}
+h2{color:var(--brown);margin:.2em 0 .3em;font-size:1.45rem}h3{color:var(--brown);margin:0 0 .4em;font-size:1.08rem}
+.why{color:var(--mid);margin:0 0 6px}.pills{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}.pill{background:var(--tan);border:1px solid var(--line);border-radius:99px;padding:1px 10px;font-size:.8rem;color:var(--brown)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:0 0 14px}
+.key{border-left:6px solid var(--gold)}.key ul,.card ul{margin:.2em 0;padding-left:1.2em}.key li{margin:.25em 0}
+.trap{background:#fff3d6;border:1px solid #edd08f;border-radius:8px;padding:8px 12px;margin:8px 0 0}
+table{border-collapse:collapse;width:100%;font-size:.95rem}th,td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}th{background:var(--tan);color:var(--brown)}
+.opts{display:grid;gap:8px;margin:8px 0}.opts button{text-align:left;background:#fff;color:var(--ink);border-color:var(--line);padding:9px 12px}
+.opts button.right{background:var(--goodbg);border-color:var(--good)}.opts button.wrong{background:var(--badbg);border-color:var(--bad)}
+.fb{font-size:.95rem;margin:6px 0 0;padding:8px 10px;border-radius:8px;background:var(--tan)}
+.step{display:none;border-top:1px dashed var(--line);padding:10px 0}.step.show{display:block}.step:first-of-type{border-top:0}
+.step input{font:inherit;width:120px;padding:5px 8px;border:1px solid var(--mid);border-radius:6px;margin-right:6px}
+.step.ok input{background:var(--goodbg);border-color:var(--good)}.step.no input{background:var(--badbg);border-color:var(--bad)}
+.work{display:none;color:var(--good);margin:6px 0 0;font-weight:600}.step.ok .work,.step.told .work{display:block}.step.told .work{color:var(--mid)}
+.mp{display:flex;gap:10px;align-items:flex-start;padding:6px 0;border-top:1px dashed var(--line)}.mp input{width:20px;height:20px;margin-top:3px;flex:none}
+.hid{display:none}.tag{display:inline-block;background:var(--brown);color:#fff;border-radius:6px;padding:0 8px;font-size:.8rem;margin-right:6px}
+.reveal li{color:transparent;background:var(--tan);border-radius:6px;margin:5px 0;padding:2px 6px;cursor:pointer;user-select:none}.reveal li.on{color:inherit;background:none;cursor:default}
+.next{display:flex;justify-content:space-between;gap:10px;margin-top:6px}.big{font-size:1.05rem;padding:10px 18px;background:var(--brown);color:#fff;border-color:var(--brown)}.big:hover{background:#3d2612}
+.score{font-size:1.6rem;font-weight:700;color:var(--brown)}svg{max-width:100%;height:auto;display:block;margin:6px auto}
+@media print{nav,#timer,.next{display:none}}
+</style></head><body>
+<header><h1 id="ttl"></h1><div id="timer"><span id="clock">25:00</span><button id="go">Start</button></div></header>
+<nav id="nav"></nav><main id="main"></main>
+<script>const WT=({
+file:'paper2-last-minute-B.html',
+title:'Paper 2 last-minute walkthrough B',
+sub:'Analysis, the atmosphere and resources · AQA GCSE Chemistry and Trilogy (Higher) · 25 minutes',
+tabs:[
+{name:'Chromatography',mins:5,why:'Chromatography has been on five of the last six papers, twice as a six-mark method. The R<sub>f</sub> calculation is 2–3 marks every time.',
+ seen:['Jun 23 (9 marks)','Nov 20 (8 marks)','Nov 21 (6-mark plan)','Trilogy Jun 22 (10 marks)','Trilogy Jun 23 (6-mark plan)'],
+ blocks:[
+ {t:'model',q:'Plan an investigation to find the R<sub>f</sub> value of a dye in a food colouring. [6]',a:[
+  'Draw a start line in <b>pencil</b> near the bottom of the chromatography paper.',
+  'Put a small spot of the food colouring on the line.',
+  'Stand the paper in a beaker of solvent, with the <b>solvent level below the start line</b>.',
+  'Leave until the solvent has travelled nearly to the top, then <b>mark the solvent front</b>.',
+  'Measure the distance moved by the dye and the distance moved by the solvent, <b>both from the start line</b>.',
+  'R<sub>f</sub> = distance moved by substance ÷ distance moved by solvent.']},
+ {t:'key',title:'Reasons and facts',items:[
+  'Pencil, not ink: pencil is insoluble, so it will not run. An ink line would dissolve and move up the paper.',
+  'Solvent below the line: so the spot does not dissolve into (wash off into) the solvent.',
+  '<b>Stationary phase</b> = the paper. <b>Mobile phase</b> = the solvent.',
+  'Substances separate because they have different solubilities in the solvent and different attractions to the paper.',
+  'A <b>pure</b> substance gives <b>one spot</b>. A spot that stays on the start line is insoluble in that solvent.',
+  'R<sub>f</sub> is always less than 1. It changes if you change the solvent or the type of paper.',
+  'A <b>pure</b> substance is a single element or compound. It melts and boils at one fixed temperature.',
+  'A <b>formulation</b> is a mixture designed as a useful product, with each component in a measured quantity.']},
+ {t:'calc',title:'R<sub>f</sub> values',q:'A red dye moves 4.2 cm. The solvent moves 7.0 cm.',
+  steps:[
+  {p:'Calculate the R<sub>f</sub> value of the red dye.',a:0.6,tol:0.001,show:'4.2 ÷ 7.0 = 0.60'},
+  {p:'On the same paper a blue dye has R<sub>f</sub> = 0.35. How far did it move? (Rearrange: distance moved by dye = R<sub>f</sub> × distance moved by solvent.)',a:2.45,tol:0.01,u:'cm',show:'0.35 × 7.0 = 2.45 cm'},
+  {p:'In another experiment a dye with R<sub>f</sub> = 0.60 moves 4.8 cm. How far did the solvent move? (distance moved by solvent = distance moved by dye ÷ R<sub>f</sub>)',a:8,tol:0.01,u:'cm',show:'4.8 ÷ 0.60 = 8.0 cm'}]}],
+ checks:[
+ {q:'Why is the start line drawn in pencil?',opts:['Pencil is easier to see','Pencil is insoluble in the solvent','Pencil reacts with the dye','Ink is too expensive'],a:1,why:'Ink would dissolve and run up the paper.'},
+ {q:'How many spots does a pure compound produce?',opts:['0','1','2','It depends on the solvent'],a:1,why:'One substance, one spot.'},
+ {q:'Two students get different R<sub>f</sub> values for the same dye. What did they do differently?',opts:['Used a different size of beaker','Left it for a different time','Used a different solvent','Used a different length of paper'],a:2,why:'R<sub>f</sub> depends on the solvent (and the type of paper).'}],
+ exam:{q:'Black ink is a mixture of several dyes.<br>Plan an experiment using paper chromatography to separate the dyes and find their R<sub>f</sub> values. [6]',
+  ms:['pencil start line on chromatography paper','spot of ink on the line','paper in solvent with the solvent below the start line','leave until the solvent is near the top and mark the solvent front','measure distance moved by each dye and by the solvent from the start line','R<sub>f</sub> = distance moved by dye ÷ distance moved by solvent']}},
+
+{name:'Gas tests',mins:2,why:'The easiest marks on the paper. A two-mark “test and result” has appeared on four of the last six papers, three times on one of them.',
+ seen:['Jun 22','Jun 23 (×2)','Nov 20','Trilogy Jun 23 (×3)'],
+ blocks:[
+ {t:'tbl',title:'Test and result: learn both halves',head:['Gas','Test','Result'],rows:[
+  ['Hydrogen','Burning splint','Burns with a (squeaky) pop'],
+  ['Oxygen','Glowing splint','Splint relights'],
+  ['Carbon dioxide','Bubble through limewater (calcium hydroxide solution)','Limewater turns milky (cloudy)'],
+  ['Chlorine','Damp litmus paper','Paper is bleached (turns white)'],
+  ['Pure water','Measure the boiling point','Boils at exactly 100 °C']]},
+ {t:'key',title:'Watch out',items:['A <b>burning</b> splint for hydrogen. A <b>glowing</b> splint for oxygen.','The litmus paper must be <b>damp</b>.','Limewater is calcium hydroxide solution.'],trap:'Giving the test without the result, or the result without the test. One mark each.'}],
+ checks:[
+ {q:'A glowing splint relights. The gas is…',opts:['hydrogen','carbon dioxide','oxygen','chlorine'],a:2,why:'Oxygen relights a glowing splint.'},
+ {q:'What is the result of the test for chlorine?',opts:['Damp litmus paper turns blue','Damp litmus paper is bleached','A squeaky pop','Limewater turns milky'],a:1,why:'Chlorine bleaches damp litmus paper white.'},
+ {q:'Zinc reacts with sulfuric acid. Which test identifies the gas made?',opts:['Glowing splint','Burning splint','Limewater','Damp litmus paper'],a:1,why:'Metal + acid gives hydrogen: burning splint, pop.'}],
+ exam:{q:'(a) Describe the test for carbon dioxide. Give the result. [2]<br>(b) Describe the test for hydrogen. Give the result. [2]',
+  ms:['bubble the gas through limewater','limewater turns milky / cloudy','burning splint','(squeaky) pop']}},
+
+{name:'The changing atmosphere',mins:5,why:'How the atmosphere changed, and how greenhouse gases work, alternate from year to year. Both are 4-mark explanations.',
+ seen:['Jun 22 (10 marks)','Trilogy Jun 22 (9 marks)','Jun 23 (8 marks)','Trilogy Jun 23 (8 marks)','Nov 20'],
+ blocks:[
+ {t:'key',title:'From the early atmosphere to today',items:[
+  'Volcanoes released gases: mainly <b>carbon dioxide</b>, with water vapour, nitrogen and small amounts of methane and ammonia. Little or no oxygen.',
+  'The water vapour <b>condensed to form the oceans</b>.',
+  'Carbon dioxide <b>dissolved in the oceans</b> and formed carbonate precipitates, which became sediments.',
+  '<b>Algae and plants photosynthesised</b>: carbon dioxide was taken in and oxygen was released. &nbsp; 6CO₂ + 6H₂O → C₆H₁₂O₆ + 6O₂',
+  'Carbon was <b>locked up in sedimentary rocks</b> (limestone) <b>and fossil fuels</b>.',
+  'Coal formed from plant remains. Crude oil and natural gas formed from plankton, buried and compressed over millions of years.',
+  'Today: about 80% nitrogen, about 20% oxygen, small amounts of carbon dioxide, water vapour and noble gases.']},
+ {t:'model',q:'Explain how greenhouse gases cause global warming. [4]',a:[
+  '<b>Short wavelength</b> radiation from the Sun passes through the atmosphere.',
+  'The Earth’s surface absorbs it and emits <b>longer wavelength</b> (infrared) radiation.',
+  'Greenhouse gases <b>absorb</b> the longer wavelength radiation.',
+  'So energy is trapped and the <b>temperature of the atmosphere rises</b>.']},
+ {t:'key',title:'Greenhouse gases and people',items:[
+  'Greenhouse gases: <b>carbon dioxide, methane, water vapour</b>.',
+  'More carbon dioxide: burning fossil fuels, deforestation (fewer trees to photosynthesise).',
+  'More methane: cattle farming, rice paddy fields, landfill sites.',
+  'Effects of climate change: ice caps melt and sea levels rise (flooding); changes in rainfall; more extreme weather; changes in where species can live.',
+  'Trees reduce global warming because they take in carbon dioxide for photosynthesis.',
+  'Carbon footprint: the total amount of greenhouse gases emitted over the full life cycle of a product, service or event.']}],
+ checks:[
+ {q:'Which process caused oxygen to increase in the atmosphere?',opts:['Volcanic activity','Photosynthesis by algae and plants','Combustion','Condensation of water vapour'],a:1,why:'Photosynthesis takes in CO₂ and releases O₂.'},
+ {q:'Which is a greenhouse gas?',opts:['Nitrogen','Oxygen','Water vapour','Argon'],a:2,why:'Carbon dioxide, methane and water vapour.'},
+ {q:'Why might a growing world population increase methane in the atmosphere?',opts:['More cars burn petrol','More cattle and rice are farmed','More trees are planted','More water evaporates'],a:1,why:'Cattle and paddy fields release methane.'}],
+ exam:{q:'The Earth’s early atmosphere was mainly carbon dioxide with little or no oxygen.<br>Explain how the amounts of carbon dioxide and oxygen in the atmosphere changed. [4]',
+  ms:['algae / plants photosynthesised','which took in carbon dioxide and released oxygen','carbon dioxide dissolved in the oceans','carbon dioxide was locked up in sedimentary rocks / fossil fuels (carbonate sediments)']}},
+
+{name:'Pollutants from fuels',mins:4,why:'A table of five pollutants covers a whole question. It was a six-marker in Nov 21 and 12 marks on Trilogy Jun 23.',
+ seen:['Nov 20 (8 marks)','Nov 21 (6 marks)','Trilogy Jun 23 (12 marks)','Jun 22'],
+ blocks:[
+ {t:'tbl',title:'Where each pollutant comes from and what it does',head:['Pollutant','How it forms','Problem'],rows:[
+  ['Carbon dioxide','Complete combustion of the carbon in a fuel','Greenhouse gas: global warming and climate change'],
+  ['Carbon monoxide','<b>Incomplete combustion</b> (not enough oxygen)','Toxic. Colourless and has no smell, so it is hard to detect'],
+  ['Particulates (soot, carbon)','Incomplete combustion','Global dimming. Breathing (health) problems'],
+  ['Sulfur dioxide','Sulfur impurities in the fuel react with oxygen when the fuel burns','<b>Acid rain</b>. Breathing problems'],
+  ['Oxides of nitrogen','<b>Nitrogen and oxygen from the air</b> react at the <b>high temperature</b> in an engine','Acid rain. Breathing problems']]},
+ {t:'key',title:'Finish the chain',items:[
+  'Acid rain damages buildings and statues made of limestone, kills trees and kills fish in lakes.',
+  'Sulfur is removed from fuels before they are burned so that less sulfur dioxide, and so less acid rain, is produced.',
+  'The nitrogen in oxides of nitrogen comes from the <b>air</b>, not from the fuel.',
+  'Burning a hydrocarbon releases water as a vapour because the temperature is above 100 °C.'],
+  trap:'Stopping at “sulfur dioxide is produced”. Go on to acid rain, and then to what acid rain damages.'}],
+ checks:[
+ {q:'Why is carbon monoxide difficult to detect?',opts:['It is very dense','It is colourless and has no smell','It only forms at night','It dissolves in rain'],a:1,why:'You cannot see or smell it.'},
+ {q:'Where does the nitrogen in oxides of nitrogen come from?',opts:['Impurities in the fuel','The air','The engine metal','Water vapour'],a:1,why:'Nitrogen from the air reacts with oxygen at high temperature.'},
+ {q:'Which pollutant causes global dimming?',opts:['Carbon dioxide','Sulfur dioxide','Particulates','Carbon monoxide'],a:2,why:'Solid carbon particles reduce the sunlight reaching the ground.'}],
+ exam:{q:'(a) Explain why sulfur impurities are removed from fuels before the fuels are burned. [3]<br>(b) Explain why oxides of nitrogen are formed in car engines. [2]',
+  ms:['sulfur burns / reacts with oxygen to produce sulfur dioxide','which causes acid rain','which damages buildings / kills trees / kills fish (or sulfur dioxide causes breathing problems)','nitrogen and oxygen from the air react','at the high temperature (in the engine)']}},
+
+{name:'Water and using resources',mins:5,why:'Potable water, life cycle assessments and extracting copper from low-grade ores take it in turns. Between them they have been a six-marker three times.',
+ seen:['Jun 22 (LCA 6 marks; water 12 marks)','Nov 20','Nov 21','Jun 23','Trilogy Jun 22 (two 6-markers)','Trilogy Jun 23'],
+ blocks:[
+ {t:'key',title:'Potable water',items:[
+  '<b>Potable</b> means safe to drink. It is not pure: it still contains dissolved salts.',
+  'From fresh water (UK): choose a suitable source → <b>filter</b> through filter beds to remove solids → <b>sterilise</b> to kill microbes using chlorine, ozone or ultraviolet light.',
+  'Filtering does not remove dissolved substances.',
+  'From sea water: <b>desalination</b> by distillation or reverse osmosis. Both need a lot of energy, so they are expensive.',
+  'Waste water (sewage): screening and grit removal → sedimentation, giving sludge and effluent → <b>anaerobic digestion</b> of the sludge → <b>aerobic biological treatment</b> of the effluent.',
+  'Ground water is the easiest source. Sewage needs the most steps. Sea water needs the most energy.']},
+ {t:'key',title:'Life cycle assessments (LCAs)',items:[
+  'Four stages: <b>extracting and processing raw materials</b> → <b>manufacturing and packaging</b> → <b>use, reuse and maintenance</b> → <b>disposal</b>. Transport is counted at every stage.',
+  'For an “evaluate” question: compare using <b>numbers from the table</b> (for example energy per use, not just energy per item), give points on both sides, and finish with a <b>justified conclusion</b>.',
+  'Recycling metals: conserves finite ores, uses less energy than extraction, and means less mining and less waste in landfill.']},
+ {t:'model',q:'Describe how copper is extracted from low-grade ores by phytomining. [4]',a:[
+  '<b>Plants are grown</b> on land containing the low-grade ore.',
+  'The plants <b>absorb copper compounds</b> through their roots.',
+  'The plants are harvested and <b>burned</b> to produce <b>ash</b> that contains copper compounds.',
+  'The ash is dissolved in acid, and copper is obtained by <b>electrolysis</b> or by <b>displacement using scrap iron</b>.']},
+ {t:'key',title:'Bioleaching',items:['<b>Bacteria</b> produce a solution called a <b>leachate</b> that contains copper compounds. Copper is then obtained by electrolysis or displacement with scrap iron.','Both methods avoid digging up and moving large amounts of rock, but they are slow.']}],
+ checks:[
+ {q:'Why is potable water sterilised?',opts:['To remove solids','To kill microbes','To remove dissolved salts','To make it pure'],a:1,why:'Chlorine, ozone or UV light kill microbes.'},
+ {q:'A country has little rainfall, a long coastline and plenty of energy. How should it obtain potable water?',opts:['Filtering ground water','Desalination of sea water','Anaerobic digestion','Sedimentation'],a:1,why:'Sea water is available and the energy cost is not a problem.'},
+ {q:'A glass bottle needs 7500 kJ to make and is used 25 times. A plastic bottle needs 1800 kJ and is used once. Energy per use for glass is…',opts:['300 kJ, less than plastic','7500 kJ, more than plastic','1800 kJ, the same as plastic','72 kJ, less than plastic'],a:0,why:'7500 ÷ 25 = 300 kJ per use, compared with 1800 kJ for plastic.'}],
+ exam:{q:'(a) Describe how potable water is produced from fresh water in the UK. [3]<br>(b) Describe how copper is extracted from low-grade ores by phytomining. [4]',
+  ms:['choose a suitable source of fresh water','filter (through filter beds) to remove solids','sterilise with chlorine / ozone / ultraviolet light to kill microbes','plants are grown on the ore / land containing copper compounds','plants absorb copper compounds','plants are burned to give ash containing copper compounds','copper obtained by electrolysis / displacement with scrap iron']}}
+],
+quiz:[
+{q:'A dye moves 3.0 cm and the solvent moves 12.0 cm. What is the R<sub>f</sub> value?',opts:['0.25','4.0','0.40','36'],a:0,why:'3.0 ÷ 12.0 = 0.25'},
+{q:'In paper chromatography the stationary phase is the…',opts:['solvent','dye','paper','beaker'],a:2,why:'Paper is stationary. The solvent is the mobile phase.'},
+{q:'The test for oxygen is…',opts:['a burning splint pops','a glowing splint relights','limewater turns milky','damp litmus is bleached'],a:1,why:'Glowing splint relights.'},
+{q:'What was the main gas in the Earth’s early atmosphere?',opts:['Oxygen','Nitrogen','Carbon dioxide','Methane'],a:2,why:'Mainly carbon dioxide from volcanoes.'},
+{q:'Greenhouse gases absorb…',opts:['short wavelength radiation from the Sun','longer wavelength radiation emitted by the Earth','ultraviolet light only','visible light'],a:1,why:'Longer wavelength (infrared) radiation from the Earth’s surface.'},
+{q:'Which pollutant is formed from impurities in a fuel?',opts:['Carbon monoxide','Oxides of nitrogen','Sulfur dioxide','Particulates'],a:2,why:'Sulfur impurities burn to make sulfur dioxide.'},
+{q:'Which is the correct order for treating fresh water?',opts:['Sterilise then filter','Filter then sterilise','Distil then filter','Sediment then digest'],a:1,why:'Filter beds remove solids, then sterilising kills microbes.'},
+{q:'In bioleaching, the copper compounds are obtained using…',opts:['plants','bacteria','yeast','electrolysis of rock'],a:1,why:'Bacteria produce a leachate solution.'}
+]});</script>
+<script>
+const E=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e};
+const S={mc:{},ex:{},qz:{},done:{}};let cur=0;const N=WT.tabs.length;
+document.getElementById('ttl').innerHTML=WT.title+'<small>'+WT.sub+'</small>';
+// timer
+let left=1500,tick=null;const clock=document.getElementById('clock'),go=document.getElementById('go');
+function draw(){const a=Math.abs(left),m=Math.floor(a/60),s=a%60;clock.textContent=(left<0?'+':'')+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');clock.className=left<0?'over':''}
+go.onclick=()=>{if(tick){clearInterval(tick);tick=null;go.textContent='Resume'}else{tick=setInterval(()=>{left--;draw()},1000);go.textContent='Pause'}};
+function nav(){const n=document.getElementById('nav');n.innerHTML='';
+ const names=WT.tabs.map((t,i)=>(i+1)+'. '+t.name).concat(['Final quiz','My score']);
+ names.forEach((nm,i)=>{const b=E('button',(i===cur?'on ':'')+(S.done[i]?'done':''),nm);b.onclick=()=>show(i);n.appendChild(b)})}
+function mcq(q,store,id){const c=E('div','card');c.appendChild(E('div',null,'<b>'+q.q+'</b>'));const o=E('div','opts'),fb=E('div','fb hid');
+ q.opts.forEach((t,i)=>{const b=E('button',null,t);b.onclick=()=>{if(!(id in store))store[id]=(i===q.a)?1:0;
+  if(i===q.a){b.className='right';fb.innerHTML='✔ '+(q.why||'Correct.');fb.className='fb';[...o.children].forEach(x=>x.disabled=true)}
+  else{b.className='wrong';b.disabled=true;fb.innerHTML='✘ Not quite – try again.';fb.className='fb'}};o.appendChild(b)});
+ c.appendChild(o);c.appendChild(fb);return c}
+function calc(b){const c=E('div','card');c.appendChild(E('h3',null,'<span class="tag">Step by step</span>'+b.title));c.appendChild(E('div',null,b.q));
+ const steps=b.steps.map((s,i)=>{const d=E('div','step'+(i===0?' show':''));d.appendChild(E('div',null,'<b>Step '+(i+1)+':</b> '+s.p));
+  const inp=E('input');inp.inputMode='decimal';inp.setAttribute('aria-label','answer for step '+(i+1));const ck=E('button',null,'Check'),tell=E('button',null,'Show me');
+  const row=E('div');row.style.marginTop='6px';row.append(inp,document.createTextNode((s.u||'')+' '),ck,document.createTextNode(' '),tell);d.appendChild(row);
+  d.appendChild(E('div','work',s.show));
+  const nxt=()=>{if(steps[i+1])steps[i+1].classList.add('show')};
+  const chk=()=>{const v=parseFloat(inp.value.replace(/,/g,'').replace('×10^','e'));const tol=s.tol!=null?s.tol:Math.abs(s.a)*0.006;
+   if(!isNaN(v)&&Math.abs(v-s.a)<=tol){d.className='step show ok';nxt()}else d.className='step show no'};
+  ck.onclick=chk;inp.onkeydown=e=>{if(e.key==='Enter')chk()};tell.onclick=()=>{d.className='step show told';nxt()};return d});
+ steps.forEach(s=>c.appendChild(s));return c}
+function graph(g){const W=340,H=230,L=44,B=36,T=10,R=10,pw=W-L-R,ph=H-T-B,X=x=>L+x/g.xmax*pw,Y=y=>T+ph-y/g.ymax*ph;let s='<svg viewBox="0 0 '+W+' '+H+'" width="460" role="img" aria-label="'+(g.cap||'graph')+'">';
+ for(let i=0;i<=g.xn;i++){const x=g.xmax*i/g.xn;s+='<line x1="'+X(x)+'" y1="'+T+'" x2="'+X(x)+'" y2="'+(T+ph)+'" stroke="#e2d3b8"/><text x="'+X(x)+'" y="'+(T+ph+13)+'" font-size="10" text-anchor="middle" fill="#5b3a1e">'+x+'</text>'}
+ for(let i=0;i<=g.yn;i++){const y=g.ymax*i/g.yn;s+='<line x1="'+L+'" y1="'+Y(y)+'" x2="'+(L+pw)+'" y2="'+Y(y)+'" stroke="#e2d3b8"/><text x="'+(L-5)+'" y="'+(Y(y)+3)+'" font-size="10" text-anchor="end" fill="#5b3a1e">'+y+'</text>'}
+ let p='';for(let i=0;i<=80;i++){const x=g.xmax*i/80;p+=(i?'L':'M')+X(x).toFixed(1)+' '+Y(g.f(x)).toFixed(1)}
+ s+='<path d="'+p+'" fill="none" stroke="#5b3a1e" stroke-width="2.2"/>';
+ if(g.tan){const[a,b]=g.tan;s+='<line x1="'+X(a[0])+'" y1="'+Y(a[1])+'" x2="'+X(b[0])+'" y2="'+Y(b[1])+'" stroke="#c0392b" stroke-width="1.8"/>'+
+  '<path d="M'+X(a[0])+' '+Y(a[1])+'H'+X(b[0])+'V'+Y(b[1])+'" fill="none" stroke="#c0392b" stroke-dasharray="4 3"/>'+
+  '<circle cx="'+X(g.at)+'" cy="'+Y(g.f(g.at))+'" r="3.5" fill="#c0392b"/>'}
+ s+='<text x="'+(L+pw/2)+'" y="'+(H-4)+'" font-size="11" text-anchor="middle" fill="#2e2218">'+g.xl+'</text><text transform="rotate(-90 11 '+(T+ph/2)+')" x="11" y="'+(T+ph/2)+'" font-size="11" text-anchor="middle" fill="#2e2218">'+g.yl+'</text></svg>';
+ const c=E('div','card',s);if(g.cap)c.appendChild(E('div','why',g.cap));return c}
+function exam(x,i){const c=E('div','card');const tot=x.ms.length;c.appendChild(E('h3',null,'<span class="tag">Exam question</span>Answer on paper, then mark it yourself &nbsp;['+tot+' marks]'));
+ c.appendChild(E('div',null,x.q));const btn=E('button',null,'Show mark scheme');btn.style.marginTop='10px';const ms=E('div','hid'),out=E('div','fb','Tick each point you got: <b>0 / '+tot+'</b>');
+ x.ms.forEach(m=>{const l=E('label','mp');const cb=E('input');cb.type='checkbox';cb.onchange=()=>{const n=ms.querySelectorAll('input:checked').length;S.ex[i]=n;out.innerHTML='Tick each point you got: <b>'+n+' / '+tot+'</b>'};l.append(cb,E('span',null,m));ms.appendChild(l)});
+ ms.appendChild(out);btn.onclick=()=>{ms.className='';btn.className='hid';if(!(i in S.ex))S.ex[i]=0};c.append(btn,ms);return c}
+function block(b){if(b.t==='calc')return calc(b);if(b.t==='graph')return graph(b);
+ if(b.t==='key'){const c=E('div','card key');c.appendChild(E('h3',null,b.title));c.appendChild(E('ul',null,b.items.map(x=>'<li>'+x+'</li>').join('')));if(b.trap)c.appendChild(E('div','trap','⚠ <b>Mark loser:</b> '+b.trap));return c}
+ if(b.t==='model'){const c=E('div','card');c.appendChild(E('h3',null,'<span class="tag">Model answer</span>'+b.q));c.appendChild(E('div','why','Say each point out loud first, then tap to reveal.'));const u=E('ul','reveal');b.a.forEach(x=>{const li=E('li',null,x);li.onclick=()=>li.className='on';u.appendChild(li)});c.appendChild(u);return c}
+ if(b.t==='tbl'){const c=E('div','card');if(b.title)c.appendChild(E('h3',null,b.title));c.appendChild(E('table',null,'<tr>'+b.head.map(h=>'<th>'+h+'</th>').join('')+'</tr>'+b.rows.map(r=>'<tr>'+r.map(d=>'<td>'+d+'</td>').join('')+'</tr>').join('')));return c}
+ return E('div','card',(b.title?'<h3>'+b.title+'</h3>':'')+b.h)}
+function foot(m,i){const f=E('div','next');const a=E('button',null,'← Back');a.onclick=()=>show(i-1);if(i===0)a.style.visibility='hidden';
+ const b=E('button','big',i<N?'Done – next →':'See my score →');b.onclick=()=>{S.done[i]=1;show(i+1)};f.append(a,b);m.appendChild(f)}
+function show(i){cur=i;nav();const m=document.getElementById('main');m.innerHTML='';window.scrollTo(0,0);
+ if(i<N){const t=WT.tabs[i];m.appendChild(E('h2',null,(i+1)+'. '+t.name+' <span class="pill">about '+t.mins+' min</span>'));m.appendChild(E('p','why',t.why));
+  m.appendChild(E('div','pills',t.seen.map(s=>'<span class="pill">'+s+'</span>').join('')));
+  t.blocks.forEach(b=>m.appendChild(block(b)));
+  if(t.checks.length){m.appendChild(E('h3',null,'Quick checks'));t.checks.forEach((q,j)=>m.appendChild(mcq(q,S.mc,i+'-'+j)))}
+  if(t.exam)m.appendChild(exam(t.exam,i));foot(m,i)}
+ else if(i===N){m.appendChild(E('h2',null,'Final quiz <span class="pill">about 4 min</span>'));m.appendChild(E('p','why','No notes. Only your first click on each question counts.'));
+  WT.quiz.forEach((q,j)=>m.appendChild(mcq(q,S.qz,j)));foot(m,i)}
+ else{const sum=o=>Object.values(o).reduce((a,b)=>a+b,0);const mcT=WT.tabs.reduce((a,t)=>a+t.checks.length,0),exT=WT.tabs.reduce((a,t)=>a+(t.exam?t.exam.ms.length:0),0);
+  m.appendChild(E('h2',null,'My score'));
+  m.appendChild(E('div','card','<table><tr><th>Section</th><th>Score</th></tr><tr><td>Quick checks (first try)</td><td class="score">'+sum(S.mc)+' / '+mcT+'</td></tr><tr><td>Exam questions (self-marked)</td><td class="score">'+sum(S.ex)+' / '+exT+'</td></tr><tr><td>Final quiz (first try)</td><td class="score">'+sum(S.qz)+' / '+WT.quiz.length+'</td></tr></table>'));
+  let weak=WT.tabs.map((t,i)=>{let got=0,tot=t.checks.length+(t.exam?t.exam.ms.length:0);t.checks.forEach((q,j)=>got+=S.mc[i+'-'+j]||0);got+=S.ex[i]||0;return{n:t.name,p:tot?got/tot:1}}).filter(x=>x.p<0.7);
+  m.appendChild(E('div','card key','<h3>What to do next</h3>'+(weak.length?'<p>Go back over these before the exam:</p><ul>'+weak.map(w=>'<li>'+w.n+' ('+Math.round(w.p*100)+'%)</li>').join('')+'</ul>':'<p>Nothing below 70%. Try the other walkthrough for this paper.</p>')+'<p>Any exam question you dropped marks on: write the question out, leave a space, and answer it again tomorrow without looking.</p>'))}}
+show(0);
+</script></body></html>
