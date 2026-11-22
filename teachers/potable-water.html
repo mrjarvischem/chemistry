@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<script src="gate.js"></script>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Potable Water and Waste Water</title>
+<style>
+/* Layout idea: four tabs, each one a single animated process diagram with a particle key above it,
+   teacher controls below it and numbered stage cards that spotlight one part of the plant. Single light theme for projectors. */
+:root{
+  color-scheme:light;
+  --bg:#eef1f6; --panel:#ffffff; --ink:#131c2b; --muted:#56637a; --line:#d3dae6;
+  --accent:#2a4fc9; --accent-soft:#e3e9fb;
+  --font:"Avenir Next","Segoe UI Variable","Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:17px;line-height:1.45}
+.wrap{max-width:1360px;margin:0 auto;padding:16px 16px 32px;display:flex;flex-direction:column;gap:14px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 16px}
+header a{color:var(--accent);font-size:.9rem;text-decoration:none;flex-basis:100%}
+header a:hover{text-decoration:underline}
+h1{font-size:1.6rem;margin:0;letter-spacing:-.01em;text-wrap:balance}
+header p{margin:0;color:var(--muted)}
+button{font:inherit;color:var(--ink);cursor:pointer}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}
+.tabs button{flex:0 0 auto;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 14px;text-align:left;display:flex;flex-direction:column;min-width:150px}
+.tabs button b{font-size:1rem}
+.tabs button span{font-size:.82rem;color:var(--muted)}
+.tabs button[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.tabs button[aria-selected="true"] span{color:#fff;opacity:.85}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px}
+.head{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 14px;margin-bottom:8px}
+.head h2{margin:0;font-size:1.3rem;text-wrap:balance}
+.head p{margin:0;color:var(--muted)}
+.key{display:flex;flex-wrap:wrap;gap:4px 20px;margin:0 0 8px;padding:0;list-style:none;font-size:.92rem}
+.key li{display:flex;align-items:center;gap:7px}
+.key i{width:13px;height:13px;border-radius:50%;flex:none;display:block}
+.key i.sq{border-radius:3px}
+.scroll{overflow-x:auto}
+canvas{display:block;width:100%;min-width:760px;height:auto;aspect-ratio:1200/540;border-radius:10px;background:#f7f9fc}
+.controls{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;margin-top:10px}
+.seg{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.seg .lab{font-weight:600;margin-right:4px}
+.controls button{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:6px 13px;min-height:38px}
+.controls button:hover{border-color:var(--accent)}
+.controls button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.controls button.primary{font-weight:650;min-width:92px}
+.controls input[type=range]{width:220px;accent-color:var(--accent)}
+.hint{color:var(--muted);font-size:.88rem;margin:8px 0 0}
+.stages{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;list-style:none;margin:0;padding:0}
+.stages button{text-align:left;width:100%;height:100%;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:5px}
+.stages button:hover{border-color:var(--accent)}
+.stages button[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 2px var(--accent);background:var(--accent-soft)}
+.stages .num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--ink);color:#fff;font-weight:700;font-size:.9rem;flex:none}
+.stages .hd{display:flex;align-items:center;gap:8px;font-weight:650;font-size:1.02rem}
+.stages .tx{font-size:.93rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a href="index.html">&larr; Teacher resources</a>
+    <h1>Potable water and waste water</h1>
+    <p>AQA GCSE Chemistry 4.10.1 (Trilogy 5.10.1) &middot; four animated processes</p>
+  </header>
+
+  <div class="tabs" role="tablist" id="tabs"></div>
+
+  <section class="card">
+    <div class="head"><h2 id="title"></h2><p id="sub"></p></div>
+    <ul class="key" id="key"></ul>
+    <div class="scroll"><canvas id="cv" width="1200" height="540"></canvas></div>
+    <div class="controls">
+      <button type="button" class="primary" id="play">Pause</button>
+      <div class="seg" id="speed"><span class="lab">Speed</span>
+        <button type="button" data-v="0.5" aria-pressed="false">Slow</button>
+        <button type="button" data-v="1" aria-pressed="true">Normal</button>
+        <button type="button" data-v="2" aria-pressed="false">Fast</button>
+      </div>
+      <div class="seg" id="agent" hidden><span class="lab">Sterilise with</span>
+        <button type="button" data-v="chlorine" aria-pressed="true">Chlorine</button>
+        <button type="button" data-v="ozone" aria-pressed="false">Ozone</button>
+        <button type="button" data-v="uv" aria-pressed="false">Ultraviolet light</button>
+      </div>
+      <div class="seg" id="press" hidden><label class="lab" for="pr">Pump pressure</label>
+        <span>low</span><input type="range" id="pr" min="0" max="100" value="85"><span>high</span>
+      </div>
+    </div>
+    <p class="hint" id="hint"></p>
+  </section>
+
+  <ol class="stages" id="stages"></ol>
+</div>
+
+<script>
+(function(){
+"use strict";
+var W=1200,H=540,cv=document.getElementById("cv"),ctx=cv.getContext("2d");
+var C={water:"#3d8fd9",solid:"#8a5a2b",micro:"#3aa83a",salt:"#f2a13a",vap:"#a9cdf0",big:"#6f6258",grit:"#3b3632",org:"#9a6a34",
+       chem:"#d6339a",gas:"#f5c33b",dig:"#4a3524",wall:"#56637a",pipe:"#d9e8f4",pipeEdge:"#6b7890",ink:"#131c2b",muted:"#56637a",tank:"#dcedf9"};
+function R(a,b){return a+Math.random()*(b-a);}
+function clamp(v,a,b){return v<a?a:v>b?b:v;}
+
+/* ---------- paths: points are [x,y,halfWidthX,halfWidthY] ---------- */
+function mk(pts){
+  var P=pts.map(function(a){var wx=a[2]==null?4:a[2];return {x:a[0],y:a[1],wx:wx,wy:a[3]==null?wx:a[3]};}),L=[0],i;
+  for(i=1;i<P.length;i++)L.push(L[i-1]+Math.hypot(P[i].x-P[i-1].x,P[i].y-P[i-1].y));
+  return {P:P,L:L,total:L[L.length-1]};
+}
+function at(p,s){
+  var L=p.L,P=p.P,i=1;s=clamp(s,0,p.total);
+  while(i<L.length-1&&s>L[i])i++;
+  var a=P[i-1],b=P[i],t=(L[i]-L[i-1])?(s-L[i-1])/(L[i]-L[i-1]):0;
+  return {x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t,wx:a.wx+(b.wx-a.wx)*t,wy:a.wy+(b.wy-a.wy)*t};
+}
+function part(kind,path,v,o){
+  var p={kind:kind,path:path,s:0,v:v*R(.85,1.15),ox:R(-1,1),oy:R(-1,1),a:1,ph:R(0,6.28),x:0,y:0};
+  if(o)for(var k in o)p[k]=o[k];
+  return p;
+}
+function stepParts(sc,dt){
+  var ps=sc.ps,i,p,c;
+  for(i=0;i<ps.length;i++){
+    p=ps[i];
+    if(p.fade){p.a-=dt*(p.fadeRate||1.1);if(p.a<=0)p.dead=true;}
+    if(p.stuck)continue;
+    c=at(p.path,p.s);
+    p.s+=p.v*dt*clamp(9/Math.max(c.wx,c.wy),.2,1);
+    if(p.on)p.on(p,sc);
+    if(p.s>=p.path.total){if(p.end)p.end(p,sc);else p.dead=true;}
+    c=at(p.path,p.s);
+    p.x=c.x+p.ox*c.wx+Math.sin(sc.t*2.2+p.ph)*1.2;p.y=c.y+p.oy*c.wy+Math.cos(sc.t*1.9+p.ph)*1.2;
+  }
+  sc.ps=ps.filter(function(q){return !q.dead;});
+}
+function drawPart(p,t){
+  var x=p.x,y=p.y,k=p.kind;
+  ctx.globalAlpha=clamp(p.a,0,1);
+  ctx.fillStyle=C[k];
+  if(k==="water"||k==="vap"){ctx.beginPath();ctx.arc(x,y,3.2,0,6.3);ctx.fill();}
+  else if(k==="micro"){ctx.save();ctx.translate(x,y);ctx.rotate(p.ph+Math.sin(t*4+p.ph)*.5);ctx.beginPath();ctx.ellipse(0,0,5.5,3,0,0,6.3);ctx.fill();ctx.restore();}
+  else if(k==="salt"||k==="solid"||k==="big"||k==="chem"){
+    var r=k==="big"?6:k==="solid"?4.2:3.6;ctx.save();ctx.translate(x,y);ctx.rotate(k==="chem"?.785:p.ph);
+    ctx.fillRect(-r,-r*(k==="big"?.65:1),2*r,2*r*(k==="big"?.65:1));
+    if(k==="salt"){ctx.strokeStyle="#fff";ctx.lineWidth=1;ctx.strokeRect(-r,-r,2*r,2*r);}
+    ctx.restore();}
+  else if(k==="gas"){ctx.beginPath();ctx.arc(x,y,4,0,6.3);ctx.fill();ctx.strokeStyle="#b98600";ctx.lineWidth=1;ctx.stroke();}
+  else{ctx.beginPath();ctx.arc(x,y,k==="grit"?2.6:3.8,0,6.3);ctx.fill();}
+  ctx.globalAlpha=1;
+}
+
+/* ---------- drawing helpers ---------- */
+function rr(x,y,w,h,r){ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x,y,w,h,r);else ctx.rect(x,y,w,h);}
+function pipe(pts,w,col){
+  w=w||12;ctx.lineJoin="round";ctx.lineCap="butt";
+  ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);for(var i=1;i<pts.length;i++)ctx.lineTo(pts[i][0],pts[i][1]);
+  ctx.strokeStyle=C.pipeEdge;ctx.lineWidth=w+4;ctx.stroke();ctx.strokeStyle=col||C.pipe;ctx.lineWidth=w;ctx.stroke();
+}
+function tank(x,y,w,h,fill,level){
+  ctx.fillStyle="#fff";ctx.fillRect(x,y,w,h);
+  ctx.fillStyle=fill||C.tank;ctx.fillRect(x,y+(level||10),w,h-(level||10));
+  ctx.strokeStyle=C.wall;ctx.lineWidth=5;ctx.lineJoin="round";ctx.beginPath();ctx.moveTo(x,y-6);ctx.lineTo(x,y+h);ctx.lineTo(x+w,y+h);ctx.lineTo(x+w,y-6);ctx.stroke();
+}
+function txt(s,x,y,o){
+  o=o||{};ctx.font=(o.b?"700 ":"500 ")+(o.size||15)+"px "+getComputedStyle(document.body).fontFamily;
+  ctx.textAlign=o.al||"center";ctx.textBaseline="alphabetic";ctx.fillStyle=o.col||C.ink;
+  String(s).split("\n").forEach(function(l,i){
+    if(o.halo){ctx.strokeStyle=o.halo;ctx.lineWidth=5;ctx.lineJoin="round";ctx.strokeText(l,x,y+i*(o.size||15)*1.2);}
+    ctx.fillText(l,x,y+i*(o.size||15)*1.2);});
+}
+function pin(n,x,y){ctx.fillStyle=C.ink;ctx.beginPath();ctx.arc(x,y,14,0,6.3);ctx.fill();ctx.strokeStyle="#fff";ctx.lineWidth=2;ctx.stroke();txt(n,x,y+5.5,{b:1,size:15,col:"#fff"});}
+function arrow(x1,y1,x2,y2,col,w){
+  var a=Math.atan2(y2-y1,x2-x1),h=9;ctx.strokeStyle=col;ctx.lineWidth=w||3;ctx.lineCap="round";
+  ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.moveTo(x2-h*Math.cos(a-.5),y2-h*Math.sin(a-.5));ctx.lineTo(x2,y2);ctx.lineTo(x2-h*Math.cos(a+.5),y2-h*Math.sin(a+.5));ctx.stroke();
+}
+function ground(y,col){ctx.fillStyle=col||"#dfe6dc";ctx.fillRect(0,y,W,H-y);}
+function waves(x0,x1,y,t,col){
+  ctx.strokeStyle=col||"#ffffff";ctx.lineWidth=2;ctx.globalAlpha=.7;ctx.beginPath();
+  for(var x=x0;x<=x1;x+=6){var yy=y+Math.sin(x*.05+t*1.5)*2.5;if(x===x0)ctx.moveTo(x,yy);else ctx.lineTo(x,yy);}ctx.stroke();ctx.globalAlpha=1;
+}
+function flame(x,y,h,t,ph){
+  var k=1+Math.sin(t*9+ph)*.15;
+  ctx.fillStyle="#ff8a2e";ctx.beginPath();ctx.moveTo(x-h*.3,y);ctx.quadraticCurveTo(x-h*.35,y-h*.5*k,x,y-h*k);ctx.quadraticCurveTo(x+h*.35,y-h*.5*k,x+h*.3,y);ctx.fill();
+  ctx.fillStyle="#ffd27a";ctx.beginPath();ctx.moveTo(x-h*.15,y);ctx.quadraticCurveTo(x-h*.16,y-h*.3*k,x,y-h*.55*k);ctx.quadraticCurveTo(x+h*.16,y-h*.3*k,x+h*.15,y);ctx.fill();
+}
+function cloud(x,y,s,col){ctx.fillStyle=col;ctx.beginPath();ctx.arc(x,y,16*s,0,6.3);ctx.arc(x+20*s,y-8*s,20*s,0,6.3);ctx.arc(x+44*s,y,16*s,0,6.3);ctx.fill();rr(x-6*s,y-2*s,56*s,18*s,9*s);ctx.fill();}
+function capStuck(sc,kind,max){
+  var st=sc.ps.filter(function(q){return q.stuck&&q.kind===kind&&!q.fade;});
+  for(var i=0;i<st.length-max;i++)st[i].fade=true;
+}
+
+/* =====================================================================
+   1. FRESH WATER
+   ===================================================================== */
+var S1=(function(){
+  var P=mk([[120,333,75,14],[222,322,8,5],[262,322],[262,240],[338,240],[445,250,95,12],[445,302,95,10],[445,360,95,10],[445,408,95,8],[552,408],[655,408],[760,335,92,62],[862,300],[950,300],[1002,300],[1012,318,3],[1012,452,3,1]]);
+  var sandS=P.L[5]+14,sterA=P.L[10]+30,sterB=P.L[11];
+  var speck=[],i;
+  for(i=0;i<260;i++)speck.push([R(340,550),R(272,334),R(.8,1.6)]);
+  var peb=[];for(i=0;i<70;i++)peb.push([R(344,546),R(342,384),R(4,7.5)]);
+  var sc={
+    id:"fresh-water",tab:"Fresh water",tabsub:"filter, then sterilise",
+    title:"Potable water from fresh water",sub:"The method used in the UK",
+    key:[["water","Water"],["solid","Insoluble solids","sq"],["micro","Microbes"]],
+    hint:"Choose the sterilising agent. All three kill microbes; none of them removes dissolved salts.",
+    stages:[
+      {title:"Choose a source",tx:"Rain has low levels of dissolved substances. It collects in the ground and in lakes and rivers.",box:[14,60,260,400],pin:[40,285]},
+      {title:"Filter beds",tx:"The water passes through beds of sand and gravel. Insoluble solids are trapped.",box:[300,165,290,290],pin:[320,195]},
+      {title:"Sterilise",tx:"Microbes are killed using chlorine, ozone or ultraviolet light.",box:[625,165,275,290],pin:[645,195]},
+      {title:"Potable water",tx:"Safe to drink. It is not pure: it still has low levels of dissolved salts and microbes.",box:[925,220,205,270],pin:[950,250]}
+    ],
+    agent:"chlorine",ps:[],t:0,acc:0,
+    spawn:function(dt){
+      this.acc+=dt;
+      while(this.acc>.085){this.acc-=.085;
+        var r=Math.random();
+        if(r<.72)this.ps.push(part("water",P,95));
+        else if(r<.87)this.ps.push(part("solid",P,95,{stop:sandS+R(0,10),on:function(p,sc){if(p.s>=p.stop){p.stuck=true;p.y=R(266,274);capStuck(sc,"solid",34);}}}));
+        else this.ps.push(part("micro",P,95,{stop:R(sterA,sterB+40),on:function(p){if(p.s>=p.stop){p.fade=true;p.fadeRate=.9;}}}));
+      }
+    },
+    draw:function(t){
+      /* sky, hills, rain */
+      var g=ctx.createLinearGradient(0,0,0,470);g.addColorStop(0,"#dcecf8");g.addColorStop(1,"#f7f9fc");ctx.fillStyle=g;ctx.fillRect(0,0,W,470);
+      ground(470);
+      ctx.fillStyle="#a9cc98";ctx.beginPath();ctx.moveTo(0,470);ctx.lineTo(0,300);ctx.quadraticCurveTo(60,230,130,300);ctx.quadraticCurveTo(200,250,262,318);ctx.quadraticCurveTo(300,380,330,470);ctx.fill();
+      ctx.fillStyle="#8fbb7f";ctx.beginPath();ctx.moveTo(0,470);ctx.lineTo(0,360);ctx.quadraticCurveTo(140,395,270,345);ctx.quadraticCurveTo(300,400,330,470);ctx.fill();
+      cloud(70,118,1.25,"#9aa3b0");cloud(150,100,1,"#aab2bd");
+      ctx.strokeStyle="#4f93cf";ctx.lineWidth=2;ctx.lineCap="round";
+      for(var i=0;i<16;i++){var rx=62+i*10,ry=142+((t*120+i*37)%120);ctx.globalAlpha=.8;ctx.beginPath();ctx.moveTo(rx,ry);ctx.lineTo(rx-4,ry+13);ctx.stroke();}
+      ctx.globalAlpha=1;
+      ctx.fillStyle="#5aa6e0";ctx.beginPath();ctx.ellipse(125,334,102,26,0,0,6.3);ctx.fill();waves(50,200,330,t);
+      txt("Reservoir, lake or river",130,400,{b:1,size:15});txt("or groundwater",130,420,{size:14,col:C.muted});
+      /* pipes */
+      pipe([[222,322],[262,322],[262,240],[338,240]]);pipe([[552,408],[655,408]]);pipe([[862,300],[1004,300]]);
+      /* filter bed */
+      tank(335,215,220,210,C.tank,14);
+      ctx.fillStyle="#e8d39a";ctx.fillRect(338,270,214,66);
+      ctx.fillStyle="#c9ae6a";speck.forEach(function(s){ctx.fillRect(s[0],s[1],s[2],s[2]);});
+      ctx.fillStyle="#cfd6dd";ctx.fillRect(338,336,214,52);
+      peb.forEach(function(s,k){ctx.fillStyle=k%2?"#8d98a5":"#a7b0bb";ctx.beginPath();ctx.ellipse(s[0],s[1],s[2],s[2]*.75,0,0,6.3);ctx.fill();});
+      txt("Filter bed",445,200,{b:1,size:16});
+      txt("sand",572,308,{al:"left",size:14,col:C.muted});txt("gravel",572,368,{al:"left",size:14,col:C.muted});
+      /* sterilisation tank */
+      tank(655,240,210,185,this.agent==="chlorine"?"#e3f1d9":C.tank,12);
+      txt("Sterilisation",760,200,{b:1,size:16});
+      if(this.agent==="uv"){
+        ctx.fillStyle="rgba(140,90,255,.16)";rr(672,300,176,70,35);ctx.fill();ctx.fillStyle="rgba(140,90,255,.22)";rr(684,316,152,38,19);ctx.fill();
+        ctx.fillStyle="#b9a2ff";rr(690,328,140,14,7);ctx.fill();ctx.strokeStyle="#6b46e0";ctx.lineWidth=2;ctx.stroke();
+        txt("UV lamp",760,395,{size:14,col:"#5a3fc0",b:1});
+      }else{
+        var col=this.agent==="chlorine"?"#b5c916":"#ffffff",n=this.agent==="chlorine"?26:22;
+        for(i=0;i<n;i++){
+          var bx=672+((i*61)%176),by=this.agent==="chlorine"?262+((i*47+t*22)%150):415-((i*53+t*45)%160);
+          ctx.beginPath();ctx.arc(bx+Math.sin(t*2+i)*3,by,this.agent==="chlorine"?3:4.5,0,6.3);
+          if(this.agent==="chlorine"){ctx.fillStyle=col;ctx.fill();}else{ctx.fillStyle="rgba(255,255,255,.8)";ctx.fill();ctx.strokeStyle="#7fb5dd";ctx.lineWidth=1.3;ctx.stroke();}
+        }
+        if(this.agent==="chlorine"){pipe([[760,218],[760,246]],6,"#d7e36a");txt("chlorine added",774,232,{al:"left",size:14,col:"#66750a",b:1});ctx.textAlign="center";}
+        else txt("ozone bubbled through",760,446,{size:14,col:"#2f6f9f",b:1});
+      }
+      /* tap and glass */
+      ctx.fillStyle=C.wall;rr(996,286,30,26,5);ctx.fill();rr(1004,270,14,18,3);ctx.fill();rr(992,264,38,9,4);ctx.fill();
+      ctx.strokeStyle="#8fa3b8";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(982,392);ctx.lineTo(988,462);ctx.lineTo(1036,462);ctx.lineTo(1042,392);ctx.stroke();
+      ctx.fillStyle="rgba(61,143,217,.35)";ctx.beginPath();ctx.moveTo(985,418);ctx.lineTo(989,460);ctx.lineTo(1035,460);ctx.lineTo(1039,418);ctx.fill();
+      txt("Potable water",1085,340,{b:1,size:16});txt("safe to drink,\nnot pure",1085,362,{size:14,col:C.muted});
+    }
+  };
+  return sc;
+})();
+
+/* =====================================================================
+   2. DISTILLATION
+   ===================================================================== */
+var S2=(function(){
+  var PW=mk([[70,480,50,14],[150,462],[150,378],[262,378],[390,378,110,34],[390,326,110,3],[390,270,100,30],[390,214,18,6],[390,150,5],[640,150,5],[770,225,5],[900,300,5],[985,300,4],[1030,322,3],[1030,445,62,8]]);
+  var sSurf=PW.L[5],sCond=PW.L[10];
+  var PS=mk([[70,480,50,14],[150,462],[150,378],[262,378],[390,372,105,30],[450,395,50,14],[340,400,60,12],[290,414,16,4],[258,414],[205,414],[205,468],[130,492,40,10]]);
+  return {
+    id:"distillation",tab:"Distillation",tabsub:"desalination by heating",
+    title:"Desalination by distillation",sub:"Used where fresh water is limited and sea water is the source",
+    key:[["water","Water (liquid)"],["vap","Water vapour"],["salt","Dissolved salts","sq"]],
+    hint:"Watch the salt: it never leaves the boiler as vapour.",
+    stages:[
+      {title:"Sea water in",tx:"Sea water contains a lot of dissolved salts, so it is not potable.",box:[8,350,238,180],pin:[30,440]},
+      {title:"Heat",tx:"The water is heated and evaporates. The salts are left behind.",box:[240,185,300,300],pin:[262,206]},
+      {title:"Condense",tx:"The water vapour is cooled and condenses back into liquid water.",box:[590,105,360,235],pin:[612,126]},
+      {title:"Collect",tx:"Distilled water is collected. Heating needs a large amount of energy, so this is expensive.",box:[935,255,250,235],pin:[957,276]}
+    ],
+    ps:[],t:0,acc:0,
+    spawn:function(dt){
+      this.acc+=dt;
+      while(this.acc>.1){this.acc-=.1;
+        if(Math.random()<.7)this.ps.push(part("water",PW,90,{on:function(p){
+          p.kind=(p.s>sSurf&&p.s<sCond)?"vap":"water";}}));
+        else this.ps.push(part("salt",PS,80));
+      }
+    },
+    draw:function(t){
+      var g=ctx.createLinearGradient(0,0,0,480);g.addColorStop(0,"#e7f1f9");g.addColorStop(1,"#f7f9fc");ctx.fillStyle=g;ctx.fillRect(0,0,W,480);
+      ground(480,"#e6dcc6");
+      /* sea */
+      ctx.fillStyle="#3f8fcb";ctx.beginPath();ctx.moveTo(0,452);ctx.lineTo(215,452);ctx.quadraticCurveTo(250,500,300,540);ctx.lineTo(0,540);ctx.fill();waves(0,212,455,t);
+      txt("Sea water",60,520,{b:1,size:16,col:"#fff"});
+      /* pipes */
+      pipe([[150,462],[150,378],[262,378]]);pipe([[258,414],[205,414],[205,468]],10,"#f1dcb6");
+      txt("salty water returned",120,412,{size:13.5,col:C.muted,al:"right"});
+      /* boiler */
+      ctx.fillStyle="#fff";rr(260,205,260,225,26);ctx.fill();
+      ctx.save();rr(260,205,260,225,26);ctx.clip();ctx.fillStyle="#cfe4f3";ctx.fillRect(260,322,260,110);
+      for(var i=0;i<9;i++){var by=425-((t*55+i*41)%100),bx=285+i*27;ctx.strokeStyle="#fff";ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(bx,by,3+(i%3),0,6.3);ctx.stroke();}
+      ctx.restore();waves(266,514,323,t,"#7fb5dd");
+      ctx.strokeStyle=C.wall;ctx.lineWidth=5;rr(260,205,260,225,26);ctx.stroke();
+      ctx.fillStyle=C.wall;ctx.fillRect(282,430,10,44);ctx.fillRect(488,430,10,44);
+      for(i=0;i<7;i++)flame(318+i*24,474,30+(i%2)*8,t,i);
+      txt("Heat",390,505,{b:1,size:16,col:"#b4530a"});txt("needs lots of energy",390,524,{size:14,col:C.muted});
+      txt("Sea water boils",414,192,{b:1,size:16,al:"left"});ctx.textAlign="center";
+      /* vapour pipe and condenser */
+      pipe([[390,208],[390,150],[640,150],[900,300],[985,300],[1030,322],[1030,352]],12,"#eef5fb");
+      ctx.save();ctx.translate(770,225);ctx.rotate(Math.atan2(150,260));
+      ctx.fillStyle="rgba(120,190,235,.55)";rr(-125,-24,250,48,10);ctx.fill();ctx.strokeStyle=C.wall;ctx.lineWidth=3;ctx.stroke();
+      ctx.strokeStyle="#fff";ctx.lineWidth=2;ctx.setLineDash([10,12]);ctx.lineDashOffset=t*30;
+      ctx.beginPath();ctx.moveTo(-115,-15);ctx.lineTo(115,-15);ctx.moveTo(-115,15);ctx.lineTo(115,15);ctx.stroke();ctx.setLineDash([]);
+      ctx.restore();
+      pipe([[815,330],[815,292]],8,"#bfe0f5");pipe([[690,128],[690,165]],8,"#bfe0f5");
+      arrow(815,372,815,340,"#2f6f9f");txt("cold water in",815,392,{size:14,col:"#2f6f9f",b:1});
+      arrow(690,122,690,96,"#2f6f9f");txt("out",690,88,{size:14,col:"#2f6f9f",b:1});
+      txt("Condenser",810,180,{b:1,size:16,al:"left"});ctx.textAlign="center";
+      txt("water vapour",515,136,{size:14,col:C.muted});
+      /* collection tank */
+      tank(950,345,160,125,C.tank,62);
+      txt("Distilled water",1030,500,{b:1,size:16});
+    }
+  };
+})();
+
+/* =====================================================================
+   3. REVERSE OSMOSIS (particle model)
+   ===================================================================== */
+var S3=(function(){
+  var X0=190,X1=1030,Y0=120,Y1=420,MA=590,MB=610,PORE=26,NL=64;
+  function poreY(y){return Y0+13+Math.round((y-Y0-13)/PORE)*PORE;}
+  function mol(x,y,side){var a=R(0,6.28);return {x:x,y:y,vx:Math.cos(a)*70,vy:Math.sin(a)*70,side:side,ang:a,tr:0};}
+  var sc={
+    id:"reverse-osmosis",tab:"Reverse osmosis",tabsub:"desalination by membrane",
+    title:"Desalination by reverse osmosis",sub:"A zoomed-in view of the membrane; particles are not to scale",
+    key:[["water","Water molecule"],["na","Sodium ion"],["cl","Chloride ion"]],
+    hint:"Lower the pump pressure and the net flow reverses: water moves back into the salty side, which is ordinary osmosis.",
+    stages:[
+      {title:"High pressure",tx:"Sea water is pumped against a membrane at high pressure. This needs a large amount of energy, so it is expensive.",box:[20,95,300,350],pin:[44,118]},
+      {title:"Membrane",tx:"Water molecules pass through the tiny holes in the membrane. Most dissolved salts (ions) cannot.",box:[545,95,110,350],pin:[600,96]},
+      {title:"Fresh water",tx:"Water with the salts removed is collected on the other side.",box:[640,95,545,350],pin:[985,96]},
+      {title:"Salty water left behind",tx:"The water left behind has a higher concentration of salts. It is returned to the sea.",box:[330,95,240,420],pin:[505,470]}
+    ],
+    P:.85,count:0,t:0,ws:[],ions:[],
+    init:function(){
+      var i;this.ws=[];this.ions=[];
+      for(i=0;i<NL;i++)this.ws.push(mol(R(260,MA-10),R(Y0+10,Y1-10),"L"));
+      for(i=0;i<22;i++)this.ws.push(mol(R(MB+10,X1-10),R(Y0+10,Y1-10),"R"));
+      for(i=0;i<22;i++){var m=mol(R(270,MA-20),R(Y0+16,Y1-16),"L");m.ion=i%2?"cl":"na";m.r=i%2?11:9.5;m.vx*=.6;m.vy*=.6;this.ions.push(m);}
+    },
+    step:function(dt){
+      var P=this.P,left=X0+26+P*46,nl=0,self=this;
+      function move(m,r,ion){
+        m.vx+=R(-1,1)*220*dt;m.vy+=R(-1,1)*220*dt;
+        m.vx+=(m.side==="L"?P*26:14)*dt;
+        var sp=Math.hypot(m.vx,m.vy),tg=ion?42:72;m.vx*=1+(tg/sp-1)*.1;m.vy*=1+(tg/sp-1)*.1;
+        m.x+=m.vx*dt;m.y+=m.vy*dt;m.ang+=dt*1.5;
+        if(m.y<Y0+r){m.y=Y0+r;m.vy=Math.abs(m.vy);}
+        if(m.y>Y1-r){m.y=Y1-r;m.vy=-Math.abs(m.vy);}
+      }
+      this.ws.forEach(function(m){
+        if(m.tr){m.x+=m.tr*80*dt;
+          if(m.tr>0&&m.x>MB+6){m.tr=0;m.side="R";self.count++;m.vx=60;}
+          else if(m.tr<0&&m.x<MA-6){m.tr=0;m.side="L";self.count--;m.vx=-60;}
+          return;}
+        move(m,5,false);
+        if(m.side==="L"){
+          nl++;
+          if(m.x<left+5){m.x=left+5;m.vx=Math.abs(m.vx);}
+          if(m.x>MA-5){if(Math.random()<.03+.5*P*P){m.tr=1;m.y=poreY(m.y);}else{m.x=MA-5;m.vx=-Math.abs(m.vx);}}
+          if(m.y>Y1-8&&Math.abs(m.x-450)<26&&self.nl>NL)m.dead=true;
+        }else{
+          if(m.x<MB+5){if(Math.random()<.22*(1-P)*(1-P)){m.tr=-1;m.y=poreY(m.y);}else{m.x=MB+5;m.vx=Math.abs(m.vx);}}
+          if(m.x>X1-5){if(Math.abs(m.y-270)<26)m.dead=true;else{m.x=X1-5;m.vx=-Math.abs(m.vx);}}
+        }
+      });
+      this.nl=nl;
+      this.ws=this.ws.filter(function(m){return !m.dead;});
+      if(nl<NL&&Math.random()<dt*14){var m=mol(R(350,400),Y0+8,"L");m.vy=70;m.vx=0;this.ws.push(m);}
+      var nr=this.ws.length-nl;
+      if(nr<6&&P<.3&&Math.random()<dt*2)this.ws.push(mol(X1-10,270,"R"));
+      this.ions.forEach(function(m){
+        move(m,m.r,true);
+        if(m.x<left+m.r){m.x=left+m.r;m.vx=Math.abs(m.vx);}
+        if(m.x>MA-m.r){m.x=MA-m.r;m.vx=-Math.abs(m.vx);}
+      });
+    },
+    draw:function(t){
+      var P=this.P,left=X0+26+P*46,i;
+      ctx.fillStyle="#f7f9fc";ctx.fillRect(0,0,W,H);
+      /* inlet, outlets */
+      pipe([[375,60],[375,Y0+2]],34,"#cfe4f3");txt("Sea water in",375,48,{b:1,size:16});
+      pipe([[450,Y1-2],[450,480]],34,"#c3dcef");txt("Concentrated salty water out",450,505,{b:1,size:16});
+      pipe([[X1-2,270],[1110,270]],40,"#e6f5fc");txt("Fresh water out",1112,322,{b:1,size:16});
+      /* vessel */
+      ctx.fillStyle="#cfe4f3";ctx.fillRect(X0,Y0,MA-X0,Y1-Y0);ctx.fillStyle="#e6f5fc";ctx.fillRect(MB,Y0,X1-MB,Y1-Y0);
+      ctx.strokeStyle=C.wall;ctx.lineWidth=6;ctx.lineJoin="round";
+      ctx.beginPath();ctx.moveTo(358,Y0);ctx.lineTo(X0,Y0);ctx.lineTo(X0,Y1);ctx.lineTo(433,Y1);ctx.moveTo(467,Y1);ctx.lineTo(X1,Y1);ctx.lineTo(X1,290);ctx.moveTo(X1,250);ctx.lineTo(X1,Y0);ctx.lineTo(392,Y0);ctx.stroke();
+      /* membrane with pores */
+      for(var y=Y0;y<Y1;y+=PORE){ctx.fillStyle="#c7a14a";ctx.fillRect(MA,y+19,MB-MA,PORE-12);}
+      ctx.fillStyle="#c7a14a";ctx.fillRect(MA,Y0,MB-MA,7);
+      txt("Membrane",600,Y1+26,{b:1,size:16,col:"#7a5d14"});
+      /* piston and pump */
+      ctx.fillStyle="#fff";ctx.fillRect(X0+3,Y0+3,left-X0-3,Y1-Y0-6);
+      ctx.fillStyle="#8d98a5";ctx.fillRect(left-16,Y0+3,16,Y1-Y0-6);ctx.fillRect(140,258,left-150,24);
+      ctx.fillStyle=C.wall;rr(40,215,110,110,12);ctx.fill();txt("Pump",95,277,{b:1,size:18,col:"#fff"});
+      var n=Math.round(1+P*3);for(i=0;i<n;i++)arrow(left+14,170+i*(200/Math.max(1,n-1||1))*(n>1?1:0)+(n===1?100:0),left+44+P*30,170+i*(200/Math.max(1,n-1||1))*(n>1?1:0)+(n===1?100:0),"#c0392b",4);
+      txt(P>.6?"High pressure":P>.3?"Medium pressure":"Low pressure",95,352,{b:1,size:15,col:"#c0392b"});
+      /* particles */
+      this.ws.forEach(function(m){
+        ctx.fillStyle="#b6d6f5";
+        ctx.beginPath();ctx.arc(m.x+Math.cos(m.ang+.9)*5,m.y+Math.sin(m.ang+.9)*5,2.6,0,6.3);ctx.arc(m.x+Math.cos(m.ang-.9)*5,m.y+Math.sin(m.ang-.9)*5,2.6,0,6.3);ctx.fill();
+        ctx.fillStyle="#2a78d6";ctx.beginPath();ctx.arc(m.x,m.y,4.6,0,6.3);ctx.fill();
+      });
+      this.ions.forEach(function(m){
+        ctx.fillStyle=m.ion==="na"?"#7d5bd6":"#1a9e6f";ctx.beginPath();ctx.arc(m.x,m.y,m.r,0,6.3);ctx.fill();
+        txt(m.ion==="na"?"+":"−",m.x,m.y+5,{b:1,size:15,col:"#fff"});
+      });
+      txt("Salty side",395,Y0-36+200>0?Y0+30:0,{size:14,col:C.muted});
+      txt("Fresh side",820,Y0+30,{size:14,col:C.muted});
+      txt("Net water molecules through the membrane: "+this.count,1180,40,{al:"right",b:1,size:16});
+    }
+  };
+  return sc;
+})();
+
+/* =====================================================================
+   4. WASTE WATER
+   ===================================================================== */
+var S4=(function(){
+  var SRC={home:[[150,110],[215,110],[215,275]],farm:[[150,275],[215,275]],fact:[[150,450],[215,450],[215,275]]};
+  var TOSCREEN=[[252,275],[285,278,20,18]];
+  var THRU=[[318,278,3,18],[350,278,16,18],[375,275],[427,275]];
+  var EFF=[[530,250,85,30],[622,228,8,6],[637,225],[680,225],[680,150],[727,150],[830,152,90,48],[933,150],[1100,150],[1140,185,30,8],[1140,560,30,8]];
+  var SLU=[[500,275,60,30],[530,338,70,8],[530,385,12,5],[530,402],[530,440],[727,440],[810,445,62,34]];
+  function P(src,rest){return mk(SRC[src].concat(rest));}
+  var paths={};
+  ["home","farm","fact"].forEach(function(s){
+    paths[s]={water:P(s,TOSCREEN.concat(THRU,EFF)),slu:P(s,TOSCREEN.concat(THRU,SLU)),big:P(s,[[252,275],[300,278,6,18],[311,278,2,18]]),grit:P(s,[[252,275],[280,290,14,6],[290,305,22,2]])};
+    paths[s].aer=paths[s].water.L[SRC[s].length+TOSCREEN.length+THRU.length+6];
+  });
+  var GAS=mk([[810,440,60,26],[810,372,40,8],[810,342,4],[810,310],[985,310],[985,336]]);
+  var DIG=mk([[810,478,60,10],[893,478],[960,478],[1000,478,5]]);
+  var CHEM=mk([[150,450],[182,450,14,9]]);
+  function fadeIn(aer){return {stop:aer-R(0,70),on:function(p){if(p.s>=p.stop){p.fade=true;p.fadeRate=.5;}}};}
+  var sludgeEnd={end:function(p,sc){p.dead=true;var r=Math.random();if(r<.5)sc.ps.push(part("gas",GAS,60));else if(r<.85)sc.ps.push(part("dig",DIG,45));}};
+  function house(x,y){ctx.fillStyle="#e9d9c4";ctx.fillRect(x,y,90,52);ctx.fillStyle="#b4573a";ctx.beginPath();ctx.moveTo(x-8,y);ctx.lineTo(x+45,y-34);ctx.lineTo(x+98,y);ctx.fill();ctx.fillStyle="#7b5a3c";ctx.fillRect(x+38,y+24,16,28);ctx.fillStyle="#9fc9ee";ctx.fillRect(x+10,y+12,18,16);ctx.fillRect(x+62,y+12,18,16);}
+  function barn(x,y){ctx.fillStyle="#b23b34";ctx.fillRect(x,y,72,46);ctx.beginPath();ctx.moveTo(x-5,y);ctx.lineTo(x+14,y-22);ctx.lineTo(x+58,y-22);ctx.lineTo(x+77,y);ctx.fill();ctx.fillStyle="#f4e9dc";ctx.fillRect(x+26,y+16,20,30);
+    ctx.fillStyle="#8fbb5f";ctx.fillRect(x+82,y+26,34,20);ctx.strokeStyle="#5f8f3a";ctx.lineWidth=2;for(var i=0;i<4;i++){ctx.beginPath();ctx.moveTo(x+86+i*8,y+26);ctx.lineTo(x+86+i*8,y+46);ctx.stroke();}}
+  function factory(x,y,t){ctx.fillStyle="#9aa7b8";ctx.fillRect(x,y,104,46);ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y-16);ctx.lineTo(x+26,y);ctx.lineTo(x+26,y-16);ctx.lineTo(x+52,y);ctx.lineTo(x+52,y-16);ctx.lineTo(x+78,y);ctx.fill();
+    ctx.fillStyle="#6b7890";ctx.fillRect(x+84,y-46,14,46);ctx.fillStyle="rgba(120,130,145,.5)";for(var i=0;i<3;i++){var k=(t*.4+i/3)%1;ctx.beginPath();ctx.arc(x+91+k*14,y-52-k*30,6+k*8,0,6.3);ctx.fill();}
+    ctx.fillStyle="#dfe7f1";for(i=0;i<4;i++)ctx.fillRect(x+10+i*20,y+16,10,12);}
+  return {
+    id:"waste-water",tab:"Waste water",tabsub:"sources and sewage treatment",
+    title:"Treating waste water",sub:"Three sources, then four treatment steps before water goes back to the environment",
+    key:[["water","Water"],["big","Large objects","sq"],["grit","Grit"],["org","Organic matter"],["micro","Harmful microbes"],["chem","Harmful chemicals","sq"],["gas","Biogas"]],
+    hint:"Follow the brown organic matter: most settles as sludge for anaerobic digestion, the rest is broken down in the aerated tank.",
+    stages:[
+      {title:"Sources of waste water",tx:"Homes produce sewage and farms produce agricultural waste water: both need organic matter and harmful microbes removed. Industrial waste water may need organic matter and harmful chemicals removed.",box:[6,30,228,500],pin:[26,52]},
+      {title:"Screening and grit removal",tx:"Large objects are caught on a screen and grit settles out.",box:[240,150,150,190],pin:[262,170]},
+      {title:"Sedimentation",tx:"Solids settle to the bottom as sewage sludge. The liquid above is effluent.",box:[408,170,246,250],pin:[448,186]},
+      {title:"Aerobic treatment of effluent",tx:"Air is bubbled through so bacteria can break down organic matter and harmful microbes using oxygen. The treated water is returned to a river.",box:[664,40,530,215],pin:[686,62]},
+      {title:"Anaerobic digestion of sludge",tx:"Bacteria break down the sludge without oxygen. This makes biogas (methane) for energy and digested sludge used as fertiliser.",box:[664,285,400,235],pin:[686,306]}
+    ],
+    ps:[],t:0,acc:0,
+    spawn:function(dt){
+      this.acc+=dt;
+      while(this.acc>.06){this.acc-=.06;
+        var s=["home","farm","fact"][Math.floor(Math.random()*3)],pa=paths[s],r=Math.random(),v=85;
+        if(r<.52)this.ps.push(part("water",pa.water,v));
+        else if(r<.74)this.ps.push(part("org",pa.slu,v,sludgeEnd));
+        else if(r<.82)this.ps.push(part("org",pa.water,v,fadeIn(pa.aer)));
+        else if(s==="fact"){if(r<.95)this.ps.push(part("chem",CHEM,50,{end:function(p){p.stuck=true;p.fade=true;p.fadeRate=.8;}}));}
+        else if(r<.92)this.ps.push(part("micro",pa.water,v,fadeIn(pa.aer)));
+        else if(r<.96)this.ps.push(part("grit",pa.grit,v,{end:function(p,sc){p.stuck=true;capStuck(sc,"grit",16);}}));
+        else if(s==="home")this.ps.push(part("big",pa.big,v,{end:function(p,sc){p.stuck=true;capStuck(sc,"big",9);}}));
+      }
+    },
+    draw:function(t){
+      var i;
+      ctx.fillStyle="#f7f9fc";ctx.fillRect(0,0,W,H);
+      /* river */
+      ctx.fillStyle="#5aa6e0";ctx.beginPath();ctx.moveTo(1100,0);ctx.bezierCurveTo(1125,160,1085,330,1105,540);ctx.lineTo(1180,540);ctx.bezierCurveTo(1160,330,1200,160,1175,0);ctx.fill();
+      for(i=0;i<5;i++){var ry=((t*40+i*120)%600)-30;ctx.strokeStyle="rgba(255,255,255,.7)";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(1128+(i%2)*18,ry);ctx.lineTo(1128+(i%2)*18,ry+22);ctx.stroke();}
+      txt("River",1140,30,{b:1,size:16,col:"#fff"});
+      /* pipes */
+      pipe([[150,110],[215,110],[215,450],[205,450]]);pipe([[150,275],[255,275]]);pipe([[150,450],[215,450]]);
+      pipe([[375,275],[427,275]]);pipe([[637,225],[680,225],[680,150],[727,150]]);pipe([[933,150],[1104,150]]);
+      pipe([[530,398],[530,440],[727,440]],12,"#d9c7a8");pipe([[810,342],[810,310],[985,310],[985,336]],8,"#fbeeb8");pipe([[893,478],[975,478]],10,"#b79a78");
+      /* sources */
+      house(48,62);txt("Homes",93,136,{b:1,size:15});txt("sewage",93,154,{size:14,col:C.muted});
+      barn(40,228);txt("Farms",93,296,{b:1,size:15});txt("agricultural waste water",103,314,{size:13.5,col:C.muted});
+      factory(38,402,t);
+      ctx.fillStyle="#f6dff0";rr(160,432,46,36,6);ctx.fill();ctx.strokeStyle="#b02a80";ctx.lineWidth=2.5;ctx.stroke();
+      txt("Industry",93,470,{b:1,size:15});txt("industrial waste water;\nharmful chemicals removed",112,488,{size:13.5,col:C.muted});
+      /* screening channel */
+      ctx.fillStyle=C.tank;ctx.fillRect(255,250,120,62);ctx.strokeStyle=C.wall;ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(255,244);ctx.lineTo(255,262);ctx.moveTo(255,288);ctx.lineTo(255,312);ctx.lineTo(375,312);ctx.lineTo(375,288);ctx.moveTo(375,262);ctx.lineTo(375,244);ctx.stroke();
+      ctx.strokeStyle="#3b4658";ctx.lineWidth=3;for(i=0;i<5;i++){ctx.beginPath();ctx.moveTo(316,252+i*13);ctx.lineTo(322,258+i*13);ctx.stroke();}
+      ctx.beginPath();ctx.moveTo(318,246);ctx.lineTo(318,310);ctx.stroke();
+      txt("Screening and\ngrit removal",322,196,{b:1,size:15});
+      /* sedimentation tank */
+      ctx.fillStyle=C.tank;ctx.beginPath();ctx.moveTo(427,215);ctx.lineTo(633,215);ctx.lineTo(633,350);ctx.lineTo(545,398);ctx.lineTo(515,398);ctx.lineTo(427,350);ctx.fill();
+      ctx.fillStyle="#b08a5c";ctx.beginPath();ctx.moveTo(445,340);ctx.lineTo(615,340);ctx.lineTo(633,350);ctx.lineTo(545,398);ctx.lineTo(515,398);ctx.lineTo(427,350);ctx.fill();
+      ctx.strokeStyle=C.wall;ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(427,205);ctx.lineTo(427,262);ctx.moveTo(427,288);ctx.lineTo(427,350);ctx.lineTo(515,398);ctx.moveTo(545,398);ctx.lineTo(633,350);ctx.lineTo(633,238);ctx.moveTo(633,212);ctx.lineTo(633,205);ctx.stroke();
+      txt("Sedimentation",530,192,{b:1,size:15});
+      /* aeration tank */
+      tank(727,80,206,145,C.tank,14);
+      for(i=0;i<16;i++){var bx=742+i*12.4,by=220-((t*50+i*29)%125);ctx.fillStyle="rgba(255,255,255,.85)";ctx.strokeStyle="#7fb5dd";ctx.lineWidth=1.2;ctx.beginPath();ctx.arc(bx+Math.sin(t*3+i)*2,by,3.5,0,6.3);ctx.fill();ctx.stroke();}
+      ctx.fillStyle="#8d98a5";ctx.fillRect(735,217,190,5);
+      txt("Aerobic treatment",830,66,{b:1,size:15});txt("air bubbled through",830,246,{size:14,col:"#2f6f9f",b:1});
+      txt("treated water",1016,138,{size:14,col:C.muted});
+      /* digester */
+      ctx.fillStyle="#d9c7a8";ctx.beginPath();ctx.moveTo(727,495);ctx.lineTo(727,385);ctx.bezierCurveTo(727,325,893,325,893,385);ctx.lineTo(893,495);ctx.closePath();ctx.fill();
+      ctx.fillStyle="#fbf4d8";ctx.beginPath();ctx.moveTo(727,392);ctx.lineTo(727,385);ctx.bezierCurveTo(727,325,893,325,893,385);ctx.lineTo(893,392);ctx.closePath();ctx.fill();
+      ctx.strokeStyle=C.wall;ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(727,428);ctx.lineTo(727,385);ctx.bezierCurveTo(727,325,893,325,893,385);ctx.lineTo(893,466);ctx.moveTo(893,490);ctx.lineTo(893,495);ctx.lineTo(727,495);ctx.lineTo(727,452);ctx.stroke();
+      txt("Anaerobic digestion",810,520,{b:1,size:15});
+      /* biogas use and fertiliser */
+      ctx.fillStyle=C.wall;rr(958,336,54,34,6);ctx.fill();flame(985,336,26,t,1);
+      txt("biogas (methane)\nburned for energy",985,392,{size:14,col:C.muted});
+      ctx.fillStyle="#c9a66b";rr(975,456,56,46,8);ctx.fill();ctx.strokeStyle="#8a6a34";ctx.lineWidth=2.5;ctx.stroke();
+      txt("fertiliser",1003,524,{size:14,col:C.muted});
+    },
+    fg:function(){
+      txt("effluent",590,322,{size:14,col:"#1f5580",b:1,halo:"#dcedf9"});
+      txt("sewage sludge",530,368,{size:14,col:"#fff",b:1,halo:"#8a6a44"});
+      txt("sealed: no oxygen",810,416,{size:14,col:"#4a3a1c",b:1,halo:"#d9c7a8"});
+    }
+  };
+})();
+
+/* ---------- shell ---------- */
+var SC=[S1,S2,S3,S4],cur=0,playing=!matchMedia("(prefers-reduced-motion: reduce)").matches,speed=1,hl=-1,last=0;
+var el=function(id){return document.getElementById(id);};
+function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;");}
+var KEYCOL={na:"#7d5bd6",cl:"#1a9e6f"};
+function stepScene(sc,dt){sc.t+=dt;if(sc.step)sc.step(dt);else{sc.spawn(dt);stepParts(sc,dt);}}
+function render(){
+  var sc=SC[cur];
+  ctx.setTransform(cv.width/W,0,0,cv.height/H,0,0);
+  sc.draw(sc.t);
+  if(sc.ps)sc.ps.forEach(function(p){drawPart(p,sc.t);});
+  if(sc.fg)sc.fg(sc.t);
+  if(hl>=0){
+    var b=sc.stages[hl].box;
+    ctx.fillStyle="rgba(238,241,246,.8)";ctx.beginPath();ctx.rect(0,0,W,H);ctx.rect(b[0],b[1],b[2],b[3]);ctx.fill("evenodd");
+    ctx.strokeStyle="#2a4fc9";ctx.lineWidth=3;rr(b[0],b[1],b[2],b[3],10);ctx.stroke();
+  }
+  sc.stages.forEach(function(s,i){if(hl<0||hl===i)pin(i+1,s.pin[0],s.pin[1]);});
+}
+function frame(ts){
+  var dt=Math.min(.05,(ts-last)/1000||0);last=ts;
+  if(playing){stepScene(SC[cur],dt*speed);}
+  render();requestAnimationFrame(frame);
+}
+function show(i){
+  cur=i;hl=-1;var sc=SC[i];
+  el("title").textContent=sc.title;el("sub").textContent=sc.sub;el("hint").textContent=sc.hint;
+  el("key").innerHTML=sc.key.map(function(k){return '<li><i class="'+(k[2]||"")+'" style="background:'+(C[k[0]]||KEYCOL[k[0]])+'"></i>'+esc(k[1])+'</li>';}).join("");
+  el("stages").innerHTML=sc.stages.map(function(s,n){return '<li><button type="button" data-n="'+n+'" aria-pressed="false"><span class="hd"><span class="num">'+(n+1)+'</span>'+esc(s.title)+'</span><span class="tx">'+esc(s.tx)+'</span></button></li>';}).join("");
+  el("agent").hidden=i!==0;el("press").hidden=i!==2;
+  [].forEach.call(el("tabs").children,function(b,n){b.setAttribute("aria-selected",n===i?"true":"false");});
+  render();
+}
+el("tabs").innerHTML=SC.map(function(s,i){return '<button type="button" role="tab" data-i="'+i+'"><b>'+(i+1)+'. '+esc(s.tab)+'</b><span>'+esc(s.tabsub)+'</span></button>';}).join("");
+el("tabs").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;var i=+b.dataset.i;try{history.replaceState(null,"","#"+SC[i].id);}catch(_){location.hash=SC[i].id;}show(i);});
+el("stages").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;var n=+b.dataset.n;hl=hl===n?-1:n;
+  [].forEach.call(el("stages").querySelectorAll("button"),function(x,k){x.setAttribute("aria-pressed",k===hl?"true":"false");});render();});
+el("play").addEventListener("click",function(){playing=!playing;el("play").textContent=playing?"Pause":"Play";});
+function segs(id,fn){el(id).addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;[].forEach.call(el(id).querySelectorAll("button"),function(x){x.setAttribute("aria-pressed",x===b?"true":"false");});fn(b.dataset.v);});}
+segs("speed",function(v){speed=+v;});
+segs("agent",function(v){S1.agent=v;render();});
+el("pr").addEventListener("input",function(){S3.P=this.value/100;render();});
+function fromHash(){var h=location.hash.replace("#",""),i=SC.findIndex(function(s){return s.id===h;});show(i<0?0:i);}
+addEventListener("hashchange",fromHash);
+
+/* run each scene forward so the page is complete at rest */
+S3.init();
+SC.forEach(function(sc){for(var k=0;k<(sc.step?150:900);k++)stepScene(sc,.04);});
+S3.count=0;
+el("play").textContent=playing?"Pause":"Play";
+function size(){var d=Math.min(2,window.devicePixelRatio||1),w=Math.max(760,cv.clientWidth||1200);cv.width=Math.round(w*d);cv.height=Math.round(w*d*H/W);render();}
+addEventListener("resize",size);
+fromHash();size();
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
