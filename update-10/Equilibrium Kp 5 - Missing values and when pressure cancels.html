@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Equilibrium (Kp) 5 – Missing values and when pressure cancels</title>
+<style>
+:root{
+  --bg:#f6efe1; --card:#fffaf0; --ink:#3b2a1a; --brown:#6b4423; --brown2:#8b5a2b;
+  --accent:#b5651d; --soft:#ead9bd; --line:#d8c4a0; --good:#2f7d4a; --bad:#b03a2e; --blue:#2c4a7a;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Arial,sans-serif;font-size:19px;line-height:1.55}
+header{background:var(--brown);color:#fff8ec;padding:14px 24px}
+header h1{margin:0;font-family:Georgia,serif;font-size:28px;font-weight:normal}
+header p{margin:2px 0 0;opacity:.85;font-size:16px}
+nav{display:flex;flex-wrap:wrap;gap:6px;padding:10px 24px;background:var(--soft);border-bottom:2px solid var(--line);position:sticky;top:0;z-index:5}
+nav button{border:2px solid var(--brown2);background:var(--card);color:var(--brown);padding:7px 14px;border-radius:20px;font-size:16px;cursor:pointer}
+nav button.on{background:var(--brown2);color:#fff}
+main{max-width:1100px;margin:0 auto;padding:20px 24px 60px}
+.page{display:none}.page.on{display:block}
+h2{font-family:Georgia,serif;color:var(--brown);font-size:30px;margin:6px 0 12px;font-weight:normal}
+h3{color:var(--brown2);font-size:22px;margin:22px 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:14px 0;box-shadow:0 2px 0 var(--line)}
+.key{border-left:6px solid var(--accent)}
+.eq{font-family:Georgia,serif;font-size:24px;text-align:center;padding:10px;background:#fff;border:1px dashed var(--line);border-radius:8px;margin:10px 0}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 6px}
+.frac>span:first-child{border-bottom:2px solid var(--ink);padding:0 6px}
+.row{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+.row>*{flex:1 1 380px}
+button.b{background:var(--brown2);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:17px;cursor:pointer;margin:4px 6px 4px 0}
+button.b.alt{background:var(--card);color:var(--brown);border:2px solid var(--brown2)}
+button.b:disabled{opacity:.45;cursor:default}
+.check{background:#fdf6e6;border:2px solid var(--accent);border-radius:12px;padding:14px 18px;margin:16px 0}
+.check .tag{display:inline-block;background:var(--accent);color:#fff;font-size:14px;padding:2px 10px;border-radius:12px;margin-bottom:6px;letter-spacing:.5px}
+.check .src{font-size:14px;color:#8a7356;font-style:italic}
+input.ans{font-size:18px;padding:6px 10px;width:200px;border:2px solid var(--line);border-radius:6px}
+.fb{font-weight:600;margin-left:8px}
+.fb.ok{color:var(--good)}.fb.no{color:var(--bad)}
+.work{display:none;background:#fff;border-left:4px solid var(--brown2);padding:8px 14px;margin-top:8px;border-radius:4px}
+.work.on{display:block}
+table.t{border-collapse:collapse;margin:8px 0;background:#fff}
+table.t th,table.t td{border:1px solid var(--line);padding:6px 12px;text-align:center}
+table.t th{background:var(--soft);color:var(--brown)}
+svg text{font-family:"Segoe UI",Arial,sans-serif}
+.readout{font-family:Consolas,monospace;background:#2b1d10;color:#ffe9c4;padding:10px 14px;border-radius:8px;font-size:17px;line-height:1.6}
+.slider{width:100%}
+label.s{display:block;font-weight:600;color:var(--brown);margin-top:8px}
+.steps li{margin:6px 0}
+.reveal{display:none}.reveal.on{display:block;animation:fade .4s}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+.pager{display:flex;justify-content:space-between;margin-top:30px}
+.mcq button.opt{display:block;width:100%;text-align:left;margin:6px 0;padding:10px 14px;font-size:17px;border:2px solid var(--line);background:#fff;border-radius:8px;cursor:pointer;color:var(--ink)}
+.mcq button.opt.right{border-color:var(--good);background:#e6f4ea}
+.mcq button.opt.wrong{border-color:var(--bad);background:#fbe9e7}
+.mcq .exp{display:none;margin-top:6px;font-size:17px}
+.mcq.done .exp{display:block}
+.warn{background:#fbeee4;border-left:6px solid var(--bad);padding:10px 16px;border-radius:6px;margin:12px 0}
+.small{font-size:15px;color:#7a6448}
+canvas{background:#fff;border:1px solid var(--line);border-radius:8px;max-width:100%}
+.chip{display:inline-block;padding:2px 10px;border-radius:12px;background:var(--soft);margin:2px;font-size:16px}
+.big{font-size:22px}
+table.ice{border-collapse:collapse;margin:10px auto;background:#fff;font-size:18px}
+table.ice th,table.ice td{border:1px solid var(--line);padding:8px 14px;text-align:center;min-width:90px}
+table.ice th{background:var(--soft);color:var(--brown)}
+table.ice td.lab{background:#fbf3e3;font-weight:600;color:var(--brown);text-align:left}
+table.ice td.hl{background:#fde9c8;transition:background .4s}
+table.ice td.done{color:var(--good);font-weight:700}
+table.ice input{width:100px;font-size:17px;padding:3px 6px;border:2px solid var(--line);border-radius:6px;text-align:center}
+.slot{display:inline-block;min-width:60px;border-bottom:2px dashed var(--brown2);margin:0 4px;text-align:center}
+select.s{font-size:18px;padding:4px 6px;border:2px solid var(--line);border-radius:6px;background:#fff}
+.tick{color:var(--good);font-weight:700}.cross{color:var(--bad);font-weight:700}
+.legend span{display:inline-block;margin-right:14px;font-size:15px}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:-2px;margin-right:4px}
+.src{font-size:14px;color:#8a7356;font-style:italic;display:block;margin-bottom:4px}
+.readout .frac>span:first-child{border-bottom-color:#ffe9c4}
+
+</style>
+</head>
+<body>
+<header>
+  <h1>Equilibrium (Kp) 5 – Missing values and when pressure cancels</h1>
+  <p>AQA A-level Chemistry · Equilibrium constant K<sub>p</sub> walkthrough</p>
+</header>
+<nav id="nav"></nav>
+<main>
+<section class="page" data-title="1. Missing partial pressure">
+<h2>1. Using K<sub>p</sub> to find a missing partial pressure</h2>
+<div class="card key">
+  <ol><li>Write the K<sub>p</sub> expression.</li><li><b>Rearrange</b> it to make the unknown partial pressure the subject. This is a mark on its own.</li><li>Substitute and calculate.</li><li>If the unknown is squared, take the <b>square root</b> at the end.</li></ol>
+</div>
+<div class="card">
+  <h3 style="margin-top:0">Worked example with the mark scheme</h3>
+  <span class="src">June 2022 Paper 1 Q1.5 (3 marks)</span>
+  <p>CO(g) + 2H₂(g) ⇌ CH₃OH(g) at temperature T. p(CO) = 125 kPa, p(CH₃OH) = 5.45 kPa, K<sub>p</sub> = 1.15 × 10⁻⁶ kPa⁻². Calculate the partial pressure of hydrogen.</p>
+  <button class="b alt" onclick="stepReveal('we1')">Show next step</button>
+  <ol class="steps" id="we1">
+    <li class="reveal">K<sub>p</sub> = <span class="frac"><span>p(CH₃OH)</span><span>p(CO) × p(H₂)²</span></span></li>
+    <li class="reveal"><b>M1</b> rearrange: p(H₂)² = <span class="frac"><span>p(CH₃OH)</span><span>K<sub>p</sub> × p(CO)</span></span></li>
+    <li class="reveal"><b>M2</b> p(H₂)² = <span class="frac"><span>5.45</span><span>1.15 × 10⁻⁶ × 125</span></span> = 37 913</li>
+    <li class="reveal"><b>M3</b> p(H₂) = √37 913 = <b>194.7 kPa</b> (allow 195)</li>
+  </ol>
+</div>
+<div class="card">
+  <h3 style="margin-top:0">Interactive: rearranging practice</h3>
+  <p>For CO + 2H₂ ⇌ CH₃OH, choose which partial pressure is missing.</p>
+  <select class="s" id="rSel"><option value="0">p(H₂)</option><option value="1">p(CO)</option><option value="2">p(CH₃OH)</option></select>
+  <div class="readout" id="rOut" style="margin-top:8px"></div>
+</div>
+</section>
+
+<section class="page" data-title="2. Missing total pressure">
+<h2>2. Finding the total pressure</h2>
+<div class="card key">
+  <p>If you know K<sub>p</sub> and the <b>mole fractions</b>, write each partial pressure as x × P. The P terms collect together:</p>
+  <div class="eq">K<sub>p</sub> = (expression in mole fractions) × P<sup>Δn</sup></div>
+  <p>Rearrange for P. If Δn = 1 (as in 2NO₂ ⇌ 2NO + O₂), P appears to the power 1 and you can solve directly.</p>
+</div>
+<div class="card">
+  <h3 style="margin-top:0">Worked example with the mark scheme</h3>
+  <span class="src">June 2023 Paper 1 Q4.3 (3 marks)</span>
+  <p>2NO₂(g) ⇌ 2NO(g) + O₂(g). Mole fractions: NO₂ 0.310, NO 0.460, O₂ 0.230. K<sub>p</sub> = 59.7 kPa. Give an expression for K<sub>p</sub> and calculate the total pressure.</p>
+  <button class="b alt" onclick="stepReveal('we2')">Show next step</button>
+  <ol class="steps" id="we2">
+    <li class="reveal"><b>M1</b> K<sub>p</sub> = <span class="frac"><span>p(NO)² × p(O₂)</span><span>p(NO₂)²</span></span> (no square brackets)</li>
+    <li class="reveal">Each p = x × P, so K<sub>p</sub> = <span class="frac"><span>(0.460P)² × 0.230P</span><span>(0.310P)²</span></span> = <span class="frac"><span>0.460² × 0.230</span><span>0.310²</span></span> × P</li>
+    <li class="reveal"><b>M2</b> P = <span class="frac"><span>K<sub>p</sub> × 0.310²</span><span>0.460² × 0.230</span></span> = <span class="frac"><span>59.7 × 0.0961</span><span>0.04867</span></span></li>
+    <li class="reveal"><b>M3</b> P = <b>117.9 kPa</b> (or 118 kPa)</li>
+  </ol>
+</div>
+<div class="check">
+  <span class="tag">QUICK CHECK 1</span>
+  <span class="src">June 2019 Paper 1 Q7.2 (4 marks)</span>
+  <p>2SO₃(g) ⇌ 2SO₂(g) + O₂(g) at 1050 K. Equilibrium amounts: SO₃ 0.320 mol, SO₂ 1.20 mol, O₂ 0.600 mol. K<sub>p</sub> = 7.62 × 10⁵ Pa. Calculate the mole fraction of each substance and the total pressure in Pa.</p>
+  x(SO₃) = <input class="ans" id="c1a" style="width:90px"> <button class="b" onclick="numCheck('c1a',0.151,0.02)">Check</button><span class="fb" id="c1afb"></span>
+  x(SO₂) = <input class="ans" id="c1b" style="width:90px"> <button class="b" onclick="numCheck('c1b',0.566,0.01)">Check</button><span class="fb" id="c1bfb"></span>
+  x(O₂) = <input class="ans" id="c1c" style="width:90px"> <button class="b" onclick="numCheck('c1c',0.283,0.01)">Check</button><span class="fb" id="c1cfb"></span><br>
+  P = <input class="ans" id="c1d"> Pa <button class="b" onclick="numCheck('c1d',1.91e5,0.016)">Check</button><span class="fb" id="c1dfb"></span>
+  <button class="b alt" onclick="tog('c1w')">Working</button>
+  <div class="work" id="c1w"><b>M1</b> Total = 2.12 mol → x(SO₃) = 0.151, x(SO₂) = 0.566, x(O₂) = 0.283<br>
+  <b>M2</b> K<sub>p</sub> = <span class="frac"><span>p(SO₂)² × p(O₂)</span><span>p(SO₃)²</span></span> = <span class="frac"><span>x(SO₂)² × x(O₂)</span><span>x(SO₃)²</span></span> × P<br>
+  <b>M3</b> P = <span class="frac"><span>K<sub>p</sub> × x(SO₃)²</span><span>x(SO₂)² × x(O₂)</span></span> = <span class="frac"><span>7.62 × 10⁵ × 0.151²</span><span>0.566² × 0.283</span></span><br>
+  <b>M4</b> P = <b>1.91 × 10⁵ Pa</b> (allow 1.88–1.94 × 10⁵)</div>
+</div>
+</section>
+
+<section class="page" data-title="3. When P cancels">
+<h2>3. When the total pressure cancels</h2>
+<div class="card key">
+  <p>If the number of moles of gas is the <b>same on both sides</b> (Δn = 0), the P terms cancel completely:</p>
+  <div class="eq">H₂O + CO ⇌ H₂ + CO₂: &nbsp; K<sub>p</sub> = <span class="frac"><span>x(H₂)P × x(CO₂)P</span><span>x(H₂O)P × x(CO)P</span></span> = <span class="frac"><span>x(H₂) × x(CO₂)</span><span>x(H₂O) × x(CO)</span></span></div>
+  <p>So you can calculate K<sub>p</sub> from mole fractions (or even from moles) without knowing the total pressure. K<sub>p</sub> has no units. In this case you <b>cannot</b> find P from K<sub>p</sub>.</p>
+</div>
+<div class="card">
+  <h3 style="margin-top:0">Interactive: does P matter?</h3>
+  <p>Same mole fractions, different total pressures. Pick a reaction and drag the pressure.</p>
+  <select class="s" id="cSel"><option value="0">H₂O + CO ⇌ H₂ + CO₂ (Δn = 0)</option><option value="1">2SO₂ + O₂ ⇌ 2SO₃ (Δn = −1)</option><option value="2">2NO₂ ⇌ 2NO + O₂ (Δn = +1)</option></select>
+  <label class="s">Total pressure: <span id="cPv"></span> kPa</label><input type="range" class="slider" id="cP" min="50" max="1000" step="50" value="200">
+  <div class="readout" id="cOut"></div>
+</div>
+<div class="check">
+  <span class="tag">QUICK CHECK 2</span>
+  <span class="src">Practice question</span>
+  <p>H₂O(g) + CO(g) ⇌ H₂(g) + CO₂(g). Start with 2.00 mol H₂O and 2.00 mol CO. At equilibrium there are 0.92 mol H₂. Calculate K<sub>p</sub>.</p>
+  <input class="ans" id="c2"> <button class="b" onclick="numCheck('c2',0.726,0.01)">Check</button><span class="fb" id="c2fb"></span>
+  <button class="b alt" onclick="tog('c2w')">Working</button>
+  <div class="work" id="c2w">E: H₂O 1.08, CO 1.08, H₂ 0.92, CO₂ 0.92 mol (total 4.00)<br>K<sub>p</sub> = <span class="frac"><span>0.23 × 0.23</span><span>0.27 × 0.27</span></span> = <span class="frac"><span>0.92²</span><span>1.08²</span></span> = <b>0.726</b> (no units)</div>
+</div>
+</section>
+
+<section class="page" data-title="4. Practice generator">
+<h2>4. Unlimited practice: find the missing value</h2>
+<div class="card">
+  <button class="b" onclick="gNew()">New problem</button> <span class="small" id="gScore"></span>
+  <div class="eq" id="gEq"></div>
+  <p id="gQ" style="font-size:20px"></p>
+  Answer = <input class="ans" id="gA"> kPa <button class="b" onclick="gCheck()">Check</button><span class="fb" id="gAfb"></span>
+  <div><button class="b alt" onclick="tog('gW')">Full working</button></div>
+  <div class="work" id="gW"></div>
+</div>
+</section>
+
+<section class="page" data-title="5. Quiz">
+<h2>5. End-of-walkthrough quiz</h2>
+<p>Click an answer. You get one go at each question.</p>
+<div id="quiz"></div>
+<div class="card" id="score" style="font-size:22px;text-align:center"></div>
+<button class="b alt" onclick="buildQuiz()">Reset quiz</button>
+<p class="small">Next: Walkthrough 6 – what happens to K<sub>p</sub> and the equilibrium position when the pressure changes.</p>
+</section>
+
+<div class="pager"><button class="b alt" id="prevB">◀ Previous</button><button class="b" id="nextB">Next ▶</button></div>
+</main>
+<script>
+/* ---------- navigation ---------- */
+const pages=[...document.querySelectorAll('.page')];let cur=0;
+const nav=document.getElementById('nav');
+pages.forEach((p,i)=>{const b=document.createElement('button');b.textContent=p.dataset.title;b.onclick=()=>go(i);nav.appendChild(b)});
+function go(i){cur=i;pages.forEach((p,j)=>p.classList.toggle('on',j===i));[...nav.children].forEach((b,j)=>b.classList.toggle('on',j===i));
+ document.getElementById('prevB').disabled=i===0;document.getElementById('nextB').disabled=i===pages.length-1;window.scrollTo(0,0);
+ if(typeof onPage==='function')onPage(i)}
+document.getElementById('prevB').onclick=()=>go(Math.max(0,cur-1));
+document.getElementById('nextB').onclick=()=>go(Math.min(pages.length-1,cur+1));
+
+/* ---------- helpers ---------- */
+const $=id=>document.getElementById(id);
+function tog(id){$(id).classList.toggle('on')}
+function stepReveal(id){const r=[...document.querySelectorAll('#'+id+' .reveal:not(.on)')];if(r.length)r[0].classList.add('on')}
+function parseNum(s){
+ s=s.trim().replace(/\s/g,'');const sp={'⁰':'0','¹':'1','²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9','⁻':'-'};
+ s=s.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁻]/g,c=>sp[c]).replace(/[−–]/g,'-').replace(/,/g,'');
+ let m=s.match(/^(-?[\d.]+)[x×X*]10\^?(-?\d+)$/);if(m)return parseFloat(m[1])*Math.pow(10,parseInt(m[2]));
+ m=s.match(/^(-?[\d.]+)[eE](-?\d+)$/);if(m)return parseFloat(s);
+ const v=Number(s);return (s===''||isNaN(v))?null:v}
+function numCheck(id,target,tol){const v=parseNum($(id).value);const fb=$(id+'fb');
+ if(v===null){fb.textContent='Enter a number';fb.className='fb no';return false}
+ if(Math.abs(v-target)<=Math.abs(target)*tol){fb.textContent='✔ Correct';fb.className='fb ok';return true}
+ fb.textContent='✘ Not quite, check your working';fb.className='fb no';return false}
+function pick(btn,ok,id){const f=$(id);f.textContent=ok?'✔ Correct':'✘ Try again';f.className='fb '+(ok?'ok':'no')}
+const sup=n=>String(n).split('').map(c=>({'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'})[c]).join('');
+/* format number to n s.f.; standard form for very small/large */
+function sf(x,n=3){if(x===0)return '0';let e=Math.floor(Math.log10(Math.abs(x)));
+ if(e<-3||e>=5){let m=(x/Math.pow(10,e)).toFixed(n-1);if(Math.abs(+m)>=10){e++;m=(x/Math.pow(10,e)).toFixed(n-1)}return m+' × 10'+sup(e)}
+ return x.toFixed(Math.max(0,n-1-e))}
+/* units of Kc from Δn = (moles top − moles bottom) */
+function kcUnits(dn){if(dn===0)return 'no units';const m=dn===1?'mol':'mol'+sup(dn);return `${m} dm${sup(-3*dn)}`}
+/* render a fraction */
+const fr=(t,b)=>`<span class="frac"><span>${t}</span><span>${b}</span></span>`;
+
+/* ---------- SVG plotting ---------- */
+const NS='http://www.w3.org/2000/svg';
+function E(tag,a,p){const e=document.createElementNS(NS,tag);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e}
+function plot(svg,o){
+ svg.innerHTML='';const W=660,H=400,ml=80,mr=20,mt=18,mb=60,pw=W-ml-mr,ph=H-mt-mb;
+ const X=x=>ml+x/o.xmax*pw,Y=y=>mt+ph-y/o.ymax*ph;
+ const id='cl'+Math.random().toString(36).slice(2);
+ const d=E('defs',{},svg);const cp=E('clipPath',{id},d);E('rect',{x:ml,y:mt,width:pw,height:ph},cp);
+ E('rect',{x:ml,y:mt,width:pw,height:ph,fill:'#fff'},svg);
+ const gx=o.gx||o.xt,gy=o.gy||o.yt;
+ for(let x=0;x<=o.xmax+1e-9;x+=gx)E('line',{x1:X(x),x2:X(x),y1:mt,y2:mt+ph,stroke:'#efe3cc'},svg);
+ for(let y=0;y<=o.ymax+1e-9;y+=gy)E('line',{x1:ml,x2:ml+pw,y1:Y(y),y2:Y(y),stroke:'#efe3cc'},svg);
+ if(!o.noxt)for(let x=0;x<=o.xmax+1e-9;x+=o.xt){E('line',{x1:X(x),x2:X(x),y1:mt+ph,y2:mt+ph+6,stroke:'#3b2a1a'},svg);const t=E('text',{x:X(x),y:mt+ph+24,'text-anchor':'middle','font-size':15,fill:'#3b2a1a'},svg);t.textContent=+x.toFixed(4)}
+ if(!o.noyt)for(let y=0;y<=o.ymax+1e-9;y+=o.yt){E('line',{x1:ml-6,x2:ml,y1:Y(y),y2:Y(y),stroke:'#3b2a1a'},svg);const t=E('text',{x:ml-10,y:Y(y)+5,'text-anchor':'end','font-size':15,fill:'#3b2a1a'},svg);t.textContent=(o.yfmt?o.yfmt(y):+y.toFixed(3))}
+ E('line',{x1:ml,x2:ml+pw,y1:mt+ph,y2:mt+ph,stroke:'#3b2a1a','stroke-width':2},svg);
+ E('line',{x1:ml,x2:ml,y1:mt,y2:mt+ph,stroke:'#3b2a1a','stroke-width':2},svg);
+ let t=E('text',{x:ml+pw/2,y:H-12,'text-anchor':'middle','font-size':17,fill:'#6b4423'},svg);t.textContent=o.xlab;
+ t=E('text',{x:18,y:mt+ph/2,'text-anchor':'middle','font-size':17,fill:'#6b4423',transform:`rotate(-90 18 ${mt+ph/2})`},svg);t.textContent=o.ylab;
+ const g=E('g',{'clip-path':`url(#${id})`},svg);
+ return {X,Y,g,svg,curve(f,col='#6b4423',w=3,dash,x0=0,x1=o.xmax){let dd='';for(let i=0;i<=300;i++){const x=x0+(x1-x0)*i/300;dd+=(i?'L':'M')+X(x)+' '+Y(f(x))}return E('path',{d:dd,fill:'none',stroke:col,'stroke-width':w,'stroke-dasharray':dash||''},g)},
+  text(x,y,s,col='#3b2a1a',sz=15,anc='start'){const t=E('text',{x:X(x),y:Y(y),'font-size':sz,fill:col,'text-anchor':anc},g);t.textContent=s;return t}};
+}
+
+/* ---------- quiz ---------- */
+let qs=0,qa=0;
+function buildQuiz(){const w=$('quiz');w.innerHTML='';qs=0;qa=0;
+ Q.forEach((q,i)=>{const c=document.createElement('div');c.className='card mcq';c.innerHTML=`<b>Q${i+1}.</b> ${q[0]}`;
+  q[1].forEach((o,j)=>{const b=document.createElement('button');b.className='opt';b.innerHTML=o;
+   b.onclick=()=>{if(c.classList.contains('done'))return;c.classList.add('done');qa++;
+    if(j===q[2]){b.classList.add('right');qs++}else{b.classList.add('wrong');c.querySelectorAll('.opt')[q[2]].classList.add('right')}score()};c.appendChild(b)});
+  const e=document.createElement('div');e.className='exp';e.innerHTML='💡 '+q[3];c.appendChild(e);w.appendChild(c)});score()}
+function score(){const n=Q.length;$('score').innerHTML=`Score: <b>${qs}</b> / ${n}`+(qa===n?(qs>=n-1?' – excellent!':qs>=Math.ceil(n*0.7)?' – good, review the ones you missed':' – go back through the walkthrough and try again'):'')}
+
+/* ---------- Kp helpers ---------- */
+function kpUnits(dn,u='kPa'){if(dn===0)return 'no units';return u+(dn===1?'':sup(dn))}
+const f3=x=>(+x.toPrecision(3)).toString();
+function optBlock(id,opts,ans,fb){const w=$(id);opts.forEach((o,i)=>{const b=document.createElement('button');b.className='b alt';b.innerHTML=o;b.onclick=()=>pick(b,i===ans,fb);w.appendChild(b)})}
+const pp=s=>`p(${s})`;
+const rnd=(a,b,d=2)=>Math.round((a+Math.random()*(b-a))*Math.pow(10,d))/Math.pow(10,d);
+const choice=a=>a[Math.floor(Math.random()*a.length)];
+
+function rr(){const v=+$('rSel').value;const K=1.15e-6,co=125,me=5.45,h=Math.sqrt(me/(K*co));
+ const t=[[`p(H₂)² = ${fr('p(CH₃OH)','K<sub>p</sub> × p(CO)')}`,`p(H₂) = √${fr('5.45','1.15 × 10⁻⁶ × 125')} = <b>${sf(h)} kPa</b>`],
+  [`p(CO) = ${fr('p(CH₃OH)','K<sub>p</sub> × p(H₂)²')}`,`p(CO) = ${fr('5.45','1.15 × 10⁻⁶ × '+sf(h)+'²')} = <b>${sf(me/(K*h*h))} kPa</b>`],
+  [`p(CH₃OH) = K<sub>p</sub> × p(CO) × p(H₂)²`,`p(CH₃OH) = 1.15 × 10⁻⁶ × 125 × ${sf(h)}² = <b>${sf(K*co*h*h)} kPa</b>`]][v];
+ $('rOut').innerHTML=`K<sub>p</sub> = ${fr('p(CH₃OH)','p(CO) × p(H₂)²')}<br>Rearranged: ${t[0]}<br>${t[1]}`}
+$('rSel').onchange=rr;rr();
+const CR=[{eq:'H₂O + CO ⇌ H₂ + CO₂',x:[['H₂O',0.27,-1],['CO',0.27,-1],['H₂',0.23,1],['CO₂',0.23,1]],dn:0},
+ {eq:'2SO₂ + O₂ ⇌ 2SO₃',x:[['SO₂',0.30,-2],['O₂',0.20,-1],['SO₃',0.50,2]],dn:-1},
+ {eq:'2NO₂ ⇌ 2NO + O₂',x:[['NO₂',0.31,-2],['NO',0.46,2],['O₂',0.23,1]],dn:1}];
+function cc(){const r=CR[+$('cSel').value],P=+$('cP').value;$('cPv').textContent=P;let K=1;r.x.forEach(([n,x,c])=>K*=Math.pow(x*P,c));
+ $('cOut').innerHTML=r.x.map(([n,x])=>`p(${n}) = ${x} × ${P} = ${sf(x*P)} kPa`).join('<br>')+`<br>K<sub>p</sub> = <b>${sf(K,3)} ${kpUnits(r.dn)}</b>`+(r.dn===0?'<br>✔ K<sub>p</sub> is the same at every pressure: P cancels.':'<br>K<sub>p</sub> changes with P here because the mole fractions are held fixed. In a real equilibrium K<sub>p</sub> stays constant, so the mole fractions must change instead (Walkthrough 6).')}
+['cSel','cP'].forEach(i=>$(i).oninput=cc);$('cSel').onchange=cc;cc();
+/* generator */
+const GT=[
+ {eq:'N₂(g) + 3H₂(g) ⇌ 2NH₃(g)',sp:[[1,'N₂',-1],[3,'H₂',-1],[2,'NH₃',1]]},
+ {eq:'2SO₂(g) + O₂(g) ⇌ 2SO₃(g)',sp:[[2,'SO₂',-1],[1,'O₂',-1],[2,'SO₃',1]]},
+ {eq:'CO(g) + 2H₂(g) ⇌ CH₃OH(g)',sp:[[1,'CO',-1],[2,'H₂',-1],[1,'CH₃OH',1]]},
+ {eq:'PCl₅(g) ⇌ PCl₃(g) + Cl₂(g)',sp:[[1,'PCl₅',-1],[1,'PCl₃',1],[1,'Cl₂',1]]},
+ {eq:'2NO₂(g) ⇌ 2NO(g) + O₂(g)',sp:[[2,'NO₂',-1],[2,'NO',1],[1,'O₂',1]]},
+ {eq:'N₂O₄(g) ⇌ 2NO₂(g)',sp:[[1,'N₂O₄',-1],[2,'NO₂',1]]}];
+let G=null,gN=0,gOk=0,gDone=false;
+function gNew(){const t=choice(GT);gDone=false;$('gA').value='';$('gAfb').textContent='';$('gW').classList.remove('on');$('gEq').textContent=t.eq;
+ const dn=t.sp.reduce((a,s)=>a+s[2]*s[0],0);const tt=a=>a.map(s=>`p(${s[1]})${s[0]>1?sup(s[0]):''}`).join(' × ');const top=t.sp.filter(s=>s[2]>0),bot=t.sp.filter(s=>s[2]<0);
+ const mode=(dn!==0&&Math.random()<0.4)?'P':'pp';
+ if(mode==='pp'){const p=t.sp.map(()=>Math.round(rnd(20,400,0)));let K=1;t.sp.forEach((s,i)=>K*=Math.pow(p[i],s[2]*s[0]));const k=Math.floor(Math.random()*t.sp.length);const Kr=+K.toPrecision(3);
+  let rest=1;t.sp.forEach((s,i)=>{if(i!==k)rest*=Math.pow(p[i],s[2]*s[0])});const e=t.sp[k][2]*t.sp[k][0];const ans=Math.pow(Kr/rest,1/e);G={ans};
+  $('gQ').innerHTML=`At equilibrium, ${t.sp.map((s,i)=>i===k?null:`p(${s[1]}) = ${p[i]} kPa`).filter(Boolean).join(', ')} and K<sub>p</sub> = ${sf(Kr,3)} ${kpUnits(dn)}. Calculate <b>p(${t.sp[k][1]})</b>.`;
+  $('gW').innerHTML=`K<sub>p</sub> = ${fr(tt(top),tt(bot))}<br>Rearrange for p(${t.sp[k][1]})${Math.abs(e)>1?sup(Math.abs(e)):''} and substitute.<br>`+(Math.abs(e)>1?`p(${t.sp[k][1]})${sup(Math.abs(e))} = ${sf(Math.pow(ans,Math.abs(e)),4)} → take the ${Math.abs(e)===2?'square':'cube'} root.<br>`:'')+`<b>p(${t.sp[k][1]}) = ${sf(ans,3)} kPa</b>`}
+ else{const n=t.sp.map(()=>rnd(0.2,2.0,2));const T=n.reduce((a,b)=>a+b,0);const x=n.map(v=>v/T);const P=Math.round(rnd(50,1000,0));let K=1;t.sp.forEach((s,i)=>K*=Math.pow(x[i]*P,s[2]*s[0]));const Kr=+K.toPrecision(3);
+  let Kx=1;t.sp.forEach((s,i)=>Kx*=Math.pow(x[i],s[2]*s[0]));const ans=Math.pow(Kr/Kx,1/dn);G={ans};
+  $('gQ').innerHTML=`At equilibrium the mole fractions are ${t.sp.map((s,i)=>`${s[1]} ${x[i].toFixed(3)}`).join(', ')}. K<sub>p</sub> = ${sf(Kr,3)} ${kpUnits(dn)}. Calculate the <b>total pressure</b>.`;
+  $('gW').innerHTML=`K<sub>p</sub> = (mole fraction expression) × P${dn===1?'':sup(dn)}<br>Mole fraction expression = ${sf(Kx,4)}<br>P${dn===1?'':sup(dn)} = ${sf(Kr,3)} ÷ ${sf(Kx,4)} = ${sf(Kr/Kx,4)}${dn===1?'':dn===-1?' → P = 1 ÷ '+sf(Kr/Kx,4):dn===-2?' → P = 1 ÷ √'+sf(Kr/Kx,4):dn===2?' → P = √'+sf(Kr/Kx,4):''}<br><b>P = ${sf(ans,3)} kPa</b>`}}
+function gCheck(){const ok=numCheck('gA',G.ans,0.02);if(!gDone&&parseNum($('gA').value)!==null){gDone=true;gN++;if(ok)gOk++;$('gScore').textContent=`Right first time: ${gOk} / ${gN}`}}
+gNew();
+const Q=[
+ ["K<sub>p</sub> = p(C)² ÷ (p(A) × p(B)). Which rearrangement gives p(C)?",["p(C) = K<sub>p</sub> × p(A) × p(B)","p(C) = √(K<sub>p</sub> × p(A) × p(B))","p(C) = √K<sub>p</sub> ÷ (p(A) × p(B))","p(C) = (K<sub>p</sub> × p(A) × p(B))²"],1,"Multiply up, then square root."],
+ ["PCl₅ ⇌ PCl₃ + Cl₂, K<sub>p</sub> = 200 kPa. p(PCl₃) = p(Cl₂) = 100 kPa. p(PCl₅) = ?",["50 kPa","20 000 kPa","2.0 kPa","0.5 kPa"],0,"p(PCl₅) = 100 × 100 ÷ 200 = 50 kPa."],
+ ["N₂O₄ ⇌ 2NO₂, K<sub>p</sub> = 16 kPa, p(N₂O₄) = 4 kPa. p(NO₂) = ?",["64 kPa","8 kPa","4 kPa","2 kPa"],1,"p(NO₂)² = 16 × 4 = 64, √64 = 8 kPa."],
+ ["Why can't you find the total pressure from K<sub>p</sub> for H₂ + I₂ ⇌ 2HI?",["K<sub>p</sub> has no value","P cancels because Δn = 0","HI is not a gas","You need the volume"],1,"Equal moles of gas on each side, so P cancels."],
+ ["For a reaction with Δn = +1, K<sub>p</sub> equals…",["the mole fraction expression","the mole fraction expression × P","the mole fraction expression ÷ P","the mole fraction expression × P²"],1,"One extra P on the top."],
+ ["Mole fraction expression = 0.50 and K<sub>p</sub> = 60 kPa for a reaction with Δn = +1. P = ?",["30 kPa","120 kPa","60 kPa","0.0083 kPa"],1,"P = 60 ÷ 0.50 = 120 kPa."],
+ ["In June 2022 Q1.5, a student forgets to take the square root. How many marks out of 3?",["0","1","2","3"],2,"They get the rearrangement and the substitution (M1, M2) but not M3."],
+ ["For H₂O + CO ⇌ H₂ + CO₂, which can be used directly in K<sub>p</sub> without converting to partial pressures?",["Only concentrations","Equilibrium moles or mole fractions","Starting moles","Volumes in cm³"],1,"With Δn = 0 the totals and pressures cancel."]
+];
+
+buildQuiz();
+go(0);
+</script>
+</body>
+</html>

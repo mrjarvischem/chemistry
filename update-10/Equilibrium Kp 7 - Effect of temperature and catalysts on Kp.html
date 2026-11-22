@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Equilibrium (Kp) 7 – Effect of temperature and catalysts on Kp</title>
+<style>
+:root{
+  --bg:#f6efe1; --card:#fffaf0; --ink:#3b2a1a; --brown:#6b4423; --brown2:#8b5a2b;
+  --accent:#b5651d; --soft:#ead9bd; --line:#d8c4a0; --good:#2f7d4a; --bad:#b03a2e; --blue:#2c4a7a;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Arial,sans-serif;font-size:19px;line-height:1.55}
+header{background:var(--brown);color:#fff8ec;padding:14px 24px}
+header h1{margin:0;font-family:Georgia,serif;font-size:28px;font-weight:normal}
+header p{margin:2px 0 0;opacity:.85;font-size:16px}
+nav{display:flex;flex-wrap:wrap;gap:6px;padding:10px 24px;background:var(--soft);border-bottom:2px solid var(--line);position:sticky;top:0;z-index:5}
+nav button{border:2px solid var(--brown2);background:var(--card);color:var(--brown);padding:7px 14px;border-radius:20px;font-size:16px;cursor:pointer}
+nav button.on{background:var(--brown2);color:#fff}
+main{max-width:1100px;margin:0 auto;padding:20px 24px 60px}
+.page{display:none}.page.on{display:block}
+h2{font-family:Georgia,serif;color:var(--brown);font-size:30px;margin:6px 0 12px;font-weight:normal}
+h3{color:var(--brown2);font-size:22px;margin:22px 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:14px 0;box-shadow:0 2px 0 var(--line)}
+.key{border-left:6px solid var(--accent)}
+.eq{font-family:Georgia,serif;font-size:24px;text-align:center;padding:10px;background:#fff;border:1px dashed var(--line);border-radius:8px;margin:10px 0}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 6px}
+.frac>span:first-child{border-bottom:2px solid var(--ink);padding:0 6px}
+.row{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+.row>*{flex:1 1 380px}
+button.b{background:var(--brown2);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:17px;cursor:pointer;margin:4px 6px 4px 0}
+button.b.alt{background:var(--card);color:var(--brown);border:2px solid var(--brown2)}
+button.b:disabled{opacity:.45;cursor:default}
+.check{background:#fdf6e6;border:2px solid var(--accent);border-radius:12px;padding:14px 18px;margin:16px 0}
+.check .tag{display:inline-block;background:var(--accent);color:#fff;font-size:14px;padding:2px 10px;border-radius:12px;margin-bottom:6px;letter-spacing:.5px}
+.check .src{font-size:14px;color:#8a7356;font-style:italic}
+input.ans{font-size:18px;padding:6px 10px;width:200px;border:2px solid var(--line);border-radius:6px}
+.fb{font-weight:600;margin-left:8px}
+.fb.ok{color:var(--good)}.fb.no{color:var(--bad)}
+.work{display:none;background:#fff;border-left:4px solid var(--brown2);padding:8px 14px;margin-top:8px;border-radius:4px}
+.work.on{display:block}
+table.t{border-collapse:collapse;margin:8px 0;background:#fff}
+table.t th,table.t td{border:1px solid var(--line);padding:6px 12px;text-align:center}
+table.t th{background:var(--soft);color:var(--brown)}
+svg text{font-family:"Segoe UI",Arial,sans-serif}
+.readout{font-family:Consolas,monospace;background:#2b1d10;color:#ffe9c4;padding:10px 14px;border-radius:8px;font-size:17px;line-height:1.6}
+.slider{width:100%}
+label.s{display:block;font-weight:600;color:var(--brown);margin-top:8px}
+.steps li{margin:6px 0}
+.reveal{display:none}.reveal.on{display:block;animation:fade .4s}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+.pager{display:flex;justify-content:space-between;margin-top:30px}
+.mcq button.opt{display:block;width:100%;text-align:left;margin:6px 0;padding:10px 14px;font-size:17px;border:2px solid var(--line);background:#fff;border-radius:8px;cursor:pointer;color:var(--ink)}
+.mcq button.opt.right{border-color:var(--good);background:#e6f4ea}
+.mcq button.opt.wrong{border-color:var(--bad);background:#fbe9e7}
+.mcq .exp{display:none;margin-top:6px;font-size:17px}
+.mcq.done .exp{display:block}
+.warn{background:#fbeee4;border-left:6px solid var(--bad);padding:10px 16px;border-radius:6px;margin:12px 0}
+.small{font-size:15px;color:#7a6448}
+canvas{background:#fff;border:1px solid var(--line);border-radius:8px;max-width:100%}
+.chip{display:inline-block;padding:2px 10px;border-radius:12px;background:var(--soft);margin:2px;font-size:16px}
+.big{font-size:22px}
+table.ice{border-collapse:collapse;margin:10px auto;background:#fff;font-size:18px}
+table.ice th,table.ice td{border:1px solid var(--line);padding:8px 14px;text-align:center;min-width:90px}
+table.ice th{background:var(--soft);color:var(--brown)}
+table.ice td.lab{background:#fbf3e3;font-weight:600;color:var(--brown);text-align:left}
+table.ice td.hl{background:#fde9c8;transition:background .4s}
+table.ice td.done{color:var(--good);font-weight:700}
+table.ice input{width:100px;font-size:17px;padding:3px 6px;border:2px solid var(--line);border-radius:6px;text-align:center}
+.slot{display:inline-block;min-width:60px;border-bottom:2px dashed var(--brown2);margin:0 4px;text-align:center}
+select.s{font-size:18px;padding:4px 6px;border:2px solid var(--line);border-radius:6px;background:#fff}
+.tick{color:var(--good);font-weight:700}.cross{color:var(--bad);font-weight:700}
+.legend span{display:inline-block;margin-right:14px;font-size:15px}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:-2px;margin-right:4px}
+.src{font-size:14px;color:#8a7356;font-style:italic;display:block;margin-bottom:4px}
+.readout .frac>span:first-child{border-bottom-color:#ffe9c4}
+
+</style>
+</head>
+<body>
+<header>
+  <h1>Equilibrium (Kp) 7 – Effect of temperature and catalysts on Kp</h1>
+  <p>AQA A-level Chemistry · Equilibrium constant K<sub>p</sub> walkthrough</p>
+</header>
+<nav id="nav"></nav>
+<main>
+<section class="page" data-title="1. Temperature">
+<h2>1. Temperature is the only thing that changes K<sub>p</sub></h2>
+<div class="card key">
+  <ul>
+    <li>Raising the temperature shifts the equilibrium in the <b>endothermic</b> direction (to absorb the extra heat).</li>
+    <li>If the <b>forward</b> reaction is <b>exothermic</b>: higher T → equilibrium moves left → less product, more reactant → <b>K<sub>p</sub> decreases</b>.</li>
+    <li>If the <b>forward</b> reaction is <b>endothermic</b>: higher T → equilibrium moves right → <b>K<sub>p</sub> increases</b>.</li>
+  </ul>
+  <p>The mark scheme wants three things: the effect on K<sub>p</sub>, the direction the equilibrium shifts (endothermic direction / to the left or right), and why (to oppose the temperature increase).</p>
+</div>
+<div class="card">
+  <h3 style="margin-top:0">Interactive: how K<sub>p</sub> changes with temperature</h3>
+  <p>Set the enthalpy change of the forward reaction. The graph shows K<sub>p</sub> compared with its value at 500 K (log scale).</p>
+  <label class="s">ΔH (forward) = <span id="hV"></span> kJ mol⁻¹</label>
+  <input type="range" class="slider" id="hS" min="-150" max="150" step="10" value="-90">
+  <label class="s">Temperature: <span id="tV"></span> K</label>
+  <input type="range" class="slider" id="tS" min="400" max="800" step="10" value="600">
+  <svg id="kT" viewBox="0 0 660 400" width="100%"></svg>
+  <div class="readout" id="tOut"></div>
+</div>
+<div class="card">
+  <h3 style="margin-top:0">Worked example with the mark scheme</h3>
+  <span class="src">June 2018 Paper 1 Q2.4 (3 marks)</span>
+  <p>N₂(g) + 3H₂(g) ⇌ 2NH₃(g), ΔH = −92 kJ mol⁻¹. State the effect, if any, of an increase in temperature on the value of K<sub>p</sub>. Justify your answer.</p>
+  <button class="b alt" onclick="stepReveal('we1')">Show next step</button>
+  <ol class="steps" id="we1">
+    <li class="reveal"><b>M1</b> K<sub>p</sub> <b>decreases</b> (if you say increase or no change, you get 0 marks)</li>
+    <li class="reveal"><b>M2</b> The equilibrium shifts in the endothermic direction, which is to the <b>left</b></li>
+    <li class="reveal"><b>M3</b> to oppose the increase in temperature (to reduce the temperature)</li>
+  </ol>
+</div>
+</section>
+
+<section class="page" data-title="2. Exam questions">
+<h2>2. Past-paper practice</h2>
+<div class="check">
+  <span class="tag">QUICK CHECK 1</span>
+  <span class="src">June 2019 Paper 1 Q7.3 (2 marks)</span>
+  <p>2SO₃(g) ⇌ 2SO₂(g) + O₂(g). At 1050 K, K<sub>p</sub> = 7.62 × 10⁵ Pa. At 500 K, K<sub>p</sub> = 3.94 × 10⁴ Pa. Explain how this information can be used to deduce that the forward reaction is endothermic.</p>
+  <button class="b alt" onclick="tog('c1w')">Mark scheme</button>
+  <div class="work" id="c1w"><b>M1</b> K<sub>p</sub> is higher at the higher temperature.<br><b>M2</b> So at higher temperature more dissociation occurs / more products form / the equilibrium shifts to the right. Raising the temperature favours the endothermic direction, so the forward reaction is endothermic. (M2 depends on M1.)</div>
+</div>
+<div class="check">
+  <span class="tag">QUICK CHECK 2</span>
+  <span class="src">June 2024 Paper 1 Q4.3 (1 mark)</span>
+  <p>H₂O(g) + CO(g) ⇌ H₂(g) + CO₂(g), ΔH = −41 kJ mol⁻¹. The temperature of the equilibrium mixture is increased. How does the amount of H₂(g) change when the new position of equilibrium is reached?</p>
+  <span id="c2"></span><span class="fb" id="c2f"></span>
+</div>
+<div class="check">
+  <span class="tag">QUICK CHECK 3</span>
+  <span class="src">June 2017 Paper 3 Q20</span>
+  <p>CO(g) + Cl₂(g) ⇌ COCl₂(g), ΔH = −108 kJ mol⁻¹, in a container of fixed volume. The temperature is decreased and the mixture reaches a new equilibrium. Which is greater for the new equilibrium than for the original equilibrium?</p>
+  <div class="mcq" id="c3"></div>
+</div>
+</section>
+
+<section class="page" data-title="3. Catalysts">
+<h2>3. Catalysts</h2>
+<div class="card key">
+  <p>A catalyst speeds up the forward and backward reactions <b>equally</b>. Equilibrium is reached faster, but the position of equilibrium and the value of K<sub>p</sub> do <b>not</b> change.</p>
+</div>
+<div class="card">
+  <h3 style="margin-top:0">Animation: with and without a catalyst</h3>
+  <p>Partial pressure of product against time, starting from reactants only.</p>
+  <button class="b" id="catGo">▶ Run</button>
+  <svg id="cat" viewBox="0 0 660 400" width="100%"></svg>
+  <p class="legend small"><span><i style="background:#6b4423"></i>no catalyst</span><span><i style="background:#2f7d4a"></i>with catalyst</span></p>
+</div>
+<div class="check">
+  <span class="tag">QUICK CHECK 4</span>
+  <span class="src">November 2020 Paper 1 Q6.5 (2 marks)</span>
+  <p>CO(g) + 2H₂(g) ⇌ CH₃OH(g). State the effect, if any, of adding a catalyst on the value of K<sub>p</sub>. Explain your answer.</p>
+  <button class="b alt" onclick="tog('c4w')">Mark scheme</button>
+  <div class="work" id="c4w"><b>M1</b> No effect.<br><b>M2</b> It increases the rate of the forward and backward reactions equally / by the same amount, OR it does not affect the position of equilibrium. (Allow: a catalyst does not appear in the K<sub>p</sub> expression; only temperature affects K<sub>p</sub>. Ignore 'catalysts increase the rate of reaction' on its own.)</div>
+</div>
+</section>
+
+<section class="page" data-title="4. Summary sorter">
+<h2>4. Summary: what changes what?</h2>
+<p>The forward reaction is <b>exothermic</b> and has <b>fewer moles of gas</b> on the right, like N₂ + 3H₂ ⇌ 2NH₃. Choose the effect of each change, then check.</p>
+<div class="card"><table class="t" id="sort"></table><button class="b" onclick="sortCheck()">Check all</button><span class="fb" id="sortF"></span></div>
+</section>
+
+<section class="page" data-title="5. Quiz">
+<h2>5. End-of-walkthrough quiz</h2>
+<p>Click an answer. You get one go at each question.</p>
+<div id="quiz"></div>
+<div class="card" id="score" style="font-size:22px;text-align:center"></div>
+<button class="b alt" onclick="buildQuiz()">Reset quiz</button>
+<p class="small">Next: Walkthrough 8 – mixed exam practice.</p>
+</section>
+
+<div class="pager"><button class="b alt" id="prevB">◀ Previous</button><button class="b" id="nextB">Next ▶</button></div>
+</main>
+<script>
+/* ---------- navigation ---------- */
+const pages=[...document.querySelectorAll('.page')];let cur=0;
+const nav=document.getElementById('nav');
+pages.forEach((p,i)=>{const b=document.createElement('button');b.textContent=p.dataset.title;b.onclick=()=>go(i);nav.appendChild(b)});
+function go(i){cur=i;pages.forEach((p,j)=>p.classList.toggle('on',j===i));[...nav.children].forEach((b,j)=>b.classList.toggle('on',j===i));
+ document.getElementById('prevB').disabled=i===0;document.getElementById('nextB').disabled=i===pages.length-1;window.scrollTo(0,0);
+ if(typeof onPage==='function')onPage(i)}
+document.getElementById('prevB').onclick=()=>go(Math.max(0,cur-1));
+document.getElementById('nextB').onclick=()=>go(Math.min(pages.length-1,cur+1));
+
+/* ---------- helpers ---------- */
+const $=id=>document.getElementById(id);
+function tog(id){$(id).classList.toggle('on')}
+function stepReveal(id){const r=[...document.querySelectorAll('#'+id+' .reveal:not(.on)')];if(r.length)r[0].classList.add('on')}
+function parseNum(s){
+ s=s.trim().replace(/\s/g,'');const sp={'⁰':'0','¹':'1','²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9','⁻':'-'};
+ s=s.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁻]/g,c=>sp[c]).replace(/[−–]/g,'-').replace(/,/g,'');
+ let m=s.match(/^(-?[\d.]+)[x×X*]10\^?(-?\d+)$/);if(m)return parseFloat(m[1])*Math.pow(10,parseInt(m[2]));
+ m=s.match(/^(-?[\d.]+)[eE](-?\d+)$/);if(m)return parseFloat(s);
+ const v=Number(s);return (s===''||isNaN(v))?null:v}
+function numCheck(id,target,tol){const v=parseNum($(id).value);const fb=$(id+'fb');
+ if(v===null){fb.textContent='Enter a number';fb.className='fb no';return false}
+ if(Math.abs(v-target)<=Math.abs(target)*tol){fb.textContent='✔ Correct';fb.className='fb ok';return true}
+ fb.textContent='✘ Not quite, check your working';fb.className='fb no';return false}
+function pick(btn,ok,id){const f=$(id);f.textContent=ok?'✔ Correct':'✘ Try again';f.className='fb '+(ok?'ok':'no')}
+const sup=n=>String(n).split('').map(c=>({'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'})[c]).join('');
+/* format number to n s.f.; standard form for very small/large */
+function sf(x,n=3){if(x===0)return '0';let e=Math.floor(Math.log10(Math.abs(x)));
+ if(e<-3||e>=5){let m=(x/Math.pow(10,e)).toFixed(n-1);if(Math.abs(+m)>=10){e++;m=(x/Math.pow(10,e)).toFixed(n-1)}return m+' × 10'+sup(e)}
+ return x.toFixed(Math.max(0,n-1-e))}
+/* units of Kc from Δn = (moles top − moles bottom) */
+function kcUnits(dn){if(dn===0)return 'no units';const m=dn===1?'mol':'mol'+sup(dn);return `${m} dm${sup(-3*dn)}`}
+/* render a fraction */
+const fr=(t,b)=>`<span class="frac"><span>${t}</span><span>${b}</span></span>`;
+
+/* ---------- SVG plotting ---------- */
+const NS='http://www.w3.org/2000/svg';
+function E(tag,a,p){const e=document.createElementNS(NS,tag);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e}
+function plot(svg,o){
+ svg.innerHTML='';const W=660,H=400,ml=80,mr=20,mt=18,mb=60,pw=W-ml-mr,ph=H-mt-mb;
+ const X=x=>ml+x/o.xmax*pw,Y=y=>mt+ph-y/o.ymax*ph;
+ const id='cl'+Math.random().toString(36).slice(2);
+ const d=E('defs',{},svg);const cp=E('clipPath',{id},d);E('rect',{x:ml,y:mt,width:pw,height:ph},cp);
+ E('rect',{x:ml,y:mt,width:pw,height:ph,fill:'#fff'},svg);
+ const gx=o.gx||o.xt,gy=o.gy||o.yt;
+ for(let x=0;x<=o.xmax+1e-9;x+=gx)E('line',{x1:X(x),x2:X(x),y1:mt,y2:mt+ph,stroke:'#efe3cc'},svg);
+ for(let y=0;y<=o.ymax+1e-9;y+=gy)E('line',{x1:ml,x2:ml+pw,y1:Y(y),y2:Y(y),stroke:'#efe3cc'},svg);
+ if(!o.noxt)for(let x=0;x<=o.xmax+1e-9;x+=o.xt){E('line',{x1:X(x),x2:X(x),y1:mt+ph,y2:mt+ph+6,stroke:'#3b2a1a'},svg);const t=E('text',{x:X(x),y:mt+ph+24,'text-anchor':'middle','font-size':15,fill:'#3b2a1a'},svg);t.textContent=+x.toFixed(4)}
+ if(!o.noyt)for(let y=0;y<=o.ymax+1e-9;y+=o.yt){E('line',{x1:ml-6,x2:ml,y1:Y(y),y2:Y(y),stroke:'#3b2a1a'},svg);const t=E('text',{x:ml-10,y:Y(y)+5,'text-anchor':'end','font-size':15,fill:'#3b2a1a'},svg);t.textContent=(o.yfmt?o.yfmt(y):+y.toFixed(3))}
+ E('line',{x1:ml,x2:ml+pw,y1:mt+ph,y2:mt+ph,stroke:'#3b2a1a','stroke-width':2},svg);
+ E('line',{x1:ml,x2:ml,y1:mt,y2:mt+ph,stroke:'#3b2a1a','stroke-width':2},svg);
+ let t=E('text',{x:ml+pw/2,y:H-12,'text-anchor':'middle','font-size':17,fill:'#6b4423'},svg);t.textContent=o.xlab;
+ t=E('text',{x:18,y:mt+ph/2,'text-anchor':'middle','font-size':17,fill:'#6b4423',transform:`rotate(-90 18 ${mt+ph/2})`},svg);t.textContent=o.ylab;
+ const g=E('g',{'clip-path':`url(#${id})`},svg);
+ return {X,Y,g,svg,curve(f,col='#6b4423',w=3,dash,x0=0,x1=o.xmax){let dd='';for(let i=0;i<=300;i++){const x=x0+(x1-x0)*i/300;dd+=(i?'L':'M')+X(x)+' '+Y(f(x))}return E('path',{d:dd,fill:'none',stroke:col,'stroke-width':w,'stroke-dasharray':dash||''},g)},
+  text(x,y,s,col='#3b2a1a',sz=15,anc='start'){const t=E('text',{x:X(x),y:Y(y),'font-size':sz,fill:col,'text-anchor':anc},g);t.textContent=s;return t}};
+}
+
+/* ---------- quiz ---------- */
+let qs=0,qa=0;
+function buildQuiz(){const w=$('quiz');w.innerHTML='';qs=0;qa=0;
+ Q.forEach((q,i)=>{const c=document.createElement('div');c.className='card mcq';c.innerHTML=`<b>Q${i+1}.</b> ${q[0]}`;
+  q[1].forEach((o,j)=>{const b=document.createElement('button');b.className='opt';b.innerHTML=o;
+   b.onclick=()=>{if(c.classList.contains('done'))return;c.classList.add('done');qa++;
+    if(j===q[2]){b.classList.add('right');qs++}else{b.classList.add('wrong');c.querySelectorAll('.opt')[q[2]].classList.add('right')}score()};c.appendChild(b)});
+  const e=document.createElement('div');e.className='exp';e.innerHTML='💡 '+q[3];c.appendChild(e);w.appendChild(c)});score()}
+function score(){const n=Q.length;$('score').innerHTML=`Score: <b>${qs}</b> / ${n}`+(qa===n?(qs>=n-1?' – excellent!':qs>=Math.ceil(n*0.7)?' – good, review the ones you missed':' – go back through the walkthrough and try again'):'')}
+
+/* ---------- Kp helpers ---------- */
+function kpUnits(dn,u='kPa'){if(dn===0)return 'no units';return u+(dn===1?'':sup(dn))}
+const f3=x=>(+x.toPrecision(3)).toString();
+function optBlock(id,opts,ans,fb){const w=$(id);opts.forEach((o,i)=>{const b=document.createElement('button');b.className='b alt';b.innerHTML=o;b.onclick=()=>pick(b,i===ans,fb);w.appendChild(b)})}
+const pp=s=>`p(${s})`;
+const rnd=(a,b,d=2)=>Math.round((a+Math.random()*(b-a))*Math.pow(10,d))/Math.pow(10,d);
+const choice=a=>a[Math.floor(Math.random()*a.length)];
+
+function kt(){const H=+$('hS').value,T=+$('tS').value;$('hV').textContent=(H>0?'+':'')+H;$('tV').textContent=T;
+ const L=t=>-H*1000/8.31*(1/t-1/500)/Math.LN10;const lo=-8,hi=8;
+ const pl=plot($('kT'),{xmax:400,ymax:16,xt:50,yt:2,xlab:'Temperature / K',ylab:'log₁₀(Kp ÷ Kp at 500 K)',noxt:true,noyt:true});
+ for(let x=0;x<=400;x+=50){const t=E('text',{x:pl.X(x),y:364,'text-anchor':'middle','font-size':15},$('kT'));t.textContent=400+x}
+ for(let y=0;y<=16;y+=4){const t=E('text',{x:72,y:pl.Y(y)+5,'text-anchor':'end','font-size':15},$('kT'));t.textContent=y-8}
+ pl.curve(x=>Math.max(-1,Math.min(17,L(400+x)+8)),H<0?'#b03a2e':'#2c4a7a',3);
+ E('circle',{cx:pl.X(T-400),cy:pl.Y(Math.max(0,Math.min(16,L(T)+8))),r:7,fill:'#b5651d'},pl.g);
+ const r=Math.pow(10,L(T));$('tOut').innerHTML=`Forward reaction is <b>${H<0?'exothermic':H>0?'endothermic':'thermoneutral'}</b>.<br>At ${T} K, K<sub>p</sub> is <b>${sf(r,3)} ×</b> its value at 500 K.<br>`+(H===0?'ΔH = 0: K<sub>p</sub> does not change with temperature.':H<0?'Raising T shifts the equilibrium left (endothermic direction), so K<sub>p</sub> falls.':'Raising T shifts the equilibrium right (endothermic direction), so K<sub>p</sub> rises.')}
+['hS','tS'].forEach(i=>$(i).oninput=kt);kt();
+optBlock('c2',['The amount decreases','The amount increases','The amount does not change'],0,'c2f');
+function mcq(id,opts,ans,exp){const w=$(id);opts.forEach((t,i)=>{const b=document.createElement('button');b.className='opt';b.innerHTML=t;b.onclick=()=>{if(w.classList.contains('done'))return;w.classList.add('done');b.classList.add(i===ans?'right':'wrong');w.querySelectorAll('.opt')[ans].classList.add('right')};w.appendChild(b)});
+ const e=document.createElement('div');e.className='exp';e.innerHTML='💡 '+exp;w.appendChild(e)}
+mcq('c3',['A  The mole fraction of carbon monoxide','B  The partial pressure of chlorine','C  The total pressure of the mixture','D  The value of the equilibrium constant'],3,'Lowering the temperature favours the exothermic (forward) direction, so more COCl₂ forms and K<sub>p</sub> increases. CO and Cl₂ are used up, and fewer moles of gas at a lower temperature means a lower total pressure.');
+/* catalyst animation */
+let ct=0,crun=false;
+function cdraw(){const pl=plot($('cat'),{xmax:100,ymax:60,xt:20,yt:10,xlab:'Time',ylab:'p(product) / kPa',noxt:true});
+ const eq=45;pl.curve(x=>eq*(1-Math.exp(-x/30)),'#6b4423',3,'',0,Math.min(100,ct));pl.curve(x=>eq*(1-Math.exp(-x/8)),'#2f7d4a',3,'',0,Math.min(100,ct));
+ pl.curve(()=>eq,'#b5651d',1.5,'6 4');pl.text(70,eq+3,'same equilibrium p','#b5651d',14)}
+function cl(){if(crun){ct=Math.min(100,ct+0.8);if(ct>=100)crun=false}cdraw();requestAnimationFrame(cl)}
+$('catGo').onclick=()=>{ct=0;crun=true};ct=100;cl();
+/* sorter */
+const SR=[['Increase temperature',['Shifts left','Decreases']],['Decrease temperature',['Shifts right','Increases']],['Increase total pressure',['Shifts right','No change']],['Decrease total pressure',['Shifts left','No change']],['Add a catalyst',['No change','No change']],['Add more of a reactant',['Shifts right','No change']]];
+$('sort').innerHTML='<tr><th>Change</th><th>Position of equilibrium</th><th>Value of K<sub>p</sub></th><th></th></tr>'+SR.map((r,i)=>`<tr><td>${r[0]}</td><td><select class="s" id="sp${i}"><option>–</option><option>Shifts left</option><option>Shifts right</option><option>No change</option></select></td><td><select class="s" id="sk${i}"><option>–</option><option>Increases</option><option>Decreases</option><option>No change</option></select></td><td id="sm${i}"></td></tr>`).join('');
+function sortCheck(){let ok=0;SR.forEach((r,i)=>{const a=$('sp'+i).value===r[1][0],b=$('sk'+i).value===r[1][1];$('sm'+i).innerHTML=a&&b?'<span class="tick">✔</span>':'<span class="cross">✘</span> '+`<span class="small">${r[1][0]}; K<sub>p</sub> ${r[1][1].toLowerCase()}</span>`;if(a&&b)ok++});$('sortF').textContent=`${ok} / ${SR.length} rows correct`;$('sortF').className='fb '+(ok===SR.length?'ok':'no')}
+const Q=[
+ ["2SO₂ + O₂ ⇌ 2SO₃ is exothermic. What happens to K<sub>p</sub> when the temperature rises?",["Increases","Decreases","No change","Becomes negative"],1,"Equilibrium shifts in the endothermic direction (left), so K<sub>p</sub> falls."],
+ ["N₂O₄ ⇌ 2NO₂ has ΔH = +58 kJ mol⁻¹. What happens to K<sub>p</sub> when the temperature rises?",["Increases","Decreases","No change","Halves"],0,"The forward reaction is endothermic, so it is favoured."],
+ ["K<sub>p</sub> for a reaction is smaller at higher temperature. The forward reaction is…",["endothermic","exothermic","thermoneutral","impossible to tell"],1,"Higher T favours the endothermic direction. Less product means the backward reaction is endothermic."],
+ ["What does a catalyst do to the time taken to reach equilibrium?",["Increases it","Decreases it","No effect","Only for exothermic reactions"],1,"Both rates increase, so equilibrium is reached sooner."],
+ ["What does a catalyst do to K<sub>p</sub>?",["Increases it","Decreases it","No effect","Depends on ΔH"],2,"The forward and backward rates increase equally."],
+ ["In the 3-mark question on the effect of temperature on K<sub>p</sub>, what happens if you say 'no change'?",["You get 1 mark","You get 2 marks","You get 0 marks","Full marks if the justification is right"],2,"The mark scheme gives 0 if the effect is wrong."],
+ ["Why does the equilibrium shift when the temperature is increased?",["To increase the rate","To oppose the increase in temperature","To keep the pressure constant","Because K<sub>p</sub> stays the same"],1,"Le Chatelier: it shifts in the endothermic direction to absorb the heat."],
+ ["N₂ + 3H₂ ⇌ 2NH₃ (exothermic). Which change increases both the yield of NH₃ and K<sub>p</sub>?",["Higher pressure","Lower temperature","A catalyst","Adding N₂"],1,"Only temperature changes K<sub>p</sub>. Lower T favours the exothermic forward reaction."]
+];
+
+buildQuiz();
+go(0);
+</script>
+</body>
+</html>
