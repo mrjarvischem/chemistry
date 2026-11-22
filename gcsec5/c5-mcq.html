@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>C5 Energy changes – Multiple choice</title>
+<style>
+:root{
+  --bg:#f3ecdf; --paper:#fffaf0; --ink:#3b2a1a; --muted:#7a6650; --line:#dccdb4;
+  --accent:#8b5a2b; --accent-soft:#efe1cb; --good:#3f7d3a; --good-soft:#e3f0dc;
+  --bad:#a33a2a; --bad-soft:#f6e0da; --l1:#5d8a4a; --l2:#3d7a8a; --l3:#8b5a2b; --l4:#7a3b5c;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#211a13; --paper:#2c241b; --ink:#f1e7d6; --muted:#b9a68c; --line:#4a3d2e;
+    --accent:#d39a5e; --accent-soft:#3b2f22; --good:#8cc47c; --good-soft:#2a3a24;
+    --bad:#e98b78; --bad-soft:#43261f; --l1:#8cc47c; --l2:#7cc0cf; --l3:#d39a5e; --l4:#d495b6; }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{padding:22px 20px 10px;max-width:900px;margin:0 auto}
+h1{font-family:Georgia,"Times New Roman",serif;font-weight:normal;font-size:1.75rem;margin:0 0 4px}
+.sub{color:var(--muted);font-size:.95rem;margin:0}
+nav{max-width:900px;margin:12px auto 0;padding:0 20px;display:flex;gap:8px;flex-wrap:wrap}
+nav button{flex:1 1 150px;border:2px solid var(--line);background:var(--paper);color:var(--ink);border-radius:12px;padding:10px 12px;cursor:pointer;text-align:left;font:inherit}
+nav button .lv{font-family:Georgia,serif;font-size:1.1rem;display:block}
+nav button .tier{font-size:.8rem;color:var(--muted)}
+nav button .sc{float:right;font-size:.85rem;font-weight:600}
+nav button[aria-selected="true"]{border-color:var(--c);box-shadow:inset 0 -4px 0 var(--c)}
+main{max-width:900px;margin:0 auto;padding:16px 20px 60px}
+.intro{background:var(--accent-soft);border-left:5px solid var(--c);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:.95rem}
+.q{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:0 0 14px}
+.qhead{display:flex;justify-content:space-between;gap:10px;align-items:baseline;margin-bottom:6px}
+.qn{font-family:Georgia,serif;font-size:1.05rem;color:var(--c);font-weight:bold}
+.src{font-size:.75rem;color:var(--muted);border:1px solid var(--line);border-radius:20px;padding:1px 9px;white-space:nowrap}
+.stem{margin:0 0 10px}
+.stem table{border-collapse:collapse;margin:8px 0;font-size:.92rem}
+.stem th,.stem td{border:1px solid var(--line);padding:4px 9px;text-align:center}
+.stem th{background:var(--accent-soft)}
+.opts{display:grid;gap:8px}
+.opt{display:flex;gap:10px;align-items:flex-start;text-align:left;width:100%;border:2px solid var(--line);background:transparent;color:var(--ink);border-radius:10px;padding:9px 12px;cursor:pointer;font:inherit}
+.opt:hover:not([disabled]){border-color:var(--c)}
+.opt .let{font-weight:700;color:var(--c);min-width:1.2em}
+.opt[disabled]{cursor:default}
+.opt.right{border-color:var(--good);background:var(--good-soft)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.fb{margin-top:10px;padding:9px 12px;border-radius:8px;font-size:.93rem;display:none}
+.fb.show{display:block}
+.fb.ok{background:var(--good-soft);border-left:4px solid var(--good)}
+.fb.no{background:var(--bad-soft);border-left:4px solid var(--bad)}
+.fb b{display:block;margin-bottom:2px}
+.bar{position:sticky;bottom:0;background:var(--paper);border-top:2px solid var(--line);padding:10px 20px;display:flex;justify-content:center}
+.bar .in{max-width:860px;width:100%;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.score{font-family:Georgia,serif;font-size:1.25rem}
+.prog{flex:1;height:10px;background:var(--line);border-radius:6px;overflow:hidden;min-width:120px}
+.prog i{display:block;height:100%;background:var(--c);width:0;transition:width .3s}
+.btn{border:2px solid var(--c);background:transparent;color:var(--ink);border-radius:8px;padding:6px 14px;cursor:pointer;font:inherit;font-size:.92rem}
+.done{background:var(--paper);border:2px solid var(--c);border-radius:12px;padding:16px 18px;margin-top:20px;display:none}
+.done.show{display:block}
+.done h2{font-family:Georgia,serif;font-weight:normal;margin:0 0 6px}
+.fix{width:100%;border-collapse:collapse;margin-top:10px;font-size:.92rem}
+.fix th,.fix td{border:1px solid var(--line);padding:8px;vertical-align:top;text-align:left}
+.fix th{background:var(--accent-soft)}
+.fix td:nth-child(2){width:30%}
+sub,sup{font-size:.72em}
+@media print{nav,.bar,.btn{display:none}.q{break-inside:avoid}}
+</style>
+</head>
+<body>
+<header>
+  <h1>C5 Energy changes</h1>
+  <p class="sub">AQA GCSE Combined Science: Trilogy – Chemistry · four 10-mark multiple choice sets</p>
+</header>
+<nav id="tabs" role="tablist"></nav>
+<main id="main"></main>
+<div class="bar"><div class="in">
+  <span class="score" id="score">0 / 10</span>
+  <div class="prog"><i id="prog"></i></div>
+  <span id="answered" style="font-size:.9rem;color:var(--muted)">0 answered</span>
+  <button class="btn" id="reset">Reset this level</button>
+</div></div>
+<script>
+const TOPIC = "gcsec5";
+const LEVELS = [
+ {name:"Level 1", tier:"Foundation – starter", col:"var(--l1)",
+  intro:"Recall questions. Aim for 10/10 before moving on."},
+ {name:"Level 2", tier:"Foundation", col:"var(--l2)",
+  intro:"Foundation-tier exam standard. Read every option before you choose."},
+ {name:"Level 3", tier:"Higher", col:"var(--l3)",
+  intro:"Higher-tier exam standard: explanations, data and some calculations. Have a calculator and periodic table ready."},
+ {name:"Level 4", tier:"Extension", col:"var(--l4)",
+  intro:"Most of these need working out on paper first. The wrong answers are the ones you get by making common mistakes, so check your working before you click."}
+];
+const DATA = [[{"s": "New question", "q": "What happens in an exothermic reaction?", "o": [{"t": "Energy is transferred to the surroundings, so the temperature increases.", "c": 1, "f": ""}, {"t": "Energy is taken in from the surroundings, so the temperature decreases.", "c": 0, "f": "That is endothermic."}, {"t": "No energy is transferred.", "c": 0, "f": ""}, {"t": "Energy is transferred to the surroundings, so the temperature decreases.", "c": 0, "f": ""}], "e": " Exo = out. Combustion, neutralisation and most oxidation reactions are exothermic."}, {"s": "New question", "q": "Which reaction is endothermic?", "o": [{"t": "Thermal decomposition", "c": 1, "f": ""}, {"t": "Combustion", "c": 0, "f": ""}, {"t": "Neutralisation", "c": 0, "f": ""}, {"t": "Respiration", "c": 0, "f": "Respiration releases energy."}], "e": " Thermal decomposition takes in energy. So do citric acid + sodium hydrogencarbonate and dissolving ammonium nitrate."}, {"s": "Adapted from AQA Nov 2020 · 1H", "q": "What is meant by activation energy?", "o": [{"t": "The minimum energy particles need to collide with to react", "c": 1, "f": ""}, {"t": "The energy released by the reaction", "c": 0, "f": "That is the overall energy change."}, {"t": "The energy of the products", "c": 0, "f": ""}, {"t": "The energy needed to melt the reactants", "c": 0, "f": ""}], "e": " On a reaction profile it is the difference between the reactants and the peak."}, {"s": "New question", "q": "Self-heating cans and hand warmers use which type of reaction?", "o": [{"t": "Exothermic", "c": 1, "f": ""}, {"t": "Endothermic", "c": 0, "f": "Endothermic reactions are used in cold packs."}, {"t": "Neutral", "c": 0, "f": ""}], "e": " They release energy to the surroundings, so they warm up."}, {"s": "New question", "q": "Instant cold packs for sports injuries use which type of reaction?", "o": [{"t": "Endothermic", "c": 1, "f": ""}, {"t": "Exothermic", "c": 0, "f": ""}, {"t": "Combustion", "c": 0, "f": ""}], "e": " They take in energy from the surroundings, so they feel cold."}, {"s": "New question", "q": "Why is a polystyrene cup used in temperature change experiments?", "o": [{"t": "It is a good insulator, so it reduces energy transfer to the surroundings.", "c": 1, "f": ""}, {"t": "It is cheap.", "c": 0, "f": "That's not the scientific reason."}, {"t": "It conducts heat well.", "c": 0, "f": "Good conductors lose energy quickly, which is the opposite of what you want."}, {"t": "It does not react with the chemicals.", "c": 0, "f": ""}], "e": " Less energy lost means a more accurate temperature change."}, {"s": "AQA Nov 2020 · 1F", "q": "Hydrogen reacts with oxygen and releases energy. What is the product?", "o": [{"t": "Water", "c": 1, "f": ""}, {"t": "Hydrogen oxide gas", "c": 0, "f": ""}, {"t": "Carbon dioxide", "c": 0, "f": "There is no carbon in the reactants."}, {"t": "Hydrogen peroxide", "c": 0, "f": ""}], "e": " hydrogen + oxygen → water. It is exothermic."}, {"s": "New question", "q": "On a reaction profile for an endothermic reaction, where are the products?", "o": [{"t": "Higher in energy than the reactants", "c": 1, "f": ""}, {"t": "Lower in energy than the reactants", "c": 0, "f": "That's exothermic."}, {"t": "At the same energy as the reactants", "c": 0, "f": ""}], "e": " Energy is taken in, so the products end up with more energy."}, {"s": "AQA Nov 2020 · 1F", "q": "A student adds citric acid to sodium hydrogencarbonate solution and measures the temperature. What is the dependent variable?", "o": [{"t": "Temperature of the solution", "c": 1, "f": ""}, {"t": "Mass of citric acid", "c": 0, "f": "This is changed on purpose, so it's the independent variable."}, {"t": "Volume of solution", "c": 0, "f": "This is kept the same, so it's a control variable."}], "e": " The dependent variable is the one you measure."}, {"s": "AQA Nov 2021 · 1F", "q": "In an investigation of different metals reacting with 50 cm<sup>3</sup> of hydrochloric acid, what type of variable is the volume of acid?", "o": [{"t": "Control", "c": 1, "f": ""}, {"t": "Dependent", "c": 0, "f": ""}, {"t": "Independent", "c": 0, "f": "The metal is the independent variable."}], "e": " It's kept the same to make it a fair test."}], [{"s": "AQA Jun 2023 · 1F", "q": "When ammonium nitrate dissolves in water, the temperature falls. What does this show?", "o": [{"t": "Dissolving ammonium nitrate is endothermic.", "c": 1, "f": ""}, {"t": "Dissolving ammonium nitrate is exothermic.", "c": 0, "f": "Exothermic would make the temperature rise."}, {"t": "No energy change happens.", "c": 0, "f": ""}, {"t": "The ammonium nitrate is reacting with the cup.", "c": 0, "f": ""}], "e": " Energy is taken in from the water, so the solution gets colder."}, {"s": "AQA Nov 2020 · 1F", "q": "As citric acid is added to sodium hydrogencarbonate solution, the temperature goes 22.6 → 22.2 → 21.8 °C. What does this show?", "o": [{"t": "The reaction is endothermic.", "c": 1, "f": ""}, {"t": "The reaction is exothermic.", "c": 0, "f": ""}, {"t": "The thermometer is broken.", "c": 0, "f": ""}], "e": " The temperature decreases as the reaction happens, so energy is being taken in."}, {"s": "AQA Jun 2023 · 1F", "q": "Repeat readings were 16.2, 16.6, 16.8 and 16.4 °C. What type of error do these results show?", "o": [{"t": "Random error", "c": 1, "f": ""}, {"t": "Systematic error", "c": 0, "f": "A systematic error would shift every reading by the same amount."}, {"t": "Zero error", "c": 0, "f": "A zero error is a type of systematic error."}], "e": " Readings scattered around the mean are caused by random error."}, {"s": "Adapted from AQA Nov 2021 · 1F", "q": "Temperature rises for cobalt were 6, 7, 5 and 9 °C (mean 7 °C). What is the uncertainty?", "o": [{"t": "± 2 °C", "c": 1, "f": ""}, {"t": "± 4 °C", "c": 0, "f": "4 is the full range. Halve it."}, {"t": "± 1 °C", "c": 0, "f": ""}, {"t": "± 7 °C", "c": 0, "f": ""}], "e": " Range = 9 − 5 = 4. Uncertainty = ± half the range = ± 2 °C."}, {"s": "AQA Nov 2021 · 1F", "q": "Temperature rises for magnesium were 54, 50, 37 and 55 °C. Calculate the mean, leaving out the anomalous result.", "o": [{"t": "53 °C", "c": 1, "f": ""}, {"t": "49 °C", "c": 0, "f": "That includes the anomalous 37."}, {"t": "46 °C", "c": 0, "f": ""}, {"t": "52.5 °C", "c": 0, "f": ""}], "e": " 37 is anomalous. (54 + 50 + 55) ÷ 3 = 53 °C."}, {"s": "New question", "q": "On the reaction profile for an exothermic reaction, how is the overall energy change shown?", "o": [{"t": "An arrow pointing down from the reactants level to the products level", "c": 1, "f": ""}, {"t": "An arrow pointing up from the reactants to the peak", "c": 0, "f": "That is the activation energy."}, {"t": "An arrow pointing up from the reactants to the products", "c": 0, "f": "Up would mean endothermic."}, {"t": "The height of the peak", "c": 0, "f": ""}], "e": " The products are lower, so energy has been released to the surroundings."}, {"s": "New question", "q": "Why is a lid put on the polystyrene cup?", "o": [{"t": "To reduce energy lost to the surroundings", "c": 1, "f": ""}, {"t": "To stop the reactants escaping", "c": 0, "f": ""}, {"t": "To make the reaction faster", "c": 0, "f": ""}, {"t": "To keep the pressure constant", "c": 0, "f": ""}], "e": " The lid reduces energy lost by evaporation and convection from the surface."}, {"s": "Adapted from AQA Jun 2022 · 1F", "q": "How does a reaction profile show that a reaction is exothermic?", "o": [{"t": "The products are at a lower energy than the reactants.", "c": 1, "f": ""}, {"t": "The products are at a higher energy than the reactants.", "c": 0, "f": ""}, {"t": "There is a peak on the profile.", "c": 0, "f": "Every reaction profile has a peak (activation energy)."}, {"t": "The line goes up then down.", "c": 0, "f": ""}], "e": " Lower products means the extra energy has been released."}, {"s": "AQA Nov 2021 · 1F", "q": "Mean temperature increases with acid: cobalt 7 °C, magnesium 53 °C, zinc 18 °C. What is the order of reactivity, most reactive first?", "o": [{"t": "Magnesium, zinc, cobalt", "c": 1, "f": ""}, {"t": "Cobalt, zinc, magnesium", "c": 0, "f": "That is least reactive first."}, {"t": "Zinc, magnesium, cobalt", "c": 0, "f": ""}, {"t": "Magnesium, cobalt, zinc", "c": 0, "f": ""}], "e": " A bigger temperature rise means a more reactive metal."}, {"s": "Adapted from AQA Nov 2021 · 1F", "q": "The student added 'one spatula' of metal powder each time. How could this step be improved to make the results more repeatable?", "o": [{"t": "Weigh the same mass of metal each time", "c": 1, "f": ""}, {"t": "Use a bigger spatula", "c": 0, "f": ""}, {"t": "Add the metal more quickly", "c": 0, "f": ""}, {"t": "Use a glass beaker instead", "c": 0, "f": ""}], "e": " A spatula doesn't give the same amount every time. Weighing it on a balance does."}], [{"s": "Adapted from AQA Jun 2023 · 1H", "q": "H–H + Cl–Cl → 2 H–Cl. Bond energies: H–H 436, Cl–Cl 242, H–Cl 432 kJ/mol. Which expression gives the overall energy change?", "o": [{"t": "436 + 242 − (2 × 432) kJ/mol", "c": 1, "f": ""}, {"t": "436 + 242 − 432 kJ/mol", "c": 0, "f": "2 HCl molecules form, so there are two H–Cl bonds."}, {"t": "436 + 242 + (2 × 432) kJ/mol", "c": 0, "f": "Bonds made release energy, so subtract them."}, {"t": "(2 × 432) − 436 − 242 kJ/mol", "c": 0, "f": "Energy change = bonds broken − bonds made."}], "e": " Energy change = energy in (bonds broken) − energy out (bonds made) = 678 − 864 = −186 kJ/mol. It releases 186 kJ more than it absorbs."}, {"s": "AQA Jun 2023 · 1H", "q": "Why does the reaction between hydrogen and chlorine release energy?", "o": [{"t": "More energy is released making new bonds than is needed to break the existing bonds.", "c": 1, "f": ""}, {"t": "More energy is needed to break bonds than is released making bonds.", "c": 0, "f": "That would be endothermic."}, {"t": "Breaking bonds releases energy.", "c": 0, "f": "Breaking bonds always needs energy."}, {"t": "The reactants have no energy.", "c": 0, "f": ""}], "e": " Bond breaking is endothermic. Bond making is exothermic. The bigger one decides the overall change."}, {"s": "New question", "q": "Is breaking a chemical bond exothermic or endothermic?", "o": [{"t": "Endothermic – energy must be supplied", "c": 1, "f": ""}, {"t": "Exothermic – energy is released", "c": 0, "f": "This is a very common mistake. Energy is released when bonds are <b>made</b>."}, {"t": "Neither", "c": 0, "f": ""}], "e": " Breaking bonds takes energy in. Making bonds gives energy out."}, {"s": "AQA Nov 2020 · 1H", "q": "A student repeats an experiment in a metal container instead of a polystyrene cup. How will the temperature change compare?", "o": [{"t": "It will be smaller, because the metal conducts energy to the surroundings.", "c": 1, "f": ""}, {"t": "It will be bigger, because metal conducts heat.", "c": 0, "f": ""}, {"t": "It will be the same, because the same reaction happens.", "c": 0, "f": ""}, {"t": "It will be smaller, because metal reacts with the solution.", "c": 0, "f": ""}], "e": " Metal is a good thermal conductor, so more energy is transferred to or from the surroundings."}, {"s": "New question", "q": "After reaching its highest temperature, the mixture slowly cools down. Why?", "o": [{"t": "The reaction has finished and energy is being transferred to the surroundings.", "c": 1, "f": ""}, {"t": "The reaction has become endothermic.", "c": 0, "f": ""}, {"t": "The products are absorbing energy from the reactants.", "c": 0, "f": ""}, {"t": "The thermometer is cooling.", "c": 0, "f": ""}], "e": " Once no more energy is being released, the warm mixture loses energy to the cooler air."}, {"s": "New question", "q": "On a reaction profile, where does the activation energy arrow go?", "o": [{"t": "From the reactants up to the peak", "c": 1, "f": ""}, {"t": "From the products up to the peak", "c": 0, "f": ""}, {"t": "From the reactants to the products", "c": 0, "f": "That arrow shows the overall energy change."}, {"t": "From zero up to the peak", "c": 0, "f": ""}], "e": " The arrow must show direction: upwards from the reactants level to the top of the curve."}, {"s": "New question", "q": "In an endothermic reaction, which is true about bond energies?", "o": [{"t": "The energy needed to break bonds is greater than the energy released making bonds.", "c": 1, "f": ""}, {"t": "The energy released making bonds is greater than the energy needed to break bonds.", "c": 0, "f": "That's exothermic."}, {"t": "No bonds are broken.", "c": 0, "f": ""}, {"t": "Bond energies are always equal.", "c": 0, "f": ""}], "e": " More energy goes in than comes out, so the products are higher in energy."}, {"s": "New question", "q": "On a reaction profile, the reactants are at 100 kJ, the peak at 250 kJ and the products at 40 kJ. What is the activation energy?", "o": [{"t": "150 kJ", "c": 1, "f": ""}, {"t": "250 kJ", "c": 0, "f": "Measure from the reactants level, not from zero."}, {"t": "210 kJ", "c": 0, "f": "That is measured from the products, which is the reverse reaction."}, {"t": "60 kJ", "c": 0, "f": "60 kJ is the energy released."}], "e": " Activation energy = peak − reactants = 250 − 100 = 150 kJ."}, {"s": "New question", "q": "Which is true for an endothermic reaction?", "o": [{"t": "The temperature of the surroundings decreases.", "c": 1, "f": ""}, {"t": "The temperature of the surroundings increases.", "c": 0, "f": ""}, {"t": "The products have less energy than the reactants.", "c": 0, "f": ""}, {"t": "It never needs activation energy.", "c": 0, "f": ""}], "e": " Energy is taken in from the surroundings, so they get colder."}, {"s": "New question", "q": "Why is the solution stirred before the temperature is read?", "o": [{"t": "So the temperature is the same throughout and all the solid reacts or dissolves", "c": 1, "f": ""}, {"t": "To make the reaction exothermic", "c": 0, "f": ""}, {"t": "To add energy", "c": 0, "f": ""}, {"t": "To stop the reaction", "c": 0, "f": ""}], "e": " Stirring mixes the reactants and avoids hot or cold spots."}], [{"s": "AQA Nov 2021 · 1H", "q": "2H–S–H + 3O=O → 2H–O–H + 2O=S=O<br>Bond energies (kJ/mol): H–S 364, O=O 498, O–H 464, S=O X.<br>The reaction releases 1034 kJ/mol more energy than it absorbs. Calculate X.", "o": [{"t": "532", "c": 1, "f": ""}, {"t": "666", "c": 0, "f": "You missed the coefficients (big numbers) in front of the displayed structures. There are 4 H–S and 4 S=O bonds."}, {"t": "15", "c": 0, "f": "Check the direction: bonds made − bonds broken = 1034."}, {"t": "1064", "c": 0, "f": "There are 4 S=O bonds (2 in each SO<sub>2</sub>), not 2."}], "e": " Broken: 4 × 364 + 3 × 498 = 2950. Made: 4 × 464 + 4X = 1856 + 4X. Made − broken = 1034 → 1856 + 4X − 2950 = 1034 → 4X = 2128 → X = 532."}, {"s": "New question", "q": "CH<sub>4</sub> + 2O<sub>2</sub> → CO<sub>2</sub> + 2H<sub>2</sub>O. Bond energies (kJ/mol): C–H 413, O=O 498, C=O 805, O–H 464. Which statement is correct?", "o": [{"t": "It releases 818 kJ/mol more energy than it absorbs.", "c": 1, "f": ""}, {"t": "It releases 1316 kJ/mol more energy than it absorbs.", "c": 0, "f": "There are 2 O<sub>2</sub> molecules: 2 × 498."}, {"t": "It absorbs 818 kJ/mol more energy than it releases.", "c": 0, "f": "The bonds made (3466) are greater than the bonds broken (2648)."}, {"t": "It releases 13 kJ/mol more energy than it absorbs.", "c": 0, "f": "CO<sub>2</sub> has two C=O bonds."}], "e": " Broken: 4(413) + 2(498) = 1652 + 996 = 2648. Made: 2(805) + 4(464) = 1610 + 1856 = 3466. 3466 − 2648 = 818 released."}, {"s": "New question", "q": "N<sub>2</sub> + 3H<sub>2</sub> → 2NH<sub>3</sub> releases 93 kJ/mol more energy than it absorbs. N≡N = 945 and H–H = 436 kJ/mol. What is the N–H bond energy?", "o": [{"t": "391 kJ/mol", "c": 1, "f": ""}, {"t": "360 kJ/mol", "c": 0, "f": "That is the endothermic direction. Bonds made must be 93 more than bonds broken."}, {"t": "782 kJ/mol", "c": 0, "f": "2NH<sub>3</sub> contains 6 N–H bonds, not 3."}, {"t": "1173 kJ/mol", "c": 0, "f": ""}], "e": " Broken: 945 + 3(436) = 2253. Made: 6x. 6x − 2253 = 93 → 6x = 2346 → x = 391."}, {"s": "New question", "q": "N<sub>2</sub> + O<sub>2</sub> → 2NO. N≡N = 945, O=O = 498, N=O = 607 kJ/mol. Which statement is correct?", "o": [{"t": "It absorbs 229 kJ/mol more energy than it releases (endothermic).", "c": 1, "f": ""}, {"t": "It releases 229 kJ/mol more energy than it absorbs (exothermic).", "c": 0, "f": "Broken (1443) is greater than made (1214)."}, {"t": "It absorbs 836 kJ/mol more energy than it releases.", "c": 0, "f": "2 NO molecules form, so there are 2 N=O bonds."}, {"t": "It releases 2050 kJ/mol.", "c": 0, "f": ""}], "e": " Broken: 945 + 498 = 1443. Made: 2 × 607 = 1214. 1443 − 1214 = 229 absorbed."}, {"s": "New question", "q": "A reaction has an activation energy of 150 kJ/mol and releases 60 kJ/mol overall. What is the activation energy of the reverse reaction?", "o": [{"t": "210 kJ/mol", "c": 1, "f": ""}, {"t": "150 kJ/mol", "c": 0, "f": "The reverse reaction starts from the lower products level."}, {"t": "90 kJ/mol", "c": 0, "f": "Add, don't subtract. The products are below the reactants."}, {"t": "60 kJ/mol", "c": 0, "f": ""}], "e": " From the products up to the same peak = 150 + 60 = 210 kJ/mol."}, {"s": "Adapted from AQA Nov 2020 · 1H", "q": "A car needs 58 MJ to travel 100 km. Reacting 1 mole of hydrogen with oxygen releases 290 kJ. How many moles of hydrogen are needed?", "o": [{"t": "200", "c": 1, "f": ""}, {"t": "0.2", "c": 0, "f": "Convert to the same units: 58 MJ = 58 000 kJ."}, {"t": "5", "c": 0, "f": "Divide the total energy by the energy per mole."}, {"t": "1.68 × 10<sup>7</sup>", "c": 0, "f": "Divide, don't multiply."}], "e": " 58 000 kJ ÷ 290 kJ/mol = 200 mol."}, {"s": "New question", "q": "The same mass of ammonium nitrate is dissolved in twice the volume of water. How does the temperature change compare?", "o": [{"t": "About half as big", "c": 1, "f": ""}, {"t": "The same", "c": 0, "f": ""}, {"t": "About twice as big", "c": 0, "f": "The same energy is spread through twice as much water."}, {"t": "Zero", "c": 0, "f": ""}], "e": " The same energy is taken from twice the mass of water, so the temperature changes by about half as much."}, {"s": "New question", "q": "Equal amounts of metal powder are added to copper sulfate solution. Which gives the greatest temperature rise?", "o": [{"t": "Magnesium + copper sulfate", "c": 1, "f": ""}, {"t": "Zinc + copper sulfate", "c": 0, "f": "Zinc reacts, but it's less reactive than magnesium."}, {"t": "Copper + magnesium sulfate", "c": 0, "f": "Copper is less reactive than magnesium, so there is no reaction."}, {"t": "Magnesium + zinc sulfate", "c": 0, "f": "This reacts, but zinc and magnesium are closer in reactivity than copper and magnesium."}], "e": " The bigger the difference in reactivity, the more energy is released."}, {"s": "New question", "q": "Sodium carbonate is added in portions to hydrochloric acid until the sodium carbonate is in excess. How does the temperature change?", "o": [{"t": "It rises, then stops rising once all the acid has reacted.", "c": 1, "f": ""}, {"t": "It rises steadily the whole time.", "c": 0, "f": "Once the acid is used up, extra sodium carbonate has nothing to react with."}, {"t": "It falls the whole time.", "c": 0, "f": "The reaction is exothermic."}, {"t": "It stays the same.", "c": 0, "f": ""}], "e": " The energy released depends on the amount of acid. Once the acid runs out, the temperature levels off and then slowly falls."}, {"s": "Adapted from AQA Jun 2023 · 1F", "q": "The lowest temperatures for 8.0 g of ammonium nitrate were 16.2, 16.6, 16.8 and 16.4 °C. The water started at 20.0 °C. What was the mean temperature change?", "o": [{"t": "−3.5 °C", "c": 1, "f": ""}, {"t": "+3.5 °C", "c": 0, "f": "The temperature fell, so the change is negative (endothermic)."}, {"t": "−3.2 °C", "c": 0, "f": "That uses only the highest reading. Use the mean, 16.5 °C."}, {"t": "−16.5 °C", "c": 0, "f": "16.5 °C is the mean final temperature, not the change."}], "e": " Mean = 16.5 °C. Change = 16.5 − 20.0 = −3.5 °C."}]];
+
+let store = {};
+try { store = JSON.parse(localStorage.getItem("mcq-"+TOPIC) || "{}"); } catch(e) { store = {}; }
+function save(){ try { localStorage.setItem("mcq-"+TOPIC, JSON.stringify(store)); } catch(e) {} }
+
+const orders = DATA.map(set => set.map(q => shuffle(q.o.map((_,i)=>i))));
+function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+let cur = 0;
+const tabs = document.getElementById("tabs"), main = document.getElementById("main");
+
+function levelScore(l){
+  const ans = store[l] || {}; let s=0, n=0;
+  DATA[l].forEach((q,i)=>{ if(ans[i]!==undefined){ n++; if(q.o[ans[i]].c) s++; } });
+  return {s,n};
+}
+function drawTabs(){
+  tabs.innerHTML = "";
+  LEVELS.forEach((L,l)=>{
+    const b = document.createElement("button");
+    b.setAttribute("role","tab"); b.setAttribute("aria-selected", l===cur);
+    b.style.setProperty("--c", L.col);
+    const {s,n} = levelScore(l);
+    b.innerHTML = `<span class="sc">${n? s+"/10":""}</span><span class="lv">${L.name}</span><span class="tier">${L.tier}</span>`;
+    b.onclick = ()=>{ cur=l; render(); window.scrollTo({top:0}); };
+    tabs.appendChild(b);
+  });
+}
+function render(){
+  const L = LEVELS[cur]; document.body.style.setProperty("--c", L.col);
+  drawTabs();
+  const ans = store[cur] || {};
+  let h = `<div class="intro"><b>${L.name} · ${L.tier}.</b> ${L.intro} Your first click counts.</div>`;
+  DATA[cur].forEach((q,i)=>{
+    h += `<div class="q" id="q${i}"><div class="qhead"><span class="qn">Q${i+1}</span><span class="src">${q.s}</span></div><div class="stem">${q.q}</div><div class="opts">`;
+    orders[cur][i].forEach((oi,k)=>{
+      const o = q.o[oi]; let cls="";
+      if(ans[i]!==undefined){ if(o.c) cls="right"; else if(ans[i]===oi) cls="wrong"; }
+      h += `<button class="opt ${cls}" data-q="${i}" data-o="${oi}" ${ans[i]!==undefined?"disabled":""}><span class="let">${"ABCD"[k]}</span><span>${o.t}</span></button>`;
+    });
+    h += `</div><div class="fb" id="fb${i}"></div></div>`;
+  });
+  h += `<div class="done" id="done"></div>`;
+  main.innerHTML = h;
+  main.querySelectorAll(".opt").forEach(b=> b.onclick = ()=> choose(+b.dataset.q, +b.dataset.o));
+  DATA[cur].forEach((q,i)=>{ if(ans[i]!==undefined) showFb(i, ans[i]); });
+  update();
+}
+function choose(i, oi){
+  store[cur] = store[cur] || {};
+  if(store[cur][i]!==undefined) return;
+  store[cur][i] = oi; save();
+  const box = document.getElementById("q"+i);
+  box.querySelectorAll(".opt").forEach(b=>{
+    b.disabled = true; const o = DATA[cur][i].o[+b.dataset.o];
+    if(o.c) b.classList.add("right"); else if(+b.dataset.o===oi) b.classList.add("wrong");
+  });
+  showFb(i, oi); update(); drawTabs();
+}
+function showFb(i, oi){
+  const q = DATA[cur][i], o = q.o[oi], fb = document.getElementById("fb"+i);
+  const right = q.o.find(x=>x.c);
+  fb.className = "fb show " + (o.c ? "ok" : "no");
+  fb.innerHTML = o.c
+    ? `<b>Correct.</b>${q.e}`
+    : `<b>Not quite – the answer is: ${right.t}</b>${o.f ? o.f+" " : ""}${q.e}`;
+}
+function update(){
+  const {s,n} = levelScore(cur);
+  document.getElementById("score").textContent = `${s} / 10`;
+  document.getElementById("answered").textContent = `${n} answered`;
+  document.getElementById("prog").style.width = (n*10)+"%";
+  const done = document.getElementById("done");
+  if(n===10){
+    const ans = store[cur]; const wrong = DATA[cur].map((q,i)=>({q,i})).filter(x=>!x.q.o[ans[x.i]].c);
+    let h = `<h2>${LEVELS[cur].name} done: ${s} / 10</h2>`;
+    if(!wrong.length){ h += `<p>Full marks. ${cur<3 ? "Try "+LEVELS[cur+1].name+" next." : "Excellent work."}</p>`; }
+    else {
+      h += `<p>Copy these into your fix-it table: write the question in column 1, leave column 2 blank to answer next time, and copy the correct answer into column 3.</p>
+      <table class="fix"><tr><th>Question</th><th>My answer next time</th><th>Correct answer</th></tr>`;
+      wrong.forEach(x=>{ h += `<tr><td>${x.q.q.replace(/<table[\s\S]*?<\/table>/g," [see table] ")}</td><td></td><td>${x.q.o.find(o=>o.c).t}</td></tr>`; });
+      h += `</table>`;
+    }
+    done.innerHTML = h; done.classList.add("show");
+  } else done.classList.remove("show");
+}
+document.getElementById("reset").onclick = ()=>{
+  delete store[cur]; save(); orders[cur] = DATA[cur].map(q=>shuffle(q.o.map((_,i)=>i))); render();
+};
+render();
+</script>
+</body>
+</html>

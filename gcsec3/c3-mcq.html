@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>C3 Quantitative chemistry – Multiple choice</title>
+<style>
+:root{
+  --bg:#f3ecdf; --paper:#fffaf0; --ink:#3b2a1a; --muted:#7a6650; --line:#dccdb4;
+  --accent:#8b5a2b; --accent-soft:#efe1cb; --good:#3f7d3a; --good-soft:#e3f0dc;
+  --bad:#a33a2a; --bad-soft:#f6e0da; --l1:#5d8a4a; --l2:#3d7a8a; --l3:#8b5a2b; --l4:#7a3b5c;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#211a13; --paper:#2c241b; --ink:#f1e7d6; --muted:#b9a68c; --line:#4a3d2e;
+    --accent:#d39a5e; --accent-soft:#3b2f22; --good:#8cc47c; --good-soft:#2a3a24;
+    --bad:#e98b78; --bad-soft:#43261f; --l1:#8cc47c; --l2:#7cc0cf; --l3:#d39a5e; --l4:#d495b6; }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{padding:22px 20px 10px;max-width:900px;margin:0 auto}
+h1{font-family:Georgia,"Times New Roman",serif;font-weight:normal;font-size:1.75rem;margin:0 0 4px}
+.sub{color:var(--muted);font-size:.95rem;margin:0}
+nav{max-width:900px;margin:12px auto 0;padding:0 20px;display:flex;gap:8px;flex-wrap:wrap}
+nav button{flex:1 1 150px;border:2px solid var(--line);background:var(--paper);color:var(--ink);border-radius:12px;padding:10px 12px;cursor:pointer;text-align:left;font:inherit}
+nav button .lv{font-family:Georgia,serif;font-size:1.1rem;display:block}
+nav button .tier{font-size:.8rem;color:var(--muted)}
+nav button .sc{float:right;font-size:.85rem;font-weight:600}
+nav button[aria-selected="true"]{border-color:var(--c);box-shadow:inset 0 -4px 0 var(--c)}
+main{max-width:900px;margin:0 auto;padding:16px 20px 60px}
+.intro{background:var(--accent-soft);border-left:5px solid var(--c);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:.95rem}
+.q{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:0 0 14px}
+.qhead{display:flex;justify-content:space-between;gap:10px;align-items:baseline;margin-bottom:6px}
+.qn{font-family:Georgia,serif;font-size:1.05rem;color:var(--c);font-weight:bold}
+.src{font-size:.75rem;color:var(--muted);border:1px solid var(--line);border-radius:20px;padding:1px 9px;white-space:nowrap}
+.stem{margin:0 0 10px}
+.stem table{border-collapse:collapse;margin:8px 0;font-size:.92rem}
+.stem th,.stem td{border:1px solid var(--line);padding:4px 9px;text-align:center}
+.stem th{background:var(--accent-soft)}
+.opts{display:grid;gap:8px}
+.opt{display:flex;gap:10px;align-items:flex-start;text-align:left;width:100%;border:2px solid var(--line);background:transparent;color:var(--ink);border-radius:10px;padding:9px 12px;cursor:pointer;font:inherit}
+.opt:hover:not([disabled]){border-color:var(--c)}
+.opt .let{font-weight:700;color:var(--c);min-width:1.2em}
+.opt[disabled]{cursor:default}
+.opt.right{border-color:var(--good);background:var(--good-soft)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.fb{margin-top:10px;padding:9px 12px;border-radius:8px;font-size:.93rem;display:none}
+.fb.show{display:block}
+.fb.ok{background:var(--good-soft);border-left:4px solid var(--good)}
+.fb.no{background:var(--bad-soft);border-left:4px solid var(--bad)}
+.fb b{display:block;margin-bottom:2px}
+.bar{position:sticky;bottom:0;background:var(--paper);border-top:2px solid var(--line);padding:10px 20px;display:flex;justify-content:center}
+.bar .in{max-width:860px;width:100%;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.score{font-family:Georgia,serif;font-size:1.25rem}
+.prog{flex:1;height:10px;background:var(--line);border-radius:6px;overflow:hidden;min-width:120px}
+.prog i{display:block;height:100%;background:var(--c);width:0;transition:width .3s}
+.btn{border:2px solid var(--c);background:transparent;color:var(--ink);border-radius:8px;padding:6px 14px;cursor:pointer;font:inherit;font-size:.92rem}
+.done{background:var(--paper);border:2px solid var(--c);border-radius:12px;padding:16px 18px;margin-top:20px;display:none}
+.done.show{display:block}
+.done h2{font-family:Georgia,serif;font-weight:normal;margin:0 0 6px}
+.fix{width:100%;border-collapse:collapse;margin-top:10px;font-size:.92rem}
+.fix th,.fix td{border:1px solid var(--line);padding:8px;vertical-align:top;text-align:left}
+.fix th{background:var(--accent-soft)}
+.fix td:nth-child(2){width:30%}
+sub,sup{font-size:.72em}
+@media print{nav,.bar,.btn{display:none}.q{break-inside:avoid}}
+</style>
+</head>
+<body>
+<header>
+  <h1>C3 Quantitative chemistry</h1>
+  <p class="sub">AQA GCSE Combined Science: Trilogy – Chemistry · four 10-mark multiple choice sets</p>
+</header>
+<nav id="tabs" role="tablist"></nav>
+<main id="main"></main>
+<div class="bar"><div class="in">
+  <span class="score" id="score">0 / 10</span>
+  <div class="prog"><i id="prog"></i></div>
+  <span id="answered" style="font-size:.9rem;color:var(--muted)">0 answered</span>
+  <button class="btn" id="reset">Reset this level</button>
+</div></div>
+<script>
+const TOPIC = "gcsec3";
+const LEVELS = [
+ {name:"Level 1", tier:"Foundation – starter", col:"var(--l1)",
+  intro:"Recall questions. Aim for 10/10 before moving on."},
+ {name:"Level 2", tier:"Foundation", col:"var(--l2)",
+  intro:"Foundation-tier exam standard. Read every option before you choose."},
+ {name:"Level 3", tier:"Higher", col:"var(--l3)",
+  intro:"Higher-tier exam standard: explanations, data and some calculations. Have a calculator and periodic table ready."},
+ {name:"Level 4", tier:"Extension", col:"var(--l4)",
+  intro:"Most of these need working out on paper first. The wrong answers are the ones you get by making common mistakes, so check your working before you click."}
+];
+const DATA = [[{"s": "New question", "q": "What does the law of conservation of mass say?", "o": [{"t": "No atoms are lost or made in a reaction, so the mass of the products equals the mass of the reactants.", "c": 1, "f": ""}, {"t": "Mass is lost when a gas is given off.", "c": 0, "f": "The gas still has mass. It has just escaped from the container."}, {"t": "The products always have more mass than the reactants.", "c": 0, "f": ""}, {"t": "Mass is used up to release energy.", "c": 0, "f": ""}], "e": " Atoms are only rearranged in a chemical reaction, so total mass stays the same."}, {"s": "New question", "q": "What is the relative formula mass (M<sub>r</sub>) of water, H<sub>2</sub>O? (A<sub>r</sub>: H = 1, O = 16)", "o": [{"t": "18", "c": 1, "f": ""}, {"t": "17", "c": 0, "f": "There are 2 hydrogen atoms: 2 × 1 = 2."}, {"t": "34", "c": 0, "f": "Only the H is doubled, not the O."}, {"t": "3", "c": 0, "f": "Add the masses, not the number of atoms."}], "e": " M<sub>r</sub> = (2 × 1) + 16 = 18"}, {"s": "Adapted from AQA Jun 2023 · 1F", "q": "The formula of a compound is N<sub>2</sub>O. How many of each type of atom are in one molecule?", "o": [{"t": "2 nitrogen, 1 oxygen", "c": 1, "f": ""}, {"t": "1 nitrogen, 2 oxygen", "c": 0, "f": "The subscript 2 belongs to the N in front of it."}, {"t": "2 nitrogen, 2 oxygen", "c": 0, "f": ""}, {"t": "1 nitrogen, 1 oxygen", "c": 0, "f": ""}], "e": " A subscript number applies to the atom just before it."}, {"s": "New question", "q": "Which is a unit of concentration?", "o": [{"t": "g/dm<sup>3</sup>", "c": 1, "f": ""}, {"t": "g", "c": 0, "f": ""}, {"t": "dm<sup>3</sup>", "c": 0, "f": "dm<sup>3</sup> is a unit of volume."}, {"t": "g/mol", "c": 0, "f": "g/mol is the unit of molar mass."}], "e": " Concentration = mass ÷ volume, so the unit is g/dm<sup>3</sup>."}, {"s": "New question", "q": "How many cm<sup>3</sup> are in 1 dm<sup>3</sup>?", "o": [{"t": "1000", "c": 1, "f": ""}, {"t": "100", "c": 0, "f": ""}, {"t": "10", "c": 0, "f": ""}, {"t": "1 000 000", "c": 0, "f": ""}], "e": " 1 dm<sup>3</sup> = 1000 cm<sup>3</sup> (a 10 cm × 10 cm × 10 cm cube). To convert cm<sup>3</sup> → dm<sup>3</sup>, divide by 1000."}, {"s": "New question", "q": "Magnesium ribbon is burned in air. The magnesium oxide has a greater mass than the magnesium. Why?", "o": [{"t": "Oxygen from the air has combined with the magnesium.", "c": 1, "f": ""}, {"t": "Mass is created when it burns.", "c": 0, "f": "Mass is never created or destroyed."}, {"t": "The magnesium gets hotter, so it weighs more.", "c": 0, "f": ""}, {"t": "Magnesium oxide is a gas.", "c": 0, "f": "Magnesium oxide is a white solid."}], "e": " The extra mass is the oxygen atoms that have joined on."}, {"s": "New question", "q": "What does the symbol A<sub>r</sub> stand for?", "o": [{"t": "Relative atomic mass", "c": 1, "f": ""}, {"t": "Relative formula mass", "c": 0, "f": "That is M<sub>r</sub>."}, {"t": "Atomic number", "c": 0, "f": ""}, {"t": "Avogadro constant", "c": 0, "f": ""}], "e": " A<sub>r</sub> = relative atomic mass. M<sub>r</sub> = relative formula mass (the sum of the A<sub>r</sub> values)."}, {"s": "New question", "q": "How many atoms are in one formula unit of calcium carbonate, CaCO<sub>3</sub>?", "o": [{"t": "5", "c": 1, "f": ""}, {"t": "3", "c": 0, "f": "3 is the number of different elements."}, {"t": "4", "c": 0, "f": ""}, {"t": "6", "c": 0, "f": ""}], "e": " 1 Ca + 1 C + 3 O = 5 atoms."}, {"s": "AQA Jun 2023 · 1F", "q": "A student did a titration four times.<table><tr><th>Trial</th><th>1</th><th>2</th><th>3</th><th>4</th></tr><tr><td>Volume (cm<sup>3</sup>)</td><td>24.3</td><td>24.5</td><td>28.1</td><td>24.4</td></tr></table>Which is the anomalous result?", "o": [{"t": "Trial 3", "c": 1, "f": ""}, {"t": "Trial 1", "c": 0, "f": ""}, {"t": "Trial 2", "c": 0, "f": ""}, {"t": "Trial 4", "c": 0, "f": ""}], "e": " An anomalous result doesn't fit the pattern. 28.1 is far from the others, which are all about 24.4."}, {"s": "New question", "q": "Marble chips (calcium carbonate) react with acid in an open flask on a balance. What happens to the reading on the balance?", "o": [{"t": "It decreases", "c": 1, "f": ""}, {"t": "It increases", "c": 0, "f": ""}, {"t": "It stays the same", "c": 0, "f": "It would only stay the same if the flask were sealed."}], "e": " Carbon dioxide gas escapes into the air, so the mass in the flask goes down. Mass is still conserved overall."}], [{"s": "AQA Jun 2022 · 1F", "q": "Calculate the M<sub>r</sub> of carbonic acid, H<sub>2</sub>CO<sub>3</sub>. (A<sub>r</sub>: H = 1, C = 12, O = 16)", "o": [{"t": "62", "c": 1, "f": ""}, {"t": "29", "c": 0, "f": "Multiply each A<sub>r</sub> by the number of atoms: 2 H and 3 O."}, {"t": "46", "c": 0, "f": "There are 3 oxygen atoms: 3 × 16 = 48."}, {"t": "61", "c": 0, "f": "There are 2 hydrogen atoms."}], "e": " (2 × 1) + 12 + (3 × 16) = 2 + 12 + 48 = 62"}, {"s": "AQA Jun 2023 · 1F", "q": "Calculate the M<sub>r</sub> of Fe<sub>2</sub>O<sub>3</sub>. (A<sub>r</sub>: O = 16, Fe = 56)", "o": [{"t": "160", "c": 1, "f": ""}, {"t": "72", "c": 0, "f": "There are 2 Fe and 3 O."}, {"t": "128", "c": 0, "f": "There are 3 oxygen atoms, not 1."}, {"t": "104", "c": 0, "f": "There are 2 iron atoms, not 1."}], "e": " (2 × 56) + (3 × 16) = 112 + 48 = 160"}, {"s": "Adapted from AQA Nov 2020 · 1F", "q": "Iron is heated in chlorine gas in a glass tube: iron + chlorine → iron chloride (a solid). What happens to the mass of the glass tube and its contents?", "o": [{"t": "It increases, because chlorine atoms have combined with the iron.", "c": 1, "f": ""}, {"t": "It decreases, because a gas is used up.", "c": 0, "f": ""}, {"t": "It stays the same, because mass is conserved.", "c": 0, "f": "Mass is conserved overall, but chlorine has come in from outside the tube."}, {"t": "It decreases, because iron is used up.", "c": 0, "f": ""}], "e": " The solid product contains the iron plus the chlorine that joined it, so the solid in the tube gets heavier."}, {"s": "AQA Jun 2023 · 1F", "q": "A sodium hydroxide solution has a concentration of 4.00 g/dm<sup>3</sup>. What mass of sodium hydroxide is in 25.0 cm<sup>3</sup> of this solution?", "o": [{"t": "0.100 g", "c": 1, "f": ""}, {"t": "100 g", "c": 0, "f": "Convert 25.0 cm<sup>3</sup> into dm<sup>3</sup> first (÷ 1000)."}, {"t": "0.160 g", "c": 0, "f": "4.00 ÷ 25 isn't the right calculation."}, {"t": "6.25 g", "c": 0, "f": ""}], "e": " Volume = 25.0 ÷ 1000 = 0.0250 dm<sup>3</sup>. Mass = 4.00 × 0.0250 = 0.100 g."}, {"s": "New question", "q": "10 g of salt is dissolved to make 0.5 dm<sup>3</sup> of solution. What is the concentration?", "o": [{"t": "20 g/dm<sup>3</sup>", "c": 1, "f": ""}, {"t": "5 g/dm<sup>3</sup>", "c": 0, "f": "Divide the mass by the volume. Don't multiply."}, {"t": "0.05 g/dm<sup>3</sup>", "c": 0, "f": "You divided the volume by the mass."}, {"t": "10.5 g/dm<sup>3</sup>", "c": 0, "f": ""}], "e": " Concentration = mass ÷ volume = 10 ÷ 0.5 = 20 g/dm<sup>3</sup>."}, {"s": "New question", "q": "Calcium carbonate is heated in an open tube: CaCO<sub>3</sub> → CaO + CO<sub>2</sub>. Why does the mass of the tube and contents decrease?", "o": [{"t": "Carbon dioxide gas escapes.", "c": 1, "f": ""}, {"t": "Calcium oxide is lighter than calcium carbonate, so mass is destroyed.", "c": 0, "f": "Mass is never destroyed."}, {"t": "Oxygen from the air reacts with it.", "c": 0, "f": "That would increase the mass."}, {"t": "The tube gets hotter.", "c": 0, "f": ""}], "e": " The missing mass is the CO<sub>2</sub> that left the tube."}, {"s": "Adapted from AQA Nov 2021 · 1F", "q": "The temperature rises for zinc were 18, 16, 18 and 20 °C, so the mean is 18 °C. What is the uncertainty?", "o": [{"t": "± 2 °C", "c": 1, "f": ""}, {"t": "± 4 °C", "c": 0, "f": "4 °C is the whole range. The uncertainty is half the range."}, {"t": "± 1 °C", "c": 0, "f": ""}, {"t": "± 18 °C", "c": 0, "f": ""}], "e": " Range = 20 − 16 = 4 °C. Uncertainty = half the range = ± 2 °C."}, {"s": "AQA Nov 2020 · 1F", "q": "Balance the equation: 2Fe + ___ Br<sub>2</sub> → 2FeBr<sub>3</sub>. What coefficient (big number) goes in front of Br<sub>2</sub>?", "o": [{"t": "3", "c": 1, "f": ""}, {"t": "6", "c": 0, "f": "Each Br<sub>2</sub> molecule already has 2 Br atoms."}, {"t": "2", "c": 0, "f": ""}, {"t": "1", "c": 0, "f": ""}], "e": " Right side: 2 × 3 = 6 Br atoms. Each Br<sub>2</sub> has 2, so 3Br<sub>2</sub> is needed."}, {"s": "Adapted from AQA Nov 2021 · 1F", "q": "Which equation for sulfuric acid and potassium hydroxide is balanced?", "o": [{"t": "H<sub>2</sub>SO<sub>4</sub> + 2KOH → K<sub>2</sub>SO<sub>4</sub> + 2H<sub>2</sub>O", "c": 1, "f": ""}, {"t": "H<sub>2</sub>SO<sub>4</sub> + KOH → K<sub>2</sub>SO<sub>4</sub> + H<sub>2</sub>O", "c": 0, "f": "Count K: 1 on the left, 2 on the right."}, {"t": "H<sub>2</sub>SO<sub>4</sub> + 2KOH → K<sub>2</sub>SO<sub>4</sub> + H<sub>2</sub>O", "c": 0, "f": "Count H: 4 on the left, only 2 on the right."}, {"t": "H<sub>2</sub>SO<sub>4</sub> + 2KOH → 2KSO<sub>4</sub> + 2H<sub>2</sub>O", "c": 0, "f": "You can't change a formula to balance an equation. Only change the coefficients (big numbers)."}], "e": " 2 K, 4 H, 1 S and 6 O on each side."}, {"s": "New question", "q": "What is the percentage by mass of oxygen in magnesium oxide, MgO? (A<sub>r</sub>: Mg = 24, O = 16)", "o": [{"t": "40%", "c": 1, "f": ""}, {"t": "60%", "c": 0, "f": "60% is the percentage of magnesium."}, {"t": "16%", "c": 0, "f": ""}, {"t": "67%", "c": 0, "f": "Divide by the M<sub>r</sub> of the whole compound (40), not by 24."}], "e": " M<sub>r</sub> = 24 + 16 = 40. % O = 16 ÷ 40 × 100 = 40%."}], [{"s": "AQA Jun 2023 · 1F", "q": "12 g of carbon contains 6.02 × 10<sup>23</sup> atoms. Which expression gives the mass of one atom of carbon?", "o": [{"t": "12 ÷ (6.02 × 10<sup>23</sup>)", "c": 1, "f": ""}, {"t": "(6.02 × 10<sup>23</sup>) ÷ 12", "c": 0, "f": "That is the number of atoms in 1 g."}, {"t": "12 × 6.02 × 10<sup>23</sup>", "c": 0, "f": "One atom must have a tiny mass, so you need to divide."}], "e": " Mass of one atom = total mass ÷ number of atoms = 2.0 × 10<sup>−23</sup> g."}, {"s": "AQA Jun 2023 · 1H", "q": "Fe<sub>2</sub>O<sub>3</sub> + 3C → 2Fe + 3CO. Which expression gives the mass of carbon needed to produce 1 mole of iron? (A<sub>r</sub>: C = 12)", "o": [{"t": "3/2 × 12 g", "c": 1, "f": ""}, {"t": "1/3 × 12 g", "c": 0, "f": ""}, {"t": "1 × 12 g", "c": 0, "f": "The ratio of C to Fe is 3 : 2, not 1 : 1."}, {"t": "3 × 12 g", "c": 0, "f": "3 mol of C makes 2 mol of Fe, not 1 mol."}], "e": " 3 mol C → 2 mol Fe, so 1 mol Fe needs 3/2 mol C = 3/2 × 12 = 18 g."}, {"s": "New question", "q": "How many moles are in 11 g of carbon dioxide (M<sub>r</sub> = 44)?", "o": [{"t": "0.25 mol", "c": 1, "f": ""}, {"t": "4 mol", "c": 0, "f": "You divided M<sub>r</sub> by mass. Moles = mass ÷ M<sub>r</sub>."}, {"t": "484 mol", "c": 0, "f": "Divide, don't multiply."}, {"t": "0.5 mol", "c": 0, "f": ""}], "e": " Moles = mass ÷ M<sub>r</sub> = 11 ÷ 44 = 0.25 mol."}, {"s": "New question", "q": "What is the mass of 0.5 mol of water (M<sub>r</sub> = 18)?", "o": [{"t": "9 g", "c": 1, "f": ""}, {"t": "36 g", "c": 0, "f": "36 g is 2 mol. Multiply moles by M<sub>r</sub>."}, {"t": "0.028 g", "c": 0, "f": ""}, {"t": "18.5 g", "c": 0, "f": ""}], "e": " Mass = moles × M<sub>r</sub> = 0.5 × 18 = 9 g."}, {"s": "New question", "q": "How many molecules are in 2 mol of water? (Avogadro constant = 6.02 × 10<sup>23</sup> per mole)", "o": [{"t": "1.204 × 10<sup>24</sup>", "c": 1, "f": ""}, {"t": "6.02 × 10<sup>23</sup>", "c": 0, "f": "That's only 1 mole."}, {"t": "3.01 × 10<sup>23</sup>", "c": 0, "f": "Multiply by 2, don't divide."}, {"t": "3.61 × 10<sup>24</sup>", "c": 0, "f": "That counts atoms (3 per molecule). The question asks for molecules."}], "e": " 2 × 6.02 × 10<sup>23</sup> = 12.04 × 10<sup>23</sup> = 1.204 × 10<sup>24</sup>"}, {"s": "AQA Jun 2023 · 1H", "q": "Which combination of changes increases the concentration of an acid?", "o": [{"t": "The mass of acid dissolved is doubled and the volume of solution is halved.", "c": 1, "f": ""}, {"t": "The mass of acid dissolved is halved and the volume is halved.", "c": 0, "f": "Both halved gives the same concentration."}, {"t": "The mass of acid dissolved is halved and the volume is doubled.", "c": 0, "f": "That makes it 4 times more dilute."}, {"t": "The mass of acid dissolved is doubled and the volume is doubled.", "c": 0, "f": "Both doubled gives the same concentration."}], "e": " Concentration = mass ÷ volume. Doubling the mass and halving the volume makes it 4 times more concentrated."}, {"s": "New question", "q": "What is meant by the limiting reactant?", "o": [{"t": "The reactant that is completely used up, so it limits the amount of product", "c": 1, "f": ""}, {"t": "The reactant with the smallest mass", "c": 0, "f": "The smallest mass isn't necessarily the fewest moles needed."}, {"t": "The reactant left over at the end", "c": 0, "f": "That is the reactant in excess."}, {"t": "The reactant that reacts most slowly", "c": 0, "f": ""}], "e": " When the limiting reactant runs out the reaction stops. The other reactant is in excess."}, {"s": "New question", "q": "4.8 g of Mg reacts with 3.2 g of O<sub>2</sub> to make 8.0 g of MgO. (M<sub>r</sub>: Mg = 24, O<sub>2</sub> = 32, MgO = 40.) Which balanced equation do these masses give?", "o": [{"t": "2Mg + O<sub>2</sub> → 2MgO", "c": 1, "f": ""}, {"t": "Mg + O<sub>2</sub> → MgO<sub>2</sub>", "c": 0, "f": "Moles: Mg 0.2, O<sub>2</sub> 0.1. That's a 2 : 1 ratio, not 1 : 1."}, {"t": "Mg + O → MgO", "c": 0, "f": "Oxygen is diatomic: O<sub>2</sub>."}, {"t": "4Mg + O<sub>2</sub> → 2Mg<sub>2</sub>O", "c": 0, "f": ""}], "e": " Moles: Mg = 4.8 ÷ 24 = 0.2, O<sub>2</sub> = 3.2 ÷ 32 = 0.1, MgO = 8.0 ÷ 40 = 0.2. Ratio 2 : 1 : 2, which gives the coefficients (big numbers)."}, {"s": "New question", "q": "One mole of any substance contains the same number of particles. What is this number?", "o": [{"t": "6.02 × 10<sup>23</sup>", "c": 1, "f": ""}, {"t": "6.02 × 10<sup>−23</sup>", "c": 0, "f": "The power is positive. A mole is a huge number of particles."}, {"t": "12", "c": 0, "f": ""}, {"t": "1000", "c": 0, "f": ""}], "e": " This is the Avogadro constant: 6.02 × 10<sup>23</sup> per mole."}, {"s": "AQA Nov 2020 · 1F", "q": "A pipette is labelled 25.0 ± 0.06 cm<sup>3</sup>. What is the percentage uncertainty?", "o": [{"t": "0.24%", "c": 1, "f": ""}, {"t": "0.06%", "c": 0, "f": "Divide by the volume and multiply by 100."}, {"t": "2.4%", "c": 0, "f": "Check the decimal: 0.06 ÷ 25 = 0.0024."}, {"t": "417%", "c": 0, "f": "You divided the volume by the uncertainty."}], "e": " % uncertainty = 0.06 ÷ 25.0 × 100 = 0.24%"}], [{"s": "AQA Jun 2022 · 1H", "q": "How many C<sub>70</sub> molecules can be made from one mole of carbon atoms? (Avogadro constant = 6.02 × 10<sup>23</sup> per mole)", "o": [{"t": "8.6 × 10<sup>21</sup>", "c": 1, "f": ""}, {"t": "4.2 × 10<sup>25</sup>", "c": 0, "f": "Each molecule uses 70 atoms, so you get fewer molecules than atoms. Divide by 70."}, {"t": "6.02 × 10<sup>23</sup>", "c": 0, "f": "That's the number of atoms, not molecules."}, {"t": "1.2 × 10<sup>−22</sup>", "c": 0, "f": "You divided 70 by the Avogadro constant."}], "e": " 6.02 × 10<sup>23</sup> atoms ÷ 70 atoms per molecule = 8.6 × 10<sup>21</sup> molecules."}, {"s": "AQA Jun 2022 · 1H", "q": "2Mg + SiO<sub>2</sub> → Si + 2MgO. What is the minimum mass of magnesium needed to reduce 1.2 kg of silicon dioxide? (A<sub>r</sub>: O = 16, Mg = 24, Si = 28)", "o": [{"t": "960 g", "c": 1, "f": ""}, {"t": "480 g", "c": 0, "f": "The coefficient (big number) 2 means you need 2 mol Mg for every 1 mol SiO<sub>2</sub>."}, {"t": "0.96 g", "c": 0, "f": "1.2 kg = 1200 g. Convert before using moles."}, {"t": "1920 g", "c": 0, "f": ""}], "e": " M<sub>r</sub> SiO<sub>2</sub> = 60. Moles = 1200 ÷ 60 = 20 mol. Mg = 2 × 20 = 40 mol. Mass = 40 × 24 = 960 g."}, {"s": "AQA Nov 2020 · 1H", "q": "Iron reacts with chlorine to make iron chloride.<table><tr><th></th><th>Mass (g)</th></tr><tr><td>Glass tube</td><td>51.56</td></tr><tr><td>Tube + iron</td><td>56.04</td></tr><tr><td>Tube + iron chloride</td><td>64.56</td></tr></table>Which balanced equation fits the data? (A<sub>r</sub>: Cl = 35.5, Fe = 56)", "o": [{"t": "2Fe + 3Cl<sub>2</sub> → 2FeCl<sub>3</sub>", "c": 1, "f": ""}, {"t": "Fe + Cl<sub>2</sub> → FeCl<sub>2</sub>", "c": 0, "f": "Work out the moles of Fe and Cl atoms: the ratio is 1 : 3, not 1 : 2."}, {"t": "Fe + 3Cl → FeCl<sub>3</sub>", "c": 0, "f": "The ratio is right, but chlorine is diatomic (Cl<sub>2</sub>)."}, {"t": "2Fe + Cl<sub>2</sub> → 2FeCl", "c": 0, "f": ""}], "e": " Fe = 56.04 − 51.56 = 4.48 g → 0.08 mol. Cl = 64.56 − 56.04 = 8.52 g → 0.24 mol. Ratio 1 : 3, so FeCl<sub>3</sub>. Balanced with Cl<sub>2</sub>: 2Fe + 3Cl<sub>2</sub> → 2FeCl<sub>3</sub>."}, {"s": "Adapted from AQA Nov 2020 · 1H", "q": "1.00 kg of aluminium is mixed with 3.00 kg of iron oxide: 2Al + Fe<sub>2</sub>O<sub>3</sub> → 2Fe + Al<sub>2</sub>O<sub>3</sub>. (A<sub>r</sub>: O = 16, Al = 27, Fe = 56.) Which statement is correct?", "o": [{"t": "Al is limiting: 37.0 mol Al needs 18.5 mol Fe<sub>2</sub>O<sub>3</sub>, and 18.75 mol is present.", "c": 1, "f": ""}, {"t": "Fe<sub>2</sub>O<sub>3</sub> is limiting, because there are fewer moles of it (18.75 vs 37.0).", "c": 0, "f": "You must use the 2 : 1 ratio in the equation, not just compare the numbers of moles."}, {"t": "Al is limiting, because it has the smaller mass.", "c": 0, "f": "Right answer, wrong reason. Mass alone never decides it."}, {"t": "Neither is limiting: they are in the exact ratio.", "c": 0, "f": ""}], "e": " Al: 1000 ÷ 27 = 37.0 mol. Fe<sub>2</sub>O<sub>3</sub>: 3000 ÷ 160 = 18.75 mol. 37.0 mol Al needs 37.0 ÷ 2 = 18.5 mol Fe<sub>2</sub>O<sub>3</sub>. That's less than 18.75, so Fe<sub>2</sub>O<sub>3</sub> is in excess."}, {"s": "New question", "q": "Fe<sub>2</sub>O<sub>3</sub> + 3CO → 2Fe + 3CO<sub>2</sub>. What mass of iron can be made from 320 g of Fe<sub>2</sub>O<sub>3</sub>? (M<sub>r</sub> Fe<sub>2</sub>O<sub>3</sub> = 160, A<sub>r</sub> Fe = 56)", "o": [{"t": "224 g", "c": 1, "f": ""}, {"t": "112 g", "c": 0, "f": "1 mol Fe<sub>2</sub>O<sub>3</sub> makes 2 mol Fe. Use the coefficients (big numbers)."}, {"t": "448 g", "c": 0, "f": "You doubled twice. 2 mol Fe<sub>2</sub>O<sub>3</sub> → 4 mol Fe."}, {"t": "320 g", "c": 0, "f": "Mass of product isn't the same as mass of reactant."}], "e": " Moles Fe<sub>2</sub>O<sub>3</sub> = 320 ÷ 160 = 2. Moles Fe = 2 × 2 = 4. Mass = 4 × 56 = 224 g."}, {"s": "New question", "q": "2.0 g of solid is dissolved in water to make 250 cm<sup>3</sup> of solution. What is the concentration?", "o": [{"t": "8.0 g/dm<sup>3</sup>", "c": 1, "f": ""}, {"t": "0.008 g/dm<sup>3</sup>", "c": 0, "f": "250 cm<sup>3</sup> must be converted to 0.250 dm<sup>3</sup> first."}, {"t": "500 g/dm<sup>3</sup>", "c": 0, "f": "Divide the mass by the volume."}, {"t": "0.5 g/dm<sup>3</sup>", "c": 0, "f": ""}], "e": " Volume = 250 ÷ 1000 = 0.250 dm<sup>3</sup>. Concentration = 2.0 ÷ 0.250 = 8.0 g/dm<sup>3</sup>."}, {"s": "New question", "q": "CaCO<sub>3</sub> → CaO + CO<sub>2</sub>. What mass of calcium oxide forms from 10.0 g of calcium carbonate? (M<sub>r</sub>: CaCO<sub>3</sub> = 100, CaO = 56)", "o": [{"t": "5.6 g", "c": 1, "f": ""}, {"t": "4.4 g", "c": 0, "f": "4.4 g is the mass of CO<sub>2</sub> given off."}, {"t": "10.0 g", "c": 0, "f": "Some of the mass leaves as CO<sub>2</sub>."}, {"t": "56 g", "c": 0, "f": "Start from moles: 10.0 ÷ 100 = 0.100 mol."}], "e": " 0.100 mol CaCO<sub>3</sub> → 0.100 mol CaO. 0.100 × 56 = 5.6 g. Check: 5.6 + 4.4 = 10.0 g ✓"}, {"s": "New question", "q": "How many atoms are in 0.5 mol of water (H<sub>2</sub>O)? (Avogadro constant = 6.02 × 10<sup>23</sup> per mole)", "o": [{"t": "9.03 × 10<sup>23</sup>", "c": 1, "f": ""}, {"t": "3.01 × 10<sup>23</sup>", "c": 0, "f": "That is the number of molecules. Each molecule has 3 atoms."}, {"t": "1.81 × 10<sup>24</sup>", "c": 0, "f": "That is 1 mol of water's atoms. You have only 0.5 mol."}, {"t": "6.02 × 10<sup>23</sup>", "c": 0, "f": ""}], "e": " Molecules = 0.5 × 6.02 × 10<sup>23</sup> = 3.01 × 10<sup>23</sup>. Atoms = 3 × 3.01 × 10<sup>23</sup> = 9.03 × 10<sup>23</sup>."}, {"s": "New question", "q": "5.4 g of Al reacts with 4.8 g of O<sub>2</sub> to make 10.2 g of Al<sub>2</sub>O<sub>3</sub>. (M<sub>r</sub>: Al = 27, O<sub>2</sub> = 32, Al<sub>2</sub>O<sub>3</sub> = 102.) Which balanced equation do these masses give?", "o": [{"t": "4Al + 3O<sub>2</sub> → 2Al<sub>2</sub>O<sub>3</sub>", "c": 1, "f": ""}, {"t": "2Al + 3O<sub>2</sub> → Al<sub>2</sub>O<sub>3</sub>", "c": 0, "f": "Not balanced: 6 O on the left, 3 O on the right."}, {"t": "Al + O<sub>2</sub> → AlO<sub>2</sub>", "c": 0, "f": "The formula is Al<sub>2</sub>O<sub>3</sub>. Never change a formula."}, {"t": "2Al + O<sub>2</sub> → Al<sub>2</sub>O<sub>3</sub>", "c": 0, "f": ""}], "e": " Moles: Al 0.2, O<sub>2</sub> 0.15, Al<sub>2</sub>O<sub>3</sub> 0.1. Divide by the smallest (0.05): 4 : 3 : 2."}, {"s": "AQA Jun 2023 · 1F/1H", "q": "Four repeats gave the lowest temperatures <table><tr><th>Trial</th><th>1</th><th>2</th><th>3</th><th>4</th></tr><tr><td>°C</td><td>16.2</td><td>16.6</td><td>16.8</td><td>16.4</td></tr></table>The mean is 16.5 °C. How should the result be written with its uncertainty?", "o": [{"t": "16.5 ± 0.3 °C", "c": 1, "f": ""}, {"t": "16.5 ± 0.6 °C", "c": 0, "f": "0.6 °C is the whole range. The uncertainty is half of it."}, {"t": "16.5 ± 0.1 °C", "c": 0, "f": ""}, {"t": "16.5 ± 16.8 °C", "c": 0, "f": ""}], "e": " Range = 16.8 − 16.2 = 0.6 °C. Uncertainty = ± half the range = ± 0.3 °C. The spread is caused by random error."}]];
+
+let store = {};
+try { store = JSON.parse(localStorage.getItem("mcq-"+TOPIC) || "{}"); } catch(e) { store = {}; }
+function save(){ try { localStorage.setItem("mcq-"+TOPIC, JSON.stringify(store)); } catch(e) {} }
+
+const orders = DATA.map(set => set.map(q => shuffle(q.o.map((_,i)=>i))));
+function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+let cur = 0;
+const tabs = document.getElementById("tabs"), main = document.getElementById("main");
+
+function levelScore(l){
+  const ans = store[l] || {}; let s=0, n=0;
+  DATA[l].forEach((q,i)=>{ if(ans[i]!==undefined){ n++; if(q.o[ans[i]].c) s++; } });
+  return {s,n};
+}
+function drawTabs(){
+  tabs.innerHTML = "";
+  LEVELS.forEach((L,l)=>{
+    const b = document.createElement("button");
+    b.setAttribute("role","tab"); b.setAttribute("aria-selected", l===cur);
+    b.style.setProperty("--c", L.col);
+    const {s,n} = levelScore(l);
+    b.innerHTML = `<span class="sc">${n? s+"/10":""}</span><span class="lv">${L.name}</span><span class="tier">${L.tier}</span>`;
+    b.onclick = ()=>{ cur=l; render(); window.scrollTo({top:0}); };
+    tabs.appendChild(b);
+  });
+}
+function render(){
+  const L = LEVELS[cur]; document.body.style.setProperty("--c", L.col);
+  drawTabs();
+  const ans = store[cur] || {};
+  let h = `<div class="intro"><b>${L.name} · ${L.tier}.</b> ${L.intro} Your first click counts.</div>`;
+  DATA[cur].forEach((q,i)=>{
+    h += `<div class="q" id="q${i}"><div class="qhead"><span class="qn">Q${i+1}</span><span class="src">${q.s}</span></div><div class="stem">${q.q}</div><div class="opts">`;
+    orders[cur][i].forEach((oi,k)=>{
+      const o = q.o[oi]; let cls="";
+      if(ans[i]!==undefined){ if(o.c) cls="right"; else if(ans[i]===oi) cls="wrong"; }
+      h += `<button class="opt ${cls}" data-q="${i}" data-o="${oi}" ${ans[i]!==undefined?"disabled":""}><span class="let">${"ABCD"[k]}</span><span>${o.t}</span></button>`;
+    });
+    h += `</div><div class="fb" id="fb${i}"></div></div>`;
+  });
+  h += `<div class="done" id="done"></div>`;
+  main.innerHTML = h;
+  main.querySelectorAll(".opt").forEach(b=> b.onclick = ()=> choose(+b.dataset.q, +b.dataset.o));
+  DATA[cur].forEach((q,i)=>{ if(ans[i]!==undefined) showFb(i, ans[i]); });
+  update();
+}
+function choose(i, oi){
+  store[cur] = store[cur] || {};
+  if(store[cur][i]!==undefined) return;
+  store[cur][i] = oi; save();
+  const box = document.getElementById("q"+i);
+  box.querySelectorAll(".opt").forEach(b=>{
+    b.disabled = true; const o = DATA[cur][i].o[+b.dataset.o];
+    if(o.c) b.classList.add("right"); else if(+b.dataset.o===oi) b.classList.add("wrong");
+  });
+  showFb(i, oi); update(); drawTabs();
+}
+function showFb(i, oi){
+  const q = DATA[cur][i], o = q.o[oi], fb = document.getElementById("fb"+i);
+  const right = q.o.find(x=>x.c);
+  fb.className = "fb show " + (o.c ? "ok" : "no");
+  fb.innerHTML = o.c
+    ? `<b>Correct.</b>${q.e}`
+    : `<b>Not quite – the answer is: ${right.t}</b>${o.f ? o.f+" " : ""}${q.e}`;
+}
+function update(){
+  const {s,n} = levelScore(cur);
+  document.getElementById("score").textContent = `${s} / 10`;
+  document.getElementById("answered").textContent = `${n} answered`;
+  document.getElementById("prog").style.width = (n*10)+"%";
+  const done = document.getElementById("done");
+  if(n===10){
+    const ans = store[cur]; const wrong = DATA[cur].map((q,i)=>({q,i})).filter(x=>!x.q.o[ans[x.i]].c);
+    let h = `<h2>${LEVELS[cur].name} done: ${s} / 10</h2>`;
+    if(!wrong.length){ h += `<p>Full marks. ${cur<3 ? "Try "+LEVELS[cur+1].name+" next." : "Excellent work."}</p>`; }
+    else {
+      h += `<p>Copy these into your fix-it table: write the question in column 1, leave column 2 blank to answer next time, and copy the correct answer into column 3.</p>
+      <table class="fix"><tr><th>Question</th><th>My answer next time</th><th>Correct answer</th></tr>`;
+      wrong.forEach(x=>{ h += `<tr><td>${x.q.q.replace(/<table[\s\S]*?<\/table>/g," [see table] ")}</td><td></td><td>${x.q.o.find(o=>o.c).t}</td></tr>`; });
+      h += `</table>`;
+    }
+    done.innerHTML = h; done.classList.add("show");
+  } else done.classList.remove("show");
+}
+document.getElementById("reset").onclick = ()=>{
+  delete store[cur]; save(); orders[cur] = DATA[cur].map(q=>shuffle(q.o.map((_,i)=>i))); render();
+};
+render();
+</script>
+</body>
+</html>

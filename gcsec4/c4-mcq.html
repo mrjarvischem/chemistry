@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>C4 Chemical changes – Multiple choice</title>
+<style>
+:root{
+  --bg:#f3ecdf; --paper:#fffaf0; --ink:#3b2a1a; --muted:#7a6650; --line:#dccdb4;
+  --accent:#8b5a2b; --accent-soft:#efe1cb; --good:#3f7d3a; --good-soft:#e3f0dc;
+  --bad:#a33a2a; --bad-soft:#f6e0da; --l1:#5d8a4a; --l2:#3d7a8a; --l3:#8b5a2b; --l4:#7a3b5c;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#211a13; --paper:#2c241b; --ink:#f1e7d6; --muted:#b9a68c; --line:#4a3d2e;
+    --accent:#d39a5e; --accent-soft:#3b2f22; --good:#8cc47c; --good-soft:#2a3a24;
+    --bad:#e98b78; --bad-soft:#43261f; --l1:#8cc47c; --l2:#7cc0cf; --l3:#d39a5e; --l4:#d495b6; }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{padding:22px 20px 10px;max-width:900px;margin:0 auto}
+h1{font-family:Georgia,"Times New Roman",serif;font-weight:normal;font-size:1.75rem;margin:0 0 4px}
+.sub{color:var(--muted);font-size:.95rem;margin:0}
+nav{max-width:900px;margin:12px auto 0;padding:0 20px;display:flex;gap:8px;flex-wrap:wrap}
+nav button{flex:1 1 150px;border:2px solid var(--line);background:var(--paper);color:var(--ink);border-radius:12px;padding:10px 12px;cursor:pointer;text-align:left;font:inherit}
+nav button .lv{font-family:Georgia,serif;font-size:1.1rem;display:block}
+nav button .tier{font-size:.8rem;color:var(--muted)}
+nav button .sc{float:right;font-size:.85rem;font-weight:600}
+nav button[aria-selected="true"]{border-color:var(--c);box-shadow:inset 0 -4px 0 var(--c)}
+main{max-width:900px;margin:0 auto;padding:16px 20px 60px}
+.intro{background:var(--accent-soft);border-left:5px solid var(--c);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:.95rem}
+.q{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:0 0 14px}
+.qhead{display:flex;justify-content:space-between;gap:10px;align-items:baseline;margin-bottom:6px}
+.qn{font-family:Georgia,serif;font-size:1.05rem;color:var(--c);font-weight:bold}
+.src{font-size:.75rem;color:var(--muted);border:1px solid var(--line);border-radius:20px;padding:1px 9px;white-space:nowrap}
+.stem{margin:0 0 10px}
+.stem table{border-collapse:collapse;margin:8px 0;font-size:.92rem}
+.stem th,.stem td{border:1px solid var(--line);padding:4px 9px;text-align:center}
+.stem th{background:var(--accent-soft)}
+.opts{display:grid;gap:8px}
+.opt{display:flex;gap:10px;align-items:flex-start;text-align:left;width:100%;border:2px solid var(--line);background:transparent;color:var(--ink);border-radius:10px;padding:9px 12px;cursor:pointer;font:inherit}
+.opt:hover:not([disabled]){border-color:var(--c)}
+.opt .let{font-weight:700;color:var(--c);min-width:1.2em}
+.opt[disabled]{cursor:default}
+.opt.right{border-color:var(--good);background:var(--good-soft)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.fb{margin-top:10px;padding:9px 12px;border-radius:8px;font-size:.93rem;display:none}
+.fb.show{display:block}
+.fb.ok{background:var(--good-soft);border-left:4px solid var(--good)}
+.fb.no{background:var(--bad-soft);border-left:4px solid var(--bad)}
+.fb b{display:block;margin-bottom:2px}
+.bar{position:sticky;bottom:0;background:var(--paper);border-top:2px solid var(--line);padding:10px 20px;display:flex;justify-content:center}
+.bar .in{max-width:860px;width:100%;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.score{font-family:Georgia,serif;font-size:1.25rem}
+.prog{flex:1;height:10px;background:var(--line);border-radius:6px;overflow:hidden;min-width:120px}
+.prog i{display:block;height:100%;background:var(--c);width:0;transition:width .3s}
+.btn{border:2px solid var(--c);background:transparent;color:var(--ink);border-radius:8px;padding:6px 14px;cursor:pointer;font:inherit;font-size:.92rem}
+.done{background:var(--paper);border:2px solid var(--c);border-radius:12px;padding:16px 18px;margin-top:20px;display:none}
+.done.show{display:block}
+.done h2{font-family:Georgia,serif;font-weight:normal;margin:0 0 6px}
+.fix{width:100%;border-collapse:collapse;margin-top:10px;font-size:.92rem}
+.fix th,.fix td{border:1px solid var(--line);padding:8px;vertical-align:top;text-align:left}
+.fix th{background:var(--accent-soft)}
+.fix td:nth-child(2){width:30%}
+sub,sup{font-size:.72em}
+@media print{nav,.bar,.btn{display:none}.q{break-inside:avoid}}
+</style>
+</head>
+<body>
+<header>
+  <h1>C4 Chemical changes</h1>
+  <p class="sub">AQA GCSE Combined Science: Trilogy – Chemistry · four 10-mark multiple choice sets</p>
+</header>
+<nav id="tabs" role="tablist"></nav>
+<main id="main"></main>
+<div class="bar"><div class="in">
+  <span class="score" id="score">0 / 10</span>
+  <div class="prog"><i id="prog"></i></div>
+  <span id="answered" style="font-size:.9rem;color:var(--muted)">0 answered</span>
+  <button class="btn" id="reset">Reset this level</button>
+</div></div>
+<script>
+const TOPIC = "gcsec4";
+const LEVELS = [
+ {name:"Level 1", tier:"Foundation – starter", col:"var(--l1)",
+  intro:"Recall questions. Aim for 10/10 before moving on."},
+ {name:"Level 2", tier:"Foundation", col:"var(--l2)",
+  intro:"Foundation-tier exam standard. Read every option before you choose."},
+ {name:"Level 3", tier:"Higher", col:"var(--l3)",
+  intro:"Higher-tier exam standard: explanations, data and some calculations. Have a calculator and periodic table ready."},
+ {name:"Level 4", tier:"Extension", col:"var(--l4)",
+  intro:"Most of these need working out on paper first. The wrong answers are the ones you get by making common mistakes, so check your working before you click."}
+];
+const DATA = [[{"s": "AQA Nov 2021 · 1F", "q": "Which ion do acids produce in aqueous solution?", "o": [{"t": "H<sup>+</sup>", "c": 1, "f": ""}, {"t": "OH<sup>−</sup>", "c": 0, "f": "Alkalis produce OH<sup>−</sup> ions."}, {"t": "O<sup>2−</sup>", "c": 0, "f": ""}], "e": " All acids release hydrogen ions (H<sup>+</sup>) in water."}, {"s": "AQA Nov 2021 · 1F", "q": "Acids react with alkalis. What is the name of this type of reaction?", "o": [{"t": "Neutralisation", "c": 1, "f": ""}, {"t": "Decomposition", "c": 0, "f": ""}, {"t": "Electrolysis", "c": 0, "f": ""}, {"t": "Redox", "c": 0, "f": ""}], "e": " acid + alkali → salt + water. H<sup>+</sup> + OH<sup>−</sup> → H<sub>2</sub>O."}, {"s": "New question", "q": "What is the pH of a neutral solution?", "o": [{"t": "7", "c": 1, "f": ""}, {"t": "0", "c": 0, "f": ""}, {"t": "1", "c": 0, "f": "pH 1 is strongly acidic."}, {"t": "14", "c": 0, "f": "pH 14 is strongly alkaline."}], "e": " Below 7 is acidic, 7 is neutral and above 7 is alkaline."}, {"s": "Adapted from AQA Jun 2022 · 1F", "q": "What colour is universal indicator in a solution of pH 1?", "o": [{"t": "Red", "c": 1, "f": ""}, {"t": "Green", "c": 0, "f": "Green is pH 7 (neutral)."}, {"t": "Purple", "c": 0, "f": "Purple is a strong alkali."}, {"t": "Blue", "c": 0, "f": ""}], "e": " Strong acid → red. Neutral → green. Strong alkali → purple."}, {"s": "New question", "q": "Which gas is produced when a metal reacts with an acid?", "o": [{"t": "Hydrogen", "c": 1, "f": ""}, {"t": "Carbon dioxide", "c": 0, "f": "Carbon dioxide comes from carbonates."}, {"t": "Oxygen", "c": 0, "f": ""}, {"t": "Chlorine", "c": 0, "f": ""}], "e": " metal + acid → salt + hydrogen. Test: a lit splint gives a squeaky pop."}, {"s": "AQA Nov 2021 · 1F", "q": "Copper carbonate reacts with an acid. Which gas is produced?", "o": [{"t": "Carbon dioxide", "c": 1, "f": ""}, {"t": "Chlorine", "c": 0, "f": ""}, {"t": "Hydrogen", "c": 0, "f": "Hydrogen comes from metals reacting with acids."}, {"t": "Oxygen", "c": 0, "f": ""}], "e": " carbonate + acid → salt + water + carbon dioxide."}, {"s": "AQA Nov 2021 · 1F", "q": "Which acid reacts with copper carbonate to produce copper chloride?", "o": [{"t": "Hydrochloric acid", "c": 1, "f": ""}, {"t": "Nitric acid", "c": 0, "f": "Nitric acid makes nitrates."}, {"t": "Sulfuric acid", "c": 0, "f": "Sulfuric acid makes sulfates."}], "e": " Hydrochloric acid → chlorides, sulfuric acid → sulfates, nitric acid → nitrates."}, {"s": "AQA Nov 2020 · 1F", "q": "A student wants to make zinc nitrate. Which acid should be used?", "o": [{"t": "Nitric acid", "c": 1, "f": ""}, {"t": "Hydrochloric acid", "c": 0, "f": ""}, {"t": "Sulfuric acid", "c": 0, "f": ""}], "e": " Nitric acid makes nitrate salts."}, {"s": "AQA Jun 2023 · 1F", "q": "Which piece of equipment should be used to measure exactly 25.0 cm<sup>3</sup> of sodium hydroxide solution for a titration?", "o": [{"t": "Pipette", "c": 1, "f": ""}, {"t": "Beaker", "c": 0, "f": "Beaker markings are only approximate."}, {"t": "Ruler", "c": 0, "f": ""}], "e": " A volumetric pipette measures one fixed volume accurately."}, {"s": "AQA Jun 2023 · 1F", "q": "Which piece of equipment is used to add the acid drop by drop in a titration?", "o": [{"t": "Burette", "c": 1, "f": ""}, {"t": "Balance", "c": 0, "f": ""}, {"t": "Measuring cylinder", "c": 0, "f": "A measuring cylinder can't add the acid drop by drop or measure it accurately enough."}], "e": " A burette has a tap to control the flow, and it measures the volume added."}], [{"s": "AQA Nov 2021 · 1F", "q": "Universal indicator turns purple in potassium hydroxide solution. What is the pH?", "o": [{"t": "14", "c": 1, "f": ""}, {"t": "1", "c": 0, "f": ""}, {"t": "4", "c": 0, "f": ""}, {"t": "7", "c": 0, "f": ""}], "e": " Purple means a strong alkali, around pH 14."}, {"s": "AQA Nov 2020 · 1F", "q": "Which is a base that could be used with nitric acid to produce zinc nitrate?", "o": [{"t": "Zinc oxide", "c": 1, "f": ""}, {"t": "Zinc chloride", "c": 0, "f": "Zinc chloride is already a salt, not a base."}, {"t": "Zinc sulfate", "c": 0, "f": "Zinc sulfate is already a salt, not a base."}], "e": " Metal oxides are bases: zinc oxide + nitric acid → zinc nitrate + water."}, {"s": "AQA Nov 2020 · 1F", "q": "What is the name of the salt with the formula MgBr<sub>2</sub>?", "o": [{"t": "Magnesium bromide", "c": 1, "f": ""}, {"t": "Magnesium bromine", "c": 0, "f": "In a compound the halogen ending changes to -ide."}, {"t": "Magnesium dibromate", "c": 0, "f": ""}, {"t": "Manganese bromide", "c": 0, "f": "Mg is magnesium. Manganese is Mn."}], "e": " Metal name first, then the non-metal with -ide."}, {"s": "Adapted from AQA Jun 2022 · 1F", "q": "A metal oxide reacts with an acid to produce zinc sulfate and water. Which reactants were used?", "o": [{"t": "Zinc oxide and sulfuric acid", "c": 1, "f": ""}, {"t": "Zinc and sulfuric acid", "c": 0, "f": "A metal would give hydrogen gas, not water."}, {"t": "Zinc oxide and hydrochloric acid", "c": 0, "f": "Hydrochloric acid makes chlorides."}, {"t": "Zinc carbonate and sulfuric acid", "c": 0, "f": "A carbonate isn't a metal oxide, and it would also give CO<sub>2</sub>."}], "e": " metal oxide + acid → salt + water. Sulfuric acid gives a sulfate."}, {"s": "AQA Nov 2021 · 1F", "q": "In making copper chloride crystals, the solution is heated gently until crystals start to form. Why is it heated?", "o": [{"t": "To evaporate water", "c": 1, "f": ""}, {"t": "To evaporate acid", "c": 0, "f": "Excess copper carbonate was added, so no acid is left."}, {"t": "To evaporate copper carbonate", "c": 0, "f": "The excess copper carbonate was removed by filtering."}], "e": " Removing some water makes the solution saturated, so crystals form as it cools."}, {"s": "AQA Jun 2022 · 1F", "q": "Why is sodium extracted by electrolysis instead of by reduction with carbon?", "o": [{"t": "Carbon is less reactive than sodium.", "c": 1, "f": ""}, {"t": "Carbon conducts electricity.", "c": 0, "f": "True, but that's not why it can't be used."}, {"t": "Carbon reduction uses more energy.", "c": 0, "f": ""}], "e": " Carbon can only reduce metals below it in the reactivity series. Sodium is above carbon."}, {"s": "AQA Jun 2023 · 1F", "q": "Aluminium oxide is mixed with cryolite before electrolysis. Why?", "o": [{"t": "The mixture has a lower melting point than pure aluminium oxide.", "c": 1, "f": ""}, {"t": "The mixture has the same melting point.", "c": 0, "f": ""}, {"t": "The mixture has a higher melting point.", "c": 0, "f": "A higher melting point would cost more energy."}], "e": " A lower melting point means less energy is needed, which reduces costs."}, {"s": "Adapted from AQA Jun 2022 · 1F", "q": "Molten potassium iodide is electrolysed. What are the products?", "o": [{"t": "Potassium at the negative electrode, iodine at the positive electrode", "c": 1, "f": ""}, {"t": "Iodine at the negative electrode, potassium at the positive electrode", "c": 0, "f": "Positive metal ions go to the negative electrode."}, {"t": "Hydrogen at the negative electrode, iodine at the positive electrode", "c": 0, "f": "There is no water in a molten compound, so hydrogen can't form."}, {"t": "Potassium at the negative electrode, oxygen at the positive electrode", "c": 0, "f": ""}], "e": " Molten binary compounds give the metal at the negative electrode and the non-metal at the positive electrode."}, {"s": "AQA Nov 2020 · 1F", "q": "A crystal with colourless positive ions and purple negative ions dissolves in an electrolyte. What happens to the purple ions when the current is switched on?", "o": [{"t": "They move towards the positive electrode.", "c": 1, "f": ""}, {"t": "They do not move.", "c": 0, "f": ""}, {"t": "They move towards the negative electrode.", "c": 0, "f": "Opposite charges attract. Negative ions go to the positive electrode."}], "e": " Negative ions (anions) are attracted to the positive electrode."}, {"s": "Adapted from AQA Jun 2023 · 1F", "q": "Fe<sub>2</sub>O<sub>3</sub> + 3C → 2Fe + 3CO. How does the equation show that iron oxide is reduced?", "o": [{"t": "Iron oxide loses oxygen.", "c": 1, "f": ""}, {"t": "Iron oxide gains oxygen.", "c": 0, "f": "Gaining oxygen is oxidation."}, {"t": "Carbon loses oxygen.", "c": 0, "f": ""}, {"t": "Iron is formed as a solid.", "c": 0, "f": ""}], "e": " Reduction is the loss of oxygen. Carbon gains oxygen, so carbon is oxidised."}], [{"s": "AQA Jun 2022 · 1F", "q": "Sodium sulfate solution contains H<sup>+</sup>, OH<sup>−</sup>, Na<sup>+</sup> and SO<sub>4</sub><sup>2−</sup> ions. Oxygen is produced at the positive electrode. Which ions are discharged to produce oxygen?", "o": [{"t": "Hydroxide ions", "c": 1, "f": ""}, {"t": "Hydrogen ions", "c": 0, "f": "H<sup>+</sup> is positive, so it goes to the negative electrode."}, {"t": "Sodium ions", "c": 0, "f": ""}, {"t": "Sulfate ions", "c": 0, "f": "Sulfate ions aren't discharged. Oxygen comes from hydroxide ions instead."}], "e": " With sulfates and nitrates, OH<sup>−</sup> ions from water are discharged at the positive electrode to form oxygen."}, {"s": "AQA Jun 2023 · 1F", "q": "Electrolysis of sodium sulfate solution produces hydrogen and oxygen. What is the source of these gases?", "o": [{"t": "Water", "c": 1, "f": ""}, {"t": "Air", "c": 0, "f": ""}, {"t": "Sulfate ions", "c": 0, "f": ""}], "e": " Water provides H<sup>+</sup> and OH<sup>−</sup> ions."}, {"s": "AQA Jun 2023 · 1F", "q": "Why is hydrogen produced instead of sodium when sodium sulfate solution is electrolysed?", "o": [{"t": "Hydrogen is less reactive than sodium.", "c": 1, "f": ""}, {"t": "Hydrogen has the same reactivity as sodium.", "c": 0, "f": ""}, {"t": "Hydrogen is more reactive than sodium.", "c": 0, "f": ""}], "e": " At the negative electrode the less reactive element is produced. Hydrogen forms if the metal is more reactive than hydrogen."}, {"s": "AQA Jun 2022 · 1H", "q": "Which is the correct half equation for the production of sodium in the electrolysis of molten sodium chloride?", "o": [{"t": "Na<sup>+</sup> + e<sup>−</sup> → Na", "c": 1, "f": ""}, {"t": "Na + e<sup>−</sup> → Na<sup>+</sup>", "c": 0, "f": ""}, {"t": "Na → Na<sup>+</sup> + e<sup>−</sup>", "c": 0, "f": "That is oxidation, the reverse of what happens."}, {"t": "Na<sup>+</sup> → Na + e<sup>−</sup>", "c": 0, "f": "Charges don't balance."}], "e": " Positive ions gain electrons at the negative electrode. This is reduction."}, {"s": "AQA Nov 2021 · 1H", "q": "Copper, copper carbonate and copper oxide are insoluble solids. Which can react with dilute hydrochloric acid to make a copper salt?", "o": [{"t": "Copper carbonate and copper oxide only", "c": 1, "f": ""}, {"t": "Copper and copper carbonate only", "c": 0, "f": "Copper is below hydrogen in the reactivity series, so it doesn't react with dilute acids."}, {"t": "Copper and copper oxide only", "c": 0, "f": ""}, {"t": "Copper, copper carbonate and copper oxide", "c": 0, "f": ""}], "e": " Bases (oxides) and carbonates react with acids. Unreactive metals like copper don't."}, {"s": "AQA Nov 2021 · 1H", "q": "1 g of hydrogen chloride (which fully ionises) is dissolved in 1 dm<sup>3</sup> of water. Which describes the solution?", "o": [{"t": "A dilute solution of a strong acid", "c": 1, "f": ""}, {"t": "A concentrated solution of a strong acid", "c": 0, "f": "1 g/dm<sup>3</sup> is a small amount in a large volume, so it's dilute."}, {"t": "A dilute solution of a weak acid", "c": 0, "f": "Fully ionised means strong."}, {"t": "A concentrated solution of a weak acid", "c": 0, "f": ""}], "e": " Strong/weak describes how much the acid ionises. Concentrated/dilute describes how much acid is in a given volume."}, {"s": "AQA Nov 2021 · 1H", "q": "Which solution has the lowest pH?", "o": [{"t": "1.0 mol/dm<sup>3</sup> hydrogen chloride", "c": 1, "f": ""}, {"t": "1.0 mol/dm<sup>3</sup> ethanoic acid", "c": 0, "f": "Ethanoic acid is weak, so only about 1% ionises."}, {"t": "0.1 mol/dm<sup>3</sup> hydrogen chloride", "c": 0, "f": ""}, {"t": "0.1 mol/dm<sup>3</sup> ethanoic acid", "c": 0, "f": ""}], "e": " The lowest pH means the highest H<sup>+</sup> concentration. That comes from a strong acid at the higher concentration."}, {"s": "AQA Jun 2023 · 1H", "q": "A + 2B<sup>+</sup> → 2B + A<sup>2+</sup>. Why is this a redox reaction?", "o": [{"t": "A loses electrons and B<sup>+</sup> gains electrons.", "c": 1, "f": ""}, {"t": "A gains electrons and B<sup>+</sup> loses electrons.", "c": 0, "f": "A becomes A<sup>2+</sup>, so it lost 2 electrons."}, {"t": "Both A and B<sup>+</sup> gain electrons.", "c": 0, "f": ""}, {"t": "Both A and B<sup>+</sup> lose electrons.", "c": 0, "f": ""}], "e": " OIL RIG: Oxidation Is Loss, Reduction Is Gain (of electrons). A is oxidised and B<sup>+</sup> is reduced."}, {"s": "AQA Jun 2023 · 1F", "q": "Metals were added to solutions of each other's sulfates (✓ = displacement).<table><tr><th>Metal</th><th>A sulfate</th><th>B sulfate</th><th>C sulfate</th><th>D sulfate</th></tr><tr><td>A</td><td>–</td><td>✗</td><td>✓</td><td>✗</td></tr><tr><td>B</td><td>✓</td><td>–</td><td>✓</td><td>✗</td></tr><tr><td>C</td><td>✗</td><td>✗</td><td>–</td><td>✗</td></tr><tr><td>D</td><td>✓</td><td>✓</td><td>✓</td><td>–</td></tr></table>What is the order of reactivity, most reactive first?", "o": [{"t": "D, B, A, C", "c": 1, "f": ""}, {"t": "C, A, B, D", "c": 0, "f": "This is least reactive first."}, {"t": "D, A, B, C", "c": 0, "f": "B displaces A, so B is more reactive than A."}, {"t": "A, B, C, D", "c": 0, "f": ""}], "e": " The more metals a metal displaces, the more reactive it is: D (3), B (2), A (1), C (0)."}, {"s": "Adapted from AQA Nov 2021 · 1F", "q": "Copper sulfate solution and sodium chloride solution are each electrolysed. What forms at the negative electrode in each?", "o": [{"t": "Copper; hydrogen", "c": 1, "f": ""}, {"t": "Copper; sodium", "c": 0, "f": "Sodium is more reactive than hydrogen, so hydrogen forms instead."}, {"t": "Hydrogen; hydrogen", "c": 0, "f": "Copper is less reactive than hydrogen, so copper forms."}, {"t": "Hydrogen; sodium", "c": 0, "f": ""}], "e": " The metal forms if it is less reactive than hydrogen; otherwise hydrogen forms."}], [{"s": "AQA Jun 2023 · 1H", "q": "Hydrochloric acid at pH 4.5 has [H<sup>+</sup>] = 3.16 × 10<sup>−5</sup> mol/dm<sup>3</sup>. What is [H<sup>+</sup>] at pH 2.5?", "o": [{"t": "3.16 × 10<sup>−3</sup> mol/dm<sup>3</sup>", "c": 1, "f": ""}, {"t": "3.16 × 10<sup>−7</sup> mol/dm<sup>3</sup>", "c": 0, "f": "A lower pH means more H<sup>+</sup>, not less."}, {"t": "3.16 × 10<sup>−4</sup> mol/dm<sup>3</sup>", "c": 0, "f": "Each pH unit is a factor of 10. 2 units is a factor of 100."}, {"t": "6.32 × 10<sup>−5</sup> mol/dm<sup>3</sup>", "c": 0, "f": "pH is a log scale, so don't just double."}], "e": " pH falls by 2, so [H<sup>+</sup>] increases by 10 × 10 = 100: 3.16 × 10<sup>−5</sup> × 100 = 3.16 × 10<sup>−3</sup>."}, {"s": "AQA Jun 2023 · 1H", "q": "Use the table. Which metal has the greatest tendency to form positive ions?<table><tr><th>Reaction</th><th>Metal</th><th>Solution</th><th>Equation</th></tr><tr><td>1</td><td>A</td><td>BNO<sub>3</sub></td><td>A + 2BNO<sub>3</sub> → 2B + A(NO<sub>3</sub>)<sub>2</sub></td></tr><tr><td>2</td><td>C</td><td>A(NO<sub>3</sub>)<sub>2</sub></td><td>2C + 3A(NO<sub>3</sub>)<sub>2</sub> → 3A + 2C(NO<sub>3</sub>)<sub>3</sub></td></tr><tr><td>3</td><td>C</td><td>D(NO<sub>3</sub>)<sub>2</sub></td><td>no reaction</td></tr></table>", "o": [{"t": "D", "c": 1, "f": ""}, {"t": "C", "c": 0, "f": "C displaces A, but C does not displace D, so D is more reactive."}, {"t": "A", "c": 0, "f": ""}, {"t": "B", "c": 0, "f": "B is displaced by A, so B is the least reactive."}], "e": " A > B (reaction 1). C > A (reaction 2). D > C (reaction 3, no reaction). Order: D > C > A > B."}, {"s": "AQA Jun 2023 · 1H", "q": "Use the same table. The nitrate ion is NO<sub>3</sub><sup>−</sup>. Which metal could be aluminium?<table><tr><th>Reaction</th><th>Metal</th><th>Solution</th><th>Equation</th></tr><tr><td>1</td><td>A</td><td>BNO<sub>3</sub></td><td>A + 2BNO<sub>3</sub> → 2B + A(NO<sub>3</sub>)<sub>2</sub></td></tr><tr><td>2</td><td>C</td><td>A(NO<sub>3</sub>)<sub>2</sub></td><td>2C + 3A(NO<sub>3</sub>)<sub>2</sub> → 3A + 2C(NO<sub>3</sub>)<sub>3</sub></td></tr><tr><td>3</td><td>C</td><td>D(NO<sub>3</sub>)<sub>2</sub></td><td>no reaction</td></tr></table>", "o": [{"t": "C", "c": 1, "f": ""}, {"t": "D", "c": 0, "f": "D is more reactive than C, but its nitrate is D(NO<sub>3</sub>)<sub>2</sub>, so it forms 2+ ions."}, {"t": "A", "c": 0, "f": "A(NO<sub>3</sub>)<sub>2</sub> means A forms 2+ ions."}, {"t": "B", "c": 0, "f": "BNO<sub>3</sub> means B forms 1+ ions."}], "e": " Aluminium forms Al<sup>3+</sup>, so its nitrate is Al(NO<sub>3</sub>)<sub>3</sub>. Only C(NO<sub>3</sub>)<sub>3</sub> matches."}, {"s": "Adapted from AQA Nov 2020 · 1H", "q": "Mg(s) + Zn<sup>2+</sup>(aq) → Mg<sup>2+</sup>(aq) + Zn(s). Which species is oxidised?", "o": [{"t": "Mg", "c": 1, "f": ""}, {"t": "Zn<sup>2+</sup>", "c": 0, "f": "Zn<sup>2+</sup> gains electrons, so it's reduced."}, {"t": "Zn", "c": 0, "f": "Zn is a product."}, {"t": "Mg<sup>2+</sup>", "c": 0, "f": "Mg<sup>2+</sup> is a product."}], "e": " Mg → Mg<sup>2+</sup> + 2e<sup>−</sup>: loss of electrons = oxidation. Zn<sup>2+</sup> + 2e<sup>−</sup> → Zn: gain = reduction."}, {"s": "New question", "q": "Why must the positive electrodes be replaced regularly in the extraction of aluminium?", "o": [{"t": "They are made of carbon, which reacts with the oxygen produced to form carbon dioxide.", "c": 1, "f": ""}, {"t": "Aluminium is deposited on them.", "c": 0, "f": "Aluminium forms at the negative electrode."}, {"t": "They melt at the high temperature.", "c": 0, "f": ""}, {"t": "They react with the cryolite.", "c": 0, "f": ""}], "e": " Oxygen forms at the positive electrode (2O<sup>2−</sup> → O<sub>2</sub> + 4e<sup>−</sup>) and burns the carbon away."}, {"s": "AQA Nov 2021 · 1H", "q": "Which is the ionic equation for the neutralisation of hydrochloric acid by potassium hydroxide?", "o": [{"t": "H<sup>+</sup> + OH<sup>−</sup> → H<sub>2</sub>O", "c": 1, "f": ""}, {"t": "HCl + KOH → KCl + H<sub>2</sub>O", "c": 0, "f": "That is the full symbol equation, not the ionic equation."}, {"t": "K<sup>+</sup> + Cl<sup>−</sup> → KCl", "c": 0, "f": "K<sup>+</sup> and Cl<sup>−</sup> are spectator ions."}, {"t": "H<sup>+</sup> + OH<sup>−</sup> → H<sub>2</sub> + O<sup>−</sup>", "c": 0, "f": ""}], "e": " Every neutralisation has the same ionic equation. The spectator ions are left out."}, {"s": "Adapted from AQA Nov 2020 · 1H", "q": "Green copper chromate solution contains blue Cu<sup>2+</sup> ions and yellow CrO<sub>4</sub><sup>2−</sup> ions. During electrolysis the solution turns yellow near the positive electrode. Why?", "o": [{"t": "Yellow CrO<sub>4</sub><sup>2−</sup> ions are attracted to the positive electrode.", "c": 1, "f": ""}, {"t": "Blue Cu<sup>2+</sup> ions are attracted to the positive electrode.", "c": 0, "f": "Positive ions are repelled by the positive electrode."}, {"t": "Chromate ions are discharged as a yellow gas.", "c": 0, "f": ""}, {"t": "Copper metal forms at the positive electrode.", "c": 0, "f": "Copper forms at the negative electrode."}], "e": " Negative ions move to the positive electrode, so the yellow colour builds up there."}, {"s": "AQA Jun 2023 · 1H", "q": "Fe<sub>2</sub>O<sub>3</sub> + 3C → 2Fe + 3CO. Which substance is reduced, and why?", "o": [{"t": "Iron oxide, because it loses oxygen", "c": 1, "f": ""}, {"t": "Carbon, because it gains oxygen", "c": 0, "f": "Gaining oxygen is oxidation."}, {"t": "Iron, because it is formed", "c": 0, "f": ""}, {"t": "Carbon monoxide, because it contains oxygen", "c": 0, "f": ""}], "e": " Fe<sub>2</sub>O<sub>3</sub> loses oxygen (reduced). Carbon gains oxygen (oxidised)."}, {"s": "Adapted from AQA Jun 2023 · 1H", "q": "At the negative electrode: Al<sup>3+</sup> + 3e<sup>−</sup> → Al. How many moles of electrons are needed to make 54 g of aluminium? (A<sub>r</sub>: Al = 27)", "o": [{"t": "6", "c": 1, "f": ""}, {"t": "3", "c": 0, "f": "3 mol of electrons makes only 1 mol (27 g) of Al."}, {"t": "2", "c": 0, "f": "2 is the moles of Al. Each needs 3 electrons."}, {"t": "18", "c": 0, "f": ""}], "e": " 54 ÷ 27 = 2 mol Al. 2 × 3 = 6 mol of electrons."}, {"s": "AQA Nov 2021 · 1H", "q": "Molten lead bromide is electrolysed. Which is the balanced half equation at the positive electrode?", "o": [{"t": "2Br<sup>−</sup> → Br<sub>2</sub> + 2e<sup>−</sup>", "c": 1, "f": ""}, {"t": "Br<sup>−</sup> → Br + e<sup>−</sup>", "c": 0, "f": "Bromine is diatomic: Br<sub>2</sub>."}, {"t": "2Br<sup>−</sup> + 2e<sup>−</sup> → Br<sub>2</sub>", "c": 0, "f": "Charges don't balance. Negative ions lose electrons."}, {"t": "Br<sub>2</sub> + 2e<sup>−</sup> → 2Br<sup>−</sup>", "c": 0, "f": "This is the reverse reaction."}], "e": " Negative ions lose electrons at the positive electrode (oxidation). Charge: −2 on the left, −2 on the right."}]];
+
+let store = {};
+try { store = JSON.parse(localStorage.getItem("mcq-"+TOPIC) || "{}"); } catch(e) { store = {}; }
+function save(){ try { localStorage.setItem("mcq-"+TOPIC, JSON.stringify(store)); } catch(e) {} }
+
+const orders = DATA.map(set => set.map(q => shuffle(q.o.map((_,i)=>i))));
+function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+let cur = 0;
+const tabs = document.getElementById("tabs"), main = document.getElementById("main");
+
+function levelScore(l){
+  const ans = store[l] || {}; let s=0, n=0;
+  DATA[l].forEach((q,i)=>{ if(ans[i]!==undefined){ n++; if(q.o[ans[i]].c) s++; } });
+  return {s,n};
+}
+function drawTabs(){
+  tabs.innerHTML = "";
+  LEVELS.forEach((L,l)=>{
+    const b = document.createElement("button");
+    b.setAttribute("role","tab"); b.setAttribute("aria-selected", l===cur);
+    b.style.setProperty("--c", L.col);
+    const {s,n} = levelScore(l);
+    b.innerHTML = `<span class="sc">${n? s+"/10":""}</span><span class="lv">${L.name}</span><span class="tier">${L.tier}</span>`;
+    b.onclick = ()=>{ cur=l; render(); window.scrollTo({top:0}); };
+    tabs.appendChild(b);
+  });
+}
+function render(){
+  const L = LEVELS[cur]; document.body.style.setProperty("--c", L.col);
+  drawTabs();
+  const ans = store[cur] || {};
+  let h = `<div class="intro"><b>${L.name} · ${L.tier}.</b> ${L.intro} Your first click counts.</div>`;
+  DATA[cur].forEach((q,i)=>{
+    h += `<div class="q" id="q${i}"><div class="qhead"><span class="qn">Q${i+1}</span><span class="src">${q.s}</span></div><div class="stem">${q.q}</div><div class="opts">`;
+    orders[cur][i].forEach((oi,k)=>{
+      const o = q.o[oi]; let cls="";
+      if(ans[i]!==undefined){ if(o.c) cls="right"; else if(ans[i]===oi) cls="wrong"; }
+      h += `<button class="opt ${cls}" data-q="${i}" data-o="${oi}" ${ans[i]!==undefined?"disabled":""}><span class="let">${"ABCD"[k]}</span><span>${o.t}</span></button>`;
+    });
+    h += `</div><div class="fb" id="fb${i}"></div></div>`;
+  });
+  h += `<div class="done" id="done"></div>`;
+  main.innerHTML = h;
+  main.querySelectorAll(".opt").forEach(b=> b.onclick = ()=> choose(+b.dataset.q, +b.dataset.o));
+  DATA[cur].forEach((q,i)=>{ if(ans[i]!==undefined) showFb(i, ans[i]); });
+  update();
+}
+function choose(i, oi){
+  store[cur] = store[cur] || {};
+  if(store[cur][i]!==undefined) return;
+  store[cur][i] = oi; save();
+  const box = document.getElementById("q"+i);
+  box.querySelectorAll(".opt").forEach(b=>{
+    b.disabled = true; const o = DATA[cur][i].o[+b.dataset.o];
+    if(o.c) b.classList.add("right"); else if(+b.dataset.o===oi) b.classList.add("wrong");
+  });
+  showFb(i, oi); update(); drawTabs();
+}
+function showFb(i, oi){
+  const q = DATA[cur][i], o = q.o[oi], fb = document.getElementById("fb"+i);
+  const right = q.o.find(x=>x.c);
+  fb.className = "fb show " + (o.c ? "ok" : "no");
+  fb.innerHTML = o.c
+    ? `<b>Correct.</b>${q.e}`
+    : `<b>Not quite – the answer is: ${right.t}</b>${o.f ? o.f+" " : ""}${q.e}`;
+}
+function update(){
+  const {s,n} = levelScore(cur);
+  document.getElementById("score").textContent = `${s} / 10`;
+  document.getElementById("answered").textContent = `${n} answered`;
+  document.getElementById("prog").style.width = (n*10)+"%";
+  const done = document.getElementById("done");
+  if(n===10){
+    const ans = store[cur]; const wrong = DATA[cur].map((q,i)=>({q,i})).filter(x=>!x.q.o[ans[x.i]].c);
+    let h = `<h2>${LEVELS[cur].name} done: ${s} / 10</h2>`;
+    if(!wrong.length){ h += `<p>Full marks. ${cur<3 ? "Try "+LEVELS[cur+1].name+" next." : "Excellent work."}</p>`; }
+    else {
+      h += `<p>Copy these into your fix-it table: write the question in column 1, leave column 2 blank to answer next time, and copy the correct answer into column 3.</p>
+      <table class="fix"><tr><th>Question</th><th>My answer next time</th><th>Correct answer</th></tr>`;
+      wrong.forEach(x=>{ h += `<tr><td>${x.q.q.replace(/<table[\s\S]*?<\/table>/g," [see table] ")}</td><td></td><td>${x.q.o.find(o=>o.c).t}</td></tr>`; });
+      h += `</table>`;
+    }
+    done.innerHTML = h; done.classList.add("show");
+  } else done.classList.remove("show");
+}
+document.getElementById("reset").onclick = ()=>{
+  delete store[cur]; save(); orders[cur] = DATA[cur].map(q=>shuffle(q.o.map((_,i)=>i))); render();
+};
+render();
+</script>
+</body>
+</html>
