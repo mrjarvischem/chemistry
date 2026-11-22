@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<script src="gate.js"></script>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Evolution of the Atmosphere</title>
+<style>
+/* Layout idea: one tall graphic on a shared time axis (composition chart above, landscape of the same moments below),
+   then a readout for the chosen moment and six numbered stage cards. Single light theme for projectors. */
+:root{
+  color-scheme:light;
+  --bg:#eef1f6; --panel:#ffffff; --ink:#131c2b; --muted:#56637a; --line:#d3dae6;
+  --accent:#2a4fc9; --accent-soft:#e3e9fb;
+  --n2:#2a78d6; --o2:#1baf7a; --other:#6250d6; --co2:#eb6834;
+  --font:"Avenir Next","Segoe UI Variable","Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:17px;line-height:1.45}
+.wrap{max-width:1360px;margin:0 auto;padding:16px 16px 32px;display:flex;flex-direction:column;gap:14px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 16px}
+header a{color:var(--accent);font-size:.9rem;text-decoration:none;flex-basis:100%}
+header a:hover{text-decoration:underline}
+h1{font-size:1.6rem;margin:0;letter-spacing:-.01em;text-wrap:balance}
+header p{margin:0;color:var(--muted)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 22px;margin:0 0 8px;padding:0;list-style:none;font-size:.95rem}
+.legend li{display:flex;align-items:center;gap:8px}
+.legend small{color:var(--muted);font-size:.85rem}
+.sw{width:14px;height:14px;border-radius:4px;flex:none}
+.scroll{overflow-x:auto}
+#fig{display:block;width:100%;min-width:760px;height:auto;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+#fig text{font-family:var(--font)}
+.note{margin:8px 0 0;color:var(--muted);font-size:.88rem}
+
+.readout{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+.rtop{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px}
+.rtop h2{margin:0;font-size:1.3rem;font-variant-numeric:tabular-nums}
+.rtop p{margin:0;color:var(--muted)}
+input[type=range]{width:100%;accent-color:var(--accent);height:30px;margin:0}
+input[type=range]:focus-visible,button:focus-visible,summary:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.bar{display:flex;height:26px;border-radius:6px;overflow:hidden;gap:2px;background:var(--panel)}
+.bar i{display:block;min-width:0}
+.vals{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:0}
+.vals div{display:flex;flex-direction:column;border-left:5px solid var(--line);padding-left:10px}
+.vals dt{font-size:.85rem;color:var(--muted)}
+.vals dd{margin:0;font-size:1.35rem;font-weight:650;font-variant-numeric:tabular-nums}
+
+.stages{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;list-style:none;margin:0;padding:0}
+.stages button{font:inherit;color:inherit;text-align:left;width:100%;height:100%;cursor:pointer;background:var(--panel);
+  border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:4px}
+.stages button:hover{border-color:var(--accent)}
+.stages button[aria-current="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 2px var(--accent);background:var(--accent-soft)}
+.stages .num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;
+  background:var(--ink);color:#fff;font-weight:700;font-size:.9rem;flex:none}
+.stages .hd{display:flex;align-items:center;gap:8px;font-weight:650;font-size:1.02rem}
+.stages .when{font-size:.82rem;color:var(--muted)}
+.stages .tx{font-size:.92rem}
+.stages .eq{font-size:.86rem;background:var(--bg);border-radius:6px;padding:4px 6px;font-variant-numeric:tabular-nums}
+details{font-size:.92rem}
+summary{cursor:pointer;color:var(--accent);font-weight:600}
+table{border-collapse:collapse;margin-top:8px;font-variant-numeric:tabular-nums}
+th,td{padding:4px 12px;border-bottom:1px solid var(--line);text-align:right}
+th:first-child,td:first-child{text-align:left}
+.tscroll{overflow-x:auto}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a href="index.html">&larr; Teacher resources</a>
+    <h1>Evolution of the Earth's atmosphere</h1>
+    <p>AQA GCSE Chemistry 4.9.1 (Trilogy 5.9.1) &middot; 4.6 billion years in one picture</p>
+  </header>
+
+  <section class="card" aria-label="Graphic">
+    <ul class="legend">
+      <li><span class="sw" style="background:var(--co2)"></span>Carbon dioxide, CO&#8322;</li>
+      <li><span class="sw" style="background:var(--other)"></span>Other gases <small>water vapour, methane, ammonia; today mostly argon</small></li>
+      <li><span class="sw" style="background:var(--o2)"></span>Oxygen, O&#8322;</li>
+      <li><span class="sw" style="background:var(--n2)"></span>Nitrogen, N&#8322;</li>
+    </ul>
+    <div class="scroll">
+      <svg id="fig" viewBox="0 0 1200 724" role="img" aria-label="Stacked chart of the gases in the atmosphere from 4.6 billion years ago to today, above a landscape showing volcanoes, oceans forming, algae, plants and rocks that lock up carbon."></svg>
+    </div>
+    <p class="note">A model, not measured data: evidence for the early atmosphere is limited, so the early percentages are estimates. Drag across the graphic or use the slider to pick a moment.</p>
+  </section>
+
+  <section class="card readout" aria-label="Composition at the chosen time">
+    <div class="rtop"><h2 id="when">Today</h2><p id="stageline"></p></div>
+    <input type="range" id="time" min="0" max="460" step="1" value="460" aria-label="Time, from 4.6 billion years ago to today">
+    <div class="bar" id="bar" aria-hidden="true"></div>
+    <dl class="vals" id="vals"></dl>
+  </section>
+
+  <ol class="stages" id="stages"></ol>
+
+  <details class="card">
+    <summary>Values used in this model</summary>
+    <div class="tscroll"><table id="tbl"></table></div>
+  </details>
+</div>
+
+<script>
+(function(){
+"use strict";
+/* ---------- model ---------- */
+var T   =[4.6,4.0,3.5,2.7,2.0,1.0,0.6,0.4,0.2,0];
+var CO2 =[88,84,62,40,22,8,3,1,0.04,0.04];
+var OTH =[10,8,5,3,2,1.5,1.2,1,0.96,0.96];
+var O2  =[0,0,0,0,3,12,17,20,21,21];
+var U=T.map(function(t){return 4.6-t;});
+function mono(xs,ys){ // monotone cubic interpolation (Fritsch-Carlson)
+  var n=xs.length,d=[],m=[],i;
+  for(i=0;i<n-1;i++)d.push((ys[i+1]-ys[i])/(xs[i+1]-xs[i]));
+  m[0]=d[0];m[n-1]=d[n-2];
+  for(i=1;i<n-1;i++)m[i]=d[i-1]*d[i]<=0?0:(d[i-1]+d[i])/2;
+  for(i=0;i<n-1;i++){
+    if(d[i]===0){m[i]=0;m[i+1]=0;continue;}
+    var a=m[i]/d[i],b=m[i+1]/d[i],s=a*a+b*b;
+    if(s>9){var k=3/Math.sqrt(s);m[i]=k*a*d[i];m[i+1]=k*b*d[i];}
+  }
+  return function(x){
+    var j=0;while(j<n-2&&x>xs[j+1])j++;
+    var h=xs[j+1]-xs[j],t=(x-xs[j])/h,t2=t*t,t3=t2*t;
+    return (2*t3-3*t2+1)*ys[j]+(t3-2*t2+t)*h*m[j]+(-2*t3+3*t2)*ys[j+1]+(t3-t2)*h*m[j+1];
+  };
+}
+var fC=mono(U,CO2),fO=mono(U,OTH),fX=mono(U,O2);
+function comp(t){
+  var u=4.6-t,c=Math.max(0,fC(u)),o=Math.max(0,fO(u)),x=Math.max(0,fX(u));
+  return {n2:100-c-o-x,o2:x,other:o,co2:c};
+}
+var GAS=[
+  {k:"co2",name:"Carbon dioxide",col:"var(--co2)"},
+  {k:"other",name:"Other gases",col:"var(--other)"},
+  {k:"o2",name:"Oxygen",col:"var(--o2)"},
+  {k:"n2",name:"Nitrogen",col:"var(--n2)"}
+];
+var STAGES=[
+  {t:4.45,from:4.6,to:4.0,title:"Volcanoes",when:"First billion years",
+   tx:"Intense volcanic activity releases carbon dioxide, water vapour and nitrogen, with small amounts of methane and ammonia. Mainly carbon dioxide and little or no oxygen, like Mars and Venus today."},
+  {t:4.0,from:4.0,to:3.6,title:"Oceans form",when:"As the Earth cools",
+   tx:"Water vapour condenses and falls as rain, forming the oceans."},
+  {t:3.3,from:3.6,to:2.7,title:"Carbon dioxide dissolves",when:"Once there are oceans",
+   tx:"Carbon dioxide dissolves in the oceans. Carbonates precipitate as sediments, which become sedimentary rocks such as limestone."},
+  {t:2.7,from:2.7,to:2.0,title:"Algae photosynthesise",when:"About 2.7 billion years ago",
+   tx:"Algae start to produce oxygen and take in carbon dioxide.",eq:"6CO₂ + 6H₂O → C₆H₁₂O₆ + 6O₂ (light)"},
+  {t:1.0,from:2.0,to:0.2,title:"Plants evolve, oxygen builds up",when:"Over the next billion years or so",
+   tx:"Oxygen rises until animals can evolve. Carbon from living things is locked up in fossil fuels: coal, crude oil and natural gas. Nitrogen from volcanoes has gradually built up."},
+  {t:0,from:0.2,to:-1,title:"Today",when:"Much the same for 200 million years",
+   tx:"About four-fifths nitrogen and one-fifth oxygen, with small proportions of carbon dioxide (0.04%), water vapour and noble gases."}
+];
+function stageAt(t){for(var i=0;i<STAGES.length;i++)if(t<=STAGES[i].from&&t>STAGES[i].to)return i;return 0;}
+
+/* ---------- geometry ---------- */
+var X0=64,X1=1176,PW=X1-X0,CT=44,CB=384,CH=CB-CT,ST=404,SEA=524,SB=644;
+function X(t){return X0+(4.6-t)/4.6*PW;}
+function Y(p){return CB-p/100*CH;}
+function f(n){return Math.round(n*10)/10;}
+var s=[];
+function add(str){s.push(str);}
+
+/* defs */
+add('<defs>'+
+ '<linearGradient id="sky" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="#c2683a"/><stop offset=".16" stop-color="#d99a66"/><stop offset=".42" stop-color="#e6d3b3"/><stop offset=".7" stop-color="#cfe4ef"/><stop offset="1" stop-color="#a9d6f5"/></linearGradient>'+
+ '<linearGradient id="skyv" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity=".35"/></linearGradient>'+
+ '<linearGradient id="sea" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#3f9ad1"/><stop offset="1" stop-color="#1c5f96"/></linearGradient>'+
+ '<linearGradient id="rock" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#5a4a45"/><stop offset="1" stop-color="#2f2725"/></linearGradient>'+
+ '<linearGradient id="cone" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#3a2a26"/><stop offset="1" stop-color="#5a4a45"/></linearGradient>'+
+ '<radialGradient id="glow"><stop offset="0" stop-color="#ffd27a"/><stop offset=".5" stop-color="#ff7a2e" stop-opacity=".8"/><stop offset="1" stop-color="#ff4a1a" stop-opacity="0"/></radialGradient>'+
+ '<clipPath id="plot"><rect x="'+X0+'" y="'+CT+'" width="'+PW+'" height="'+CH+'" rx="6"/></clipPath>'+
+ '<clipPath id="scene"><rect x="'+X0+'" y="'+ST+'" width="'+PW+'" height="'+(SB-ST)+'" rx="6"/></clipPath>'+
+ '</defs>');
+
+/* ---------- chart ---------- */
+var N=230,pts=[],i;
+for(i=0;i<=N;i++){var t=4.6-4.6*i/N,c=comp(t);pts.push({x:X(t),a:c.n2,b:c.n2+c.o2,c:c.n2+c.o2+c.other});}
+function area(lo,hi){
+  var d="M";
+  for(i=0;i<=N;i++)d+=f(pts[i].x)+","+f(Y(hi(pts[i])))+(i<N?"L":"");
+  for(i=N;i>=0;i--)d+="L"+f(pts[i].x)+","+f(Y(lo(pts[i])));
+  return d+"Z";
+}
+add('<g clip-path="url(#plot)">');
+add('<rect x="'+X0+'" y="'+CT+'" width="'+PW+'" height="'+CH+'" fill="var(--co2)"/>');
+add('<path d="'+area(function(){return 0;},function(p){return p.c;})+'" fill="var(--other)" stroke="#fff" stroke-width="2" stroke-linejoin="round"/>');
+add('<path d="'+area(function(){return 0;},function(p){return p.b;})+'" fill="var(--o2)" stroke="#fff" stroke-width="2" stroke-linejoin="round"/>');
+add('<path d="'+area(function(){return 0;},function(p){return p.a;})+'" fill="var(--n2)" stroke="#fff" stroke-width="2" stroke-linejoin="round"/>');
+[20,40,60,80].forEach(function(p){add('<line x1="'+X0+'" x2="'+X1+'" y1="'+Y(p)+'" y2="'+Y(p)+'" stroke="#fff" stroke-opacity=".28"/>');});
+add('</g>');
+[0,20,40,60,80,100].forEach(function(p){add('<text x="'+(X0-10)+'" y="'+(Y(p)+5)+'" text-anchor="end" font-size="14" fill="var(--muted)">'+p+'</text>');});
+add('<text transform="translate(18,'+((CT+CB)/2)+') rotate(-90)" text-anchor="middle" font-size="14" fill="var(--muted)">% of the atmosphere</text>');
+/* direct labels */
+function lab(x,y,txt,size){add('<text x="'+f(x)+'" y="'+f(y)+'" text-anchor="middle" font-size="'+size+'" font-weight="700" fill="#fff">'+txt+'</text>');}
+lab(X(3.95),Y(58),"Carbon dioxide",24);
+lab(X(1.55),Y(38),"Nitrogen",24);
+var cL=comp(4.42);lab(X(4.42)+34,Y(cL.n2+cL.o2+cL.other/2)+5,"Other gases",13.5);
+var cO=comp(0.22);lab(X(0.24),Y(cO.n2+cO.o2/2)+6,"Oxygen",17);
+
+/* ---------- landscape ---------- */
+add('<g clip-path="url(#scene)">');
+add('<rect x="'+X0+'" y="'+ST+'" width="'+PW+'" height="'+(SEA-ST)+'" fill="url(#sky)"/>');
+add('<rect x="'+X0+'" y="'+ST+'" width="'+PW+'" height="'+(SEA-ST)+'" fill="url(#skyv)"/>');
+/* sun */
+add('<circle cx="1118" cy="436" r="34" fill="#fff3b0" opacity=".45"/><circle cx="1118" cy="436" r="18" fill="#ffdf5c"/>');
+/* rock base */
+add('<rect x="'+X0+'" y="'+SEA+'" width="'+PW+'" height="'+(SB-SEA)+'" fill="url(#rock)"/>');
+/* sea floor profile */
+var xo=X(4.0),xs=X(0.5),DEEP=58;
+function ease(u){u=Math.max(0,Math.min(1,u));return u*u*(3-2*u);}
+function floorY(x){
+  var d=DEEP*ease((x-xo)/120)*ease((xs-x)/70);
+  return SEA+d;
+}
+function sedTop(x){ // sediment builds up on the sea floor through time
+  var g=ease((x-X(3.8))/700)*30;
+  return Math.max(SEA+2,floorY(x)-g*ease((xs-x)/90));
+}
+var sea="M"+f(xo)+","+SEA,sed="",x;
+for(x=xo;x<=xs;x+=6)sea+="L"+f(x)+","+f(floorY(x));
+sea+="L"+f(xs)+","+SEA+"Z";
+add('<path d="'+sea+'" fill="url(#sea)"/>');
+sed="M"+f(X(3.8))+","+f(floorY(X(3.8)));
+for(x=X(3.8);x<=xs;x+=6)sed+="L"+f(x)+","+f(sedTop(x));
+for(x=xs;x>=X(3.8);x-=6)sed+="L"+f(x)+","+f(floorY(x)+10);
+add('<path d="'+sed+'Z" fill="#e9dcc0"/>');
+[0.35,0.7].forEach(function(k){
+  var d="";for(x=X(3.0);x<=xs-30;x+=8){var yy=sedTop(x)+(floorY(x)+10-sedTop(x))*k;d+=(d?"L":"M")+f(x)+","+f(yy);}
+  add('<path d="'+d+'" fill="none" stroke="#c9b68e" stroke-width="1.5"/>');
+});
+add('<text x="'+f(X(1.45))+'" y="'+(SEA+DEEP-3)+'" text-anchor="middle" font-size="13.5" font-weight="600" fill="#5b4a2a">carbonate sediments &#8594; limestone</text>');
+/* water surface highlight */
+add('<line x1="'+f(xo+8)+'" x2="'+f(xs-4)+'" y1="'+(SEA+1)+'" y2="'+(SEA+1)+'" stroke="#bfe6fb" stroke-width="2" stroke-opacity=".8"/>');
+/* volcanoes */
+function volcano(cx,h,w){
+  var top=SEA-h;
+  add('<circle cx="'+cx+'" cy="'+(top+2)+'" r="'+(h*.42)+'" fill="url(#glow)"/>');
+  var k,pl="";
+  for(k=0;k<7;k++){var r=10+k*5.5,py=top-10-k*17,px=cx+Math.sin(k*1.3+cx)*7+k*3;pl+='<circle cx="'+f(px)+'" cy="'+f(py)+'" r="'+r+'" fill="#6f625c" opacity="'+f(.62-k*.06)+'"/>';}
+  add(pl);
+  add('<path d="M'+(cx-w)+','+(SEA+1)+' L'+(cx-9)+','+top+' L'+(cx+9)+','+top+' L'+(cx+w)+','+(SEA+1)+'Z" fill="url(#cone)"/>');
+  add('<path d="M'+(cx-8)+','+top+' L'+(cx+8)+','+top+' L'+(cx+13)+','+(top+26)+' L'+(cx+5)+','+(top+14)+' L'+(cx-2)+','+(top+34)+' L'+(cx-10)+','+(top+12)+'Z" fill="#ff8a2e"/>');
+}
+volcano(152,58,44);volcano(100,84,58);volcano(190,46,36);
+/* rain clouds as the Earth cools */
+function cloud(cx,cy,sc,col){
+  add('<g fill="'+col+'"><circle cx="'+cx+'" cy="'+cy+'" r="'+16*sc+'"/><circle cx="'+(cx+18*sc)+'" cy="'+(cy-7*sc)+'" r="'+19*sc+'"/><circle cx="'+(cx+40*sc)+'" cy="'+cy+'" r="'+15*sc+'"/><rect x="'+(cx-4*sc)+'" y="'+(cy-2*sc)+'" width="'+48*sc+'" height="'+17*sc+'" rx="'+8*sc+'"/></g>');
+}
+cloud(238,446,1,"#8e8a8a");cloud(296,438,1.1,"#9a9796");
+var rain="";
+for(i=0;i<16;i++){var rx=236+i*7.2,ry=468+(i%3)*9;rain+='<line x1="'+f(rx)+'" y1="'+ry+'" x2="'+f(rx-4)+'" y2="'+(ry+15)+'"/>';}
+add('<g stroke="#3f7fb5" stroke-width="2" stroke-linecap="round" opacity=".85">'+rain+'</g>');
+/* CO2 dissolving */
+function arrow(x1,y1,x2,y2,col){
+  var a=Math.atan2(y2-y1,x2-x1),h=7;
+  add('<g stroke="'+col+'" stroke-width="2.5" stroke-linecap="round" fill="none"><line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'"/>'+
+      '<path d="M'+f(x2-h*Math.cos(a-.5))+','+f(y2-h*Math.sin(a-.5))+' L'+x2+','+y2+' L'+f(x2-h*Math.cos(a+.5))+','+f(y2-h*Math.sin(a+.5))+'"/></g>');
+}
+[372,410,448].forEach(function(ax){arrow(ax,484,ax,516,"#a8431a");});
+add('<text x="410" y="474" text-anchor="middle" font-size="14" font-weight="700" fill="#7a2f10">CO&#8322; dissolves</text>');
+/* algae and oxygen */
+var alg="",seed=7;
+function rnd(){seed=(seed*16807)%2147483647;return seed/2147483647;}
+for(i=0;i<150;i++){
+  var u=Math.pow(rnd(),.65),ax=X(2.7)+u*(xs-12-X(2.7)),ay=SEA+5+rnd()*14;
+  alg+='<circle cx="'+f(ax)+'" cy="'+f(ay)+'" r="'+f(1.8+rnd()*1.6)+'"/>';
+}
+add('<g fill="#7fd957">'+alg+'</g>');
+[X(2.55),X(2.1),X(1.65),X(1.2),X(0.8)].forEach(function(bx,k){
+  arrow(f(bx),514,f(bx),486-k*3,"#0d7a55");
+  add('<circle cx="'+f(bx-9)+'" cy="508" r="3" fill="none" stroke="#0d7a55" stroke-width="1.5"/><circle cx="'+f(bx+8)+'" cy="500" r="2.2" fill="none" stroke="#0d7a55" stroke-width="1.5"/>');
+});
+add('<text x="'+f(X(2.33))+'" y="476" text-anchor="middle" font-size="14" font-weight="700" fill="#0a5c40">O&#8322; from algae</text>');
+/* fish */
+add('<g fill="#f4f8fb" opacity=".95"><ellipse cx="'+f(xs-58)+'" cy="'+(SEA+17)+'" rx="11" ry="5"/><path d="M'+f(xs-69)+','+(SEA+17)+' l-9,-6 v12z"/></g>');
+/* land with plants (right) */
+add('<path d="M'+f(xs-16)+','+(SEA+3)+' Q'+f(xs+6)+','+(SEA-8)+' '+f(xs+30)+','+(SEA-9)+' L'+(X1+2)+','+(SEA-11)+' L'+(X1+2)+','+(SEA+12)+' L'+f(xs-16)+','+(SEA+12)+'Z" fill="#4f8f3a"/>');
+function tree(tx,h){var by=SEA-10;add('<rect x="'+(tx-2)+'" y="'+(by-h)+'" width="4" height="'+h+'" fill="#5a3d24"/><circle cx="'+tx+'" cy="'+(by-h)+'" r="'+f(h*.55)+'" fill="#2f7d32"/><circle cx="'+(tx-5)+'" cy="'+(by-h+4)+'" r="'+f(h*.38)+'" fill="#3c9440"/>');}
+tree(1080,18);tree(1100,26);tree(1124,20);tree(1146,28);tree(1166,22);
+/* coal seam and oil/gas trap under the land */
+add('<path d="M'+f(xs+8)+',556 Q1110,546 '+(X1+2)+',552 L'+(X1+2)+',562 Q1110,557 '+f(xs+8)+',565Z" fill="#0e0c0c"/>');
+add('<text x="1116" y="580" text-anchor="middle" font-size="13" font-weight="600" fill="#e9e2dc">coal</text>');
+add('<path d="M1008,616 Q1050,588 1092,616Z" fill="#17120f"/><path d="M1030,602 Q1050,589 1070,602Z" fill="#d9d2c4"/>');
+add('<text x="1050" y="634" text-anchor="middle" font-size="13" font-weight="600" fill="#e9e2dc">oil and gas</text>');
+add('<text x="'+f(X(4.33))+'" y="'+(SB-14)+'" text-anchor="middle" font-size="13" font-weight="600" fill="#e9e2dc">volcanic gases</text>');
+add('</g>');
+
+/* ---------- event lines, pins, axis ---------- */
+STAGES.forEach(function(st,k){
+  var px=X(k===5?0.1:st.t);
+  add('<line x1="'+f(px)+'" x2="'+f(px)+'" y1="34" y2="'+SB+'" stroke="#131c2b" stroke-opacity=".5" stroke-width="1.2" stroke-dasharray="3 5"/>');
+  add('<circle cx="'+f(px)+'" cy="20" r="14" fill="#131c2b"/><text x="'+f(px)+'" y="25.5" text-anchor="middle" font-size="15" font-weight="700" fill="#fff">'+(k+1)+'</text>');
+});
+[4.6,4,3,2,1,0].forEach(function(t){
+  var tx=X(t);
+  add('<line x1="'+f(tx)+'" x2="'+f(tx)+'" y1="'+SB+'" y2="'+(SB+26)+'" stroke="var(--line)"/>');
+  add('<text x="'+f(tx)+'" y="'+(SB+44)+'" text-anchor="'+(t===0?"end":t===4.6?"start":"middle")+'" font-size="15" fill="var(--ink)" font-weight="600">'+(t===0?"Today":t)+'</text>');
+});
+add('<text x="'+((X0+X1)/2)+'" y="'+(SB+68)+'" text-anchor="middle" font-size="14" fill="var(--muted)">Billions of years ago</text>');
+
+/* cursor */
+add('<g id="cur"><line x1="0" x2="0" y1="'+(CT-6)+'" y2="'+(SB+4)+'" stroke="#fff" stroke-width="5" stroke-opacity=".85"/><line x1="0" x2="0" y1="'+(CT-6)+'" y2="'+(SB+4)+'" stroke="#131c2b" stroke-width="2"/>'+
+    '<path d="M-9,'+(SB+4)+' h18 v9 l-9,9 l-9,-9z" fill="#131c2b" stroke="#fff" stroke-width="1.5"/></g>');
+
+var svg=document.getElementById("fig");
+svg.innerHTML=s.join("");
+
+/* ---------- readout ---------- */
+var cur=document.getElementById("cur"),slider=document.getElementById("time"),
+    whenEl=document.getElementById("when"),lineEl=document.getElementById("stageline"),
+    bar=document.getElementById("bar"),vals=document.getElementById("vals"),stagesEl=document.getElementById("stages");
+function esc(t){return t.replace(/&/g,"&amp;").replace(/</g,"&lt;");}
+function whenText(t){
+  if(t<=0.005)return "Today";
+  if(t<1)return Math.round(t*100)*10+" million years ago";
+  return t.toFixed(1)+" billion years ago";
+}
+function pct(v,k,t){
+  if(t<=0.005&&k==="co2")return "0.04%";
+  if(v<0.05)return "0%";
+  if(v<1)return "less than 1%";
+  return "about "+Math.round(v)+"%";
+}
+stagesEl.innerHTML=STAGES.map(function(st,k){
+  return '<li><button type="button" data-k="'+k+'"><span class="hd"><span class="num">'+(k+1)+'</span>'+esc(st.title)+'</span>'+
+    '<span class="when">'+esc(st.when)+'</span><span class="tx">'+esc(st.tx)+'</span>'+(st.eq?'<span class="eq">'+esc(st.eq)+'</span>':'')+'</button></li>';
+}).join("");
+var btns=stagesEl.querySelectorAll("button");
+function setT(t,fromSlider){
+  t=Math.max(0,Math.min(4.6,t));
+  var c=comp(t),k=stageAt(t);
+  cur.setAttribute("transform","translate("+f(X(t))+",0)");
+  if(!fromSlider)slider.value=Math.round((4.6-t)*100);
+  whenEl.textContent=whenText(t);
+  lineEl.textContent="Stage "+(k+1)+": "+STAGES[k].title;
+  bar.innerHTML=GAS.slice().reverse().map(function(g){return '<i style="background:'+g.col+';flex:'+Math.max(c[g.k],0.0001).toFixed(3)+' 1 0"></i>';}).join("");
+  vals.innerHTML=GAS.slice().reverse().map(function(g){return '<div style="border-left-color:'+g.col+'"><dt>'+g.name+'</dt><dd>'+pct(c[g.k],g.k,t)+'</dd></div>';}).join("");
+  for(var b=0;b<btns.length;b++)btns[b].setAttribute("aria-current",b===k?"true":"false");
+}
+slider.addEventListener("input",function(){setT(4.6-slider.value/100,true);});
+stagesEl.addEventListener("click",function(e){var b=e.target.closest("button");if(b)setT(STAGES[+b.dataset.k].t);});
+var drag=false;
+function fromEvent(e){
+  var r=svg.getBoundingClientRect(),sx=(e.clientX-r.left)/r.width*1200;
+  setT(4.6-(sx-X0)/PW*4.6);
+}
+svg.addEventListener("pointerdown",function(e){drag=true;try{svg.setPointerCapture(e.pointerId);}catch(_){}fromEvent(e);});
+svg.addEventListener("pointermove",function(e){if(drag)fromEvent(e);});
+["pointerup","pointercancel"].forEach(function(n){svg.addEventListener(n,function(){drag=false;});});
+
+/* table */
+document.getElementById("tbl").innerHTML='<tr><th>Time</th><th>Nitrogen %</th><th>Oxygen %</th><th>Other gases %</th><th>Carbon dioxide %</th></tr>'+
+  T.map(function(t,j){var n=100-CO2[j]-OTH[j]-O2[j];return '<tr><td>'+whenText(t)+'</td><td>'+f(n)+'</td><td>'+O2[j]+'</td><td>'+OTH[j]+'</td><td>'+CO2[j]+'</td></tr>';}).join("");
+
+setT(0);
+})();
+</script>
+</body>
+</html>
