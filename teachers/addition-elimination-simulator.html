@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script src="gate.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Addition-Elimination Mechanism</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Layout: instrument bench, matching Atom Viewer and Bonding Simulator. Six step chips across the top,
+     3D stage over the written curly-arrow mechanism on the left, an explain rail on the right. */
+  --bg:#EDF0F5; --surface:#FFFFFF; --soft:#E6EAF2; --ink:#0D1424; --muted:#566076; --line:#D7DDE8;
+  --accent:#2348F5; --accent-ink:#FFFFFF;
+  --stage:#FAFBFE; --stage2:#E3E8F2; --stage-line:#93A0B8;
+  --dot:#E23B2E; --pair:#F5A700; --bond:#6A7488; --bond-hi:#C3CAD8;
+  --font-display:"Bricolage Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;
+  --font-body:"Instrument Sans","Segoe UI",system-ui,-apple-system,sans-serif;
+  --r:14px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#080C15; --surface:#111828; --soft:#1A2337; --ink:#EDF1FA; --muted:#98A3BA; --line:#242E46;
+    --accent:#8198FF; --accent-ink:#0A0F1C;
+    --stage:#0E1527; --stage2:#05080F; --stage-line:#5A6884;
+    --dot:#FF6A5C; --pair:#FFC53D; --bond:#8E99B0; --bond-hi:#DCE2EE;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#080C15; --surface:#111828; --soft:#1A2337; --ink:#EDF1FA; --muted:#98A3BA; --line:#242E46;
+  --accent:#8198FF; --accent-ink:#0A0F1C;
+  --stage:#0E1527; --stage2:#05080F; --stage-line:#5A6884;
+  --dot:#FF6A5C; --pair:#FFC53D; --bond:#8E99B0; --bond-hi:#DCE2EE;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.45;
+  display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+button:disabled{cursor:default;opacity:.4}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3,p,ul{margin:0}
+[hidden]{display:none!important}
+
+.top{display:flex;align-items:center;gap:10px 14px;padding:12px 18px 8px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto}
+.brand svg{width:30px;height:30px;flex:none}
+.brand h1{font-family:var(--font-display);font-weight:700;font-size:24px;letter-spacing:-.02em;line-height:1}
+.pick{display:flex;align-items:center;gap:7px}
+.pick>span{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.seg{display:inline-flex;background:var(--soft);border-radius:999px;padding:3px;gap:2px}
+.seg button{border:0;background:transparent;padding:6px 14px;border-radius:999px;font-weight:600;font-size:13.5px;color:var(--muted);white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(10,20,40,.18)}
+.seg.strong button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+
+.timeline{display:flex;gap:6px;padding:4px 18px 12px;overflow-x:auto;scrollbar-width:none}
+.timeline::-webkit-scrollbar{display:none}
+.timeline button{flex:1 0 auto;min-width:128px;text-align:left;border:1px solid var(--line);background:var(--surface);
+  border-radius:12px;padding:8px 12px 9px;display:flex;flex-direction:column;gap:1px}
+.timeline .yr{font-size:11.5px;font-weight:600;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.timeline .nm{font-family:var(--font-display);font-weight:700;font-size:15.5px;letter-spacing:-.01em;line-height:1.15}
+.timeline button.done{background:var(--soft)}
+.timeline button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.timeline button[aria-pressed="true"] .yr{color:inherit;opacity:.7}
+
+.bench{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 370px;gap:14px;padding:0 18px 16px}
+.col{display:flex;flex-direction:column;gap:10px;min-height:0;min-width:0}
+.panel{position:relative;border-radius:var(--r);overflow:hidden;border:1px solid var(--line);background:var(--surface)}
+.stagebox{flex:1.7 1 0;min-height:260px;
+  background:radial-gradient(circle at 1px 1px,color-mix(in srgb,var(--stage-line) 22%,transparent) 1px,transparent 1.5px) 0 0/22px 22px,
+             radial-gradient(ellipse at 50% 45%,var(--stage),var(--stage2))}
+#stage{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+#stage:active{cursor:grabbing}
+.ov{position:absolute;display:flex;gap:8px;align-items:center;flex-wrap:wrap;pointer-events:none}
+.ov>*{pointer-events:auto}
+.ov.tl{top:12px;left:12px}.ov.tr{top:12px;right:12px}.ov.bl{bottom:12px;left:12px}
+.pill{border:1px solid var(--line);background:color-mix(in srgb,var(--surface) 82%,transparent);backdrop-filter:blur(8px);
+  border-radius:999px;padding:5px 12px;font-size:13px;font-weight:600}
+.pill[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.pill.sq{width:34px;height:34px;padding:0;display:grid;place-items:center;font-size:17px;line-height:1}
+.tag{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:5px 10px;border-radius:999px;
+  background:color-mix(in srgb,var(--surface) 78%,transparent)}
+.key{display:flex;gap:12px;font-size:12.5px;font-weight:600;color:var(--muted);padding:5px 12px;border-radius:999px;
+  background:color-mix(in srgb,var(--surface) 78%,transparent);flex-wrap:wrap}
+.key i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+
+.ctrl{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 16px;font-weight:600;font-size:14px;
+  display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+.btn svg{width:14px;height:14px;fill:currentColor}
+.btn.go{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);min-width:118px;justify-content:center}
+.ctrl .sp{margin-left:auto;display:flex;align-items:center;gap:8px}
+.ctrl .sp>span{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+
+.mechbox{flex:1 1 0;min-height:210px;display:flex}
+#mech{width:100%;height:100%;display:block}
+#mech .at{font:600 23px var(--font-body);fill:var(--ink);dominant-baseline:central}
+#mech .rg{fill:var(--accent)}
+#mech .ch{font:700 20px var(--font-body);fill:var(--dot);dominant-baseline:central}
+#mech .dl{font:700 17px var(--font-body);fill:var(--muted);dominant-baseline:central}
+#mech .cap{font:600 15.5px var(--font-body);fill:var(--muted)}
+#mech .cap.b{fill:var(--ink)}
+#mech .bd{stroke:var(--ink);stroke-width:2.2;stroke-linecap:round}
+#mech .ca{stroke:var(--dot);stroke-width:2.8;fill:none;stroke-linecap:round}
+#mech .lp{fill:var(--dot)}
+
+.rail{display:flex;flex-direction:column;gap:12px;min-height:0;overflow-y:auto}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px}
+.card .eyebrow{font-size:11.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--accent)}
+.card h2{font-family:var(--font-display);font-weight:700;font-size:25px;letter-spacing:-.02em;line-height:1.1;margin:4px 0 10px;text-wrap:balance}
+.card p{font-size:16.5px;line-height:1.5}
+.card p+p{margin-top:9px}
+.card h3{font-size:11.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.pts{list-style:none;padding:0;display:flex;flex-direction:column;gap:8px}
+.pts li{font-size:15.5px;line-height:1.4;padding-left:16px;border-left:3px solid var(--dot)}
+.eq{font-size:18px;font-weight:600;line-height:1.5}
+.eq small{display:block;font-size:14px;font-weight:500;color:var(--muted)}
+.badge{display:inline-block;margin-top:8px;font-size:12.5px;font-weight:700;padding:3px 10px;border-radius:999px;background:var(--soft);color:var(--ink)}
+.badge.maj{background:var(--accent);color:var(--accent-ink)}
+.note{font-size:13px;color:var(--muted)}
+
+@media (max-width:980px){
+  html,body{height:auto}
+  .bench{grid-template-columns:1fr}
+  .stagebox{flex:none;height:380px}
+  .mechbox{flex:none;height:auto;overflow-x:auto}
+  #mech{min-width:760px;height:auto}
+  .rail{overflow:visible}
+}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="brand">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="9" cy="20" r="6" fill="var(--ink)"/><circle cx="23" cy="20" r="6" fill="var(--ink)"/><path d="M9 11 C12 3 21 3 23 10" fill="none" stroke="var(--dot)" stroke-width="2.4" stroke-linecap="round"/><path d="M24.6 5.6 L23.2 11 L18.6 8.2Z" fill="var(--dot)"/></svg>
+    <h1>Addition-Elimination</h1>
+  </div>
+  <div class="pick"><span>Acylating agent</span>
+    <div class="seg" id="segAc">
+      <button data-v="Cl" id="acCl">Ethanoyl chloride</button>
+      <button data-v="An" id="acAn">Ethanoic anhydride</button>
+    </div>
+  </div>
+  <div class="pick"><span>Nucleophile</span>
+    <div class="seg strong" id="segNu">
+      <button data-v="W" id="nuW">Water</button>
+      <button data-v="E" id="nuE">Ethanol</button>
+      <button data-v="A" id="nuA">Ammonia</button>
+      <button data-v="M" id="nuM">Methylamine</button>
+    </div>
+  </div>
+</div>
+
+<div class="timeline" id="tl"></div>
+
+<div class="bench">
+  <div class="col">
+    <div class="panel stagebox">
+      <canvas id="stage" aria-label="3D model of the reaction. Drag to rotate."></canvas>
+      <div class="ov tl"><span class="tag">3D model · drag to rotate</span></div>
+      <div class="ov tr">
+        <button class="pill" id="tgPairs" aria-pressed="true">Electron pairs</button>
+        <button class="pill" id="tgSym" aria-pressed="true">Symbols</button>
+        <button class="pill sq" id="zOut" aria-label="Zoom out">−</button>
+        <button class="pill sq" id="zIn" aria-label="Zoom in">+</button>
+        <button class="pill" id="vReset">Reset view</button>
+      </div>
+      <div class="ov bl"><div class="key"><span><i style="background:var(--pair)"></i>electron pair</span></div></div>
+    </div>
+
+    <div class="ctrl">
+      <button class="btn" id="bRestart"><svg viewBox="0 0 16 16"><path d="M2 2h2v12H2zM14 2v12L5 8z"/></svg>Restart</button>
+      <button class="btn" id="bBack"><svg viewBox="0 0 16 16"><path d="M12 2v12L3 8z"/></svg>Back</button>
+      <button class="btn go" id="bPlay"></button>
+      <button class="btn" id="bNext">Next step<svg viewBox="0 0 16 16"><path d="M4 2v12l9-6z"/></svg></button>
+      <div class="sp"><span>Speed</span>
+        <div class="seg" id="segSp">
+          <button data-v="0.4" id="sp04">Slow</button>
+          <button data-v="1" id="sp1">Normal</button>
+          <button data-v="2" id="sp2">Fast</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel mechbox">
+      <div class="ov tl"><span class="tag">Curly arrow mechanism</span></div>
+      <svg id="mech" viewBox="-30 0 1250 306" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Curly arrow mechanism"></svg>
+    </div>
+  </div>
+
+  <aside class="rail">
+    <div class="card" id="explain"></div>
+    <div class="card" id="points"></div>
+    <div class="card" id="overall"></div>
+    <p class="note">Keys: → next step, ← back, space to play or pause.</p>
+  </aside>
+</div>
+
+<script>
+(function(){
+"use strict";
+const add=(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]], sub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]],
+ mul=(a,s)=>[a[0]*s,a[1]*s,a[2]*s], len=a=>Math.hypot(a[0],a[1],a[2]), norm=a=>mul(a,1/(len(a)||1)),
+ cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]],
+ lerp=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t], mid=(a,b)=>lerp(a,b,.5);
+const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+const rad=a=>a*Math.PI/180, T=1/3;
+function ring(a,k){const v=norm(Math.abs(a[1])>.9?cross(a,[1,0,0]):cross(a,[0,1,0])),w=cross(a,v),s=Math.sqrt(1-k*k);
+  return [90,210,330].map(d=>{const t=rad(d);return add(mul(a,-k),add(mul(v,s*Math.cos(t)),mul(w,s*Math.sin(t))));});}
+
+const EL={C:{r:.40,c:['#939DB3','#3F4759','#1A1F2B'],t:'#fff'},H:{r:.25,c:['#FFFFFF','#E7EBF3','#A3ADC0'],t:'#1a2030'},
+ O:{r:.37,c:['#FF9C92','#E0392B','#8A180F'],t:'#fff'},N:{r:.38,c:['#9DB4FF','#3257E8','#152C96'],t:'#fff'},
+ Cl:{r:.52,c:['#A6F0A0','#2FA83A','#14601C'],t:'#fff'}};
+
+const cfg={ac:'Cl',nu:'A'};
+let M=null, step=0, anim=null, playing=false, dwellUntil=0, speed=1, dirty=true;
+let yaw=-.55, pitch=.2, zoom=1, showPairs=true, showSym=true;
+const NU={W:{at:'O',B:'H',C:null},E:{at:'O',B:'Et',C:null},A:{at:'N',B:'H',C:'H'},M:{at:'N',B:'Me',C:'H'}};
+
+function build(){
+  const an=cfg.ac==='An', nu=NU[cfg.nu], el={C:'C',O:'O',R:'C',X:an?'O':'Cl',Nu:nu.at,Hx:'H'}, gb=[['C','R',1]], stages=[];
+  let reg=true;
+  const methyl=(P,id,c,d)=>{P[id]=c;ring(mul(d,-1),T).forEach((r,i)=>{P[id+'h'+i]=add(c,mul(r,1.09));if(reg){el[id+'h'+i]='H';gb.push([id,id+'h'+i,1]);}});};
+  const subst=(P,id,kind,d)=>{if(!kind)return;
+    if(kind==='H'){P[id]=add(P.Nu,mul(d,1.0));if(reg){el[id]='H';gb.push(['Nu',id,1]);}return;}
+    const c=add(P.Nu,mul(d,kind==='Me'?1.47:1.43));if(reg){el[id]='C';gb.push(['Nu',id,1]);}
+    if(kind==='Me'){methyl(P,id,c,d);return;}
+    P[id]=c;const q=ring(mul(d,-1),T);if(reg){el[id+'m']='C';gb.push([id,id+'m',1]);}
+    methyl(P,id+'m',add(c,mul(q[0],1.53)),q[0]);
+    [1,2].forEach(i=>{P[id+'x'+i]=add(c,mul(q[i],1.09));if(reg){el[id+'x'+i]='H';gb.push([id,id+'x'+i,1]);}});};
+  const LX=an?1.38:1.79, LHX=an?.97:1.27;
+  const e1=[0,-.5,.866], e2=[0,-.866,-.5], bq=norm(add(mul(e1,.5),mul(e2,.866)));
+  for(let i=0;i<4;i++){
+    const P={},sp3=i===2,fin=i===3;P.C=[0,0,0];
+    P.O=sp3?[T*1.4,.943*1.4,0]:[0,1.22,0];
+    const dR=fin?[.866,-.5,0]:sp3?[T,-.471,-.816]:[0,-.5,-.866];
+    if(reg)el.R='C';methyl(P,'R',mul(dR,1.5),dR);
+    P.X=fin?[2.6,-2.0,.5]:mul(sp3?[T,-.471,.816]:[0,-.5,.866],LX);
+    if(an){P.Cq=add(P.X,mul(bq,1.38));P.Oq=add(P.Cq,mul(e1,1.21));const dr=norm(add(mul(e1,-.5),mul(e2,.866)));
+      if(reg){el.Cq='C';el.Oq='O';el.Cr='C';gb.push(['X','Cq',1],['Cq','Oq',2],['Cq','Cr',1]);}
+      methyl(P,'Cr',add(P.Cq,mul(dr,1.5)),dr);}
+    P.Nu=i===0?[-4.2,0,0]:i===1?[-3.0,0,0]:i===2?[-1.47,0,0]:mul([-.866,-.5,0],1.38);
+    const q=ring([1,0,0],T);
+    P.Hx=fin?add(P.X,mul(norm([-1,.4,0]),LHX)):add(P.Nu,mul(q[0],1.0));
+    subst(P,'B',nu.B,fin?[0,-1,0]:q[1]);subst(P,'S',nu.C,fin?[-.866,.5,0]:q[2]);
+    reg=false;stages.push({P,A:{}});
+  }
+  const bonds=i=>{const b=gb.slice();b.push(['C','O',i===2?1:2]);if(i<3)b.push(['C','X',1],['Nu','Hx',1]);else b.push(['X','Hx',1]);if(i>=2)b.push(['C','Nu',1]);return b;};
+  const labels=[{},{C:'δ+',O:'δ−',X:'δ−'},{O:'−',Nu:'+'},{}];
+  const rN=EL[nu.at].r, rX=EL[el.X].r;
+  const pairs=[
+    {f:(i,P)=>i<2?add(P.Nu,[rN+.2,0,0]):mid(P.Nu,P.C),a:()=>1},
+    {f:(i,P)=>i===2?add(P.O,mul(norm([.4,1,0]),EL.O.r+.2)):mid(P.C,P.O),a:()=>1},
+    {f:(i,P)=>i<3?mid(P.C,P.X):mid(P.X,P.Hx),a:()=>1},
+    {f:(i,P)=>i<3?mid(P.Nu,P.Hx):add(P.Nu,[0,0,rN+.2]),a:i=>i>=2?1:0}];
+  let lo=[9,9],hi=[-9,-9];
+  stages.forEach(st=>{for(const k in st.P){const p=st.P[k];lo[0]=Math.min(lo[0],p[0]);hi[0]=Math.max(hi[0],p[0]);lo[1]=Math.min(lo[1],p[1]);hi[1]=Math.max(hi[1],p[1]);}});
+  M={an,nu,el,stages,bonds,labels,pairs,cx:(lo[0]+hi[0])/2,cy:(lo[1]+hi[1])/2,w:hi[0]-lo[0]+2.4,h:hi[1]-lo[1]+2.8,
+     stageOf:[0,1,2,2,3,3],dur:[0,2.2,3.0,1.0,3.4,1.0],last:5};
+}
+
+function scene(){
+  let a=M.stageOf[step], b=a, e=0;
+  if(anim){a=M.stageOf[anim.from];b=M.stageOf[anim.to];e=a===b?0:ease(anim.f);}
+  const A=M.stages[a], B=M.stages[b], P={}, AL={};
+  for(const k in A.P){P[k]=lerp(A.P[k],B.P[k],e);AL[k]=1;}
+  const bm=new Map();
+  M.bonds(a).forEach(([x,y,o])=>bm.set(x+'|'+y,{a:x,b:y,o0:o,o1:0}));
+  M.bonds(b).forEach(([x,y,o])=>{const k=x+'|'+y;if(bm.has(k))bm.get(k).o1=o;else bm.set(k,{a:x,b:y,o0:0,o1:o});});
+  const bonds=[...bm.values()].map(q=>({a:q.a,b:q.b,o:q.o0+(q.o1-q.o0)*e,al:1}));
+  const pairs=M.pairs.map(p=>({p:lerp(p.f(a,P),p.f(b,P),e),al:p.a(a)+(p.a(b)-p.a(a))*e}));
+  const labels=[], LA=M.labels[a], LB=M.labels[b];
+  new Set([...Object.keys(LA),...Object.keys(LB)]).forEach(id=>{
+    if(LA[id]&&LA[id]===LB[id])labels.push({id,t:LA[id],a:1});
+    else{if(LA[id])labels.push({id,t:LA[id],a:Math.max(0,1-2*e)});if(LB[id])labels.push({id,t:LB[id],a:Math.max(0,2*e-1)});}
+  });
+  return {P,AL,bonds,pairs,labels};
+}
+
+const cv=document.getElementById('stage'), ctx=cv.getContext('2d');
+function css(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim();}
+function draw(){
+  const W=cv.width,H=cv.height,dpr=W/(cv.clientWidth||1);
+  ctx.clearRect(0,0,W,H);
+  if(!W||!H)return;
+  const S=scene(), sc=Math.min(W/M.w,H/M.h)*zoom, cy=Math.cos(yaw),sy=Math.sin(yaw),cp=Math.cos(pitch),sp=Math.sin(pitch), D=26;
+  const pr=p=>{const x=p[0]-M.cx,y=p[1]-M.cy,z=p[2];const x1=x*cy+z*sy,z1=-x*sy+z*cy;const y2=y*cp-z1*sp,z2=y*sp+z1*cp;
+    const k=D/(D-z2);return {x:W/2+x1*sc*k,y:H/2-y2*sc*k,z:z2,k:k*sc};};
+  const col={bond:css('--bond'),hi:css('--bond-hi'),dot:css('--dot'),pair:css('--pair'),surf:css('--surface'),line:css('--stage-line')};
+  const items=[], Q={};
+  if(S.mir>.01){const c=[[0,-2.9,-1.7],[0,3.1,-1.7],[0,3.1,1.7],[0,-2.9,1.7]].map(pr);ctx.save();ctx.beginPath();c.forEach((q,i)=>i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y));ctx.closePath();
+    ctx.globalAlpha=.10*S.mir;ctx.fillStyle=css('--accent');ctx.fill();ctx.globalAlpha=.8*S.mir;ctx.setLineDash([7*dpr,6*dpr]);ctx.lineWidth=1.6*dpr;ctx.strokeStyle=css('--accent');ctx.stroke();
+    ctx.setLineDash([]);ctx.fillStyle=css('--accent');ctx.font='700 '+14*dpr+'px "Instrument Sans",system-ui,sans-serif';ctx.textAlign='center';ctx.fillText('MIRROR',(c[1].x+c[2].x)/2,Math.min(c[1].y,c[2].y)-8*dpr);ctx.restore();}
+  for(const id in S.P){const e=EL[M.el[id]],q=pr(S.P[id]),al=S.AL[id];Q[id]=q;if(al<=.01)continue;
+    items.push({z:q.z,f(){const r=e.r*q.k,g=ctx.createRadialGradient(q.x-r*.35,q.y-r*.4,r*.08,q.x,q.y,r);
+      g.addColorStop(0,e.c[0]);g.addColorStop(.55,e.c[1]);g.addColorStop(1,e.c[2]);
+      ctx.save();ctx.globalAlpha=al;ctx.beginPath();ctx.arc(q.x,q.y,r,0,7);ctx.fillStyle=g;ctx.fill();
+      ctx.lineWidth=Math.max(1,dpr);ctx.strokeStyle=col.line;ctx.globalAlpha=.55*al;ctx.stroke();ctx.globalAlpha=al;
+      if(showSym&&r>7*dpr){ctx.fillStyle=e.t;ctx.font='700 '+Math.round(Math.min(r*(M.el[id].length>1?.95:1.05),22*dpr))+'px "Instrument Sans",system-ui,sans-serif';
+        ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(M.el[id],q.x,q.y+r*.04);}ctx.restore();}});}
+  S.bonds.forEach(b=>{if(b.o<=.02||b.al<=.01)return;
+    const A=S.P[b.a],B=S.P[b.b],u=norm(sub(B,A));
+    const p=pr(add(A,mul(u,EL[M.el[b.a]].r*.7))),q=pr(sub(B,mul(u,EL[M.el[b.b]].r*.7)));
+    items.push({z:(p.z+q.z)/2,f(){const k=(p.k+q.k)/2,w=(b.o>2.5?.12:.17)*k;let dx=q.x-p.x,dy=q.y-p.y;const L=Math.hypot(dx,dy)||1;
+      const off=(b.o>2.5?.2:.15)*k*Math.max(0,Math.min(1,b.o-1)),nx=-dy/L*off,ny=dx/L*off;
+      ctx.save();ctx.globalAlpha=b.al*Math.min(1,b.o<1?.25+.75*b.o:1);
+      if(b.o<.98){ctx.setLineDash([w*.9,w*.9]);ctx.lineCap='butt';}else ctx.lineCap='round';
+      (b.o>2.5?[1,0,-1]:off>.5?[1,-1]:[0]).forEach(s=>{
+        ctx.beginPath();ctx.moveTo(p.x+nx*s,p.y+ny*s);ctx.lineTo(q.x+nx*s,q.y+ny*s);
+        ctx.strokeStyle=col.bond;ctx.lineWidth=w;ctx.stroke();
+        ctx.strokeStyle=col.hi;ctx.lineWidth=w*.38;ctx.stroke();});
+      ctx.restore();}});});
+  if(showPairs)S.pairs.forEach(c=>{if(c.al<=.01)return;const q=pr(c.p);
+    items.push({z:q.z+.45,f(){const r=.13*q.k;ctx.save();ctx.globalAlpha=c.al;ctx.shadowColor=col.pair;ctx.shadowBlur=r*2.2;
+      [-1,1].forEach(s=>{ctx.beginPath();ctx.arc(q.x+s*r*1.25,q.y,r,0,7);ctx.fillStyle=col.pair;ctx.fill();});
+      ctx.shadowBlur=0;ctx.lineWidth=dpr;ctx.strokeStyle='rgba(60,35,0,.7)';
+      [-1,1].forEach(s=>{ctx.beginPath();ctx.arc(q.x+s*r*1.25,q.y,r,0,7);ctx.stroke();});ctx.restore();}});});
+  items.sort((a,b)=>a.z-b.z).forEach(i=>i.f());
+  S.labels.forEach(l=>{const a=l.a*S.AL[l.id];if(a<=.01)return;const q=Q[l.id],r=EL[M.el[l.id]].r*q.k,fs=17*dpr;
+    const x=q.x+r*.72+fs*.75,y=q.y-r*.72-fs*.55;
+    ctx.save();ctx.globalAlpha=a;ctx.font='700 '+fs+'px "Instrument Sans",system-ui,sans-serif';
+    const tw=ctx.measureText(l.t).width+fs*.7,th=fs*1.35;
+    ctx.fillStyle=col.surf;ctx.strokeStyle=col.dot;ctx.lineWidth=1.5*dpr;
+    ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x-tw/2,y-th/2,tw,th,th/2);else ctx.rect(x-tw/2,y-th/2,tw,th);ctx.fill();ctx.stroke();
+    ctx.fillStyle=col.dot;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(l.t,x,y+fs*.04);ctx.restore();});
+}
+function fit(){const d=Math.min(window.devicePixelRatio||1,2),w=cv.clientWidth,h=cv.clientHeight;
+  if(cv.width!==Math.round(w*d)||cv.height!==Math.round(h*d)){cv.width=Math.round(w*d);cv.height=Math.round(h*d);}dirty=true;}
+if(window.ResizeObserver)new ResizeObserver(fit).observe(cv);window.addEventListener('resize',fit);
+let drag=null;
+cv.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY};try{cv.setPointerCapture(e.pointerId);}catch(_){}});
+cv.addEventListener('pointermove',e=>{if(!drag)return;yaw+=(e.clientX-drag.x)*.01;pitch=Math.max(-1.3,Math.min(1.3,pitch+(e.clientY-drag.y)*.01));
+  drag={x:e.clientX,y:e.clientY};dirty=true;});
+['pointerup','pointercancel'].forEach(n=>cv.addEventListener(n,()=>drag=null));
+cv.addEventListener('wheel',e=>{e.preventDefault();zoom=Math.max(.6,Math.min(2.4,zoom*(e.deltaY<0?1.08:.93)));dirty=true;},{passive:false});
+
+/* ---------- 2D mechanism ---------- */
+const mech=document.getElementById('mech');
+function renderMech(){
+  const st=anim?anim.to:step, f=anim?anim.f:1, y0=135, an=M.an, n=cfg.nu;
+  const op=k=>st>k?1:st===k?f:0;
+  const T=(x,y,t,an,cls)=>'<text x="'+x+'" y="'+y+'" text-anchor="'+(an||'middle')+'" class="'+(cls||'at')+'">'+t+'</text>';
+  const ln=(x1,y1,x2,y2,g1,g2)=>{g1=g1||13;g2=g2||13;const dx=x2-x1,dy=y2-y1,L=Math.hypot(dx,dy);
+    return '<line class="bd" x1="'+(x1+dx/L*g1)+'" y1="'+(y1+dy/L*g1)+'" x2="'+(x2-dx/L*g2)+'" y2="'+(y2-dy/L*g2)+'"/>';};
+  const arrow=(d,p)=>p<=0?'':'<path class="ca" d="'+d+'" pathLength="1" stroke-dasharray="1" stroke-dashoffset="'+(1-p)+'"'+(p>.97?' marker-end="url(#ah)"':'')+'/>';
+  const rxn=(x,o)=>'<g opacity="'+o+'"><line class="bd" x1="'+x+'" y1="'+y0+'" x2="'+(x+46)+'" y2="'+y0+'" marker-end="url(#rh)"/></g>';
+  const dots=(x,y,px,py)=>'<circle class="lp" cx="'+(x+px*4.6)+'" cy="'+(y+py*4.6)+'" r="2.7"/><circle class="lp" cx="'+(x-px*4.6)+'" cy="'+(y-py*4.6)+'" r="2.7"/>';
+  const dbl=(x)=>'<line class="bd" x1="'+(x-4.5)+'" y1="'+(y0-13)+'" x2="'+(x-4.5)+'" y2="'+(y0-49)+'"/><line class="bd" x1="'+(x+4.5)+'" y1="'+(y0-13)+'" x2="'+(x+4.5)+'" y2="'+(y0-49)+'"/>';
+  const lg=x=>an?ln(x,y0,x+66,y0)+T(x+57,y0,'OCOCH₃','start'):ln(x,y0,x+66,y0,13,16)+T(x+66,y0,'Cl');
+  const base=x=>T(x,y0,'C')+ln(x,y0,x-62,y0)+T(x-53,y0,'H₃C','end')+T(x,y0-62,'O');
+  const A=M.nu.at, left={W:'H',E:'CH₃CH₂',A:'H',M:'H₃C'}[n];
+  let s='<defs><marker id="ah" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5.4" markerHeight="5.4" orient="auto"><path d="M0 0L10 5L0 10Z" style="fill:var(--dot)"/></marker>'+
+        '<marker id="rh" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10Z" style="fill:var(--ink)"/></marker></defs>';
+  /* Block A */
+  {const x=190,ny=y0+92;
+   s+=base(x)+dbl(x)+lg(x);
+   s+={W:T(x-9,ny,'OH₂','start','at rg'),E:T(x-9,ny,'OH','start','at rg')+T(x-11,ny,'CH₃CH₂','end','at rg'),A:T(x-9,ny,'NH₃','start','at rg'),M:T(x-9,ny,'NH₂','start','at rg')+T(x-11,ny,'CH₃','end','at rg')}[n]+dots(x,ny-18,1,0);
+   const o1=op(1);
+   if(o1>0)s+='<g opacity="'+o1+'">'+T(x-18,y0-20,'δ+','middle','dl')+T(x-24,y0-64,'δ−','middle','dl')+(an?'':T(x+72,y0+24,'δ−','middle','dl'))+'</g>';
+   const p=op(2);
+   s+=arrow('M'+(x+3)+' '+(ny-27)+' Q'+(x+26)+' '+(y0+42)+' '+(x+7)+' '+(y0+15),p);
+   s+=arrow('M'+(x+6)+' '+(y0-31)+' C'+(x+40)+' '+(y0-32)+' '+(x+44)+' '+(y0-58)+' '+(x+17)+' '+(y0-64),p);
+   s+=T(x+30,270,(an?'ethanoic anhydride':'ethanoyl chloride')+' + '+nuName(),'middle','cap');}
+  const oB=op(3);
+  if(oB>0){const x=545,ny=y0+58;
+   s+=rxn(366,oB)+'<g opacity="'+oB+'">'+base(x)+ln(x,y0,x,y0-62)+lg(x)+dots(x-17,y0-62,0,1)+T(x+17,y0-75,'−','middle','ch');
+   s+=ln(x,y0,x,ny)+T(x,ny,A,'middle','at rg')+T(x+15,ny-14,'+','middle','ch')+ln(x,ny,x+56,ny)+T(x+56,ny,'H','middle','at rg');
+   s+=ln(x,ny,x-56,ny)+(left.length===1?T(x-56,ny,left,'middle','at rg'):T(x-47,ny,left,'end','at rg'));
+   if(A==='N')s+=ln(x,ny,x,ny+50)+T(x,ny+50,'H','middle','at rg');
+   s+=T(x+30,270,'intermediate','middle','cap')+'</g>';
+   const p=op(4);
+   s+=arrow('M'+(x-21)+' '+(y0-56)+' C'+(x-42)+' '+(y0-48)+' '+(x-36)+' '+(y0-29)+' '+(x-6)+' '+(y0-29),p);
+   s+=arrow('M'+(x+35)+' '+(y0-5)+' C'+(x+39)+' '+(y0-40)+' '+(x+63)+' '+(y0-44)+' '+(x+67)+' '+(y0-18),p);
+   s+=arrow('M'+(x+35)+' '+(ny+5)+' C'+(x+36)+' '+(ny+34)+' '+(x+18)+' '+(ny+38)+' '+(x+11)+' '+(ny+15),p);}
+  const oC=op(5);
+  if(oC>0){const x=890,pr=product();
+   s+=rxn(722,oC)+'<g opacity="'+oC+'">'+base(x)+dbl(x)+ln(x,y0,x+66,y0)+T(x+57,y0,{W:'OH',E:'OCH₂CH₃',A:'NH₂',M:'NHCH₃'}[n],'start','at rg');
+   const bx=x+{W:118,E:176,A:122,M:160}[n];
+   s+=T(bx,y0,'+')+T(bx+24,y0,an?'CH₃COOH':'HCl','start');
+   s+=T(x+50,270,pr.name,'middle','cap b')+'</g>';}
+  mech.innerHTML=s;
+}
+
+/* ---------- words ---------- */
+const nuName=()=>({W:'water',E:'ethanol',A:'ammonia',M:'methylamine'})[cfg.nu];
+function product(){const an=cfg.ac==='An',R=an?'(CH₃CO)₂O':'CH₃COCl';
+  return {W:{name:'ethanoic acid',type:'a carboxylic acid',eq:an?R+' + H₂O → 2CH₃COOH':R+' + H₂O → CH₃COOH + HCl'},
+    E:{name:'ethyl ethanoate',type:'an ester',eq:R+' + CH₃CH₂OH → CH₃COOCH₂CH₃ + '+(an?'CH₃COOH':'HCl')},
+    A:{name:'ethanamide',type:'a primary amide',eq:R+' + 2NH₃ → CH₃CONH₂ + '+(an?'CH₃COONH₄':'NH₄Cl')},
+    M:{name:'N-methylethanamide',type:'an N-substituted amide',eq:R+' + 2CH₃NH₂ → CH₃CONHCH₃ + '+(an?'CH₃COO⁻ CH₃NH₃⁺':'CH₃NH₃Cl')}}[cfg.nu];}
+const chips=()=>[['Start','Reactants'],['Approach','Polar bonds'],['Step 1','Addition'],['Intermediate','O⁻ and '+M.nu.at+'⁺'],['Step 2','Elimination'],['Finish','Products']];
+function words(i){
+  const an=M.an,n=cfg.nu,at=M.nu.at,pr=product(),nm=nuName(),lgn=an?'ethanoate ion':'chloride ion',X=an?'O':'Cl',by=an?'ethanoic acid':'hydrogen chloride';
+  return [
+   {h:'Reactants',p:['<b>'+(an?'Ethanoic anhydride':'Ethanoyl chloride')+'</b> reacts with <b>'+nm+'</b> to make '+pr.name+', '+pr.type+'.',
+     nm[0].toUpperCase()+nm.slice(1)+' is the nucleophile: it has a lone pair on its '+(at==='N'?'nitrogen':'oxygen')+' atom.',
+     an?'AQA only asks for the mechanism with acyl chlorides. The anhydride reacts in the same way, with an ethanoate ion leaving in place of chloride.':''].filter(Boolean),pts:[]},
+   {h:'Polar bonds',p:['The carbonyl carbon is bonded to two electronegative atoms, O and '+X+'. Both pull electron density away, so the carbon is strongly δ+.',
+     'The lone pair on the '+at+' of '+nm+' is attracted to this δ+ carbon.'],pts:['Show δ+ on the carbonyl carbon and δ− on O']},
+   {h:'Step 1: addition',p:['The lone pair on '+at+' forms a new bond to the δ+ carbon.','One pair of electrons from the C=O double bond moves onto oxygen.','The nucleophile has <b>added</b> to the carbonyl group.'],
+    pts:['First arrow from the lone pair on '+at+' to the carbonyl carbon','Second arrow from the C=O bond to O']},
+   {h:'Intermediate',p:['The carbon is now tetrahedral. Oxygen has a negative charge and a lone pair.','The '+at+' has used its lone pair to make a bond, so it now has a positive charge.'],
+    pts:['Show the lone pair and − charge on O','Show the + charge on '+at]},
+   {h:'Step 2: elimination',p:['The lone pair on O⁻ moves back to re-form the C=O double bond.','The C–'+X+' bond breaks and a '+lgn+' leaves.','The '+at+'–H bond breaks, with its electrons moving onto '+at+'⁺. The H⁺ lost ends up as '+by+'.','A small molecule has been <b>eliminated</b>.'],
+    pts:['Arrow from the lone pair on O⁻ to re-form C=O','Arrow from the C–'+X+' bond to '+X,'Arrow from the '+at+'–H bond to '+at+'⁺']},
+   {h:'Products',p:['The product is <b>'+pr.name+'</b>, '+pr.type+', with '+by+'.',
+     at==='N'?(an?'With excess '+nm+', the ethanoic acid reacts further to give the salt, so two moles of '+nm+' are needed.':'HCl reacts with a second molecule of '+nm+' to give '+(n==='A'?'ammonium chloride':'methylammonium chloride')+', so two moles of '+nm+' are needed.')
+       :(n==='W'?'This is hydrolysis.':'This is a quick way to make an ester, and unlike esterification with a carboxylic acid it is not reversible.'),
+     an?'Industry prefers the anhydride: it is cheaper, less corrosive, reacts less violently with water and does not give off HCl fumes. It is used to make aspirin.'
+       :'Acyl chlorides react vigorously and give off misty fumes of HCl. The acid anhydride gives the same organic product more safely.'],
+    pts:at==='N'?['Use 2 moles of '+nm+' in the overall equation']:(an&&n==='W'?['Two molecules of ethanoic acid form']:[])}][i];
+}
+
+/* ---------- UI ---------- */
+const $=id=>document.getElementById(id);
+const ICON_PLAY='<svg viewBox="0 0 16 16"><path d="M4 2v12l9-6z"/></svg>', ICON_PAUSE='<svg viewBox="0 0 16 16"><path d="M3 2h4v12H3zM9 2h4v12H9z"/></svg>';
+function syncUI(){
+  const st=anim?anim.to:step, w=words(st), pr=product(), ch=chips(), L=M.last;
+  $('tl').innerHTML=ch.map((c,i)=>'<button id="chip'+i+'" data-i="'+i+'" aria-pressed="'+(i===st)+'" class="'+(i<st?'done':'')+'"><span class="yr">'+c[0]+'</span><span class="nm">'+c[1]+'</span></button>').join('');
+  $('explain').innerHTML='<div class="eyebrow">'+ch[st][0]+' · '+(st+1)+' of '+(L+1)+'</div><h2>'+w.h+'</h2>'+w.p.map(x=>'<p>'+x+'</p>').join('');
+  $('points').hidden=!w.pts.length;
+  $('points').innerHTML='<h3>On the exam paper</h3><ul class="pts">'+w.pts.map(x=>'<li>'+x+'</li>').join('')+'</ul>';
+  $('overall').innerHTML='<h3>Overall reaction</h3><div class="eq">'+pr.eq+'<small>'+pr.name+'</small></div><span class="badge">Nucleophilic addition-elimination</span>';
+  $('bPlay').innerHTML=playing?ICON_PAUSE+'Pause':ICON_PLAY+(st===L&&!anim?'Replay':'Play all');
+  $('bBack').disabled=st===0&&!anim; $('bNext').disabled=st===L&&!anim; $('bRestart').disabled=st===0&&!anim;
+  [['segAc',cfg.ac],['segNu',cfg.nu],['segSp',String(speed)]].forEach(([id,v])=>
+    $(id).querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===v)));
+  $('tgPairs').setAttribute('aria-pressed',showPairs);$('tgSym').setAttribute('aria-pressed',showSym);
+  dirty=true;
+}
+function start(to,ts){anim={from:step,to,t0:ts||performance.now(),dur:M.dur[to]/speed*1000,f:0};syncUI();}
+function next(){playing=false;if(anim){step=anim.to;anim=null;}else if(step<M.last){start(step+1);return;}syncUI();}
+function back(){playing=false;if(anim){step=anim.from;anim=null;}else step=Math.max(0,step-1);syncUI();}
+function restart(){playing=false;anim=null;step=0;syncUI();}
+function play(){if(playing)playing=false;else{if(step===M.last&&!anim)step=0;playing=true;dwellUntil=performance.now()+(step===0?500:0);}syncUI();}
+function reconfig(){build();playing=false;anim=null;step=0;syncUI();}
+
+$('tl').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const i=+b.dataset.i;
+  playing=false;anim=null;if(i===step+1){start(i);return;}step=i;syncUI();});
+$('segAc').addEventListener('click',e=>{const b=e.target.closest('button');if(b){cfg.ac=b.dataset.v;reconfig();}});
+$('segNu').addEventListener('click',e=>{const b=e.target.closest('button');if(b){cfg.nu=b.dataset.v;reconfig();}});
+$('segSp').addEventListener('click',e=>{const b=e.target.closest('button');if(b){speed=+b.dataset.v;syncUI();}});
+$('bPlay').onclick=play;$('bNext').onclick=next;$('bBack').onclick=back;$('bRestart').onclick=restart;
+$('tgPairs').onclick=()=>{showPairs=!showPairs;syncUI();};$('tgSym').onclick=()=>{showSym=!showSym;syncUI();};
+$('zIn').onclick=()=>{zoom=Math.min(2.4,zoom*1.15);dirty=true;};$('zOut').onclick=()=>{zoom=Math.max(.6,zoom/1.15);dirty=true;};
+$('vReset').onclick=()=>{yaw=-.55;pitch=.2;zoom=1;dirty=true;};
+document.addEventListener('keydown',e=>{
+  if(e.target.matches&&e.target.matches('input,textarea'))return;
+  if(e.key==='ArrowRight'){e.preventDefault();next();}
+  else if(e.key==='ArrowLeft'){e.preventDefault();back();}
+  else if(e.key===' '&&(e.target===document.body||e.target===document.documentElement)){e.preventDefault();play();}
+});
+if(window.matchMedia)window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change',()=>dirty=true);
+new MutationObserver(()=>dirty=true).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>dirty=true);
+
+function tick(ts){
+  if(anim){anim.f=Math.min(1,(ts-anim.t0)/anim.dur);
+    if(anim.f>=1){step=anim.to;anim=null;dwellUntil=ts+1500/speed;if(playing&&step===M.last)playing=false;syncUI();}
+    dirty=true;}
+  else if(playing&&ts>=dwellUntil){if(step<M.last)start(step+1,ts);else{playing=false;syncUI();}}
+  if(dirty){dirty=false;draw();renderMech();}
+  requestAnimationFrame(tick);
+}
+build();fit();syncUI();requestAnimationFrame(tick);
+window.__sim={go(i){playing=false;anim=null;step=i;syncUI();},set(a,n){cfg.ac=a;cfg.nu=n;reconfig();}};
+})();
+</script>
+</body>
+</html>
