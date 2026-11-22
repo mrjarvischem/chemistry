@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<script src="gate.js"></script>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Specific Heat Capacity Practical Simulator</title>
+<style>
+/* Layout idea: lab bench on the left (block, heater, meters, readings), lab book on the right (set up, graph, calculation, runs). Single light blue theme for projectors. */
+:root{
+  color-scheme: light;
+  --bg:#eaf2f8;
+  --paper:#f8fbfe;
+  --ink:#1b2c3d;
+  --accent:#2b5f8f;
+  --line:#bfd3e4;
+  --soft:#dbe8f3;
+  --good:#0f7a4f;
+  --warn:#9a3b1f;
+  --display: Georgia, "Times New Roman", serif;
+  --body: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.45}
+header{padding:16px 20px 8px;display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline}
+h1{font-family:var(--display);font-size:1.6rem;margin:0;text-wrap:balance}
+header p{margin:0;color:var(--accent)}
+main{display:grid;gap:16px;padding:8px 16px 24px;grid-template-columns:1fr}
+@media (min-width:980px){main{grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);align-items:start}}
+.col{display:flex;flex-direction:column;gap:16px;min-width:0}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+h2{font-family:var(--display);font-size:1.1rem;margin:0 0 10px}
+.row{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+.row + .row{margin-top:10px}
+.lab{font-weight:600;min-width:7.5em}
+.seg{display:flex;flex-wrap:wrap;gap:4px}
+button{font:inherit;color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:7px;padding:6px 12px;cursor:pointer;min-height:38px}
+button:hover{border-color:var(--accent)}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600;padding:8px 20px}
+button:disabled{opacity:.45;cursor:not-allowed}
+
+.bench{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:12px;align-items:center}
+@media (max-width:520px){.bench{grid-template-columns:1fr}}
+.bench svg{width:100%;height:auto;display:block}
+.clock{font-family:"Courier New",monospace;font-weight:700;font-size:2.6rem;letter-spacing:.06em;background:#18283a;color:#cfe6fb;border-radius:8px;padding:6px 12px;text-align:center;font-variant-numeric:tabular-nums}
+.clockwrap{display:flex;flex-direction:column;gap:10px}
+.meters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px}
+@media (max-width:520px){.meters{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.meter{background:#18283a;color:#cfe6fb;border-radius:8px;padding:6px 8px;text-align:center}
+.meter b{display:block;font-family:"Courier New",monospace;font-size:1.35rem;font-variant-numeric:tabular-nums;white-space:nowrap}
+.meter span{font-size:.78rem;opacity:.85}
+.status{min-height:3.1em;padding:8px 12px;border-left:5px solid var(--accent);background:var(--soft);border-radius:4px}
+.status.good{border-color:var(--good)}
+.status.warn{border-color:var(--warn)}
+
+.headrow{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.headrow span{color:var(--accent);font-size:.9rem}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:center}
+th{background:var(--soft);font-weight:600;font-size:.9rem}
+td.dim{color:#7d93a8;font-size:.85rem}
+.sw{display:inline-block;width:13px;height:13px;border-radius:50%;vertical-align:-1px;margin-right:6px}
+.graphwrap{overflow-x:auto}
+.graphwrap svg{width:100%;min-width:320px;height:auto;display:block}
+.calc p{margin:8px 0;max-width:70ch}
+.calc .eq{font-variant-numeric:tabular-nums;background:var(--soft);border-radius:6px;padding:8px 12px}
+details summary{cursor:pointer;font-family:var(--display);font-size:1.1rem;font-weight:700}
+details ul{margin:8px 0 0;padding-left:1.2em}
+details li{margin:4px 0;max-width:68ch}
+details h3{font-size:1rem;margin:12px 0 0}
+.note{font-size:.85rem;color:var(--accent);margin:8px 0 0}
+</style>
+</head>
+<body>
+<header>
+  <h1>Specific heat capacity</h1>
+  <p>AQA GCSE Physics required practical 1: electrical heating of a metal block</p>
+</header>
+
+<main>
+  <div class="col">
+    <section class="panel" aria-label="Apparatus">
+      <h2>Metal block, immersion heater and stop clock</h2>
+      <div class="bench">
+        <svg viewBox="0 0 340 250" role="img" aria-label="Metal block with an immersion heater and a thermometer, connected to a power supply through a joulemeter">
+          <!-- heatproof mat -->
+          <rect x="22" y="222" width="236" height="10" rx="3" fill="#b7a78c"/>
+          <!-- insulation -->
+          <rect id="ins" x="48" y="82" width="184" height="140" rx="10" fill="#f3eedc" stroke="#cbbd96" stroke-width="2" stroke-dasharray="6 4"/>
+          <!-- block -->
+          <rect id="block" x="68" y="94" width="144" height="128" rx="3" fill="#c5ccd4" stroke="#4d5b69" stroke-width="2.5"/>
+          <rect x="97" y="94" width="18" height="96" fill="#000" opacity=".28"/>
+          <rect x="161" y="94" width="18" height="96" fill="#000" opacity=".28"/>
+          <text id="blockName" x="140" y="208" text-anchor="middle" font-size="12" font-weight="700" fill="#1b2c3d" font-family="system-ui,Arial">Aluminium 1.00 kg</text>
+          <!-- heater -->
+          <rect x="100" y="52" width="12" height="134" rx="4" fill="#5a5f66"/>
+          <rect id="glow" x="100" y="96" width="12" height="90" rx="4" fill="#ff7a1a" opacity="0"/>
+          <rect x="96" y="44" width="20" height="12" rx="3" fill="#2b3138"/>
+          <text x="106" y="36" text-anchor="middle" font-size="11" fill="#1b2c3d" font-family="system-ui,Arial">heater</text>
+          <!-- thermometer -->
+          <rect x="166" y="18" width="8" height="166" rx="4" fill="#fff" stroke="#4d5b69" stroke-width="1.8"/>
+          <circle cx="170" cy="182" r="6.5" fill="#c0392b" stroke="#4d5b69" stroke-width="1.8"/>
+          <rect id="merc" x="168.2" y="150" width="3.6" height="28" fill="#c0392b"/>
+          <text x="184" y="30" font-size="11" fill="#1b2c3d" font-family="system-ui,Arial">thermometer</text>
+          <!-- wires -->
+          <path d="M102 44 C 102 6, 250 6, 280 58" fill="none" stroke="#b03a2e" stroke-width="2.5"/>
+          <path d="M110 44 C 112 16, 300 10, 312 150" fill="none" stroke="#1b2c3d" stroke-width="2.5"/>
+          <path d="M290 112 L 290 150" fill="none" stroke="#b03a2e" stroke-width="2.5"/>
+          <!-- joulemeter -->
+          <rect x="258" y="58" width="68" height="54" rx="6" fill="#e3ecf4" stroke="#4d5b69" stroke-width="2"/>
+          <rect x="264" y="64" width="56" height="24" rx="3" fill="#18283a"/>
+          <text id="jmSvg" x="316" y="81" text-anchor="end" font-size="13" font-weight="700" fill="#cfe6fb" font-family="Courier New,monospace">0</text>
+          <text x="292" y="104" text-anchor="middle" font-size="10.5" fill="#1b2c3d" font-family="system-ui,Arial">joulemeter</text>
+          <!-- power supply -->
+          <rect x="258" y="150" width="68" height="72" rx="6" fill="#e3ecf4" stroke="#4d5b69" stroke-width="2"/>
+          <circle id="lamp" cx="274" cy="168" r="6" fill="#8fa3b5" stroke="#4d5b69" stroke-width="1.5"/>
+          <text x="302" y="173" text-anchor="middle" font-size="13" font-weight="700" fill="#1b2c3d" font-family="system-ui,Arial">12 V</text>
+          <text x="292" y="204" text-anchor="middle" font-size="10.5" fill="#1b2c3d" font-family="system-ui,Arial">power supply</text>
+        </svg>
+        <div class="clockwrap">
+          <div class="clock" id="clock" aria-live="off">00:00</div>
+          <div class="row">
+            <button class="primary" id="startBtn">Start</button>
+            <button id="resetBtn">Reset run</button>
+          </div>
+          <div class="row"><span>Clock speed</span>
+            <div class="seg" id="speedSeg"></div>
+          </div>
+          <div class="row"><button id="instantBtn">Complete run instantly</button></div>
+        </div>
+      </div>
+      <div class="meters">
+        <div class="meter"><b id="mTemp">20.0</b><span>temperature (°C)</span></div>
+        <div class="meter"><b id="mE">0</b><span>joulemeter (J)</span></div>
+        <div class="meter"><b id="mV">0.0</b><span>p.d. (V)</span></div>
+        <div class="meter"><b id="mI">0.00</b><span>current (A)</span></div>
+      </div>
+      <div class="status" id="status" aria-live="polite" style="margin-top:12px"></div>
+    </section>
+
+    <section class="panel" aria-label="Readings">
+      <div class="headrow"><h2>Readings every minute</h2><span id="readInfo"></span></div>
+      <div class="tablewrap"><table>
+        <thead><tr><th>Time (s)</th><th>Energy transferred (J)</th><th>Temperature (°C)</th></tr></thead>
+        <tbody id="rbody"></tbody>
+      </table></div>
+    </section>
+  </div>
+
+  <div class="col">
+    <section class="panel" aria-label="Set up">
+      <h2>Set up the run</h2>
+      <div class="row"><span class="lab">Block (1.00 kg)</span><div class="seg" id="blockSeg"></div></div>
+      <div class="row"><span class="lab">Heater power</span><div class="seg" id="powerSeg"></div></div>
+      <div class="row"><span class="lab">Insulation</span><div class="seg" id="insSeg"></div></div>
+      <div class="row"><span class="lab">Thermometer</span><div class="seg" id="resSeg"></div></div>
+      <div class="row"><span class="lab">Variation</span>
+        <div class="seg"><button id="varyBtn" aria-pressed="true">Run-to-run variation on</button></div>
+      </div>
+      <p class="note">The heater is on for 10 minutes. Changing the set up starts a fresh run; finished runs stay on the graph.</p>
+    </section>
+
+    <section class="panel" aria-label="Graph">
+      <div class="row" style="justify-content:space-between">
+        <h2 style="margin:0">Graph</h2>
+        <div class="row" style="margin:0">
+          <div class="seg" id="xSeg"></div>
+          <button id="fitBtn" aria-pressed="false">Line of best fit</button>
+        </div>
+      </div>
+      <div class="graphwrap" id="graph" style="margin-top:8px"></div>
+    </section>
+
+    <section class="panel" aria-label="Runs and calculation">
+      <div class="row" style="justify-content:space-between">
+        <h2 style="margin:0">Runs and calculation</h2>
+        <button id="calcBtn" aria-pressed="false">Show calculation</button>
+      </div>
+      <div class="tablewrap" style="margin-top:10px"><table>
+        <thead><tr><th>Run</th><th>Block</th><th>Power (W)</th><th>Insulated</th><th>c, first and last</th><th>c, gradient</th><th>Accepted c</th></tr></thead>
+        <tbody id="runBody"></tbody>
+      </table></div>
+      <div class="calc" id="calc"></div>
+      <div class="row"><button id="clearBtn">Clear all runs</button></div>
+      <p class="note">c values are in J/kg °C. Up to four runs are kept.</p>
+    </section>
+
+    <section class="panel">
+      <details>
+        <summary>Teacher notes</summary>
+        <h3>Variables</h3>
+        <ul>
+          <li>Independent: energy transferred to the block (work done by the heater).</li>
+          <li>Dependent: temperature of the block.</li>
+          <li>Control: mass of the block (1.00 kg), the material, the insulation.</li>
+        </ul>
+        <h3>Method this models</h3>
+        <ul>
+          <li>Measure the mass of the block. Put the heater in the large hole and the thermometer in the small hole, with a drop of water for good thermal contact.</li>
+          <li>Wrap the block in insulation. Record the starting temperature, then switch on the heater and start the clock.</li>
+          <li>Record the joulemeter reading and the temperature every minute for 10 minutes.</li>
+          <li>Plot temperature against energy transferred. Gradient of the straight section = 1 ÷ (m × c).</li>
+          <li>Without a joulemeter: energy = p.d. × current × time, using the voltmeter and ammeter readings.</li>
+        </ul>
+        <h3>Questions to draw out</h3>
+        <ul>
+          <li>Why do the first few points sit below the line of best fit? The heater has to warm up first, and energy takes time to reach the thermometer.</li>
+          <li>Why is the calculated value higher than the accepted value? Some energy heats the heater itself and some is transferred to the surroundings, so the temperature rise is smaller than it should be.</li>
+          <li>Why is the gradient method closer than using only the first and last readings?</li>
+          <li>Run the same block with and without insulation and compare the two curves and the two values of c.</li>
+          <li>Compare aluminium with copper at the same power: which heats up faster, and what does that say about c?</li>
+          <li>Switch the thermometer to 1 °C resolution: what happens to the scatter about the line?</li>
+        </ul>
+        <p class="note">The data are simulated. Accepted values used: aluminium 900, iron 450, copper 385, brass 380 J/kg °C. With insulation the gradient method typically comes out 5 to 15% high, in line with real class results.</p>
+      </details>
+    </section>
+  </div>
+</main>
+
+<script>
+(function(){
+  "use strict";
+  var BLOCKS = {
+    al:{name:"Aluminium", c:900, col:"#c5ccd4"},
+    fe:{name:"Iron",      c:450, col:"#8d949c"},
+    cu:{name:"Copper",    c:385, col:"#c98252"},
+    br:{name:"Brass",     c:380, col:"#d1ad55"}
+  };
+  var DUR=600, STEP=60, H=0.5, CH=30, G=0.6, M=1, FITFROM=180, MAXRUNS=4;
+  var COLS=["#2b5f8f","#c2571a","#2f7d4f","#7a4fa3"];
+  var st = {block:"al", power:48, ins:"yes", res:0.1, vary:true, speed:10, xmode:"energy", fit:false, calc:false};
+  var runs=[], run=null, last=0, nextId=1;
+
+  function $(id){return document.getElementById(id);}
+  function fmtClock(t){
+    var s=Math.floor(t+1e-6), m=Math.floor(s/60); s=s%60;
+    return (m<10?"0":"")+m+":"+(s<10?"0":"")+s;
+  }
+  function sf3(v){ return String(Number(v.toPrecision(3))); }
+  function thou(n){ return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g," "); }
+  function fmtT(v,res){ return res>=1 ? String(Math.round(v)) : v.toFixed(1); }
+  function describe(r){ return BLOCKS[r.block].name+", "+r.P+" W, "+(r.ins?"insulated":"no insulation"); }
+
+  function newRun(){
+    var room = st.vary ? 20+Math.random()*3 : 20;
+    run = {id:nextId, block:st.block, P:st.power, ins:st.ins==="yes", res:st.res, vary:st.vary,
+           k:(st.ins==="yes"?0.08:0.6)*(st.vary?0.85+Math.random()*0.3:1),
+           room:room, Th:room, Tb:room, E:0, t:0, acc:0, next:0,
+           readings:[], running:false, started:false, done:false};
+  }
+  function quant(v,res){ return Number((Math.round(v/res)*res).toFixed(1)); }
+  function takeReading(r){
+    var v = r.Tb + (r.vary ? (Math.random()-0.5)*0.3 : 0);
+    r.readings.push({t:r.next, E:Math.round(r.E), T:quant(v,r.res)});
+    r.next += STEP;
+  }
+  function advance(r,dt){
+    r.acc += dt;
+    while(r.acc>=H && !r.done){
+      r.acc -= H;
+      var q = G*(r.Th-r.Tb);
+      r.Th += (r.P-q)/CH*H;
+      r.Tb += (q - r.k*(r.Tb-r.room))/(M*BLOCKS[r.block].c)*H;
+      r.E += r.P*H; r.t += H;
+      if(r.t >= r.next-1e-6) takeReading(r);
+      if(r.t >= DUR-1e-6) r.done = true;
+    }
+  }
+  function active(){
+    if(run && run.readings.length) return run;
+    return runs.length ? runs[runs.length-1] : run;
+  }
+
+  function fitLine(p){
+    var n=p.length, sx=0, sy=0, sxx=0, sxy=0;
+    p.forEach(function(q){ sx+=q[0]; sy+=q[1]; sxx+=q[0]*q[0]; sxy+=q[0]*q[1]; });
+    var d=n*sxx-sx*sx; if(n<3 || !d) return null;
+    var m=(n*sxy-sx*sy)/d; return {m:m, b:(sy-m*sx)/n};
+  }
+  function calc(r){
+    var rd=r.readings, o={simple:null, grad:null, gkJ:null, dE:null, dT:null};
+    if(rd.length>=2){
+      var a=rd[0], b=rd[rd.length-1];
+      o.dE=b.E-a.E; o.dT=Number((b.T-a.T).toFixed(1));
+      if(o.dT>0) o.simple=o.dE/(M*o.dT);
+    }
+    var f=fitLine(rd.filter(function(p){return p.t>=FITFROM;}).map(function(p){return [p.E,p.T];}));
+    if(f && f.m>0){ o.gkJ=f.m*1000; o.grad=1/(M*f.m); }
+    return o;
+  }
+
+  function setStatus(msg,cls){ var el=$("status"); el.textContent=msg; el.className="status"+(cls?" "+cls:""); }
+  function idleStatus(){
+    setStatus("Ready: "+describe(run)+". Starting temperature "+fmtT(quant(run.Tb,run.res),run.res)+" °C. Press Start to switch on the heater and start the clock.");
+  }
+
+  function finish(){
+    run.running=false;
+    runs.push(run); nextId++;
+    if(runs.length>MAXRUNS) runs.shift();
+    $("startBtn").textContent="Start next run";
+    var b=run.readings[run.readings.length-1];
+    setStatus("10 minutes: heater switched off. "+thou(b.E)+" J transferred and the temperature has reached "+fmtT(b.T,run.res)+" °C. Use the graph to find c.","good");
+    renderAll();
+  }
+  function start(){
+    if(run.done) newRun();
+    if(!run.started){ run.started=true; takeReading(run); }
+    run.running=true; last=performance.now();
+    $("startBtn").textContent="Pause";
+    setStatus("Heater on at "+run.P+" W. Temperature and joulemeter readings are recorded every minute.");
+    renderAll();
+    requestAnimationFrame(tick);
+  }
+  function pause(){ run.running=false; $("startBtn").textContent="Resume"; setStatus("Paused at "+Math.floor(run.t)+" s."); renderScene(); }
+  function tick(now){
+    if(!run || !run.running) return;
+    var dt=Math.min(0.25,(now-last)/1000); last=now;
+    var n=run.readings.length;
+    advance(run, dt*st.speed);
+    if(run.done){ finish(); return; }
+    renderScene();
+    if(run.readings.length!==n){ renderReadings(); renderGraph(); renderRuns(); }
+    requestAnimationFrame(tick);
+  }
+  function instant(){
+    if(run.done) newRun();
+    if(!run.started){ run.started=true; takeReading(run); }
+    run.acc=0; advance(run, DUR-run.t+H);
+    finish();
+  }
+  function resetRun(){ newRun(); $("startBtn").textContent="Start"; renderAll(); idleStatus(); }
+
+  function renderScene(){
+    var on = run.running;
+    $("clock").textContent = fmtClock(run.t);
+    $("mTemp").textContent = fmtT(quant(run.Tb,run.res),run.res);
+    $("mE").textContent = thou(run.E);
+    $("jmSvg").textContent = Math.round(run.E);
+    $("mV").textContent = on ? "12.0" : "0.0";
+    $("mI").textContent = on ? (run.P/12).toFixed(2) : "0.00";
+    $("lamp").setAttribute("fill", on ? "#3fbf6b" : "#8fa3b5");
+    var h = Math.max(4, Math.min(156, (run.Tb-10)*1.5));
+    $("merc").setAttribute("y",(178-h).toFixed(1)); $("merc").setAttribute("height",h.toFixed(1));
+    $("glow").setAttribute("opacity", Math.max(0,Math.min(0.85,(run.Th-run.Tb)/95)).toFixed(2));
+    $("block").setAttribute("fill", BLOCKS[run.block].col);
+    $("blockName").textContent = BLOCKS[run.block].name+" 1.00 kg";
+    $("ins").style.display = run.ins ? "" : "none";
+  }
+  function renderReadings(){
+    var r=active(), html="";
+    for(var i=0;i<=DUR/STEP;i++){
+      var p=r.readings[i];
+      html+="<tr><td>"+(i*STEP)+"</td><td>"+(p?thou(p.E):"")+"</td><td>"+(p?fmtT(p.T,r.res):"")+"</td></tr>";
+    }
+    $("rbody").innerHTML=html;
+    $("readInfo").textContent = r.readings.length ? "Run "+r.id+": "+describe(r) : "";
+  }
+
+  function series(){
+    var list=runs.slice();
+    if(run.started && !run.done) list.push(run);
+    return list;
+  }
+  function colour(r){ return COLS[(r.id-1)%COLS.length]; }
+
+  function renderGraph(){
+    var list=series(), isE = st.xmode==="energy";
+    var W=560,Hh=330,L=58,R=540,T=16,B=270;
+    function xv(p){ return isE ? p.E/1000 : p.t; }
+    var xmax = isE ? 30 : DUR, xstep = isE ? 5 : 100, ymin=20, tmax=40;
+    list.forEach(function(r){
+      if(isE) xmax=Math.max(xmax, Math.ceil(r.P*DUR/1000/5)*5);
+      r.readings.forEach(function(p){ tmax=Math.max(tmax,p.T); });
+    });
+    var ystep = (tmax-ymin)>60 ? 20 : 10;
+    var ymax = ymin + Math.max(2,Math.ceil((tmax-ymin+0.5)/ystep))*ystep;
+    function X(x){return L+(x/xmax)*(R-L);}
+    function Y(y){return B-((y-ymin)/(ymax-ymin))*(B-T);}
+    var s='<svg viewBox="0 0 '+W+' '+Hh+'" role="img" aria-label="Graph of temperature against '+(isE?"energy transferred":"time")+'">';
+    s+='<defs><clipPath id="plotclip"><rect x="'+L+'" y="'+T+'" width="'+(R-L)+'" height="'+(B-T)+'"/></clipPath></defs>';
+    for(var y=ymin;y<=ymax+0.01;y+=ystep){
+      s+='<line x1="'+L+'" x2="'+R+'" y1="'+Y(y)+'" y2="'+Y(y)+'" stroke="#d3e2ef" stroke-width="1"/>';
+      s+='<text x="'+(L-8)+'" y="'+(Y(y)+5)+'" text-anchor="end" font-size="14" fill="#1b2c3d">'+y+'</text>';
+    }
+    for(var x=0;x<=xmax+0.01;x+=xstep){
+      s+='<line x1="'+X(x)+'" x2="'+X(x)+'" y1="'+T+'" y2="'+B+'" stroke="#e2ecf5" stroke-width="1"/>';
+      s+='<line x1="'+X(x)+'" x2="'+X(x)+'" y1="'+B+'" y2="'+(B+6)+'" stroke="#1b2c3d" stroke-width="1.5"/>';
+      s+='<text x="'+X(x)+'" y="'+(B+22)+'" text-anchor="middle" font-size="14" fill="#1b2c3d">'+x+'</text>';
+    }
+    s+='<line x1="'+L+'" x2="'+R+'" y1="'+B+'" y2="'+B+'" stroke="#1b2c3d" stroke-width="2"/>';
+    s+='<line x1="'+L+'" x2="'+L+'" y1="'+T+'" y2="'+B+'" stroke="#1b2c3d" stroke-width="2"/>';
+    s+='<text x="'+((L+R)/2)+'" y="'+(Hh-10)+'" text-anchor="middle" font-size="15" font-weight="600" fill="#1b2c3d">'+(isE?"Energy transferred (kJ)":"Time (s)")+'</text>';
+    s+='<text transform="translate(16 '+((T+B)/2)+') rotate(-90)" text-anchor="middle" font-size="15" font-weight="600" fill="#1b2c3d">Temperature (°C)</text>';
+    var act=active();
+    if(st.fit && act && act.readings.length){
+      var f=fitLine(act.readings.filter(function(p){return p.t>=FITFROM;}).map(function(p){return [xv(p),p.T];}));
+      if(f){
+        var xe=xv(act.readings[act.readings.length-1]);
+        s+='<line clip-path="url(#plotclip)" x1="'+X(0).toFixed(1)+'" y1="'+Y(f.b).toFixed(1)+'" x2="'+X(xe).toFixed(1)+'" y2="'+Y(f.b+f.m*xe).toFixed(1)+'" stroke="'+colour(act)+'" stroke-width="2.2" stroke-dasharray="7 4"/>';
+      }
+    }
+    list.forEach(function(r){
+      var c=colour(r), strong = r===act;
+      r.readings.forEach(function(p){
+        var cx=X(xv(p)).toFixed(1), cy=Y(p.T).toFixed(1);
+        s+='<circle cx="'+cx+'" cy="'+cy+'" r="'+(strong?5:4)+'" fill="'+(strong?c:"#f8fbfe")+'" stroke="'+c+'" stroke-width="2"/>';
+      });
+    });
+    if(!list.length) s+='<text x="'+((L+R)/2)+'" y="'+((T+B)/2)+'" text-anchor="middle" font-size="15" fill="#2b5f8f">Start a run to plot the first point</text>';
+    s+='</svg>';
+    $("graph").innerHTML=s;
+  }
+
+  function renderRuns(){
+    var list=series(), html="";
+    list.forEach(function(r){
+      var o=calc(r), acc=BLOCKS[r.block].c;
+      function cell(v){ return st.calc ? '<td>'+(v===null?'':sf3(v))+'</td>' : '<td class="dim">hidden</td>'; }
+      html+='<tr><td><span class="sw" style="background:'+colour(r)+'"></span>'+r.id+(r.done?'':' (running)')+'</td><td>'+BLOCKS[r.block].name+'</td><td>'+r.P+'</td><td>'+(r.ins?"Yes":"No")+'</td>'
+          + cell(o.simple)+cell(o.grad)+(st.calc?'<td>'+acc+'</td>':'<td class="dim">hidden</td>')+'</tr>';
+    });
+    if(!list.length) html='<tr><td colspan="7" class="dim">No runs yet</td></tr>';
+    $("runBody").innerHTML=html;
+
+    var act=active(), c="";
+    if(st.calc && act && act.readings.length>=2){
+      var o=calc(act), acc=BLOCKS[act.block].c, name=BLOCKS[act.block].name.toLowerCase();
+      c+='<p><strong>Run '+act.id+': '+describe(act)+'</strong>. ΔE = m c Δθ, with m = 1.00 kg.</p>';
+      if(o.simple!==null) c+='<p class="eq">First and last readings: ΔE = '+thou(o.dE)+' J, Δθ = '+fmtT(o.dT,act.res)+' °C<br>c = '+thou(o.dE)+' ÷ (1.00 × '+fmtT(o.dT,act.res)+') = <strong>'+sf3(o.simple)+' J/kg °C</strong></p>';
+      if(o.grad!==null) c+='<p class="eq">Gradient of the straight section (3 minutes onwards) = '+o.gkJ.toFixed(2)+' °C per kJ<br>c = 1000 ÷ (1.00 × '+o.gkJ.toFixed(2)+') = <strong>'+sf3(o.grad)+' J/kg °C</strong></p>';
+      else c+='<p class="note">The gradient method needs at least three readings from 3 minutes onwards.</p>';
+      if(o.grad!==null){
+        var pc=Math.round((o.grad-acc)/acc*100);
+        c+='<p>Accepted value for '+name+': '+acc+' J/kg °C. The gradient method is '+(pc===0?'within 1% of this':Math.abs(pc)+'% '+(pc>0?'higher':'lower'))+'.</p>';
+      }
+    }
+    $("calc").innerHTML=c;
+  }
+  function renderAll(){ renderScene(); renderReadings(); renderGraph(); renderRuns(); }
+
+  function seg(id, items, get, set){
+    var el=$(id);
+    function draw(){
+      el.innerHTML=items.map(function(it){
+        return '<button data-v="'+it[0]+'" aria-pressed="'+(String(get())===String(it[0]))+'">'+it[1]+'</button>';
+      }).join("");
+    }
+    el.addEventListener("click",function(e){
+      var b=e.target.closest("button"); if(!b) return;
+      set(b.getAttribute("data-v")); draw();
+    });
+    draw();
+  }
+
+  seg("blockSeg", Object.keys(BLOCKS).map(function(k){return [k,BLOCKS[k].name];}),
+      function(){return st.block;}, function(v){st.block=v; resetRun();});
+  seg("powerSeg", [[24,"24 W"],[36,"36 W"],[48,"48 W"]],
+      function(){return st.power;}, function(v){st.power=Number(v); resetRun();});
+  seg("insSeg", [["yes","Insulated"],["no","No insulation"]],
+      function(){return st.ins;}, function(v){st.ins=v; resetRun();});
+  seg("resSeg", [[0.1,"Digital, 0.1 °C"],[1,"Glass, 1 °C"]],
+      function(){return st.res;}, function(v){st.res=Number(v); resetRun();});
+  seg("speedSeg", [[1,"×1"],[10,"×10"],[30,"×30"]],
+      function(){return st.speed;}, function(v){st.speed=Number(v);});
+  seg("xSeg", [["energy","Energy"],["time","Time"]],
+      function(){return st.xmode;}, function(v){st.xmode=v; renderGraph();});
+
+  $("startBtn").addEventListener("click",function(){ if(run.running) pause(); else start(); });
+  $("resetBtn").addEventListener("click",resetRun);
+  $("instantBtn").addEventListener("click",instant);
+  $("varyBtn").addEventListener("click",function(){
+    st.vary=!st.vary; this.setAttribute("aria-pressed",st.vary);
+    this.textContent="Run-to-run variation "+(st.vary?"on":"off");
+    resetRun();
+  });
+  $("fitBtn").addEventListener("click",function(){ st.fit=!st.fit; this.setAttribute("aria-pressed",st.fit); renderGraph(); });
+  $("calcBtn").addEventListener("click",function(){
+    st.calc=!st.calc; this.setAttribute("aria-pressed",st.calc);
+    this.textContent=(st.calc?"Hide":"Show")+" calculation"; renderRuns();
+  });
+  $("clearBtn").addEventListener("click",function(){ runs=[]; nextId=1; resetRun(); });
+
+  resetRun();
+})();
+</script>
+</body>
+</html>
