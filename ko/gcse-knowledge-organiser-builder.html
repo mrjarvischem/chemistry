@@ -60,10 +60,52 @@
   .back { display:inline-block; color:#fff; opacity:.85; text-decoration:none; font-size:.9rem; margin-bottom:6px; }
   .back:hover { opacity:1; text-decoration:underline; }
 
+  /* ---------- Online quiz ---------- */
+  button.quizbtn { background:#2b8a3e; border-color:#2b8a3e; color:#fff; }
+  button.repeatbtn { border-color:#c2410c; color:#c2410c; }
+  .quiz { position:fixed; inset:0; background:rgba(15,25,45,.55); z-index:20; display:flex; align-items:flex-start; justify-content:center; overflow-y:auto; padding:24px 12px; }
+  .quiz[hidden] { display:none; }
+  .qbox { background:#fff; width:100%; max-width:720px; border-radius:14px; box-shadow:0 10px 40px rgba(0,0,0,.25); overflow:hidden; }
+  .qhead { background:var(--navy); color:#fff; padding:12px 16px; display:flex; align-items:center; gap:12px; }
+  .qhead .t { font-weight:700; flex:1; }
+  .qhead button { background:transparent; color:#fff; border-color:rgba(255,255,255,.6); padding:6px 12px; font-size:.88rem; }
+  .qprog { height:6px; background:var(--light); }
+  .qprog div { height:100%; width:0; background:#2b8a3e; transition:width .25s; }
+  .qmain { padding:20px 20px 24px; }
+  .qmeta { display:flex; justify-content:space-between; flex-wrap:wrap; gap:6px; font-size:.88rem; color:var(--grey); margin-bottom:10px; }
+  .qmeta .paper { margin-left:0; margin-right:6px; }
+  .qq-big { font-size:1.35rem; font-weight:700; color:var(--navy); line-height:1.35; margin:6px 0 18px; }
+  .qans { font-size:1.15rem; background:var(--pale); border-left:4px solid var(--blue); border-radius:6px; padding:10px 14px; margin:10px 0 16px; }
+  .qans .lbl { display:block; font-size:.8rem; color:var(--grey); margin-bottom:2px; }
+  .qinput { width:100%; font:inherit; font-size:1.1rem; padding:11px 12px; border:2px solid var(--line); border-radius:8px; }
+  .qinput:focus { outline:none; border-color:var(--blue); }
+  .qtip { font-size:.82rem; color:var(--grey); margin:6px 0 14px; }
+  .qrow { display:flex; flex-wrap:wrap; gap:10px; }
+  .qrow button { flex:1 1 160px; padding:12px 14px; font-size:1rem; }
+  button.ok { background:#2b8a3e; border-color:#2b8a3e; color:#fff; }
+  button.no { background:#c2410c; border-color:#c2410c; color:#fff; }
+  .verdict { font-weight:700; font-size:1.05rem; padding:8px 12px; border-radius:8px; margin:12px 0 4px; }
+  .verdict.ok { background:#E6F4EA; color:#1e6b31; }
+  .verdict.close { background:#FFF4D6; color:#8a5a00; }
+  .verdict.no { background:#FDECE4; color:#a23a0a; }
+  .yours { font-size:.92rem; color:var(--grey); margin-top:4px; }
+  .override { background:none; border:none; color:var(--blue); text-decoration:underline; padding:4px 0; font-size:.9rem; cursor:pointer; }
+  .qsetup label.opt { display:flex; gap:10px; align-items:flex-start; border:1px solid var(--line); border-radius:10px; padding:12px; margin-bottom:10px; cursor:pointer; }
+  .qsetup label.opt:has(input:checked) { border-color:var(--navy); background:var(--pale); }
+  .qsetup label.opt input { margin-top:3px; }
+  .qsetup .d { font-size:.88rem; color:var(--grey); }
+  .score { text-align:center; margin:6px 0 16px; }
+  .score .big { font-size:2.6rem; font-weight:700; color:var(--navy); }
+  .wrong { width:100%; border-collapse:collapse; font-size:.93rem; margin:8px 0 16px; }
+  .wrong td { border-top:1px solid #E3E9F4; padding:7px 6px; vertical-align:top; }
+  .wrong td:last-child { color:var(--navy); }
+  @media (max-width:560px) { .bar { gap:6px; padding:8px 8px; } .bar button { padding:7px 10px; font-size:.86rem; } }
+  .qnote { font-size:.88rem; color:var(--grey); margin:-4px 0 14px; }
+
   /* ---------- Print ---------- */
   @media print {
     body { background:#fff; }
-    header.top, .wrap, .bar { display:none !important; }
+    header.top, .wrap, .bar, .quiz { display:none !important; }
     #print { display:block; }
     .sheet { page-break-after:always; break-after:page; }
     .sheet:last-child { page-break-after:auto; break-after:auto; }
@@ -97,7 +139,7 @@
 
 <div class="wrap">
   <div class="help">
-    <b>How to use:</b> open a topic, cover or hide the answers, and tick every question you can't answer. Then press <b>Print Q&amp;A sheet</b> or <b>Print self-test sheet</b> and choose <b>Save as PDF</b>. Your ticks are grouped into sets of 10. The self-test sheet is landscape; if it comes out portrait, switch to landscape in the print options. Coloured labels show which paper each topic is on. Sets marked <b>Triple only</b> are for separate Chemistry (8462) only – Combined Science students can hide them with the switch below.
+    <b>How to use:</b> open a topic, cover or hide the answers, and tick every question you can't answer. Then press <b>Print Q&amp;A sheet</b> or <b>Print self-test sheet</b> and choose <b>Save as PDF</b>, or press <b>Quiz me online</b> to test yourself on screen (tap to reveal, or type your answers). Anything you get wrong goes on your <b>repeat list</b> so you can quiz yourself on it again later. Your ticks are grouped into sets of 10. The self-test sheet is landscape; if it comes out portrait, switch to landscape in the print options. Coloured labels show which paper each topic is on. Sets marked <b>Triple only</b> are for separate Chemistry (8462) only – Combined Science students can hide them with the switch below.
   </div>
   <div class="controls">
     <input type="search" id="search" placeholder="Search questions and answers (e.g. colour, equation, Kc)">
@@ -121,6 +163,16 @@
   <button id="clear">Clear ticks</button>
   <button class="primary" id="pQA">Print Q&amp;A sheet</button>
   <button class="primary" id="pST">Print self-test sheet</button>
+  <button class="quizbtn" id="qStart">Quiz me online</button>
+  <button class="repeatbtn" id="qRepeat" hidden>Repeat list</button>
+</div>
+
+<div class="quiz" id="quiz" hidden role="dialog" aria-modal="true" aria-labelledby="qTitle">
+  <div class="qbox">
+    <div class="qhead"><span class="t" id="qTitle">Quiz</span><button id="qExit">✕ Exit</button></div>
+    <div class="qprog"><div id="qFill"></div></div>
+    <div class="qmain" id="qMain"></div>
+  </div>
 </div>
 
 <div id="print"></div>
@@ -265,8 +317,8 @@ document.getElementById("clear").addEventListener("click", () => {
 });
 function confirmClear() { return window.confirm ? window.confirm("Clear all ticks?") : true; }
 
-function buildPrint(mode) {
-  const items = activeItems();
+function buildPrint(mode, list) {
+  const items = list || activeItems();
   const name = nameEl.value.trim();
   const codes = [...new Set(items.map(r => r.code))];
   const sets = []; for (let i = 0; i < items.length; i += 10) sets.push(items.slice(i, i + 10));
@@ -305,6 +357,203 @@ function topicPrint(code, mode) {
     `${LEVEL_LABEL}  •  Set ${si + 1}: ${fmt(s.title)}  ${badge(t.paper)}${s.triple ? " " + triBadge : ""}`,
     s.items.map(([q, a]) => ({ q, a })), land)).join("");
 }
+/* ================= Online quiz ================= */
+const repeat = new Set(store.get("ko-repeat-" + LEVEL_LABEL, []).filter(id => byId[id]));
+const quizEl = document.getElementById("quiz"), qMain = document.getElementById("qMain"),
+      qFill = document.getElementById("qFill"), qTitle = document.getElementById("qTitle");
+const qStartBtn = document.getElementById("qStart"), qRepeatBtn = document.getElementById("qRepeat");
+let Q = null; // current quiz state
+
+function saveRepeat() {
+  store.set("ko-repeat-" + LEVEL_LABEL, [...repeat]);
+  qRepeatBtn.hidden = !repeat.size;
+  qRepeatBtn.textContent = `Quiz my repeat list (${repeat.size})`;
+}
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const escT = t => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+// ---- Lenient marking for typed answers ----
+const STOP = new Set("the a an of to in on and is are be by for with from as at it its that this each per into or".split(" "));
+function norm(s) {
+  return plain(s)
+    .replace(/[−–—]/g, "-").replace(/->|=>|-->/g, "→").replace(/⇌|<=>/g, "⇌")
+    .replace(/[“”"'‘’`°]/g, "").replace(/[.,:!?]+(\s|$)/g, " ")
+    .replace(/\s+/g, " ").trim();
+}
+const tight = s => s.replace(/\s+/g, "");
+function lev(a, b) {
+  if (a === b) return 0; if (!a.length) return b.length; if (!b.length) return a.length;
+  let prev = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i++) {
+    const cur = [i];
+    for (let j = 1; j <= b.length; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    prev = cur;
+  }
+  return prev[b.length];
+}
+function variants(ans) {
+  const n = norm(ans), out = new Set([n]);
+  const noParen = n.replace(/\([^)]*\)/g, " ").replace(/\s+/g, " ").trim(); if (noParen) out.add(noParen);
+  (n.match(/\(([^)]*)\)/g) || []).forEach(p => { const v = p.slice(1, -1).replace(/^[≈~=]\s*/, "").trim(); if (v.length > 1 || /\d/.test(v)) out.add(v); });
+  [...out].forEach(v => v.split(/\s+or\s+|;|\s\/\s/).forEach(x => { x = x.trim(); if (x) out.add(x); }));
+  return [...out];
+}
+const words = s => s.split(/[\s,/()]+/).map(w => w.replace(/^[^\w+\-→]+|[^\w+\-→]+$/g, "")).filter(w => w.length >= 3 && !STOP.has(w));
+function mark(typed, ans) {
+  const t = norm(typed); if (!t) return "no";
+  const tt = tight(t);
+  let best = "no";
+  for (const v of variants(ans)) {
+    const vt = tight(v);
+    if (tt === vt) return "ok";
+    const hasNum = /\d/.test(vt);
+    const allow = hasNum && vt.length <= 10 ? 0 : vt.length <= 4 ? 0 : vt.length <= 8 ? 1 : Math.floor(vt.length * 0.15);
+    if (lev(tt, vt) <= allow) return "ok";
+  }
+  // Longer answers: how many of the key words did they include?
+  const key = [...new Set(words(norm(ans).replace(/\([^)]*\)/g, " ")))];
+  if (key.length >= 3) {
+    const tw = words(t);
+    const hit = key.filter(k => tw.some(w => w === k || (k.length >= 5 && lev(w, k) <= 1) || (k.length >= 6 && (w.startsWith(k.slice(0, 5)))))).length;
+    const cov = hit / key.length;
+    if (cov >= 0.75) return "ok-check";
+    if (cov >= 0.4) best = "close";
+  }
+  return best;
+}
+
+// ---- Quiz flow ----
+function openQuiz(items, title) {
+  if (!items.length) return;
+  Q = { pool: items, title, results: [], i: 0, mode: store.get("ko-qmode", "self"), shuf: store.get("ko-qshuf", true) };
+  qTitle.textContent = title; quizEl.hidden = false; document.body.style.overflow = "hidden";
+  qFill.style.width = "0";
+  qMain.innerHTML = `<div class="qsetup">
+    <p style="margin-top:0"><b>${items.length} question${items.length > 1 ? "s" : ""}</b> from ${[...new Set(items.map(r => r.code))].map(fmt).join(", ")}</p>
+    <label class="opt"><input type="radio" name="qmode" value="self"${Q.mode === "self" ? " checked" : ""}><span><b>Self-check</b><br><span class="d">Answer in your head (or on paper), tap to reveal the answer, then mark yourself.</span></span></label>
+    <label class="opt"><input type="radio" name="qmode" value="type"${Q.mode === "type" ? " checked" : ""}><span><b>Type my answers</b><br><span class="d">Type each answer and it's marked for you. Small spelling slips are allowed, and you can overrule the marking if you know you were right.</span></span></label>
+    <label class="toggle" style="margin:4px 0 16px"><input type="checkbox" id="qShuf"${Q.shuf ? " checked" : ""}> Shuffle the questions</label>
+    <div class="qrow"><button class="primary" id="qGo">Start quiz</button></div></div>`;
+  document.getElementById("qGo").onclick = () => {
+    Q.mode = qMain.querySelector("input[name=qmode]:checked").value; Q.shuf = document.getElementById("qShuf").checked;
+    store.set("ko-qmode", Q.mode); store.set("ko-qshuf", Q.shuf);
+    Q.list = Q.shuf ? shuffle(Q.pool) : Q.pool.slice();
+    showQ();
+  };
+  document.getElementById("qGo").focus();
+}
+function closeQuiz(force) {
+  if (!force && Q && Q.list && Q.results.length < Q.list.length && Q.results.length && !window.confirm("Stop this quiz? Questions you've already marked wrong will stay on your repeat list.")) return;
+  quizEl.hidden = true; document.body.style.overflow = ""; Q = null; refresh();
+}
+function meta(r) {
+  const t = DATA[r.ti];
+  return `<div class="qmeta"><span>${badge(r.paper)}${r.triple ? triBadge : ""}${fmt(t.code + " " + t.name)}</span><span>Question ${Q.i + 1} of ${Q.list.length}  •  Score ${Q.results.filter(x => x.ok).length}</span></div>`;
+}
+function showQ() {
+  const r = Q.list[Q.i];
+  qFill.style.width = (Q.i / Q.list.length * 100) + "%";
+  let html = meta(r) + `<div class="qq-big">${fmt(r.q)}</div>`;
+  if (Q.mode === "self") {
+    html += `<div id="qA"></div><div class="qrow" id="qBtns"><button class="primary" id="qShow">Show answer</button></div><div class="qtip">Tip: press Space to show the answer, then 1 = got it, 2 = not yet.</div>`;
+    qMain.innerHTML = html;
+    const show = () => {
+      document.getElementById("qA").innerHTML = `<div class="qans"><span class="lbl">Answer</span>${fmt(r.a)}</div>`;
+      document.getElementById("qBtns").innerHTML = `<button class="ok" id="qY">✓ Got it</button><button class="no" id="qN">✗ Not yet</button>`;
+      document.getElementById("qY").onclick = () => record(true);
+      document.getElementById("qN").onclick = () => record(false);
+      Q.revealed = true;
+    };
+    Q.revealed = false; Q.show = show;
+    document.getElementById("qShow").onclick = show;
+    document.getElementById("qShow").focus();
+  } else {
+    html += `<input class="qinput" id="qIn" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Type your answer"><div class="qtip">Press Enter to check. Write formulae as normal text, e.g. H2SO4, Fe3+, CH3CH2OH.</div>
+      <div id="qA"></div><div class="qrow" id="qBtns"><button class="primary" id="qChk">Check</button><button id="qSkip">I don't know</button></div>`;
+    qMain.innerHTML = html;
+    const inp = document.getElementById("qIn");
+    const check = skip => {
+      const typed = skip ? "" : inp.value;
+      if (!skip && !typed.trim()) { inp.focus(); return; }
+      const v = skip ? "no" : mark(typed, r.a);
+      const ok = v === "ok" || v === "ok-check";
+      inp.disabled = true; Q.pending = ok;
+      const msg = { ok: "✓ Correct", "ok-check": "✓ Marked correct – check your wording against the answer", close: "Nearly – compare with the answer below", no: skip ? "Here's the answer" : "✗ Not quite" }[v];
+      const cls = v === "close" ? "close" : ok ? "ok" : "no";
+      document.getElementById("qA").innerHTML = `<div class="verdict ${cls}" id="qV">${msg}</div>
+        <div class="qans"><span class="lbl">Answer</span>${fmt(r.a)}</div>
+        ${skip ? "" : `<button class="override" id="qOv">${ok ? "Actually, I got this wrong" : "I was right – count it as correct"}</button>`}`;
+      const ov = document.getElementById("qOv");
+      if (ov) ov.onclick = () => {
+        Q.pending = !Q.pending;
+        const V = document.getElementById("qV");
+        V.className = "verdict " + (Q.pending ? "ok" : "no");
+        V.textContent = Q.pending ? "✓ Counted as correct" : "✗ Counted as wrong";
+        ov.textContent = Q.pending ? "Actually, I got this wrong" : "I was right – count it as correct";
+      };
+      document.getElementById("qBtns").innerHTML = `<button class="primary" id="qNext">${Q.i + 1 < Q.list.length ? "Next question →" : "See my results"}</button>`;
+      document.getElementById("qNext").onclick = () => record(Q.pending);
+      document.getElementById("qNext").focus();
+    };
+    Q.check = check;
+    inp.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); e.stopPropagation(); check(false); } });
+    document.getElementById("qChk").onclick = () => check(false);
+    document.getElementById("qSkip").onclick = () => check(true);
+    inp.focus();
+  }
+}
+function record(ok) {
+  const r = Q.list[Q.i];
+  Q.results.push({ r, ok });
+  ok ? repeat.delete(r.id) : repeat.add(r.id); saveRepeat();
+  Q.i++;
+  Q.i < Q.list.length ? showQ() : results();
+}
+function results() {
+  qFill.style.width = "100%";
+  const n = Q.results.length, right = Q.results.filter(x => x.ok).length;
+  const wrong = Q.results.filter(x => !x.ok).map(x => x.r);
+  const pct = Math.round(right / n * 100);
+  const msg = pct === 100 ? "Perfect – every one right!" : pct >= 80 ? "Great work." : pct >= 50 ? "Good progress – now go over the ones you missed." : "Keep going – these are the facts to work on.";
+  qMain.innerHTML = `<div class="score"><div class="big">${right} / ${n}</div><div>${pct}%  •  ${msg}</div></div>
+    ${wrong.length ? `<h3 style="color:var(--navy);margin:0 0 4px">To repeat (${wrong.length})</h3>
+      <p class="qnote">These are saved on your repeat list on this device. Get them right in a later quiz and they come off the list.</p>
+      <table class="wrong">${wrong.map(r => `<tr><td>${fmt(r.q)}</td><td>${fmt(r.a)}</td></tr>`).join("")}</table>
+      <div class="qrow" style="margin-bottom:10px">
+        <button class="quizbtn" id="qAgain">Quiz me again on these ${wrong.length}</button>
+        <button id="qPrintW">Print these as a self-test sheet</button>
+      </div>` : ""}
+    <div class="qrow">
+      <button id="qRedo">Retake the whole quiz</button>
+      <button class="primary" id="qDone">Back to the builder</button>
+    </div>`;
+  const pool = Q.pool, title = Q.title, mode = Q.mode, shuf = Q.shuf;
+  const restart = (items, t) => { openQuiz(items, t); Q.mode = mode; Q.shuf = shuf; Q.list = shuf ? shuffle(items) : items.slice(); showQ(); };
+  if (wrong.length) {
+    document.getElementById("qAgain").onclick = () => restart(wrong, "Quiz: the ones I missed");
+    document.getElementById("qPrintW").onclick = () => buildPrint("st", wrong);
+  }
+  document.getElementById("qRedo").onclick = () => restart(pool, title);
+  document.getElementById("qDone").onclick = () => closeQuiz(true);
+  document.getElementById(wrong.length ? "qAgain" : "qDone").focus();
+}
+
+qStartBtn.addEventListener("click", () => openQuiz(activeItems(), "Quiz: my ticked questions"));
+qRepeatBtn.addEventListener("click", () => openQuiz(index.filter(r => repeat.has(r.id)), "Quiz: my repeat list"));
+document.getElementById("qExit").addEventListener("click", () => closeQuiz(false));
+document.addEventListener("keydown", e => {
+  if (quizEl.hidden || !Q) return;
+  if (e.key === "Escape") { closeQuiz(false); return; }
+  if (Q.mode === "self" && Q.list && Q.i < Q.list.length && Q.results.length === Q.i) {
+    if ((e.key === " " || e.key === "Enter") && !Q.revealed && e.target.tagName !== "BUTTON") { e.preventDefault(); Q.show(); }
+    else if (Q.revealed && e.key === "1") record(true);
+    else if (Q.revealed && e.key === "2") record(false);
+  }
+});
+saveRepeat();
+const _refresh = refresh;
+refresh = function () { _refresh(); qStartBtn.disabled = !activeItems().length; };
+
 document.getElementById("pQA").addEventListener("click", () => buildPrint("qa"));
 document.getElementById("pST").addEventListener("click", () => buildPrint("st"));
 
