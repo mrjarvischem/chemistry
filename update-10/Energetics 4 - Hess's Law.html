@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Energetics 4: Hess's Law</title>
+<style>
+:root{color-scheme:light dark;
+--bg:light-dark(#f6efe2,#1d1712);--panel:light-dark(#fffaf1,#2a221b);--ink:light-dark(#3a2a1d,#f1e6d6);--muted:light-dark(#7a6450,#b9a58f);
+--line:light-dark(#e2d4bd,#4a3b2f);--brown:light-dark(#8a5a2b,#d79c62);--glass:light-dark(#5a4634,#cdbba5);
+--k:light-dark(#2c6e8f,#74b6d6);--kl:light-dark(#d4e6ef,#1f3a4b);--u:light-dark(#a0462a,#e48f6c);--ul:light-dark(#f3dacd,#4b2a20);
+--x:light-dark(#a87a0a,#e0b44a);--xl:light-dark(#f4e3b2,#4a3d17);--good:light-dark(#2f7a3d,#7fcf8c);--gl:light-dark(#dcefdc,#203a25)}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow-x:clip}
+.band{padding:clamp(16px,3vw,36px) max(4vw,14px)}
+.wrap{max-width:1120px;margin:0 auto}
+header{border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:18px}
+.series{margin:0 0 4px;color:var(--brown);font-weight:700;font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+h1{font-size:clamp(28px,4vw,40px);line-height:1.1;margin:0 0 6px;text-wrap:balance}
+.sub{margin:0;color:var(--muted);max-width:75ch}
+#pnav{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+button{font:inherit;cursor:pointer;min-height:44px;border-radius:10px;border:1.5px solid var(--brown);background:var(--panel);color:var(--ink);padding:8px 16px}
+button:disabled{opacity:.4;cursor:default}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--k);outline-offset:2px}
+#pnav button{font-size:14px;min-height:38px;padding:4px 12px;border-color:var(--line)}
+#pnav button[aria-current=true],button[aria-pressed=true]{background:var(--brown);color:var(--panel);border-color:var(--brown)}
+button.next{background:var(--brown);color:var(--panel);font-weight:700}
+button.ghost{border-color:var(--line);font-size:15px}
+h2{font-size:clamp(23px,3vw,30px);line-height:1.15;margin:0 0 12px;text-wrap:balance}
+h3{font-size:19px;margin:0 0 8px}
+p{margin:0 0 10px}.page>p,.page>ul{max-width:80ch}
+ul,ol{margin:0 0 10px;padding-left:22px}li{margin:3px 0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 20px;margin:0 0 16px}
+.def{border-left:6px solid var(--brown)}
+.def .term{margin:0 0 4px;font-size:14px;font-weight:700;color:var(--brown);letter-spacing:.04em;text-transform:uppercase}
+.def .say{font-size:19px;font-weight:600;margin:0}
+.eq{background:var(--bg);border-radius:8px;padding:8px 12px;font-weight:600;font-size:19px;text-align:center;margin:8px 0;font-variant-numeric:tabular-nums}
+.card .eq{background:var(--bg)}
+.work{border-left:4px solid var(--brown);background:var(--bg);padding:10px 12px;border-radius:0 8px 8px 0;margin:10px 0;font-variant-numeric:tabular-nums}
+.tip{font-size:15px;color:var(--muted);margin:8px 0 0}.tip b{color:var(--ink)}
+.warn{border-left:6px solid var(--u);background:var(--ul);border-radius:0 10px 10px 0;padding:10px 14px;margin:0 0 16px}
+.g2{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:18px;align-items:start}
+.g2e{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.fig{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:8px;margin:0 0 16px}
+.fig svg{display:block;width:100%;height:auto}
+.fig .cap{font-size:14px;color:var(--muted);margin:4px 8px 4px}
+.kk{color:var(--k);font-weight:700}.uu{color:var(--u);font-weight:700}.xx{color:var(--x);font-weight:700}.gg{color:var(--good);font-weight:700}
+.num{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--brown);color:var(--panel);font-weight:700;font-size:14px;margin-right:8px;flex:none}
+.st{display:flex;align-items:flex-start;margin:0 0 10px}.st>div{flex:1}
+.stepper{margin-bottom:16px}
+.sbar{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-top:12px}
+.sbar .scount{color:var(--muted);font-size:14px}
+.new{animation:pop .5s ease both}
+@keyframes pop{from{opacity:0;transform:translateY(8px)}}
+.check{border:1.5px dashed var(--brown);border-radius:12px;padding:14px 16px;margin:0 0 14px;background:var(--panel)}
+.check .lab{font-size:13px;font-weight:700;color:var(--brown);letter-spacing:.06em;margin:0 0 4px}
+.check .q{font-weight:600;margin:0 0 8px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.row input,select{font:inherit;min-height:44px;padding:6px 10px;border:1.5px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink)}
+.row input{width:9em}
+.fb{margin:8px 0 0;font-weight:600;min-height:1.2em}.fb.ok{color:var(--good)}.fb.no{color:var(--u)}
+.ans{margin-top:10px;border-left:4px solid var(--good);background:var(--gl);padding:10px 12px;border-radius:0 8px 8px 0;font-variant-numeric:tabular-nums}
+.spot .eq{text-align:left;font-size:17px}
+.spot .ans{border-left-color:var(--u);background:var(--ul)}
+table.t{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+table.t th,table.t td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+table.t th{background:var(--bg);font-size:15px}
+.scroll{overflow-x:auto}
+.quiz .qq{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 18px;margin:0 0 14px}
+.quiz .qt{font-weight:600;margin:0 0 10px}
+.quiz .opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.quiz .opts button{text-align:left;border-color:var(--line)}
+.quiz .opts button.right{background:var(--gl);border-color:var(--good)}
+.quiz .opts button.wrong{background:var(--ul);border-color:var(--u)}
+.quiz .ex{margin:10px 0 0;font-size:15px}
+.score{font-size:20px;font-weight:700}
+.pfoot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:22px;border-top:1px solid var(--line);padding-top:14px}
+#pcount{color:var(--muted);font-size:14px}
+.sd{display:inline-block;width:.62em;height:.62em;border:1.5px solid currentColor;border-radius:50%;position:relative;vertical-align:.55em;margin-left:1px}
+.sd::after{content:"";position:absolute;left:-2.5px;right:-2.5px;top:50%;border-top:1.5px solid currentColor;transform:translateY(-50%)}
+/* svg */
+svg text{fill:var(--ink);font-size:13px;font-family:inherit}
+svg .sm{font-size:11.5px;fill:var(--muted)}svg .b{font-weight:700}svg .lg{font-size:15px;font-weight:700}
+svg .tk{fill:var(--k)}svg .tu{fill:var(--u)}svg .tx{fill:var(--x)}svg .tg{fill:var(--good)}svg .wt{fill:var(--panel);font-weight:700}
+.ax{stroke:var(--ink);stroke-width:1.6;fill:none}.lv{stroke:var(--ink);stroke-width:3;stroke-linecap:round}
+.ak{stroke:var(--k);stroke-width:2.6;fill:none}.au{stroke:var(--u);stroke-width:2.6;fill:none}.ag{stroke:var(--good);stroke-width:2.6;fill:none}.ai{stroke:var(--ink);stroke-width:2;fill:none}.ax2{stroke:var(--x);stroke-width:2.6;fill:none}
+.glass{fill:none;stroke:var(--glass);stroke-width:2.2;stroke-linejoin:round;stroke-linecap:round}
+.water{fill:var(--kl)}.hot{fill:var(--u)}.boxp{fill:var(--panel);stroke:var(--line);stroke-width:1.5}.boxb{fill:var(--bg);stroke:var(--line)}
+.grid-l{stroke:var(--line);stroke-width:1}
+@media(prefers-reduced-motion:reduce){.new{animation:none}}
+@media(max-width:820px){.g2,.g2e,.g3,.quiz .opts{grid-template-columns:minmax(0,1fr)}}
+</style>
+</head>
+<body>
+<div class="band"><div class="wrap">
+<header>
+<p class="series">AQA A-level Chemistry · 3.1.4 Energetics · Walkthrough 4 of 5</p>
+<h1>Hess's Law</h1>
+<p class="sub">Finding enthalpy changes you cannot measure, by adding equations or drawing a cycle with formation or combustion data.</p>
+<nav id="pnav" aria-label="Pages"></nav>
+</header>
+<main>
+<section class="page" data-title="Hess's law">
+<h2>Why do we need Hess's law?</h2>
+<p>Many enthalpy changes cannot be measured by experiment. Carbon and hydrogen will not react cleanly to make only methane, so Δ<sub>f</sub>H of methane cannot be found with a calorimeter:</p>
+<p class="eq">C(s) + 2H₂(g) → CH₄(g) &nbsp;&nbsp; ΔH = ?</p>
+<p>But we <i>can</i> burn carbon, hydrogen and methane and measure those enthalpy changes. Hess's law lets us use them to get the one we want.</p>
+<div class="card def"><p class="term">Hess's law</p><p class="say">The enthalpy change for a reaction is independent of the route taken, as long as the start and end are the same.</p><p class="tip">It works because energy is conserved. Like climbing a hill: your height gain is the same whichever path you take.</p></div>
+<div class="g2">
+<div class="fig"><svg viewBox="0 0 540 300" role="img" aria-label="Two routes from carbon and hydrogen to methane: direct, or via carbon dioxide and water" id="routes"></svg></div>
+<div class="card"><h3>Take both routes</h3>
+<div class="row" style="margin-bottom:10px"><button id="r1">Route 1: direct</button><button id="r2">Route 2: via CO₂ and H₂O</button></div>
+<p style="font-size:22px;font-weight:700;margin:0" id="rtot" aria-live="polite">Enthalpy change so far: 0 kJ</p>
+<p class="tip" id="rmsg">Route 2 goes down to the combustion products (−966 kJ), then back up to methane (+890 kJ, the reverse of burning methane).</p></div>
+</div>
+<div class="check"><p class="lab">CHECK 1</p><p class="q">State Hess's law.</p><div class="ans">The enthalpy change for a reaction is independent of the route taken (it depends only on the initial and final states).</div></div>
+<div class="check"><p class="lab">CHECK 2</p><p class="q">Suggest why the enthalpy change for C(s) + ½O₂(g) → CO(g) cannot be measured directly.</p><div class="ans">Some of the carbon always burns further to CO₂, so you cannot make only CO.</div></div>
+</section>
+
+<section class="page" data-title="Adding equations">
+<h2>Method 1: add the equations</h2>
+<p>Treat the data equations like building blocks. Scale them and flip them until they add up to the target equation. Whatever you do to an equation, do the same to its ΔH.</p>
+<div class="g2e"><div class="card"><h3>Multiply an equation</h3><p>Multiply ΔH by the same number.</p></div><div class="card"><h3>Reverse an equation</h3><p>Change the sign of ΔH.</p></div></div>
+<div class="card stepper"><h3>Target: C(s) + 2H₂(g) → CH₄(g)</h3>
+<div data-s="1" data-until="1"><p>The data: three enthalpies of combustion.</p><div class="scroll"><table class="t"><tr><th>Equation</th><th>ΔH / kJ mol⁻¹</th></tr>
+<tr><td>C(s) + O₂(g) → CO₂(g)</td><td>−394</td></tr><tr><td>H₂(g) + ½O₂(g) → H₂O(l)</td><td>−286</td></tr><tr><td>CH₄(g) + 2O₂(g) → CO₂(g) + 2H₂O(l)</td><td>−890</td></tr></table></div></div>
+<div data-s="2" data-until="2"><p><b>Scale and reverse.</b> The target needs 2H₂ on the left, so double the hydrogen equation. It needs CH₄ on the right, so reverse the methane equation.</p><div class="scroll"><table class="t"><tr><th>Equation</th><th>ΔH / kJ mol⁻¹</th><th></th></tr>
+<tr><td>C(s) + O₂(g) → CO₂(g)</td><td>−394</td><td>unchanged</td></tr><tr><td>2H₂(g) + O₂(g) → 2H₂O(l)</td><td>−572</td><td class="kk">× 2</td></tr><tr><td>CO₂(g) + 2H₂O(l) → CH₄(g) + 2O₂(g)</td><td>+890</td><td class="uu">reversed</td></tr></table></div></div>
+<div data-s="3"><p><b>Add and cancel.</b> Anything that appears on both sides cancels: CO₂, 2H₂O and 2O₂.</p><div class="scroll"><table class="t"><tr><th>Equation</th><th>ΔH / kJ mol⁻¹</th></tr>
+<tr><td>C(s) + <s>O₂(g)</s> → <s>CO₂(g)</s></td><td>−394</td></tr><tr><td>2H₂(g) + <s>O₂(g)</s> → <s>2H₂O(l)</s></td><td>−572</td></tr><tr><td><s>CO₂(g)</s> + <s>2H₂O(l)</s> → CH₄(g) + <s>2O₂(g)</s></td><td>+890</td></tr>
+<tr data-s="4"><th>C(s) + 2H₂(g) → CH₄(g)</th><th>−76</th></tr></table></div></div>
+<div data-s="4"><p class="eq">ΔH = −394 + (−572) + 890 = −76 kJ mol⁻¹</p></div>
+</div>
+<div class="check" data-ans="-111" data-unit="kJ mol⁻¹"><p class="lab">CHECK 3</p><p class="q">Use these to find ΔH for C(s) + ½O₂(g) → CO(g).<br>C(s) + O₂(g) → CO₂(g) &nbsp; ΔH = −394 kJ mol⁻¹<br>CO(g) + ½O₂(g) → CO₂(g) &nbsp; ΔH = −283 kJ mol⁻¹</p><div class="ans">Keep the first equation. Reverse the second: CO₂(g) → CO(g) + ½O₂(g), ΔH = +283.<br>Add: CO₂ cancels and ½O₂ cancels from each side, leaving C(s) + ½O₂(g) → CO(g).<br>ΔH = −394 + 283 = <b>−111 kJ mol⁻¹</b></div></div>
+<div class="check" data-ans="-114" data-unit="kJ mol⁻¹"><p class="lab">CHECK 4</p><p class="q">Use these to find ΔH for 2NO(g) + O₂(g) → 2NO₂(g).<br>½N₂(g) + ½O₂(g) → NO(g) &nbsp; ΔH = +90 kJ mol⁻¹<br>½N₂(g) + O₂(g) → NO₂(g) &nbsp; ΔH = +33 kJ mol⁻¹</p><div class="ans">Reverse and double the first: 2NO(g) → N₂(g) + O₂(g), ΔH = −180.<br>Double the second: N₂(g) + 2O₂(g) → 2NO₂(g), ΔH = +66.<br>Add: N₂ cancels and one O₂ cancels. ΔH = −180 + 66 = <b>−114 kJ mol⁻¹</b></div></div>
+</section>
+
+<section class="page" data-title="Combustion cycles">
+<h2>Method 2: a cycle with combustion data</h2>
+<p>The same calculation can be drawn as a triangle. Both the reactants and the products burn to give the <b>same combustion products</b>, so those go at the bottom and the <b>arrows point down</b>.</p>
+<div class="stepper"><div class="g2">
+<div class="fig"><div id="cy1"></div></div>
+<div>
+<div class="st" data-s="1"><span class="num">1</span><div>Write the target equation across the top.</div></div>
+<div class="st" data-s="2"><span class="num">2</span><div>Put the combustion products at the bottom. Draw an arrow <b>down</b> from each side: each arrow is "burn everything in this box".</div></div>
+<div class="st" data-s="3"><span class="num">3</span><div>Label each arrow with the total Δ<sub>c</sub>H for that box. Left: −394 + 2(−286) = <b>−966</b>. Right: <b>−890</b>.</div></div>
+<div class="st" data-s="4"><span class="num">4</span><div>Go from reactants to products the long way round. Travelling <b>with</b> an arrow, keep its sign. Travelling <b>against</b> an arrow, change its sign.</div></div>
+<div class="st" data-s="5"><span class="num">5</span><div>Add up the route: ΔH = −966 + 890 = <b>−76 kJ mol⁻¹</b>. The same answer as adding the equations.</div></div>
+</div></div></div>
+<div class="card def"><p class="term">Shortcut for combustion data</p><p class="say">ΔH = ΣΔ<sub>c</sub>H(reactants) − ΣΔ<sub>c</sub>H(products)</p><p class="tip">O₂ does not burn, so its Δ<sub>c</sub>H is zero. Multiply each Δ<sub>c</sub>H by the number in front of that substance.</p></div>
+<div class="check" data-ans="51" data-unit="kJ mol⁻¹"><p class="lab">CHECK 5</p><p class="q">Calculate Δ<sub>f</sub>H of ethene: 2C(s) + 2H₂(g) → C₂H₄(g).<br>Δ<sub>c</sub>H / kJ mol⁻¹: C(s) −394, H₂(g) −286, C₂H₄(g) −1411</p><div class="ans">Reactants: 2(−394) + 2(−286) = −1360 &nbsp; Products: −1411<br>ΔH = −1360 − (−1411) = <b>+51 kJ mol⁻¹</b></div></div>
+<div class="check" data-ans="-107" data-unit="kJ mol⁻¹"><p class="lab">CHECK 6</p><p class="q">Calculate Δ<sub>f</sub>H of propane: 3C(s) + 4H₂(g) → C₃H₈(g).<br>Δ<sub>c</sub>H / kJ mol⁻¹: C(s) −394, H₂(g) −286, C₃H₈(g) −2219</p><div class="ans">Reactants: 3(−394) + 4(−286) = −2326 &nbsp; Products: −2219<br>ΔH = −2326 − (−2219) = <b>−107 kJ mol⁻¹</b></div></div>
+<div class="check" data-ans="-137" data-unit="kJ mol⁻¹"><p class="lab">CHECK 7</p><p class="q">Calculate ΔH for C₂H₄(g) + H₂(g) → C₂H₆(g).<br>Δ<sub>c</sub>H / kJ mol⁻¹: C₂H₄(g) −1411, H₂(g) −286, C₂H₆(g) −1560</p><div class="ans">Reactants: −1411 + (−286) = −1697 &nbsp; Products: −1560<br>ΔH = −1697 − (−1560) = <b>−137 kJ mol⁻¹</b></div></div>
+</section>
+
+<section class="page" data-title="Formation cycles">
+<h2>A cycle with formation data</h2>
+<p>Every compound can be made from its elements, so with Δ<sub>f</sub>H data the <b>elements go at the bottom</b> and the <b>arrows point up</b> to the reactants and to the products.</p>
+<div class="stepper"><div class="g2">
+<div class="fig"><div id="cy2"></div></div>
+<div>
+<div class="st" data-s="1"><span class="num">1</span><div>Target equation across the top: iron(III) oxide reduced by carbon monoxide.</div></div>
+<div class="st" data-s="2"><span class="num">2</span><div>Elements at the bottom. Draw an arrow <b>up</b> to each side: each arrow is "make everything in this box from its elements".</div></div>
+<div class="st" data-s="3"><span class="num">3</span><div>Label each arrow. Left: −822 + 3(−111) = <b>−1155</b>. Right: 3(−394) = <b>−1182</b>. Fe is an element, so its Δ<sub>f</sub>H is 0.</div></div>
+<div class="st" data-s="4"><span class="num">4</span><div>Reactants to products the long way: <b>against</b> the left arrow (change the sign), then <b>with</b> the right arrow.</div></div>
+<div class="st" data-s="5"><span class="num">5</span><div>ΔH = +1155 − 1182 = <b>−27 kJ mol⁻¹</b></div></div>
+</div></div></div>
+<div class="card def"><p class="term">Shortcut for formation data</p><p class="say">ΔH = ΣΔ<sub>f</sub>H(products) − ΣΔ<sub>f</sub>H(reactants)</p><p class="tip">Any element in its standard state has Δ<sub>f</sub>H = 0. Notice the shortcut is the <b>opposite way round</b> to the combustion one, because the arrows point the other way.</p></div>
+<div class="check" data-ans="178" data-unit="kJ mol⁻¹"><p class="lab">CHECK 8</p><p class="q">Calculate ΔH for CaCO₃(s) → CaO(s) + CO₂(g).<br>Δ<sub>f</sub>H / kJ mol⁻¹: CaCO₃ −1207, CaO −635, CO₂ −394</p><div class="ans">Products: −635 + (−394) = −1029 &nbsp; Reactants: −1207<br>ΔH = −1029 − (−1207) = <b>+178 kJ mol⁻¹</b></div></div>
+<div class="check" data-ans="-854" data-unit="kJ mol⁻¹"><p class="lab">CHECK 9</p><p class="q">Calculate ΔH for 2Al(s) + Fe₂O₃(s) → Al₂O₃(s) + 2Fe(s).<br>Δ<sub>f</sub>H / kJ mol⁻¹: Al₂O₃ −1676, Fe₂O₃ −822</p><div class="ans">Al and Fe are elements: Δ<sub>f</sub>H = 0.<br>ΔH = −1676 − (−822) = <b>−854 kJ mol⁻¹</b></div></div>
+<div class="check" data-ans="-1369" data-unit="kJ mol⁻¹"><p class="lab">CHECK 10</p><p class="q">Calculate Δ<sub>c</sub>H of ethanol: C₂H₅OH(l) + 3O₂(g) → 2CO₂(g) + 3H₂O(l).<br>Δ<sub>f</sub>H / kJ mol⁻¹: C₂H₅OH(l) −277, CO₂(g) −394, H₂O(l) −286</p><div class="ans">Products: 2(−394) + 3(−286) = −1646 &nbsp; Reactants: −277 (O₂ is an element, 0)<br>ΔH = −1646 − (−277) = <b>−1369 kJ mol⁻¹</b></div></div>
+</section>
+
+<section class="page" data-title="Which way round?">
+<h2>Which way round? Practice until it sticks</h2>
+<div class="card"><div class="scroll"><table class="t"><tr><th></th><th>Formation data, Δ<sub>f</sub>H</th><th>Combustion data, Δ<sub>c</sub>H</th></tr>
+<tr><th>Bottom of the cycle</th><td>The elements</td><td>The combustion products (CO₂ and H₂O)</td></tr>
+<tr><th>Arrows point</th><td>Up, from the elements</td><td>Down, to the combustion products</td></tr>
+<tr><th>Shortcut</th><td><span class="gg">products − reactants</span></td><td><span class="uu">reactants − products</span></td></tr>
+<tr><th>Counts as zero</th><td>Any element in its standard state</td><td>O₂, CO₂ and H₂O (they do not burn)</td></tr></table></div></div>
+<div class="row" style="margin-bottom:12px"><button id="g-f">New formation-data question</button><button id="g-c">New combustion-data question</button></div>
+<div id="gen"></div>
+<div class="card stepper"><h3>Stretch: finding a missing value</h3>
+<p>Fe₂O₃(s) + 3CO(g) → 2Fe(s) + 3CO₂(g) &nbsp; ΔH = −27 kJ mol⁻¹. Given Δ<sub>f</sub>H: Fe₂O₃ −822 and CO −111, find Δ<sub>f</sub>H of CO₂.</p>
+<div class="st" data-s="1"><span class="num">1</span><div>Write the shortcut with x for the unknown: −27 = 3x − [−822 + 3(−111)]</div></div>
+<div class="st" data-s="2"><span class="num">2</span><div>Work out the bracket: −27 = 3x − (−1155) = 3x + 1155</div></div>
+<div class="st" data-s="3"><span class="num">3</span><div>Rearrange: 3x = −27 − 1155 = −1182</div></div>
+<div class="st" data-s="4"><span class="num">4</span><div><p class="eq">x = −394 kJ mol⁻¹</p></div></div>
+</div>
+<div class="check" data-ans="50" data-unit="kJ mol⁻¹"><p class="lab">CHECK 11</p><p class="q">N₂H₄(l) + O₂(g) → N₂(g) + 2H₂O(l) &nbsp; ΔH = −622 kJ mol⁻¹. Δ<sub>f</sub>H of H₂O(l) = −286 kJ mol⁻¹. Calculate Δ<sub>f</sub>H of hydrazine, N₂H₄(l).</p><div class="ans">−622 = 2(−286) − x &nbsp; (N₂ and O₂ are elements, 0)<br>−622 = −572 − x, so x = −572 + 622 = <b>+50 kJ mol⁻¹</b></div></div>
+</section>
+
+<section class="page" data-title="Quiz">
+<div class="card"><h3>Want to see more cycles drawn out?</h3><p>The <b>Hess's Law Explorer</b> is another way to work through this topic: 21 worked examples that animate the equations being added and then rearranged into the cycle.</p><p><a href="hesslawexplorer.html" style="color:var(--brown);font-weight:700">Open the Hess's Law Explorer →</a></p></div>
+<h2>Quiz: Hess's law</h2>
+<div class="quiz" id="quiz"></div>
+</section>
+
+</main>
+<div class="pfoot"><button id="prev">← Previous page</button><span id="pcount"></span><button id="next" class="next">Next page →</button></div>
+</div></div>
+<script>
+const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
+const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e};
+const sgn=(x,dp=0)=>(x<0?'−':'+')+Math.abs(x).toFixed(dp);
+const neg=(x,dp=0)=>(x<0?'−':'')+Math.abs(x).toFixed(dp);
+const br=(x,dp=0)=>x<0?'('+neg(x,dp)+')':neg(x,dp);
+const rnd=(a,b)=>a+Math.random()*(b-a),pick=a=>a[Math.floor(Math.random()*a.length)];
+const sf3=x=>{const s=Number(x.toPrecision(3));const a=Math.abs(s);return (s<0?'−':'')+(a>=100?a.toFixed(0):a>=10?a.toFixed(1):a>=1?a.toFixed(2):a.toPrecision(3))};
+/* atoms and molecules for particle pictures */
+const AT={C:['#4e4e4e','#fff',11],H:['#fafafa','#222',7],O:['#c8402f','#fff',10],Cl:['#3f8f4f','#fff',11],N:['#3a62b0','#fff',10],Br:['#8a3b1c','#fff',12]};
+const atom=(s,x,y)=>`<circle cx="${x}" cy="${y}" r="${AT[s][2]}" fill="${AT[s][0]}" stroke="#333" stroke-width="1"/><text x="${x}" y="${y+3.2}" text-anchor="middle" style="fill:${AT[s][1]};font-size:${AT[s][2]<8?7.5:9}px;font-weight:700">${s}</text>`;
+const MOL={
+ CH4:(x,y)=>atom('H',x-13,y-11)+atom('H',x+13,y-11)+atom('H',x-13,y+11)+atom('H',x+13,y+11)+atom('C',x,y),
+ O2:(x,y)=>atom('O',x-9,y)+atom('O',x+9,y),
+ CO2:(x,y)=>atom('O',x-18,y)+atom('O',x+18,y)+atom('C',x,y),
+ H2O:(x,y)=>atom('H',x-11,y+8)+atom('H',x+11,y+8)+atom('O',x,y),
+ H2:(x,y)=>atom('H',x-6,y)+atom('H',x+6,y),
+ Cl2:(x,y)=>atom('Cl',x-10,y)+atom('Cl',x+10,y),
+ HCl:(x,y)=>atom('Cl',x+5,y)+atom('H',x-10,y)};
+/* shared arrow markers */
+document.body.insertAdjacentHTML('afterbegin',`<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>${[['i','--ink'],['k','--k'],['u','--u'],['g','--good'],['x','--x'],['m','--muted']].map(([n,v])=>`<marker id="m-${n}" viewBox="0 0 10 10" refX="8.5" refY="5" markerUnits="userSpaceOnUse" markerWidth="13" markerHeight="13" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" style="fill:var(${v})"/></marker>`).join('')}</defs></svg>`);
+/* check questions */
+function initCheck(c){
+ const a=$('.ans',c);a.hidden=true;const row=el('div','row');let fb;
+ if(c.dataset.ans!=null){
+  const inp=el('input');inp.type='text';inp.inputMode='text';inp.setAttribute('aria-label','Your answer');inp.placeholder='your answer';
+  const ok=el('button','','Check');fb=el('p','fb');fb.setAttribute('aria-live','polite');row.append(inp);if(c.dataset.unit)row.append(el('span','unit',c.dataset.unit));row.append(ok);
+  const chk=()=>{const v=parseFloat(inp.value.replace(/[−–]/g,'-').replace(/[,\s]/g,'')),t=+c.dataset.ans,tol=+(c.dataset.tol||0.012);
+   const close=(x,y)=>Math.abs(x-y)<=Math.abs(y)*tol+1e-9;
+   if(isNaN(v)){fb.textContent='Type a number first.';fb.className='fb no'}
+   else if(close(v,t)){fb.textContent='✓ Correct';fb.className='fb ok';a.hidden=false;sh.textContent='Hide working'}
+   else if(t&&close(-v,t)){fb.textContent='Right size, wrong sign. Is energy given out (−) or taken in (+)?';fb.className='fb no'}
+   else if(close(v/1000,t)||close(v*1000,t)||close(-v/1000,t)){fb.textContent='Out by a factor of 1000. Check J ↔ kJ and cm³ ↔ dm³.';fb.className='fb no'}
+   else{fb.textContent='Not yet. Try again, or show the working.';fb.className='fb no'}};
+  ok.onclick=chk;inp.onkeydown=e=>{if(e.key==='Enter')chk()};
+ }
+ const lab=c.dataset.label||(c.dataset.ans!=null?'Show working':'Show answer');
+ const sh=el('button','ghost',lab);sh.onclick=()=>{a.hidden=!a.hidden;sh.textContent=a.hidden?lab:'Hide'};
+ row.append(sh);c.insertBefore(row,a);if(fb)c.insertBefore(fb,a);
+}
+function initAll(){
+ /* steppers */
+ $$('.stepper').forEach(st=>{
+  const els=$$('[data-s]',st),max=Math.max(...els.map(e=>+e.dataset.s));let n=1;
+  const bar=el('div','sbar'),b=el('button','ghost','← Back'),f=el('button','next'),c=el('span','scount');bar.append(b,c,f);st.append(bar);
+  const up=()=>{els.forEach(e=>{const s=+e.dataset.s,on=s<=n&&(!e.dataset.until||n<=+e.dataset.until);e.style.display=on?'':'none';e.classList.toggle('new',s===n)});
+   c.textContent=`Step ${n} of ${max}`;b.disabled=n<=1;f.textContent=n>=max?'↺ Start again':'Next step →';st.dispatchEvent(new CustomEvent('step',{detail:n}))};
+  b.onclick=()=>{n--;up()};f.onclick=()=>{n=n>=max?1:n+1;up()};up();
+ });
+ $$('.check').forEach(initCheck);
+ /* quiz */
+ const qz=$('#quiz');
+ if(qz&&window.QUIZ){
+  let score=0,done=0;const out=el('p','score');
+  const build=()=>{qz.innerHTML='';score=0;done=0;out.textContent='';
+   QUIZ.forEach((q,i)=>{const d=el('div','qq'),o=el('div','opts'),ex=el('p','ex');ex.hidden=true;
+    d.append(el('p','qt',`${i+1}. ${q.q}`),o,ex);
+    const order=q.o.map((t,k)=>[t,k]).sort(()=>Math.random()-.5);
+    order.forEach(([t,k])=>{const bt=el('button','',t);bt.onclick=()=>{if(d.dataset.done)return;d.dataset.done=1;done++;
+      if(k===0){score++;bt.classList.add('right')}else{bt.classList.add('wrong');$$('button',o).forEach((x,j)=>{if(order[j][1]===0)x.classList.add('right')})}
+      ex.innerHTML=(k===0?'<b class="gg">Correct.</b> ':'<b class="uu">Not quite.</b> ')+q.e;ex.hidden=false;
+      if(done===QUIZ.length){out.textContent=`You scored ${score} out of ${QUIZ.length}. `+(score>=9?'Excellent – this topic is secure.':score>=6?'Good – go back over the ones you missed.':'Go back through the pages above, then try again.')}};
+     o.append(bt)});
+    qz.append(d)});
+   const again=el('button','','Try the quiz again');again.onclick=()=>{build();qz.scrollIntoView()};qz.append(out,again)};
+  build();
+ }
+ /* pages */
+ const pages=$$('.page'),nav=$('#pnav');let cur=0;
+ const go=(i,sc=true)=>{cur=Math.max(0,Math.min(pages.length-1,i));pages.forEach((p,k)=>p.hidden=k!==cur);
+  $$('button',nav).forEach((b,k)=>b.setAttribute('aria-current',k===cur));$('#prev').disabled=cur===0;$('#next').disabled=cur===pages.length-1;
+  $('#pcount').textContent=`Page ${cur+1} of ${pages.length}`;try{history.replaceState(null,'','#p'+(cur+1))}catch(e){}
+  if(sc)window.scrollTo(0,0);pages[cur].dispatchEvent(new Event('shown'))};
+ pages.forEach((p,i)=>{const b=el('button','',`${i+1}. ${p.dataset.title}`);b.onclick=()=>go(i);nav.append(b)});
+ $('#prev').onclick=()=>go(cur-1);$('#next').onclick=()=>go(cur+1);
+ const h=()=>{const m=/^#p(\d+)$/.exec(location.hash);go(m?m[1]-1:0,false)};window.addEventListener('hashchange',h);h();
+}
+const DS=t=>t.replace(/Δ([cfr])H/g,'Δ<tspan dy="3" font-size="80%">$1</tspan><tspan dy="-3">H</tspan>');
+const DH=t=>t.replace(/Δ([cfr])H/g,'Δ<sub>$1</sub>H');
+/* Hess cycle drawing: c={tl,tr,bot,dir:'down'|'up',L,R,ll,rl,note} ; steps 1 target, 2 cycle, 3 values, 4 route, 5 answer */
+function cycle(id,c){
+ const d=c.dp||0,dn=c.dir==='down',ans=dn?c.L-c.R:c.R-c.L,la=dn?c.L:-c.L,ra=dn?-c.R:c.R;
+ const box=(x,y,w,t)=>`<rect x="${x}" y="${y}" width="${w}" height="44" rx="10" class="boxp"/><text x="${x+w/2}" y="${y+27}" text-anchor="middle" class="b">${t}</text>`;
+ const ar=(x1,y1,x2,y2,cl,m)=>`<path d="M${x1} ${y1}L${x2} ${y2}" class="${cl}" marker-end="url(#m-${m})"/>`;
+ const Lp=dn?[120,78,196,216]:[196,216,120,78],Rp=dn?[420,78,344,216]:[344,216,420,78];
+ $(id).innerHTML=`<svg viewBox="0 0 540 300" role="img" aria-label="Hess cycle">
+ <g data-s="1">${box(10,30,220,c.tl)}${box(310,30,220,c.tr)}${ar(234,52,306,52,'ai','i')}<text x="270" y="42" text-anchor="middle" class="b">ΔH = ?</text></g>
+ <g data-s="2">${box(110,220,320,c.bot)}${ar(...Lp,'ak','k')}${ar(...Rp,'ak','k')}<text x="270" y="286" text-anchor="middle" class="sm">${c.note}</text></g>
+ <g data-s="3" data-until="3"><text x="140" y="150" text-anchor="end" class="b tk">${c.ll}</text><text x="400" y="150" class="b tk">${c.rl}</text></g>
+ <g data-s="4"><path d="M166 110L222 212" class="ag" style="stroke-dasharray:7 5" marker-end="url(#m-g)"/><path d="M318 212L374 110" class="ag" style="stroke-dasharray:7 5" marker-end="url(#m-g)"/>
+ <text x="140" y="140" text-anchor="end" class="sm">${dn?'with':'against'} the arrow</text><text x="140" y="158" text-anchor="end" class="b tg">${sgn(la,d)}</text>
+ <text x="400" y="140" class="sm">${dn?'against':'with'} the arrow</text><text x="400" y="158" class="b tg">${sgn(ra,d)}</text></g>
+ <g data-s="5"><rect x="160" y="68" width="220" height="32" rx="8" class="boxb"/><text x="270" y="89" text-anchor="middle" class="b tg">ΔH = ${neg(la,d)} ${ra<0?'−':'+'} ${Math.abs(ra).toFixed(d)} = ${sgn(ans,d)}</text></g></svg>`;
+}
+/* generated Hess questions: r,p = [[coef,formula,value]] */
+const cf=n=>n===1?'':n===0.5?'½':n===1.5?'1½':n===2.5?'2½':n===3.5?'3½':n===6.5?'6½':n;
+const side=a=>a.map(([n,f])=>cf(n)+f).join(' + ');
+const sumtxt=a=>a.map(([n,f,v])=>(n===1?'':cf(n)+' × ')+br(v)).join(' + ');
+const tot=a=>a.reduce((s,[n,f,v])=>s+n*v,0);
+
+/* two routes */
+{
+const s=$('#routes'),A=[120,60],B=[420,60],C=[270,230];
+const box=(x,y,w,t)=>`<rect x="${x-w/2}" y="${y-22}" width="${w}" height="44" rx="10" class="boxp"/><text x="${x}" y="${y+5}" text-anchor="middle" class="b">${t}</text>`;
+s.innerHTML=`<path d="M232 60H308" class="ag" marker-end="url(#m-g)"/><text x="270" y="48" text-anchor="middle" class="b tg">route 1</text>
+<path d="M150 84L236 206" class="ak" marker-end="url(#m-k)"/><path d="M304 206L390 84" class="ak" marker-end="url(#m-k)"/><text x="170" y="160" text-anchor="end" class="b tk">route 2</text>
+<text x="170" y="178" text-anchor="end" class="sm">burn C and 2H₂: −966</text><text x="372" y="160" class="sm">reverse of burning</text><text x="372" y="178" class="sm">CH₄: +890</text>
+${box(A[0],A[1],220,'C(s) + 2H₂(g)')}${box(B[0],B[1],220,'CH₄(g)')}${box(C[0],C[1]+14,280,'CO₂(g) + 2H₂O(l)')}
+<circle id="dot" cx="${A[0]}" cy="${A[1]-34}" r="9" style="fill:var(--x);stroke:var(--ink)"/>`;
+let busy=false;
+const run=(pts,vals,msg)=>{if(busy)return;busy=true;const d=$('#dot'),t0=performance.now(),seg=1400,N=pts.length-1;
+ const tick=t=>{const e=Math.min(N,(t-t0)/seg),i=Math.min(N-1,Math.floor(e)),k=e-i;
+  d.setAttribute('cx',pts[i][0]+(pts[i+1][0]-pts[i][0])*k);d.setAttribute('cy',pts[i][1]+(pts[i+1][1]-pts[i][1])*k);
+  const v=vals[i]+(vals[i+1]-vals[i])*k;$('#rtot').textContent=`Enthalpy change so far: ${neg(v)} kJ`;
+  if(e<N)requestAnimationFrame(tick);else{busy=false;$('#rmsg').innerHTML=msg}};
+ requestAnimationFrame(tick)};
+$('#r1').onclick=()=>run([[A[0],A[1]-34],[B[0],B[1]-34]],[0,-76],'Route 1 total: <b>−76 kJ</b>. Now try the other route.');
+$('#r2').onclick=()=>run([[A[0],A[1]-34],[C[0],C[1]-22],[B[0],B[1]-34]],[0,-966,-76],'Route 2 total: −966 + 890 = <b>−76 kJ</b>. The same as route 1: that is Hess\'s law.');
+}
+cycle('#cy1',{tl:'C(s) + 2H₂(g)',tr:'CH₄(g)',bot:'CO₂(g) + 2H₂O(l)',dir:'down',L:-966,R:-890,ll:'−394 + 2(−286) = −966',rl:'−890',note:'each side also needs 2O₂(g) to burn'});
+cycle('#cy2',{tl:'Fe₂O₃(s) + 3CO(g)',tr:'2Fe(s) + 3CO₂(g)',bot:'2Fe(s) + 3C(s) + 3O₂(g)',dir:'up',L:-1155,R:-1182,ll:'−822 + 3(−111) = −1155',rl:'3(−394) = −1182',note:'the elements in their standard states'});
+/* generator */
+{
+const FQ=[
+ {r:[[1,'CH₄(g)',-75],[2,'O₂(g)',0]],p:[[1,'CO₂(g)',-394],[2,'H₂O(l)',-286]]},
+ {r:[[4,'NH₃(g)',-46],[5,'O₂(g)',0]],p:[[4,'NO(g)',90],[6,'H₂O(g)',-242]]},
+ {r:[[1,'C₂H₄(g)',52],[1,'H₂(g)',0]],p:[[1,'C₂H₆(g)',-85]]},
+ {r:[[1,'SO₂(g)',-297],[0.5,'O₂(g)',0]],p:[[1,'SO₃(g)',-396]]},
+ {r:[[1,'MgO(s)',-602],[1,'CO₂(g)',-394]],p:[[1,'MgCO₃(s)',-1096]]},
+ {r:[[2,'H₂S(g)',-21],[3,'O₂(g)',0]],p:[[2,'SO₂(g)',-297],[2,'H₂O(l)',-286]]},
+ {r:[[1,'C₃H₈(g)',-104],[5,'O₂(g)',0]],p:[[3,'CO₂(g)',-394],[4,'H₂O(l)',-286]]},
+ {r:[[1,'CO(g)',-111],[1,'H₂O(g)',-242]],p:[[1,'CO₂(g)',-394],[1,'H₂(g)',0]]}];
+const CQ=[
+ {r:[[2,'C(s)',-394],[3,'H₂(g)',-286]],p:[[1,'C₂H₆(g)',-1560]]},
+ {r:[[4,'C(s)',-394],[5,'H₂(g)',-286]],p:[[1,'C₄H₁₀(g)',-2877]]},
+ {r:[[2,'C(s)',-394],[3,'H₂(g)',-286],[0.5,'O₂(g)',0]],p:[[1,'C₂H₅OH(l)',-1367]]},
+ {r:[[1,'C(s)',-394],[2,'H₂(g)',-286],[0.5,'O₂(g)',0]],p:[[1,'CH₃OH(l)',-726]]},
+ {r:[[6,'C(s)',-394],[3,'H₂(g)',-286]],p:[[1,'C₆H₆(l)',-3268]]},
+ {r:[[1,'C₃H₆(g)',-2058],[1,'H₂(g)',-286]],p:[[1,'C₃H₈(g)',-2219]]}];let last;
+const ask=(pool,k)=>{let q;do{q=pick(pool)}while(q===last);last=q;const R=tot(q.r),P=tot(q.p),ans=k==='f'?P-R:R-P,sym=k==='f'?'ΔfH':'ΔcH';
+ const data=[...q.r,...q.p].filter(x=>k==='f'?x[2]!==0:!/^(O₂|H₂O)/.test(x[1])).map(x=>`${x[1]} ${neg(x[2])}`).join(', ');
+ const c=el('div','check');c.dataset.ans=ans;c.dataset.unit='kJ mol⁻¹';c.dataset.tol=0.004;
+ c.innerHTML=DH(`<p class="lab">PRACTICE · ${k==='f'?'formation':'combustion'} data</p><p class="q">Calculate ΔH for ${side(q.r)} → ${side(q.p)}<br>${sym} / kJ mol⁻¹: ${data}</p>
+ <div class="ans">${k==='f'?'Products':'Reactants'}: ${sumtxt(k==='f'?q.p:q.r)} = ${neg(k==='f'?P:R)}<br>${k==='f'?'Reactants':'Products'}: ${sumtxt(k==='f'?q.r:q.p)} = ${neg(k==='f'?R:P)}<br>
+ ΔH = ${k==='f'?'products − reactants':'reactants − products'} = ${neg(k==='f'?P:R)} − ${br(k==='f'?R:P)} = <b>${sgn(ans)} kJ mol⁻¹</b></div>`);
+ $('#gen').innerHTML='';$('#gen').append(c);initCheck(c)};
+$('#g-f').onclick=()=>ask(FQ,'f');$('#g-c').onclick=()=>ask(CQ,'c');ask(FQ,'f');
+}
+window.QUIZ=[
+{q:'Hess\'s law states that the enthalpy change for a reaction…',o:['is independent of the route taken','depends on how fast the reaction is','is always negative','depends on the catalyst used'],e:'Only the start and end points matter, not the route between them.'},
+{q:'Hess\'s law is a consequence of…',o:['the conservation of energy','the conservation of mass','Le Chatelier\'s principle','collision theory'],e:'Energy cannot be created or destroyed, so every route between the same two states must involve the same energy change.'},
+{q:'Using enthalpies of formation, ΔH for a reaction equals…',o:['ΣΔfH(products) − ΣΔfH(reactants)','ΣΔfH(reactants) − ΣΔfH(products)','ΣΔfH(products) + ΣΔfH(reactants)','ΣΔfH(reactants) only'],e:'Formation arrows point up from the elements, so the route is against the reactants arrow and with the products arrow.'},
+{q:'Using enthalpies of combustion, ΔH for a reaction equals…',o:['ΣΔcH(reactants) − ΣΔcH(products)','ΣΔcH(products) − ΣΔcH(reactants)','ΣΔcH(products) + ΣΔcH(reactants)','ΣΔcH(products) only'],e:'Combustion arrows point down, so the route is with the reactants arrow and against the products arrow.'},
+{q:'When an equation is reversed, its ΔH…',o:['changes sign','doubles','stays the same','becomes zero'],e:'The reverse reaction has the same size of enthalpy change but the opposite sign.'},
+{q:'H₂(g) + ½O₂(g) → H₂O(l) has ΔH = −286 kJ mol⁻¹. What is ΔH for 2H₂(g) + O₂(g) → 2H₂O(l)?',o:['−572 kJ mol⁻¹','−286 kJ mol⁻¹','−143 kJ mol⁻¹','+572 kJ mol⁻¹'],e:'Doubling the equation doubles the enthalpy change.'},
+{q:'ΔfH / kJ mol⁻¹: CO₂ −394, H₂O(l) −286, C₂H₆ −85. What is ΔcH of ethane, C₂H₆ + 3½O₂ → 2CO₂ + 3H₂O?',o:['−1561 kJ mol⁻¹','−1731 kJ mol⁻¹','−595 kJ mol⁻¹','+1561 kJ mol⁻¹'],e:'Products − reactants: [2(−394) + 3(−286)] − (−85) = −1646 + 85 = −1561.'},
+{q:'ΔcH / kJ mol⁻¹: C −394, H₂ −286, CH₃OH −726. What is ΔfH of methanol, C + 2H₂ + ½O₂ → CH₃OH?',o:['−240 kJ mol⁻¹','+46 kJ mol⁻¹','+240 kJ mol⁻¹','−1692 kJ mol⁻¹'],e:'Reactants − products: [−394 + 2(−286)] − (−726) = −966 + 726 = −240. O₂ does not burn, so it counts as zero.'},
+{q:'Why can the enthalpy of formation of methane not be measured directly?',o:['Carbon and hydrogen do not react together to give only methane','The reaction is too exothermic','Methane is a gas','The reaction is too fast'],e:'Mixing carbon and hydrogen gives other hydrocarbons as well, or no reaction at all, so the change cannot be isolated in a calorimeter.'},
+{q:'In a formation cycle, what value is used for O₂(g)?',o:['0','−394','+249','−286'],e:'O₂(g) is an element in its standard state, so its enthalpy of formation is zero.'}];
+QUIZ.forEach(q=>{q.q=DH(q.q);q.o=q.o.map(DH);q.e=DH(q.e)});
+
+initAll();
+</script>
+</body>
+</html>
