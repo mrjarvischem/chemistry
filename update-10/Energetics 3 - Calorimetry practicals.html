@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Energetics 3: Calorimetry practicals</title>
+<style>
+:root{color-scheme:light dark;
+--bg:light-dark(#f6efe2,#1d1712);--panel:light-dark(#fffaf1,#2a221b);--ink:light-dark(#3a2a1d,#f1e6d6);--muted:light-dark(#7a6450,#b9a58f);
+--line:light-dark(#e2d4bd,#4a3b2f);--brown:light-dark(#8a5a2b,#d79c62);--glass:light-dark(#5a4634,#cdbba5);
+--k:light-dark(#2c6e8f,#74b6d6);--kl:light-dark(#d4e6ef,#1f3a4b);--u:light-dark(#a0462a,#e48f6c);--ul:light-dark(#f3dacd,#4b2a20);
+--x:light-dark(#a87a0a,#e0b44a);--xl:light-dark(#f4e3b2,#4a3d17);--good:light-dark(#2f7a3d,#7fcf8c);--gl:light-dark(#dcefdc,#203a25)}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow-x:clip}
+.band{padding:clamp(16px,3vw,36px) max(4vw,14px)}
+.wrap{max-width:1120px;margin:0 auto}
+header{border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:18px}
+.series{margin:0 0 4px;color:var(--brown);font-weight:700;font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+h1{font-size:clamp(28px,4vw,40px);line-height:1.1;margin:0 0 6px;text-wrap:balance}
+.sub{margin:0;color:var(--muted);max-width:75ch}
+#pnav{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+button{font:inherit;cursor:pointer;min-height:44px;border-radius:10px;border:1.5px solid var(--brown);background:var(--panel);color:var(--ink);padding:8px 16px}
+button:disabled{opacity:.4;cursor:default}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--k);outline-offset:2px}
+#pnav button{font-size:14px;min-height:38px;padding:4px 12px;border-color:var(--line)}
+#pnav button[aria-current=true],button[aria-pressed=true]{background:var(--brown);color:var(--panel);border-color:var(--brown)}
+button.next{background:var(--brown);color:var(--panel);font-weight:700}
+button.ghost{border-color:var(--line);font-size:15px}
+h2{font-size:clamp(23px,3vw,30px);line-height:1.15;margin:0 0 12px;text-wrap:balance}
+h3{font-size:19px;margin:0 0 8px}
+p{margin:0 0 10px}.page>p,.page>ul{max-width:80ch}
+ul,ol{margin:0 0 10px;padding-left:22px}li{margin:3px 0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 20px;margin:0 0 16px}
+.def{border-left:6px solid var(--brown)}
+.def .term{margin:0 0 4px;font-size:14px;font-weight:700;color:var(--brown);letter-spacing:.04em;text-transform:uppercase}
+.def .say{font-size:19px;font-weight:600;margin:0}
+.eq{background:var(--bg);border-radius:8px;padding:8px 12px;font-weight:600;font-size:19px;text-align:center;margin:8px 0;font-variant-numeric:tabular-nums}
+.card .eq{background:var(--bg)}
+.work{border-left:4px solid var(--brown);background:var(--bg);padding:10px 12px;border-radius:0 8px 8px 0;margin:10px 0;font-variant-numeric:tabular-nums}
+.tip{font-size:15px;color:var(--muted);margin:8px 0 0}.tip b{color:var(--ink)}
+.warn{border-left:6px solid var(--u);background:var(--ul);border-radius:0 10px 10px 0;padding:10px 14px;margin:0 0 16px}
+.g2{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:18px;align-items:start}
+.g2e{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.fig{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:8px;margin:0 0 16px}
+.fig svg{display:block;width:100%;height:auto}
+.fig .cap{font-size:14px;color:var(--muted);margin:4px 8px 4px}
+.kk{color:var(--k);font-weight:700}.uu{color:var(--u);font-weight:700}.xx{color:var(--x);font-weight:700}.gg{color:var(--good);font-weight:700}
+.num{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--brown);color:var(--panel);font-weight:700;font-size:14px;margin-right:8px;flex:none}
+.st{display:flex;align-items:flex-start;margin:0 0 10px}.st>div{flex:1}
+.stepper{margin-bottom:16px}
+.sbar{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-top:12px}
+.sbar .scount{color:var(--muted);font-size:14px}
+.new{animation:pop .5s ease both}
+@keyframes pop{from{opacity:0;transform:translateY(8px)}}
+.check{border:1.5px dashed var(--brown);border-radius:12px;padding:14px 16px;margin:0 0 14px;background:var(--panel)}
+.check .lab{font-size:13px;font-weight:700;color:var(--brown);letter-spacing:.06em;margin:0 0 4px}
+.check .q{font-weight:600;margin:0 0 8px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.row input,select{font:inherit;min-height:44px;padding:6px 10px;border:1.5px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink)}
+.row input{width:9em}
+.fb{margin:8px 0 0;font-weight:600;min-height:1.2em}.fb.ok{color:var(--good)}.fb.no{color:var(--u)}
+.ans{margin-top:10px;border-left:4px solid var(--good);background:var(--gl);padding:10px 12px;border-radius:0 8px 8px 0;font-variant-numeric:tabular-nums}
+.spot .eq{text-align:left;font-size:17px}
+.spot .ans{border-left-color:var(--u);background:var(--ul)}
+table.t{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+table.t th,table.t td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+table.t th{background:var(--bg);font-size:15px}
+.scroll{overflow-x:auto}
+.quiz .qq{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 18px;margin:0 0 14px}
+.quiz .qt{font-weight:600;margin:0 0 10px}
+.quiz .opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.quiz .opts button{text-align:left;border-color:var(--line)}
+.quiz .opts button.right{background:var(--gl);border-color:var(--good)}
+.quiz .opts button.wrong{background:var(--ul);border-color:var(--u)}
+.quiz .ex{margin:10px 0 0;font-size:15px}
+.score{font-size:20px;font-weight:700}
+.pfoot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:22px;border-top:1px solid var(--line);padding-top:14px}
+#pcount{color:var(--muted);font-size:14px}
+.sd{display:inline-block;width:.62em;height:.62em;border:1.5px solid currentColor;border-radius:50%;position:relative;vertical-align:.55em;margin-left:1px}
+.sd::after{content:"";position:absolute;left:-2.5px;right:-2.5px;top:50%;border-top:1.5px solid currentColor;transform:translateY(-50%)}
+/* svg */
+svg text{fill:var(--ink);font-size:13px;font-family:inherit}
+svg .sm{font-size:11.5px;fill:var(--muted)}svg .b{font-weight:700}svg .lg{font-size:15px;font-weight:700}
+svg .tk{fill:var(--k)}svg .tu{fill:var(--u)}svg .tx{fill:var(--x)}svg .tg{fill:var(--good)}svg .wt{fill:var(--panel);font-weight:700}
+.ax{stroke:var(--ink);stroke-width:1.6;fill:none}.lv{stroke:var(--ink);stroke-width:3;stroke-linecap:round}
+.ak{stroke:var(--k);stroke-width:2.6;fill:none}.au{stroke:var(--u);stroke-width:2.6;fill:none}.ag{stroke:var(--good);stroke-width:2.6;fill:none}.ai{stroke:var(--ink);stroke-width:2;fill:none}.ax2{stroke:var(--x);stroke-width:2.6;fill:none}
+.glass{fill:none;stroke:var(--glass);stroke-width:2.2;stroke-linejoin:round;stroke-linecap:round}
+.water{fill:var(--kl)}.hot{fill:var(--u)}.boxp{fill:var(--panel);stroke:var(--line);stroke-width:1.5}.boxb{fill:var(--bg);stroke:var(--line)}
+.grid-l{stroke:var(--line);stroke-width:1}
+@media(prefers-reduced-motion:reduce){.new{animation:none}}
+@media(max-width:820px){.g2,.g2e,.g3,.quiz .opts{grid-template-columns:minmax(0,1fr)}}
+</style>
+</head>
+<body>
+<div class="band"><div class="wrap">
+<header>
+<p class="series">AQA A-level Chemistry · 3.1.4 Energetics · Walkthrough 3 of 5</p>
+<h1>Calorimetry practicals</h1>
+<p class="sub">Calorimetry of fuels and Required Practical 2: taking the readings, finding ΔT from a graph, and evaluating the result.</p>
+<nav id="pnav" aria-label="Pages"></nav>
+</header>
+<main>
+<section class="page" data-title="Calorimetry of fuels">
+<h2>Calorimetry of fuels: the practical</h2>
+<p>The aim is to find an experimental value for the enthalpy of combustion of a liquid fuel, such as an alcohol, by using it to heat a known mass of water.</p>
+<div class="stepper"><div class="g2">
+<div class="fig"><svg viewBox="0 -0 530 340" role="img" aria-label="Labelled diagram of a spirit burner heating water in a clamped copper calorimeter inside a draught shield" id="app"></svg></div>
+<div>
+<div class="st" data-s="1"><span class="num">1</span><div>Measure <b>100 cm³ of water</b> (100 g) into the copper calorimeter and clamp it in place.</div></div>
+<div class="st" data-s="2"><span class="num">2</span><div>Stir and record the <b>initial temperature</b> of the water.</div></div>
+<div class="st" data-s="3"><span class="num">3</span><div>Weigh the <b>spirit burner with its cap on</b>.</div></div>
+<div class="st" data-s="4"><span class="num">4</span><div>Put the burner under the calorimeter, inside a <b>draught shield</b>, and light it. Stir the water all the time.</div></div>
+<div class="st" data-s="5"><span class="num">5</span><div>When the temperature has risen by about 20 °C, <b>put the cap back on</b> to put out the flame. Record the <b>highest temperature</b> reached.</div></div>
+<div class="st" data-s="6"><span class="num">6</span><div><b>Reweigh</b> the burner and cap straight away.</div></div>
+</div></div></div>
+<div class="card"><h3>Results table</h3>
+<div class="scroll"><table class="t"><tr><th>Reading</th><th>Value</th><th>Used for</th></tr>
+<tr><td>Mass of water / g</td><td>100</td><td>m in q = mcΔT</td></tr>
+<tr><td>Initial mass of burner / g</td><td>186.42</td><td rowspan="2">mass of fuel burned → n = m ÷ M<sub>r</sub></td></tr>
+<tr><td>Final mass of burner / g</td><td>185.86</td></tr>
+<tr><td>Initial temperature of water / °C</td><td>19.5</td><td rowspan="2">ΔT</td></tr>
+<tr><td>Final temperature of water / °C</td><td>41.0</td></tr></table></div>
+<p class="tip">Units go in the headings, not next to each number. Balance readings are recorded to 2 decimal places, thermometer readings to the precision of the thermometer.</p></div>
+<div class="check" data-ans="-738" data-unit="kJ mol⁻¹"><p class="lab">CHECK 1</p><p class="q">The fuel in the table above is ethanol (M<sub>r</sub> = 46.0). Use the readings to calculate an experimental value for Δ<sub>c</sub>H.</p><div class="ans">Mass burned = 186.42 − 185.86 = 0.56 g &nbsp; n = 0.56 ÷ 46.0 = 0.01217 mol<br>ΔT = 41.0 − 19.5 = 21.5 K &nbsp; q = 100 × 4.18 × 21.5 = 8987 J = 8.987 kJ<br>Δ<sub>c</sub>H = −8.987 ÷ 0.01217 = <b>−738 kJ mol⁻¹</b></div></div>
+<div class="check"><p class="lab">CHECK 2</p><p class="q">Give two ways of measuring out 100 g of water.</p><div class="ans">Weigh it directly on a balance, or measure 100 cm³ with a measuring cylinder (density of water = 1.00 g cm⁻³).</div></div>
+</section>
+
+<section class="page" data-title="Evaluating the fuels practical">
+<h2>Why is the answer so far out?</h2>
+<p>The data book value for ethanol is −1367 kJ mol⁻¹. The experiment on the last page gave −738 kJ mol⁻¹, barely half. The experimental value is always <b>less exothermic</b> than the true one. You need to be able to say why, and link it to the calculation.</p>
+<div class="card"><div class="scroll"><table class="t"><tr><th>Source of error</th><th>Effect on the calculation</th><th>Improvement</th></tr>
+<tr><td><b>Heat lost</b> to the air and to the calorimeter</td><td>ΔT too small → q too small → ΔH less exothermic</td><td>Draught shield, lid on the calorimeter, insulate the sides</td></tr>
+<tr><td><b>Incomplete combustion</b>: soot (C) and CO are made</td><td>Less energy released per mole burned → ΔT too small</td><td>Good air supply; keep the calorimeter close to, but not smothering, the flame</td></tr>
+<tr><td><b>Fuel evaporates</b> from the hot wick</td><td>Mass "burned" is too big → n too big → ΔH less exothermic</td><td>Cap the burner as soon as it is put out, and weigh straight away</td></tr>
+<tr><td><b>Not standard conditions</b>: water forms as steam, not liquid</td><td>Less energy released than the standard value</td><td>Cannot easily be fixed in a school lab</td></tr></table></div></div>
+<div class="warn"><b>The assumption in every calculation:</b> all the heat energy released by the fuel goes into the water.</div>
+<div class="g2e">
+<div class="check"><p class="lab">CHECK 3</p><p class="q">Suggest two disadvantages of using a glass beaker on a tripod and gauze instead of a clamped copper calorimeter.</p><div class="ans">Glass is a poorer conductor of heat than copper, so less heat reaches the water. The tripod and gauze absorb heat themselves and fix the beaker at one height above the flame.</div></div>
+<div class="check"><p class="lab">CHECK 4</p><p class="q">Why should the water be stirred throughout?</p><div class="ans">So the temperature is the same throughout the water and the thermometer reading is representative.</div></div>
+<div class="check"><p class="lab">CHECK 5</p><p class="q">A student forgets to put the cap back on before reweighing. Explain the effect on the calculated Δ<sub>c</sub>H.</p><div class="ans">Fuel evaporates, so the measured mass loss is bigger than the mass actually burned. n is too big, so Δ<sub>c</sub>H = −q ÷ n is less exothermic.</div></div>
+<div class="check"><p class="lab">CHECK 6</p><p class="q">The bottom of the calorimeter is black after the experiment. What does this show, and how does it affect the result?</p><div class="ans">Soot (carbon) has formed, so combustion was incomplete. Less energy is released per mole of fuel, so Δ<sub>c</sub>H is less exothermic.</div></div>
+</div>
+</section>
+
+<section class="page" data-title="Required Practical 2">
+<h2>Required Practical 2: measuring an enthalpy change in solution</h2>
+<p>RP2 measures ΔH for a reaction in solution, here zinc displacing copper from copper(II) sulfate:</p>
+<p class="eq">Zn(s) + CuSO₄(aq) → ZnSO₄(aq) + Cu(s)</p>
+<div class="card"><h3>The problem</h3><p>The reaction is not instant. While the temperature is still climbing, heat is already leaking out of the cup. The highest thermometer reading is therefore <b>lower than it should be</b>. The fix is to take readings over time and use a <b>graph</b> to find the temperature the mixture would have reached if the reaction had been instant.</p></div>
+<div class="card stepper"><h3>Method</h3>
+<div class="st" data-s="1"><span class="num">1</span><div>Use a pipette or burette to put <b>25.0 cm³ of copper(II) sulfate solution</b> into a polystyrene cup standing in a beaker. Add a lid with a hole for the thermometer.</div></div>
+<div class="st" data-s="2"><span class="num">2</span><div>Weigh out an <b>excess of zinc powder</b> (about 3 g).</div></div>
+<div class="st" data-s="3"><span class="num">3</span><div>Start a timer. Stir and record the temperature of the solution <b>every minute for 3 minutes</b>.</div></div>
+<div class="st" data-s="4"><span class="num">4</span><div><b>At 4 minutes add the zinc</b> and stir. Do not take a temperature reading at 4 minutes.</div></div>
+<div class="st" data-s="5"><span class="num">5</span><div>From 5 minutes, keep stirring and record the temperature <b>every minute for about 10 more minutes</b>.</div></div>
+<div class="st" data-s="6"><span class="num">6</span><div>Plot temperature against time and extrapolate to find ΔT at 4 minutes (next page).</div></div>
+</div>
+<div class="g2e">
+<div class="check"><p class="lab">CHECK 7</p><p class="q">Why is the zinc used as a powder and in excess?</p><div class="ans">Powder has a large surface area, so the reaction is fast and less heat is lost while it happens. Excess zinc makes sure all the copper(II) sulfate reacts, so the moles of CuSO₄ are the moles that react.</div></div>
+<div class="check"><p class="lab">CHECK 8</p><p class="q">Why is the temperature recorded for 3 minutes before the zinc is added?</p><div class="ans">To get a steady, reliable starting temperature. The line through these points is extended forward to the time of mixing.</div></div>
+</div>
+</section>
+
+<section class="page" data-title="ΔT from a graph">
+<h2>Finding ΔT from the graph</h2>
+<div class="stepper"><div class="g2">
+<div class="fig"><div id="g-exo"></div></div>
+<div>
+<div class="st" data-s="1"><span class="num">1</span><div>Plot the readings taken <b>before</b> the zinc was added. They give a steady starting temperature of 19.5 °C.</div></div>
+<div class="st" data-s="2"><span class="num">2</span><div>Plot the readings taken <b>after</b> the zinc was added at 4 minutes. The temperature climbs, then slowly falls as heat is lost.</div></div>
+<div class="st" data-s="3"><span class="num">3</span><div>The highest reading is 43.3 °C. Using it gives ΔT = 43.3 − 19.5 = <b>23.8 °C</b>, but heat was already escaping while the temperature was rising, so this is <span class="uu">too small</span>.</div></div>
+<div class="st" data-s="4"><span class="num">4</span><div>Draw a line of best fit through the starting temperatures and extend it <b>forward to 4 minutes</b>.</div></div>
+<div class="st" data-s="5"><span class="num">5</span><div>Draw a line of best fit through the <b>cooling</b> points only and extrapolate it <b>back to 4 minutes</b>. It reaches 44.0 °C.</div></div>
+<div class="st" data-s="6"><span class="num">6</span><div>ΔT is the vertical gap between the two lines <b>at the time of mixing</b>:<p class="eq">ΔT = 44.0 − 19.5 = 24.5 °C</p></div></div>
+</div></div></div>
+<div class="warn"><b>Do not extrapolate further back than the time of mixing.</b> Ignore the points where the temperature is still rising when you draw the cooling line.</div>
+<div class="card stepper"><h3>The calculation</h3>
+<p>25.0 cm³ of 0.500 mol dm⁻³ CuSO₄ was used with 3.00 g of zinc (A<sub>r</sub> = 65.4). ΔT = 24.5 °C.</p>
+<div class="st" data-s="1"><span class="num">1</span><div>q = mcΔT = 25.0 × 4.18 × 24.5 = 2560 J = <b>2.560 kJ</b> &nbsp; (m is the 25.0 g of solution, not the zinc)</div></div>
+<div class="st" data-s="2"><span class="num">2</span><div>Find the limiting reagent. n(CuSO₄) = 0.500 × 25.0 ÷ 1000 = <b>0.0125 mol</b> &nbsp; n(Zn) = 3.00 ÷ 65.4 = 0.0459 mol</div></div>
+<div class="st" data-s="3"><span class="num">3</span><div>The ratio is 1 : 1, so zinc is in excess and <b>CuSO₄ is limiting</b>. Use 0.0125 mol.</div></div>
+<div class="st" data-s="4"><span class="num">4</span><div>ΔH = −2.560 ÷ 0.0125. The temperature rose, so ΔH is negative.<p class="eq">ΔH = −205 kJ mol⁻¹</p><p class="tip">With the highest reading (ΔT = 23.8 °C) the answer would have been −199 kJ mol⁻¹: less exothermic.</p></div></div>
+</div>
+</section>
+
+<section class="page" data-title="Endothermic version">
+<h2>The same method for an endothermic change</h2>
+<p>When ammonium nitrate dissolves, the temperature <b>falls</b>. Now heat leaks <i>in</i> from the room while the solid is still dissolving, so the lowest reading is not low enough. The graph method fixes this in the same way.</p>
+<div class="stepper"><div class="g2">
+<div class="fig"><div id="g-endo"></div></div>
+<div>
+<div class="st" data-s="1"><span class="num">1</span><div>Starting temperature of the water: steady at 21.0 °C.</div></div>
+<div class="st" data-s="2"><span class="num">2</span><div>The solid is added at 3 minutes. The temperature drops, then slowly creeps back up as heat comes in from the room.</div></div>
+<div class="st" data-s="3"><span class="num">3</span><div>The lowest reading is 13.6 °C, giving ΔT = 7.4 °C. This is too small.</div></div>
+<div class="st" data-s="4"><span class="num">4</span><div>Extend the starting line forward to 3 minutes.</div></div>
+<div class="st" data-s="5"><span class="num">5</span><div>Draw the best-fit line through the <b>warming</b> points and extrapolate back to 3 minutes: 13.0 °C.</div></div>
+<div class="st" data-s="6"><span class="num">6</span><div><p class="eq">ΔT = 21.0 − 13.0 = 8.0 °C</p></div></div>
+</div></div></div>
+<div class="check" data-ans="26.8" data-unit="kJ mol⁻¹"><p class="lab">CHECK 9</p><p class="q">In this experiment 5.00 g of NH₄NO₃ (M<sub>r</sub> = 80.0) was dissolved in 50.0 g of water. Use ΔT = 8.0 °C to calculate the enthalpy change.</p><div class="ans">q = 50.0 × 4.18 × 8.0 = 1672 J = 1.672 kJ &nbsp; n = 5.00 ÷ 80.0 = 0.0625 mol<br>The temperature fell, so ΔH is positive: ΔH = 1.672 ÷ 0.0625 = <b>+26.8 kJ mol⁻¹</b></div></div>
+<div class="check"><p class="lab">CHECK 10 · 4 marks</p><p class="q">Describe the steps you would take to determine an accurate minimum temperature that is not influenced by heat from the surroundings.</p><div class="ans"><ul><li>Record the temperature of the water at regular intervals (e.g. every minute) for a few minutes <b>before</b> adding the solid.</li><li>Add the solid at a known time, stir, and keep recording the temperature at regular intervals for several minutes <b>after</b>.</li><li>Plot a graph of temperature against time.</li><li>Extrapolate both lines to the time of mixing and read off the temperature difference there.</li></ul></div></div>
+</section>
+
+<section class="page" data-title="Uncertainty + quiz">
+<h2>Percentage uncertainty</h2>
+<div class="card"><p class="eq">% uncertainty = (uncertainty in each reading × number of readings) ÷ value measured × 100</p>
+<p>A temperature <i>change</i> comes from <b>two</b> readings, and so does a mass found by difference, so the uncertainty counts twice.</p>
+<div class="work">Thermometer ±0.1 °C, ΔT = 24.5 °C: &nbsp; (2 × 0.1) ÷ 24.5 × 100 = <b>0.82 %</b><br>Balance ±0.01 g, mass of fuel burned = 0.56 g: &nbsp; (2 × 0.01) ÷ 0.56 × 100 = <b>3.6 %</b></div>
+<p class="tip">To reduce the percentage uncertainty <b>without changing the apparatus</b>, make the measured value bigger: burn more fuel, or use a more concentrated solution so ΔT is larger.</p></div>
+<div class="check" data-ans="2.5" data-unit="%"><p class="lab">CHECK 11</p><p class="q">A thermometer has an uncertainty of ±0.1 °C. Calculate the percentage uncertainty in a temperature change of 8.0 °C.</p><div class="ans">(2 × 0.1) ÷ 8.0 × 100 = <b>2.5 %</b></div></div>
+<h2 style="margin-top:22px">Quiz: calorimetry practicals</h2>
+<div class="quiz" id="quiz"></div>
+</section>
+
+</main>
+<div class="pfoot"><button id="prev">← Previous page</button><span id="pcount"></span><button id="next" class="next">Next page →</button></div>
+</div></div>
+<script>
+const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
+const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e};
+const sgn=(x,dp=0)=>(x<0?'−':'+')+Math.abs(x).toFixed(dp);
+const neg=(x,dp=0)=>(x<0?'−':'')+Math.abs(x).toFixed(dp);
+const br=(x,dp=0)=>x<0?'('+neg(x,dp)+')':neg(x,dp);
+const rnd=(a,b)=>a+Math.random()*(b-a),pick=a=>a[Math.floor(Math.random()*a.length)];
+const sf3=x=>{const s=Number(x.toPrecision(3));const a=Math.abs(s);return (s<0?'−':'')+(a>=100?a.toFixed(0):a>=10?a.toFixed(1):a>=1?a.toFixed(2):a.toPrecision(3))};
+/* atoms and molecules for particle pictures */
+const AT={C:['#4e4e4e','#fff',11],H:['#fafafa','#222',7],O:['#c8402f','#fff',10],Cl:['#3f8f4f','#fff',11],N:['#3a62b0','#fff',10],Br:['#8a3b1c','#fff',12]};
+const atom=(s,x,y)=>`<circle cx="${x}" cy="${y}" r="${AT[s][2]}" fill="${AT[s][0]}" stroke="#333" stroke-width="1"/><text x="${x}" y="${y+3.2}" text-anchor="middle" style="fill:${AT[s][1]};font-size:${AT[s][2]<8?7.5:9}px;font-weight:700">${s}</text>`;
+const MOL={
+ CH4:(x,y)=>atom('H',x-13,y-11)+atom('H',x+13,y-11)+atom('H',x-13,y+11)+atom('H',x+13,y+11)+atom('C',x,y),
+ O2:(x,y)=>atom('O',x-9,y)+atom('O',x+9,y),
+ CO2:(x,y)=>atom('O',x-18,y)+atom('O',x+18,y)+atom('C',x,y),
+ H2O:(x,y)=>atom('H',x-11,y+8)+atom('H',x+11,y+8)+atom('O',x,y),
+ H2:(x,y)=>atom('H',x-6,y)+atom('H',x+6,y),
+ Cl2:(x,y)=>atom('Cl',x-10,y)+atom('Cl',x+10,y),
+ HCl:(x,y)=>atom('Cl',x+5,y)+atom('H',x-10,y)};
+/* shared arrow markers */
+document.body.insertAdjacentHTML('afterbegin',`<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>${[['i','--ink'],['k','--k'],['u','--u'],['g','--good'],['x','--x'],['m','--muted']].map(([n,v])=>`<marker id="m-${n}" viewBox="0 0 10 10" refX="8.5" refY="5" markerUnits="userSpaceOnUse" markerWidth="13" markerHeight="13" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" style="fill:var(${v})"/></marker>`).join('')}</defs></svg>`);
+/* check questions */
+function initCheck(c){
+ const a=$('.ans',c);a.hidden=true;const row=el('div','row');let fb;
+ if(c.dataset.ans!=null){
+  const inp=el('input');inp.type='text';inp.inputMode='text';inp.setAttribute('aria-label','Your answer');inp.placeholder='your answer';
+  const ok=el('button','','Check');fb=el('p','fb');fb.setAttribute('aria-live','polite');row.append(inp);if(c.dataset.unit)row.append(el('span','unit',c.dataset.unit));row.append(ok);
+  const chk=()=>{const v=parseFloat(inp.value.replace(/[−–]/g,'-').replace(/[,\s]/g,'')),t=+c.dataset.ans,tol=+(c.dataset.tol||0.012);
+   const close=(x,y)=>Math.abs(x-y)<=Math.abs(y)*tol+1e-9;
+   if(isNaN(v)){fb.textContent='Type a number first.';fb.className='fb no'}
+   else if(close(v,t)){fb.textContent='✓ Correct';fb.className='fb ok';a.hidden=false;sh.textContent='Hide working'}
+   else if(t&&close(-v,t)){fb.textContent='Right size, wrong sign. Is energy given out (−) or taken in (+)?';fb.className='fb no'}
+   else if(close(v/1000,t)||close(v*1000,t)||close(-v/1000,t)){fb.textContent='Out by a factor of 1000. Check J ↔ kJ and cm³ ↔ dm³.';fb.className='fb no'}
+   else{fb.textContent='Not yet. Try again, or show the working.';fb.className='fb no'}};
+  ok.onclick=chk;inp.onkeydown=e=>{if(e.key==='Enter')chk()};
+ }
+ const lab=c.dataset.label||(c.dataset.ans!=null?'Show working':'Show answer');
+ const sh=el('button','ghost',lab);sh.onclick=()=>{a.hidden=!a.hidden;sh.textContent=a.hidden?lab:'Hide'};
+ row.append(sh);c.insertBefore(row,a);if(fb)c.insertBefore(fb,a);
+}
+function initAll(){
+ /* steppers */
+ $$('.stepper').forEach(st=>{
+  const els=$$('[data-s]',st),max=Math.max(...els.map(e=>+e.dataset.s));let n=1;
+  const bar=el('div','sbar'),b=el('button','ghost','← Back'),f=el('button','next'),c=el('span','scount');bar.append(b,c,f);st.append(bar);
+  const up=()=>{els.forEach(e=>{const s=+e.dataset.s,on=s<=n&&(!e.dataset.until||n<=+e.dataset.until);e.style.display=on?'':'none';e.classList.toggle('new',s===n)});
+   c.textContent=`Step ${n} of ${max}`;b.disabled=n<=1;f.textContent=n>=max?'↺ Start again':'Next step →';st.dispatchEvent(new CustomEvent('step',{detail:n}))};
+  b.onclick=()=>{n--;up()};f.onclick=()=>{n=n>=max?1:n+1;up()};up();
+ });
+ $$('.check').forEach(initCheck);
+ /* quiz */
+ const qz=$('#quiz');
+ if(qz&&window.QUIZ){
+  let score=0,done=0;const out=el('p','score');
+  const build=()=>{qz.innerHTML='';score=0;done=0;out.textContent='';
+   QUIZ.forEach((q,i)=>{const d=el('div','qq'),o=el('div','opts'),ex=el('p','ex');ex.hidden=true;
+    d.append(el('p','qt',`${i+1}. ${q.q}`),o,ex);
+    const order=q.o.map((t,k)=>[t,k]).sort(()=>Math.random()-.5);
+    order.forEach(([t,k])=>{const bt=el('button','',t);bt.onclick=()=>{if(d.dataset.done)return;d.dataset.done=1;done++;
+      if(k===0){score++;bt.classList.add('right')}else{bt.classList.add('wrong');$$('button',o).forEach((x,j)=>{if(order[j][1]===0)x.classList.add('right')})}
+      ex.innerHTML=(k===0?'<b class="gg">Correct.</b> ':'<b class="uu">Not quite.</b> ')+q.e;ex.hidden=false;
+      if(done===QUIZ.length){out.textContent=`You scored ${score} out of ${QUIZ.length}. `+(score>=9?'Excellent – this topic is secure.':score>=6?'Good – go back over the ones you missed.':'Go back through the pages above, then try again.')}};
+     o.append(bt)});
+    qz.append(d)});
+   const again=el('button','','Try the quiz again');again.onclick=()=>{build();qz.scrollIntoView()};qz.append(out,again)};
+  build();
+ }
+ /* pages */
+ const pages=$$('.page'),nav=$('#pnav');let cur=0;
+ const go=(i,sc=true)=>{cur=Math.max(0,Math.min(pages.length-1,i));pages.forEach((p,k)=>p.hidden=k!==cur);
+  $$('button',nav).forEach((b,k)=>b.setAttribute('aria-current',k===cur));$('#prev').disabled=cur===0;$('#next').disabled=cur===pages.length-1;
+  $('#pcount').textContent=`Page ${cur+1} of ${pages.length}`;try{history.replaceState(null,'','#p'+(cur+1))}catch(e){}
+  if(sc)window.scrollTo(0,0);pages[cur].dispatchEvent(new Event('shown'))};
+ pages.forEach((p,i)=>{const b=el('button','',`${i+1}. ${p.dataset.title}`);b.onclick=()=>go(i);nav.append(b)});
+ $('#prev').onclick=()=>go(cur-1);$('#next').onclick=()=>go(cur+1);
+ const h=()=>{const m=/^#p(\d+)$/.exec(location.hash);go(m?m[1]-1:0,false)};window.addEventListener('hashchange',h);h();
+}
+const DS=t=>t.replace(/Δ([cfr])H/g,'Δ<tspan dy="3" font-size="80%">$1</tspan><tspan dy="-3">H</tspan>');
+const DH=t=>t.replace(/Δ([cfr])H/g,'Δ<sub>$1</sub>H');
+/* Hess cycle drawing: c={tl,tr,bot,dir:'down'|'up',L,R,ll,rl,note} ; steps 1 target, 2 cycle, 3 values, 4 route, 5 answer */
+function cycle(id,c){
+ const d=c.dp||0,dn=c.dir==='down',ans=dn?c.L-c.R:c.R-c.L,la=dn?c.L:-c.L,ra=dn?-c.R:c.R;
+ const box=(x,y,w,t)=>`<rect x="${x}" y="${y}" width="${w}" height="44" rx="10" class="boxp"/><text x="${x+w/2}" y="${y+27}" text-anchor="middle" class="b">${t}</text>`;
+ const ar=(x1,y1,x2,y2,cl,m)=>`<path d="M${x1} ${y1}L${x2} ${y2}" class="${cl}" marker-end="url(#m-${m})"/>`;
+ const Lp=dn?[120,78,196,216]:[196,216,120,78],Rp=dn?[420,78,344,216]:[344,216,420,78];
+ $(id).innerHTML=`<svg viewBox="0 0 540 300" role="img" aria-label="Hess cycle">
+ <g data-s="1">${box(10,30,220,c.tl)}${box(310,30,220,c.tr)}${ar(234,52,306,52,'ai','i')}<text x="270" y="42" text-anchor="middle" class="b">ΔH = ?</text></g>
+ <g data-s="2">${box(110,220,320,c.bot)}${ar(...Lp,'ak','k')}${ar(...Rp,'ak','k')}<text x="270" y="286" text-anchor="middle" class="sm">${c.note}</text></g>
+ <g data-s="3" data-until="3"><text x="140" y="150" text-anchor="end" class="b tk">${c.ll}</text><text x="400" y="150" class="b tk">${c.rl}</text></g>
+ <g data-s="4"><path d="M166 110L222 212" class="ag" style="stroke-dasharray:7 5" marker-end="url(#m-g)"/><path d="M318 212L374 110" class="ag" style="stroke-dasharray:7 5" marker-end="url(#m-g)"/>
+ <text x="140" y="140" text-anchor="end" class="sm">${dn?'with':'against'} the arrow</text><text x="140" y="158" text-anchor="end" class="b tg">${sgn(la,d)}</text>
+ <text x="400" y="140" class="sm">${dn?'against':'with'} the arrow</text><text x="400" y="158" class="b tg">${sgn(ra,d)}</text></g>
+ <g data-s="5"><rect x="160" y="68" width="220" height="32" rx="8" class="boxb"/><text x="270" y="89" text-anchor="middle" class="b tg">ΔH = ${neg(la,d)} ${ra<0?'−':'+'} ${Math.abs(ra).toFixed(d)} = ${sgn(ans,d)}</text></g></svg>`;
+}
+/* generated Hess questions: r,p = [[coef,formula,value]] */
+const cf=n=>n===1?'':n===0.5?'½':n===1.5?'1½':n===2.5?'2½':n===3.5?'3½':n===6.5?'6½':n;
+const side=a=>a.map(([n,f])=>cf(n)+f).join(' + ');
+const sumtxt=a=>a.map(([n,f,v])=>(n===1?'':cf(n)+' × ')+br(v)).join(' + ');
+const tot=a=>a.reduce((s,[n,f,v])=>s+n*v,0);
+
+/* apparatus */
+{
+const lab=(x,y,t,x2,y2,s)=>`<g data-s="${s}"><line x1="${x}" y1="${y-4}" x2="${x2}" y2="${y2}" class="grid-l" style="stroke:var(--muted)"/><text x="${x}" y="${y}" text-anchor="${x<230?'end':'start'}" class="sm b">${t}</text></g>`;
+$('#app').innerHTML=`<path d="M110 60V310M350 60V310" class="glass" style="stroke-dasharray:6 5"/><text x="230" y="330" text-anchor="middle" class="sm" data-s="4">draught shield</text>
+<rect x="165" y="110" width="130" height="110" rx="4" style="fill:var(--panel);stroke:#b87333;stroke-width:5"/><rect x="169" y="132" width="122" height="85" class="water"/>
+<path d="M295 150H372M372 40V310" class="glass"/>
+<rect x="242" y="40" width="10" height="160" rx="5" class="glass" style="fill:var(--panel)"/><rect x="245" y="120" width="4" height="78" class="hot"/><circle cx="247" cy="200" r="7" class="hot"/>
+<path d="M200 310h60l-8-34h-44z" class="glass" style="fill:var(--xl)"/><rect x="226" y="266" width="8" height="12" class="glass"/>
+<path data-s="4" data-until="4" d="M230 266c-12-12-4-22 0-34c4 12 12 22 0 34z" style="fill:var(--x);stroke:var(--u);stroke-width:1.5"/>
+<path data-s="5" d="M222 262h16v14h-16z" class="glass" style="fill:var(--glass)"/>
+${lab(96,100,'thermometer',243,90,2)}${lab(96,160,'water (100 g)',175,170,1)}${lab(384,120,'copper calorimeter',296,125,1)}${lab(384,200,'clamp',372,160,1)}${lab(96,296,'spirit burner',204,300,3)}${lab(384,270,'cap',238,268,5)}`;
+}
+/* temperature–time graphs */
+function tgraph(id,c){
+ const W=520,H=350,L=58,R=18,T=18,B=48,X=t=>L+(W-L-R)*t/c.tmax,Y=v=>T+(H-T-B)*(c.ymax-v)/(c.ymax-c.ymin);
+ let o=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${c.aria}">`;
+ for(let t=0;t<=c.tmax;t+=2)o+=`<line x1="${X(t)}" x2="${X(t)}" y1="${T}" y2="${H-B}" class="grid-l"/><text x="${X(t)}" y="${H-B+16}" text-anchor="middle" class="sm">${t}</text>`;
+ for(let v=c.ymin;v<=c.ymax;v+=c.ystep)o+=`<line x1="${L}" x2="${W-R}" y1="${Y(v)}" y2="${Y(v)}" class="grid-l"/><text x="${L-8}" y="${Y(v)+4}" text-anchor="end" class="sm">${v}</text>`;
+ o+=`<path d="M${L} ${T}V${H-B}H${W-R}" class="ax"/><text x="${(L+W-R)/2}" y="${H-8}" text-anchor="middle">time / minutes</text><text x="16" y="${(T+H-B)/2}" transform="rotate(-90 16 ${(T+H-B)/2})" text-anchor="middle">temperature / °C</text>`;
+ const cross=(t,v)=>`<path d="M${X(t)-4} ${Y(v)-4}l8 8m0-8l-8 8" class="ai"/>`;
+ o+=`<g data-s="1">${c.base.map(t=>cross(t,c.T0)).join('')}</g>`;
+ o+=`<g data-s="2">${c.pts.map(p=>cross(...p)).join('')}<line x1="${X(c.tadd)}" x2="${X(c.tadd)}" y1="${T}" y2="${H-B}" style="stroke:var(--muted);stroke-dasharray:4 4"/><text x="${X(c.tadd)+5}" y="${T+12}" class="sm">${c.addl}</text></g>`;
+ const [et,ev]=c.ext;o+=`<g data-s="3" data-until="3"><circle cx="${X(et)}" cy="${Y(ev)}" r="10" class="au"/><text x="${X(et)+14}" y="${Y(ev)+(c.up?-8:18)}" class="b tu">${c.extl} ${ev.toFixed(1)} °C</text></g>`;
+ o+=`<line data-s="4" x1="${X(0)}" x2="${X(c.tadd)}" y1="${Y(c.T0)}" y2="${Y(c.T0)}" class="ak"/>`;
+ const f=t=>c.Te+c.slope*(t-c.tadd);
+ o+=`<g data-s="5"><line x1="${X(c.fit0)}" x2="${X(c.tmax)}" y1="${Y(f(c.fit0))}" y2="${Y(f(c.tmax))}" class="ag"/><line x1="${X(c.tadd)}" x2="${X(c.fit0)}" y1="${Y(c.Te)}" y2="${Y(f(c.fit0))}" class="ag" style="stroke-dasharray:6 5"/><text x="${X(c.tadd)-6}" y="${Y(c.Te)+(c.up?-6:16)}" text-anchor="end" class="b tg">${c.Te.toFixed(1)} °C</text></g>`;
+ o+=`<g data-s="6"><path d="M${X(c.tadd)} ${Y(c.T0)+(c.up?-4:4)}V${Y(c.Te)+(c.up?6:-6)}" class="au" marker-end="url(#m-u)" marker-start="url(#m-u)"/><text x="${X(c.tadd)+8}" y="${(Y(c.T0)+Y(c.Te))/2+4}" class="lg tu">ΔT = ${Math.abs(c.Te-c.T0).toFixed(1)} °C</text></g>`;
+ $(id).innerHTML=o+'</svg>';
+}
+tgraph('#g-exo',{aria:'Temperature against time for zinc added to copper sulfate solution',tmax:14,ymin:15,ymax:50,ystep:5,T0:19.5,base:[0,1,2,3],tadd:4,addl:'zinc added',up:true,
+ pts:[[5,38.0],[6,43.3],[7,42.95],[8,42.6],[9,42.25],[10,41.9],[11,41.55],[12,41.2],[13,40.85],[14,40.5]],ext:[6,43.3],extl:'highest reading',Te:44.0,slope:-0.35,fit0:6});
+tgraph('#g-endo',{aria:'Temperature against time for ammonium nitrate dissolving in water',tmax:10,ymin:10,ymax:24,ystep:2,T0:21.0,base:[0,1,2],tadd:3,addl:'solid added',up:false,
+ pts:[[4,15.2],[5,13.6],[6,13.9],[7,14.2],[8,14.5],[9,14.8],[10,15.1]],ext:[5,13.6],extl:'lowest reading',Te:13.0,slope:0.3,fit0:5});
+window.QUIZ=[
+{q:'Which two readings give the mass of fuel burned?',o:['Mass of the burner before and after burning','Mass of the water before and after heating','Temperature of the water before and after','Mass of the calorimeter empty and full'],e:'The fuel that has burned has left the burner, so its mass is the difference between the two burner readings.'},
+{q:'Why is a copper calorimeter better than a glass beaker?',o:['Copper is a better conductor of heat','Copper is cheaper than glass','Copper does not react with water','Copper has a higher melting point'],e:'Copper conducts heat from the flame to the water much better than glass, so less is lost on the way.'},
+{q:'What is the purpose of a draught shield?',o:['To reduce heat loss to the surrounding air','To supply more oxygen to the flame','To stop the water evaporating','To hold the thermometer upright'],e:'It keeps moving air away from the flame and calorimeter so more of the heat reaches the water.'},
+{q:'Soot forms on the base of the calorimeter. The experimental enthalpy of combustion will be…',o:['less exothermic, because combustion is incomplete','more exothermic, because carbon is a good conductor','unchanged','positive'],e:'Soot shows incomplete combustion. Less energy is released per mole of fuel burned.'},
+{q:'In RP2, why is the temperature recorded for a few minutes before the solid is added?',o:['To establish an accurate starting temperature','To let the reaction begin slowly','To cool the solution down','To calibrate the thermometer'],e:'A steady line through these points gives a reliable starting temperature at the time of mixing.'},
+{q:'The cooling line on the graph is extrapolated back to…',o:['the time the reactants were mixed','time zero','the time of the highest reading','the end of the experiment'],e:'ΔT is read at the time of mixing: the temperature the mixture would have reached if the reaction were instant.'},
+{q:'Why does using the highest thermometer reading underestimate ΔT for an exothermic reaction?',o:['Heat is lost while the reaction is still taking place','The thermometer overshoots','The solution evaporates','The reaction is instantaneous'],e:'The reaction takes time, and heat escapes during that time, so the mixture never reaches the temperature it should.'},
+{q:'A thermometer has an uncertainty of ±0.5 °C. What is the percentage uncertainty in a temperature rise of 20.0 °C?',o:['5.0 %','2.5 %','0.5 %','10 %'],e:'Two readings are needed for a change: (2 × 0.5) ÷ 20.0 × 100 = 5.0 %.'},
+{q:'How could the percentage uncertainty in ΔT be reduced using the same apparatus?',o:['Burn more fuel so the temperature rise is larger','Use a larger mass of water','Burn less fuel','Stop stirring the water'],e:'The uncertainty stays the same, so making ΔT larger makes the percentage smaller. More water would make ΔT smaller.'},
+{q:'25.0 cm³ of 0.500 mol dm⁻³ CuSO₄ reacts with 3.00 g of zinc (Aᵣ = 65.4). Which amount is used to calculate ΔH?',o:['0.0125 mol, because CuSO₄ is limiting','0.0459 mol, because zinc is the solid','0.0250 mol, the total volume in dm³','0.0584 mol, the total moles'],e:'n(CuSO₄) = 0.0125 mol and n(Zn) = 0.0459 mol. They react 1 : 1, so CuSO₄ runs out first.'}];
+
+initAll();
+</script>
+</body>
+</html>

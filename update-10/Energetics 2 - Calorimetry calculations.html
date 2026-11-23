@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Energetics 2: Calorimetry calculations</title>
+<style>
+:root{color-scheme:light dark;
+--bg:light-dark(#f6efe2,#1d1712);--panel:light-dark(#fffaf1,#2a221b);--ink:light-dark(#3a2a1d,#f1e6d6);--muted:light-dark(#7a6450,#b9a58f);
+--line:light-dark(#e2d4bd,#4a3b2f);--brown:light-dark(#8a5a2b,#d79c62);--glass:light-dark(#5a4634,#cdbba5);
+--k:light-dark(#2c6e8f,#74b6d6);--kl:light-dark(#d4e6ef,#1f3a4b);--u:light-dark(#a0462a,#e48f6c);--ul:light-dark(#f3dacd,#4b2a20);
+--x:light-dark(#a87a0a,#e0b44a);--xl:light-dark(#f4e3b2,#4a3d17);--good:light-dark(#2f7a3d,#7fcf8c);--gl:light-dark(#dcefdc,#203a25)}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow-x:clip}
+.band{padding:clamp(16px,3vw,36px) max(4vw,14px)}
+.wrap{max-width:1120px;margin:0 auto}
+header{border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:18px}
+.series{margin:0 0 4px;color:var(--brown);font-weight:700;font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+h1{font-size:clamp(28px,4vw,40px);line-height:1.1;margin:0 0 6px;text-wrap:balance}
+.sub{margin:0;color:var(--muted);max-width:75ch}
+#pnav{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+button{font:inherit;cursor:pointer;min-height:44px;border-radius:10px;border:1.5px solid var(--brown);background:var(--panel);color:var(--ink);padding:8px 16px}
+button:disabled{opacity:.4;cursor:default}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--k);outline-offset:2px}
+#pnav button{font-size:14px;min-height:38px;padding:4px 12px;border-color:var(--line)}
+#pnav button[aria-current=true],button[aria-pressed=true]{background:var(--brown);color:var(--panel);border-color:var(--brown)}
+button.next{background:var(--brown);color:var(--panel);font-weight:700}
+button.ghost{border-color:var(--line);font-size:15px}
+h2{font-size:clamp(23px,3vw,30px);line-height:1.15;margin:0 0 12px;text-wrap:balance}
+h3{font-size:19px;margin:0 0 8px}
+p{margin:0 0 10px}.page>p,.page>ul{max-width:80ch}
+ul,ol{margin:0 0 10px;padding-left:22px}li{margin:3px 0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 20px;margin:0 0 16px}
+.def{border-left:6px solid var(--brown)}
+.def .term{margin:0 0 4px;font-size:14px;font-weight:700;color:var(--brown);letter-spacing:.04em;text-transform:uppercase}
+.def .say{font-size:19px;font-weight:600;margin:0}
+.eq{background:var(--bg);border-radius:8px;padding:8px 12px;font-weight:600;font-size:19px;text-align:center;margin:8px 0;font-variant-numeric:tabular-nums}
+.card .eq{background:var(--bg)}
+.work{border-left:4px solid var(--brown);background:var(--bg);padding:10px 12px;border-radius:0 8px 8px 0;margin:10px 0;font-variant-numeric:tabular-nums}
+.tip{font-size:15px;color:var(--muted);margin:8px 0 0}.tip b{color:var(--ink)}
+.warn{border-left:6px solid var(--u);background:var(--ul);border-radius:0 10px 10px 0;padding:10px 14px;margin:0 0 16px}
+.g2{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:18px;align-items:start}
+.g2e{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.fig{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:8px;margin:0 0 16px}
+.fig svg{display:block;width:100%;height:auto}
+.fig .cap{font-size:14px;color:var(--muted);margin:4px 8px 4px}
+.kk{color:var(--k);font-weight:700}.uu{color:var(--u);font-weight:700}.xx{color:var(--x);font-weight:700}.gg{color:var(--good);font-weight:700}
+.num{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--brown);color:var(--panel);font-weight:700;font-size:14px;margin-right:8px;flex:none}
+.st{display:flex;align-items:flex-start;margin:0 0 10px}.st>div{flex:1}
+.stepper{margin-bottom:16px}
+.sbar{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-top:12px}
+.sbar .scount{color:var(--muted);font-size:14px}
+.new{animation:pop .5s ease both}
+@keyframes pop{from{opacity:0;transform:translateY(8px)}}
+.check{border:1.5px dashed var(--brown);border-radius:12px;padding:14px 16px;margin:0 0 14px;background:var(--panel)}
+.check .lab{font-size:13px;font-weight:700;color:var(--brown);letter-spacing:.06em;margin:0 0 4px}
+.check .q{font-weight:600;margin:0 0 8px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.row input,select{font:inherit;min-height:44px;padding:6px 10px;border:1.5px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink)}
+.row input{width:9em}
+.fb{margin:8px 0 0;font-weight:600;min-height:1.2em}.fb.ok{color:var(--good)}.fb.no{color:var(--u)}
+.ans{margin-top:10px;border-left:4px solid var(--good);background:var(--gl);padding:10px 12px;border-radius:0 8px 8px 0;font-variant-numeric:tabular-nums}
+.spot .eq{text-align:left;font-size:17px}
+.spot .ans{border-left-color:var(--u);background:var(--ul)}
+table.t{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+table.t th,table.t td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+table.t th{background:var(--bg);font-size:15px}
+.scroll{overflow-x:auto}
+.quiz .qq{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 18px;margin:0 0 14px}
+.quiz .qt{font-weight:600;margin:0 0 10px}
+.quiz .opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.quiz .opts button{text-align:left;border-color:var(--line)}
+.quiz .opts button.right{background:var(--gl);border-color:var(--good)}
+.quiz .opts button.wrong{background:var(--ul);border-color:var(--u)}
+.quiz .ex{margin:10px 0 0;font-size:15px}
+.score{font-size:20px;font-weight:700}
+.pfoot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:22px;border-top:1px solid var(--line);padding-top:14px}
+#pcount{color:var(--muted);font-size:14px}
+.sd{display:inline-block;width:.62em;height:.62em;border:1.5px solid currentColor;border-radius:50%;position:relative;vertical-align:.55em;margin-left:1px}
+.sd::after{content:"";position:absolute;left:-2.5px;right:-2.5px;top:50%;border-top:1.5px solid currentColor;transform:translateY(-50%)}
+/* svg */
+svg text{fill:var(--ink);font-size:13px;font-family:inherit}
+svg .sm{font-size:11.5px;fill:var(--muted)}svg .b{font-weight:700}svg .lg{font-size:15px;font-weight:700}
+svg .tk{fill:var(--k)}svg .tu{fill:var(--u)}svg .tx{fill:var(--x)}svg .tg{fill:var(--good)}svg .wt{fill:var(--panel);font-weight:700}
+.ax{stroke:var(--ink);stroke-width:1.6;fill:none}.lv{stroke:var(--ink);stroke-width:3;stroke-linecap:round}
+.ak{stroke:var(--k);stroke-width:2.6;fill:none}.au{stroke:var(--u);stroke-width:2.6;fill:none}.ag{stroke:var(--good);stroke-width:2.6;fill:none}.ai{stroke:var(--ink);stroke-width:2;fill:none}.ax2{stroke:var(--x);stroke-width:2.6;fill:none}
+.glass{fill:none;stroke:var(--glass);stroke-width:2.2;stroke-linejoin:round;stroke-linecap:round}
+.water{fill:var(--kl)}.hot{fill:var(--u)}.boxp{fill:var(--panel);stroke:var(--line);stroke-width:1.5}.boxb{fill:var(--bg);stroke:var(--line)}
+.grid-l{stroke:var(--line);stroke-width:1}
+@media(prefers-reduced-motion:reduce){.new{animation:none}}
+@media(max-width:820px){.g2,.g2e,.g3,.quiz .opts{grid-template-columns:minmax(0,1fr)}}
+</style>
+</head>
+<body>
+<div class="band"><div class="wrap">
+<header>
+<p class="series">AQA A-level Chemistry · 3.1.4 Energetics · Walkthrough 2 of 5</p>
+<h1>Calorimetry calculations</h1>
+<p class="sub">Using q = mcΔT to turn a temperature change into an enthalpy change, for burning fuels and for reactions in solution.</p>
+<nav id="pnav" aria-label="Pages"></nav>
+</header>
+<main>
+<section class="page" data-title="q = mcΔT">
+<h2>Measuring heat energy: q = mcΔT</h2>
+<p>We cannot measure enthalpy directly. Instead we let the reaction heat (or cool) some water and measure the temperature change of the water. This is <b>calorimetry</b>.</p>
+<div class="card"><p class="eq" style="font-size:26px">q = m × c × ΔT</p>
+<div class="scroll"><table class="t"><tr><th>Symbol</th><th>Meaning</th><th>Unit</th><th>Watch out</th></tr>
+<tr><td><b>q</b></td><td>heat energy transferred</td><td>J</td><td>Divide by 1000 to get kJ before finding ΔH.</td></tr>
+<tr><td><b>m</b></td><td>mass of the water or solution being heated</td><td>g</td><td><span class="uu">Never the mass of the fuel or solid.</span> 1 cm³ of water or dilute solution = 1 g.</td></tr>
+<tr><td><b>c</b></td><td>specific heat capacity of water</td><td>J g⁻¹ K⁻¹</td><td>4.18 J g⁻¹ K⁻¹. It is given in the question.</td></tr>
+<tr><td><b>ΔT</b></td><td>temperature change</td><td>K or °C</td><td>A change of 1 °C is the same as a change of 1 K, so <span class="uu">never add 273</span>.</td></tr></table></div></div>
+<div class="check" data-ans="6270" data-unit="J"><p class="lab">CHECK 1</p><p class="q">150 g of water is heated from 21.0 °C to 31.0 °C. Calculate q.</p><div class="ans">ΔT = 10.0 K &nbsp; q = 150 × 4.18 × 10.0 = <b>6270 J</b> (6.27 kJ)</div></div>
+<div class="check" data-ans="5.2" data-tol="0.03" data-unit="°C"><p class="lab">CHECK 2</p><p class="q">2.18 kJ of heat energy is transferred to 100 g of water. Calculate the temperature rise.</p><div class="ans">Rearrange: ΔT = q ÷ (m × c) = 2180 ÷ (100 × 4.18) = <b>5.2 °C</b>. Remember to put q back into J first.</div></div>
+</section>
+
+<section class="page" data-title="From q to ΔH">
+<h2>From q to ΔH</h2>
+<div class="g2e">
+<div class="card"><h3>The four steps</h3>
+<ol><li><b>ΔT</b> = final − initial temperature</li><li><b>q = mcΔT</b>, then ÷ 1000 to get kJ</li><li><b>n</b> = moles of the fuel burned (or of the limiting reagent)</li><li><b>ΔH = −q ÷ n</b> &nbsp; (kJ mol⁻¹)</li></ol></div>
+<div class="card"><h3>Where does the minus sign come from?</h3>
+<p>q is the energy gained by the <b>water</b> (the surroundings). The reaction (the system) lost exactly that much.</p>
+<ul><li>Temperature <span class="uu">rose</span> → exothermic → ΔH is <span class="uu">negative</span></li><li>Temperature <span class="kk">fell</span> → endothermic → ΔH is <span class="kk">positive</span></li></ul></div>
+</div>
+<h3>Try it: burn a fuel under a copper calorimeter</h3>
+<div class="g2">
+<div class="fig"><svg viewBox="0 0 460 330" role="img" aria-label="Spirit burner heating water in a copper calorimeter with a thermometer" id="cal"></svg></div>
+<div class="card">
+<div class="row" style="margin-bottom:8px"><label>Fuel <select id="c-fuel"></select></label><label>Water <select id="c-water"><option>100</option><option>150</option><option selected>200</option></select> g</label></div>
+<div class="row" style="margin-bottom:8px"><label>Mass of fuel burned <input id="c-mass" type="range" min="0.2" max="0.6" step="0.05" value="0.4" style="width:8em;padding:0"> <b id="c-massv"></b> g</label></div>
+<div class="row" style="margin-bottom:10px" role="group" aria-label="Heat loss"><button id="c-ideal" aria-pressed="false">No heat loss</button><button id="c-real" aria-pressed="true">Real lab</button><button id="c-burn" class="next" data-auto>Burn ▶</button></div>
+<div id="c-out" aria-live="polite"><p class="tip">Choose a fuel, then press Burn.</p></div>
+</div></div>
+<div class="check"><p class="lab">CHECK 3</p><p class="q">Run the same fuel with "No heat loss" and then "Real lab". Which gives the less exothermic value, and why?</p><div class="ans">The real lab. Some of the heat from the flame goes into the air and the copper can instead of the water, so ΔT is smaller, q is smaller and ΔH is less exothermic.</div></div>
+</section>
+
+<section class="page" data-title="Burning fuels">
+<h2>Combustion calorimetry</h2>
+<div class="card stepper"><h3>Worked example</h3>
+<p>A student burns 0.0300 mol of an alcohol. It heats 0.250 kg of water in a copper calorimeter from 18.9 °C to 78.1 °C. Calculate the enthalpy of combustion of the alcohol. (c = 4.18 J g⁻¹ K⁻¹)</p>
+<div class="st" data-s="1"><span class="num">1</span><div>Temperature change: ΔT = 78.1 − 18.9 = <b>59.2 K</b></div></div>
+<div class="st" data-s="2"><span class="num">2</span><div>Mass of water in grams: 0.250 kg = <b>250 g</b></div></div>
+<div class="st" data-s="3"><span class="num">3</span><div>q = mcΔT = 250 × 4.18 × 59.2 = 61 864 J = <b>61.864 kJ</b></div></div>
+<div class="st" data-s="4"><span class="num">4</span><div>ΔH = −q ÷ n = −61.864 ÷ 0.0300 = −2062</div></div>
+<div class="st" data-s="5"><span class="num">5</span><div>The temperature rose, so ΔH is negative. To 3 s.f.:<p class="eq">Δ<sub>c</sub>H = −2060 kJ mol⁻¹</p><p class="tip">The data book value for propan-1-ol is −2021 kJ mol⁻¹, so that is the most likely alcohol.</p></div></div>
+</div>
+<h3>Spot the error</h3>
+<p>Each student has made one mistake. Find it.</p>
+<div class="g2e">
+<div class="check spot" data-label="Reveal the mistake"><p class="eq">q = 0.46 × 4.18 × 16.4</p><div class="ans">0.46 g is the mass of fuel. m is the mass of water heated.</div></div>
+<div class="check spot" data-label="Reveal the mistake"><p class="eq">ΔT = 35.1 + 273 = 308.1 K</p><div class="ans">ΔT is a change: final − initial. Never add 273 to a temperature change.</div></div>
+<div class="check spot" data-label="Reveal the mistake"><p class="eq">ΔH = −61 864 ÷ 0.0300 kJ mol⁻¹</p><div class="ans">q is still in J. Divide by 1000 first to get kJ mol⁻¹.</div></div>
+<div class="check spot" data-label="Reveal the mistake"><p class="eq">Water heated from 19 °C to 45 °C: ΔH = +2060 kJ mol⁻¹</p><div class="ans">The temperature rose, so the reaction is exothermic and ΔH is negative.</div></div>
+</div>
+<div class="check" data-ans="-899" data-unit="kJ mol⁻¹"><p class="lab">CHECK 4</p><p class="q">0.920 g of ethanol (M<sub>r</sub> = 46.0) is burned and heats 200 g of water by 21.5 °C. Calculate Δ<sub>c</sub>H.</p><div class="ans">q = 200 × 4.18 × 21.5 = 17 974 J = 17.974 kJ<br>n = 0.920 ÷ 46.0 = 0.0200 mol<br>Δ<sub>c</sub>H = −17.974 ÷ 0.0200 = <b>−899 kJ mol⁻¹</b></div></div>
+<div class="check" data-ans="-1960" data-unit="kJ mol⁻¹"><p class="lab">CHECK 5</p><p class="q">0.600 g of butan-1-ol (M<sub>r</sub> = 74.0) heats 150 g of water from 19.2 °C to 44.6 °C. Calculate Δ<sub>c</sub>H to 3 significant figures.</p><div class="ans">ΔT = 25.4 K &nbsp; q = 150 × 4.18 × 25.4 = 15 926 J = 15.926 kJ<br>n = 0.600 ÷ 74.0 = 8.108 × 10⁻³ mol<br>Δ<sub>c</sub>H = −15.926 ÷ 8.108 × 10⁻³ = <b>−1960 kJ mol⁻¹</b></div></div>
+</section>
+
+<section class="page" data-title="Reactions in solution">
+<h2>Reactions in solution</h2>
+<p>For neutralisation, displacement and dissolving, the reaction happens <i>in</i> the water. The solution itself is the surroundings, and a polystyrene cup with a lid keeps the heat in.</p>
+<div class="g3">
+<div class="card"><h3>m</h3><p>The <b>total volume</b> of solution, taken as 1.00 g per cm³.</p><p class="tip">25.0 cm³ + 25.0 cm³ → m = 50.0 g. Do not add the mass of a solid.</p></div>
+<div class="card"><h3>n</h3><p>Moles of the <b>limiting reagent</b>: n = c × V ÷ 1000.</p><p class="tip">If one reagent is "in excess", use the other one.</p></div>
+<div class="card"><h3>ΔT</h3><p>Highest (or lowest) temperature reached − starting temperature.</p><p class="tip">Walkthrough 3 shows a more accurate way using a graph.</p></div>
+</div>
+<div class="card stepper"><h3>Worked example: neutralisation</h3>
+<p>25.0 cm³ of 1.00 mol dm⁻³ HCl reacts with 25.0 cm³ of 1.00 mol dm⁻³ NaOH. The temperature rises by 6.8 °C.</p>
+<div class="st" data-s="1"><span class="num">1</span><div>Mass of solution: 25.0 + 25.0 = 50.0 cm³ → <b>50.0 g</b></div></div>
+<div class="st" data-s="2"><span class="num">2</span><div>q = mcΔT = 50.0 × 4.18 × 6.8 = 1421 J = <b>1.421 kJ</b></div></div>
+<div class="st" data-s="3"><span class="num">3</span><div>n(HCl) = 1.00 × 25.0 ÷ 1000 = <b>0.0250 mol</b></div></div>
+<div class="st" data-s="4"><span class="num">4</span><div>ΔH = −q ÷ n = −1.421 ÷ 0.0250. The temperature rose, so ΔH is negative.<p class="eq">ΔH = −56.8 kJ mol⁻¹</p></div></div>
+</div>
+<div class="check" data-ans="-213" data-unit="kJ mol⁻¹"><p class="lab">CHECK 6</p><p class="q">Excess zinc powder is added to 50.0 cm³ of 0.500 mol dm⁻³ CuSO₄(aq). The temperature rises by 25.5 °C. Calculate ΔH for the reaction.</p><div class="ans">q = 50.0 × 4.18 × 25.5 = 5330 J = 5.330 kJ<br>n(CuSO₄) = 0.500 × 50.0 ÷ 1000 = 0.0250 mol (zinc is in excess)<br>ΔH = −5.330 ÷ 0.0250 = <b>−213 kJ mol⁻¹</b></div></div>
+<div class="check" data-ans="-55.2" data-unit="kJ mol⁻¹"><p class="lab">CHECK 7</p><p class="q">50.0 cm³ of 1.00 mol dm⁻³ HCl is mixed with 50.0 cm³ of 1.20 mol dm⁻³ NaOH. The temperature rises by 6.6 °C. Calculate ΔH per mole of water formed.</p><div class="ans">m = 100 g &nbsp; q = 100 × 4.18 × 6.6 = 2759 J = 2.759 kJ<br>HCl is limiting: n = 1.00 × 50.0 ÷ 1000 = 0.0500 mol (NaOH is 0.0600 mol, in excess)<br>ΔH = −2.759 ÷ 0.0500 = <b>−55.2 kJ mol⁻¹</b></div></div>
+<div class="check" data-ans="26.3" data-unit="kJ mol⁻¹"><p class="lab">CHECK 8</p><p class="q">8.00 g of ammonium nitrate, NH₄NO₃ (M<sub>r</sub> = 80.0), dissolves in 100 g of water. The temperature falls from 20.5 °C to 14.2 °C. Calculate ΔH.</p><div class="ans">ΔT = 6.3 K &nbsp; q = 100 × 4.18 × 6.3 = 2633 J = 2.633 kJ<br>n = 8.00 ÷ 80.0 = 0.100 mol<br>The temperature fell, so ΔH is positive: ΔH = <b>+26.3 kJ mol⁻¹</b></div></div>
+</section>
+
+<section class="page" data-title="Working backwards">
+<h2>Working backwards: finding a temperature</h2>
+<p>Some questions give you ΔH and ask for the temperature change or the final temperature. Run the same steps in reverse.</p>
+<div class="card stepper"><h3>Worked example</h3>
+<p>50.0 cm³ of 0.500 mol dm⁻³ HCl is mixed with 50.0 cm³ of 0.500 mol dm⁻³ NaOH, both at 18.5 °C. ΔH = −57.1 kJ mol⁻¹. Calculate the final temperature.</p>
+<div class="st" data-s="1"><span class="num">1</span><div>n(HCl) = 0.500 × 50.0 ÷ 1000 = <b>0.0250 mol</b></div></div>
+<div class="st" data-s="2"><span class="num">2</span><div>q = n × ΔH = 0.0250 × 57.1 = 1.4275 kJ = <b>1427.5 J</b></div></div>
+<div class="st" data-s="3"><span class="num">3</span><div>Rearrange q = mcΔT. The mass is the total volume, 100 g.<br>ΔT = q ÷ (m × c) = 1427.5 ÷ (100 × 4.18) = <b>3.4 °C</b></div></div>
+<div class="st" data-s="4"><span class="num">4</span><div>ΔH is negative, so the temperature <b>rises</b>: 18.5 + 3.4<p class="eq">Final temperature = 21.9 °C</p></div></div>
+</div>
+<div class="check" data-ans="41.8" data-unit="°C"><p class="lab">CHECK 9</p><p class="q">0.460 g of ethanol (M<sub>r</sub> = 46.0) is burned under 150 g of water at 20.0 °C. Δ<sub>c</sub>H = −1367 kJ mol⁻¹. Assuming no heat loss, calculate the final temperature of the water.</p><div class="ans">n = 0.460 ÷ 46.0 = 0.0100 mol &nbsp; q = 0.0100 × 1367 = 13.67 kJ = 13 670 J<br>ΔT = 13 670 ÷ (150 × 4.18) = 21.8 °C<br>Final temperature = 20.0 + 21.8 = <b>41.8 °C</b></div></div>
+<div class="check" data-ans="32.7" data-unit="°C"><p class="lab">CHECK 10</p><p class="q">25.0 cm³ of 2.00 mol dm⁻³ HCl is mixed with 25.0 cm³ of 2.00 mol dm⁻³ NaOH, both at 19.0 °C. ΔH = −57.1 kJ mol⁻¹. Calculate the final temperature.</p><div class="ans">n = 2.00 × 25.0 ÷ 1000 = 0.0500 mol &nbsp; q = 0.0500 × 57.1 = 2.855 kJ = 2855 J<br>ΔT = 2855 ÷ (50.0 × 4.18) = 13.7 °C<br>Final temperature = 19.0 + 13.7 = <b>32.7 °C</b></div></div>
+<div class="check"><p class="lab">CHECK 11</p><p class="q">In a real experiment the final temperature in CHECK 9 would be lower than your answer. Explain why.</p><div class="ans">Some heat is lost to the air and to the calorimeter, and some fuel burns incompletely, so less energy reaches the water.</div></div>
+</section>
+
+<section class="page" data-title="Practice + quiz">
+<h2>Practice with new numbers</h2>
+<p>Each press gives a new question. Work it out on paper, then check.</p>
+<div class="row" style="margin-bottom:12px"><button id="g-comb">New combustion question</button><button id="g-soln">New solution question</button></div>
+<div id="gen"></div>
+<h2 style="margin-top:22px">Quiz: calorimetry calculations</h2>
+<div class="quiz" id="quiz"></div>
+</section>
+
+</main>
+<div class="pfoot"><button id="prev">← Previous page</button><span id="pcount"></span><button id="next" class="next">Next page →</button></div>
+</div></div>
+<script>
+const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
+const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e};
+const sgn=(x,dp=0)=>(x<0?'−':'+')+Math.abs(x).toFixed(dp);
+const neg=(x,dp=0)=>(x<0?'−':'')+Math.abs(x).toFixed(dp);
+const br=(x,dp=0)=>x<0?'('+neg(x,dp)+')':neg(x,dp);
+const rnd=(a,b)=>a+Math.random()*(b-a),pick=a=>a[Math.floor(Math.random()*a.length)];
+const sf3=x=>{const s=Number(x.toPrecision(3));const a=Math.abs(s);return (s<0?'−':'')+(a>=100?a.toFixed(0):a>=10?a.toFixed(1):a>=1?a.toFixed(2):a.toPrecision(3))};
+/* atoms and molecules for particle pictures */
+const AT={C:['#4e4e4e','#fff',11],H:['#fafafa','#222',7],O:['#c8402f','#fff',10],Cl:['#3f8f4f','#fff',11],N:['#3a62b0','#fff',10],Br:['#8a3b1c','#fff',12]};
+const atom=(s,x,y)=>`<circle cx="${x}" cy="${y}" r="${AT[s][2]}" fill="${AT[s][0]}" stroke="#333" stroke-width="1"/><text x="${x}" y="${y+3.2}" text-anchor="middle" style="fill:${AT[s][1]};font-size:${AT[s][2]<8?7.5:9}px;font-weight:700">${s}</text>`;
+const MOL={
+ CH4:(x,y)=>atom('H',x-13,y-11)+atom('H',x+13,y-11)+atom('H',x-13,y+11)+atom('H',x+13,y+11)+atom('C',x,y),
+ O2:(x,y)=>atom('O',x-9,y)+atom('O',x+9,y),
+ CO2:(x,y)=>atom('O',x-18,y)+atom('O',x+18,y)+atom('C',x,y),
+ H2O:(x,y)=>atom('H',x-11,y+8)+atom('H',x+11,y+8)+atom('O',x,y),
+ H2:(x,y)=>atom('H',x-6,y)+atom('H',x+6,y),
+ Cl2:(x,y)=>atom('Cl',x-10,y)+atom('Cl',x+10,y),
+ HCl:(x,y)=>atom('Cl',x+5,y)+atom('H',x-10,y)};
+/* shared arrow markers */
+document.body.insertAdjacentHTML('afterbegin',`<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>${[['i','--ink'],['k','--k'],['u','--u'],['g','--good'],['x','--x'],['m','--muted']].map(([n,v])=>`<marker id="m-${n}" viewBox="0 0 10 10" refX="8.5" refY="5" markerUnits="userSpaceOnUse" markerWidth="13" markerHeight="13" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" style="fill:var(${v})"/></marker>`).join('')}</defs></svg>`);
+/* check questions */
+function initCheck(c){
+ const a=$('.ans',c);a.hidden=true;const row=el('div','row');let fb;
+ if(c.dataset.ans!=null){
+  const inp=el('input');inp.type='text';inp.inputMode='text';inp.setAttribute('aria-label','Your answer');inp.placeholder='your answer';
+  const ok=el('button','','Check');fb=el('p','fb');fb.setAttribute('aria-live','polite');row.append(inp);if(c.dataset.unit)row.append(el('span','unit',c.dataset.unit));row.append(ok);
+  const chk=()=>{const v=parseFloat(inp.value.replace(/[−–]/g,'-').replace(/[,\s]/g,'')),t=+c.dataset.ans,tol=+(c.dataset.tol||0.012);
+   const close=(x,y)=>Math.abs(x-y)<=Math.abs(y)*tol+1e-9;
+   if(isNaN(v)){fb.textContent='Type a number first.';fb.className='fb no'}
+   else if(close(v,t)){fb.textContent='✓ Correct';fb.className='fb ok';a.hidden=false;sh.textContent='Hide working'}
+   else if(t&&close(-v,t)){fb.textContent='Right size, wrong sign. Is energy given out (−) or taken in (+)?';fb.className='fb no'}
+   else if(close(v/1000,t)||close(v*1000,t)||close(-v/1000,t)){fb.textContent='Out by a factor of 1000. Check J ↔ kJ and cm³ ↔ dm³.';fb.className='fb no'}
+   else{fb.textContent='Not yet. Try again, or show the working.';fb.className='fb no'}};
+  ok.onclick=chk;inp.onkeydown=e=>{if(e.key==='Enter')chk()};
+ }
+ const lab=c.dataset.label||(c.dataset.ans!=null?'Show working':'Show answer');
+ const sh=el('button','ghost',lab);sh.onclick=()=>{a.hidden=!a.hidden;sh.textContent=a.hidden?lab:'Hide'};
+ row.append(sh);c.insertBefore(row,a);if(fb)c.insertBefore(fb,a);
+}
+function initAll(){
+ /* steppers */
+ $$('.stepper').forEach(st=>{
+  const els=$$('[data-s]',st),max=Math.max(...els.map(e=>+e.dataset.s));let n=1;
+  const bar=el('div','sbar'),b=el('button','ghost','← Back'),f=el('button','next'),c=el('span','scount');bar.append(b,c,f);st.append(bar);
+  const up=()=>{els.forEach(e=>{const s=+e.dataset.s,on=s<=n&&(!e.dataset.until||n<=+e.dataset.until);e.style.display=on?'':'none';e.classList.toggle('new',s===n)});
+   c.textContent=`Step ${n} of ${max}`;b.disabled=n<=1;f.textContent=n>=max?'↺ Start again':'Next step →';st.dispatchEvent(new CustomEvent('step',{detail:n}))};
+  b.onclick=()=>{n--;up()};f.onclick=()=>{n=n>=max?1:n+1;up()};up();
+ });
+ $$('.check').forEach(initCheck);
+ /* quiz */
+ const qz=$('#quiz');
+ if(qz&&window.QUIZ){
+  let score=0,done=0;const out=el('p','score');
+  const build=()=>{qz.innerHTML='';score=0;done=0;out.textContent='';
+   QUIZ.forEach((q,i)=>{const d=el('div','qq'),o=el('div','opts'),ex=el('p','ex');ex.hidden=true;
+    d.append(el('p','qt',`${i+1}. ${q.q}`),o,ex);
+    const order=q.o.map((t,k)=>[t,k]).sort(()=>Math.random()-.5);
+    order.forEach(([t,k])=>{const bt=el('button','',t);bt.onclick=()=>{if(d.dataset.done)return;d.dataset.done=1;done++;
+      if(k===0){score++;bt.classList.add('right')}else{bt.classList.add('wrong');$$('button',o).forEach((x,j)=>{if(order[j][1]===0)x.classList.add('right')})}
+      ex.innerHTML=(k===0?'<b class="gg">Correct.</b> ':'<b class="uu">Not quite.</b> ')+q.e;ex.hidden=false;
+      if(done===QUIZ.length){out.textContent=`You scored ${score} out of ${QUIZ.length}. `+(score>=9?'Excellent – this topic is secure.':score>=6?'Good – go back over the ones you missed.':'Go back through the pages above, then try again.')}};
+     o.append(bt)});
+    qz.append(d)});
+   const again=el('button','','Try the quiz again');again.onclick=()=>{build();qz.scrollIntoView()};qz.append(out,again)};
+  build();
+ }
+ /* pages */
+ const pages=$$('.page'),nav=$('#pnav');let cur=0;
+ const go=(i,sc=true)=>{cur=Math.max(0,Math.min(pages.length-1,i));pages.forEach((p,k)=>p.hidden=k!==cur);
+  $$('button',nav).forEach((b,k)=>b.setAttribute('aria-current',k===cur));$('#prev').disabled=cur===0;$('#next').disabled=cur===pages.length-1;
+  $('#pcount').textContent=`Page ${cur+1} of ${pages.length}`;try{history.replaceState(null,'','#p'+(cur+1))}catch(e){}
+  if(sc)window.scrollTo(0,0);pages[cur].dispatchEvent(new Event('shown'))};
+ pages.forEach((p,i)=>{const b=el('button','',`${i+1}. ${p.dataset.title}`);b.onclick=()=>go(i);nav.append(b)});
+ $('#prev').onclick=()=>go(cur-1);$('#next').onclick=()=>go(cur+1);
+ const h=()=>{const m=/^#p(\d+)$/.exec(location.hash);go(m?m[1]-1:0,false)};window.addEventListener('hashchange',h);h();
+}
+const DS=t=>t.replace(/Δ([cfr])H/g,'Δ<tspan dy="3" font-size="80%">$1</tspan><tspan dy="-3">H</tspan>');
+const DH=t=>t.replace(/Δ([cfr])H/g,'Δ<sub>$1</sub>H');
+/* Hess cycle drawing: c={tl,tr,bot,dir:'down'|'up',L,R,ll,rl,note} ; steps 1 target, 2 cycle, 3 values, 4 route, 5 answer */
+function cycle(id,c){
+ const d=c.dp||0,dn=c.dir==='down',ans=dn?c.L-c.R:c.R-c.L,la=dn?c.L:-c.L,ra=dn?-c.R:c.R;
+ const box=(x,y,w,t)=>`<rect x="${x}" y="${y}" width="${w}" height="44" rx="10" class="boxp"/><text x="${x+w/2}" y="${y+27}" text-anchor="middle" class="b">${t}</text>`;
+ const ar=(x1,y1,x2,y2,cl,m)=>`<path d="M${x1} ${y1}L${x2} ${y2}" class="${cl}" marker-end="url(#m-${m})"/>`;
+ const Lp=dn?[120,78,196,216]:[196,216,120,78],Rp=dn?[420,78,344,216]:[344,216,420,78];
+ $(id).innerHTML=`<svg viewBox="0 0 540 300" role="img" aria-label="Hess cycle">
+ <g data-s="1">${box(10,30,220,c.tl)}${box(310,30,220,c.tr)}${ar(234,52,306,52,'ai','i')}<text x="270" y="42" text-anchor="middle" class="b">ΔH = ?</text></g>
+ <g data-s="2">${box(110,220,320,c.bot)}${ar(...Lp,'ak','k')}${ar(...Rp,'ak','k')}<text x="270" y="286" text-anchor="middle" class="sm">${c.note}</text></g>
+ <g data-s="3" data-until="3"><text x="140" y="150" text-anchor="end" class="b tk">${c.ll}</text><text x="400" y="150" class="b tk">${c.rl}</text></g>
+ <g data-s="4"><path d="M166 110L222 212" class="ag" style="stroke-dasharray:7 5" marker-end="url(#m-g)"/><path d="M318 212L374 110" class="ag" style="stroke-dasharray:7 5" marker-end="url(#m-g)"/>
+ <text x="140" y="140" text-anchor="end" class="sm">${dn?'with':'against'} the arrow</text><text x="140" y="158" text-anchor="end" class="b tg">${sgn(la,d)}</text>
+ <text x="400" y="140" class="sm">${dn?'against':'with'} the arrow</text><text x="400" y="158" class="b tg">${sgn(ra,d)}</text></g>
+ <g data-s="5"><rect x="160" y="68" width="220" height="32" rx="8" class="boxb"/><text x="270" y="89" text-anchor="middle" class="b tg">ΔH = ${neg(la,d)} ${ra<0?'−':'+'} ${Math.abs(ra).toFixed(d)} = ${sgn(ans,d)}</text></g></svg>`;
+}
+/* generated Hess questions: r,p = [[coef,formula,value]] */
+const cf=n=>n===1?'':n===0.5?'½':n===1.5?'1½':n===2.5?'2½':n===3.5?'3½':n===6.5?'6½':n;
+const side=a=>a.map(([n,f])=>cf(n)+f).join(' + ');
+const sumtxt=a=>a.map(([n,f,v])=>(n===1?'':cf(n)+' × ')+br(v)).join(' + ');
+const tot=a=>a.reduce((s,[n,f,v])=>s+n*v,0);
+
+/* calorimeter simulator */
+{
+const FUELS=[['methanol','CH₃OH',32.0,-726],['ethanol','C₂H₅OH',46.0,-1367],['propan-1-ol','C₃H₇OH',60.0,-2021],['butan-1-ol','C₄H₉OH',74.0,-2676]];
+const sel=$('#c-fuel');FUELS.forEach((f,i)=>{const o=el('option','',`${f[0]}, ${f[1]}`);o.value=i;sel.append(o)});sel.value=1;
+let real=true,busy=false;
+$('#cal').innerHTML=`<rect x="100" y="96" width="140" height="124" rx="4" style="fill:var(--panel);stroke:#b87333;stroke-width:5"/><rect x="104" y="120" width="132" height="97" class="water"/>
+<text x="170" y="240" text-anchor="middle" class="sm">copper calorimeter</text>
+<rect x="194" y="30" width="12" height="170" rx="6" class="glass" style="fill:var(--panel)"/><rect id="c-hg" x="197" y="40" width="6" height="158" class="hot" style="transform-box:fill-box;transform-origin:bottom;transform:scaleY(.2)"/><circle cx="200" cy="200" r="8" class="hot"/>
+<path d="M140 320h60l-8-36h-44z" class="glass" style="fill:var(--xl)"/><rect x="166" y="274" width="8" height="12" class="glass"/>
+<path id="c-fl" d="M170 274c-14-14-4-24 0-36c4 12 14 22 0 36z" style="fill:var(--x);stroke:var(--u);stroke-width:1.5;display:none"><animate attributeName="d" dur=".5s" repeatCount="indefinite" values="M170 274c-14-14-4-24 0-36c4 12 14 22 0 36z;M170 274c-12-12-7-26 2-40c2 14 12 24-2 40z;M170 274c-14-14-4-24 0-36c4 12 14 22 0 36z"/></path>
+<text x="170" y="12" text-anchor="middle" class="sm" id="c-wl"></text>
+<g id="c-loss" style="display:none">${[[110,262,60,240],[230,262,280,240],[96,230,50,205]].map(([a,b,c,d])=>`<path d="M${a} ${b}L${c} ${d}" class="au" marker-end="url(#m-u)"/>`).join('')}<text x="300" y="262" class="sm tu">heat lost to the air</text></g>
+<rect x="290" y="40" width="160" height="150" rx="10" class="boxb"/><text x="370" y="62" text-anchor="middle" class="sm">water temperature</text><text id="c-T" x="370" y="98" text-anchor="middle" style="font-size:30px;font-weight:700">20.0 °C</text>
+<text x="370" y="130" text-anchor="middle" class="sm">mass of burner</text><text id="c-m" x="370" y="162" text-anchor="middle" style="font-size:24px;font-weight:700">185.30 g</text>`;
+const mode=r=>{real=r;$('#c-real').setAttribute('aria-pressed',r);$('#c-ideal').setAttribute('aria-pressed',!r)};
+$('#c-real').onclick=()=>mode(true);$('#c-ideal').onclick=()=>mode(false);
+const mv=()=>{$('#c-massv').textContent=(+$('#c-mass').value).toFixed(2)};$('#c-mass').oninput=mv;mv();
+$('#c-burn').onclick=()=>{if(busy)return;busy=true;
+ const f=FUELS[sel.value],mw=+$('#c-water').value,mf=+$('#c-mass').value,eff=real?0.6:1;
+ const dT=+(eff*mf/f[2]*-f[3]*1000/(mw*4.18)).toFixed(1),T0=20.0,m0=185.30,t0=performance.now(),D=2600;
+ $('#c-fl').style.display='';$('#c-loss').style.display=real?'':'none';$('#c-wl').textContent=`${mw} g of water`;$('#c-out').innerHTML='<p class="tip">Burning…</p>';
+ const tick=t=>{const k=Math.min(1,(t-t0)/D),T=T0+dT*k;$('#c-T').textContent=T.toFixed(1)+' °C';$('#c-m').textContent=(m0-mf*k).toFixed(2)+' g';$('#c-hg').style.transform=`scaleY(${.2+.8*(T-20)/80})`;
+  if(k<1)requestAnimationFrame(tick);else{busy=false;$('#c-fl').style.display='none';
+   const q=mw*4.18*dT,n=mf/f[2],H=-q/1000/n;
+   $('#c-out').innerHTML=`<div class="work"><b>Readings:</b> water ${T0.toFixed(1)} → ${(T0+dT).toFixed(1)} °C; burner ${m0.toFixed(2)} → ${(m0-mf).toFixed(2)} g<br>
+   1. ΔT = ${dT.toFixed(1)} K<br>2. q = ${mw} × 4.18 × ${dT.toFixed(1)} = ${q.toFixed(0)} J = ${(q/1000).toFixed(2)} kJ<br>3. n = ${mf.toFixed(2)} ÷ ${f[2].toFixed(1)} = ${n.toFixed(5)} mol<br>4. ΔH = −${(q/1000).toFixed(2)} ÷ ${n.toFixed(5)} = <b>${sf3(H)} kJ mol⁻¹</b></div>
+   <p class="tip">Data book value for ${f[0]}: <b>${neg(f[3])} kJ mol⁻¹</b>. ${real?`This experiment only found about ${Math.round(H/f[3]*100)} % of it.`:'With no heat loss the experiment matches the data book (apart from rounding).'}</p>`}};
+ requestAnimationFrame(tick)};
+}
+/* practice generator */
+{
+const F=[['methanol',32.0,-726],['ethanol',46.0,-1367],['propan-1-ol',60.0,-2021],['butan-1-ol',74.0,-2676],['propanone',58.0,-1786],['hexane',86.0,-4163]];
+const show=(q,ans,work)=>{const c=el('div','check');c.dataset.ans=ans;c.dataset.unit='kJ mol⁻¹';c.dataset.tol=0.015;c.innerHTML=`<p class="lab">PRACTICE</p><p class="q">${q}</p><div class="ans">${work}</div>`;$('#gen').innerHTML='';$('#gen').append(c);initCheck(c)};
+$('#g-comb').onclick=()=>{const f=pick(F),mw=pick([100,150,200,250]),mf=+rnd(.3,.9).toFixed(2),T0=+rnd(17,22).toFixed(1);
+ const dT=+(rnd(.5,.8)*mf/f[1]*-f[2]*1000/(mw*4.18)).toFixed(1),T1=+(T0+dT).toFixed(1),q=mw*4.18*dT,n=mf/f[1],H=-q/1000/n;
+ show(`${mf.toFixed(2)} g of ${f[0]} (M<sub>r</sub> = ${f[1].toFixed(1)}) is burned and heats ${mw} g of water from ${T0.toFixed(1)} °C to ${T1.toFixed(1)} °C. Calculate the enthalpy of combustion.`,H,
+ `ΔT = ${T1.toFixed(1)} − ${T0.toFixed(1)} = ${dT.toFixed(1)} K<br>q = ${mw} × 4.18 × ${dT.toFixed(1)} = ${q.toFixed(0)} J = ${(q/1000).toFixed(3)} kJ<br>n = ${mf.toFixed(2)} ÷ ${f[1].toFixed(1)} = ${n.toPrecision(4)} mol<br>ΔH = −${(q/1000).toFixed(3)} ÷ ${n.toPrecision(4)} = <b>${sf3(H)} kJ mol⁻¹</b>`)};
+$('#g-soln').onclick=()=>{const V=pick([25,50]),ca=pick([0.5,1,1.5,2]),cb=ca*pick([1,1,1.2]),dT=+(rnd(.9,.98)*57.1*ca*V/((2*V)*4.18)).toFixed(1),q=2*V*4.18*dT,n=ca*V/1000,H=-q/1000/n;
+ show(`${V.toFixed(1)} cm³ of ${ca.toFixed(2)} mol dm⁻³ HCl is mixed with ${V.toFixed(1)} cm³ of ${cb.toFixed(2)} mol dm⁻³ NaOH in a polystyrene cup. The temperature rises by ${dT.toFixed(1)} °C. Calculate the enthalpy change per mole of water formed.`,H,
+ `m = ${V} + ${V} = ${2*V} g<br>q = ${2*V} × 4.18 × ${dT.toFixed(1)} = ${q.toFixed(0)} J = ${(q/1000).toFixed(3)} kJ<br>n(HCl) = ${ca.toFixed(2)} × ${V.toFixed(1)} ÷ 1000 = ${n.toPrecision(3)} mol${cb>ca?' (HCl is limiting; NaOH is in excess)':''}<br>ΔH = −${(q/1000).toFixed(3)} ÷ ${n.toPrecision(3)} = <b>${sf3(H)} kJ mol⁻¹</b>`)};
+$('#g-comb').click();
+}
+window.QUIZ=[
+{q:'A fuel is burned to heat water. In q = mcΔT, what is m?',o:['The mass of water heated','The mass of fuel burned','The mass of the burner','The mass of water plus fuel'],e:'It is the water that changes temperature, so m is the mass of water. The mass of fuel is used to find the moles.'},
+{q:'The temperature of some water rises from 20.0 °C to 35.0 °C. What is ΔT in kelvin?',o:['15.0 K','288 K','308 K','258 K'],e:'A change of 1 °C is the same size as a change of 1 K. Never add 273 to a temperature change.'},
+{q:'100 g of water is heated by 10.0 °C. How much heat energy is transferred? (c = 4.18 J g⁻¹ K⁻¹)',o:['4180 J','418 J','41.8 J','41 800 J'],e:'q = 100 × 4.18 × 10.0 = 4180 J.'},
+{q:'Burning 0.0200 mol of a fuel transfers 8.36 kJ to the water. What is the enthalpy of combustion?',o:['−418 kJ mol⁻¹','+418 kJ mol⁻¹','−0.167 kJ mol⁻¹','−4.18 kJ mol⁻¹'],e:'ΔH = −q ÷ n = −8.36 ÷ 0.0200 = −418 kJ mol⁻¹. Combustion is exothermic, so the value is negative.'},
+{q:'25.0 cm³ of acid is added to 25.0 cm³ of alkali. What mass is used in q = mcΔT?',o:['50.0 g','25.0 g','The mass of the dissolved acid only','100 g'],e:'All of the solution is heated, so use the total volume: 50.0 cm³ = 50.0 g.'},
+{q:'25.0 cm³ of 1.00 mol dm⁻³ HCl reacts with 25.0 cm³ of 2.00 mol dm⁻³ NaOH. How many moles are used to calculate ΔH?',o:['0.0250 mol','0.0500 mol','0.0750 mol','0.0125 mol'],e:'HCl is the limiting reagent: 1.00 × 25.0 ÷ 1000 = 0.0250 mol. Only that much reaction can happen.'},
+{q:'Why is an experimental enthalpy of combustion usually less exothermic than the data book value?',o:['Heat is lost to the surroundings','The thermometer reads too high','The fuel burns too completely','Water has a low specific heat capacity'],e:'Heat escapes to the air and the calorimeter, so ΔT is smaller than it should be. Incomplete combustion and evaporation of fuel add to this.'},
+{q:'Why is a polystyrene cup used for reactions in solution?',o:['It is a good insulator, so less heat is lost','It conducts heat well','It lets you see the colour change','It has a high heat capacity'],e:'Polystyrene is a poor conductor and absorbs very little heat itself, so more of the energy stays in the solution.'},
+{q:'0.0500 mol of a salt dissolves in 50.0 g of water and the temperature falls by 4.0 °C. What is ΔH?',o:['+16.7 kJ mol⁻¹','−16.7 kJ mol⁻¹','+16 700 kJ mol⁻¹','+0.836 kJ mol⁻¹'],e:'q = 50.0 × 4.18 × 4.0 = 836 J = 0.836 kJ. ΔH = 0.836 ÷ 0.0500 = 16.7, and it is positive because the temperature fell.'},
+{q:'ΔH = −57.1 kJ mol⁻¹ for a neutralisation. 0.0100 mol reacts in 100 g of solution. What is the temperature rise?',o:['1.4 °C','13.7 °C','0.14 °C','5.7 °C'],e:'q = 0.0100 × 57.1 = 0.571 kJ = 571 J. ΔT = 571 ÷ (100 × 4.18) = 1.4 °C.'}];
+
+initAll();
+</script>
+</body>
+</html>
