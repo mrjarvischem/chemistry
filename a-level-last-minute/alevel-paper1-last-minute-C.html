@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A-level Paper 1 last-minute walkthrough C</title>
+<style>
+:root{--cream:#fbf5e9;--card:#fffdf7;--brown:#5b3a1e;--mid:#8a5a2b;--line:#e2d3b8;--tan:#f1e4cb;--ink:#2e2218;--good:#2f7d4f;--goodbg:#e3f3e8;--bad:#b3402e;--badbg:#fbe6e1;--gold:#c98a1b}
+*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font:17px/1.5 "Segoe UI",Helvetica,Arial,sans-serif}
+header{background:var(--brown);color:#fff;padding:12px 16px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between}
+header h1{font-size:1.15rem;margin:0}header small{display:block;opacity:.85;font-weight:400;font-size:.85rem}
+#timer{display:flex;align-items:center;gap:8px}#clock{font:700 1.3rem ui-monospace,Consolas,monospace;background:#3d2612;padding:4px 10px;border-radius:6px;min-width:84px;text-align:center}
+#clock.over{background:var(--bad)}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--mid);background:var(--tan);color:var(--brown);padding:6px 12px}
+button:hover{background:#e9d6b1}header button{background:#fff;border-color:#fff}
+nav{display:flex;gap:6px;overflow-x:auto;padding:10px 12px;background:var(--tan);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+nav button{white-space:nowrap;background:var(--card)}nav button.on{background:var(--brown);color:#fff;border-color:var(--brown)}nav button.done::after{content:" ✓";color:var(--good)}nav button.on.done::after{color:#bfe8cd}
+main{max-width:860px;margin:0 auto;padding:16px 14px 60px}
+h2{color:var(--brown);margin:.2em 0 .3em;font-size:1.45rem}h3{color:var(--brown);margin:0 0 .4em;font-size:1.08rem}
+.why{color:var(--mid);margin:0 0 6px}.pills{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}.pill{background:var(--tan);border:1px solid var(--line);border-radius:99px;padding:1px 10px;font-size:.8rem;color:var(--brown)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:0 0 14px}
+.key{border-left:6px solid var(--gold)}.key ul,.card ul{margin:.2em 0;padding-left:1.2em}.key li{margin:.25em 0}
+.trap{background:#fff3d6;border:1px solid #edd08f;border-radius:8px;padding:8px 12px;margin:8px 0 0}
+table{border-collapse:collapse;width:100%;font-size:.95rem}th,td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}th{background:var(--tan);color:var(--brown)}
+.opts{display:grid;gap:8px;margin:8px 0}.opts button{text-align:left;background:#fff;color:var(--ink);border-color:var(--line);padding:9px 12px}
+.opts button.right{background:var(--goodbg);border-color:var(--good)}.opts button.wrong{background:var(--badbg);border-color:var(--bad)}
+.fb{font-size:.95rem;margin:6px 0 0;padding:8px 10px;border-radius:8px;background:var(--tan)}
+.step{display:none;border-top:1px dashed var(--line);padding:10px 0}.step.show{display:block}.step:first-of-type{border-top:0}
+.step input{font:inherit;width:120px;padding:5px 8px;border:1px solid var(--mid);border-radius:6px;margin-right:6px}
+.step.ok input{background:var(--goodbg);border-color:var(--good)}.step.no input{background:var(--badbg);border-color:var(--bad)}
+.work{display:none;color:var(--good);margin:6px 0 0;font-weight:600}.step.ok .work,.step.told .work{display:block}.step.told .work{color:var(--mid)}
+.mp{display:flex;gap:10px;align-items:flex-start;padding:6px 0;border-top:1px dashed var(--line)}.mp input{width:20px;height:20px;margin-top:3px;flex:none}
+.hid{display:none}.tag{display:inline-block;background:var(--brown);color:#fff;border-radius:6px;padding:0 8px;font-size:.8rem;margin-right:6px}
+.reveal li{color:transparent;background:var(--tan);border-radius:6px;margin:5px 0;padding:2px 6px;cursor:pointer;user-select:none}.reveal li.on{color:inherit;background:none;cursor:default}
+.next{display:flex;justify-content:space-between;gap:10px;margin-top:6px}.big{font-size:1.05rem;padding:10px 18px;background:var(--brown);color:#fff;border-color:var(--brown)}.big:hover{background:#3d2612}
+.score{font-size:1.6rem;font-weight:700;color:var(--brown)}svg{max-width:100%;height:auto;display:block;margin:6px auto}
+svg.mol{width:100%;height:auto;display:block;margin:0 auto}svg.mol .bd{stroke:#3b2a1a;stroke-width:2.2;stroke-linecap:round}svg.mol text{font-family:"Segoe UI",Arial,sans-serif}.eq{font-weight:600}.card{overflow-x:auto}@media(max-width:560px){table{font-size:.8rem}th,td{padding:4px 5px}}
+@media print{nav,#timer,.next{display:none}}
+</style></head><body>
+<header><h1 id="ttl"></h1><div id="timer"><span id="clock">25:00</span><button id="go">Start</button></div></header>
+<nav id="nav"></nav><main id="main"></main>
+<script>const WT=({
+file:"alevel-paper1-last-minute-C.html",
+title:"A-level Paper 1 last-minute walkthrough C",
+sub:"Inorganic: Period 3, Group 7, aqua ions, complexes and catalysts · AQA A-level Chemistry 7405/1 · 25 minutes",
+tabs:[
+{name:"Period 3 elements and oxides",mins:4,why:"Period 3 equations are short, 1-mark questions that came up on five of the seven Paper 1s (and on Paper 3 twice). They are pure recall, so they are the easiest marks to bank.",
+ seen:["Jun 17 (13)","2020 (7)","2021 (12)","Jun 22 (15)","Jun 23 (6)","P3 Jun 18, 2020"],
+ blocks:[
+ {t:"tbl",title:"Oxides with water",head:["Oxide","Bonding / structure","Equation with water","pH"],rows:[
+  ["Na₂O","ionic lattice","Na₂O + H₂O → 2NaOH","14"],
+  ["MgO","ionic lattice","MgO + H₂O → Mg(OH)₂  (sparingly soluble)","9–10"],
+  ["Al₂O₃","ionic (some covalent character)","insoluble","7"],
+  ["SiO₂","macromolecular","insoluble","7"],
+  ["P₄O₁₀","simple molecular","P₄O₁₀ + 6H₂O → 4H₃PO₄","0–1"],
+  ["SO₂","simple molecular","SO₂ + H₂O → H₂SO₃","2–3"],
+  ["SO₃","simple molecular","SO₃ + H₂O → H₂SO₄","0–1"]]},
+ {t:"key",title:"Equations that keep coming up",items:[
+  "<b>Burning:</b> 4Na + O₂ → 2Na₂O (yellow flame, white solid) · 2Mg + O₂ → 2MgO (bright white flame) · P₄ + 5O₂ → P₄O₁₀ (white flame, white smoke) · S + O₂ → SO₂ (blue flame)",
+  "<b>With water:</b> 2Na(s) + 2H₂O(l) → 2NaOH(aq) + H₂(g) · Mg(s) + H₂O(g) → MgO(s) + H₂(g)  (steam: white solid, bright white light)",
+  "<b>Basic oxide + acid:</b> MgO + 2HCl → MgCl₂ + H₂O · 3MgO + 2H₃PO₄ → Mg₃(PO₄)₂ + 3H₂O",
+  "<b>Al₂O₃ is amphoteric:</b> Al₂O₃ + 3H₂SO₄ → Al₂(SO₄)₃ + 3H₂O and Al₂O₃ + 2NaOH + 3H₂O → 2NaAl(OH)₄",
+  "<b>Acidic oxide + alkali:</b> SiO₂ + 2NaOH → Na₂SiO₃ + H₂O · P₄O₁₀ + 12NaOH → 4Na₃PO₄ + 6H₂O · SO₂ + 2NaOH → Na₂SO₃ + H₂O · SO₃ + 2NaOH → Na₂SO₄ + H₂O",
+  "<b>Why ionic oxides are basic:</b> the O²⁻ ion reacts with water to form OH⁻ ions. <b>Why covalent oxides are acidic:</b> they react with water to form acids that release H⁺."],
+  trap:"Writing P₂O₅ instead of P₄O₁₀, or saying magnesium reacts with steam to form magnesium hydroxide. It forms the oxide."},
+ {t:"key",title:"Trends across Period 3",items:[
+  "<b>Atomic radius decreases:</b> more protons, same shielding (same number of shells), so the outer electrons are attracted more strongly.",
+  "<b>First ionisation energy</b> increases in general. It dips at <b>Al</b> (outer electron is in a 3p orbital, higher in energy than 3s) and at <b>S</b> (two electrons paired in one 3p orbital repel).",
+  "<b>Melting points:</b> Na < Mg < Al (metallic, more delocalised electrons) · Si is highest (macromolecular) · then S₈ > P₄ > Cl₂ > Ar (bigger molecules, stronger van der Waals forces)."]}],
+ checks:[
+ {q:"Which oxide reacts with both hydrochloric acid and sodium hydroxide solution?",opts:["MgO","Al₂O₃","SiO₂","SO₂"],a:1,why:"Aluminium oxide is amphoteric."},
+ {q:"Which is the correct equation for phosphorus(V) oxide with water?",opts:["P₂O₅ + H₂O → 2HPO₃","P₄O₁₀ + 6H₂O → 4H₃PO₄","P₄O₁₀ + 2H₂O → 4HPO₂","P₄O₆ + 6H₂O → 4H₃PO₃"],a:1,why:"P₄O₁₀ + 6H₂O → 4H₃PO₄, pH about 0–1."},
+ {q:"Which Period 3 element has the highest melting point?",opts:["Sodium","Aluminium","Silicon","Sulfur"],a:2,why:"Silicon is macromolecular: many strong covalent bonds must be broken."}],
+ exam:{q:"(a) Give an equation for the reaction of sulfur trioxide with potassium hydroxide solution. [1]<br>(b) Give an equation for the reaction of magnesium with steam and state one observation. [2]<br>(c) Explain why sodium oxide forms an alkaline solution in water but sulfur dioxide forms an acidic solution. Include equations. [4]",
+  ms:["SO₃ + 2KOH → K₂SO₄ + H₂O","Mg + H₂O → MgO + H₂","white solid formed / bright white light (flame)","Na₂O is ionic / contains O²⁻ ions which react with water to form OH⁻","Na₂O + H₂O → 2NaOH  (or 2Na⁺ + 2OH⁻)","SO₂ is covalent / molecular and reacts with water to form an acid (H⁺ ions)","SO₂ + H₂O → H₂SO₃  (⇌ H⁺ + HSO₃⁻)"]}},
+
+{name:"Group 7: halides",mins:4,why:"Halide ions with concentrated sulfuric acid, and the silver nitrate test, came up on four Paper 1s and two Paper 3s between 2017 and 2023, for up to 13 marks.",
+ seen:["Jun 17 (2)","Jun 19 (13)","2020 (9)","Jun 22 (11)","P3 Jun 17 (5)","P3 2021 (7)"],
+ blocks:[
+ {t:"tbl",title:"Solid sodium halide + concentrated H₂SO₄",head:["Halide","Products and observations","Role of H₂SO₄"],rows:[
+  ["NaCl","<span class='eq'>NaCl + H₂SO₄ → NaHSO₄ + HCl</span><br>steamy (white) fumes of HCl","acid only (not redox)"],
+  ["NaBr","HBr first, then<br><span class='eq'>2HBr + H₂SO₄ → Br₂ + SO₂ + 2H₂O</span><br>orange-brown fumes of Br₂; SO₂ is a colourless, choking gas","acid, then oxidising agent (S: +6 → +4)"],
+  ["NaI","HI first, then I₂ with <b>SO₂</b>, <b>S</b> and <b>H₂S</b><br><span class='eq'>8HI + H₂SO₄ → 4I₂ + H₂S + 4H₂O</span><br>black solid / purple fumes (I₂), yellow solid (S), bad egg smell (H₂S)","acid, then oxidising agent (S: +6 → +4, 0 and −2)"]]},
+ {t:"model",q:"Explain why iodide ions are stronger reducing agents than chloride ions. [3]",a:[
+  "An iodide ion is <b>larger</b> (has more shells / more shielding) than a chloride ion.",
+  "So the outer electrons are <b>attracted less strongly</b> by the nucleus.",
+  "So an iodide ion <b>loses an electron more easily</b>."]},
+ {t:"tbl",title:"Testing for halide ions: add dilute HNO₃, then AgNO₃(aq)",head:["Ion","Precipitate","Dilute NH₃","Concentrated NH₃"],rows:[
+  ["F⁻","none (AgF is soluble)","–","–"],
+  ["Cl⁻","white AgCl","dissolves","dissolves"],
+  ["Br⁻","cream AgBr","no change","dissolves"],
+  ["I⁻","yellow AgI","no change","no change"]]},
+ {t:"key",title:"Also learn",items:[
+  "Ag⁺(aq) + Cl⁻(aq) → AgCl(s).   Dissolving: AgCl + 2NH₃ → [Ag(NH₃)₂]⁺ + Cl⁻",
+  "<b>Nitric acid</b> is added first to remove carbonate (or hydroxide) ions, which would also give a precipitate with silver nitrate.",
+  "<b>Displacement:</b> Cl₂ + 2Br⁻ → 2Cl⁻ + Br₂ (yellow-orange solution) · Cl₂ + 2I⁻ → 2Cl⁻ + I₂ (brown solution).",
+  "<b>Chlorine with water:</b> Cl₂ + H₂O ⇌ HCl + HClO. Chlorine is both oxidised (0 → +1) and reduced (0 → −1). The amount added is controlled because chlorine is toxic.",
+  "<b>Chlorine with cold dilute NaOH:</b> Cl₂ + 2NaOH → NaCl + NaClO + H₂O (bleach)."],
+  trap:"Calling sulfuric acid an oxidising agent in the reaction with sodium chloride. With NaCl it is only an acid."}],
+ checks:[
+ {q:"Which observation is made when solid sodium bromide reacts with concentrated sulfuric acid?",opts:["Yellow solid","Bad egg smell","Orange-brown fumes","Purple fumes"],a:2,why:"Bromine is formed. Sulfur and H₂S are only formed with iodide."},
+ {q:"A solution gives a cream precipitate with acidified silver nitrate. The precipitate dissolves in concentrated ammonia but not in dilute ammonia. Which ion is present?",opts:["Cl⁻","Br⁻","I⁻","F⁻"],a:1,why:"Cream AgBr, soluble only in concentrated ammonia."},
+ {q:"What is the oxidation state of sulfur in H₂S?",opts:["+6","+4","0","−2"],a:3,why:"Iodide reduces sulfur all the way from +6 to −2."}],
+ exam:{q:"(a) Solid sodium iodide reacts with concentrated sulfuric acid. Give an equation for the formation of the product with a smell of bad eggs, and identify the black solid that forms. [2]<br>(b) State the role of sulfuric acid in the reaction in (a). [1]<br>(c) A solution contains chloride ions and iodide ions. Dilute nitric acid and then silver nitrate solution are added, followed by an excess of dilute ammonia. Describe and explain what is seen. Give an ionic equation for the formation of one precipitate. [4]",
+  ms:["8HI + H₂SO₄ → 4I₂ + H₂S + 4H₂O  (or 8H⁺ + 8I⁻ + H₂SO₄ → 4I₂ + H₂S + 4H₂O)","black solid is iodine","oxidising agent","a (pale) yellow precipitate forms (a mixture of white AgCl and yellow AgI)","Ag⁺ + Cl⁻ → AgCl  or  Ag⁺ + I⁻ → AgI","with dilute ammonia some of the precipitate dissolves because AgCl is soluble (forms [Ag(NH₃)₂]⁺)","a yellow precipitate remains because AgI is insoluble in ammonia"]}},
+
+{name:"Reactions of aqua ions",mins:5,why:"The reactions of iron, copper and aluminium aqua ions with NaOH, NH₃ and Na₂CO₃ were on every Paper 1 from 2017 to 2023, for about 10 marks each time. Formula, colour and equation are one mark each.",
+ seen:["Jun 17 (9)","Jun 18 (9)","Jun 19 (8)","2020 (10)","2021 (8)","Jun 22 (5)","Jun 23 (6)"],
+ blocks:[
+ {t:"tbl",title:"What you see",head:["Aqua ion","NaOH or NH₃ (a little)","Excess NaOH","Excess NH₃","Na₂CO₃"],rows:[
+  ["[Fe(H₂O)₆]²⁺<br>green solution","green ppt<br>Fe(H₂O)₄(OH)₂","no change","no change","green ppt<br>FeCO₃"],
+  ["[Cu(H₂O)₆]²⁺<br>blue solution","blue ppt<br>Cu(H₂O)₄(OH)₂","no change","deep blue solution<br>[Cu(NH₃)₄(H₂O)₂]²⁺","blue-green ppt<br>CuCO₃"],
+  ["[Fe(H₂O)₆]³⁺<br>purple solution (looks yellow-brown)","brown ppt<br>Fe(H₂O)₃(OH)₃","no change","no change","brown ppt Fe(H₂O)₃(OH)₃<br>and bubbles of CO₂"],
+  ["[Al(H₂O)₆]³⁺<br>colourless solution","white ppt<br>Al(H₂O)₃(OH)₃","colourless solution<br>[Al(OH)₄]⁻","no change","white ppt Al(H₂O)₃(OH)₃<br>and bubbles of CO₂"]]},
+ {t:"key",title:"The equations (swap the metal to write the others)",items:[
+  "<b>2+ ion with OH⁻:</b> [Cu(H₂O)₆]²⁺ + 2OH⁻ → Cu(H₂O)₄(OH)₂ + 2H₂O",
+  "<b>2+ ion with NH₃:</b> [Cu(H₂O)₆]²⁺ + 2NH₃ → Cu(H₂O)₄(OH)₂ + 2NH₄⁺",
+  "<b>Excess NH₃ with copper:</b> Cu(H₂O)₄(OH)₂ + 4NH₃ → [Cu(NH₃)₄(H₂O)₂]²⁺ + 2OH⁻ + 2H₂O",
+  "<b>3+ ion with OH⁻:</b> [Al(H₂O)₆]³⁺ + 3OH⁻ → Al(H₂O)₃(OH)₃ + 3H₂O",
+  "<b>3+ ion with NH₃:</b> [Al(H₂O)₆]³⁺ + 3NH₃ → Al(H₂O)₃(OH)₃ + 3NH₄⁺",
+  "<b>Excess OH⁻ with aluminium:</b> Al(H₂O)₃(OH)₃ + OH⁻ → [Al(OH)₄]⁻ + 3H₂O",
+  "<b>2+ ion with carbonate:</b> [Cu(H₂O)₆]²⁺ + CO₃²⁻ → CuCO₃ + 6H₂O",
+  "<b>3+ ion with carbonate:</b> 2[Fe(H₂O)₆]³⁺ + 3CO₃²⁻ → 2Fe(H₂O)₃(OH)₃ + 3CO₂ + 3H₂O"],
+  trap:"Forgetting the bubbles of CO₂ when a 3+ ion reacts with carbonate, or giving a 2+ ion bubbles."},
+ {t:"model",q:"Explain why a solution containing [Fe(H₂O)₆]³⁺ is more acidic than one containing [Fe(H₂O)₆]²⁺. [3]",a:[
+  "Fe³⁺ has a <b>higher charge and is smaller</b>, so it has a greater charge density (it is more polarising).",
+  "It <b>weakens the O–H bonds</b> in the water ligands more.",
+  "So more H⁺ ions are released: [Fe(H₂O)₆]³⁺ ⇌ [Fe(H₂O)₅(OH)]²⁺ + H⁺"]}],
+ checks:[
+ {q:"Sodium hydroxide solution is added to a solution of an aqua ion until in excess. A white precipitate forms and then dissolves. Which ion is present?",opts:["Fe²⁺","Cu²⁺","Fe³⁺","Al³⁺"],a:3,why:"Aluminium hydroxide is amphoteric, so it dissolves in excess NaOH to form [Al(OH)₄]⁻."},
+ {q:"Which reagent would distinguish between solutions of MgCl₂ and AlCl₃?",opts:["Silver nitrate solution","Excess sodium hydroxide solution","Barium chloride solution","Dilute nitric acid"],a:1,why:"Both give a white precipitate, but only the aluminium precipitate dissolves in excess NaOH."},
+ {q:"What is the formula of the deep blue complex formed when excess ammonia is added to copper(II) sulfate solution?",opts:["[Cu(NH₃)₆]²⁺","[Cu(NH₃)₄(H₂O)₂]²⁺","Cu(H₂O)₄(OH)₂","[Cu(NH₃)₄]²⁺"],a:1,why:"Only four of the six water ligands are replaced."}],
+ exam:{q:"(a) Sodium carbonate solution is added to a solution containing [Al(H₂O)₆]³⁺ ions. State two observations and give an equation for the reaction. [3]<br>(b) Aqueous ammonia is added to a solution containing [Cu(H₂O)₆]²⁺ ions until in excess. State what is observed and give an equation for each of the two reactions. [4]",
+  ms:["white precipitate","bubbles / effervescence (of CO₂)","2[Al(H₂O)₆]³⁺ + 3CO₃²⁻ → 2Al(H₂O)₃(OH)₃ + 3CO₂ + 3H₂O","(pale) blue precipitate forms first","[Cu(H₂O)₆]²⁺ + 2NH₃ → Cu(H₂O)₄(OH)₂ + 2NH₄⁺","precipitate dissolves to give a deep blue solution","Cu(H₂O)₄(OH)₂ + 4NH₃ → [Cu(NH₃)₄(H₂O)₂]²⁺ + 2OH⁻ + 2H₂O"]}},
+
+{name:"Complexes: shape, isomerism and colour",mins:4,why:"Shapes of complexes, isomerism and why complexes are coloured were on five of the seven Paper 1s, including a 6-mark question in 2019.",
+ seen:["Jun 17 (7)","Jun 18 (3)","Jun 19 (8)","Jun 22 (12)","Jun 23 (10)","P3 2020 (6)"],
+ blocks:[
+ {t:"key",title:"Words and shapes",items:[
+  "<b>Ligand:</b> a molecule or ion that donates a lone pair of electrons to form a co-ordinate bond with a metal ion. <b>Complex:</b> a central metal atom or ion surrounded by ligands. <b>Co-ordination number:</b> the number of co-ordinate bonds to the metal.",
+  "<b>Octahedral</b> (90°): six small ligands such as H₂O or NH₃. <b>Tetrahedral</b> (109.5°): four large Cl⁻ ligands, such as [CuCl₄]²⁻ and [CoCl₄]²⁻. <b>Square planar:</b> platinum complexes such as cisplatin. <b>Linear:</b> [Ag(NH₃)₂]⁺",
+  "<b>Ligand substitution with Cl⁻:</b> [Cu(H₂O)₆]²⁺ + 4Cl⁻ → [CuCl₄]²⁻ + 6H₂O (blue → yellow-green). Co-ordination number changes from 6 to 4 because Cl⁻ is larger.",
+  "<b>Bidentate</b> ligands form two co-ordinate bonds: H₂NCH₂CH₂NH₂ and C₂O₄²⁻. <b>EDTA⁴⁻</b> is multidentate (six).",
+  "<b>Chelate effect:</b> [Cu(H₂O)₆]²⁺ + EDTA⁴⁻ → [Cu(EDTA)]²⁻ + 6H₂O. 2 particles → 7 particles, so ΔS is positive. ΔH is about zero (same number and type of bonds broken and made), so ΔG is negative.",
+  "<b>Cis–trans isomerism:</b> octahedral [M(NH₃)₄Cl₂]⁺ and square planar [Pt(NH₃)₂Cl₂]. <b>Optical isomerism:</b> octahedral complexes with three bidentate ligands, such as [Co(H₂NCH₂CH₂NH₂)₃]²⁺"]},
+ {t:"model",q:"Explain why transition metal complexes are coloured. [3]",a:[
+  "<b>d electrons</b> are excited to a higher energy level (the d orbitals are split in energy).",
+  "They <b>absorb</b> energy / light from the <b>visible</b> region.",
+  "The colour seen is the light that is <b>transmitted or reflected</b> (the colours not absorbed)."]},
+ {t:"key",title:"Colour calculations",items:[
+  "<b>ΔE = hν = hc ÷ λ</b>   (λ in metres: 1 nm = 10⁻⁹ m)",
+  "The colour changes if the <b>oxidation state</b>, the <b>ligand</b> or the <b>co-ordination number</b> changes, because each changes ΔE.",
+  "An ion with a full (d¹⁰) or empty d sub-level, such as Cu⁺, Zn²⁺ or Al³⁺, is colourless: no d electron can be excited, so colorimetry cannot be used."],
+  trap:"Saying the complex “emits” light. The mark is for absorbing visible light, and the colour seen is what is left."},
+ {t:"calc",title:"Energy of an absorbed photon",q:"A complex absorbs light of wavelength 520 nm. Calculate ΔE in joules. (h = 6.63 × 10⁻³⁴ J s, c = 3.00 × 10⁸ m s⁻¹) <br><small>Type standard form like this: 3.8e-19</small>",
+  steps:[
+  {p:"Convert 520 nm into metres.",a:5.2e-7,u:" m",show:"520 × 10⁻⁹ = 5.20 × 10⁻⁷ m"},
+  {p:"Use ΔE = hc ÷ λ",a:3.825e-19,u:" J",show:"6.63 × 10⁻³⁴ × 3.00 × 10⁸ ÷ 5.20 × 10⁻⁷ = 3.83 × 10⁻¹⁹ J"}]}],
+ checks:[
+ {q:"What is the oxidation state and co-ordination number of cobalt in [Co(NH₃)₅Cl]Cl₂?",opts:["+2 and 5","+2 and 6","+3 and 5","+3 and 6"],a:3,why:"Three Cl⁻ in total means Co is +3. Five NH₃ and one Cl⁻ are bonded to cobalt: 6."},
+ {q:"Which complex can show optical isomerism?",opts:["[Ag(NH₃)₂]⁺","[Co(C₂O₄)₃]⁴⁻","[CuCl₄]²⁻","[Cu(NH₃)₄(H₂O)₂]²⁺"],a:1,why:"Octahedral with three bidentate ligands."},
+ {q:"Why is the enthalpy change close to zero when [Co(NH₃)₆]²⁺ reacts with H₂NCH₂CH₂NH₂ to form [Co(H₂NCH₂CH₂NH₂)₃]²⁺?",opts:["No bonds are broken","The same number of Co–N bonds are broken and made","The reaction is very slow","The entropy change is zero"],a:1,why:"Six Co–N bonds broken and six Co–N bonds made. The reaction happens because ΔS is positive (4 particles → 7)."}],
+ exam:{q:"(a) Concentrated hydrochloric acid is added to a solution containing [Co(H₂O)₆]²⁺ ions. Give an equation for the reaction, state the colour change and name the shape of the complex formed. [4]<br>(b) The complex [Cr(NH₃)₄Cl₂]⁺ exists as two isomers. State the type of isomerism and describe how the two isomers differ. [2]<br>(c) State three ways of changing a complex so that its colour changes. [3]",
+  ms:["[Co(H₂O)₆]²⁺ + 4Cl⁻ → [CoCl₄]²⁻ + 6H₂O","pink (solution)","to blue (solution)","tetrahedral","cis–trans (E–Z / geometric) isomerism","in one isomer the two Cl⁻ ligands are next to each other (90°, cis); in the other they are opposite (180°, trans)","change the oxidation state of the metal","change the ligand","change the co-ordination number"]}},
+
+{name:"Catalysts",mins:4,why:"Catalysis is the topic most often used for a long answer in inorganic chemistry: a 6-mark question in 2021 and on Paper 3 in 2022, plus shorter questions in 2018 and on Paper 3 in 2020.",
+ seen:["Jun 18 (4)","2021 (11)","P3 2020 (4)","P3 Jun 22 (11)","P3 Jun 17 (MCQ)","P3 Jun 23 (MCQ)"],
+ blocks:[
+ {t:"key",title:"Heterogeneous catalysts (different phase from the reactants)",items:[
+  "<b>How they work:</b> reactants are <b>adsorbed</b> onto active sites on the surface → bonds are weakened and the <b>reaction</b> takes place on the surface → products are <b>desorbed</b>.",
+  "<b>Haber process:</b> iron. <b>Contact process:</b> V₂O₅, which works by changing oxidation state:<br>V₂O₅ + SO₂ → V₂O₄ + SO₃   then   V₂O₄ + ½O₂ → V₂O₅",
+  "<b>Efficiency:</b> use a large surface area, for example a thin layer on a ceramic support (honeycomb), which also cuts cost.",
+  "<b>Poisoning:</b> impurities (such as sulfur in the Haber process, lead in catalytic converters) bind strongly to the active sites and block them. The catalyst becomes less efficient and has to be replaced, which costs money."]},
+ {t:"key",title:"Homogeneous catalysts (same phase)",items:[
+  "They work through an <b>intermediate species</b>, with the metal changing oxidation state.",
+  "<b>S₂O₈²⁻ + 2I⁻ → 2SO₄²⁻ + I₂</b> is slow because both ions are <b>negative, so they repel</b> (high activation energy).",
+  "Fe²⁺ catalyst:   <b>S₂O₈²⁻ + 2Fe²⁺ → 2SO₄²⁻ + 2Fe³⁺</b>   then   <b>2Fe³⁺ + 2I⁻ → 2Fe²⁺ + I₂</b>   Each step has oppositely charged ions, which attract. (Fe³⁺ also works: the steps happen in the other order.)",
+  "A metal ion can only catalyse this if its E° lies between the two values (+0.54 V and +2.01 V). Zn²⁺ cannot because zinc has only one oxidation state in its compounds.",
+  "<b>Autocatalysis:</b> a product of the reaction is the catalyst. In 2MnO₄⁻ + 16H⁺ + 5C₂O₄²⁻ → 2Mn²⁺ + 8H₂O + 10CO₂ the reaction starts slowly (two negative ions repel), then speeds up as <b>Mn²⁺</b> forms:<br>4Mn²⁺ + MnO₄⁻ + 8H⁺ → 5Mn³⁺ + 4H₂O   then   2Mn³⁺ + C₂O₄²⁻ → 2Mn²⁺ + 2CO₂"],
+  trap:"Writing “absorbed” for a surface catalyst. The word is adsorbed."},
+ {t:"model",q:"Describe the stages by which a heterogeneous catalyst provides an alternative route with a lower activation energy. [3]",a:[
+  "Reactant molecules are <b>adsorbed</b> onto the surface (at active sites).",
+  "Bonds in the reactants are weakened and the <b>reaction takes place on the surface</b>.",
+  "The products are <b>desorbed</b> from the surface."]}],
+ checks:[
+ {q:"Why is the uncatalysed reaction between S₂O₈²⁻ and I⁻ slow?",opts:["Both ions are negative, so they repel","Both ions are large","The reaction is endothermic","Iodide is a weak reducing agent"],a:0,why:"Repulsion between two negative ions gives a high activation energy."},
+ {q:"Which species is the autocatalyst in the reaction between manganate(VII) ions and ethanedioate ions?",opts:["MnO₄⁻","H⁺","Mn²⁺","CO₂"],a:2,why:"Mn²⁺ is a product, and it catalyses the reaction."},
+ {q:"Which process does not use a heterogeneous catalyst?",opts:["Haber process","Contact process","Catalytic cracking","Decomposition of ozone by chlorine atoms"],a:3,why:"Chlorine atoms and ozone are both gases: homogeneous."}],
+ exam:{q:"(a) State the meaning of the term heterogeneous catalyst. [2]<br>(b) Give two equations to show how V₂O₅ acts as a catalyst in the Contact process. [2]<br>(c) Explain how Fe²⁺ ions catalyse the reaction between S₂O₈²⁻ ions and I⁻ ions. Include equations. [4]",
+  ms:["in a different phase / state from the reactants","speeds up the reaction without being used up (by providing a route with lower activation energy)","V₂O₅ + SO₂ → V₂O₄ + SO₃","V₂O₄ + ½O₂ → V₂O₅","the uncatalysed reaction is slow because both ions are negative and repel","S₂O₈²⁻ + 2Fe²⁺ → 2SO₄²⁻ + 2Fe³⁺","2Fe³⁺ + 2I⁻ → 2Fe²⁺ + I₂","each step involves oppositely charged ions (which attract), so the activation energy is lower / Fe²⁺ is regenerated"]}}
+],
+quiz:[
+{q:"What is seen when sulfur burns in oxygen?",opts:["White smoke","Blue flame","Yellow flame","Bright white light"],a:1,why:"Sulfur burns with a blue flame to form SO₂."},
+{q:"Which oxide has a macromolecular structure?",opts:["Na₂O","SiO₂","P₄O₁₀","SO₃"],a:1,why:"Silicon dioxide."},
+{q:"Solid NaCl reacts with concentrated H₂SO₄. What is the role of the sulfuric acid?",opts:["Oxidising agent","Reducing agent","Acid (proton donor)","Catalyst"],a:2,why:"Chloride is not a strong enough reducing agent to reduce sulfuric acid."},
+{q:"Which silver halide dissolves in dilute ammonia?",opts:["AgCl","AgBr","AgI","None of them"],a:0,why:"AgCl forms [Ag(NH₃)₂]⁺"},
+{q:"What is the colour of the precipitate Fe(H₂O)₃(OH)₃?",opts:["Green","Blue","Brown","White"],a:2,why:"Iron(III) hydroxide is brown."},
+{q:"What is the shape of [CuCl₄]²⁻?",opts:["Square planar","Tetrahedral","Octahedral","Linear"],a:1,why:"Four large chloride ligands: tetrahedral."},
+{q:"Why is a solution of [Zn(H₂O)₆]²⁺ colourless?",opts:["Zinc is not in the d block","Zn²⁺ has a full 3d sub-level","Zn²⁺ has no d electrons","Water is not a ligand"],a:1,why:"3d¹⁰: no d electron can be promoted."},
+{q:"Which gas is given off when sodium carbonate is added to [Fe(H₂O)₆]³⁺(aq)?",opts:["Hydrogen","Oxygen","Carbon dioxide","None"],a:2,why:"The acidic 3+ aqua ion reacts with carbonate to release CO₂."}
+]});</script>
+<script>
+const E=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e};
+const S={mc:{},ex:{},qz:{},done:{}};let cur=0;const N=WT.tabs.length;
+document.getElementById('ttl').innerHTML=WT.title+'<small>'+WT.sub+'</small>';
+// timer
+let left=1500,tick=null;const clock=document.getElementById('clock'),go=document.getElementById('go');
+function draw(){const a=Math.abs(left),m=Math.floor(a/60),s=a%60;clock.textContent=(left<0?'+':'')+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');clock.className=left<0?'over':''}
+go.onclick=()=>{if(tick){clearInterval(tick);tick=null;go.textContent='Resume'}else{tick=setInterval(()=>{left--;draw()},1000);go.textContent='Pause'}};
+function nav(){const n=document.getElementById('nav');n.innerHTML='';
+ const names=WT.tabs.map((t,i)=>(i+1)+'. '+t.name).concat(['Final quiz','My score']);
+ names.forEach((nm,i)=>{const b=E('button',(i===cur?'on ':'')+(S.done[i]?'done':''),nm);b.onclick=()=>show(i);n.appendChild(b)})}
+function mcq(q,store,id){const c=E('div','card');c.appendChild(E('div',null,'<b>'+q.q+'</b>'));const o=E('div','opts'),fb=E('div','fb hid');
+ q.opts.forEach((t,i)=>{const b=E('button',null,t);b.onclick=()=>{if(!(id in store))store[id]=(i===q.a)?1:0;
+  if(i===q.a){b.className='right';fb.innerHTML='✔ '+(q.why||'Correct.');fb.className='fb';[...o.children].forEach(x=>x.disabled=true)}
+  else{b.className='wrong';b.disabled=true;fb.innerHTML='✘ Not quite – try again.';fb.className='fb'}};o.appendChild(b)});
+ c.appendChild(o);c.appendChild(fb);return c}
+function calc(b){const c=E('div','card');c.appendChild(E('h3',null,'<span class="tag">Step by step</span>'+b.title));c.appendChild(E('div',null,b.q));
+ const steps=b.steps.map((s,i)=>{const d=E('div','step'+(i===0?' show':''));d.appendChild(E('div',null,'<b>Step '+(i+1)+':</b> '+s.p));
+  const inp=E('input');inp.inputMode='decimal';inp.setAttribute('aria-label','answer for step '+(i+1));const ck=E('button',null,'Check'),tell=E('button',null,'Show me');
+  const row=E('div');row.style.marginTop='6px';row.append(inp,document.createTextNode((s.u||'')+' '),ck,document.createTextNode(' '),tell);d.appendChild(row);
+  d.appendChild(E('div','work',s.show));
+  const nxt=()=>{if(steps[i+1])steps[i+1].classList.add('show')};
+  const chk=()=>{const v=parseFloat(inp.value.replace(/,/g,'').replace('×10^','e'));const tol=s.tol!=null?s.tol:Math.abs(s.a)*0.006;
+   if(!isNaN(v)&&Math.abs(v-s.a)<=tol){d.className='step show ok';nxt()}else d.className='step show no'};
+  ck.onclick=chk;inp.onkeydown=e=>{if(e.key==='Enter')chk()};tell.onclick=()=>{d.className='step show told';nxt()};return d});
+ steps.forEach(s=>c.appendChild(s));return c}
+function graph(g){const W=340,H=230,L=44,B=36,T=10,R=10,pw=W-L-R,ph=H-T-B,X=x=>L+x/g.xmax*pw,Y=y=>T+ph-y/g.ymax*ph;let s='<svg viewBox="0 0 '+W+' '+H+'" width="460" role="img" aria-label="'+(g.cap||'graph')+'">';
+ for(let i=0;i<=g.xn;i++){const x=g.xmax*i/g.xn;s+='<line x1="'+X(x)+'" y1="'+T+'" x2="'+X(x)+'" y2="'+(T+ph)+'" stroke="#e2d3b8"/><text x="'+X(x)+'" y="'+(T+ph+13)+'" font-size="10" text-anchor="middle" fill="#5b3a1e">'+x+'</text>'}
+ for(let i=0;i<=g.yn;i++){const y=g.ymax*i/g.yn;s+='<line x1="'+L+'" y1="'+Y(y)+'" x2="'+(L+pw)+'" y2="'+Y(y)+'" stroke="#e2d3b8"/><text x="'+(L-5)+'" y="'+(Y(y)+3)+'" font-size="10" text-anchor="end" fill="#5b3a1e">'+y+'</text>'}
+ let p='';for(let i=0;i<=80;i++){const x=g.xmax*i/80;p+=(i?'L':'M')+X(x).toFixed(1)+' '+Y(g.f(x)).toFixed(1)}
+ s+='<path d="'+p+'" fill="none" stroke="#5b3a1e" stroke-width="2.2"/>';
+ if(g.tan){const[a,b]=g.tan;s+='<line x1="'+X(a[0])+'" y1="'+Y(a[1])+'" x2="'+X(b[0])+'" y2="'+Y(b[1])+'" stroke="#c0392b" stroke-width="1.8"/>'+
+  '<path d="M'+X(a[0])+' '+Y(a[1])+'H'+X(b[0])+'V'+Y(b[1])+'" fill="none" stroke="#c0392b" stroke-dasharray="4 3"/>'+
+  '<circle cx="'+X(g.at)+'" cy="'+Y(g.f(g.at))+'" r="3.5" fill="#c0392b"/>'}
+ s+='<text x="'+(L+pw/2)+'" y="'+(H-4)+'" font-size="11" text-anchor="middle" fill="#2e2218">'+g.xl+'</text><text transform="rotate(-90 11 '+(T+ph/2)+')" x="11" y="'+(T+ph/2)+'" font-size="11" text-anchor="middle" fill="#2e2218">'+g.yl+'</text></svg>';
+ const c=E('div','card',s);if(g.cap)c.appendChild(E('div','why',g.cap));return c}
+function exam(x,i){const c=E('div','card');const tot=x.ms.length;c.appendChild(E('h3',null,'<span class="tag">Exam question</span>Answer on paper, then mark it yourself &nbsp;['+tot+' marks]'));
+ c.appendChild(E('div',null,x.q));const btn=E('button',null,'Show mark scheme');btn.style.marginTop='10px';const ms=E('div','hid'),out=E('div','fb','Tick each point you got: <b>0 / '+tot+'</b>');
+ x.ms.forEach(m=>{const l=E('label','mp');const cb=E('input');cb.type='checkbox';cb.onchange=()=>{const n=ms.querySelectorAll('input:checked').length;S.ex[i]=n;out.innerHTML='Tick each point you got: <b>'+n+' / '+tot+'</b>'};l.append(cb,E('span',null,m));ms.appendChild(l)});
+ ms.appendChild(out);btn.onclick=()=>{ms.className='';btn.className='hid';if(!(i in S.ex))S.ex[i]=0};c.append(btn,ms);return c}
+function block(b){if(b.t==='calc')return calc(b);if(b.t==='graph')return graph(b);
+ if(b.t==='key'){const c=E('div','card key');c.appendChild(E('h3',null,b.title));c.appendChild(E('ul',null,b.items.map(x=>'<li>'+x+'</li>').join('')));if(b.trap)c.appendChild(E('div','trap','⚠ <b>Mark loser:</b> '+b.trap));return c}
+ if(b.t==='model'){const c=E('div','card');c.appendChild(E('h3',null,'<span class="tag">Model answer</span>'+b.q));c.appendChild(E('div','why','Say each point out loud first, then tap to reveal.'));const u=E('ul','reveal');b.a.forEach(x=>{const li=E('li',null,x);li.onclick=()=>li.className='on';u.appendChild(li)});c.appendChild(u);return c}
+ if(b.t==='tbl'){const c=E('div','card');if(b.title)c.appendChild(E('h3',null,b.title));c.appendChild(E('table',null,'<tr>'+b.head.map(h=>'<th>'+h+'</th>').join('')+'</tr>'+b.rows.map(r=>'<tr>'+r.map(d=>'<td>'+d+'</td>').join('')+'</tr>').join('')));return c}
+ return E('div','card',(b.title?'<h3>'+b.title+'</h3>':'')+b.h)}
+function foot(m,i){const f=E('div','next');const a=E('button',null,'← Back');a.onclick=()=>show(i-1);if(i===0)a.style.visibility='hidden';
+ const b=E('button','big',i<N?'Done – next →':'See my score →');b.onclick=()=>{S.done[i]=1;show(i+1)};f.append(a,b);m.appendChild(f)}
+function show(i){cur=i;nav();const m=document.getElementById('main');m.innerHTML='';window.scrollTo(0,0);
+ if(i<N){const t=WT.tabs[i];m.appendChild(E('h2',null,(i+1)+'. '+t.name+' <span class="pill">about '+t.mins+' min</span>'));m.appendChild(E('p','why',t.why));
+  m.appendChild(E('div','pills',t.seen.map(s=>'<span class="pill">'+s+'</span>').join('')));
+  t.blocks.forEach(b=>m.appendChild(block(b)));
+  if(t.checks.length){m.appendChild(E('h3',null,'Quick checks'));t.checks.forEach((q,j)=>m.appendChild(mcq(q,S.mc,i+'-'+j)))}
+  if(t.exam)m.appendChild(exam(t.exam,i));foot(m,i)}
+ else if(i===N){m.appendChild(E('h2',null,'Final quiz <span class="pill">about 4 min</span>'));m.appendChild(E('p','why','No notes. Only your first click on each question counts.'));
+  WT.quiz.forEach((q,j)=>m.appendChild(mcq(q,S.qz,j)));foot(m,i)}
+ else{const sum=o=>Object.values(o).reduce((a,b)=>a+b,0);const mcT=WT.tabs.reduce((a,t)=>a+t.checks.length,0),exT=WT.tabs.reduce((a,t)=>a+(t.exam?t.exam.ms.length:0),0);
+  m.appendChild(E('h2',null,'My score'));
+  m.appendChild(E('div','card','<table><tr><th>Section</th><th>Score</th></tr><tr><td>Quick checks (first try)</td><td class="score">'+sum(S.mc)+' / '+mcT+'</td></tr><tr><td>Exam questions (self-marked)</td><td class="score">'+sum(S.ex)+' / '+exT+'</td></tr><tr><td>Final quiz (first try)</td><td class="score">'+sum(S.qz)+' / '+WT.quiz.length+'</td></tr></table>'));
+  let weak=WT.tabs.map((t,i)=>{let got=0,tot=t.checks.length+(t.exam?t.exam.ms.length:0);t.checks.forEach((q,j)=>got+=S.mc[i+'-'+j]||0);got+=S.ex[i]||0;return{n:t.name,p:tot?got/tot:1}}).filter(x=>x.p<0.7);
+  m.appendChild(E('div','card key','<h3>What to do next</h3>'+(weak.length?'<p>Go back over these before the exam:</p><ul>'+weak.map(w=>'<li>'+w.n+' ('+Math.round(w.p*100)+'%)</li>').join('')+'</ul>':'<p>Nothing below 70%. Try the other walkthrough for this paper.</p>')+'<p>Any exam question you dropped marks on: write the question out, leave a space, and answer it again tomorrow without looking.</p>'))}}
+show(0);
+</script></body></html>

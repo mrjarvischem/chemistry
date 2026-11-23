@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A-level Paper 2 last-minute walkthrough C</title>
+<style>
+:root{--cream:#fbf5e9;--card:#fffdf7;--brown:#5b3a1e;--mid:#8a5a2b;--line:#e2d3b8;--tan:#f1e4cb;--ink:#2e2218;--good:#2f7d4f;--goodbg:#e3f3e8;--bad:#b3402e;--badbg:#fbe6e1;--gold:#c98a1b}
+*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font:17px/1.5 "Segoe UI",Helvetica,Arial,sans-serif}
+header{background:var(--brown);color:#fff;padding:12px 16px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between}
+header h1{font-size:1.15rem;margin:0}header small{display:block;opacity:.85;font-weight:400;font-size:.85rem}
+#timer{display:flex;align-items:center;gap:8px}#clock{font:700 1.3rem ui-monospace,Consolas,monospace;background:#3d2612;padding:4px 10px;border-radius:6px;min-width:84px;text-align:center}
+#clock.over{background:var(--bad)}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--mid);background:var(--tan);color:var(--brown);padding:6px 12px}
+button:hover{background:#e9d6b1}header button{background:#fff;border-color:#fff}
+nav{display:flex;gap:6px;overflow-x:auto;padding:10px 12px;background:var(--tan);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+nav button{white-space:nowrap;background:var(--card)}nav button.on{background:var(--brown);color:#fff;border-color:var(--brown)}nav button.done::after{content:" ✓";color:var(--good)}nav button.on.done::after{color:#bfe8cd}
+main{max-width:860px;margin:0 auto;padding:16px 14px 60px}
+h2{color:var(--brown);margin:.2em 0 .3em;font-size:1.45rem}h3{color:var(--brown);margin:0 0 .4em;font-size:1.08rem}
+.why{color:var(--mid);margin:0 0 6px}.pills{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}.pill{background:var(--tan);border:1px solid var(--line);border-radius:99px;padding:1px 10px;font-size:.8rem;color:var(--brown)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:0 0 14px}
+.key{border-left:6px solid var(--gold)}.key ul,.card ul{margin:.2em 0;padding-left:1.2em}.key li{margin:.25em 0}
+.trap{background:#fff3d6;border:1px solid #edd08f;border-radius:8px;padding:8px 12px;margin:8px 0 0}
+table{border-collapse:collapse;width:100%;font-size:.95rem}th,td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}th{background:var(--tan);color:var(--brown)}
+.opts{display:grid;gap:8px;margin:8px 0}.opts button{text-align:left;background:#fff;color:var(--ink);border-color:var(--line);padding:9px 12px}
+.opts button.right{background:var(--goodbg);border-color:var(--good)}.opts button.wrong{background:var(--badbg);border-color:var(--bad)}
+.fb{font-size:.95rem;margin:6px 0 0;padding:8px 10px;border-radius:8px;background:var(--tan)}
+.step{display:none;border-top:1px dashed var(--line);padding:10px 0}.step.show{display:block}.step:first-of-type{border-top:0}
+.step input{font:inherit;width:120px;padding:5px 8px;border:1px solid var(--mid);border-radius:6px;margin-right:6px}
+.step.ok input{background:var(--goodbg);border-color:var(--good)}.step.no input{background:var(--badbg);border-color:var(--bad)}
+.work{display:none;color:var(--good);margin:6px 0 0;font-weight:600}.step.ok .work,.step.told .work{display:block}.step.told .work{color:var(--mid)}
+.mp{display:flex;gap:10px;align-items:flex-start;padding:6px 0;border-top:1px dashed var(--line)}.mp input{width:20px;height:20px;margin-top:3px;flex:none}
+.hid{display:none}.tag{display:inline-block;background:var(--brown);color:#fff;border-radius:6px;padding:0 8px;font-size:.8rem;margin-right:6px}
+.reveal li{color:transparent;background:var(--tan);border-radius:6px;margin:5px 0;padding:2px 6px;cursor:pointer;user-select:none}.reveal li.on{color:inherit;background:none;cursor:default}
+.next{display:flex;justify-content:space-between;gap:10px;margin-top:6px}.big{font-size:1.05rem;padding:10px 18px;background:var(--brown);color:#fff;border-color:var(--brown)}.big:hover{background:#3d2612}
+.score{font-size:1.6rem;font-weight:700;color:var(--brown)}svg{max-width:100%;height:auto;display:block;margin:6px auto}
+svg.mol{width:100%;height:auto;display:block;margin:0 auto}svg.mol .bd{stroke:#3b2a1a;stroke-width:2.2;stroke-linecap:round}svg.mol text{font-family:"Segoe UI",Arial,sans-serif}.eq{font-weight:600}.card{overflow-x:auto}@media(max-width:560px){table{font-size:.8rem}th,td{padding:4px 5px}}
+@media print{nav,#timer,.next{display:none}}
+</style></head><body>
+<header><h1 id="ttl"></h1><div id="timer"><span id="clock">25:00</span><button id="go">Start</button></div></header>
+<nav id="nav"></nav><main id="main"></main>
+<script>const WT=({
+file:"alevel-paper2-last-minute-C.html",
+title:"A-level Paper 2 last-minute walkthrough C",
+sub:"Organic: NMR, tests, synthesis, polymers and biochemistry · AQA A-level Chemistry 7405/2 · 25 minutes",
+tabs:[
+{name:"NMR spectroscopy",mins:5,why:"NMR was on every Paper 2 from 2017 to 2023, for 6 to 13 marks. It was the 6-mark question in 2020 (TMS and solvents) and in 2022 (working out a structure).",
+ seen:["Jun 17 (9)","Jun 18 (6)","Jun 19 (12)","2020 (13)","2021 (7)","Jun 22 (6)","Jun 23 (11)"],
+ blocks:[
+ {t:"key",title:"What each piece of information tells you",items:[
+  "<b>¹³C NMR, number of peaks</b> = number of different carbon environments. Look for symmetry: equivalent carbons give one peak.",
+  "<b>¹H NMR, number of peaks</b> = number of different hydrogen environments.",
+  "<b>Integration ratio</b> = the ratio of the number of H atoms in each environment.",
+  "<b>Splitting (n + 1 rule):</b> a peak is split into n + 1, where n is the number of H atoms on the <b>adjacent carbon</b>. Singlet: 0 neighbours. Doublet: 1. Triplet: 2. Quartet: 3.",
+  "<b>Chemical shift (δ)</b>: use the Data Booklet to find the type of environment. Table B for ¹H and Table C for ¹³C.",
+  "H atoms on O or N (O–H, N–H) are singlets and do not split neighbouring peaks."]},
+ {t:"tbl",title:"Patterns to spot in ¹H spectra",head:["You see","It means","Typical shift"],rows:[
+  ["triplet (3H) and quartet (2H)","an ethyl group, CH₃CH₂–","quartet near 4.1 if it is –O–CH₂CH₃ (ester); near 2.4 if it is CH₃CH₂–C=O"],
+  ["singlet (3H) at about 2.1","CH₃–C=O with no H on the next atom","2.1–2.6"],
+  ["singlet (3H) at about 3.7","CH₃–O– (methyl ester or ether)","3.1–3.9 / 3.7–4.1"],
+  ["doublet (6H) and a septet (1H)","(CH₃)₂CH–","0.7–1.2 for the CH₃ groups"],
+  ["singlet (9H)","(CH₃)₃C–","0.7–1.2"],
+  ["doublet (3H) and quartet (1H)","CH₃–CH","depends on what the CH is joined to"]]},
+ {t:"model",q:"Explain why TMS, Si(CH₃)₄, is used as the standard, and why CDCl₃ or CCl₄ is used as the solvent, in ¹H NMR. [5]",a:[
+  "TMS gives <b>one peak</b> because all 12 H atoms are in the same environment.",
+  "Its peak is at δ = 0, <b>upfield of (well away from) most other peaks</b>, because Si is less electronegative than C.",
+  "TMS is <b>inert</b> (does not react with the sample), non-toxic and <b>volatile</b>, so it is easily removed.",
+  "CDCl₃ and CCl₄ contain <b>no ¹H atoms</b>, so they give no peaks in the spectrum.",
+  "CDCl₃ is polar so it dissolves polar samples; CCl₄ is non-polar so it dissolves non-polar samples."]},
+ {t:"key",title:"A method for the 6-mark structure question",items:[
+  "1. IR: name the bond for each key absorption (C=O 1680–1750, O–H alcohol 3230–3550, O–H acid 2500–3000 broad).",
+  "2. ¹³C: count the peaks; use shifts to identify C=O (160–220) and C–O (50–90).",
+  "3. ¹H: for each peak write integration → splitting → number of neighbours → the fragment.",
+  "4. Join the fragments, check the formula, and <b>draw the structure</b>. Link each piece of evidence to a part of your structure."],
+  trap:"Saying a triplet means “three hydrogens”. A triplet means two H atoms on the adjacent carbon."}],
+ checks:[
+ {q:"How many peaks are there in the ¹³C NMR spectrum of 1,4-dimethylbenzene?",opts:["2","3","4","8"],a:1,why:"CH₃ carbons, the two ring carbons bonded to CH₃, and the four ring CH carbons: 3 environments."},
+ {q:"In the ¹H NMR spectrum of CH₃CH₂COOCH₃, what is the splitting of the peak for the CH₂ group?",opts:["singlet","doublet","triplet","quartet"],a:3,why:"Three H atoms on the adjacent CH₃, so 3 + 1 = 4."},
+ {q:"A compound C₄H₈O₂ has a ¹H NMR spectrum with a singlet (3H), a quartet (2H) and a triplet (3H). The quartet is at δ = 4.1. Which compound is it?",opts:["CH₃CH₂COOCH₃","CH₃COOCH₂CH₃","CH₃CH₂CH₂COOH","HCOOCH₂CH₂CH₃"],a:1,why:"Quartet at 4.1 means –O–CH₂CH₃. The singlet is CH₃C=O. Ethyl ethanoate."}],
+ exam:{q:"Compound Z has the molecular formula C₅H₁₀O₂. Its infrared spectrum has a strong absorption at 1740 cm⁻¹ and nothing above 3000 cm⁻¹. Its ¹H NMR spectrum is:<br><table><tr><th>δ / ppm</th><td>3.7</td><td>2.6</td><td>1.2</td></tr><tr><th>Integration</th><td>3</td><td>1</td><td>6</td></tr><tr><th>Splitting</th><td>singlet</td><td>septet</td><td>doublet</td></tr></table>Deduce the structure of Z. Explain your reasoning. [6]",
+  ms:["1740 cm⁻¹ is C=O, and with no O–H absorption (and two O atoms) Z is an ester","singlet (3H) at 3.7 is CH₃–O– with no H on the adjacent atom","doublet (6H) at 1.2 is two equivalent CH₃ groups next to a CH","septet (1H) at 2.6 is a CH next to six H atoms / next to C=O","so Z contains (CH₃)₂CH–C=O and –O–CH₃","structure: (CH₃)₂CHCOOCH₃ (methyl 2-methylpropanoate)"]}},
+
+{name:"Test-tube reactions and IR",mins:4,why:"Identifying functional groups with chemical tests was on five of the seven Paper 2s, including an 11-mark question in 2023 and a 6-mark question in 2017. An IR question came with it almost every year.",
+ seen:["Jun 17 (6)","Jun 18 (2)","Jun 19 (6)","2020 (12)","2021 (4, IR)","Jun 23 (11)","P3 2021 (3)"],
+ blocks:[
+ {t:"tbl",title:"The tests",head:["Functional group","Reagent","Positive result"],rows:[
+  ["alkene","bromine water (shake, room temperature)","orange to colourless"],
+  ["primary or secondary alcohol, aldehyde","acidified potassium dichromate(VI), warm","orange to green"],
+  ["aldehyde (not ketone)","Tollens’ reagent, warm","silver mirror"],
+  ["aldehyde (not ketone)","Fehling’s solution, warm","blue solution to brick-red precipitate"],
+  ["carboxylic acid","sodium carbonate or sodium hydrogencarbonate","effervescence (CO₂ turns limewater cloudy)"],
+  ["halogenoalkane","warm with NaOH(aq), acidify with HNO₃, add AgNO₃(aq)","white, cream or yellow precipitate"],
+  ["acyl chloride","add water (or AgNO₃(aq))","steamy fumes (white precipitate)"]]},
+ {t:"key",title:"Using the tests",items:[
+  "<b>Tertiary alcohols</b> and <b>ketones</b> are not oxidised: dichromate stays orange.",
+  "To tell a primary from a secondary alcohol: oxidise, <b>distil off</b> the product, then test it with Tollens’ or Fehling’s. Primary gives an aldehyde (positive). Secondary gives a ketone (no change).",
+  "For any “distinguish between” question give: the <b>reagent</b>, the observation with <b>one</b> compound and the observation with <b>the other</b> (“no visible change” if nothing happens).",
+  "<b>Oxidation equations:</b> use [O]. CH₃CH₂OH + [O] → CH₃CHO + H₂O (distil) · CH₃CH₂OH + 2[O] → CH₃COOH + H₂O (reflux) · secondary alcohol + [O] → ketone + H₂O"],
+  trap:"Writing “no reaction” or “nothing” as an observation. Write “no visible change”. And “clear” is not a colour: write “colourless”."},
+ {t:"tbl",title:"Infrared: the absorptions that matter (Data Booklet Table A)",head:["Bond","Wavenumber / cm⁻¹","Found in"],rows:[
+  ["O–H (alcohol)","3230–3550, broad","alcohols"],
+  ["O–H (acid)","2500–3000, very broad","carboxylic acids"],
+  ["N–H","3300–3500","amines, amides"],
+  ["C=O","1680–1750","aldehydes, ketones, acids, esters, amides"],
+  ["C≡N","2220–2260","nitriles"],
+  ["C=C","1620–1680","alkenes"]]},
+ {t:"key",title:"More on IR and mass spectrometry",items:[
+  "The <b>fingerprint region</b> (below 1500 cm⁻¹) is unique to each compound. Compare it with a database of known spectra to identify the compound.",
+  "Greenhouse gases (CO₂, CH₄, H₂O) absorb infrared radiation because their bonds vibrate at those frequencies. Symmetrical molecules such as O₂ and N₂ do not.",
+  "<b>High resolution mass spectrometry</b> gives M<sub>r</sub> to several decimal places, which distinguishes compounds with the same M<sub>r</sub> to the nearest whole number. It cannot distinguish isomers: they have the same molecular formula."]}],
+ checks:[
+ {q:"Which compound gives a silver mirror with Tollens’ reagent?",opts:["Propanone","Propanal","Propan-2-ol","Propanoic acid"],a:1,why:"Only aldehydes are oxidised by Tollens’ reagent."},
+ {q:"Which reagent distinguishes 2-methylbutan-1-ol from 2-methylbutan-2-ol?",opts:["Bromine water","Sodium carbonate solution","Acidified potassium dichromate(VI)","Silver nitrate solution"],a:2,why:"The primary alcohol turns it from orange to green. The tertiary alcohol gives no visible change."},
+ {q:"A compound has a very broad absorption at 2500–3000 cm⁻¹ and a strong absorption at 1710 cm⁻¹. What is it?",opts:["An alcohol","A ketone","A carboxylic acid","An ester"],a:2,why:"O–H (acid) and C=O together."}],
+ exam:{q:"Four unlabelled bottles contain propan-1-ol, propanal, propanone and propanoic acid.<br>Describe how you could identify all four liquids using test-tube reactions. Give the observations for each test. [6]",
+  ms:["add sodium carbonate (or NaHCO₃) to each","propanoic acid gives effervescence; the others give no visible change","warm the other three with Tollens’ reagent (or Fehling’s solution)","propanal gives a silver mirror (or brick-red precipitate); the others give no visible change","warm the remaining two with acidified potassium dichromate(VI)","propan-1-ol turns it from orange to green; propanone gives no visible change"]}},
+
+{name:"Synthesis and amines",mins:4,why:"Reagents and conditions for a synthesis route came up on every Paper 2 from 2017 to 2023 (10 marks in 2022). Amine base strength was a 6-mark question in 2017 and came back in 2019 and 2022.",
+ seen:["Jun 17 (11)","Jun 18 (7)","Jun 19 (5)","2020 (6)","2021 (6)","Jun 22 (10)","Jun 23 (4)"],
+ blocks:[
+ {t:"tbl",title:"Conversions you must know cold",head:["From → to","Reagents and conditions"],rows:[
+  ["alkene → alcohol","steam, concentrated H₃PO₄ catalyst (or conc H₂SO₄ then water)"],
+  ["alcohol → alkene","concentrated H₂SO₄ or H₃PO₄, heat (elimination / dehydration)"],
+  ["halogenoalkane → alcohol","NaOH(aq), warm"],
+  ["halogenoalkane → nitrile","KCN, aqueous ethanol, warm"],
+  ["halogenoalkane → amine","excess NH₃ in ethanol, heat under pressure"],
+  ["nitrile → primary amine","H₂ with Ni catalyst (or LiAlH₄ in dry ether)"],
+  ["primary alcohol → aldehyde","K₂Cr₂O₇ / H₂SO₄, distil"],
+  ["primary alcohol → carboxylic acid","K₂Cr₂O₇ / H₂SO₄, reflux"],
+  ["aldehyde or ketone → alcohol","NaBH₄(aq)"],
+  ["acid + alcohol → ester","concentrated H₂SO₄ catalyst, heat (reversible)"],
+  ["benzene → nitrobenzene","concentrated HNO₃ and concentrated H₂SO₄"],
+  ["nitrobenzene → phenylamine","Sn and concentrated HCl, then NaOH"],
+  ["benzene → phenylketone","acyl chloride, AlCl₃ (anhydrous)"]]},
+ {t:"model",q:"Explain why ethylamine is a stronger base than ammonia, and phenylamine is a weaker base than ammonia. [6]",a:[
+  "A base accepts a proton using the <b>lone pair on the nitrogen</b> atom.",
+  "In ethylamine the alkyl group has a <b>positive inductive effect</b>: it pushes electron density towards N.",
+  "So the lone pair is <b>more available</b> to accept a proton.",
+  "In phenylamine the lone pair on N is <b>delocalised into the benzene ring</b>.",
+  "So the lone pair is <b>less available</b> to accept a proton.",
+  "Order of base strength: phenylamine < ammonia < primary alkyl amine (< secondary amine)."]},
+ {t:"key",title:"Making amines",items:[
+  "<b>From a halogenoalkane + NH₃:</b> the product is also a nucleophile, so you get a mixture of primary, secondary and tertiary amines and a quaternary ammonium salt. Low yield of the primary amine.",
+  "<b>From a nitrile (halogenoalkane → nitrile → amine):</b> only the primary amine forms, so the yield and purity are better. The chain is one carbon longer.",
+  "<b>Quaternary ammonium salts</b> (from a large excess of halogenoalkane) are used as cationic surfactants, for example in fabric conditioner.",
+  "<b>Fewer steps</b> in a synthesis give a higher overall yield and less waste. A <b>high atom economy</b> means less waste and better use of raw materials."],
+  trap:"Giving a reagent without its conditions. “Acidified” dichromate, “concentrated” acids, “ethanolic” KOH and “excess” ammonia all carry marks."}],
+ checks:[
+ {q:"A two-step synthesis converts bromoethane into propylamine. What is the intermediate?",opts:["CH₃CH₂NH₂","CH₃CH₂CN","CH₃CH₂CH₂Br","CH₃CH₂OH"],a:1,why:"KCN gives propanenitrile; H₂ / Ni reduces it to propylamine."},
+ {q:"Which is the correct order of base strength, weakest first?",opts:["ethylamine < ammonia < phenylamine","phenylamine < ammonia < ethylamine","ammonia < phenylamine < ethylamine","phenylamine < ethylamine < ammonia"],a:1,why:"Lone pair delocalised into the ring (weakest); alkyl group pushes electrons onto N (strongest)."},
+ {q:"Which reagent converts a nitrile into a primary amine?",opts:["NaBH₄(aq)","H₂ with a nickel catalyst","K₂Cr₂O₇ / H₂SO₄","NaOH(aq)"],a:1,why:"Reduction with hydrogen and a nickel catalyst: RCN + 2H₂ → RCH₂NH₂"}],
+ exam:{q:"(a) Propylamine can be made from bromoethane in two steps. Give the reagent and conditions for each step and the structure of the intermediate. [5]<br>(b) Explain why this route gives a better yield of propylamine than the reaction of 1-bromopropane with ammonia. [2]",
+  ms:["step 1: KCN","in aqueous ethanol / warm","intermediate: CH₃CH₂CN","step 2: H₂","nickel catalyst (or LiAlH₄ in dry ether)","with ammonia, the primary amine reacts further / further substitution gives secondary and tertiary amines (and a quaternary salt)","reduction of the nitrile gives only the primary amine"]}},
+
+{name:"Polymers, amino acids, proteins and DNA",mins:4,why:"These topics were on six of the seven Paper 2s and are in the multiple-choice section of every Paper 3. Most of the marks are for drawing: repeating units, zwitterions, dipeptides and hydrogen bonds.",
+ seen:["Jun 17 (14)","Jun 18 (10)","Jun 19 (10)","2020 (5)","Jun 22 (9)","Jun 23 (4)"],
+ blocks:[
+ {t:"tbl",title:"Condensation polymers",head:["Type","Made from","Link","Example"],rows:[
+  ["polyester","dicarboxylic acid + diol (or diacyl dichloride + diol)","–COO– (ester)","Terylene (PET): benzene-1,4-dicarboxylic acid + ethane-1,2-diol"],
+  ["polyamide","dicarboxylic acid + diamine (or diacyl dichloride + diamine)","–CONH– (amide)","nylon 6,6: hexanedioic acid + 1,6-diaminohexane; Kevlar: benzene-1,4-dicarboxylic acid + benzene-1,4-diamine"]]},
+ {t:"key",title:"Polymer marks",items:[
+  "To draw a repeating unit: join the monomers with the link, remove H₂O (or HCl), and draw a <b>bond going out of each end</b>.",
+  "<b>Biodegradable:</b> polyesters and polyamides have <b>polar C=O (δ+ carbon)</b> so they can be <b>hydrolysed</b> / attacked by nucleophiles. Poly(alkenes) have non-polar C–C and C–H bonds, so they cannot.",
+  "<b>Forces between chains:</b> polyamides have <b>hydrogen bonds</b> between N–H and C=O of neighbouring chains. Polyesters have permanent dipole–dipole forces. Poly(alkenes) have only van der Waals forces."]},
+ {t:"key",title:"Amino acids and proteins",items:[
+  "<b>Zwitterion:</b> H₃N⁺–CHR–COO⁻. <b>Low pH (acid):</b> H₃N⁺–CHR–COOH. <b>High pH (alkali):</b> H₂N–CHR–COO⁻. Also change any COOH or NH₂ in the R group.",
+  "<b>Peptide link:</b> –CONH–. Two different amino acids give <b>two</b> possible dipeptides. Water is the other product.",
+  "<b>Primary structure:</b> the sequence of amino acids. <b>Secondary:</b> α-helix or β-pleated sheet, held by <b>hydrogen bonds</b> between N–H and C=O. <b>Tertiary:</b> the overall 3D folding, held by hydrogen bonds, ionic interactions and <b>disulfide (S–S) bridges</b> between cysteine residues.",
+  "<b>Hydrolysis</b> of a protein: heat with 6 mol dm⁻³ HCl (or an enzyme). Amino acids are separated by TLC and located with <b>ninhydrin</b> or UV light.",
+  "<b>Enzymes</b> are proteins with a stereospecific <b>active site</b>: only one enantiomer of the substrate fits. Drugs can be designed (with computer modelling) to block the active site."]},
+ {t:"key",title:"DNA and cisplatin",items:[
+  "A <b>nucleotide</b> = phosphate + 2-deoxyribose (sugar) + base. The sugar–phosphate backbone is joined by covalent bonds.",
+  "Two strands are held by <b>hydrogen bonds between complementary bases</b>: A with T (<b>2</b> hydrogen bonds), C with G (<b>3</b> hydrogen bonds).",
+  "<b>Cisplatin</b> stops DNA replication: its two Cl⁻ ligands are replaced and Pt bonds to a <b>nitrogen atom on two guanine</b> bases. It also affects healthy cells, so doses are kept low."],
+  trap:"Leaving the trailing bonds off a repeating unit, or drawing brackets with n when the question asks for the repeating unit."}],
+ checks:[
+ {q:"Which polymer has hydrogen bonding between its chains?",opts:["Poly(propene)","Terylene","Kevlar","PVC"],a:2,why:"Kevlar is a polyamide: N–H···O=C hydrogen bonds."},
+ {q:"Which species is the main form of alanine, CH₃CH(NH₂)COOH, at pH 14?",opts:["CH₃CH(NH₃⁺)COOH","CH₃CH(NH₃⁺)COO⁻","CH₃CH(NH₂)COO⁻","CH₃CH(NH₂)COOH"],a:2,why:"In alkali the COOH loses H⁺ and the NH₂ is not protonated."},
+ {q:"How many hydrogen bonds join the base pairs in a section of DNA with the sequence A, C, G, T, A on one strand?",opts:["10","12","13","15"],a:1,why:"A–T pairs have 2 each (3 pairs = 6) and C–G pairs have 3 each (2 pairs = 6): 12."}],
+ exam:{q:"(a) Draw the repeating unit of the polymer formed from hexanedioic acid, HOOC(CH₂)₄COOH, and 1,6-diaminohexane, H₂N(CH₂)₆NH₂. Tick if your drawing has each feature. [2]<br>(b) Explain why this polymer is biodegradable but poly(ethene) is not. [2]<br>(c) Explain how the secondary structure of a protein is held in place. [2]<br>(d) State how cisplatin prevents DNA replication. [1]",
+  ms:["–CO(CH₂)₄CO–NH(CH₂)₆NH– with the amide link shown correctly","trailing bonds at both ends","the polyamide has polar bonds / a δ+ carbon in C=O, so it can be hydrolysed (attacked by nucleophiles)","poly(ethene) has non-polar C–C and C–H bonds, so it cannot be hydrolysed","hydrogen bonds","between the N–H of one peptide link and the C=O of another","Pt bonds to nitrogen atoms on (two) guanine bases, so the strands cannot unwind / be copied"]}},
+
+{name:"Isomerism and esters",mins:4,why:"Optical and E–Z isomerism came up on five of the seven Paper 2s. Esters, fats and biodiesel came up on five as well, including 15 marks in 2021.",
+ seen:["Jun 17 (8)","Jun 18 (2)","Jun 19 (14)","2020 (6)","2021 (20)","Jun 22 (6)","Jun 23 (2)"],
+ blocks:[
+ {t:"key",title:"Stereoisomers",items:[
+  "<b>Stereoisomers</b> have the same structural formula but a different arrangement of atoms in space.",
+  "<b>E–Z isomerism</b> needs a C=C (restricted rotation) with <b>two different groups on each carbon</b> of the double bond. Z: highest priority groups (highest atomic number) on the same side. E: on opposite sides.",
+  "<b>Optical isomerism</b> needs a <b>chiral centre</b>: a carbon with <b>four different groups</b>. The two enantiomers are non-superimposable mirror images.",
+  "Draw enantiomers as 3D tetrahedral structures (two plain bonds, one wedge, one dashed) as mirror images of each other.",
+  "Enantiomers rotate <b>plane-polarised light</b> in opposite directions. A <b>racemic mixture</b> (equal amounts of both) has no effect on plane-polarised light.",
+  "A racemic mixture forms when a nucleophile attacks a <b>planar</b> C=O group from either side with equal probability."]},
+ {t:"key",title:"Esters, fats and biodiesel",items:[
+  "<b>Naming:</b> alcohol part first, acid part second. CH₃COOCH₂CH₃ is ethyl ethanoate (from ethanol and ethanoic acid).",
+  "<b>Acid hydrolysis</b> (dilute HCl, reflux): ester + water ⇌ carboxylic acid + alcohol. Reversible.",
+  "<b>Alkaline hydrolysis</b> (NaOH(aq), reflux): ester + NaOH → <b>salt of the carboxylic acid</b> + alcohol. Goes to completion, so the yield is better.",
+  "<b>Fats and oils</b> are triesters of propane-1,2,3-triol (glycerol) with three long-chain fatty acids, which can be different from each other.",
+  "<b>Triester + 3NaOH → propane-1,2,3-triol + 3 sodium salts</b> of the fatty acids (<b>soap</b>).",
+  "<b>Triester + 3CH₃OH → propane-1,2,3-triol + 3 methyl esters</b> (<b>biodiesel</b>), with a KOH catalyst.",
+  "Uses of esters: solvents, plasticisers, perfumes and food flavourings."],
+  trap:"Giving the carboxylic acid as the product of alkaline hydrolysis. In alkali you get the salt, RCOO⁻Na⁺."},
+ {t:"model",q:"“Bioethanol is a carbon-neutral fuel.” Evaluate this statement. [6]",a:[
+  "Bioethanol is made by <b>fermentation</b> of glucose from crops: C₆H₁₂O₆ → 2C₂H₅OH + 2CO₂",
+  "Photosynthesis takes in CO₂ as the crop grows: 6CO₂ + 6H₂O → C₆H₁₂O₆ + 6O₂ (<b>6 mol CO₂ absorbed</b>).",
+  "Combustion: C₂H₅OH + 3O₂ → 2CO₂ + 3H₂O. For 2 mol of ethanol that is 4 mol CO₂, plus 2 mol from fermentation: <b>6 mol CO₂ released</b>.",
+  "So in theory the CO₂ released equals the CO₂ absorbed.",
+  "But fossil fuels are burned for <b>farm machinery, fertiliser production, distillation and transport</b>, which releases extra CO₂.",
+  "So it is not completely carbon neutral. Land used for fuel crops is also not available for food."]}],
+ checks:[
+ {q:"Which compound shows E–Z isomerism?",opts:["CH₂=CHBr","CH₂=CBr₂","CHBr=CHBr","CBr₂=CHBr"],a:2,why:"Each carbon of the C=C has two different groups (H and Br)."},
+ {q:"Which compound has a chiral centre?",opts:["CH₃CH(CH₃)CH₂CH₃","CH₃CH₂CHClCH₃","CH₃CH₂CH₂Cl","(CH₃)₂CHOH"],a:1,why:"Carbon 2 of 2-chlorobutane has H, Cl, CH₃ and C₂H₅ attached."},
+ {q:"What are the products when ethyl propanoate is heated with aqueous sodium hydroxide?",opts:["Propanoic acid and ethanol","Sodium propanoate and ethanol","Sodium ethanoate and propan-1-ol","Ethanoic acid and propan-1-ol"],a:1,why:"The acid part (propanoate) forms the sodium salt; the alcohol part is ethanol."}],
+ exam:{q:"(a) Butan-2-ol is formed as a racemic mixture when butanone is reduced with NaBH₄. Explain why a racemic mixture is formed. [3]<br>(b) State how separate samples of the two enantiomers could be distinguished. [2]<br>(c) A triester in a vegetable oil reacts with methanol to form biodiesel. Name the other product and give the type of catalyst used. [2]",
+  ms:["the C=O group (in butanone) is planar","the nucleophile (H⁻) attacks from either side / above and below","with equal probability, giving equal amounts of the two enantiomers","pass plane-polarised light through each sample","they rotate it in opposite directions","propane-1,2,3-triol (glycerol)","alkali / KOH (or NaOH)"]}}
+],
+quiz:[
+{q:"How many peaks are there in the ¹³C NMR spectrum of propanone?",opts:["1","2","3","6"],a:1,why:"The two CH₃ carbons are equivalent, plus the C=O carbon."},
+{q:"In ¹H NMR, a peak is a doublet. How many H atoms are on the adjacent carbon?",opts:["0","1","2","3"],a:1,why:"n + 1 = 2, so n = 1."},
+{q:"Which reagent gives effervescence with a carboxylic acid?",opts:["Tollens’ reagent","Bromine water","Sodium hydrogencarbonate","Acidified potassium dichromate(VI)"],a:2,why:"CO₂ is given off."},
+{q:"What is the product when 1-phenylethanol, C₆H₅CH(OH)CH₃, is oxidised?",opts:["C₆H₅CH₂CHO","C₆H₅COCH₃","C₆H₅CH₂COOH","C₆H₅COOH"],a:1,why:"A secondary alcohol is oxidised to a ketone."},
+{q:"Which reagents convert benzene into nitrobenzene?",opts:["Sn and concentrated HCl","Concentrated HNO₃ and concentrated H₂SO₄","NaNO₂ and HCl","AlCl₃ and CH₃COCl"],a:1,why:"They form the NO₂⁺ electrophile."},
+{q:"Which monomer can form a polymer with ClOC(CH₂)₈COCl?",opts:["CH₃CH₂CONH₂","H₂NCH₂CH₂NH₂","(CH₃CO)₂O","CH₃CH₂OH"],a:1,why:"A diamine has two NH₂ groups, so a polyamide chain can grow."},
+{q:"How many hydrogen bonds form between cytosine and guanine?",opts:["1","2","3","4"],a:2,why:"C–G: 3. A–T: 2."},
+{q:"A racemic mixture…",opts:["rotates plane-polarised light to the right","contains only one enantiomer","contains equal amounts of two enantiomers","contains E and Z isomers"],a:2,why:"Equal amounts, so the rotations cancel."}
+]});</script>
+<script>
+const E=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e};
+const S={mc:{},ex:{},qz:{},done:{}};let cur=0;const N=WT.tabs.length;
+document.getElementById('ttl').innerHTML=WT.title+'<small>'+WT.sub+'</small>';
+// timer
+let left=1500,tick=null;const clock=document.getElementById('clock'),go=document.getElementById('go');
+function draw(){const a=Math.abs(left),m=Math.floor(a/60),s=a%60;clock.textContent=(left<0?'+':'')+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');clock.className=left<0?'over':''}
+go.onclick=()=>{if(tick){clearInterval(tick);tick=null;go.textContent='Resume'}else{tick=setInterval(()=>{left--;draw()},1000);go.textContent='Pause'}};
+function nav(){const n=document.getElementById('nav');n.innerHTML='';
+ const names=WT.tabs.map((t,i)=>(i+1)+'. '+t.name).concat(['Final quiz','My score']);
+ names.forEach((nm,i)=>{const b=E('button',(i===cur?'on ':'')+(S.done[i]?'done':''),nm);b.onclick=()=>show(i);n.appendChild(b)})}
+function mcq(q,store,id){const c=E('div','card');c.appendChild(E('div',null,'<b>'+q.q+'</b>'));const o=E('div','opts'),fb=E('div','fb hid');
+ q.opts.forEach((t,i)=>{const b=E('button',null,t);b.onclick=()=>{if(!(id in store))store[id]=(i===q.a)?1:0;
+  if(i===q.a){b.className='right';fb.innerHTML='✔ '+(q.why||'Correct.');fb.className='fb';[...o.children].forEach(x=>x.disabled=true)}
+  else{b.className='wrong';b.disabled=true;fb.innerHTML='✘ Not quite – try again.';fb.className='fb'}};o.appendChild(b)});
+ c.appendChild(o);c.appendChild(fb);return c}
+function calc(b){const c=E('div','card');c.appendChild(E('h3',null,'<span class="tag">Step by step</span>'+b.title));c.appendChild(E('div',null,b.q));
+ const steps=b.steps.map((s,i)=>{const d=E('div','step'+(i===0?' show':''));d.appendChild(E('div',null,'<b>Step '+(i+1)+':</b> '+s.p));
+  const inp=E('input');inp.inputMode='decimal';inp.setAttribute('aria-label','answer for step '+(i+1));const ck=E('button',null,'Check'),tell=E('button',null,'Show me');
+  const row=E('div');row.style.marginTop='6px';row.append(inp,document.createTextNode((s.u||'')+' '),ck,document.createTextNode(' '),tell);d.appendChild(row);
+  d.appendChild(E('div','work',s.show));
+  const nxt=()=>{if(steps[i+1])steps[i+1].classList.add('show')};
+  const chk=()=>{const v=parseFloat(inp.value.replace(/,/g,'').replace('×10^','e'));const tol=s.tol!=null?s.tol:Math.abs(s.a)*0.006;
+   if(!isNaN(v)&&Math.abs(v-s.a)<=tol){d.className='step show ok';nxt()}else d.className='step show no'};
+  ck.onclick=chk;inp.onkeydown=e=>{if(e.key==='Enter')chk()};tell.onclick=()=>{d.className='step show told';nxt()};return d});
+ steps.forEach(s=>c.appendChild(s));return c}
+function graph(g){const W=340,H=230,L=44,B=36,T=10,R=10,pw=W-L-R,ph=H-T-B,X=x=>L+x/g.xmax*pw,Y=y=>T+ph-y/g.ymax*ph;let s='<svg viewBox="0 0 '+W+' '+H+'" width="460" role="img" aria-label="'+(g.cap||'graph')+'">';
+ for(let i=0;i<=g.xn;i++){const x=g.xmax*i/g.xn;s+='<line x1="'+X(x)+'" y1="'+T+'" x2="'+X(x)+'" y2="'+(T+ph)+'" stroke="#e2d3b8"/><text x="'+X(x)+'" y="'+(T+ph+13)+'" font-size="10" text-anchor="middle" fill="#5b3a1e">'+x+'</text>'}
+ for(let i=0;i<=g.yn;i++){const y=g.ymax*i/g.yn;s+='<line x1="'+L+'" y1="'+Y(y)+'" x2="'+(L+pw)+'" y2="'+Y(y)+'" stroke="#e2d3b8"/><text x="'+(L-5)+'" y="'+(Y(y)+3)+'" font-size="10" text-anchor="end" fill="#5b3a1e">'+y+'</text>'}
+ let p='';for(let i=0;i<=80;i++){const x=g.xmax*i/80;p+=(i?'L':'M')+X(x).toFixed(1)+' '+Y(g.f(x)).toFixed(1)}
+ s+='<path d="'+p+'" fill="none" stroke="#5b3a1e" stroke-width="2.2"/>';
+ if(g.tan){const[a,b]=g.tan;s+='<line x1="'+X(a[0])+'" y1="'+Y(a[1])+'" x2="'+X(b[0])+'" y2="'+Y(b[1])+'" stroke="#c0392b" stroke-width="1.8"/>'+
+  '<path d="M'+X(a[0])+' '+Y(a[1])+'H'+X(b[0])+'V'+Y(b[1])+'" fill="none" stroke="#c0392b" stroke-dasharray="4 3"/>'+
+  '<circle cx="'+X(g.at)+'" cy="'+Y(g.f(g.at))+'" r="3.5" fill="#c0392b"/>'}
+ s+='<text x="'+(L+pw/2)+'" y="'+(H-4)+'" font-size="11" text-anchor="middle" fill="#2e2218">'+g.xl+'</text><text transform="rotate(-90 11 '+(T+ph/2)+')" x="11" y="'+(T+ph/2)+'" font-size="11" text-anchor="middle" fill="#2e2218">'+g.yl+'</text></svg>';
+ const c=E('div','card',s);if(g.cap)c.appendChild(E('div','why',g.cap));return c}
+function exam(x,i){const c=E('div','card');const tot=x.ms.length;c.appendChild(E('h3',null,'<span class="tag">Exam question</span>Answer on paper, then mark it yourself &nbsp;['+tot+' marks]'));
+ c.appendChild(E('div',null,x.q));const btn=E('button',null,'Show mark scheme');btn.style.marginTop='10px';const ms=E('div','hid'),out=E('div','fb','Tick each point you got: <b>0 / '+tot+'</b>');
+ x.ms.forEach(m=>{const l=E('label','mp');const cb=E('input');cb.type='checkbox';cb.onchange=()=>{const n=ms.querySelectorAll('input:checked').length;S.ex[i]=n;out.innerHTML='Tick each point you got: <b>'+n+' / '+tot+'</b>'};l.append(cb,E('span',null,m));ms.appendChild(l)});
+ ms.appendChild(out);btn.onclick=()=>{ms.className='';btn.className='hid';if(!(i in S.ex))S.ex[i]=0};c.append(btn,ms);return c}
+function block(b){if(b.t==='calc')return calc(b);if(b.t==='graph')return graph(b);
+ if(b.t==='key'){const c=E('div','card key');c.appendChild(E('h3',null,b.title));c.appendChild(E('ul',null,b.items.map(x=>'<li>'+x+'</li>').join('')));if(b.trap)c.appendChild(E('div','trap','⚠ <b>Mark loser:</b> '+b.trap));return c}
+ if(b.t==='model'){const c=E('div','card');c.appendChild(E('h3',null,'<span class="tag">Model answer</span>'+b.q));c.appendChild(E('div','why','Say each point out loud first, then tap to reveal.'));const u=E('ul','reveal');b.a.forEach(x=>{const li=E('li',null,x);li.onclick=()=>li.className='on';u.appendChild(li)});c.appendChild(u);return c}
+ if(b.t==='tbl'){const c=E('div','card');if(b.title)c.appendChild(E('h3',null,b.title));c.appendChild(E('table',null,'<tr>'+b.head.map(h=>'<th>'+h+'</th>').join('')+'</tr>'+b.rows.map(r=>'<tr>'+r.map(d=>'<td>'+d+'</td>').join('')+'</tr>').join('')));return c}
+ return E('div','card',(b.title?'<h3>'+b.title+'</h3>':'')+b.h)}
+function foot(m,i){const f=E('div','next');const a=E('button',null,'← Back');a.onclick=()=>show(i-1);if(i===0)a.style.visibility='hidden';
+ const b=E('button','big',i<N?'Done – next →':'See my score →');b.onclick=()=>{S.done[i]=1;show(i+1)};f.append(a,b);m.appendChild(f)}
+function show(i){cur=i;nav();const m=document.getElementById('main');m.innerHTML='';window.scrollTo(0,0);
+ if(i<N){const t=WT.tabs[i];m.appendChild(E('h2',null,(i+1)+'. '+t.name+' <span class="pill">about '+t.mins+' min</span>'));m.appendChild(E('p','why',t.why));
+  m.appendChild(E('div','pills',t.seen.map(s=>'<span class="pill">'+s+'</span>').join('')));
+  t.blocks.forEach(b=>m.appendChild(block(b)));
+  if(t.checks.length){m.appendChild(E('h3',null,'Quick checks'));t.checks.forEach((q,j)=>m.appendChild(mcq(q,S.mc,i+'-'+j)))}
+  if(t.exam)m.appendChild(exam(t.exam,i));foot(m,i)}
+ else if(i===N){m.appendChild(E('h2',null,'Final quiz <span class="pill">about 4 min</span>'));m.appendChild(E('p','why','No notes. Only your first click on each question counts.'));
+  WT.quiz.forEach((q,j)=>m.appendChild(mcq(q,S.qz,j)));foot(m,i)}
+ else{const sum=o=>Object.values(o).reduce((a,b)=>a+b,0);const mcT=WT.tabs.reduce((a,t)=>a+t.checks.length,0),exT=WT.tabs.reduce((a,t)=>a+(t.exam?t.exam.ms.length:0),0);
+  m.appendChild(E('h2',null,'My score'));
+  m.appendChild(E('div','card','<table><tr><th>Section</th><th>Score</th></tr><tr><td>Quick checks (first try)</td><td class="score">'+sum(S.mc)+' / '+mcT+'</td></tr><tr><td>Exam questions (self-marked)</td><td class="score">'+sum(S.ex)+' / '+exT+'</td></tr><tr><td>Final quiz (first try)</td><td class="score">'+sum(S.qz)+' / '+WT.quiz.length+'</td></tr></table>'));
+  let weak=WT.tabs.map((t,i)=>{let got=0,tot=t.checks.length+(t.exam?t.exam.ms.length:0);t.checks.forEach((q,j)=>got+=S.mc[i+'-'+j]||0);got+=S.ex[i]||0;return{n:t.name,p:tot?got/tot:1}}).filter(x=>x.p<0.7);
+  m.appendChild(E('div','card key','<h3>What to do next</h3>'+(weak.length?'<p>Go back over these before the exam:</p><ul>'+weak.map(w=>'<li>'+w.n+' ('+Math.round(w.p*100)+'%)</li>').join('')+'</ul>':'<p>Nothing below 70%. Try the other walkthrough for this paper.</p>')+'<p>Any exam question you dropped marks on: write the question out, leave a space, and answer it again tomorrow without looking.</p>'))}}
+show(0);
+</script></body></html>

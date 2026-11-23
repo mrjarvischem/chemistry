@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A-level Paper 3 last-minute walkthrough C</title>
+<style>
+:root{--cream:#fbf5e9;--card:#fffdf7;--brown:#5b3a1e;--mid:#8a5a2b;--line:#e2d3b8;--tan:#f1e4cb;--ink:#2e2218;--good:#2f7d4f;--goodbg:#e3f3e8;--bad:#b3402e;--badbg:#fbe6e1;--gold:#c98a1b}
+*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font:17px/1.5 "Segoe UI",Helvetica,Arial,sans-serif}
+header{background:var(--brown);color:#fff;padding:12px 16px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between}
+header h1{font-size:1.15rem;margin:0}header small{display:block;opacity:.85;font-weight:400;font-size:.85rem}
+#timer{display:flex;align-items:center;gap:8px}#clock{font:700 1.3rem ui-monospace,Consolas,monospace;background:#3d2612;padding:4px 10px;border-radius:6px;min-width:84px;text-align:center}
+#clock.over{background:var(--bad)}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--mid);background:var(--tan);color:var(--brown);padding:6px 12px}
+button:hover{background:#e9d6b1}header button{background:#fff;border-color:#fff}
+nav{display:flex;gap:6px;overflow-x:auto;padding:10px 12px;background:var(--tan);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+nav button{white-space:nowrap;background:var(--card)}nav button.on{background:var(--brown);color:#fff;border-color:var(--brown)}nav button.done::after{content:" ✓";color:var(--good)}nav button.on.done::after{color:#bfe8cd}
+main{max-width:860px;margin:0 auto;padding:16px 14px 60px}
+h2{color:var(--brown);margin:.2em 0 .3em;font-size:1.45rem}h3{color:var(--brown);margin:0 0 .4em;font-size:1.08rem}
+.why{color:var(--mid);margin:0 0 6px}.pills{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}.pill{background:var(--tan);border:1px solid var(--line);border-radius:99px;padding:1px 10px;font-size:.8rem;color:var(--brown)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:0 0 14px}
+.key{border-left:6px solid var(--gold)}.key ul,.card ul{margin:.2em 0;padding-left:1.2em}.key li{margin:.25em 0}
+.trap{background:#fff3d6;border:1px solid #edd08f;border-radius:8px;padding:8px 12px;margin:8px 0 0}
+table{border-collapse:collapse;width:100%;font-size:.95rem}th,td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}th{background:var(--tan);color:var(--brown)}
+.opts{display:grid;gap:8px;margin:8px 0}.opts button{text-align:left;background:#fff;color:var(--ink);border-color:var(--line);padding:9px 12px}
+.opts button.right{background:var(--goodbg);border-color:var(--good)}.opts button.wrong{background:var(--badbg);border-color:var(--bad)}
+.fb{font-size:.95rem;margin:6px 0 0;padding:8px 10px;border-radius:8px;background:var(--tan)}
+.step{display:none;border-top:1px dashed var(--line);padding:10px 0}.step.show{display:block}.step:first-of-type{border-top:0}
+.step input{font:inherit;width:120px;padding:5px 8px;border:1px solid var(--mid);border-radius:6px;margin-right:6px}
+.step.ok input{background:var(--goodbg);border-color:var(--good)}.step.no input{background:var(--badbg);border-color:var(--bad)}
+.work{display:none;color:var(--good);margin:6px 0 0;font-weight:600}.step.ok .work,.step.told .work{display:block}.step.told .work{color:var(--mid)}
+.mp{display:flex;gap:10px;align-items:flex-start;padding:6px 0;border-top:1px dashed var(--line)}.mp input{width:20px;height:20px;margin-top:3px;flex:none}
+.hid{display:none}.tag{display:inline-block;background:var(--brown);color:#fff;border-radius:6px;padding:0 8px;font-size:.8rem;margin-right:6px}
+.reveal li{color:transparent;background:var(--tan);border-radius:6px;margin:5px 0;padding:2px 6px;cursor:pointer;user-select:none}.reveal li.on{color:inherit;background:none;cursor:default}
+.next{display:flex;justify-content:space-between;gap:10px;margin-top:6px}.big{font-size:1.05rem;padding:10px 18px;background:var(--brown);color:#fff;border-color:var(--brown)}.big:hover{background:#3d2612}
+.score{font-size:1.6rem;font-weight:700;color:var(--brown)}svg{max-width:100%;height:auto;display:block;margin:6px auto}
+svg.mol{width:100%;height:auto;display:block;margin:0 auto}svg.mol .bd{stroke:#3b2a1a;stroke-width:2.2;stroke-linecap:round}svg.mol text{font-family:"Segoe UI",Arial,sans-serif}.eq{font-weight:600}.card{overflow-x:auto}@media(max-width:560px){table{font-size:.8rem}th,td{padding:4px 5px}}
+@media print{nav,#timer,.next{display:none}}
+</style></head><body>
+<header><h1 id="ttl"></h1><div id="timer"><span id="clock">25:00</span><button id="go">Start</button></div></header>
+<nav id="nav"></nav><main id="main"></main>
+<script>const WT=({
+file:"alevel-paper3-last-minute-C.html",
+title:"A-level Paper 3 last-minute walkthrough C",
+sub:"Rates and cells practicals, tests for ions and the multiple-choice section · AQA A-level Chemistry 7405/3 · 25 minutes",
+tabs:[
+{name:"Rates practicals",mins:5,why:"A rates experiment was a major Section A question on Paper 3 in 2018 (19 marks), 2019, 2020 and 2022. Two of the 6-mark questions were “describe an experiment to…” on rates.",
+ seen:["Jun 18 (19)","Jun 19 (6)","2020 (10)","Jun 22 (10)","P2 2020 (6)","P2 2021 (9)"],
+ blocks:[
+ {t:"tbl",title:"Two ways to measure a rate",head:["","Initial rate (clock) method","Continuous monitoring"],rows:[
+  ["What you measure","the <b>time, t,</b> for a fixed small amount of product to form (a colour appears, or a cross disappears)","a quantity at <b>regular time intervals</b> in one experiment: gas volume (gas syringe), mass lost, colour (colorimeter), or concentration by titrating samples"],
+  ["How you get the rate","rate ∝ <b>1/t</b>","plot against time; <b>gradient of the tangent</b> = rate"],
+  ["How you find the order","repeat with different concentrations of one reactant; plot rate (1/t) against concentration","from the shape of the concentration–time graph, or plot rate against concentration"]]},
+ {t:"model",q:"Describe an experiment to find the order of reaction with respect to reactant A using a clock method. [6]",a:[
+  "Measure known volumes of A, B and the clock reagent (X) into a flask, using a <b>burette or pipette</b>.",
+  "Add the last reagent, <b>start a timer</b> and mix. Record the <b>time t for the colour to appear</b>.",
+  "<b>Repeat with different concentrations of A</b>, adding water so the <b>total volume is the same</b> each time.",
+  "Keep the concentrations of B (and X) and the <b>temperature constant</b>.",
+  "Calculate <b>1/t</b> as a measure of the initial rate for each experiment.",
+  "Plot <b>1/t against the concentration (volume) of A</b>: horizontal line = zero order; straight line through the origin = first order; upward curve = second order."]},
+ {t:"key",title:"Phrases that earn the marks",items:[
+  "<b>Large excess:</b> if all other reactants are in large excess, their concentrations are (almost) constant, so the rate depends only on the one reactant being studied.",
+  "<b>Quenching</b> a sample before titrating: add it to excess NaHCO₃ to neutralise an acid catalyst, or cool it in ice, or dilute it. This stops the reaction so the concentration does not change during the titration.",
+  "<b>Effect of temperature</b> (thiosulfate and acid): use a water bath; time how long it takes for a cross under the flask to disappear; keep volumes and concentrations the same; plot 1/t against temperature. The curve rises more and more steeply.",
+  "The reaction is <b>fastest at the start</b> because the concentration of the reactants is highest, so there are more frequent successful collisions.",
+  "<b>Zero order:</b> the concentration–time graph is a straight line. <b>First order:</b> the half-life is constant, and a rate–concentration graph is a straight line through the origin.",
+  "SO₂ is toxic: do the thiosulfate experiment in a well-ventilated room and with low concentrations."],
+  trap:"Forgetting to say that the total volume is kept constant by adding water, so that the concentration is proportional to the volume used."}],
+ checks:[
+ {q:"In a clock reaction, the time for the colour to appear is 40 s. What is the relative rate?",opts:["40 s⁻¹","0.025 s⁻¹","1600 s⁻¹","0.40 s⁻¹"],a:1,why:"Rate ∝ 1/t = 1 ÷ 40 = 0.025 s⁻¹"},
+ {q:"Samples from a reaction catalysed by H⁺ are added to excess NaHCO₃ solution before being titrated. Why?",opts:["To act as an indicator","To neutralise the acid catalyst and stop the reaction","To speed up the reaction","To dilute the iodine"],a:1,why:"This quenches the reaction, so the concentration stays the same while it is titrated."},
+ {q:"Why does using a large excess of H₂O₂ and I⁻ let you find the order with respect to H⁺?",opts:["They are catalysts","Their concentrations stay effectively constant, so only [H⁺] changes","They do not react","They make the reaction faster"],a:1,why:"The rate equation simplifies to rate = k′[H⁺]ⁿ"}],
+ exam:{q:"Hydrogen peroxide decomposes in the presence of a solid catalyst: 2H₂O₂(aq) → 2H₂O(l) + O₂(g)<br>(a) Describe how a student could monitor this reaction continuously. [3]<br>(b) Explain why the rate is fastest at the start. [2]<br>(c) A graph of rate against [H₂O₂] is a straight line through the origin. State the order with respect to H₂O₂ and explain how the graph shows this. [2]",
+  ms:["add the catalyst to a known volume of H₂O₂ in a conical flask connected to a gas syringe (or on a balance)","start a timer when the catalyst is added","record the volume of oxygen (or mass) at regular time intervals","the concentration of H₂O₂ is highest at the start","so there are more frequent (successful) collisions","first order","the rate is directly proportional to the concentration"]}},
+
+{name:"Electrochemical cells practical",mins:4,why:"Setting up and measuring a cell was a 17-mark question on Paper 3 in 2019 and a 13-mark question in 2020, including a 6-mark “describe an experiment”. It also comes up on Paper 1.",
+ seen:["Jun 19 (17)","2020 (13)","Jun 22 (MCQ × 2)","P1 Jun 18 (6)","P1 Jun 23 (5)"],
+ blocks:[
+ {t:"key",title:"The standard hydrogen electrode",items:[
+  "<b>Hydrogen gas at 100 kPa</b>",
+  "<b>1.00 mol dm⁻³ H⁺(aq)</b>, for example HCl",
+  "<b>298 K</b>",
+  "<b>Platinum electrode</b> (inert, conducts electricity)",
+  "By convention the hydrogen electrode is drawn on the <b>left</b>, so the cell EMF is the electrode potential of the right-hand half-cell."]},
+ {t:"model",q:"Describe how to set up a cell to measure the EMF of a zinc–copper cell under standard conditions. [6]",a:[
+  "<b>Clean</b> the zinc and copper strips with emery paper (to remove the oxide layer).",
+  "Put the zinc in <b>1.00 mol dm⁻³</b> ZnSO₄(aq) and the copper in <b>1.00 mol dm⁻³</b> CuSO₄(aq), in separate beakers.",
+  "Connect the solutions with a <b>salt bridge</b>: filter paper soaked in saturated <b>KNO₃</b> solution.",
+  "Connect the metals through a <b>high-resistance voltmeter</b> (so that almost no current flows).",
+  "Carry out the experiment at <b>298 K</b>.",
+  "Read the voltmeter. EMF = E(right) − E(left). If the reading is negative, swap the connections."]},
+ {t:"key",title:"Details and explanations",items:[
+  "<b>Salt bridge:</b> lets ions move between the solutions to complete the circuit and balance the charge. KNO₃ is used because its ions do not react with the solutions (KCl could form a precipitate or complexes).",
+  "For a half-cell with two ions (Fe³⁺/Fe²⁺) use a <b>platinum</b> electrode, with <b>both ions at 1.00 mol dm⁻³</b>.",
+  "To make a standard solution for a half-cell: dissolve the calculated mass of solid, make up to the mark in a volumetric flask, mix.",
+  "If the voltmeter is replaced by a bulb or wire, current flows and the reaction proceeds: the concentrations change, so the <b>EMF falls to zero</b> as the reactants are used up.",
+  "<b>Non-standard conditions</b> change the electrode potential: lowering the concentration of the ion on the left of the half-equation makes E less positive.",
+  "Changing the <b>surface area</b> of an electrode does not change the EMF."],
+  trap:"Using an ordinary voltmeter without saying “high resistance”, or forgetting the salt bridge."}],
+ checks:[
+ {q:"Which change to a hydrogen electrode has no effect on its electrode potential?",opts:["The concentration of H⁺ ions","The pressure of the hydrogen","The surface area of the platinum","The temperature"],a:2,why:"Surface area affects the current that can flow, not the potential."},
+ {q:"What is the purpose of the salt bridge?",opts:["To let electrons flow between the solutions","To let ions flow and complete the circuit","To keep the solutions at 298 K","To act as a catalyst"],a:1,why:"Electrons flow in the wire. Ions flow through the salt bridge."},
+ {q:"E°(Cu²⁺/Cu) = +0.34 V. A cell is set up with the standard hydrogen electrode on the left. What is the voltmeter reading?",opts:["−0.34 V","0.00 V","+0.34 V","+0.68 V"],a:2,why:"EMF = E(right) − E(left) = 0.34 − 0.00"}],
+ exam:{q:"A student measures the standard electrode potential of the Fe³⁺(aq)/Fe²⁺(aq) electrode using a standard hydrogen electrode.<br>(a) Identify the electrode used in the Fe³⁺/Fe²⁺ half-cell and state the concentration of each ion. [2]<br>(b) State the three conditions needed in the hydrogen electrode. [3]<br>(c) Name a suitable compound for the salt bridge and state its purpose. [2]<br>(d) E° for Fe³⁺/Fe²⁺ is +0.77 V. Give the ionic equation for the overall cell reaction. [1]",
+  ms:["platinum","1.00 mol dm⁻³ Fe³⁺ and 1.00 mol dm⁻³ Fe²⁺","hydrogen gas at 100 kPa","1.00 mol dm⁻³ H⁺ (HCl)","298 K","potassium nitrate (KNO₃)","allows ions to move between the solutions / completes the circuit","2Fe³⁺ + H₂ → 2Fe²⁺ + 2H⁺"]}},
+
+{name:"Tests for ions",mins:4,why:"Identifying ions from test-tube results was the 6-mark question on Paper 3 in 2022 and again in 2023, and 7 marks in 2021. The tests are also on Paper 1 (2017, 2019, 2022).",
+ seen:["2021 (7)","Jun 22 (6)","Jun 23 (6)","P1 Jun 17 (6)","P1 Jun 19 (6)","P1 Jun 22 (6)"],
+ blocks:[
+ {t:"tbl",title:"Negative ions",head:["Ion","Test","Result","Ionic equation"],rows:[
+  ["CO₃²⁻","add dilute acid (HCl or HNO₃)","effervescence; gas turns limewater cloudy","CO₃²⁻ + 2H⁺ → CO₂ + H₂O"],
+  ["SO₄²⁻","add dilute HCl, then BaCl₂(aq)","white precipitate","Ba²⁺ + SO₄²⁻ → BaSO₄"],
+  ["Cl⁻ / Br⁻ / I⁻","add dilute HNO₃, then AgNO₃(aq)","white / cream / yellow precipitate","Ag⁺ + X⁻ → AgX"],
+  ["OH⁻","red litmus paper","turns blue","–"]]},
+ {t:"tbl",title:"Positive ions",head:["Ion","Test","Result"],rows:[
+  ["NH₄⁺","warm with NaOH(aq); hold damp red litmus <b>above</b> the mixture","litmus turns blue (NH₃ gas). NH₄⁺ + OH⁻ → NH₃ + H₂O"],
+  ["Mg²⁺","add NaOH(aq)","white precipitate, insoluble in excess. Mg²⁺ + 2OH⁻ → Mg(OH)₂"],
+  ["Ba²⁺","add dilute H₂SO₄ (or a sulfate solution)","white precipitate of BaSO₄"],
+  ["Al³⁺","add NaOH(aq) until in excess","white precipitate that dissolves in excess to give a colourless solution"],
+  ["Fe²⁺","add NaOH(aq) or NH₃(aq)","green precipitate"],
+  ["Fe³⁺","add NaOH(aq) or NH₃(aq)","brown precipitate"],
+  ["Cu²⁺","add NH₃(aq) until in excess","blue precipitate, then deep blue solution"]]},
+ {t:"key",title:"Order and reasons",items:[
+  "<b>Test order: carbonate → sulfate → halide.</b> BaCO₃ and Ag₂CO₃ are also insoluble, so carbonate must be removed (or ruled out) with acid first. BaCl₂ would add Cl⁻, so do the halide test on a fresh sample.",
+  "Acidify the sulfate test with <b>HCl</b> (not H₂SO₄, which contains sulfate). Acidify the halide test with <b>HNO₃</b> (not HCl, which contains chloride).",
+  "<b>Group 2 trends:</b> hydroxides become <b>more soluble</b> down the group (Mg(OH)₂ is sparingly soluble). Sulfates become <b>less soluble</b> down the group (BaSO₄ is insoluble).",
+  "BaSO₄ is used as a barium meal: it is insoluble, so the toxic Ba²⁺ ions are not absorbed. Mg(OH)₂ is used as an antacid. Ca(OH)₂ neutralises acidic soil.",
+  "Barium with water: Ba + 2H₂O → Ba(OH)₂ + H₂. Effervescence and a colourless solution."],
+  trap:"Touching the litmus paper on the mixture in the ammonium test. The NaOH itself would turn it blue. Hold it above."}],
+ checks:[
+ {q:"A solution gives a white precipitate with acidified barium chloride and, on a fresh sample, a white precipitate with sodium hydroxide that does not dissolve in excess. Which compound is it?",opts:["MgSO₄","Al₂(SO₄)₃","MgCl₂","BaCl₂"],a:0,why:"Sulfate (BaSO₄ precipitate) and magnesium (Mg(OH)₂, insoluble in excess)."},
+ {q:"Which reagent would detect carbonate ions in the presence of an excess of sulfate ions?",opts:["BaCl₂(aq)","Dilute H₂SO₄(aq)","NaOH(aq)","NaCl(aq)"],a:1,why:"Acid gives effervescence with carbonate. Barium chloride would give a white precipitate with both ions."},
+ {q:"Why is nitric acid, not hydrochloric acid, added before silver nitrate in the halide test?",opts:["Nitric acid is stronger","Hydrochloric acid would add chloride ions and give a white precipitate","Nitric acid is an oxidising agent","Hydrochloric acid reacts with halides"],a:1,why:"The acid must not contain the ion you are testing for."}],
+ exam:{q:"A white solid is thought to be ammonium sulfate, (NH₄)₂SO₄, contaminated with a little ammonium carbonate.<br>Describe test-tube reactions to confirm the presence of the ammonium ion, the carbonate ion and the sulfate ion. Give the result of each test and an ionic equation for one of them. [6]",
+  ms:["warm with sodium hydroxide solution","damp red litmus held above the mixture turns blue (ammonia)","add dilute hydrochloric (or nitric) acid: effervescence shows carbonate","then add barium chloride solution to the acidified solution","white precipitate shows sulfate","one correct ionic equation, such as Ba²⁺ + SO₄²⁻ → BaSO₄  or  NH₄⁺ + OH⁻ → NH₃ + H₂O  or  CO₃²⁻ + 2H⁺ → CO₂ + H₂O"]}},
+
+{name:"Multiple choice: quick calculations",mins:4,why:"Section B is 30 marks, a third of the paper, and about a third of it is short calculations. The same types return every year: moles, pH, rate equations and gas volumes.",
+ seen:["Every Paper 3","30 marks","about 8–10 calculations each year"],
+ blocks:[
+ {t:"key",title:"Tactics",items:[
+  "You have about <b>50 minutes for 30 questions</b>: well over a minute each. Do the working in the space around the question.",
+  "<b>Do the calculation first, then look for your answer.</b> The wrong options are the answers you get from common slips (forgetting × 2, ÷ 1000, or the ratio).",
+  "Watch for <b>not</b> in bold. Read all four options before choosing.",
+  "<b>Never leave a blank.</b> If you are stuck, cross out what you can and choose.",
+  "Check the units in the options: mg or g, cm³ or dm³, kJ or J."]},
+ {t:"tbl",title:"One-line methods",head:["Type","Method"],rows:[
+  ["Diprotic acids and bases","H₂SO₄: [H⁺] = 2 × concentration. Ba(OH)₂: [OH⁻] = 2 × concentration. H₂A needs 2 mol NaOH per mole."],
+  ["pH of a strong base","[H⁺] = Kw ÷ [OH⁻], then −log"],
+  ["Concentration from pH of a base","[H⁺] = 10⁻ᵖᴴ, then [OH⁻] = Kw ÷ [H⁺]"],
+  ["Weak acid","[H⁺] = √(Ka × c).   Ka = [H⁺]² ÷ c"],
+  ["Dilution","c₁V₁ = c₂V₂. Water to add = V₂ − V₁"],
+  ["Gas volume","n = pV ÷ RT with p in Pa, V in m³ (cm³ × 10⁻⁶), T in K"],
+  ["Mole fraction","moles of one ÷ total moles"],
+  ["Rate equation","factor change in rate = (factor change in concentration)<sup>order</sup> for each reactant, multiplied together"],
+  ["Units of k","order 1: s⁻¹ · order 2: mol⁻¹ dm³ s⁻¹ · order 3: mol⁻² dm⁶ s⁻¹"],
+  ["% yield","moles of product expected × M<sub>r</sub> × (% yield ÷ 100)"],
+  ["Hess / bond enthalpies","add the equations so they match the target. Bonds broken − bonds made"]]},
+ {t:"calc",title:"Four in a row (aim for about a minute each)",q:"Use the one-line methods.",
+  steps:[
+  {p:"What is the pH of 0.015 mol dm⁻³ H₂SO₄ (assume full dissociation)? Give 2 decimal places.",a:1.52,tol:0.006,show:"[H⁺] = 0.030.   −log(0.030) = 1.52"},
+  {p:"What volume of water, in cm³, must be added to 5.00 cm³ of 1.00 mol dm⁻³ NH₃ to make it 0.050 mol dm⁻³?",a:95,tol:0.1,u:" cm³",show:"V₂ = 1.00 × 5.00 ÷ 0.050 = 100 cm³, so add 95.0 cm³"},
+  {p:"rate = k[P][Q]². [P] is tripled and [Q] is doubled. By what factor does the rate increase?",a:12,tol:0,show:"3 × 2² = 12"},
+  {p:"What is the concentration of NaOH(aq), in mol dm⁻³, with pH = 13.30 at 25 °C? (Kw = 1.00 × 10⁻¹⁴)",a:0.2,tol:0.002,u:" mol dm⁻³",show:"[H⁺] = 10⁻¹³·³⁰ = 5.01 × 10⁻¹⁴.   [OH⁻] = 1.00 × 10⁻¹⁴ ÷ 5.01 × 10⁻¹⁴ = 0.200"}]}],
+ checks:[
+ {q:"7.5 g of a diprotic acid H₂A (M<sub>r</sub> = 150) is neutralised by which amount of NaOH?",opts:["50 cm³ of 0.050 mol dm⁻³","100 cm³ of 0.50 mol dm⁻³","100 cm³ of 1.0 mol dm⁻³","100 cm³ of 2.0 mol dm⁻³"],a:2,why:"0.050 mol of H₂A needs 0.100 mol of NaOH = 100 cm³ of 1.0 mol dm⁻³"},
+ {q:"25.0 cm³ of 0.100 mol dm⁻³ Pb(NO₃)₂ is mixed with 25.0 cm³ of 0.100 mol dm⁻³ KI. Pb(NO₃)₂ + 2KI → PbI₂ + 2KNO₃. How many moles of PbI₂ form?",opts:["1.25 × 10⁻³","2.50 × 10⁻³","5.00 × 10⁻³","1.25 × 10⁻²"],a:0,why:"KI is limiting: 2.50 × 10⁻³ mol of KI gives half as many moles of PbI₂."},
+ {q:"What volume of 0.020 mol dm⁻³ KMnO₄ is needed to oxidise 0.010 mol of Fe²⁺? (MnO₄⁻ : Fe²⁺ = 1 : 5)",opts:["10 cm³","50 cm³","100 cm³","500 cm³"],a:2,why:"mol MnO₄⁻ = 0.010 ÷ 5 = 0.0020. Volume = 0.0020 ÷ 0.020 = 0.10 dm³ = 100 cm³"}],
+ exam:null},
+
+{name:"Multiple choice: recall regulars",mins:4,why:"The other 20 or so multiple-choice marks are recall, spread across the whole specification. These are the facts that came up again and again in Section B between 2017 and 2023.",
+ seen:["Every Paper 3","zwitterions × 4","polymers × 6","halide test × 3","DNA base pairs × 2"],
+ blocks:[
+ {t:"key",title:"Organic regulars",items:[
+  "<b>Amino acid at high pH (14):</b> all COOH groups become COO⁻ and NH₂ stays as NH₂. <b>At low pH:</b> NH₃⁺ and COOH. <b>Zwitterion:</b> NH₃⁺ and COO⁻.",
+  "<b>Polymer with hydrogen bonding between chains:</b> a polyamide (Kevlar, nylon). <b>Not hydrolysed by alkali:</b> poly(alkenes).",
+  "<b>Which forms a polymer with a diacyl dichloride?</b> A diamine or a diol (two functional groups).",
+  "<b>DNA:</b> cytosine–guanine 3 hydrogen bonds; adenine–thymine 2.",
+  "<b>1-phenylethanol</b> (secondary alcohol) oxidises to the ketone C₆H₅COCH₃.",
+  "<b>Reacts with Tollens’:</b> aldehydes only. Count the aldehyde isomers (C₅H₁₀O has 4).",
+  "<b>E–Z isomers</b> need two different groups on each C of C=C: CHBr=CHBr yes; CH₂=CHBr no.",
+  "<b>Major product with HBr:</b> the H adds to the carbon that already has more H atoms.",
+  "<b>Amine + halogenoalkane:</b> the alkyl group of the halogenoalkane is added each time. Methylamine with bromoethane can give C₂H₅NHCH₃, (C₂H₅)₂NCH₃ and [(C₂H₅)₃NCH₃]⁺Br⁻, but nothing with two methyl groups.",
+  "<b>Mechanism names:</b> alkane + halogen in UV: free-radical substitution. Benzene: electrophilic substitution. Acyl chloride: nucleophilic addition–elimination."]},
+ {t:"key",title:"Inorganic and physical regulars",items:[
+  "<b>Halide test:</b> nitric acid is added to prevent the precipitation of other silver compounds (such as silver carbonate).",
+  "<b>Cl₂ with cold dilute NaOH:</b> NaCl, NaClO and water.",
+  "<b>Mg with steam:</b> magnesium oxide and hydrogen. <b>Ba with water:</b> colourless solution and effervescence.",
+  "<b>Shapes of complexes:</b> [CuCl₄]²⁻ and [CoCl₄]²⁻ are tetrahedral. Adding concentrated HCl to an aqua ion is ligand substitution.",
+  "<b>Decolourises acidified KMnO₄:</b> a reducing agent such as FeSO₄ (Fe²⁺).",
+  "<b>Catalyst:</b> no effect on the equilibrium constant or ΔH. Increases the rate of both forward and reverse reactions. Increases the proportion of successful collisions because E<sub>a</sub> is lower.",
+  "<b>Maxwell–Boltzmann:</b> area under the curve = total number of molecules. At higher temperature the peak is lower and further right. No molecules have zero energy.",
+  "<b>Enthalpy of formation:</b> elements in their standard states → one mole of compound, for example Ba(s) + Cl₂(g) → BaCl₂(s).",
+  "<b>Delocalised electrons:</b> graphite, metals, benzene rings. <b>Covalent bonds break on melting:</b> SiO₂, diamond, graphite.",
+  "<b>Brønsted–Lowry acid:</b> a proton donor. HCO₃⁻ can be an acid or a base. CH₃COO⁻ cannot be an acid.",
+  "<b>Transition metal atom:</b> has a partly filled d sub-level in the atom or its ions, such as [Ar] 4s² 3d⁸. Zinc ([Ar] 4s² 3d¹⁰) is not one."],
+  trap:"Rushing questions with “not” in them. Underline the word, then check each option as true or false."}],
+ checks:[
+ {q:"Which is the main species present when aspartic acid, HOOCCH₂CH(NH₂)COOH, is dissolved in a solution at pH 14?",opts:["HOOCCH₂CH(NH₃⁺)COOH","HOOCCH₂CH(NH₃⁺)COO⁻","⁻OOCCH₂CH(NH₂)COO⁻","⁻OOCCH₂CH(NH₃⁺)COO⁻"],a:2,why:"Both COOH groups lose H⁺ and the amine group is not protonated."},
+ {q:"Which compound is <b>not</b> a possible product when methylamine reacts with bromoethane?",opts:["C₂H₅NHCH₃","(C₂H₅)₂NCH₃","[(C₂H₅)₃NCH₃]⁺Br⁻","[(C₂H₅)₂N(CH₃)₂]⁺Br⁻"],a:3,why:"Only ethyl groups are added, so there can only be one methyl group."},
+ {q:"Which statement about a catalyst added to a mixture at equilibrium is correct?",opts:["The equilibrium constant increases","The rate of the reverse reaction increases","The enthalpy change decreases","The yield of product increases"],a:1,why:"Both forward and reverse rates increase equally. K, ΔH and the yield do not change."}],
+ exam:null}
+],
+quiz:[
+{q:"In a clock reaction, which quantity is used as a measure of the initial rate?",opts:["t","1/t","t²","ln t"],a:1,why:"A shorter time means a faster reaction."},
+{q:"A concentration–time graph for a reactant is a curve with a constant half-life. What is the order?",opts:["0","1","2","3"],a:1,why:"Constant half-life is the mark of a first-order reaction."},
+{q:"Which is used in a salt bridge?",opts:["Distilled water","Saturated potassium nitrate solution","Dilute sulfuric acid","Copper wire"],a:1,why:"An unreactive ionic solution."},
+{q:"Which acid is used to acidify a solution before testing for sulfate ions with barium chloride?",opts:["Sulfuric acid","Hydrochloric acid","Ethanoic acid","Any acid"],a:1,why:"Sulfuric acid would add sulfate ions."},
+{q:"How is ammonia gas detected in the test for ammonium ions?",opts:["Damp blue litmus turns red","Damp red litmus held above the mixture turns blue","A white precipitate forms","Limewater turns cloudy"],a:1,why:"Ammonia is an alkaline gas."},
+{q:"What is the pH of 0.46 mol dm⁻³ KOH at 298 K? (Kw = 1.00 × 10⁻¹⁴)",opts:["0.34","13.66","13.96","14.34"],a:1,why:"[H⁺] = 1.00 × 10⁻¹⁴ ÷ 0.46 = 2.17 × 10⁻¹⁴. pH = 13.66"},
+{q:"What are the units of the rate constant for a third-order reaction?",opts:["mol dm⁻³ s⁻¹","mol⁻¹ dm³ s⁻¹","mol² dm⁻⁶ s⁻¹","mol⁻² dm⁶ s⁻¹"],a:3,why:"mol dm⁻³ s⁻¹ ÷ (mol dm⁻³)³"},
+{q:"Which pair of DNA bases is joined by three hydrogen bonds?",opts:["Adenine and thymine","Adenine and guanine","Cytosine and guanine","Cytosine and thymine"],a:2,why:"C–G: 3. A–T: 2."}
+]});</script>
+<script>
+const E=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e};
+const S={mc:{},ex:{},qz:{},done:{}};let cur=0;const N=WT.tabs.length;
+document.getElementById('ttl').innerHTML=WT.title+'<small>'+WT.sub+'</small>';
+// timer
+let left=1500,tick=null;const clock=document.getElementById('clock'),go=document.getElementById('go');
+function draw(){const a=Math.abs(left),m=Math.floor(a/60),s=a%60;clock.textContent=(left<0?'+':'')+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');clock.className=left<0?'over':''}
+go.onclick=()=>{if(tick){clearInterval(tick);tick=null;go.textContent='Resume'}else{tick=setInterval(()=>{left--;draw()},1000);go.textContent='Pause'}};
+function nav(){const n=document.getElementById('nav');n.innerHTML='';
+ const names=WT.tabs.map((t,i)=>(i+1)+'. '+t.name).concat(['Final quiz','My score']);
+ names.forEach((nm,i)=>{const b=E('button',(i===cur?'on ':'')+(S.done[i]?'done':''),nm);b.onclick=()=>show(i);n.appendChild(b)})}
+function mcq(q,store,id){const c=E('div','card');c.appendChild(E('div',null,'<b>'+q.q+'</b>'));const o=E('div','opts'),fb=E('div','fb hid');
+ q.opts.forEach((t,i)=>{const b=E('button',null,t);b.onclick=()=>{if(!(id in store))store[id]=(i===q.a)?1:0;
+  if(i===q.a){b.className='right';fb.innerHTML='✔ '+(q.why||'Correct.');fb.className='fb';[...o.children].forEach(x=>x.disabled=true)}
+  else{b.className='wrong';b.disabled=true;fb.innerHTML='✘ Not quite – try again.';fb.className='fb'}};o.appendChild(b)});
+ c.appendChild(o);c.appendChild(fb);return c}
+function calc(b){const c=E('div','card');c.appendChild(E('h3',null,'<span class="tag">Step by step</span>'+b.title));c.appendChild(E('div',null,b.q));
+ const steps=b.steps.map((s,i)=>{const d=E('div','step'+(i===0?' show':''));d.appendChild(E('div',null,'<b>Step '+(i+1)+':</b> '+s.p));
+  const inp=E('input');inp.inputMode='decimal';inp.setAttribute('aria-label','answer for step '+(i+1));const ck=E('button',null,'Check'),tell=E('button',null,'Show me');
+  const row=E('div');row.style.marginTop='6px';row.append(inp,document.createTextNode((s.u||'')+' '),ck,document.createTextNode(' '),tell);d.appendChild(row);
+  d.appendChild(E('div','work',s.show));
+  const nxt=()=>{if(steps[i+1])steps[i+1].classList.add('show')};
+  const chk=()=>{const v=parseFloat(inp.value.replace(/,/g,'').replace('×10^','e'));const tol=s.tol!=null?s.tol:Math.abs(s.a)*0.006;
+   if(!isNaN(v)&&Math.abs(v-s.a)<=tol){d.className='step show ok';nxt()}else d.className='step show no'};
+  ck.onclick=chk;inp.onkeydown=e=>{if(e.key==='Enter')chk()};tell.onclick=()=>{d.className='step show told';nxt()};return d});
+ steps.forEach(s=>c.appendChild(s));return c}
+function graph(g){const W=340,H=230,L=44,B=36,T=10,R=10,pw=W-L-R,ph=H-T-B,X=x=>L+x/g.xmax*pw,Y=y=>T+ph-y/g.ymax*ph;let s='<svg viewBox="0 0 '+W+' '+H+'" width="460" role="img" aria-label="'+(g.cap||'graph')+'">';
+ for(let i=0;i<=g.xn;i++){const x=g.xmax*i/g.xn;s+='<line x1="'+X(x)+'" y1="'+T+'" x2="'+X(x)+'" y2="'+(T+ph)+'" stroke="#e2d3b8"/><text x="'+X(x)+'" y="'+(T+ph+13)+'" font-size="10" text-anchor="middle" fill="#5b3a1e">'+x+'</text>'}
+ for(let i=0;i<=g.yn;i++){const y=g.ymax*i/g.yn;s+='<line x1="'+L+'" y1="'+Y(y)+'" x2="'+(L+pw)+'" y2="'+Y(y)+'" stroke="#e2d3b8"/><text x="'+(L-5)+'" y="'+(Y(y)+3)+'" font-size="10" text-anchor="end" fill="#5b3a1e">'+y+'</text>'}
+ let p='';for(let i=0;i<=80;i++){const x=g.xmax*i/80;p+=(i?'L':'M')+X(x).toFixed(1)+' '+Y(g.f(x)).toFixed(1)}
+ s+='<path d="'+p+'" fill="none" stroke="#5b3a1e" stroke-width="2.2"/>';
+ if(g.tan){const[a,b]=g.tan;s+='<line x1="'+X(a[0])+'" y1="'+Y(a[1])+'" x2="'+X(b[0])+'" y2="'+Y(b[1])+'" stroke="#c0392b" stroke-width="1.8"/>'+
+  '<path d="M'+X(a[0])+' '+Y(a[1])+'H'+X(b[0])+'V'+Y(b[1])+'" fill="none" stroke="#c0392b" stroke-dasharray="4 3"/>'+
+  '<circle cx="'+X(g.at)+'" cy="'+Y(g.f(g.at))+'" r="3.5" fill="#c0392b"/>'}
+ s+='<text x="'+(L+pw/2)+'" y="'+(H-4)+'" font-size="11" text-anchor="middle" fill="#2e2218">'+g.xl+'</text><text transform="rotate(-90 11 '+(T+ph/2)+')" x="11" y="'+(T+ph/2)+'" font-size="11" text-anchor="middle" fill="#2e2218">'+g.yl+'</text></svg>';
+ const c=E('div','card',s);if(g.cap)c.appendChild(E('div','why',g.cap));return c}
+function exam(x,i){const c=E('div','card');const tot=x.ms.length;c.appendChild(E('h3',null,'<span class="tag">Exam question</span>Answer on paper, then mark it yourself &nbsp;['+tot+' marks]'));
+ c.appendChild(E('div',null,x.q));const btn=E('button',null,'Show mark scheme');btn.style.marginTop='10px';const ms=E('div','hid'),out=E('div','fb','Tick each point you got: <b>0 / '+tot+'</b>');
+ x.ms.forEach(m=>{const l=E('label','mp');const cb=E('input');cb.type='checkbox';cb.onchange=()=>{const n=ms.querySelectorAll('input:checked').length;S.ex[i]=n;out.innerHTML='Tick each point you got: <b>'+n+' / '+tot+'</b>'};l.append(cb,E('span',null,m));ms.appendChild(l)});
+ ms.appendChild(out);btn.onclick=()=>{ms.className='';btn.className='hid';if(!(i in S.ex))S.ex[i]=0};c.append(btn,ms);return c}
+function block(b){if(b.t==='calc')return calc(b);if(b.t==='graph')return graph(b);
+ if(b.t==='key'){const c=E('div','card key');c.appendChild(E('h3',null,b.title));c.appendChild(E('ul',null,b.items.map(x=>'<li>'+x+'</li>').join('')));if(b.trap)c.appendChild(E('div','trap','⚠ <b>Mark loser:</b> '+b.trap));return c}
+ if(b.t==='model'){const c=E('div','card');c.appendChild(E('h3',null,'<span class="tag">Model answer</span>'+b.q));c.appendChild(E('div','why','Say each point out loud first, then tap to reveal.'));const u=E('ul','reveal');b.a.forEach(x=>{const li=E('li',null,x);li.onclick=()=>li.className='on';u.appendChild(li)});c.appendChild(u);return c}
+ if(b.t==='tbl'){const c=E('div','card');if(b.title)c.appendChild(E('h3',null,b.title));c.appendChild(E('table',null,'<tr>'+b.head.map(h=>'<th>'+h+'</th>').join('')+'</tr>'+b.rows.map(r=>'<tr>'+r.map(d=>'<td>'+d+'</td>').join('')+'</tr>').join('')));return c}
+ return E('div','card',(b.title?'<h3>'+b.title+'</h3>':'')+b.h)}
+function foot(m,i){const f=E('div','next');const a=E('button',null,'← Back');a.onclick=()=>show(i-1);if(i===0)a.style.visibility='hidden';
+ const b=E('button','big',i<N?'Done – next →':'See my score →');b.onclick=()=>{S.done[i]=1;show(i+1)};f.append(a,b);m.appendChild(f)}
+function show(i){cur=i;nav();const m=document.getElementById('main');m.innerHTML='';window.scrollTo(0,0);
+ if(i<N){const t=WT.tabs[i];m.appendChild(E('h2',null,(i+1)+'. '+t.name+' <span class="pill">about '+t.mins+' min</span>'));m.appendChild(E('p','why',t.why));
+  m.appendChild(E('div','pills',t.seen.map(s=>'<span class="pill">'+s+'</span>').join('')));
+  t.blocks.forEach(b=>m.appendChild(block(b)));
+  if(t.checks.length){m.appendChild(E('h3',null,'Quick checks'));t.checks.forEach((q,j)=>m.appendChild(mcq(q,S.mc,i+'-'+j)))}
+  if(t.exam)m.appendChild(exam(t.exam,i));foot(m,i)}
+ else if(i===N){m.appendChild(E('h2',null,'Final quiz <span class="pill">about 4 min</span>'));m.appendChild(E('p','why','No notes. Only your first click on each question counts.'));
+  WT.quiz.forEach((q,j)=>m.appendChild(mcq(q,S.qz,j)));foot(m,i)}
+ else{const sum=o=>Object.values(o).reduce((a,b)=>a+b,0);const mcT=WT.tabs.reduce((a,t)=>a+t.checks.length,0),exT=WT.tabs.reduce((a,t)=>a+(t.exam?t.exam.ms.length:0),0);
+  m.appendChild(E('h2',null,'My score'));
+  m.appendChild(E('div','card','<table><tr><th>Section</th><th>Score</th></tr><tr><td>Quick checks (first try)</td><td class="score">'+sum(S.mc)+' / '+mcT+'</td></tr><tr><td>Exam questions (self-marked)</td><td class="score">'+sum(S.ex)+' / '+exT+'</td></tr><tr><td>Final quiz (first try)</td><td class="score">'+sum(S.qz)+' / '+WT.quiz.length+'</td></tr></table>'));
+  let weak=WT.tabs.map((t,i)=>{let got=0,tot=t.checks.length+(t.exam?t.exam.ms.length:0);t.checks.forEach((q,j)=>got+=S.mc[i+'-'+j]||0);got+=S.ex[i]||0;return{n:t.name,p:tot?got/tot:1}}).filter(x=>x.p<0.7);
+  m.appendChild(E('div','card key','<h3>What to do next</h3>'+(weak.length?'<p>Go back over these before the exam:</p><ul>'+weak.map(w=>'<li>'+w.n+' ('+Math.round(w.p*100)+'%)</li>').join('')+'</ul>':'<p>Nothing below 70%. Try the other walkthrough for this paper.</p>')+'<p>Any exam question you dropped marks on: write the question out, leave a space, and answer it again tomorrow without looking.</p>'))}}
+show(0);
+</script></body></html>
