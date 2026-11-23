@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2 · Weight and mass — GCSE Physics Forces</title>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="core.css">
+</head>
+<body data-lesson="2" data-next="L3.html">
+<header class="top"><a class="home" href="index.html">← All Forces walkthroughs</a>
+<h1>Lesson 2 · Gravity, weight and mass</h1>
+<p>AQA GCSE Physics / Combined Science · Forces 4.5.1.3 · about 25 minutes</p></header>
+<main>
+
+<section id="s1" data-title="Mass vs weight" data-mins="7">
+<h2>Mass and weight are different</h2>
+<div class="grid2">
+ <div class="card"><h3>Mass</h3><p style="margin:0">How much matter an object contains. Measured in <b>kilograms (kg)</b>. A scalar. It is the <b>same everywhere</b>.</p></div>
+ <div class="card"><h3>Weight</h3><p style="margin:0">The <b>force</b> acting on an object due to gravity. Measured in <b>newtons (N)</b>. A vector (it acts downwards). It <b>depends on where you are</b>.</p></div>
+</div>
+<div class="grid2">
+ <div class="card" style="padding:8px"><svg id="pl" viewBox="0 0 300 240" width="100%"></svg><div class="row" id="pb"></div></div>
+ <div class="card"><div class="sl">Astronaut’s mass: <b id="mv"></b> kg<input type="range" id="m" min="40" max="120" step="5" value="80"></div><div class="read" id="wR"></div></div>
+</div>
+<div id="q1a"></div>
+</section>
+
+<section id="s2" data-title="W = m g" data-mins="6">
+<h2>Calculating weight</h2>
+<div class="card"><span class="eqbox">W = m g</span> <span class="tag">Learn this — not on the equation sheet</span>
+<table class="t" style="margin-top:10px"><tr><th>Symbol</th><th>Quantity</th><th>Unit</th></tr><tr><td>W</td><td>weight</td><td>newtons, N</td></tr><tr><td>m</td><td>mass</td><td>kilograms, kg</td></tr><tr><td>g</td><td>gravitational field strength</td><td>newtons per kilogram, N/kg</td></tr></table>
+<p style="margin:8px 0 0">On Earth g = 9.8 N/kg. The weight of an object is <b>directly proportional</b> to its mass (W ∝ m).</p></div>
+<div id="q2a"></div><div id="q2b"></div><div id="q2c"></div>
+</section>
+
+<section id="s3" data-title="Measuring weight" data-mins="5">
+<h2>Newtonmeters and centre of mass</h2>
+<div class="grid2">
+ <div class="card" style="padding:8px"><svg id="nm" viewBox="0 0 240 260" width="100%"></svg><div class="sl">Mass hung on it: <b id="hv"></b> g<input type="range" id="h" min="0" max="1000" step="100" value="300"></div></div>
+ <div class="card"><h3>Newtonmeter</h3><p style="margin:0">A <b>calibrated spring-balance</b>: the spring stretches in proportion to the force, and the scale reads weight in newtons.</p><h3 style="margin-top:12px">Centre of mass</h3><p style="margin:0">The weight of an object can be thought of as acting at a single point called its <b>centre of mass</b>. For a uniform, symmetrical object it is at the centre.</p></div>
+</div>
+<div id="q3a"></div>
+</section>
+
+<section id="s4" data-title="Exam practice" data-mins="6">
+<h2>Exam practice</h2>
+<div id="ex1"></div><div id="ex2"></div>
+<div class="summary"><h3>Lesson summary</h3><ul>
+<li>Mass (kg) is the same everywhere; weight (N) is the force of gravity on it.</li>
+<li>W = m g (learn it). g = 9.8 N/kg on Earth. Weight ∝ mass.</li>
+<li>Gravitational field strength depends on the planet (or moon).</li>
+<li>Measure weight with a newtonmeter. Weight acts at the centre of mass.</li></ul></div>
+</section>
+</main>
+<script src="core.js"></script>
+<script>
+const P=[['Earth',9.8,'#2e86de'],['Moon',1.6,'#bdc3c7'],['Mars',3.7,'#c0392b'],['Jupiter',25,'#d4a76a']];let pi=0;
+$('pb').innerHTML=P.map((p,i)=>`<button class="btn ${i?'':'on'}" data-i="${i}">${p[0]}</button>`).join('');
+$('pb').onclick=e=>{const b=e.target.closest('.btn');if(!b)return;pi=+b.dataset.i;$('pb').querySelectorAll('.btn').forEach(x=>x.classList.toggle('on',x===b));pl()};
+function pl(){const m=+$('m').value;$('mv').textContent=m;const [n,g,c]=P[pi];const W=m*g;
+ $('pl').innerHTML=`<ellipse cx="150" cy="280" rx="260" ry="90" fill="${c}" opacity=".6"/><text x="150" y="110" font-size="56" text-anchor="middle">🧑‍🚀</text>`+ARR(150,125,150,125+Math.min(110,W/20),{col:'#c2410c',label:'W = '+fmt(W,3)+' N',lx:12,ly:-10,anchor:'start'});
+ $('wR').innerHTML=`On <b>${n}</b>: g = ${g} N/kg<br>mass = <b>${m} kg</b> (same everywhere)<br>W = m g = ${m} × ${g} = <b>${fmt(W,3)} N</b>`}
+$('m').oninput=pl;pl();
+MCQ('q1a',{q:'An astronaut travels from Earth to the Moon. Which is correct?',opts:['Mass and weight both decrease','Mass stays the same, weight decreases','Mass decreases, weight stays the same','Both stay the same'],a:1});
+NumQ('q2a',{q:'Calculate the weight of a 65 kg student on Earth. g = 9.8 N/kg.',ans:637,unit:'N',steps:['W = m g','= 65 × 9.8','= 637 N']});
+NumQ('q2b',{q:'A bag weighs 49 N on Earth (g = 9.8 N/kg). Calculate its mass.',ans:5,unit:'kg',steps:['m = W ÷ g','= 49 ÷ 9.8','= 5.0 kg']});
+NumQ('q2c',{q:'A 12 kg rover weighs 44.4 N on Mars. Calculate g on Mars.',ans:3.7,unit:'N/kg',steps:['g = W ÷ m','= 44.4 ÷ 12','= 3.7 N/kg']});
+function nm(){const g=+$('h').value;$('hv').textContent=g;const W=g/1000*9.8;const ext=W*12;
+ let s=`<rect x="90" y="10" width="60" height="150" rx="8" fill="#eef0f6" stroke="#556" stroke-width="2"/>`;for(let k=0;k<=10;k++)s+=`<line x1="132" y1="${25+k*12}" x2="146" y2="${25+k*12}" stroke="#556"/><text x="100" y="${29+k*12}" font-size="9" fill="#556">${k}</text>`;
+ s+=`<path d="M120 15 ${Array.from({length:8},(_,k)=>`L${k%2?112:128} ${20+k*(ext+8)/8}`).join(' ')} L120 ${25+ext}" fill="none" stroke="#7f8c8d" stroke-width="2"/><line x1="112" y1="${25+ext}" x2="146" y2="${25+ext}" stroke="#c0392b" stroke-width="3"/><line x1="120" y1="${25+ext}" x2="120" y2="${175+ext*0.1}" stroke="#555" stroke-width="2"/>${g?`<rect x="95" y="${175+ext*0.1}" width="50" height="${20+g/50}" fill="#7f8c8d" rx="3"/><text x="120" y="${190+ext*0.1+g/100}" font-size="11" fill="#fff" text-anchor="middle">${g} g</text>`:''}<text x="185" y="40" font-size="14" font-weight="700" fill="#c0392b">${W.toFixed(1)} N</text>`;
+ $('nm').innerHTML=s}
+$('h').oninput=nm;nm();
+MCQ('q3a',{q:'What is the centre of mass of an object?',opts:['The heaviest part','The point where its weight can be thought of as acting','The middle of its base','The point where it is most dense'],a:1});
+ExamQ('ex1',{title:'Question 1 · Weight on Mars',stem:'<p>A robot has a mass of 180 kg. Gravitational field strength on Earth is 9.8 N/kg and on Mars is 3.7 N/kg.</p>',parts:[
+ {label:'1.1',q:'Write down the equation that links weight, mass and gravitational field strength.',marks:1,ms:['W = m g']},
+ {label:'1.2',q:'Calculate the difference between the robot’s weight on Earth and on Mars.',marks:3,ms:['Earth: 180 × 9.8 = 1764 N','Mars: 180 × 3.7 = 666 N','Difference = 1098 N']},
+ {label:'1.3',q:'State the mass of the robot on Mars.',marks:1,ms:['180 kg (mass doesn’t change)']}]});
+ExamQ('ex2',{title:'Question 2 · Mass and weight',stem:'',parts:[
+ {label:'2.1',q:'Describe the relationship between the weight of an object and its mass.',marks:1,ms:['Weight is directly proportional to mass']},
+ {label:'2.2',q:'Name the piece of equipment used to measure weight.',marks:1,ms:['Newtonmeter (calibrated spring-balance)']}]});
+</script>
+</body>
+</html>

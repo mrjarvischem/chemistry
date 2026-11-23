@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>10 · Newton’s first law and terminal velocity — GCSE Physics Forces</title>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="core.css">
+</head>
+<body data-lesson="10" data-next="L11.html">
+<header class="top"><a class="home" href="index.html">← All Forces walkthroughs</a>
+<h1>Lesson 10 · Newton’s first law and terminal velocity</h1>
+<p>AQA GCSE Physics / Combined Science · Forces 4.5.6.2.1 · terminal velocity 4.5.6.1.5 (Physics only) · about 25 minutes</p></header>
+<main>
+
+<section id="s1" data-title="Newton’s first law" data-mins="7">
+<h2>Newton’s first law</h2>
+<div class="key">If the <b>resultant force</b> on an object is <b>zero</b>: a <b>stationary</b> object stays stationary, and a <b>moving</b> object carries on at the <b>same speed in the same direction</b> (constant velocity).</div>
+<p class="lead">Give the puck one push and watch. Then change the surface.</p>
+<div class="card" style="padding:8px"><svg id="ice" viewBox="0 0 520 140" width="100%"></svg>
+ <div class="row"><button class="btn pri" id="push">Push once</button><button class="btn on" data-f="0">Frictionless ice</button><button class="btn" data-f="1">Carpet</button></div>
+ <div class="read" id="iR" style="font-family:inherit;margin-top:8px"></div></div>
+<div class="note">So the <b>velocity</b> (speed or direction) of an object only changes if a <b>resultant force</b> acts on it. A car at a steady 30 m/s still needs its engine: the driving force balances friction and air resistance.</div>
+<div id="q1a"></div>
+</section>
+
+<section id="s2" data-title="Inertia (HT)" data-mins="3">
+<h2>Inertia <span class="tag ht">Higher tier</span></h2>
+<p class="lead"><b>Inertia</b> is the tendency of objects to <b>continue in their state of rest or of uniform motion</b>. It is why you lurch forwards when a bus brakes suddenly — your body keeps moving until a force (the seat belt) stops it.</p>
+<div id="q2a"></div>
+</section>
+
+<section id="s3" data-title="Terminal velocity" data-mins="9">
+<h2>Terminal velocity <span class="tag po">Physics only</span></h2>
+<p class="lead">Jump from the plane. Open the parachute when you like. Watch the forces and the velocity–time graph.</p>
+<div class="grid2">
+ <div class="card" style="padding:8px"><svg id="sky" viewBox="0 0 300 260" width="100%"></svg><div class="row"><button class="btn pri" id="jump">▶ Jump</button><button class="btn" id="chute" disabled>🪂 Open parachute</button></div></div>
+ <div class="card" style="padding:8px"><svg id="svt" viewBox="0 0 330 250" width="100%"></svg><div class="read" id="sR" style="font-family:inherit"></div></div>
+</div>
+<div class="key">Falling through a fluid: weight is constant, but air resistance (drag) <b>increases with speed</b>. When drag = weight, the resultant force is zero and the object falls at a constant <b>terminal velocity</b>. Opening a parachute increases the area → much more drag → slows down to a <b>new, lower</b> terminal velocity.</div>
+<div id="q3a"></div>
+</section>
+
+<section id="s4" data-title="Exam practice" data-mins="6">
+<h2>Exam practice</h2>
+<div id="ex1"></div><div id="ex2"></div>
+<div class="summary"><h3>Lesson summary</h3><ul>
+<li>Newton’s first law: zero resultant force → stationary stays still; moving keeps constant velocity.</li>
+<li>Velocity only changes if there is a resultant force.</li>
+<li>HT: inertia is the tendency to keep doing what you are doing.</li>
+<li>Physics only: drag increases with speed; drag = weight → terminal velocity. Parachute → lower terminal velocity.</li></ul></div>
+</section>
+</main>
+<script src="core.js"></script>
+<script>
+let fr=0,stI=null;
+function ice(x,v){const col=fr?'#c39bd3':'#d6eaf8';$('ice').innerHTML=`<rect y="90" width="520" height="30" fill="${col}"/><ellipse cx="${x}" cy="82" rx="22" ry="8" fill="#1d2433"/>`+(v>0.2&&fr?ARR(x-26,70,x-26-30,70,{col:'#8e44ad',w:3,label:'friction',ly:-8}):'')}
+function run(){if(stI)stI();let x=40,v=5;let last=performance.now();stI=animate(9000,()=>{const now=performance.now(),dt=(now-last)/16;last=now;if(fr)v=Math.max(0,v-0.06*dt);x+=v*dt;if(x>500)x-=480;ice(x,v);
+ $('iR').innerHTML=fr?(v>0?'Friction is a resultant force backwards → the puck <b>decelerates</b>.':'Stopped: friction has removed all its kinetic energy.'):'No friction: resultant force = 0 → the puck keeps going at <b>constant velocity</b>. Forever (in theory)!'})}
+$('push').onclick=run;document.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{fr=+b.dataset.f;document.querySelectorAll('[data-f]').forEach(x=>x.classList.toggle('on',x===b));ice(40,0);$('iR').innerHTML='Press Push.'});ice(40,0);
+MCQ('q1a',{q:'A car travels at a constant 20 m/s on a straight road. What is the resultant force on it?',opts:['Forwards','Backwards','Zero','Equal to its weight'],a:2,why:'Constant velocity → balanced forces (Newton’s first law).'});
+MCQ('q2a',{q:'HT: Which describes inertia?',opts:['The force needed to stop an object','The tendency of an object to stay at rest or keep moving at a constant velocity','The resistance of air','The speed of a falling object'],a:1});
+const m=80,g=9.8,W=m*g,kc=0.24,ko=22;let v=0,t=0,open=false,hist=[],stS=null;
+function sky(){const k=open?ko:kc;const D=k*v*v;const res=W-D;
+ $('sky').innerHTML=`<rect width="300" height="260" fill="#eaf3fb"/><text x="150" y="${open?120:130}" font-size="${open?60:46}" text-anchor="middle">${open?'🪂':'🧍'}</text>`+ARR(150,140,150,140+W/12,{col:'#2e86de',label:'weight '+Math.round(W)+' N',lx:10,ly:-6,anchor:'start'})+(D>5?ARR(150,open?70:105,150,(open?70:105)-Math.min(100,D/12),{col:'#8e44ad',label:'air resistance '+Math.round(D)+' N',lx:10,ly:14,anchor:'start'}):'');
+ const A=AXES({x0:45,y0:210,w:270,h:180,xmax:60,ymax:60,xstep:10,ystep:10,xlab:'time / s',ylab:'velocity / m/s'});let s=A.svg;
+ if(hist.length)s+=`<path d="M${hist.map(h=>A.X(h[0])+' '+A.Y(h[1])).join(' L')}" fill="none" stroke="#c2410c" stroke-width="3"/>`;$('svt').innerHTML=s;
+ $('sR').innerHTML=`t = ${t.toFixed(0)} s, v = <b>${v.toFixed(1)} m/s</b><br>resultant force = ${Math.round(W)} − ${Math.round(D)} = <b>${Math.round(res)} N</b> ${Math.abs(res)<15?'(≈ 0 → terminal velocity)':res>0?'downwards → speeding up':'upwards → slowing down'}`}
+$('jump').onclick=()=>{if(stS)stS();v=0;t=0;open=false;hist=[[0,0]];$('chute').disabled=false;let last=performance.now();
+ stS=animate(14000,()=>{const now=performance.now();let dt=Math.min(0.05,(now-last)/1000)*4.3;last=now;const k=open?ko:kc;for(let i=0;i<10;i++){const a=(W-k*v*v)/m;v+=a*dt/10;if(v<0)v=0}t+=dt;if(t<=60)hist.push([t,v]);sky()})};
+$('chute').onclick=()=>{open=true;$('chute').disabled=true};sky();
+MCQ('q3a',{q:'A skydiver is falling at terminal velocity. Which is correct?',opts:['Weight is greater than air resistance','Air resistance is greater than weight','Weight equals air resistance','There are no forces acting'],a:2});
+ExamQ('ex1',{title:'Question 1 · Skydiver (Physics only)',stem:'<p>A skydiver jumps from a plane, reaches terminal velocity, then opens her parachute.</p>',parts:[
+ {label:'1.1',q:'Explain why her velocity increases at first and then becomes constant.',marks:4,ms:['At first weight is greater than air resistance, so there is a resultant force downwards and she accelerates','As her speed increases, air resistance increases','Eventually air resistance equals weight','Resultant force is zero so she falls at constant (terminal) velocity']},
+ {label:'1.2',q:'Explain what happens when she opens her parachute.',marks:3,ms:['Surface area increases so air resistance increases (becomes bigger than weight)','Resultant force is upwards so she decelerates','Air resistance decreases as she slows until it equals weight again — a new, lower terminal velocity']}]});
+ExamQ('ex2',{title:'Question 2 · Newton’s first law',stem:'',parts:[
+ {label:'2.1',q:'A spacecraft in deep space switches off its engines. Describe its motion and explain why.',marks:2,ms:['It continues at constant velocity (same speed, same direction)','No resultant force acts (no friction/air resistance) — Newton’s first law']}]});
+</script>
+</body>
+</html>

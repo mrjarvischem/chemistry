@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>11 · Newton’s second law — GCSE Physics Forces</title>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="core.css">
+</head>
+<body data-lesson="11" data-next="L12.html">
+<header class="top"><a class="home" href="index.html">← All Forces walkthroughs</a>
+<h1>Lesson 11 · Newton’s second law and the acceleration practical</h1>
+<p>AQA GCSE Physics / Combined Science · Forces 4.5.6.2.2 · Required practical · about 25 minutes</p></header>
+<main>
+
+<section id="s1" data-title="F = m a" data-mins="6">
+<h2>Newton’s second law</h2>
+<p class="lead">The acceleration of an object is <b>proportional to the resultant force</b> acting on it, and <b>inversely proportional to its mass</b>.</p>
+<div class="card"><span class="eqbox">F = m a</span> <span class="tag">Learn this — not on the equation sheet</span>
+<p style="margin:8px 0 0">F = resultant force (N), m = mass (kg), a = acceleration (m/s²).</p></div>
+<div class="grid2">
+ <div class="card"><div class="sl">Resultant force: <b id="fv"></b> N<input type="range" id="f" min="0" max="4000" step="250" value="2000"></div><div class="sl">Mass: <b id="mv"></b> kg<input type="range" id="m" min="500" max="2000" step="250" value="1000"></div><div class="read" id="aR"></div></div>
+ <div class="card"><div id="aB"></div></div>
+</div>
+<div id="q1a"></div><div id="q1b"></div>
+</section>
+
+<section id="s2" data-title="Required practical" data-mins="11">
+<h2>Required practical: force and acceleration</h2>
+<p class="lead">A trolley is pulled along a bench by a hanging mass. Two light gates measure its speed, and so its acceleration. To change the force <b>without changing the total mass</b>, move slotted masses from the trolley to the hanger.</p>
+<div class="card" style="padding:8px"><svg id="rig" viewBox="0 0 560 210" width="100%"></svg>
+ <div class="row"><span>Masses on hanger:</span><span id="nb"></span><button class="btn pri" id="go">▶ Release</button><button class="btn" id="rec">Record</button></div></div>
+<div class="grid2">
+ <div class="card"><div class="tablewrap"><table class="t" id="tab"></table></div></div>
+ <div class="card" style="padding:8px"><svg id="gr" viewBox="0 0 330 250" width="100%"></svg><div class="read" id="gR" style="font-family:inherit"></div></div>
+</div>
+<div class="tip">Why move the masses rather than add new ones? The <b>whole system</b> (trolley + hanger) accelerates. Keeping its total mass constant makes mass a <b>control variable</b>, so any change in acceleration is due to the force alone.</div>
+<div id="q2a"></div>
+</section>
+
+<section id="s3" data-title="Inertial mass (HT)" data-mins="3">
+<h2>Inertial mass <span class="tag ht">Higher tier</span></h2>
+<p class="lead"><b>Inertial mass</b> is a measure of how difficult it is to change the velocity of an object. It is defined as the ratio of force over acceleration: <b>m = F ÷ a</b>. A loaded lorry is much harder to speed up or stop than a car.</p>
+<div id="q3a"></div>
+</section>
+
+<section id="s4" data-title="Exam practice" data-mins="5">
+<h2>Exam practice</h2>
+<div id="ex1"></div><div id="ex2"></div>
+<div class="summary"><h3>Lesson summary</h3><ul>
+<li>F = m a (learn it). a ∝ F; a ∝ 1/m.</li>
+<li>Practical: light gates measure acceleration; move masses from trolley to hanger to keep total mass constant.</li>
+<li>Graph of a against F: straight line through the origin.</li>
+<li>HT: inertial mass = F ÷ a — how hard it is to change an object’s velocity.</li></ul></div>
+</section>
+</main>
+<script src="core.js"></script>
+<script>
+function fma(){const F=+$('f').value,m=+$('m').value;$('fv').textContent=F;$('mv').textContent=m;const a=F/m;$('aR').innerHTML=`a = F ÷ m = ${F} ÷ ${m} = <b>${fmt(a,3)} m/s²</b>`;bars('aB',[{l:'acceleration (m/s²)',c:'#c2410c',v:a,txt:fmt(a,3)}],8)}
+['f','m'].forEach(id=>$(id).oninput=fma);fma();
+NumQ('q1a',{q:'A 1200 kg car accelerates at 2.5 m/s². Calculate the resultant force.',ans:3000,unit:'N',steps:['F = m a','= 1200 × 2.5','= 3000 N']});
+NumQ('q1b',{q:'A resultant force of 45 N acts on a 15 kg sledge. Calculate its acceleration.',ans:3,unit:'m/s²',steps:['a = F ÷ m','= 45 ÷ 15','= 3.0 m/s²']});
+const MT=1.0;let n=1,rows=[],stR=null;const g=9.8;const fr=0.04; // friction compensation small
+$('nb').innerHTML=[1,2,3,4,5].map(k=>`<button class="btn ${k===1?'on':''}" data-n="${k}">${k}</button>`).join('');
+$('nb').onclick=e=>{const b=e.target.closest('.btn');if(!b)return;n=+b.dataset.n;$('nb').querySelectorAll('.btn').forEach(x=>x.classList.toggle('on',x===b));rig(0,null)};
+const acc=k=>(k*0.1*g-fr)/MT; // each slotted mass 100 g
+function rig(x,res){const tx=40+x;let s=`<rect x="10" y="110" width="470" height="10" fill="#8d6e63"/><circle cx="490" cy="112" r="12" fill="#bdc3c7" stroke="#555"/><rect x="480" y="120" width="8" height="40" fill="#555"/>`;
+ [190,360].forEach((gx,i)=>s+=`<rect x="${gx-4}" y="50" width="8" height="58" fill="#1d2433"/><rect x="${gx-10}" y="44" width="20" height="10" rx="2" fill="#1d2433"/><text x="${gx}" y="38" font-size="10" text-anchor="middle">light gate ${i+1}</text><line x1="${gx}" y1="60" x2="${gx}" y2="108" stroke="#e74c3c" stroke-dasharray="2 2"/>`);
+ s+=`<rect x="${tx}" y="82" width="80" height="26" rx="4" fill="#2e86de"/><circle cx="${tx+15}" cy="110" r="6" fill="#333"/><circle cx="${tx+65}" cy="110" r="6" fill="#333"/>`;for(let k=0;k<5-n;k++)s+=`<rect x="${tx+6+k*14}" y="70" width="12" height="12" fill="#7f8c8d" stroke="#555"/>`;
+ s+=`<rect x="${tx+40}" y="76" width="30" height="6" fill="#e9eef5"/><line x1="${tx+80}" y1="95" x2="490" y2="100" stroke="#555"/><line x1="502" y1="112" x2="502" y2="${130+x*0.35}" stroke="#555"/>`;for(let k=0;k<n;k++)s+=`<rect x="490" y="${130+x*0.35+k*9}" width="24" height="8" fill="#7f8c8d" stroke="#555"/>`;
+ if(res)s+=`<text x="280" y="160" font-size="12" text-anchor="middle">gate 1: ${res.v1.toFixed(2)} m/s · gate 2: ${res.v2.toFixed(2)} m/s · time between: ${res.t.toFixed(2)} s</text><text x="280" y="180" font-size="14" font-weight="700" text-anchor="middle" fill="#c2410c">a = (${res.v2.toFixed(2)} − ${res.v1.toFixed(2)}) ÷ ${res.t.toFixed(2)} = ${res.a.toFixed(2)} m/s²</text>`;
+ $('rig').innerHTML=s}
+let last=null;
+$('go').onclick=()=>{if(stR)stR();const a=acc(n);const L=0.6,d1=0.30,d2=0.80;const T=Math.sqrt(2*1.0/a);const v1=Math.sqrt(2*a*d1),v2=Math.sqrt(2*a*d2);const t=(v2-v1)/a;const noise=1+(Math.random()-.5)*0.04;last={F:n*0.1*g,v1,v2,t,a:(v2-v1)/t*noise};
+ stR=animate(Math.min(3000,T*900),f=>rig(f*f*360,null),()=>rig(360,last))};
+function tab(){$('tab').innerHTML='<tr><th>Force / N</th><th>Acceleration / m/s²</th></tr>'+rows.slice().sort((a,b)=>a.F-b.F).map(r=>`<tr><td>${r.F.toFixed(2)}</td><td>${r.a.toFixed(2)}</td></tr>`).join('');
+ const A=AXES({x0:45,y0:210,w:270,h:180,xmax:5,ymax:5,xstep:1,ystep:1,xlab:'force / N',ylab:'acceleration / m/s²'});let s=A.svg;rows.forEach(r=>s+=`<path d="M${A.X(r.F)-4} ${A.Y(r.a)-4} l8 8 M${A.X(r.F)+4} ${A.Y(r.a)-4} l-8 8" stroke="#c2410c" stroke-width="2"/>`);
+ if(rows.length>=3)s+=`<line x1="${A.X(0)}" y1="${A.Y(0)}" x2="${A.X(5)}" y2="${A.Y(5/MT)}" stroke="#1d2433" stroke-width="1.5"/>`;$('gr').innerHTML=s;
+ $('gR').innerHTML=rows.length<3?'Release and record at least 3 different forces.':'Straight line through the origin: <b>acceleration is directly proportional to the resultant force</b> (with mass constant). Gradient = 1 ÷ mass ≈ 1.0, so the mass of the system is about 1.0 kg.'}
+$('rec').onclick=()=>{if(!last){$('gR').innerHTML='Release the trolley first.';return}rows=rows.filter(r=>Math.abs(r.F-last.F)>0.01);rows.push({F:last.F,a:last.a});tab()};rig(0,null);tab();
+MCQ('q2a',{q:'In this practical, what is the independent variable?',opts:['The acceleration','The resultant force (weight on the hanger)','The total mass','The length of the bench'],a:1});
+NumQ('q3a',{q:'HT: A force of 600 N gives an object an acceleration of 0.40 m/s². Calculate its inertial mass.',ans:1500,unit:'kg',steps:['m = F ÷ a','= 600 ÷ 0.40','= 1500 kg']});
+ExamQ('ex1',{title:'Question 1 · Required practical',stem:'<p>A student investigates how the acceleration of a trolley depends on the force pulling it.</p>',parts:[
+ {label:'1.1',q:'Describe a method the student could use.',marks:6,ms:['Trolley on a bench attached by string over a pulley to a hanging mass','Release from rest; use light gates (or ticker timer / stopwatch and ruler) to measure speeds and time','Calculate acceleration (a = Δv ÷ t)','Repeat with different hanging masses (forces)','Keep the total mass constant by moving masses from the trolley to the hanger','Plot a graph of acceleration against force'],guide:'Level 3 (5–6 marks): a logical method covering how the force is changed, how acceleration is measured and calculated, and the control variable.'},
+ {label:'1.2',q:'State the expected relationship between acceleration and force.',marks:1,ms:['Acceleration is directly proportional to the resultant force']}]});
+ExamQ('ex2',{title:'Question 2 · Lorry',stem:'<p>An empty lorry has a mass of 8000 kg. Its engine gives a resultant force of 12 000 N.</p>',parts:[
+ {label:'2.1',q:'Calculate its acceleration.',marks:2,ms:['a = 12 000 ÷ 8000','= 1.5 m/s²']},
+ {label:'2.2',q:'The lorry is loaded with 4000 kg of goods. Calculate the new acceleration with the same resultant force.',marks:2,ms:['m = 12 000 kg','a = 12 000 ÷ 12 000 = 1.0 m/s²']}]});
+</script>
+</body>
+</html>

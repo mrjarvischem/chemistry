@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>8 · Speed, velocity and distance–time graphs — GCSE Physics Forces</title>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="core.css">
+</head>
+<body data-lesson="8" data-next="L9.html">
+<header class="top"><a class="home" href="index.html">← All Forces walkthroughs</a>
+<h1>Lesson 8 · Speed, velocity and distance–time graphs</h1>
+<p>AQA GCSE Physics / Combined Science · Forces 4.5.6.1.1–4.5.6.1.4 · about 25 minutes</p></header>
+<main>
+
+<section id="s1" data-title="Speed and velocity" data-mins="6">
+<h2>Distance, displacement, speed and velocity</h2>
+<div class="grid2">
+ <div class="card"><h3>Scalars</h3><p style="margin:0"><b>Distance</b>: how far an object moves (no direction).<br><b>Speed</b>: how fast — distance per unit time.</p></div>
+ <div class="card"><h3>Vectors</h3><p style="margin:0"><b>Displacement</b>: distance <b>in a straight line</b> from start to finish, with a direction.<br><b>Velocity</b>: speed <b>in a given direction</b>.</p></div>
+</div>
+<div class="note">An object moving in a <b>circle at constant speed</b> has a <b>changing velocity</b>, because its direction keeps changing.</div>
+<div class="card"><h3>Typical speeds</h3><table class="t"><tr><td>Walking</td><td>1.5 m/s</td><td>Car in town</td><td>13 m/s</td></tr><tr><td>Running</td><td>3 m/s</td><td>Car on motorway</td><td>31 m/s</td></tr><tr><td>Cycling</td><td>6 m/s</td><td>Train</td><td>up to 55 m/s</td></tr><tr><td>Wind</td><td>5–20 m/s</td><td>Sound in air</td><td>330 m/s</td></tr></table></div>
+<div id="q1a"></div>
+</section>
+
+<section id="s2" data-title="s = v t" data-mins="5">
+<h2>Calculating speed</h2>
+<div class="card"><span class="eqbox">s = v t</span> <span class="tag">Learn this — not on the equation sheet</span>
+<p style="margin:8px 0 0">s = distance travelled (m), v = speed (m/s), t = time (s). Speed is rarely constant, so this often gives the <b>average</b> speed.</p></div>
+<div id="q2a"></div><div id="q2b"></div><div id="q2c"></div>
+</section>
+
+<section id="s3" data-title="Distance–time graphs" data-mins="9">
+<h2>Distance–time graphs</h2>
+<p class="lead">Watch a cyclist’s journey build the graph. Then tap a section to measure its gradient.</p>
+<div class="grid2">
+ <div class="card" style="padding:8px"><svg id="road" viewBox="0 0 320 70" width="100%"></svg><svg id="dt" viewBox="0 0 330 250" width="100%"></svg><div class="row"><button class="btn pri" id="go">▶ Play journey</button><button class="btn" id="hc">HT: accelerating curve</button></div></div>
+ <div class="card"><div class="read" id="dR" style="font-family:inherit">Press Play.</div></div>
+</div>
+<div class="key">On a distance–time graph the <b>gradient = speed</b>. A <b>straight sloping</b> line = constant speed; <b>steeper</b> = faster; <b>flat</b> = stationary. A <b>curve</b> means the speed is changing.</div>
+<div id="q3a"></div>
+</section>
+
+<section id="s4" data-title="Exam practice" data-mins="5">
+<h2>Exam practice</h2>
+<div id="ex1"></div><div id="ex2"></div>
+<div class="summary"><h3>Lesson summary</h3><ul>
+<li>Distance and speed are scalars; displacement and velocity are vectors.</li>
+<li>s = v t (learn it). Know typical speeds.</li>
+<li>Distance–time graph: gradient = speed; flat = stationary.</li>
+<li>HT: for a curve, draw a tangent and find its gradient for the speed at that instant.</li></ul></div>
+</section>
+</main>
+<script src="core.js"></script>
+<script>
+MCQ('q1a',{q:'Which is the most likely speed of a person walking?',opts:['0.15 m/s','1.5 m/s','15 m/s','150 m/s'],a:1});
+NumQ('q2a',{q:'A runner covers 400 m in 80 s. Calculate her average speed.',ans:5,unit:'m/s',steps:['v = s ÷ t','= 400 ÷ 80','= 5.0 m/s']});
+NumQ('q2b',{q:'A car travels at 25 m/s for 2 minutes. How far does it go?',ans:3000,unit:'m',steps:['t = 2 × 60 = 120 s','s = v t = 25 × 120','= 3000 m']});
+NumQ('q2c',{q:'Sound travels at 330 m/s. How long does it take to travel 1.65 km?',ans:5,unit:'s',steps:['s = 1.65 km = 1650 m','t = s ÷ v = 1650 ÷ 330','= 5.0 s']});
+// segments: [t0,t1,d0,d1]
+const SEG=[[0,20,0,100,'A: steady speed'],[20,40,100,100,'B: stopped'],[40,50,100,200,'C: faster steady speed'],[50,70,200,250,'D: slower steady speed']];
+let curve=false,st=null,shown=-1;
+function dpos(t){if(curve)return 0.25*t*t;for(const s of SEG)if(t<=s[1])return s[2]+(s[3]-s[2])*(t-s[0])/(s[1]-s[0]);return 250}
+function draw(T){const A=AXES({x0:45,y0:210,w:270,h:190,xmax:70,ymax:curve?300:300,xstep:10,ystep:50,xlab:'time / s',ylab:'distance / m'});let s=A.svg;
+ let d='';for(let t=0;t<=T+1e-9;t+=0.5)d+=(t?' L':'M')+A.X(t)+' '+A.Y(Math.min(300,dpos(t)));s+=`<path d="${d}" fill="none" stroke="#c2410c" stroke-width="3"/>`;
+ if(!curve&&T>=70){SEG.forEach((g,i)=>{s+=`<g class="seg" data-i="${i}" style="cursor:pointer"><line x1="${A.X(g[0])}" y1="${A.Y(g[2])}" x2="${A.X(g[1])}" y2="${A.Y(g[3])}" stroke="transparent" stroke-width="18"/><text x="${A.X((g[0]+g[1])/2)-8}" y="${A.Y((g[2]+g[3])/2)-8}" font-size="13" font-weight="700" fill="${i===shown?'#2e86de':'#1d2433'}">${'ABCD'[i]}</text></g>`});
+  if(shown>=0){const g=SEG[shown];s+=`<path d="M${A.X(g[0])} ${A.Y(g[2])} H${A.X(g[1])} V${A.Y(g[3])}" fill="none" stroke="#2e86de" stroke-width="2" stroke-dasharray="5 3"/>`}}
+ if(curve&&T>=30){const t0=20,v=0.5*t0,y0=dpos(t0);s+=`<line x1="${A.X(t0-12)}" y1="${A.Y(y0-v*12)}" x2="${A.X(t0+12)}" y2="${A.Y(y0+v*12)}" stroke="#2e86de" stroke-width="2"/><circle cx="${A.X(t0)}" cy="${A.Y(y0)}" r="4" fill="#2e86de"/>`}
+ $('dt').innerHTML=s;$('dt').querySelectorAll('.seg').forEach(el=>el.onclick=()=>{shown=+el.dataset.i;const g=SEG[shown];const v=(g[3]-g[2])/(g[1]-g[0]);$('dR').innerHTML=`<b>${g[4]}</b><br>gradient = change in distance ÷ change in time = (${g[3]} − ${g[2]}) ÷ (${g[1]} − ${g[0]}) = <b>${v} m/s</b>${v===0?' — stationary.':''}`;draw(70)});
+ const x=10+Math.min(300,dpos(T))*1.0;$('road').innerHTML=`<rect y="45" width="320" height="10" fill="#c8ccd8"/><text x="${x}" y="42" font-size="26">🚴</text>`}
+$('go').onclick=()=>{curve=false;shown=-1;$('hc').classList.remove('on');if(st)st();st=animate(5000,f=>draw(f*70),()=>{$('dR').innerHTML='Tap a letter on the graph to measure that section’s gradient.'})};
+$('hc').onclick=()=>{curve=true;$('hc').classList.add('on');if(st)st();st=animate(4000,f=>draw(f*34),()=>{$('dR').innerHTML='<b>HT: accelerating.</b> The graph curves upwards — the gradient (speed) is increasing. To find the speed at 20 s, draw a <b>tangent</b> (blue) and find its gradient: here about <b>10 m/s</b>.'})};
+draw(0);
+MCQ('q3a',{q:'What does a horizontal line on a distance–time graph show?',opts:['Constant speed','Acceleration','The object is stationary','The object is moving backwards'],a:2});
+ExamQ('ex1',{title:'Question 1 · Bus journey',stem:'<p>A bus travels 1200 m in 100 s, stops for 60 s, then travels 800 m in 40 s.</p>',parts:[
+ {label:'1.1',q:'Calculate the speed of the bus in the first part of the journey.',marks:2,ms:['v = 1200 ÷ 100','= 12 m/s']},
+ {label:'1.2',q:'Calculate the average speed for the whole journey.',marks:3,ms:['Total distance = 2000 m','Total time = 200 s','Average speed = 10 m/s']},
+ {label:'1.3',q:'Describe how the distance–time graph for the stop would look.',marks:1,ms:['A horizontal (flat) line']}]});
+ExamQ('ex2',{title:'Question 2 · Velocity',stem:'',parts:[
+ {label:'2.1',q:'A car drives round a roundabout at a constant speed. Explain why its velocity is changing.',marks:2,ms:['Velocity is speed in a given direction (a vector)','The direction is changing']}]});
+</script>
+</body>
+</html>
