@@ -139,6 +139,9 @@
   div.topic .row{ color:var(--ink-soft); font-weight:500; }
   .count{ flex:none; font-size:.75rem; font-weight:700; color:var(--accent); background:var(--accent-soft);
           padding:2px 9px; border-radius:20px; }
+  a.topic.flat{ display:flex; justify-content:space-between; align-items:center; gap:10px; padding:13px 16px; background:var(--card, #fff); border:1px solid var(--line, #e3e6ee); border-radius:12px; text-decoration:none; color:var(--ink); font-weight:600; }
+  a.topic.flat:hover{ background:var(--accent-soft); }
+  a.topic.flat::after{ content:"PDF ↗"; flex:none; font-size:.72rem; font-weight:700; color:var(--accent); background:var(--accent-soft); padding:4px 8px; border-radius:20px; }
   .topic ul{ list-style:none; margin:0; padding:0 10px 10px; }
   .topic li a{ display:flex; justify-content:space-between; gap:10px; padding:9px 12px; border-radius:8px;
                text-decoration:none; color:var(--ink-soft); }
@@ -1102,7 +1105,7 @@ const CATS = [
   { key: "activities",   title: "25-minute revision activities", blurb: "Printable revision activities for each topic. Download the PDF, set a 25-minute timer and work through it, then record it on your revision tracker.", type: "topics" },
   { key: "walkthroughs", title: "Topic walkthroughs",            blurb: "Guided explanations that build each topic up from the basics.", type: "topics" },
   { key: "kos",          title: "Knowledge organisers",           blurb: "Key facts, definitions and equations for every topic, in sets of 10. Learn from the Q&A sheet, then test yourself on the self-test sheet – or build your own from just the facts you don't know yet.", type: "topics", paperLabels: true },
-  { key: "summaries",    title: "1 page summaries",               blurb: "The highest-yield content for each topic on one page, with a page of exam-style questions and answers on the back. Split into Year 1 and Year 2 topics.", type: "topics", levels: ["alevel"] },
+  { key: "summaries",    title: "1 page summaries",               blurb: "The highest-yield content for each topic on one page, with a page of exam-style questions and answers on the back. Tap a topic to open its PDF.", type: "topics", levels: ["alevel"] },
   { key: "records",      title: "Revision records",               blurb: "Track what you've revised and when. Each topic shows roughly how many marks it's worth, so you can spend your time where it counts. Print the PDF or fill in the Excel version on screen.", type: "records" },
 ];
 const SLUG = { gcse: "gcse", alevel: "a-level" };
@@ -1151,7 +1154,7 @@ function renderCards(items, catTitle) {
   }).join("")}</div>`;
 }
 
-function renderTopics(topics, links, paperLabels, tripleTopics = []) {
+function renderTopics(topics, links, paperLabels, tripleTopics = [], flat = false) {
   const tri = t => !paperLabels ? "" : (t && t.triple) ? `<span class="paper tri">Triple only</span>`
     : tripleTopics.includes(topicName(t)) ? `<span class="paper tri-some">Includes triple</span>` : "";
   const known = new Set(topics.map(topicName));
@@ -1166,7 +1169,9 @@ function renderTopics(topics, links, paperLabels, tripleTopics = []) {
       open = true; currentGroup = g;
     }
     const items = (links[topicName(t)] || []).filter(i => i.url);
-    html += items.length
+    html += flat && items.length
+      ? `<a class="topic flat" href="${esc(items[0].url)}" target="_blank" rel="noopener"><span>${esc(topicName(t))}</span></a>`
+      : items.length
       ? `<details class="topic"><summary><span class="name">${esc(topicName(t))}${paperLabels ? `<span class="pills">${paperPill(paperOf(t))}${tri(t)}</span>` : ""}</span><span class="count">${items.length}</span></summary>
            <ul>${items.map(i => /\.pdf(#|$)/i.test(i.url)
              ? `<li><a href="${esc(i.url)}" target="_blank" rel="noopener" data-pdf>${esc(i.title)}</a></li>`
@@ -1244,10 +1249,10 @@ function renderCategory(level, L, c) {
   let body;
   if (c.type === "cards") body = renderCards(L[c.key] || [], c.title);
   else if (c.type === "records") body = renderRecords(L.records);
-  else body = `<div class="tools"><button class="link-btn" data-toggle-all>Open all topics</button></div>
+  else body = `${c.key === "summaries" ? "" : `<div class="tools"><button class="link-btn" data-toggle-all>Open all topics</button></div>`}
                ${c.key === "activities" ? renderTrackerCard(level) : ""}
                ${c.key === "kos" ? renderKoIntro(L) : ""}
-               ${renderTopics(c.key === "kos" ? [...L.topics, ...(L.koExtraTopics || [])] : c.key === "activities" ? [...L.topics, ...(L.koExtraTopics || []).filter(t => (L.activities || {})[topicName(t)])] : c.key === "summaries" ? (L.summaryTopics || L.topics) : L.topics, L[c.key] || {}, c.paperLabels, c.key === "kos" ? (L.koTripleTopics || []) : [])}`;
+               ${renderTopics(c.key === "kos" ? [...L.topics, ...(L.koExtraTopics || [])] : c.key === "activities" ? [...L.topics, ...(L.koExtraTopics || []).filter(t => (L.activities || {})[topicName(t)])] : c.key === "summaries" ? (L.summaryTopics || L.topics) : L.topics, L[c.key] || {}, c.paperLabels, c.key === "kos" ? (L.koTripleTopics || []) : [], c.key === "summaries")}`;
   return `
     <div class="crumbs"><a href="#${SLUG[level]}">← ${esc(L.name)} home</a><span>/</span><span>${esc(c.title)}</span></div>
     <div class="page-head"><span class="icon">${ICONS[c.key]}</span><h2>${esc(c.title)}</h2></div>
