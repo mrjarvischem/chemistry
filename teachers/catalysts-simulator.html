@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script src="gate.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Catalysts in Action</title>
+<style>
+:root{
+  /* Layout: tabs on top, large canvas stage left, teaching panel right; step bar under the canvas. */
+  --paper:#F4EDE0; --panel:#FFFBF3; --ink:#2B2118; --muted:#6C5C4C; --line:#D9CBB3;
+  --accent:#8A4B14; --accent-soft:#F1DFC6; --eq:#1E5670;
+  --display:"Trebuchet MS","Segoe UI",system-ui,sans-serif;
+  --body:"Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.45}
+.wrap{max-width:1500px;margin:0 auto;padding:16px 20px 28px;display:flex;flex-direction:column;gap:14px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px}
+h1{font-family:var(--display);font-size:1.7rem;margin:0;letter-spacing:.2px;text-wrap:balance}
+.sub{color:var(--muted);font-size:.95rem;margin:2px 0 0}
+.tabs{display:flex;flex-wrap:wrap;gap:8px}
+.tabs button{font:inherit;font-weight:600;padding:9px 16px;border-radius:10px;border:2px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+main{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:16px;align-items:start}
+.stage{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.canvasBox{position:relative;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:#FBF7EE}
+#cv{display:block;width:100%;height:auto;aspect-ratio:1000/600}
+.steps{display:flex;flex-wrap:wrap;gap:6px;list-style:none;margin:0;padding:0}
+.steps button{font:inherit;font-size:.86rem;font-weight:600;display:flex;align-items:center;gap:7px;padding:6px 11px 6px 6px;border-radius:999px;border:1.5px solid var(--line);background:#fff;color:var(--muted);cursor:pointer}
+.steps .n{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-variant-numeric:tabular-nums}
+.steps button.done{color:var(--ink)}
+.steps button.on{border-color:var(--accent);color:var(--ink);background:var(--accent-soft)}
+.steps button.on .n{background:var(--accent);color:#fff}
+.controls{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.controls button,.controls select{font:inherit;font-weight:600;padding:9px 15px;border-radius:10px;border:2px solid var(--line);background:#fff;color:var(--ink);cursor:pointer}
+.controls .primary{background:var(--accent);border-color:var(--accent);color:#fff;padding-inline:22px}
+.controls button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.controls .sp{margin-left:auto;display:flex;align-items:center;gap:8px;color:var(--muted);font-size:.9rem}
+.hint{color:var(--muted);font-size:.82rem}
+button:focus-visible,select:focus-visible{outline:3px solid #2F6DB3;outline-offset:2px}
+aside{display:flex;flex-direction:column;gap:12px;min-width:0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.card h2{font-family:var(--display);font-size:1.25rem;margin:0 0 6px;text-wrap:balance}
+.card h3{font-family:var(--display);font-size:.8rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+.count{font-size:.8rem;font-weight:700;color:var(--accent);letter-spacing:.08em;text-transform:uppercase}
+#stepText{margin:0;min-height:6.2em}
+.eq{margin-top:10px;padding:9px 12px;border-radius:9px;background:#EAF2F5;border-left:5px solid var(--eq);color:var(--eq);font-weight:700;font-size:1.06rem;overflow-x:auto;white-space:nowrap}
+.eq.none{visibility:hidden}
+.overall{font-weight:700;font-size:1.05rem;color:var(--ink);margin:0 0 4px;overflow-x:auto;white-space:nowrap}
+.type{color:var(--muted);font-size:.92rem;margin:0}
+#pf{display:block;width:100%;height:auto;aspect-ratio:340/190}
+ul.facts{margin:0;padding-left:1.1em}
+ul.facts li{margin:0 0 5px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin:0;padding:0;list-style:none;font-size:.88rem}
+.legend li{display:flex;align-items:center;gap:6px}
+.legend i{width:15px;height:15px;border-radius:50%;border:1px solid rgba(0,0,0,.35);display:inline-block}
+@media (max-width:1020px){main{grid-template-columns:minmax(0,1fr)}#stepText{min-height:0}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Catalysts in action</h1>
+      <p class="sub">A-level Chemistry · heterogeneous and homogeneous catalysis, step by step</p>
+    </div>
+    <div class="tabs" role="tablist" aria-label="Choose a catalyst" id="tabs"></div>
+  </header>
+  <main>
+    <section class="stage">
+      <div class="canvasBox"><canvas id="cv" width="1000" height="600" role="img" aria-label="Particle animation of the catalysed reaction"></canvas></div>
+      <ol class="steps" id="steps"></ol>
+      <div class="controls">
+        <button id="back" type="button">◀ Back</button>
+        <button id="next" type="button" class="primary">Next step ▶</button>
+        <button id="replay" type="button">↻ Replay step</button>
+        <button id="auto" type="button" aria-pressed="false">Play all</button>
+        <span class="sp"><label for="speed">Speed</label>
+          <select id="speed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="1.75">1.75×</option></select>
+        </span>
+      </div>
+      <div class="hint">Keyboard: → next step · ← back · R replay · P play all</div>
+    </section>
+    <aside>
+      <div class="card">
+        <h3 id="sceneName"></h3>
+        <p class="overall" id="overall"></p>
+        <p class="type" id="sceneType"></p>
+      </div>
+      <div class="card" aria-live="polite">
+        <div class="count" id="count"></div>
+        <h2 id="stepTitle"></h2>
+        <p id="stepText"></p>
+        <div class="eq" id="stepEq"></div>
+      </div>
+      <div class="card">
+        <h3>Energy profile (sketch, not to scale)</h3>
+        <canvas id="pf" width="340" height="190" role="img" aria-label="Energy profile comparing the route with and without a catalyst"></canvas>
+      </div>
+      <div class="card">
+        <h3>Key</h3>
+        <ul class="legend" id="legend"></ul>
+      </div>
+      <div class="card">
+        <h3>Key points</h3>
+        <ul class="facts" id="facts"></ul>
+      </div>
+    </aside>
+  </main>
+</div>
+<script>
+"use strict";
+const W=1000,H=600,SURF=440;
+const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- particle kinds ---------- */
+const K={
+  N:{r:17,c:'#3F5FC9',t:'N',tc:'#fff'}, H:{r:10,c:'#F3F0E8',t:'H',tc:'#333'},
+  S:{r:16,c:'#E3B81F',t:'S',tc:'#3a2c00'}, O:{r:13,c:'#D2402F',t:'O',tc:'#fff'},
+  half:{r:32,c:'#D7A531',t:'SO₄',tc:'#3a2c00'}, SO4:{r:33,c:'#D7A531',t:'SO₄²⁻',tc:'#3a2c00'},
+  Im:{r:24,c:'#7C4DAF',t:'I⁻',tc:'#fff'}, I:{r:24,c:'#6B3F1D',t:'I',tc:'#fff'},
+  Fe2:{r:28,c:'#9AD3A4',t:'Fe²⁺',tc:'#143d1c'}, Fe3:{r:28,c:'#E58B2B',t:'Fe³⁺',tc:'#3d1f00'},
+  e:{r:10,c:'#FFD43B',t:'e⁻',tc:'#222'}, w:{r:6,c:'#A9CFE0',t:'',tc:'#000'}
+};
+
+/* ---------- scenes ---------- */
+const HABER={
+  id:'haber', tab:'Iron · Haber process', name:'Iron in the Haber process',
+  overall:'N₂(g) + 3H₂(g) ⇌ 2NH₃(g)', type:'Heterogeneous catalyst: solid iron, gaseous reactants',
+  surface:'fe', ambient:[['N2',5],['H2',9],['NH3',3]],
+  legend:[['#3F5FC9','Nitrogen'],['#F3F0E8','Hydrogen'],['#9499A3','Iron'],['#E3B81F','Sulfur (poison)']],
+  facts:['Heterogeneous: the catalyst is in a different phase from the reactants.',
+    'The reaction happens at active sites on the surface.',
+    'Adsorption must be strong enough to weaken bonds, but weak enough for the products to desorb.',
+    'Iron is used as pea-sized lumps to give a large surface area.',
+    'Poisons block active sites. Replacing the catalyst costs money.'],
+  profile:{unc:[[0,.5],[.5,.96],[1,.3]],cat:[[0,.5],[.12,.6],[.3,.3],[.5,.5],[.68,.2],[.86,.42],[1,.3]]},
+  init:{N1:{x:449,y:150,k:'N'},N2:{x:491,y:150,k:'N'},
+    H1:{x:247,y:110,k:'H'},H2:{x:273,y:110,k:'H'},H3:{x:667,y:120,k:'H'},H4:{x:693,y:120,k:'H'},H5:{x:347,y:232,k:'H'},H6:{x:373,y:232,k:'H'},
+    S1:{x:390,y:-40,k:'S',a:0},S2:{x:494,y:-40,k:'S',a:0},S3:{x:598,y:-40,k:'S',a:0},
+    N3:{x:449,y:-60,k:'N',a:0},N4:{x:491,y:-60,k:'N',a:0}},
+  bonds:[['N1','N2',3],['H1','H2',1],['H3','H4',1],['H5','H6',1]],
+  tags:[{at:['N1','N2'],text:'N₂',dy:-34},{at:['H1','H2'],text:'H₂',dy:-27},{at:['H3','H4'],text:'H₂',dy:-27},{at:['H5','H6'],text:'H₂',dy:-27}],
+  stages:[
+   {label:'Gas phase',title:'Reactants in the gas phase',m:0,
+    text:'Nitrogen and hydrogen molecules move randomly above the solid iron. The N≡N bond is very strong, so without a catalyst the activation energy is very high.',frames:[{}]},
+   {label:'Adsorption',title:'Adsorption onto active sites',m:.3,
+    text:'Molecules diffuse to the surface and adsorb onto active sites. Weak bonds form between the gas molecules and the iron atoms, holding the reactants close together.',
+    frames:[{p:{N1:{x:442,y:406,ads:1},N2:{x:494,y:406,ads:1},H1:{x:234,y:415,ads:1},H2:{x:286,y:415,ads:1},H3:{x:650,y:415,ads:1},H4:{x:702,y:415,ads:1},H5:{x:455,y:290},H6:{x:481,y:290}},
+      tags:[{at:['H5','H6'],text:'H₂',dy:-27}]}]},
+   {label:'Bonds break',title:'Bonds weaken and break',m:.5,
+    text:'Bonding to the iron weakens the bonds inside the molecules. N≡N and H–H break, leaving separate N and H atoms held on the surface. More H₂ adsorbs on the sites that become free.',
+    frames:[{p:{N1:{x:390},N2:{x:546},H5:{x:455,y:345},H6:{x:481,y:345}},bonds:[['H5','H6',1]]},
+            {p:{H5:{x:442,y:415,ads:1},H6:{x:494,y:415,ads:1}},bonds:[],tags:[]}]},
+   {label:'Reaction',title:'Reaction on the surface',m:.68,
+    text:'Hydrogen atoms move across the surface and bond to the nitrogen atoms one at a time: N → NH → NH₂ → NH₃.',
+    frames:[{p:{H2:{x:368,y:398,ads:0},H5:{x:412,y:398,ads:0},H6:{x:524,y:398,ads:0},H3:{x:568,y:398,ads:0}},bonds:[['N1','H2',1],['N1','H5',1],['N2','H6',1],['N2','H3',1]]},
+            {p:{H1:{x:350,y:362,ads:0},H4:{x:586,y:362,ads:0}}},
+            {p:{H1:{x:390,y:379},H4:{x:546,y:379}},bonds:[['N1','H2',1],['N1','H5',1],['N2','H6',1],['N2','H3',1],['N1','H1',1],['N2','H4',1]]}]},
+   {label:'Desorption',title:'Desorption of ammonia',m:1,eq:'N₂ + 3H₂ ⇌ 2NH₃',
+    text:'The ammonia molecules break away from the surface. The active sites are free again, so the iron is unchanged and ready for more reactant molecules.',
+    frames:[{p:{N1:{x:320,y:180,ads:0},H2:{x:298,y:172},H5:{x:342,y:172},H1:{x:320,y:153},N2:{x:650,y:140,ads:0},H6:{x:628,y:132},H3:{x:672,y:132},H4:{x:650,y:113}},
+      tags:[{at:['N1'],text:'NH₃',dy:36},{at:['N2'],text:'NH₃',dy:36}]}]},
+   {label:'Poisoning',title:'Catalyst poisoning',m:0,
+    text:'Sulfur impurities (from the natural gas used to make the hydrogen) adsorb strongly and do not desorb. They block the active sites, so N₂ and H₂ cannot adsorb and the catalyst becomes less efficient.',
+    frames:[{p:{N1:{y:60,a:0},H2:{y:52,a:0},H5:{y:52,a:0},H1:{y:33,a:0},N2:{y:30,a:0},H6:{y:22,a:0},H3:{y:22,a:0},H4:{y:3,a:0},
+        S1:{y:407,a:1,ads:1},S2:{y:407,a:1,ads:1},S3:{y:407,a:1,ads:1},N3:{y:110,a:1},N4:{y:110,a:1}},
+        bonds:[['N3','N4',3]],tags:[{at:['N3','N4'],text:'N₂',dy:-34}]},
+      {p:{N3:{y:352},N4:{y:352}}},
+      {p:{N3:{x:600,y:170},N4:{x:640,y:184}}}]}
+  ]
+};
+
+const CONTACT={
+  id:'contact', tab:'V₂O₅ · Contact process', name:'Vanadium(V) oxide in the Contact process',
+  overall:'2SO₂(g) + O₂(g) ⇌ 2SO₃(g)', type:'Heterogeneous catalyst that works by changing oxidation state',
+  surface:'v', ambient:[['SO2',7],['O2',6],['SO3',3]],
+  legend:[['#E3B81F','Sulfur'],['#D2402F','Oxygen'],['#E39A1C','Vanadium +5'],['#2F6DB3','Vanadium +4']],
+  facts:['V₂O₅ is a solid and the reactants are gases, so it is heterogeneous.',
+    'Step 1: SO₂ + V₂O₅ → SO₃ + V₂O₄',
+    'Step 2: V₂O₄ + ½O₂ → V₂O₅',
+    'Vanadium goes +5 → +4 → +5. Variable oxidation states are why transition metals make good catalysts.',
+    'Add the two steps and V₂O₅ cancels: it is unchanged at the end.'],
+  profile:{unc:[[0,.5],[.5,.96],[1,.3]],cat:[[0,.5],[.25,.72],[.5,.42],[.75,.62],[1,.3]]},
+  init:{SA:{x:300,y:170,k:'S'},A1:{x:273,y:156,k:'O'},A2:{x:327,y:156,k:'O'},
+    SB:{x:650,y:140,k:'S'},B1:{x:623,y:126,k:'O'},B2:{x:677,y:126,k:'O'},
+    X1:{x:470,y:90,k:'O'},X2:{x:500,y:90,k:'O'},L1:{x:390,y:428,k:'O'},L2:{x:510,y:428,k:'O'}},
+  bonds:[['SA','A1',2],['SA','A2',2],['SB','B1',2],['SB','B2',2],['X1','X2',2]],
+  tags:[{at:['SA'],text:'SO₂',dy:34},{at:['SB'],text:'SO₂',dy:34},{at:['X1','X2'],text:'O₂',dy:-30}],
+  vars:{r1:0,r2:0},
+  stages:[
+   {label:'Gas phase',title:'Reactants above the catalyst',m:0,
+    text:'Sulfur dioxide and oxygen pass over solid vanadium(V) oxide. Every vanadium is in the +5 oxidation state.',frames:[{}]},
+   {label:'SO₂ adsorbs',title:'SO₂ adsorbs',m:.14,
+    text:'Each SO₂ molecule adsorbs onto the surface and starts to bond to an oxygen in the V₂O₅ lattice.',
+    frames:[{p:{SA:{x:390,y:396},A1:{x:363,y:382},A2:{x:417,y:382},SB:{x:510,y:396},B1:{x:483,y:382},B2:{x:537,y:382},X1:{x:462,y:120},X2:{x:492,y:120}},
+      bonds:[['SA','A1',2],['SA','A2',2],['SB','B1',2],['SB','B2',2],['X1','X2',2],['SA','L1',1],['SB','L2',1]],
+      tags:[{at:['X1','X2'],text:'O₂',dy:-30}]}]},
+   {label:'V reduced',title:'SO₂ is oxidised, vanadium is reduced',m:.5,eq:'SO₂ + V₂O₅ → SO₃ + V₂O₄',
+    text:'SO₂ takes the oxygen from the lattice and leaves as SO₃. The two vanadiums next to each gap are reduced from +5 to +4.',
+    frames:[{p:{SA:{x:380,y:318},A1:{x:354,y:303},A2:{x:406,y:303},L1:{x:380,y:348},SB:{x:520,y:318},B1:{x:494,y:303},B2:{x:546,y:303},L2:{x:520,y:348}},vars:{r1:1,r2:1},
+       bonds:[['SA','A1',2],['SA','A2',2],['SB','B1',2],['SB','B2',2],['X1','X2',2],['SA','L1',2],['SB','L2',2]]},
+      {p:{SA:{x:215,y:185},A1:{x:189,y:170},A2:{x:241,y:170},L1:{x:215,y:215},SB:{x:780,y:175},B1:{x:754,y:160},B2:{x:806,y:160},L2:{x:780,y:205}},
+       tags:[{at:['X1','X2'],text:'O₂',dy:-30},{at:['SA'],text:'SO₃',dy:-46},{at:['SB'],text:'SO₃',dy:-46}]}]},
+   {label:'O₂ adsorbs',title:'O₂ adsorbs',m:.64,
+    text:'An oxygen molecule adsorbs onto the reduced surface, between the two gaps in the lattice.',
+    frames:[{p:{X1:{x:435,y:400,ads:1},X2:{x:465,y:400,ads:1}},tags:[{at:['SA'],text:'SO₃',dy:-46},{at:['SB'],text:'SO₃',dy:-46}]}]},
+   {label:'V oxidised',title:'Vanadium is oxidised back to +5',m:1,eq:'V₂O₄ + ½O₂ → V₂O₅',
+    text:'The O=O bond breaks and the oxygen atoms fill the gaps. Vanadium is oxidised from +4 back to +5, so the V₂O₅ is regenerated and can react again.',
+    frames:[{p:{X1:{x:390,y:428,ads:0},X2:{x:510,y:428,ads:0}},vars:{r1:0,r2:0},
+      bonds:[['SA','A1',2],['SA','A2',2],['SB','B1',2],['SB','B2',2],['SA','L1',2],['SB','L2',2]]}]}
+  ]
+};
+
+const IRON={
+  id:'iron', tab:'Fe²⁺ / Fe³⁺ · S₂O₈²⁻ and I⁻', name:'Fe²⁺ in the reaction of S₂O₈²⁻ with I⁻',
+  overall:'S₂O₈²⁻(aq) + 2I⁻(aq) → 2SO₄²⁻(aq) + I₂(aq)', type:'Homogeneous catalyst: everything is in aqueous solution',
+  surface:'aq', ambient:[['w',46]],
+  legend:[['#D7A531','S₂O₈²⁻ / SO₄²⁻'],['#7C4DAF','Iodide, I⁻'],['#6B3F1D','Iodine, I₂'],['#9AD3A4','Fe²⁺'],['#E58B2B','Fe³⁺'],['#FFD43B','Electron']],
+  facts:['Homogeneous: the catalyst is in the same phase as the reactants.',
+    'Uncatalysed: two negative ions repel, so the activation energy is high.',
+    'Step 1: S₂O₈²⁻ + 2Fe²⁺ → 2SO₄²⁻ + 2Fe³⁺',
+    'Step 2: 2Fe³⁺ + 2I⁻ → 2Fe²⁺ + I₂',
+    'Each step is between oppositely charged ions, so each has a lower activation energy.',
+    'The reaction goes through an intermediate. Either Fe²⁺ or Fe³⁺ works, because the steps can happen in either order.'],
+  profile:{unc:[[0,.5],[.5,.96],[1,.3]],cat:[[0,.5],[.25,.7],[.5,.42],[.75,.62],[1,.3]]},
+  init:{P1:{x:455,y:290,k:'half'},P2:{x:545,y:290,k:'half'},I1:{x:170,y:170,k:'Im'},I2:{x:185,y:425,k:'Im'},
+    Fa:{x:810,y:160,k:'Fe2'},Fb:{x:820,y:440,k:'Fe2'},e1:{x:500,y:226,k:'e',a:0},e2:{x:500,y:354,k:'e',a:0}},
+  bonds:[['P1','P2',1]],
+  tags:[{at:['P1','P2'],text:'S₂O₈²⁻',dy:-54}],
+  vars:{brown:0},
+  stages:[
+   {label:'In solution',title:'Reactants in solution',m:0,
+    text:'Peroxodisulfate ions, iodide ions and a small amount of Fe²⁺ are all dissolved in the same solution.',frames:[{}]},
+   {label:'No catalyst',title:'Without the catalyst',m:t=>({x:.3*Math.sin(Math.PI*t),unc:true}),fx:'repel',
+    text:'S₂O₈²⁻ and I⁻ are both negative, so they repel each other. Very few collisions succeed: the activation energy is high and the reaction is slow.',
+    frames:[{p:{I1:{x:382,y:250},I2:{x:382,y:330}}},{p:{I1:{x:225,y:195},I2:{x:232,y:405}}}]},
+   {label:'Attraction 1',title:'Step 1: opposite charges attract',m:.12,link:[['Fa','P2'],['Fb','P1']],
+    text:'Fe²⁺ is positive, so it is attracted to the negative S₂O₈²⁻. These ions collide easily.',
+    frames:[{p:{Fa:{x:500,y:226},Fb:{x:500,y:354}}}]},
+   {label:'Fe²⁺ → Fe³⁺',title:'Fe²⁺ is oxidised to Fe³⁺',m:.5,eq:'S₂O₈²⁻ + 2Fe²⁺ → 2SO₄²⁻ + 2Fe³⁺',
+    text:'Each Fe²⁺ gives one electron to the peroxodisulfate. The O–O bond breaks to give two sulfate ions, and each Fe²⁺ becomes Fe³⁺.',
+    frames:[{p:{e1:{y:280,a:1},e2:{y:300,a:1}}},
+      {p:{e1:{a:0},e2:{a:0},Fa:{k:'Fe3',x:470,y:195},Fb:{k:'Fe3',x:470,y:392},P1:{k:'SO4',x:585,y:455},P2:{k:'SO4',x:665,y:165}},bonds:[],tags:[]}]},
+   {label:'Attraction 2',title:'Step 2: opposite charges attract again',m:.62,link:[['Fa','I1'],['Fb','I2']],
+    text:'Fe³⁺ is positive and I⁻ is negative, so these ions attract each other too.',
+    frames:[{p:{I1:{x:285,y:245},I2:{x:285,y:355},Fa:{x:350,y:222},Fb:{x:350,y:378},e1:{x:285,y:245},e2:{x:285,y:355}}}]},
+   {label:'Fe³⁺ → Fe²⁺',title:'Fe³⁺ is reduced back to Fe²⁺',m:1,eq:'2Fe³⁺ + 2I⁻ → 2Fe²⁺ + I₂',
+    text:'Each I⁻ gives one electron to an Fe³⁺. Iodine forms and the Fe²⁺ is regenerated, ready to react with more S₂O₈²⁻.',
+    frames:[{p:{e1:{x:350,y:222,a:1},e2:{x:350,y:378,a:1}}},
+      {p:{e1:{a:0},e2:{a:0},Fa:{k:'Fe2',x:440,y:175},Fb:{k:'Fe2',x:440,y:425},I1:{k:'I',x:250,y:270},I2:{k:'I',x:250,y:330}},vars:{brown:1},
+       bonds:[['I1','I2',1]],tags:[{at:['I1','I2'],text:'I₂',dy:-72}]}]}
+  ]
+};
+const SCENES=[HABER,CONTACT,IRON];
+
+/* ---------- build cumulative key-states ---------- */
+function mergeState(prev,f){
+  const pos={};for(const id in prev.pos)pos[id]=Object.assign({},prev.pos[id],(f.p&&f.p[id])||{});
+  return {pos,bonds:f.bonds||prev.bonds,tags:f.tags||prev.tags,vars:Object.assign({},prev.vars,f.vars||{})};
+}
+for(const sc of SCENES){
+  let cur={pos:{},bonds:sc.bonds,tags:sc.tags,vars:sc.vars||{}};
+  for(const id in sc.init)cur.pos[id]=Object.assign({a:1,ads:0},sc.init[id]);
+  sc.initState=cur;
+  for(const st of sc.stages){st.keys=st.frames.map(f=>(cur=mergeState(cur,f)));}
+}
+
+/* ---------- helpers ---------- */
+const lerp=(a,b,t)=>a+(b-a)*t, clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+function rgb(h){const n=parseInt(h.slice(1),16);return[(n>>16)&255,(n>>8)&255,n&255];}
+function mix(a,b,t){const A=rgb(a),B=rgb(b);return'rgb('+A.map((v,i)=>Math.round(lerp(v,B[i],t))).join(',')+')';}
+function mixRGB(a,b,t){const A=rgb(a),B=rgb(b);return A.map((v,i)=>Math.round(lerp(v,B[i],t)));}
+const css=c=>'rgb('+c.join(',')+')';
+const tint=(c,t)=>css(c.map(v=>Math.round(lerp(v,255,t)))), shade=(c,t)=>css(c.map(v=>Math.round(v*(1-t))));
+
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+const pf=document.getElementById('pf'),pctx=pf.getContext('2d');
+function fit(){
+  const d=Math.min(window.devicePixelRatio||1,2.5);
+  const w=cv.clientWidth||W; cv.width=Math.round(w*d); cv.height=Math.round(w*.6*d);
+  const pw=pf.clientWidth||340; pf.width=Math.round(pw*d); pf.height=Math.round(pw*190/340*d);
+}
+window.addEventListener('resize',fit);
+
+function sphere(c,x,y,r,col,alpha,shadow){
+  if(alpha<=0.01)return;
+  c.save();c.globalAlpha*=alpha;
+  if(shadow){c.shadowColor='rgba(40,25,10,.28)';c.shadowBlur=8;c.shadowOffsetY=3;}
+  const g=c.createRadialGradient(x-r*.35,y-r*.4,r*.08,x,y,r);
+  g.addColorStop(0,tint(col,.62));g.addColorStop(.45,css(col));g.addColorStop(1,shade(col,.3));
+  c.fillStyle=g;c.beginPath();c.arc(x,y,r,0,7);c.fill();
+  c.shadowColor='transparent';c.lineWidth=1;c.strokeStyle=shade(col,.45);c.stroke();
+  c.restore();
+}
+function label(c,x,y,r,txt,col,alpha){
+  if(!txt||alpha<=0.01)return;
+  const fs=clamp((2*r-4)/(txt.length*.62),7,r*1.15);
+  c.save();c.globalAlpha*=alpha;c.fillStyle=col;c.font='700 '+fs.toFixed(1)+'px "Segoe UI",system-ui,Arial,sans-serif';
+  c.textAlign='center';c.textBaseline='middle';c.fillText(txt,x,y+.5);c.restore();
+}
+function pill(c,x,y,txt,alpha,dark){
+  if(alpha<=0.01)return;
+  c.save();c.globalAlpha*=alpha;c.font='700 15px "Segoe UI",system-ui,Arial,sans-serif';
+  const w=c.measureText(txt).width+16,h=24;
+  c.fillStyle=dark?'rgba(43,33,24,.82)':'rgba(255,253,247,.92)';c.strokeStyle=dark?'transparent':'rgba(110,90,65,.55)';c.lineWidth=1;
+  c.beginPath();c.roundRect(x-w/2,y-h/2,w,h,12);c.fill();c.stroke();
+  c.fillStyle=dark?'#fff':'#2B2118';c.textAlign='center';c.textBaseline='middle';c.fillText(txt,x,y+1);c.restore();
+}
+
+/* ---------- ambient background particles ---------- */
+const GLYPH={
+  N2:[[-9,0,'N'],[9,0,'N']],H2:[[-6,0,'H'],[6,0,'H']],NH3:[[0,0,'N'],[-12,7,'H'],[12,7,'H'],[0,-14,'H']],
+  SO2:[[0,0,'S'],[-14,-8,'O'],[14,-8,'O']],O2:[[-8,0,'O'],[8,0,'O']],SO3:[[0,0,'S'],[-14,-8,'O'],[14,-8,'O'],[0,16,'O']],
+  w:[[0,0,'w']]
+};
+function seedAmbient(sc){
+  let s=sc.id.length*7919+13;const rnd=()=>{s=(s*16807)%2147483647;return s/2147483647;};
+  const ymax=sc.surface==='aq'?H-20:330;sc.amb=[];
+  for(const [type,n] of sc.ambient)for(let i=0;i<n;i++){
+    const sp=sc.surface==='aq'?10:(type==='H2'?46:26);const a=rnd()*6.283;
+    sc.amb.push({type,x:rnd()*W,y:20+rnd()*(ymax-20),vx:Math.cos(a)*sp*(.6+rnd()*.6),vy:Math.sin(a)*sp*(.6+rnd()*.6),ang:rnd()*6.283,va:(rnd()-.5)*1.6,ymax});
+  }
+}
+SCENES.forEach(seedAmbient);
+function drawAmbient(sc,dt){
+  const aq=sc.surface==='aq';
+  for(const p of sc.amb){
+    p.x+=p.vx*dt;p.y+=p.vy*dt;p.ang+=p.va*dt;
+    if(p.x<10&&p.vx<0||p.x>W-10&&p.vx>0)p.vx*=-1;
+    if(p.y<14&&p.vy<0||p.y>p.ymax&&p.vy>0)p.vy*=-1;
+    ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.ang);ctx.scale(.62,.62);ctx.globalAlpha=aq?.42:.26;
+    for(const [dx,dy,k] of GLYPH[p.type]){ctx.fillStyle=K[k].c;ctx.strokeStyle='rgba(60,45,30,.55)';ctx.lineWidth=1.4;ctx.beginPath();ctx.arc(dx,dy,K[k].r,0,7);ctx.fill();if(!aq)ctx.stroke();}
+    ctx.restore();
+  }
+}
+
+/* ---------- backdrops and surfaces ---------- */
+const FE=rgb('#9499A3'),V5='#E39A1C',V4='#2F6DB3',OX=rgb('#D2402F');
+function drawBackdrop(sc,vars){
+  if(sc.surface==='aq'){
+    const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#EAF4F6');g.addColorStop(1,'#D6E9EE');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='rgba(205,140,35,'+(.24*(vars.brown||0)).toFixed(3)+')';ctx.fillRect(0,0,W,H);
+  }else{
+    const g=ctx.createLinearGradient(0,0,0,SURF);g.addColorStop(0,'#FCF8EF');g.addColorStop(1,'#F3EAD8');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  }
+}
+function drawSurface(sc,vars){
+  if(sc.surface==='fe'){
+    ctx.fillStyle='#5E626B';ctx.fillRect(0,SURF,W,H-SURF);
+    for(let row=3;row>=0;row--){const y=SURF+row*45,off=row%2?26:0,col=FE.map(v=>Math.round(v*(1-row*.09)));
+      for(let x=-52+off;x<W+52;x+=52)sphere(ctx,x,y,26,col,1,false);}
+    pill(ctx,W/2,H-22,'Iron catalyst surface',1,true);
+  }else if(sc.surface==='v'){
+    ctx.fillStyle='#7A5A2A';ctx.fillRect(0,SURF+6,W,H-SURF);
+    for(let x=30;x<W+40;x+=60)sphere(ctx,x,528,22,rgb('#C98A1C'),1,false);
+    for(let x=0;x<W+40;x+=60){sphere(ctx,x,490,13,OX.map(v=>Math.round(v*.88)),1,false);sphere(ctx,x,566,13,OX.map(v=>Math.round(v*.8)),1,false);}
+    for(let x=0;x<=W;x+=60){
+      const r=(x===360||x===420)?vars.r1:(x===480||x===540)?vars.r2:0;
+      sphere(ctx,x,450,22,mixRGB(V5,V4,r),1,false);
+      label(ctx,x,451,22,r>.5?'+4':'+5','#fff',Math.abs(2*r-1)*.95);
+    }
+    for(let x=30;x<W;x+=60){
+      if(x===390||x===510){const a=x===390?vars.r1:vars.r2;
+        if(a>.02){ctx.save();ctx.globalAlpha=a;ctx.setLineDash([4,4]);ctx.lineWidth=2;ctx.strokeStyle='#fff';ctx.beginPath();ctx.arc(x,428,13,0,7);ctx.stroke();ctx.restore();}
+        continue;}
+      sphere(ctx,x,428,13,OX,1,false);
+    }
+    pill(ctx,W/2,H-20,'V₂O₅ catalyst surface',1,true);
+  }
+}
+
+/* ---------- main render of one interpolated state ---------- */
+function bondMap(b){const m={};for(const [a,c,o] of b)m[a+'|'+c]=o;return m;}
+function render(sc,A,B,u,T,stage,tStage,dt){
+  const vars={};for(const k in B.vars)vars[k]=lerp(A.vars[k]??B.vars[k],B.vars[k],u);
+  drawBackdrop(sc,vars);drawAmbient(sc,dt);drawSurface(sc,vars);
+  const aq=sc.surface==='aq',P={};
+  for(const id in B.pos){
+    const a=A.pos[id],b=B.pos[id],ka=K[a.k],kb=K[b.k];
+    let x=lerp(a.x,b.x,u),y=lerp(a.y,b.y,u);
+    const g=reduce?0:(aq?(a.k==='e'?0:.8):clamp((370-y)/80,0,1));
+    x+=3*Math.sin(T*.9+y*.011+x*.004)*g;y+=4*Math.sin(T*1.15+x*.012)*g;
+    P[id]={x,y,r:lerp(ka.r,kb.r,u),col:mixRGB(ka.c,kb.c,u),al:lerp(a.a,b.a,u),ads:lerp(a.ads,b.ads,u),
+      txt:(u<.5?ka:kb).t,tc:(u<.5?ka:kb).tc,ta:a.k===b.k?1:Math.abs(2*u-1)};
+  }
+  // adsorption glow
+  for(const id in P){const p=P[id];if(p.ads>.02&&p.al>.02){const gx=p.x,gy=p.y+p.r*.8;const g=ctx.createRadialGradient(gx,gy,2,gx,gy,30);
+    g.addColorStop(0,'rgba(255,214,90,'+(.85*p.ads*p.al).toFixed(3)+')');g.addColorStop(1,'rgba(255,214,90,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(gx,gy,30,0,7);ctx.fill();}}
+  // charge links (attraction)
+  if(stage.link&&tStage<1){const al=Math.sin(Math.PI*tStage);ctx.save();ctx.globalAlpha=al*.8;ctx.strokeStyle='#2E8B57';ctx.lineWidth=3;ctx.setLineDash([3,7]);ctx.lineDashOffset=-T*30;
+    for(const [a,b] of stage.link){ctx.beginPath();ctx.moveTo(P[a].x,P[a].y);ctx.lineTo(P[b].x,P[b].y);ctx.stroke();}ctx.restore();}
+  // bonds
+  const ma=bondMap(A.bonds),mb=bondMap(B.bonds),keys=new Set([...Object.keys(ma),...Object.keys(mb)]);
+  for(const key of keys){
+    const [i,j]=key.split('|'),p=P[i],q=P[j];let al=(key in ma&&key in mb)?1:(key in mb?u:1-u);
+    al*=Math.min(p.al,q.al);if(al<=.01)continue;
+    const order=mb[key]||ma[key],dx=q.x-p.x,dy=q.y-p.y,L=Math.hypot(dx,dy)||1,nx=-dy/L,ny=dx/L;
+    ctx.save();ctx.globalAlpha=al;ctx.strokeStyle='#4A3D30';ctx.lineWidth=order>1?3:4;ctx.lineCap='round';if(al<.75)ctx.setLineDash([5,5]);
+    for(let n=0;n<order;n++){const o=(n-(order-1)/2)*5.5;ctx.beginPath();ctx.moveTo(p.x+nx*o,p.y+ny*o);ctx.lineTo(q.x+nx*o,q.y+ny*o);ctx.stroke();}
+    ctx.restore();
+  }
+  // atoms
+  const ids=Object.keys(P).sort((a,b)=>(P[a].r<9?1:0)-(P[b].r<9?1:0));
+  for(const id of ids){const p=P[id];sphere(ctx,p.x,p.y,p.r,p.col,p.al,true);label(ctx,p.x,p.y,p.r,p.txt,p.tc,p.al*p.ta);}
+  // repulsion effect
+  if(stage.fx==='repel'&&tStage<1){
+    const al=Math.sin(Math.PI*clamp((tStage-.28)/.44,0,1));
+    if(al>.02){ctx.save();ctx.globalAlpha=al;ctx.strokeStyle='#C0392B';ctx.lineWidth=3.5;ctx.lineCap='round';
+      for(const id of ['I1','I2']){const p=P[id],q=P.P1,ang=Math.atan2(p.y-q.y,p.x-q.x);
+        for(let k=0;k<3;k++){ctx.beginPath();ctx.arc(q.x,q.y,44+k*9+4*Math.sin(T*9+k),ang-.32,ang+.32);ctx.stroke();}}
+      ctx.restore();pill(ctx,285,290,'− repels −',al,false);}
+  }
+  // tags
+  const tk=t=>t.text+'|'+t.at.join(','),ta={},tb={};A.tags.forEach(t=>ta[tk(t)]=t);B.tags.forEach(t=>tb[tk(t)]=t);
+  for(const key of new Set([...Object.keys(ta),...Object.keys(tb)])){
+    const t=tb[key]||ta[key];let al=(key in ta&&key in tb)?1:(key in tb?u:1-u),x=0,y=0,m=1;
+    for(const id of t.at){x+=P[id].x;y+=P[id].y;m=Math.min(m,P[id].al);}
+    pill(ctx,x/t.at.length,y/t.at.length+t.dy,t.text,al*m,false);
+  }
+}
+
+/* ---------- energy profile ---------- */
+function curve(pts,x){for(let i=0;i<pts.length-1;i++){const [x0,e0]=pts[i],[x1,e1]=pts[i+1];if(x<=x1){const u=(x-x0)/(x1-x0);return lerp(e0,e1,(1-Math.cos(Math.PI*u))/2);}}return pts[pts.length-1][1];}
+function drawProfile(sc,m){
+  const c=pctx,s=pf.width/340;c.setTransform(s,0,0,s,0,0);c.clearRect(0,0,340,190);
+  const x0=34,x1=326,y0=160,y1=14,X=x=>lerp(x0,x1,x),Y=e=>lerp(y0,y1,e);
+  c.strokeStyle='#6C5C4C';c.lineWidth=1.5;c.beginPath();c.moveTo(x0,y1-4);c.lineTo(x0,y0);c.lineTo(x1+6,y0);c.stroke();
+  c.fillStyle='#6C5C4C';c.font='600 11px "Segoe UI",system-ui,Arial,sans-serif';c.textAlign='center';c.fillText('Progress of reaction',(x0+x1)/2,180);
+  c.save();c.translate(14,(y0+y1)/2);c.rotate(-Math.PI/2);c.fillText('Energy',0,0);c.restore();
+  const path=(pts)=>{c.beginPath();for(let i=0;i<=100;i++){const x=i/100;i?c.lineTo(X(x),Y(curve(pts,x))):c.moveTo(X(x),Y(curve(pts,x)));}c.stroke();};
+  c.setLineDash([5,4]);c.strokeStyle='#9A8C7C';c.lineWidth=2;path(sc.profile.unc);c.setLineDash([]);
+  c.strokeStyle='#8A4B14';c.lineWidth=3;path(sc.profile.cat);
+  c.textAlign='left';c.fillStyle='#9A8C7C';c.fillText('no catalyst',X(.5)+26,Y(.93));c.fillStyle='#8A4B14';c.fillText('with catalyst',X(.02),Y(.12));
+  const pts=m.unc?sc.profile.unc:sc.profile.cat;const mx=X(m.x),my=Y(curve(pts,m.x));
+  c.fillStyle='#fff';c.strokeStyle=m.unc?'#C0392B':'#1E5670';c.lineWidth=3.5;c.beginPath();c.arc(mx,my,6.5,0,7);c.fill();c.stroke();
+}
+
+/* ---------- state machine and UI ---------- */
+const S={scene:0,stage:0,t:1,auto:false,hold:0,speed:1,T:0};
+const $=id=>document.getElementById(id);
+function scene(){return SCENES[S.scene];}
+function markerOf(sc,k,t){
+  const cur=sc.stages[k].m;if(typeof cur==='function')return cur(t);
+  let prev=k>0?sc.stages[k-1].m:cur;if(typeof prev==='function')prev=0;if(k===0)prev=cur;
+  return {x:lerp(prev,cur,ease(t)),unc:false};
+}
+function buildTabs(){
+  const el=$('tabs');
+  SCENES.forEach((sc,i)=>{const b=document.createElement('button');b.type='button';b.role='tab';b.id='tab-'+sc.id;b.textContent=sc.tab;b.addEventListener('click',()=>setScene(i,true));el.appendChild(b);});
+}
+function setScene(i,push){
+  S.scene=i;S.auto=false;const sc=scene();
+  [...$('tabs').children].forEach((b,j)=>b.setAttribute('aria-selected',j===i?'true':'false'));
+  $('sceneName').textContent=sc.name;$('overall').textContent=sc.overall;$('sceneType').textContent=sc.type;
+  $('facts').innerHTML='';sc.facts.forEach(f=>{const li=document.createElement('li');li.textContent=f;$('facts').appendChild(li);});
+  $('legend').innerHTML='';sc.legend.forEach(([c,n])=>{const li=document.createElement('li'),d=document.createElement('i');d.style.background=c;li.appendChild(d);li.appendChild(document.createTextNode(n));$('legend').appendChild(li);});
+  const ol=$('steps');ol.innerHTML='';
+  sc.stages.forEach((st,k)=>{const li=document.createElement('li'),b=document.createElement('button'),n=document.createElement('span');b.type='button';n.className='n';n.textContent=k+1;b.appendChild(n);b.appendChild(document.createTextNode(st.label));b.addEventListener('click',()=>{S.auto=false;go(k,true);});li.appendChild(b);ol.appendChild(li);});
+  if(push){try{history.replaceState(null,'','#'+sc.id);}catch(e){}}
+  go(0,false);
+}
+function go(k,anim){
+  const sc=scene();S.stage=clamp(k,0,sc.stages.length-1);S.t=(anim&&S.stage>0&&!reduce)?0:1;S.hold=0;
+  const st=sc.stages[S.stage];
+  $('count').textContent='Step '+(S.stage+1)+' of '+sc.stages.length;$('stepTitle').textContent=st.title;$('stepText').textContent=st.text;
+  const eq=$('stepEq');eq.textContent=st.eq||'–';eq.classList.toggle('none',!st.eq);
+  [...$('steps').querySelectorAll('button')].forEach((b,j)=>{b.classList.toggle('on',j===S.stage);b.classList.toggle('done',j<S.stage);if(j===S.stage)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current');});
+  $('back').disabled=S.stage===0;
+  $('next').textContent=S.stage===sc.stages.length-1?'Start again ⟲':'Next step ▶';
+  $('auto').setAttribute('aria-pressed',S.auto?'true':'false');$('auto').textContent=S.auto?'Pause':'Play all';
+}
+function next(){const sc=scene();go(S.stage===sc.stages.length-1?0:S.stage+1,true);}
+$('next').addEventListener('click',()=>{S.auto=false;next();});
+$('back').addEventListener('click',()=>{S.auto=false;go(S.stage-1,true);});
+$('replay').addEventListener('click',()=>go(S.stage,true));
+$('auto').addEventListener('click',()=>{S.auto=!S.auto;if(S.auto&&S.t>=1)next();else go(S.stage,false);});
+$('speed').addEventListener('change',e=>{S.speed=parseFloat(e.target.value)||1;});
+window.addEventListener('keydown',e=>{
+  if(e.target&&/^(SELECT|INPUT|TEXTAREA)$/.test(e.target.tagName))return;
+  if(e.key==='ArrowRight'){S.auto=false;next();e.preventDefault();}
+  else if(e.key==='ArrowLeft'){S.auto=false;go(S.stage-1,true);e.preventDefault();}
+  else if(e.key==='r'||e.key==='R')go(S.stage,true);
+  else if(e.key==='p'||e.key==='P')$('auto').click();
+});
+window.addEventListener('hashchange',()=>{const i=SCENES.findIndex(s=>'#'+s.id===location.hash);if(i>=0&&i!==S.scene)setScene(i,false);});
+
+let last=0;
+function frame(now){
+  const dt=reduce?0:Math.min(.05,(now-last)/1000||0);last=now;S.T+=dt;
+  const sc=scene(),st=sc.stages[S.stage],n=st.keys.length;
+  if(S.t<1){S.t=Math.min(1,S.t+dt*S.speed/(1.5+1.9*n));}
+  else if(S.auto){S.hold+=dt*S.speed;if(S.hold>(S.stage===sc.stages.length-1?2.6:1.5))next();}
+  const start=S.stage>0?sc.stages[S.stage-1].keys.at(-1):sc.initState;
+  const seq=[start,...st.keys],v=S.t*n,seg=Math.min(n-1,Math.floor(v)),u=ease(clamp(v-seg,0,1));
+  const s=cv.width/W;ctx.setTransform(s,0,0,s,0,0);
+  render(sc,seq[seg],seq[seg+1],u,S.T,st,S.t,dt);
+  drawProfile(sc,markerOf(sc,S.stage,S.t));
+  requestAnimationFrame(frame);
+}
+buildTabs();fit();
+setScene(Math.max(0,SCENES.findIndex(s=>'#'+s.id===location.hash)),false);
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
