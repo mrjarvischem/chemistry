@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Acids and bases 6: How buffers work</title>
+<style>
+:root{color-scheme:light dark;
+--bg:light-dark(#f6efe2,#1d1712);--panel:light-dark(#fffaf1,#2a221b);--ink:light-dark(#3a2a1d,#f1e6d6);--muted:light-dark(#7a6450,#b9a58f);
+--line:light-dark(#e2d4bd,#4a3b2f);--brown:light-dark(#8a5a2b,#d79c62);--glass:light-dark(#5a4634,#cdbba5);
+--k:light-dark(#2c6e8f,#74b6d6);--kl:light-dark(#d4e6ef,#1f3a4b);--u:light-dark(#a0462a,#e48f6c);--ul:light-dark(#f3dacd,#4b2a20);
+--x:light-dark(#a87a0a,#e0b44a);--xl:light-dark(#f4e3b2,#4a3d17);--good:light-dark(#2f7a3d,#7fcf8c);--gl:light-dark(#dcefdc,#203a25)}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow-x:clip}
+.band{padding:clamp(16px,3vw,36px) max(4vw,14px)}
+.wrap{max-width:1120px;margin:0 auto}
+header{border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:18px}
+.series{margin:0 0 4px;color:var(--brown);font-weight:700;font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+h1{font-size:clamp(28px,4vw,40px);line-height:1.1;margin:0 0 6px;text-wrap:balance}
+.sub{margin:0;color:var(--muted);max-width:75ch}
+#pnav{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+button{font:inherit;cursor:pointer;min-height:44px;border-radius:10px;border:1.5px solid var(--brown);background:var(--panel);color:var(--ink);padding:8px 16px}
+button:disabled{opacity:.4;cursor:default}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--k);outline-offset:2px}
+#pnav button{font-size:14px;min-height:38px;padding:4px 12px;border-color:var(--line)}
+#pnav button[aria-current=true],button[aria-pressed=true]{background:var(--brown);color:var(--panel);border-color:var(--brown)}
+button.next{background:var(--brown);color:var(--panel);font-weight:700}
+button.ghost{border-color:var(--line);font-size:15px}
+h2{font-size:clamp(23px,3vw,30px);line-height:1.15;margin:0 0 12px;text-wrap:balance}
+h3{font-size:19px;margin:0 0 8px}
+p{margin:0 0 10px}.page>p,.page>ul{max-width:80ch}
+ul,ol{margin:0 0 10px;padding-left:22px}li{margin:3px 0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 20px;margin:0 0 16px}
+.def{border-left:6px solid var(--brown)}
+.def .term{margin:0 0 4px;font-size:14px;font-weight:700;color:var(--brown);letter-spacing:.04em;text-transform:uppercase}
+.def .say{font-size:19px;font-weight:600;margin:0}
+.eq{background:var(--bg);border-radius:8px;padding:8px 12px;font-weight:600;font-size:19px;text-align:center;margin:8px 0;font-variant-numeric:tabular-nums}
+.card .eq{background:var(--bg)}
+.work{border-left:4px solid var(--brown);background:var(--bg);padding:10px 12px;border-radius:0 8px 8px 0;margin:10px 0;font-variant-numeric:tabular-nums}
+.tip{font-size:15px;color:var(--muted);margin:8px 0 0}.tip b{color:var(--ink)}
+.warn{border-left:6px solid var(--u);background:var(--ul);border-radius:0 10px 10px 0;padding:10px 14px;margin:0 0 16px}
+.g2{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:18px;align-items:start}
+.g2e{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.fig{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:8px;margin:0 0 16px}
+.fig svg{display:block;width:100%;height:auto}
+.fig .cap{font-size:14px;color:var(--muted);margin:4px 8px 4px}
+.kk{color:var(--k);font-weight:700}.uu{color:var(--u);font-weight:700}.xx{color:var(--x);font-weight:700}.gg{color:var(--good);font-weight:700}
+.num{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--brown);color:var(--panel);font-weight:700;font-size:14px;margin-right:8px;flex:none}
+.st{display:flex;align-items:flex-start;margin:0 0 10px}.st>div{flex:1}
+.stepper{margin-bottom:16px}
+.sbar{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-top:12px}
+.sbar .scount{color:var(--muted);font-size:14px}
+.new{animation:pop .5s ease both}
+@keyframes pop{from{opacity:0;transform:translateY(8px)}}
+.check{border:1.5px dashed var(--brown);border-radius:12px;padding:14px 16px;margin:0 0 14px;background:var(--panel)}
+.check .lab{font-size:13px;font-weight:700;color:var(--brown);letter-spacing:.06em;margin:0 0 4px}
+.check .q{font-weight:600;margin:0 0 8px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.row input,select{font:inherit;min-height:44px;padding:6px 10px;border:1.5px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink)}
+.row input{width:9em}
+.fb{margin:8px 0 0;font-weight:600;min-height:1.2em}.fb.ok{color:var(--good)}.fb.no{color:var(--u)}
+.ans{margin-top:10px;border-left:4px solid var(--good);background:var(--gl);padding:10px 12px;border-radius:0 8px 8px 0;font-variant-numeric:tabular-nums}
+.spot .eq{text-align:left;font-size:17px}
+.spot .ans{border-left-color:var(--u);background:var(--ul)}
+table.t{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+table.t th,table.t td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+table.t th{background:var(--bg);font-size:15px}
+.scroll{overflow-x:auto}
+.quiz .qq{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 18px;margin:0 0 14px}
+.quiz .qt{font-weight:600;margin:0 0 10px}
+.quiz .opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.quiz .opts button{text-align:left;border-color:var(--line)}
+.quiz .opts button.right{background:var(--gl);border-color:var(--good)}
+.quiz .opts button.wrong{background:var(--ul);border-color:var(--u)}
+.quiz .ex{margin:10px 0 0;font-size:15px}
+.score{font-size:20px;font-weight:700}
+.pfoot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:22px;border-top:1px solid var(--line);padding-top:14px}
+#pcount{color:var(--muted);font-size:14px}
+.sd{display:inline-block;width:.62em;height:.62em;border:1.5px solid currentColor;border-radius:50%;position:relative;vertical-align:.55em;margin-left:1px}
+.sd::after{content:"";position:absolute;left:-2.5px;right:-2.5px;top:50%;border-top:1.5px solid currentColor;transform:translateY(-50%)}
+/* svg */
+svg text{fill:var(--ink);font-size:13px;font-family:inherit}
+svg .sm{font-size:11.5px;fill:var(--muted)}svg .b{font-weight:700}svg .lg{font-size:15px;font-weight:700}
+svg .tk{fill:var(--k)}svg .tu{fill:var(--u)}svg .tx{fill:var(--x)}svg .tg{fill:var(--good)}svg .wt{fill:var(--panel);font-weight:700}
+.ax{stroke:var(--ink);stroke-width:1.6;fill:none}.lv{stroke:var(--ink);stroke-width:3;stroke-linecap:round}
+.ak{stroke:var(--k);stroke-width:2.6;fill:none}.au{stroke:var(--u);stroke-width:2.6;fill:none}.ag{stroke:var(--good);stroke-width:2.6;fill:none}.ai{stroke:var(--ink);stroke-width:2;fill:none}.ax2{stroke:var(--x);stroke-width:2.6;fill:none}
+.glass{fill:none;stroke:var(--glass);stroke-width:2.2;stroke-linejoin:round;stroke-linecap:round}
+.water{fill:var(--kl)}.hot{fill:var(--u)}.boxp{fill:var(--panel);stroke:var(--line);stroke-width:1.5}.boxb{fill:var(--bg);stroke:var(--line)}
+.grid-l{stroke:var(--line);stroke-width:1}
+@media(prefers-reduced-motion:reduce){.new{animation:none}}
+@media(max-width:820px){.g2,.g2e,.g3,.quiz .opts{grid-template-columns:minmax(0,1fr)}}
+
+.bars{display:grid;gap:8px;margin:8px 0}
+.bar{display:grid;grid-template-columns:8.5em 1fr 6.5em;gap:8px;align-items:center;font-variant-numeric:tabular-nums}
+.bar i{display:block;height:20px;border-radius:5px;background:var(--k);min-width:2px;transition:width .35s}
+.bar.u i{background:var(--u)}.bar.g i{background:var(--good)}.bar.x i{background:var(--x)}
+.big{font-size:30px;font-weight:700;font-variant-numeric:tabular-nums;margin:0}
+.read{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:10px 0}
+.read>div{background:var(--bg);border-radius:10px;padding:8px 12px}
+.read .l{font-size:13px;color:var(--muted);margin:0}
+.read .v{font-size:21px;font-weight:700;margin:0;font-variant-numeric:tabular-nums}
+input[type=range]{accent-color:var(--brown);min-height:34px}
+label{display:inline-flex;gap:6px;align-items:center;flex-wrap:wrap}
+.pill{display:inline-block;border-radius:99px;padding:2px 12px;font-weight:700;font-size:15px}
+.pill.ok{background:var(--gl);color:var(--good)}.pill.no{background:var(--ul);color:var(--u)}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 4px}
+.frac>span:first-child{border-bottom:2px solid currentColor;padding:0 6px 1px}
+.frac>span:last-child{padding:1px 6px 0}
+.row input[type=checkbox]{width:22px;height:22px;min-height:22px;padding:0;accent-color:var(--brown)}
+.scroll{margin-bottom:16px}.card .scroll:last-child{margin-bottom:0}
+.page>h3{margin-top:6px}
+.opts5{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:10px 0}
+.opts5 button.right{background:var(--gl);border-color:var(--good)}.opts5 button.wrong{background:var(--ul);border-color:var(--u)}
+</style>
+</head>
+<body>
+<div class="band"><div class="wrap">
+<header>
+<p class="series">AQA A-level Chemistry · 3.1.12 Acids and bases · Walkthrough 6 of 9</p>
+<h1>How buffers work</h1>
+<p class="sub">What a buffer is, the two ways to make an acidic buffer, and how to explain what happens when acid or alkali is added.</p>
+<nav id="pnav" aria-label="Pages"></nav>
+</header>
+<main>
+<section class="page" data-title="What is a buffer?">
+<h2>What is a buffer?</h2>
+<div class="card def"><p class="term">Buffer solution</p><p class="say">A solution that resists changes in pH when small amounts of acid or alkali are added</p></div>
+<p>The pH does change, but only very slightly. An <b>acidic buffer</b> (pH below 7) contains a <b>weak acid and its salt</b>. A <b>basic buffer</b> (pH above 7) contains a weak base and its salt.</p>
+<h3>Try it: buffer against water</h3>
+<p>Both beakers hold 100 cm<sup>3</sup>. The buffer contains 0.0100 mol of CH<sub>3</sub>COOH and 0.0100 mol of CH<sub>3</sub>COO<sup>−</sup>.</p>
+<div class="g2e"><div class="card"><h3>Water</h3><p class="big" id="bw-w"></p><p class="tip" id="bw-wt"></p></div><div class="card"><h3>Buffer</h3><p class="big" id="bw-b"></p><div class="bars"><div class="bar x"><span>mol HA</span><i id="bw-ha"></i><span id="bw-hat"></span></div><div class="bar"><span>mol A⁻</span><i id="bw-a"></i><span id="bw-at"></span></div></div><p class="tip" id="bw-bt"></p></div></div>
+<div class="row" style="margin-bottom:16px"><button id="bw-h">Add 1.0 cm³ of 1.00 mol dm⁻³ HCl</button><button id="bw-o">Add 1.0 cm³ of 1.00 mol dm⁻³ NaOH</button><button id="bw-r" class="ghost">Reset</button><span id="bw-n" class="tip" style="margin:0"></span></div>
+<div class="check"><p class="lab">CHECK 1</p><p class="q">Add acid once. By how much does the pH of the water change, compared with the buffer?</p><div class="ans">The water falls from pH 7.00 to 2.00, a change of 5 units. The buffer falls from 4.76 to 4.67, less than 0.1 of a unit.</div></div>
+<div class="check"><p class="lab">CHECK 2</p><p class="q">Keep adding acid to the buffer. What happens after about 10 additions, and why?</p><div class="ans">The pH collapses. All of the A<sup>−</sup> has been used up, so there is nothing left to remove H<sup>+</sup>. A buffer only copes with <b>small</b> amounts of acid or alkali.</div></div>
+</section>
+
+<section class="page" data-title="Making a buffer">
+<h2>Two ways to make an acidic buffer</h2>
+<p>A weak acid on its own has plenty of HA but very little A<sup>−</sup>. A buffer needs a <b>high concentration of both</b>.</p>
+<div class="g2e"><div class="card"><h3>1. Weak acid + its salt</h3><p>Mix ethanoic acid with sodium ethanoate.</p><p class="eq">CH<sub>3</sub>COOH ⇌ CH<sub>3</sub>COO<sup>−</sup> + H<sup>+</sup></p><p>The salt is fully dissociated and supplies the A<sup>−</sup>:</p><p class="eq">CH<sub>3</sub>COONa → CH<sub>3</sub>COO<sup>−</sup> + Na<sup>+</sup></p></div><div class="card"><h3>2. Excess weak acid + strong alkali</h3><p>Add NaOH to an excess of ethanoic acid.</p><p class="eq">CH<sub>3</sub>COOH + NaOH → CH<sub>3</sub>COONa + H<sub>2</sub>O</p><p>All of the NaOH reacts. The mixture contains the <b>left-over acid</b> and the <b>salt that has formed</b>.</p><p class="tip">mol A<sup>−</sup> formed = mol NaOH added. &emsp; mol HA left = mol HA at start − mol NaOH.</p></div></div>
+<div class="check"><p class="lab">CHECK 3</p><p class="q">Which mixtures form an acidic buffer?<br>A: CH<sub>3</sub>COOH + CH<sub>3</sub>COONa &emsp; B: HCl + NaCl &emsp; C: 50 cm<sup>3</sup> of 0.1 mol dm<sup>−3</sup> CH<sub>3</sub>COOH + 25 cm<sup>3</sup> of 0.1 mol dm<sup>−3</sup> NaOH &emsp; D: 25 cm<sup>3</sup> of 0.1 mol dm<sup>−3</sup> CH<sub>3</sub>COOH + 50 cm<sup>3</sup> of 0.1 mol dm<sup>−3</sup> NaOH</p><div class="ans"><b>A and C.</b> A is a weak acid and its salt. In C the weak acid is in excess, so acid and salt are both present. B uses a strong acid. In D the NaOH is in excess, so no weak acid is left.</div></div>
+<div class="check"><p class="lab">CHECK 4</p><p class="q">Explain why ethanoic acid on its own is not a good buffer.</p><div class="ans">It is only slightly dissociated, so it contains very few CH<sub>3</sub>COO<sup>−</sup> ions. There is not enough A<sup>−</sup> to remove added H<sup>+</sup>.</div></div>
+</section>
+
+<section class="page" data-title="Adding acid">
+<h2>Adding a small amount of acid</h2>
+<div class="card"><p class="eq" style="font-size:22px">HA ⇌ H<sup>+</sup> + A<sup>−</sup></p></div>
+<div class="card stepper"><h3>What happens?</h3><p>A small amount of HCl is added to the buffer.</p><div class="st" data-s="1"><span class="num">1</span><div>The added H<sup>+</sup> reacts with the <b>A<sup>−</sup></b> ions (from the salt):<p class="eq">A<sup>−</sup> + H<sup>+</sup> → HA</p></div></div><div class="st" data-s="2"><span class="num">2</span><div>The equilibrium HA ⇌ H<sup>+</sup> + A<sup>−</sup> shifts to the <b>left</b>, removing most of the added H<sup>+</sup>.</div></div><div class="st" data-s="3"><span class="num">3</span><div>There is a large reservoir of A<sup>−</sup>, so [A<sup>−</sup>] falls only slightly and [HA] rises only slightly.</div></div><div class="st" data-s="4"><span class="num">4</span><div>The <b>ratio [HA] : [A<sup>−</sup>] stays almost constant</b>, so [H<sup>+</sup>] and the pH hardly change.</div></div></div>
+<div class="check"><p class="lab">CHECK 5</p><p class="q">A buffer contains propanoic acid and sodium propanoate. Write an equation to show how it removes added H<sup>+</sup>.</p><div class="ans">CH<sub>3</sub>CH<sub>2</sub>COO<sup>−</sup> + H<sup>+</sup> → CH<sub>3</sub>CH<sub>2</sub>COOH</div></div>
+<div class="check"><p class="lab">CHECK 6</p><p class="q">Which component of an acidic buffer removes added acid: the weak acid or the salt?</p><div class="ans">The salt. It supplies the A<sup>−</sup> ions that react with H<sup>+</sup>.</div></div>
+</section>
+
+<section class="page" data-title="Adding alkali">
+<h2>Adding a small amount of alkali</h2>
+<div class="card"><p class="eq" style="font-size:22px">HA ⇌ H<sup>+</sup> + A<sup>−</sup></p></div>
+<div class="card stepper"><h3>What happens?</h3><p>A small amount of NaOH is added to the buffer.</p><div class="st" data-s="1"><span class="num">1</span><div>The added OH<sup>−</sup> reacts with the <b>weak acid, HA</b>:<p class="eq">HA + OH<sup>−</sup> → A<sup>−</sup> + H<sub>2</sub>O</p></div></div><div class="st" data-s="2"><span class="num">2</span><div>You can also describe it this way: OH<sup>−</sup> reacts with H<sup>+</sup> to make water, and the equilibrium shifts to the <b>right</b> to replace the H<sup>+</sup>. Both are accepted.</div></div><div class="st" data-s="3"><span class="num">3</span><div>There is a large reservoir of HA, so [HA] falls only slightly and [A<sup>−</sup>] rises only slightly.</div></div><div class="st" data-s="4"><span class="num">4</span><div>The <b>ratio [HA] : [A<sup>−</sup>] stays almost constant</b>, so the pH hardly changes.</div></div></div>
+<div class="scroll"><table class="t"><tr><th></th><th>Acid (H<sup>+</sup>) added</th><th>Alkali (OH<sup>−</sup>) added</th></tr><tr><td>Reacts with</td><td>A<sup>−</sup> (the salt)</td><td>HA (the weak acid)</td></tr><tr><td>Equation</td><td>A<sup>−</sup> + H<sup>+</sup> → HA</td><td>HA + OH<sup>−</sup> → A<sup>−</sup> + H<sub>2</sub>O</td></tr><tr><td>Equilibrium HA ⇌ H<sup>+</sup> + A<sup>−</sup></td><td>shifts left</td><td>shifts right</td></tr><tr><td>Ratio [HA] : [A<sup>−</sup>]</td><td>almost constant</td><td>almost constant</td></tr></table></div>
+<div class="check"><p class="lab">CHECK 7</p><p class="q">A buffer contains ethanoic acid and sodium ethanoate. Write an equation to show how it removes added OH<sup>−</sup>.</p><div class="ans">CH<sub>3</sub>COOH + OH<sup>−</sup> → CH<sub>3</sub>COO<sup>−</sup> + H<sub>2</sub>O</div></div>
+<div class="check"><p class="lab">CHECK 8</p><p class="q">A student writes: "When NaOH is added the equilibrium HA ⇌ H<sup>+</sup> + A<sup>−</sup> shifts to the left." What is wrong?</p><div class="ans">OH<sup>−</sup> removes H<sup>+</sup> (or HA), so the equilibrium shifts to the <b>right</b> to replace the H<sup>+</sup>.</div></div>
+</section>
+
+<section class="page" data-title="The ratio">
+<h2>Why the ratio matters, and other buffers</h2>
+<div class="card"><p class="eq" style="font-size:20px">K<sub>a</sub> = <span class="frac"><span>[H<sup>+</sup>][A<sup>−</sup>]</span><span>[HA]</span></span> &emsp;&emsp; rearranges to &emsp;&emsp; [H<sup>+</sup>] = K<sub>a</sub> × <span class="frac"><span>[HA]</span><span>[A<sup>−</sup>]</span></span></p><ul><li>K<sub>a</sub> is constant at a fixed temperature, so [H<sup>+</sup>] depends only on the <b>ratio</b> [HA] : [A<sup>−</sup>].</li><li>Small additions of acid or alkali barely change the ratio.</li><li>Adding a little water dilutes HA and A<sup>−</sup> by the same factor. The ratio, and so the pH, does not change.</li><li>If [HA] = [A<sup>−</sup>], then [H<sup>+</sup>] = K<sub>a</sub> and <b>pH = pK<sub>a</sub></b>.</li></ul></div>
+<div class="g2e"><div class="card"><h3>Basic buffers</h3><p>A weak base and its salt, for example NH<sub>3</sub> and NH<sub>4</sub>Cl.</p><p class="eq">NH<sub>3</sub> + H<sup>+</sup> → NH<sub>4</sub><sup>+</sup></p><p class="eq">NH<sub>4</sub><sup>+</sup> + OH<sup>−</sup> → NH<sub>3</sub> + H<sub>2</sub>O</p><p class="tip">Ammonia removes added acid. Ammonium ions remove added alkali.</p></div><div class="card"><h3>Buffers in the blood</h3><p>Blood is kept between pH 7.35 and 7.45.</p><p class="eq">H<sub>2</sub>CO<sub>3</sub> ⇌ H<sup>+</sup> + HCO<sub>3</sub><sup>−</sup></p><p>Extra acid (such as lactic acid): HCO<sub>3</sub><sup>−</sup> + H<sup>+</sup> → H<sub>2</sub>CO<sub>3</sub>, and the equilibrium shifts left.</p><p class="tip">Extra alkali: H<sub>2</sub>CO<sub>3</sub> + OH<sup>−</sup> → HCO<sub>3</sub><sup>−</sup> + H<sub>2</sub>O.</p></div></div>
+<div class="check" data-ans="4.75945" data-kind="ph" data-abs="0.015"><p class="lab">CHECK 9</p><p class="q">An ethanoic acid / sodium ethanoate buffer has [HA] = [A<sup>−</sup>]. Calculate its pH.  K<sub>a</sub> = 1.74 × 10<sup>−5</sup> mol dm<sup>−3</sup></p><div class="ans">[H<sup>+</sup>] = K<sub>a</sub> × 1 = 1.74 × 10<sup>−5</sup> &emsp; pH = pK<sub>a</sub> = <b>4.76</b></div></div>
+<div class="check" data-ans="5.06048" data-kind="ph" data-abs="0.015"><p class="lab">CHECK 10</p><p class="q">In another buffer [A<sup>−</sup>] is twice [HA]. Calculate its pH.  K<sub>a</sub> = 1.74 × 10<sup>−5</sup> mol dm<sup>−3</sup></p><div class="ans">[H<sup>+</sup>] = 1.74 × 10<sup>−5</sup> × ½ = 8.70 × 10<sup>−6</sup> mol dm<sup>−3</sup> &emsp; pH = <b>5.06</b></div></div>
+</section>
+
+<section class="page" data-title="Exam answers + quiz">
+<h2>Model exam answers</h2>
+<p>These questions are almost always worth 2 marks: one for the <b>equation or reaction</b>, one for the <b>ratio</b> (or equilibrium shift).</p>
+<div class="check"><p class="lab">CHECK 11</p><p class="q">A buffer contains propanoic acid and sodium propanoate. Explain how it resists a change in pH when a small amount of NaOH is added. [2 marks]</p><div class="ans">1. OH<sup>−</sup> reacts with the acid:  CH<sub>3</sub>CH<sub>2</sub>COOH + OH<sup>−</sup> → CH<sub>3</sub>CH<sub>2</sub>COO<sup>−</sup> + H<sub>2</sub>O<br>2. The ratio [CH<sub>3</sub>CH<sub>2</sub>COOH] : [CH<sub>3</sub>CH<sub>2</sub>COO<sup>−</sup>] stays almost constant.</div></div>
+<div class="check"><p class="lab">CHECK 12</p><p class="q">Explain how the same buffer resists a change in pH when a small amount of HCl is added. [2 marks]</p><div class="ans">1. H<sup>+</sup> reacts with the propanoate ions:  CH<sub>3</sub>CH<sub>2</sub>COO<sup>−</sup> + H<sup>+</sup> → CH<sub>3</sub>CH<sub>2</sub>COOH<br>2. The ratio [CH<sub>3</sub>CH<sub>2</sub>COOH] : [CH<sub>3</sub>CH<sub>2</sub>COO<sup>−</sup>] stays almost constant.</div></div>
+<h2 style="margin-top:22px">Quiz: how buffers work</h2><div class="quiz" id="quiz"></div>
+</section>
+</main>
+<div class="pfoot"><button id="prev">← Previous page</button><span id="pcount"></span><button id="next" class="next">Next page →</button></div>
+</div></div>
+<script>
+
+const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
+const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e};
+const rnd=(a,b)=>a+Math.random()*(b-a),pick=a=>a[Math.floor(Math.random()*a.length)];
+const sup=n=>String(n).replace('-','−');
+/* n significant figures; standard form below 0.01 */
+const sfx=(x,n=3)=>{if(x===0)return '0';const e=Math.floor(Math.log10(Math.abs(x))+1e-12);
+ if(e>=-2&&e<4)return Number(x.toPrecision(n)).toFixed(Math.max(n-1-e,0));
+ let m=x/Math.pow(10,e),ms=m.toFixed(n-1),ee=e;if(parseFloat(ms)>=10){ms=(m/10).toFixed(n-1);ee=e+1}
+ return ms+' × 10<sup>'+sup(ee)+'</sup>'};
+const pH=h=>-Math.log10(h),p2=h=>pH(h).toFixed(2);
+const KW=1e-14;
+const fr=(a,b)=>`<span class="frac"><span>${a}</span><span>${b}</span></span>`;
+document.body.insertAdjacentHTML('afterbegin',`<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>${[['i','--ink'],['k','--k'],['u','--u'],['g','--good'],['x','--x'],['m','--muted']].map(([n,v])=>`<marker id="m-${n}" viewBox="0 0 10 10" refX="8.5" refY="5" markerUnits="userSpaceOnUse" markerWidth="13" markerHeight="13" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" style="fill:var(${v})"/></marker>`).join('')}</defs></svg>`);
+const num=s=>parseFloat(String(s).replace(/[−–]/g,'-').replace(/[,\s]/g,'').replace(/[×x\*]10\^?\(?(-?\d+)\)?/i,'e$1'));
+/* check questions */
+function initCheck(c){
+ const a=$('.ans',c);a.hidden=true;const row=el('div','row');let fb,sh;
+ if(c.dataset.ans!=null){
+  const inp=el('input');inp.type='text';inp.setAttribute('aria-label','Your answer');inp.placeholder=c.dataset.ph||'your answer';
+  const ok=el('button','','Check');fb=el('p','fb');fb.setAttribute('aria-live','polite');row.append(inp);if(c.dataset.unit)row.append(el('span','unit',c.dataset.unit));row.append(ok);
+  const chk=()=>{const v=num(inp.value),t=+c.dataset.ans,tol=+(c.dataset.tol||0.012),ab=+(c.dataset.abs||0);
+   const close=(x,y)=>Math.abs(x-y)<=(ab||Math.abs(y)*tol)+1e-12;
+   const say=(m,g)=>{fb.textContent=m;fb.className='fb '+(g?'ok':'no')};
+   if(isNaN(v))say('Type a number first. For standard form type 1.5e-5 or 1.5x10^-5.');
+   else if(close(v,t)){say('✓ Correct',1);a.hidden=false;sh.textContent='Hide working'}
+   else if(c.dataset.kind==='ph'&&close(v,14-t))say('That is the pOH. Use Kw to get [H⁺] before taking −log.');
+   else if(c.dataset.kind==='ph'&&Math.abs(Math.abs(v-t)-0.30)<0.02)say('Out by a factor of 2 in [H⁺] or [OH⁻]. How many H⁺ or OH⁻ does each formula give?');
+   else if(c.dataset.kind==='ph'&&Math.abs(v-t)<0.06)say('Very close. Keep unrounded values in your calculator and give 2 decimal places.');
+   else if(c.dataset.kind!=='ph'&&(close(v/2,t)||close(v*2,t)))say('Out by a factor of 2. Check the mole ratio.');
+   else if(c.dataset.kind!=='ph'&&(close(v/1000,t)||close(v*1000,t)))say('Out by a factor of 1000. Check cm³ → dm³.');
+   else say('Not yet. Try again, or show the working.')};
+  ok.onclick=chk;inp.onkeydown=e=>{if(e.key==='Enter')chk()};
+ }
+ const lab=c.dataset.label||(c.dataset.ans!=null?'Show working':'Show answer');
+ sh=el('button','ghost',lab);sh.onclick=()=>{a.hidden=!a.hidden;sh.textContent=a.hidden?lab:'Hide'};
+ row.append(sh);c.insertBefore(row,a);if(fb)c.insertBefore(fb,a);
+}
+/* generated practice question */
+function showQ(host,q,ans,work,o={}){const c=el('div','check');c.dataset.ans=ans;if(o.unit)c.dataset.unit=o.unit;if(o.kind)c.dataset.kind=o.kind;if(o.abs)c.dataset.abs=o.abs;if(o.tol)c.dataset.tol=o.tol;
+ c.innerHTML=`<p class="lab">PRACTICE</p><p class="q">${q}</p><div class="ans">${work}</div>`;$(host).innerHTML='';$(host).append(c);initCheck(c)}
+const PHO={kind:'ph',abs:0.015};
+function initAll(){
+ $$('.stepper').forEach(st=>{
+  const els=$$('[data-s]',st),max=Math.max(...els.map(e=>+e.dataset.s));let n=1;
+  const bar=el('div','sbar'),b=el('button','ghost','← Back'),f=el('button','next'),c=el('span','scount');bar.append(b,c,f);st.append(bar);
+  const up=()=>{els.forEach(e=>{const s=+e.dataset.s,on=s<=n&&(!e.dataset.until||n<=+e.dataset.until);e.style.display=on?'':'none';e.classList.toggle('new',s===n)});
+   c.textContent=`Step ${n} of ${max}`;b.disabled=n<=1;f.textContent=n>=max?'↺ Start again':'Next step →';st.dispatchEvent(new CustomEvent('step',{detail:n}))};
+  b.onclick=()=>{n--;up()};f.onclick=()=>{n=n>=max?1:n+1;up()};up();
+ });
+ $$('.check').forEach(initCheck);
+ const qz=$('#quiz');
+ if(qz&&window.QUIZ){
+  let score=0,done=0;const out=el('p','score');const N=QUIZ.length;
+  const build=()=>{qz.innerHTML='';score=0;done=0;out.textContent='';
+   QUIZ.forEach((q,i)=>{const d=el('div','qq'),o=el('div','opts'),ex=el('p','ex');ex.hidden=true;
+    d.append(el('p','qt',`${i+1}. ${q.q}`),o,ex);
+    const order=q.o.map((t,k)=>[t,k]).sort(()=>Math.random()-.5);
+    order.forEach(([t,k])=>{const bt=el('button','',t);bt.onclick=()=>{if(d.dataset.done)return;d.dataset.done=1;done++;
+      if(k===0){score++;bt.classList.add('right')}else{bt.classList.add('wrong');$$('button',o).forEach((x,j)=>{if(order[j][1]===0)x.classList.add('right')})}
+      ex.innerHTML=(k===0?'<b class="gg">Correct.</b> ':'<b class="uu">Not quite.</b> ')+q.e;ex.hidden=false;
+      if(done===N){out.textContent=`You scored ${score} out of ${N}. `+(score>=0.9*N?'Excellent – this topic is secure.':score>=0.6*N?'Good – go back over the ones you missed.':'Go back through the pages above, then try again.')}};
+     o.append(bt)});
+    qz.append(d)});
+   const again=el('button','','Try the quiz again');again.onclick=()=>{build();qz.scrollIntoView()};qz.append(out,again)};
+  build();
+ }
+ const pages=$$('.page'),nav=$('#pnav');let cur=0;
+ const go=(i,sc=true)=>{cur=Math.max(0,Math.min(pages.length-1,i));pages.forEach((p,k)=>p.hidden=k!==cur);
+  $$('button',nav).forEach((b,k)=>b.setAttribute('aria-current',k===cur));$('#prev').disabled=cur===0;$('#next').disabled=cur===pages.length-1;
+  $('#pcount').textContent=`Page ${cur+1} of ${pages.length}`;try{history.replaceState(null,'','#p'+(cur+1))}catch(e){}
+  if(sc)window.scrollTo(0,0);pages[cur].dispatchEvent(new Event('shown'))};
+ pages.forEach((p,i)=>{const b=el('button','',`${i+1}. ${p.dataset.title}`);b.onclick=()=>go(i);nav.append(b)});
+ $('#prev').onclick=()=>go(cur-1);$('#next').onclick=()=>go(cur+1);
+ const h=()=>{const m=/^#p(\d+)$/.exec(location.hash);go(m?m[1]-1:0,false)};window.addEventListener('hashchange',h);h();
+}
+
+
+{ const KA=1.74e-5;let k=0;
+const up=()=>{const V=(100+Math.abs(k))/1000,n=Math.abs(k)*1e-3;
+ /* water */
+ let hw=k===0?1e-7:(k>0?n/V:KW/(n/V));$('#bw-w').textContent='pH '+p2(hw);$('#bw-wt').textContent=k===0?'Pure water at 25 °C.':'Changed by '+Math.abs(pH(hw)-7).toFixed(2)+' pH units.';
+ /* buffer: k>0 acid added */
+ let ha=0.0100+k*1e-3,a=0.0100-k*1e-3,hb,msg;
+ if(a>1e-9&&ha>1e-9){hb=KA*ha/a;msg='Changed by '+Math.abs(pH(hb)-pH(KA)).toFixed(2)+' pH units. Ratio HA : A⁻ = '+(ha/a).toFixed(2)+' : 1'}
+ else if(a<=1e-9){const ex=-a;ha=0.0200;a=0;hb=ex>1e-9?ex/V:Math.sqrt(KA*0.02/V);msg='All of the A⁻ has been used up. The buffer has failed.'}
+ else{const ex=-ha;a=0.0200;ha=0;hb=ex>1e-9?KW/(ex/V):KW/Math.sqrt(KW/KA*0.02/V);msg='All of the HA has been used up. The buffer has failed.'}
+ $('#bw-b').textContent='pH '+p2(hb);$('#bw-bt').textContent=msg;$('#bw-ha').style.width=100*ha/0.02+'%';$('#bw-a').style.width=100*a/0.02+'%';$('#bw-hat').textContent=ha.toFixed(4);$('#bw-at').textContent=a.toFixed(4);
+ $('#bw-n').textContent=k===0?'':Math.abs(k)+' cm³ of '+(k>0?'HCl':'NaOH')+' added'};
+$('#bw-h').onclick=()=>{if(k<12)k++;up()};$('#bw-o').onclick=()=>{if(k>-12)k--;up()};$('#bw-r').onclick=()=>{k=0;up()};up(); }
+
+window.QUIZ=[{"q": "What is a buffer solution?", "o": ["A solution that resists changes in pH when small amounts of acid or alkali are added", "A solution whose pH never changes", "A solution with a pH of exactly 7", "A solution of a strong acid and a strong base"], "e": "The pH does change slightly, and only small additions can be absorbed."}, {"q": "Which pair makes an acidic buffer?", "o": ["CH<sub>3</sub>COOH and CH<sub>3</sub>COONa", "HCl and NaCl", "NaOH and NaCl", "HCl and CH<sub>3</sub>COOH"], "e": "A weak acid and a salt of that acid."}, {"q": "Which species in an ethanoic acid / sodium ethanoate buffer removes added H<sup>+</sup>?", "o": ["CH<sub>3</sub>COO<sup>−</sup>", "CH<sub>3</sub>COOH", "Na<sup>+</sup>", "H<sub>2</sub>O"], "e": "Ethanoate ions accept the proton: CH<sub>3</sub>COO<sup>−</sup> + H<sup>+</sup> → CH<sub>3</sub>COOH."}, {"q": "Which species removes added OH<sup>−</sup>?", "o": ["CH<sub>3</sub>COOH", "CH<sub>3</sub>COO<sup>−</sup>", "Na<sup>+</sup>", "OH<sup>−</sup>"], "e": "CH<sub>3</sub>COOH + OH<sup>−</sup> → CH<sub>3</sub>COO<sup>−</sup> + H<sub>2</sub>O."}, {"q": "Acid is added to a buffer. Which way does the equilibrium HA ⇌ H<sup>+</sup> + A<sup>−</sup> shift?", "o": ["Left", "Right", "It does not move", "Right, then left"], "e": "Extra H<sup>+</sup> is removed by reacting with A<sup>−</sup> to make HA."}, {"q": "Why does the pH of a buffer stay almost constant?", "o": ["The ratio [HA] : [A<sup>−</sup>] stays almost constant", "K<sub>a</sub> changes to compensate", "The added acid does not react", "Water absorbs the H<sup>+</sup> ions"], "e": "[H<sup>+</sup>] = K<sub>a</sub> × [HA] ÷ [A<sup>−</sup>], and the ratio barely changes."}, {"q": "30 cm<sup>3</sup> of 0.1 mol dm<sup>−3</sup> NaOH is added to 50 cm<sup>3</sup> of 0.1 mol dm<sup>−3</sup> ethanoic acid. What does the mixture contain?", "o": ["Ethanoic acid and sodium ethanoate: a buffer", "Only sodium ethanoate", "Sodium ethanoate and excess NaOH", "Only ethanoic acid"], "e": "The acid is in excess, so some remains alongside the salt formed."}, {"q": "A buffer has [HA] = [A<sup>−</sup>]. What is its pH?", "o": ["Equal to pK<sub>a</sub>", "7.00", "Equal to K<sub>a</sub>", "Half of pK<sub>a</sub>"], "e": "[H<sup>+</sup>] = K<sub>a</sub> × 1, so pH = pK<sub>a</sub>."}, {"q": "A small volume of water is added to a buffer. What happens to its pH?", "o": ["It stays the same", "It rises towards 7", "It falls", "It doubles"], "e": "HA and A<sup>−</sup> are diluted equally, so their ratio is unchanged."}, {"q": "Which pair makes a basic buffer?", "o": ["NH<sub>3</sub> and NH<sub>4</sub>Cl", "NaOH and NaCl", "NH<sub>3</sub> and NaOH", "HCl and NH<sub>4</sub>Cl"], "e": "A weak base and its salt."}];
+initAll();
+</script>
+</body>
+</html>
