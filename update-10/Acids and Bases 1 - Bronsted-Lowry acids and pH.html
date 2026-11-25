@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Acids and bases 1: Brønsted–Lowry acids and pH</title>
+<style>
+:root{color-scheme:light dark;
+--bg:light-dark(#f6efe2,#1d1712);--panel:light-dark(#fffaf1,#2a221b);--ink:light-dark(#3a2a1d,#f1e6d6);--muted:light-dark(#7a6450,#b9a58f);
+--line:light-dark(#e2d4bd,#4a3b2f);--brown:light-dark(#8a5a2b,#d79c62);--glass:light-dark(#5a4634,#cdbba5);
+--k:light-dark(#2c6e8f,#74b6d6);--kl:light-dark(#d4e6ef,#1f3a4b);--u:light-dark(#a0462a,#e48f6c);--ul:light-dark(#f3dacd,#4b2a20);
+--x:light-dark(#a87a0a,#e0b44a);--xl:light-dark(#f4e3b2,#4a3d17);--good:light-dark(#2f7a3d,#7fcf8c);--gl:light-dark(#dcefdc,#203a25)}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow-x:clip}
+.band{padding:clamp(16px,3vw,36px) max(4vw,14px)}
+.wrap{max-width:1120px;margin:0 auto}
+header{border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:18px}
+.series{margin:0 0 4px;color:var(--brown);font-weight:700;font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+h1{font-size:clamp(28px,4vw,40px);line-height:1.1;margin:0 0 6px;text-wrap:balance}
+.sub{margin:0;color:var(--muted);max-width:75ch}
+#pnav{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+button{font:inherit;cursor:pointer;min-height:44px;border-radius:10px;border:1.5px solid var(--brown);background:var(--panel);color:var(--ink);padding:8px 16px}
+button:disabled{opacity:.4;cursor:default}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--k);outline-offset:2px}
+#pnav button{font-size:14px;min-height:38px;padding:4px 12px;border-color:var(--line)}
+#pnav button[aria-current=true],button[aria-pressed=true]{background:var(--brown);color:var(--panel);border-color:var(--brown)}
+button.next{background:var(--brown);color:var(--panel);font-weight:700}
+button.ghost{border-color:var(--line);font-size:15px}
+h2{font-size:clamp(23px,3vw,30px);line-height:1.15;margin:0 0 12px;text-wrap:balance}
+h3{font-size:19px;margin:0 0 8px}
+p{margin:0 0 10px}.page>p,.page>ul{max-width:80ch}
+ul,ol{margin:0 0 10px;padding-left:22px}li{margin:3px 0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 20px;margin:0 0 16px}
+.def{border-left:6px solid var(--brown)}
+.def .term{margin:0 0 4px;font-size:14px;font-weight:700;color:var(--brown);letter-spacing:.04em;text-transform:uppercase}
+.def .say{font-size:19px;font-weight:600;margin:0}
+.eq{background:var(--bg);border-radius:8px;padding:8px 12px;font-weight:600;font-size:19px;text-align:center;margin:8px 0;font-variant-numeric:tabular-nums}
+.card .eq{background:var(--bg)}
+.work{border-left:4px solid var(--brown);background:var(--bg);padding:10px 12px;border-radius:0 8px 8px 0;margin:10px 0;font-variant-numeric:tabular-nums}
+.tip{font-size:15px;color:var(--muted);margin:8px 0 0}.tip b{color:var(--ink)}
+.warn{border-left:6px solid var(--u);background:var(--ul);border-radius:0 10px 10px 0;padding:10px 14px;margin:0 0 16px}
+.g2{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:18px;align-items:start}
+.g2e{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.fig{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:8px;margin:0 0 16px}
+.fig svg{display:block;width:100%;height:auto}
+.fig .cap{font-size:14px;color:var(--muted);margin:4px 8px 4px}
+.kk{color:var(--k);font-weight:700}.uu{color:var(--u);font-weight:700}.xx{color:var(--x);font-weight:700}.gg{color:var(--good);font-weight:700}
+.num{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--brown);color:var(--panel);font-weight:700;font-size:14px;margin-right:8px;flex:none}
+.st{display:flex;align-items:flex-start;margin:0 0 10px}.st>div{flex:1}
+.stepper{margin-bottom:16px}
+.sbar{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-top:12px}
+.sbar .scount{color:var(--muted);font-size:14px}
+.new{animation:pop .5s ease both}
+@keyframes pop{from{opacity:0;transform:translateY(8px)}}
+.check{border:1.5px dashed var(--brown);border-radius:12px;padding:14px 16px;margin:0 0 14px;background:var(--panel)}
+.check .lab{font-size:13px;font-weight:700;color:var(--brown);letter-spacing:.06em;margin:0 0 4px}
+.check .q{font-weight:600;margin:0 0 8px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.row input,select{font:inherit;min-height:44px;padding:6px 10px;border:1.5px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink)}
+.row input{width:9em}
+.fb{margin:8px 0 0;font-weight:600;min-height:1.2em}.fb.ok{color:var(--good)}.fb.no{color:var(--u)}
+.ans{margin-top:10px;border-left:4px solid var(--good);background:var(--gl);padding:10px 12px;border-radius:0 8px 8px 0;font-variant-numeric:tabular-nums}
+.spot .eq{text-align:left;font-size:17px}
+.spot .ans{border-left-color:var(--u);background:var(--ul)}
+table.t{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+table.t th,table.t td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+table.t th{background:var(--bg);font-size:15px}
+.scroll{overflow-x:auto}
+.quiz .qq{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 18px;margin:0 0 14px}
+.quiz .qt{font-weight:600;margin:0 0 10px}
+.quiz .opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.quiz .opts button{text-align:left;border-color:var(--line)}
+.quiz .opts button.right{background:var(--gl);border-color:var(--good)}
+.quiz .opts button.wrong{background:var(--ul);border-color:var(--u)}
+.quiz .ex{margin:10px 0 0;font-size:15px}
+.score{font-size:20px;font-weight:700}
+.pfoot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:22px;border-top:1px solid var(--line);padding-top:14px}
+#pcount{color:var(--muted);font-size:14px}
+.sd{display:inline-block;width:.62em;height:.62em;border:1.5px solid currentColor;border-radius:50%;position:relative;vertical-align:.55em;margin-left:1px}
+.sd::after{content:"";position:absolute;left:-2.5px;right:-2.5px;top:50%;border-top:1.5px solid currentColor;transform:translateY(-50%)}
+/* svg */
+svg text{fill:var(--ink);font-size:13px;font-family:inherit}
+svg .sm{font-size:11.5px;fill:var(--muted)}svg .b{font-weight:700}svg .lg{font-size:15px;font-weight:700}
+svg .tk{fill:var(--k)}svg .tu{fill:var(--u)}svg .tx{fill:var(--x)}svg .tg{fill:var(--good)}svg .wt{fill:var(--panel);font-weight:700}
+.ax{stroke:var(--ink);stroke-width:1.6;fill:none}.lv{stroke:var(--ink);stroke-width:3;stroke-linecap:round}
+.ak{stroke:var(--k);stroke-width:2.6;fill:none}.au{stroke:var(--u);stroke-width:2.6;fill:none}.ag{stroke:var(--good);stroke-width:2.6;fill:none}.ai{stroke:var(--ink);stroke-width:2;fill:none}.ax2{stroke:var(--x);stroke-width:2.6;fill:none}
+.glass{fill:none;stroke:var(--glass);stroke-width:2.2;stroke-linejoin:round;stroke-linecap:round}
+.water{fill:var(--kl)}.hot{fill:var(--u)}.boxp{fill:var(--panel);stroke:var(--line);stroke-width:1.5}.boxb{fill:var(--bg);stroke:var(--line)}
+.grid-l{stroke:var(--line);stroke-width:1}
+@media(prefers-reduced-motion:reduce){.new{animation:none}}
+@media(max-width:820px){.g2,.g2e,.g3,.quiz .opts{grid-template-columns:minmax(0,1fr)}}
+
+.bars{display:grid;gap:8px;margin:8px 0}
+.bar{display:grid;grid-template-columns:8.5em 1fr 6.5em;gap:8px;align-items:center;font-variant-numeric:tabular-nums}
+.bar i{display:block;height:20px;border-radius:5px;background:var(--k);min-width:2px;transition:width .35s}
+.bar.u i{background:var(--u)}.bar.g i{background:var(--good)}.bar.x i{background:var(--x)}
+.big{font-size:30px;font-weight:700;font-variant-numeric:tabular-nums;margin:0}
+.read{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:10px 0}
+.read>div{background:var(--bg);border-radius:10px;padding:8px 12px}
+.read .l{font-size:13px;color:var(--muted);margin:0}
+.read .v{font-size:21px;font-weight:700;margin:0;font-variant-numeric:tabular-nums}
+input[type=range]{accent-color:var(--brown);min-height:34px}
+label{display:inline-flex;gap:6px;align-items:center;flex-wrap:wrap}
+.pill{display:inline-block;border-radius:99px;padding:2px 12px;font-weight:700;font-size:15px}
+.pill.ok{background:var(--gl);color:var(--good)}.pill.no{background:var(--ul);color:var(--u)}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 4px}
+.frac>span:first-child{border-bottom:2px solid currentColor;padding:0 6px 1px}
+.frac>span:last-child{padding:1px 6px 0}
+.row input[type=checkbox]{width:22px;height:22px;min-height:22px;padding:0;accent-color:var(--brown)}
+.scroll{margin-bottom:16px}.card .scroll:last-child{margin-bottom:0}
+.page>h3{margin-top:6px}
+.opts5{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:10px 0}
+.opts5 button.right{background:var(--gl);border-color:var(--good)}.opts5 button.wrong{background:var(--ul);border-color:var(--u)}
+</style>
+</head>
+<body>
+<div class="band"><div class="wrap">
+<header>
+<p class="series">AQA A-level Chemistry · 3.1.12 Acids and bases · Walkthrough 1 of 9</p>
+<h1>Brønsted–Lowry acids and pH</h1>
+<p class="sub">What acids and bases are, the difference between strong and weak, and how to move between pH and [H<sup>+</sup>] for strong acids.</p>
+<nav id="pnav" aria-label="Pages"></nav>
+</header>
+<main>
+<section class="page" data-title="Acids and bases">
+<h2>Acids donate protons, bases accept them</h2>
+<div class="g2e"><div class="card def"><p class="term">Brønsted–Lowry acid</p><p class="say">A proton (H<sup>+</sup>) donor</p></div><div class="card def"><p class="term">Brønsted–Lowry base</p><p class="say">A proton (H<sup>+</sup>) acceptor</p></div></div>
+<p>An acid–base reaction is a <b>proton transfer</b>. To find the acid, look for the species that has <span class="uu">lost</span> an H<sup>+</sup> by the end of the reaction. The base is the species that has <span class="kk">gained</span> one.</p>
+<div class="card"><h3>Example</h3><p class="eq"><span class="uu">HCl</span> + <span class="kk">H<sub>2</sub>O</span> → H<sub>3</sub>O<sup>+</sup> + Cl<sup>−</sup></p><ul><li>HCl becomes Cl<sup>−</sup>. It has <span class="uu">lost H<sup>+</sup></span>, so HCl is the <b>acid</b>.</li><li>H<sub>2</sub>O becomes H<sub>3</sub>O<sup>+</sup>. It has <span class="kk">gained H<sup>+</sup></span>, so H<sub>2</sub>O is the <b>base</b>.</li></ul><p class="tip">H<sub>3</sub>O<sup>+</sup> is the oxonium (hydroxonium) ion. In calculations H<sup>+</sup>(aq) and H<sub>3</sub>O<sup>+</sup>(aq) mean the same thing, so the equation is usually shortened to HCl → H<sup>+</sup> + Cl<sup>−</sup>.</p></div>
+<div class="check"><p class="lab">CHECK 1</p><p class="q">Identify the acid and the base in the forward reaction:  NH<sub>3</sub> + H<sub>2</sub>O ⇌ NH<sub>4</sub><sup>+</sup> + OH<sup>−</sup></p><div class="ans">Acid: <b>H<sub>2</sub>O</b> (it loses H<sup>+</sup> to become OH<sup>−</sup>). Base: <b>NH<sub>3</sub></b> (it gains H<sup>+</sup> to become NH<sub>4</sub><sup>+</sup>). Water can act as an acid or as a base: it depends on what it reacts with.</div></div>
+<div class="check"><p class="lab">CHECK 2</p><p class="q">Identify the acid and the base in the forward reaction:  CH<sub>3</sub>COOH + NH<sub>3</sub> ⇌ CH<sub>3</sub>COO<sup>−</sup> + NH<sub>4</sub><sup>+</sup></p><div class="ans">Acid: <b>CH<sub>3</sub>COOH</b>. Base: <b>NH<sub>3</sub></b>.</div></div>
+<div class="check"><p class="lab">CHECK 3</p><p class="q">Identify the acid and the base in the forward reaction:  H<sub>2</sub>SO<sub>4</sub> + HNO<sub>3</sub> ⇌ HSO<sub>4</sub><sup>−</sup> + H<sub>2</sub>NO<sub>3</sub><sup>+</sup></p><div class="ans">Acid: <b>H<sub>2</sub>SO<sub>4</sub></b> (loses H<sup>+</sup>). Base: <b>HNO<sub>3</sub></b> (gains H<sup>+</sup> to become H<sub>2</sub>NO<sub>3</sub><sup>+</sup>). Nitric acid is acting as a base here because sulfuric acid is the stronger acid.</div></div>
+<div class="check"><p class="lab">CHECK 4</p><p class="q">Identify the acid and the base in the forward reaction:  HSO<sub>4</sub><sup>−</sup> + H<sub>3</sub>O<sup>+</sup> ⇌ H<sub>2</sub>SO<sub>4</sub> + H<sub>2</sub>O</p><div class="ans">Acid: <b>H<sub>3</sub>O<sup>+</sup></b> (loses H<sup>+</sup> to become H<sub>2</sub>O). Base: <b>HSO<sub>4</sub><sup>−</sup></b> (gains H<sup>+</sup>).</div></div>
+</section>
+
+<section class="page" data-title="Strong and weak">
+<h2>Strong and weak acids</h2>
+<div class="g2e"><div class="card"><h3>Strong acid</h3><p><b>Fully dissociated</b> in water.</p><p class="eq">HCl → H<sup>+</sup> + Cl<sup>−</sup></p><p>Every molecule has dissociated, so [H<sup>+</sup>] = [HCl].</p><p class="tip">Strong acids to know: HCl, HNO<sub>3</sub>, H<sub>2</sub>SO<sub>4</sub>.</p></div><div class="card"><h3>Weak acid</h3><p><b>Partially dissociated</b> in water.</p><p class="eq">CH<sub>3</sub>COOH ⇌ CH<sub>3</sub>COO<sup>−</sup> + H<sup>+</sup></p><p>The ⇌ shows an equilibrium that lies well to the left.</p><p class="tip">Weak acids to know: carboxylic acids such as ethanoic acid.</p></div></div>
+<h3>Try it: what is in the beaker?</h3>
+<div class="g2"><div class="fig"><svg viewBox="0 0 460 300" role="img" aria-label="Particles in a beaker of acid" id="bk"></svg></div><div class="card"><div class="row" role="group" aria-label="Acid"><button id="bk-s" aria-pressed="true">0.1 mol dm⁻³ HCl</button><button id="bk-w" aria-pressed="false">0.1 mol dm⁻³ CH₃COOH</button></div><div id="bk-out" aria-live="polite" style="margin-top:10px"></div></div></div>
+<div class="warn"><b>Strong does not mean concentrated.</b> Strong and weak describe <i>how much</i> of the acid dissociates. Concentrated and dilute describe how much acid is dissolved in each dm<sup>3</sup>.</div>
+<div class="check"><p class="lab">CHECK 5</p><p class="q">Write an equation for the dissociation of the weak acid HA in water. What in your equation shows that the acid is weak?</p><div class="ans">HA ⇌ H<sup>+</sup> + A<sup>−</sup>. The reversible arrow ⇌ shows the acid is only partially dissociated.</div></div>
+<div class="check"><p class="lab">CHECK 6</p><p class="q">Define a strong acid.</p><div class="ans">A proton donor that is fully dissociated in water.</div></div>
+</section>
+
+<section class="page" data-title="pH and [H⁺]">
+<h2>pH and hydrogen ion concentration</h2>
+<div class="g2e"><div class="card"><h3>From [H<sup>+</sup>] to pH</h3><p class="eq" style="font-size:24px">pH = −log<sub>10</sub>[H<sup>+</sup>]</p><p class="tip">Calculator: (−) log, then the concentration.</p></div><div class="card"><h3>From pH to [H<sup>+</sup>]</h3><p class="eq" style="font-size:24px">[H<sup>+</sup>] = 10<sup>−pH</sup></p><p class="tip">Calculator: SHIFT log gives 10^x, then (−) and the pH.</p></div></div>
+<ul><li>[H<sup>+</sup>] is in mol dm<sup>−3</sup>.</li><li>Always give pH to <b>2 decimal places</b>.</li><li>pH is a log scale: 1 pH unit is a <b>×10</b> change in [H<sup>+</sup>].</li></ul>
+<h3>Try it: slide the pH</h3>
+<div class="card"><label>pH <input id="ps" type="range" min="0" max="14" step="0.1" value="3" style="width:min(60vw,26em)"></label><div class="read"><div><p class="l">pH</p><p class="v" id="ps-ph"></p></div><div><p class="l">[H⁺] / mol dm⁻³</p><p class="v" id="ps-h"></p></div><div><p class="l">compared with pH 7</p><p class="v" id="ps-x"></p></div></div><div class="bars"><div class="bar u"><span>[H⁺] (log scale)</span><i id="ps-b"></i><span id="ps-t"></span></div></div></div>
+<div class="check" data-ans="0.481486" data-kind="ph" data-abs="0.015"><p class="lab">CHECK 7</p><p class="q">Calculate the pH when [H<sup>+</sup>] = 0.330 mol dm<sup>−3</sup>.</p><div class="ans">pH = −log(0.330) = <b>0.48</b></div></div>
+<div class="check" data-ans="11.7235" data-kind="ph" data-abs="0.015"><p class="lab">CHECK 8</p><p class="q">Calculate the pH when [H<sup>+</sup>] = 1.89 × 10<sup>−12</sup> mol dm<sup>−3</sup>.</p><div class="ans">pH = −log(1.89 × 10<sup>−12</sup>) = <b>11.72</b></div></div>
+<div class="check" data-ans="1.41254e-05" data-unit="mol dm⁻³"><p class="lab">CHECK 9</p><p class="q">Calculate [H<sup>+</sup>] in a solution with a pH of 4.85.</p><div class="ans">[H<sup>+</sup>] = 10<sup>−4.85</sup> = <b>1.41 × 10<sup>−5</sup> mol dm<sup>−3</sup></b></div></div>
+<div class="check" data-ans="0.0501187" data-unit="mol dm⁻³"><p class="lab">CHECK 10</p><p class="q">Calculate [H<sup>+</sup>] in a solution with a pH of 1.30.</p><div class="ans">[H<sup>+</sup>] = 10<sup>−1.30</sup> = <b>0.0501 mol dm<sup>−3</sup></b></div></div>
+<div class="check" data-ans="1000" data-unit="times"><p class="lab">CHECK 11</p><p class="q">Solution X has pH 2.00 and solution Y has pH 5.00. How many times greater is [H<sup>+</sup>] in X?</p><div class="ans">3 pH units = 10 × 10 × 10 = <b>1000 times</b></div></div>
+</section>
+
+<section class="page" data-title="Strong acids">
+<h2>pH of a strong acid</h2>
+<p>A strong acid is fully dissociated, so the dissociation equation gives [H<sup>+</sup>] directly.</p>
+<div class="g2e"><div class="card stepper"><h3>Monoprotic: HCl</h3><p>Calculate the pH of 0.171 mol dm<sup>−3</sup> hydrochloric acid.</p><div class="st" data-s="1"><span class="num">1</span><div>Dissociation: HCl → H<sup>+</sup> + Cl<sup>−</sup></div></div><div class="st" data-s="2"><span class="num">2</span><div>1 mol HCl gives 1 mol H<sup>+</sup>, so [H<sup>+</sup>] = <b>0.171 mol dm<sup>−3</sup></b></div></div><div class="st" data-s="3"><span class="num">3</span><div>pH = −log(0.171)<p class="eq">pH = 0.77</p></div></div></div><div class="card stepper"><h3>Diprotic: H<sub>2</sub>SO<sub>4</sub></h3><p>Calculate the pH of 0.054 mol dm<sup>−3</sup> sulfuric acid. Assume both protons fully dissociate.</p><div class="st" data-s="1"><span class="num">1</span><div>Dissociation: H<sub>2</sub>SO<sub>4</sub> → 2H<sup>+</sup> + SO<sub>4</sub><sup>2−</sup></div></div><div class="st" data-s="2"><span class="num">2</span><div>1 mol H<sub>2</sub>SO<sub>4</sub> gives <span class="uu">2 mol H<sup>+</sup></span>, so [H<sup>+</sup>] = 2 × 0.054 = <b>0.108 mol dm<sup>−3</sup></b></div></div><div class="st" data-s="3"><span class="num">3</span><div>pH = −log(0.108)<p class="eq">pH = 0.97</p></div></div></div></div>
+<div class="card"><h3>Working backwards</h3><p>From a pH, find [H<sup>+</sup>] first, then use the equation to find the acid concentration.</p><ul><li>HCl with pH 1.07: [H<sup>+</sup>] = 10<sup>−1.07</sup> = 0.0851, so [HCl] = <b>0.0851 mol dm<sup>−3</sup></b></li><li>H<sub>2</sub>SO<sub>4</sub> with pH 1.89: [H<sup>+</sup>] = 10<sup>−1.89</sup> = 0.0129, so [H<sub>2</sub>SO<sub>4</sub>] = [H<sup>+</sup>] ÷ 2 = <b>6.44 × 10<sup>−3</sup> mol dm<sup>−3</sup></b></li></ul></div>
+<div class="check" data-ans="1.60206" data-kind="ph" data-abs="0.015"><p class="lab">CHECK 12</p><p class="q">Calculate the pH of 0.0250 mol dm<sup>−3</sup> HNO<sub>3</sub>.</p><div class="ans">[H<sup>+</sup>] = 0.0250 mol dm<sup>−3</sup>  pH = <b>1.60</b></div></div>
+<div class="check" data-ans="1.52288" data-kind="ph" data-abs="0.015"><p class="lab">CHECK 13</p><p class="q">Calculate the pH of 0.0150 mol dm<sup>−3</sup> H<sub>2</sub>SO<sub>4</sub>.</p><div class="ans">[H<sup>+</sup>] = 2 × 0.0150 = 0.0300 mol dm<sup>−3</sup>  pH = <b>1.52</b></div></div>
+<div class="check" data-ans="0.00562341" data-unit="mol dm⁻³"><p class="lab">CHECK 14</p><p class="q">Hydrochloric acid has a pH of 2.25. Calculate its concentration.</p><div class="ans">[H<sup>+</sup>] = 10<sup>−2.25</sup> = <b>5.62 × 10<sup>−3</sup> mol dm<sup>−3</sup></b> = [HCl]</div></div>
+<div class="check" data-ans="0.0353973" data-unit="mol dm⁻³"><p class="lab">CHECK 15</p><p class="q">Sulfuric acid has a pH of 1.15. Calculate its concentration.</p><div class="ans">[H<sup>+</sup>] = 10<sup>−1.15</sup> = 0.0708 mol dm<sup>−3</sup><br>[H<sub>2</sub>SO<sub>4</sub>] = 0.0708 ÷ 2 = <b>0.0354 mol dm<sup>−3</sup></b></div></div>
+</section>
+
+<section class="page" data-title="Dilutions">
+<h2>Diluting a strong acid</h2>
+<p>When an acid is diluted the moles of H<sup>+</sup> stay the same but the volume increases. Find the new concentration first, then the pH.</p>
+<div class="card"><p class="eq">new concentration = old concentration × <span class="frac"><span>old volume</span><span>new (total) volume</span></span></p></div>
+<div class="card stepper"><h3>Worked example</h3><p>25.0 cm<sup>3</sup> of 0.070 mol dm<sup>−3</sup> HCl is made up to 100.0 cm<sup>3</sup> with deionised water. Calculate the pH of the diluted solution.</p><div class="st" data-s="1"><span class="num">1</span><div>New concentration = 0.070 × (25.0 ÷ 100.0) = <b>0.0175 mol dm<sup>−3</sup></b></div></div><div class="st" data-s="2"><span class="num">2</span><div>Strong acid, so [H<sup>+</sup>] = 0.0175 mol dm<sup>−3</sup></div></div><div class="st" data-s="3"><span class="num">3</span><div>pH = −log(0.0175)<p class="eq">pH = 1.76</p></div></div></div>
+<div class="warn">Read the question carefully. "Made up <b>to</b> 250 cm<sup>3</sup>" means the total volume is 250 cm<sup>3</sup>. "250 cm<sup>3</sup> of water is <b>added</b>" means the total is the original volume + 250 cm<sup>3</sup>.</div>
+<div class="check" data-ans="2.09691" data-kind="ph" data-abs="0.015"><p class="lab">CHECK 16</p><p class="q">10.0 cm<sup>3</sup> of 0.200 mol dm<sup>−3</sup> HCl is made up to 250 cm<sup>3</sup>. Calculate the pH.</p><div class="ans">New concentration = 0.200 × (10.0 ÷ 250) = 8.00 × 10<sup>−3</sup> mol dm<sup>−3</sup><br>pH = <b>2.10</b></div></div>
+<div class="check" data-ans="1.52288" data-kind="ph" data-abs="0.015"><p class="lab">CHECK 17</p><p class="q">50.0 cm<sup>3</sup> of 0.0600 mol dm<sup>−3</sup> H<sub>2</sub>SO<sub>4</sub> is diluted to a total volume of 200 cm<sup>3</sup>. Calculate the pH.</p><div class="ans">[H<sub>2</sub>SO<sub>4</sub>] = 0.0600 × (50.0 ÷ 200) = 0.0150 mol dm<sup>−3</sup><br>[H<sup>+</sup>] = 2 × 0.0150 = 0.0300 mol dm<sup>−3</sup><br>pH = <b>1.52</b></div></div>
+<div class="check" data-ans="132.739" data-unit="cm³"><p class="lab">CHECK 18</p><p class="q">Nitric acid has a pH of 1.20. What volume of water must be added to 25.0 cm<sup>3</sup> of this acid to give a solution with a pH of 2.00?</p><div class="ans">Original [H<sup>+</sup>] = 10<sup>−1.20</sup> = 0.0631 mol dm<sup>−3</sup>. Final [H<sup>+</sup>] = 0.0100 mol dm<sup>−3</sup>.<br>Final volume = 25.0 × (0.0631 ÷ 0.0100) = 157.7 cm<sup>3</sup><br>Water added = 157.7 − 25.0 = <b>132.7 cm<sup>3</sup></b></div></div>
+</section>
+
+<section class="page" data-title="Practice + quiz">
+<h2>Practice with new numbers</h2>
+<p>Each press gives a new question. Work it out on paper, then check.</p><div class="row" style="margin-bottom:12px"><button id="g1">pH of a strong acid</button><button id="g2">Concentration from pH</button><button id="g3">Dilution</button></div><div id="gen"></div><h2 style="margin-top:22px">Quiz: acids and pH</h2><div class="quiz" id="quiz"></div>
+</section>
+</main>
+<div class="pfoot"><button id="prev">← Previous page</button><span id="pcount"></span><button id="next" class="next">Next page →</button></div>
+</div></div>
+<script>
+
+const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
+const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e};
+const rnd=(a,b)=>a+Math.random()*(b-a),pick=a=>a[Math.floor(Math.random()*a.length)];
+const sup=n=>String(n).replace('-','−');
+/* n significant figures; standard form below 0.01 */
+const sfx=(x,n=3)=>{if(x===0)return '0';const e=Math.floor(Math.log10(Math.abs(x))+1e-12);
+ if(e>=-2&&e<4)return Number(x.toPrecision(n)).toFixed(Math.max(n-1-e,0));
+ let m=x/Math.pow(10,e),ms=m.toFixed(n-1),ee=e;if(parseFloat(ms)>=10){ms=(m/10).toFixed(n-1);ee=e+1}
+ return ms+' × 10<sup>'+sup(ee)+'</sup>'};
+const pH=h=>-Math.log10(h),p2=h=>pH(h).toFixed(2);
+const KW=1e-14;
+const fr=(a,b)=>`<span class="frac"><span>${a}</span><span>${b}</span></span>`;
+document.body.insertAdjacentHTML('afterbegin',`<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>${[['i','--ink'],['k','--k'],['u','--u'],['g','--good'],['x','--x'],['m','--muted']].map(([n,v])=>`<marker id="m-${n}" viewBox="0 0 10 10" refX="8.5" refY="5" markerUnits="userSpaceOnUse" markerWidth="13" markerHeight="13" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" style="fill:var(${v})"/></marker>`).join('')}</defs></svg>`);
+const num=s=>parseFloat(String(s).replace(/[−–]/g,'-').replace(/[,\s]/g,'').replace(/[×x\*]10\^?\(?(-?\d+)\)?/i,'e$1'));
+/* check questions */
+function initCheck(c){
+ const a=$('.ans',c);a.hidden=true;const row=el('div','row');let fb,sh;
+ if(c.dataset.ans!=null){
+  const inp=el('input');inp.type='text';inp.setAttribute('aria-label','Your answer');inp.placeholder=c.dataset.ph||'your answer';
+  const ok=el('button','','Check');fb=el('p','fb');fb.setAttribute('aria-live','polite');row.append(inp);if(c.dataset.unit)row.append(el('span','unit',c.dataset.unit));row.append(ok);
+  const chk=()=>{const v=num(inp.value),t=+c.dataset.ans,tol=+(c.dataset.tol||0.012),ab=+(c.dataset.abs||0);
+   const close=(x,y)=>Math.abs(x-y)<=(ab||Math.abs(y)*tol)+1e-12;
+   const say=(m,g)=>{fb.textContent=m;fb.className='fb '+(g?'ok':'no')};
+   if(isNaN(v))say('Type a number first. For standard form type 1.5e-5 or 1.5x10^-5.');
+   else if(close(v,t)){say('✓ Correct',1);a.hidden=false;sh.textContent='Hide working'}
+   else if(c.dataset.kind==='ph'&&close(v,14-t))say('That is the pOH. Use Kw to get [H⁺] before taking −log.');
+   else if(c.dataset.kind==='ph'&&Math.abs(Math.abs(v-t)-0.30)<0.02)say('Out by a factor of 2 in [H⁺] or [OH⁻]. How many H⁺ or OH⁻ does each formula give?');
+   else if(c.dataset.kind==='ph'&&Math.abs(v-t)<0.06)say('Very close. Keep unrounded values in your calculator and give 2 decimal places.');
+   else if(c.dataset.kind!=='ph'&&(close(v/2,t)||close(v*2,t)))say('Out by a factor of 2. Check the mole ratio.');
+   else if(c.dataset.kind!=='ph'&&(close(v/1000,t)||close(v*1000,t)))say('Out by a factor of 1000. Check cm³ → dm³.');
+   else say('Not yet. Try again, or show the working.')};
+  ok.onclick=chk;inp.onkeydown=e=>{if(e.key==='Enter')chk()};
+ }
+ const lab=c.dataset.label||(c.dataset.ans!=null?'Show working':'Show answer');
+ sh=el('button','ghost',lab);sh.onclick=()=>{a.hidden=!a.hidden;sh.textContent=a.hidden?lab:'Hide'};
+ row.append(sh);c.insertBefore(row,a);if(fb)c.insertBefore(fb,a);
+}
+/* generated practice question */
+function showQ(host,q,ans,work,o={}){const c=el('div','check');c.dataset.ans=ans;if(o.unit)c.dataset.unit=o.unit;if(o.kind)c.dataset.kind=o.kind;if(o.abs)c.dataset.abs=o.abs;if(o.tol)c.dataset.tol=o.tol;
+ c.innerHTML=`<p class="lab">PRACTICE</p><p class="q">${q}</p><div class="ans">${work}</div>`;$(host).innerHTML='';$(host).append(c);initCheck(c)}
+const PHO={kind:'ph',abs:0.015};
+function initAll(){
+ $$('.stepper').forEach(st=>{
+  const els=$$('[data-s]',st),max=Math.max(...els.map(e=>+e.dataset.s));let n=1;
+  const bar=el('div','sbar'),b=el('button','ghost','← Back'),f=el('button','next'),c=el('span','scount');bar.append(b,c,f);st.append(bar);
+  const up=()=>{els.forEach(e=>{const s=+e.dataset.s,on=s<=n&&(!e.dataset.until||n<=+e.dataset.until);e.style.display=on?'':'none';e.classList.toggle('new',s===n)});
+   c.textContent=`Step ${n} of ${max}`;b.disabled=n<=1;f.textContent=n>=max?'↺ Start again':'Next step →';st.dispatchEvent(new CustomEvent('step',{detail:n}))};
+  b.onclick=()=>{n--;up()};f.onclick=()=>{n=n>=max?1:n+1;up()};up();
+ });
+ $$('.check').forEach(initCheck);
+ const qz=$('#quiz');
+ if(qz&&window.QUIZ){
+  let score=0,done=0;const out=el('p','score');const N=QUIZ.length;
+  const build=()=>{qz.innerHTML='';score=0;done=0;out.textContent='';
+   QUIZ.forEach((q,i)=>{const d=el('div','qq'),o=el('div','opts'),ex=el('p','ex');ex.hidden=true;
+    d.append(el('p','qt',`${i+1}. ${q.q}`),o,ex);
+    const order=q.o.map((t,k)=>[t,k]).sort(()=>Math.random()-.5);
+    order.forEach(([t,k])=>{const bt=el('button','',t);bt.onclick=()=>{if(d.dataset.done)return;d.dataset.done=1;done++;
+      if(k===0){score++;bt.classList.add('right')}else{bt.classList.add('wrong');$$('button',o).forEach((x,j)=>{if(order[j][1]===0)x.classList.add('right')})}
+      ex.innerHTML=(k===0?'<b class="gg">Correct.</b> ':'<b class="uu">Not quite.</b> ')+q.e;ex.hidden=false;
+      if(done===N){out.textContent=`You scored ${score} out of ${N}. `+(score>=0.9*N?'Excellent – this topic is secure.':score>=0.6*N?'Good – go back over the ones you missed.':'Go back through the pages above, then try again.')}};
+     o.append(bt)});
+    qz.append(d)});
+   const again=el('button','','Try the quiz again');again.onclick=()=>{build();qz.scrollIntoView()};qz.append(out,again)};
+  build();
+ }
+ const pages=$$('.page'),nav=$('#pnav');let cur=0;
+ const go=(i,sc=true)=>{cur=Math.max(0,Math.min(pages.length-1,i));pages.forEach((p,k)=>p.hidden=k!==cur);
+  $$('button',nav).forEach((b,k)=>b.setAttribute('aria-current',k===cur));$('#prev').disabled=cur===0;$('#next').disabled=cur===pages.length-1;
+  $('#pcount').textContent=`Page ${cur+1} of ${pages.length}`;try{history.replaceState(null,'','#p'+(cur+1))}catch(e){}
+  if(sc)window.scrollTo(0,0);pages[cur].dispatchEvent(new Event('shown'))};
+ pages.forEach((p,i)=>{const b=el('button','',`${i+1}. ${p.dataset.title}`);b.onclick=()=>go(i);nav.append(b)});
+ $('#prev').onclick=()=>go(cur-1);$('#next').onclick=()=>go(cur+1);
+ const h=()=>{const m=/^#p(\d+)$/.exec(location.hash);go(m?m[1]-1:0,false)};window.addEventListener('hashchange',h);h();
+}
+
+
+{ /* beaker: strong v weak */
+const pos=[];for(let r=0;r<4;r++)for(let c=0;c<5;c++)pos.push([120+c*55+(r%2)*18,120+r*38]);
+const draw=strong=>{let s=`<path d="M70 40v230a12 12 0 0 0 12 12h296a12 12 0 0 0 12-12V40" class="glass"/><rect x="74" y="90" width="312" height="188" class="water"/>`;
+ pos.forEach(([x,y],i)=>{const dis=strong||i===7;
+  if(dis)s+=`<circle cx="${x-13}" cy="${y}" r="8" style="fill:var(--u)"/><text x="${x-13}" y="${y+4}" text-anchor="middle" class="wt" style="font-size:9px">H⁺</text><circle cx="${x+12}" cy="${y+4}" r="12" style="fill:var(--k)"/><text x="${x+12}" y="${y+8}" text-anchor="middle" class="wt" style="font-size:9px">${strong?'Cl⁻':'A⁻'}</text>`;
+  else s+=`<ellipse cx="${x}" cy="${y}" rx="20" ry="12" style="fill:var(--x)"/><text x="${x}" y="${y+4}" text-anchor="middle" class="wt" style="font-size:10px">HA</text>`});
+ s+=`<text x="230" y="24" text-anchor="middle" class="lg">${strong?'HCl: every molecule dissociated':'CH₃COOH: mostly undissociated'}</text>`;$('#bk').innerHTML=s;
+ $('#bk-s').setAttribute('aria-pressed',strong);$('#bk-w').setAttribute('aria-pressed',!strong);
+ const h=strong?0.1:Math.sqrt(1.74e-5*0.1);
+ $('#bk-out').innerHTML=`<div class="read"><div><p class="l">[H⁺] / mol dm⁻³</p><p class="v">${sfx(h)}</p></div><div><p class="l">pH</p><p class="v">${p2(h)}</p></div><div><p class="l">dissociated</p><p class="v">${strong?'100 %':'about 1 %'}</p></div></div><p class="tip">${strong?'[H⁺] is the same as the acid concentration.':'Same concentration of acid, but about 75 times fewer H⁺ ions. In a real solution only about 1 molecule in 100 is dissociated (the picture shows 1 in 20). Here A⁻ is CH₃COO⁻.'}</p>`};
+$('#bk-s').onclick=()=>draw(true);$('#bk-w').onclick=()=>draw(false);draw(true);
+}
+{ /* pH slider */
+const up=()=>{const v=+$('#ps').value,h=Math.pow(10,-v);$('#ps-ph').textContent=v.toFixed(2);$('#ps-h').innerHTML=sfx(h);
+ const d=7-v;$('#ps-x').innerHTML=Math.abs(d)<0.05?'the same':(d>0?'× ':'÷ ')+sfx(Math.pow(10,Math.abs(d)),2)+' [H⁺]';
+ $('#ps-b').style.width=(100*(14-v)/14)+'%';$('#ps-t').textContent=v<7?'acidic':v>7?'alkaline':'neutral at 25 °C'};
+$('#ps').oninput=up;up();
+}
+{ /* generators */
+const A=[['HCl',1],['HNO₃',1],['H₂SO₄',2]];
+$('#g1').onclick=()=>{const [f,n]=pick(A),c=+rnd(0.012,0.48).toPrecision(3),h=c*n;
+ showQ('#gen',`Calculate the pH of ${sfx(c)} mol dm⁻³ ${f}.`,pH(h),(n===2?`H₂SO₄ → 2H⁺ + SO₄²⁻, so [H⁺] = 2 × ${sfx(c)} = ${sfx(h)} mol dm⁻³<br>`:`[H⁺] = ${sfx(c)} mol dm⁻³<br>`)+`pH = −log(${sfx(h)}) = <b>${p2(h)}</b>`,PHO)};
+$('#g2').onclick=()=>{const [f,n]=pick(A),ph=+rnd(0.6,2.6).toFixed(2),h=Math.pow(10,-ph),c=h/n;
+ showQ('#gen',`A solution of ${f} has a pH of ${ph.toFixed(2)}. Calculate the concentration of the acid.`,c,`[H⁺] = 10<sup>−${ph.toFixed(2)}</sup> = ${sfx(h)} mol dm⁻³<br>`+(n===2?`[H₂SO₄] = [H⁺] ÷ 2 = <b>${sfx(c)} mol dm⁻³</b>`:`[${f}] = <b>${sfx(c)} mol dm⁻³</b>`),{unit:'mol dm⁻³',tol:0.02})};
+$('#g3').onclick=()=>{const [f,n]=pick(A),c=pick([0.1,0.15,0.2,0.25,0.5]),v=pick([10,20,25]),V=pick([100,250,500]),c2=c*v/V,h=c2*n;
+ showQ('#gen',`${v.toFixed(1)} cm³ of ${c.toFixed(3)} mol dm⁻³ ${f} is made up to ${V} cm³ with deionised water. Calculate the pH of the diluted solution.`,pH(h),`New concentration = ${c.toFixed(3)} × (${v.toFixed(1)} ÷ ${V}) = ${sfx(c2)} mol dm⁻³<br>`+(n===2?`[H⁺] = 2 × ${sfx(c2)} = ${sfx(h)} mol dm⁻³<br>`:'')+`pH = <b>${p2(h)}</b>`,PHO)};
+$('#g1').click();
+}
+
+window.QUIZ=[{"q": "What is a Brønsted–Lowry base?", "o": ["A proton acceptor", "A proton donor", "An electron pair donor", "A substance that releases OH<sup>−</sup> ions"], "e": "A base accepts a proton (H<sup>+</sup>). An acid donates one."}, {"q": "In  NH<sub>3</sub> + H<sub>2</sub>O ⇌ NH<sub>4</sub><sup>+</sup> + OH<sup>−</sup>,  which species is the acid in the forward reaction?", "o": ["H<sub>2</sub>O", "NH<sub>3</sub>", "NH<sub>4</sub><sup>+</sup>", "OH<sup>−</sup>"], "e": "Water loses H<sup>+</sup> to become OH<sup>−</sup>, so it is the proton donor."}, {"q": "Which statement describes a weak acid?", "o": ["It is partially dissociated in water", "It is fully dissociated in water", "It has a low concentration", "It has a pH above 7"], "e": "Weak means only partially dissociated. It says nothing about concentration."}, {"q": "What is the pH of 0.0500 mol dm<sup>−3</sup> HCl?", "o": ["1.30", "1.00", "0.05", "1.60"], "e": "HCl is strong and monoprotic, so [H<sup>+</sup>] = 0.0500. pH = −log(0.0500) = 1.30."}, {"q": "What is the pH of 0.0500 mol dm<sup>−3</sup> H<sub>2</sub>SO<sub>4</sub>?", "o": ["1.00", "1.30", "1.60", "2.00"], "e": "Each H<sub>2</sub>SO<sub>4</sub> gives 2 H<sup>+</sup>, so [H<sup>+</sup>] = 0.100 and pH = 1.00."}, {"q": "What is [H<sup>+</sup>] in a solution with a pH of 3.40?", "o": ["3.98 × 10<sup>−4</sup> mol dm<sup>−3</sup>", "3.98 × 10<sup>−5</sup> mol dm<sup>−3</sup>", "0.531 mol dm<sup>−3</sup>", "3.40 × 10<sup>−3</sup> mol dm<sup>−3</sup>"], "e": "[H<sup>+</sup>] = 10<sup>−3.40</sup> = 3.98 × 10<sup>−4</sup> mol dm<sup>−3</sup>."}, {"q": "The pH of a solution falls from 5 to 2. What happens to [H<sup>+</sup>]?", "o": ["It increases by a factor of 1000", "It increases by a factor of 3", "It decreases by a factor of 1000", "It increases by a factor of 30"], "e": "Each pH unit is a ×10 change. Three units = 10<sup>3</sup>. Lower pH means more H<sup>+</sup>."}, {"q": "Sulfuric acid has a pH of 1.00. What is its concentration?", "o": ["0.0500 mol dm<sup>−3</sup>", "0.100 mol dm<sup>−3</sup>", "0.200 mol dm<sup>−3</sup>", "1.00 mol dm<sup>−3</sup>"], "e": "[H<sup>+</sup>] = 10<sup>−1.00</sup> = 0.100. Each H<sub>2</sub>SO<sub>4</sub> gives 2 H<sup>+</sup>, so [H<sub>2</sub>SO<sub>4</sub>] = 0.0500 mol dm<sup>−3</sup>."}, {"q": "25.0 cm<sup>3</sup> of 0.100 mol dm<sup>−3</sup> HCl is made up to 250 cm<sup>3</sup>. What is the pH?", "o": ["2.00", "1.00", "3.00", "1.40"], "e": "The concentration falls by a factor of 10 to 0.0100 mol dm<sup>−3</sup>, so the pH rises by 1 unit to 2.00."}, {"q": "To how many decimal places should a pH be given?", "o": ["2", "1", "3", "The same number as the significant figures in the question"], "e": "pH values are always quoted to 2 decimal places at A-level."}];
+initAll();
+</script>
+</body>
+</html>
