@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="gate.js"></script>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Greenhouse Effect Animation</title>
+<style>
+:root{
+  /* Layout: large animated scene on the left, teacher controls and readouts on the right. Cream and brown house palette; yellow = sunlight, red = infrared. */
+  --paper:#f6efe0;
+  --card:#fffaf0;
+  --ink:#3b2a1a;
+  --soft:#7a634b;
+  --line:#d9c7a8;
+  --brown:#6b4423;
+  --sun:#d9a400;
+  --ir:#d2391c;
+  --good:#2f6b3a;
+  --font:"Segoe UI",Calibri,"Helvetica Neue",Arial,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--font);font-size:17px;line-height:1.4}
+header{padding:14px 20px 6px;display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;justify-content:space-between;max-width:1500px;margin:0 auto}
+h1{font-size:1.55rem;margin:0;color:var(--brown);text-wrap:balance}
+h2{font-size:.95rem;margin:0 0 8px;color:var(--brown);text-transform:uppercase;letter-spacing:.05em}
+.seg{display:inline-flex;flex-wrap:wrap;border:2px solid var(--brown);border-radius:8px;overflow:hidden}
+.seg button{border:0;background:var(--card);color:var(--brown);font:inherit;font-weight:600;padding:9px 14px;cursor:pointer}
+.seg button+button{border-left:2px solid var(--brown)}
+.seg button[aria-pressed="true"]{background:var(--brown);color:#fff}
+main{display:grid;grid-template-columns:minmax(0,2.1fr) minmax(300px,1fr);gap:16px;padding:8px 20px 24px;max-width:1500px;margin:0 auto}
+@media (max-width:980px){main{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.stack{display:flex;flex-direction:column;gap:14px;min-width:0}
+#cv{width:100%;aspect-ratio:5/3;display:block;border-radius:8px;background:#12306b}
+#caption{margin:10px 0 0;font-weight:600;font-size:1.05rem;min-height:2.8em}
+.bar{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;margin-top:10px}
+button.act{font:inherit;font-weight:600;padding:8px 14px;border-radius:8px;border:2px solid var(--brown);background:#fff;color:var(--brown);cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid #1d6fd1;outline-offset:2px}
+label.chk{display:inline-flex;gap:6px;align-items:center;font-size:.95rem}
+input[type=range]{accent-color:var(--brown);width:130px}
+input[type=checkbox]{accent-color:var(--brown);width:18px;height:18px}
+.key{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:10px;font-size:.92rem;color:var(--soft)}
+.key>span{display:inline-flex;align-items:center;gap:6px}
+.key svg{flex:none}
+.acts{display:flex;flex-direction:column;gap:6px}
+.actrow{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;align-items:start;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#fff;cursor:pointer}
+.actrow input{margin-top:3px}
+.actrow b{display:block}
+.actrow small{color:var(--soft);font-size:.86rem;line-height:1.3}
+.actrow .gas{font-weight:700;font-size:.8rem;border-radius:999px;padding:1px 8px;color:#fff;margin-left:6px;vertical-align:1px}
+.gas.c{background:#4a4a4a}.gas.m{background:#2a6f8f}
+.readgrid{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center}
+.thermo{width:26px;height:150px;border:2px solid var(--brown);border-radius:13px;background:#fff;position:relative;overflow:hidden}
+.thermo i{position:absolute;left:0;right:0;bottom:0;height:50%;background:linear-gradient(#e2502c,#b8261a)}
+.thermo u{position:absolute;left:0;right:0;border-top:2px dashed var(--good);bottom:87.5%}
+.big>b{font-size:2.3rem;font-variant-numeric:tabular-nums;line-height:1.1}
+.big>span{display:block;font-size:.8rem;color:var(--soft);text-transform:uppercase;letter-spacing:.04em}
+.big>span em{font-style:normal;font-weight:700;color:var(--ir)}
+.lv{display:grid;grid-template-columns:1fr auto;gap:2px 10px;font-variant-numeric:tabular-nums;margin-top:8px}
+.lv b{text-align:right}
+.split{height:22px;border-radius:6px;overflow:hidden;display:flex;background:#efe4cd;margin-top:4px}
+.split i{background:var(--ir);width:50%}.split s{background:#8fb8e0;flex:1}
+.note{font-size:.85rem;color:var(--soft);margin:6px 0 0}
+ol.steps{margin:0;padding-left:1.3em}
+ol.steps li{margin:5px 0}
+.y{color:#9a7400;font-weight:700}.r{color:var(--ir);font-weight:700}
+.wide{grid-column:1/-1}
+.fx{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:6px 22px;margin:0;padding-left:1.2em}
+</style>
+</head>
+<body>
+<header>
+  <h1>The greenhouse effect</h1>
+  <div class="seg" role="group" aria-label="Atmosphere">
+    <button id="mNone" aria-pressed="false">No greenhouse gases</button>
+    <button id="mNat" aria-pressed="true">Natural greenhouse effect</button>
+    <button id="mHum" aria-pressed="false">With human activities</button>
+  </div>
+</header>
+
+<main>
+  <section class="stack">
+    <div class="card">
+      <canvas id="cv" width="1000" height="600" role="img" aria-label="Animated cross-section of Earth's surface and atmosphere showing sunlight arriving, infrared leaving and greenhouse gas molecules absorbing and re-emitting infrared"></canvas>
+      <p id="caption" aria-live="polite"></p>
+      <div class="bar">
+        <button class="act" id="play">Pause</button>
+        <label class="chk">Speed <input type="range" id="speed" min="0.25" max="3" step="0.25" value="1"></label>
+        <label class="chk"><input type="checkbox" id="sSun" checked> Sunlight</label>
+        <label class="chk"><input type="checkbox" id="sIR" checked> Infrared</label>
+        <label class="chk"><input type="checkbox" id="sLab" checked> Labels</label>
+      </div>
+      <div class="key">
+        <span><svg width="46" height="14" viewBox="0 0 46 14"><path d="M1,7 q3,-8 6,0 t6,0 t6,0 t6,0 t6,0 t6,0 t6,0" fill="none" stroke="#d9a400" stroke-width="2.4"/></svg>short wavelength radiation from the Sun</span>
+        <span><svg width="46" height="14" viewBox="0 0 46 14"><path d="M1,7 q5.5,-10 11,0 t11,0 t11,0 t11,0" fill="none" stroke="#d2391c" stroke-width="2.6"/></svg>longer wavelength infrared from the surface</span>
+        <span><svg width="34" height="14" viewBox="0 0 34 14"><circle cx="6" cy="7" r="5" fill="#d43c2f"/><circle cx="17" cy="7" r="5" fill="#3a3a3a"/><circle cx="28" cy="7" r="5" fill="#d43c2f"/></svg><b style="font-weight:400">CO<sub>2</sub></b></span>
+        <span><svg width="24" height="20" viewBox="0 0 24 20"><circle cx="12" cy="10" r="5" fill="#3a3a3a"/><circle cx="4" cy="3" r="3" fill="#fff" stroke="#888"/><circle cx="20" cy="3" r="3" fill="#fff" stroke="#888"/><circle cx="4" cy="17" r="3" fill="#fff" stroke="#888"/><circle cx="20" cy="17" r="3" fill="#fff" stroke="#888"/></svg><b style="font-weight:400">CH<sub>4</sub></b></span>
+        <span><svg width="24" height="16" viewBox="0 0 24 16"><circle cx="12" cy="6" r="5" fill="#d43c2f"/><circle cx="4" cy="12" r="3" fill="#fff" stroke="#888"/><circle cx="20" cy="12" r="3" fill="#fff" stroke="#888"/></svg><b style="font-weight:400">H<sub>2</sub>O vapour</b></span>
+      </div>
+      <p class="note">A model, not to scale. Melting ice and sea level rise are exaggerated so they can be seen.</p>
+    </div>
+
+    <div class="card">
+      <h2>What is happening</h2>
+      <ol class="steps">
+        <li><span class="y">Short wavelength</span> radiation from the Sun passes through the atmosphere.</li>
+        <li>The Earth's surface absorbs it and warms up.</li>
+        <li>The warm surface emits <span class="r">longer wavelength infrared</span> radiation.</li>
+        <li>Greenhouse gases absorb the infrared and re-emit it in all directions. Some goes back to the surface, keeping the Earth warm.</li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="stack">
+    <div class="card">
+      <h2>Human activities</h2>
+      <div class="acts" id="acts"></div>
+      <div class="bar"><button class="act" id="allOn">All on</button><button class="act" id="allOff">All off</button></div>
+    </div>
+
+    <div class="card">
+      <h2>Average surface temperature</h2>
+      <div class="readgrid">
+        <div class="thermo" aria-hidden="true"><i id="thFill"></i><u title="natural level, 15 °C"></u></div>
+        <div class="big">
+          <b id="temp">15.0 °C</b>
+          <span id="tNote">natural level about 15 °C (dashed line)</span>
+          <div class="lv">
+            <span>Carbon dioxide</span><b id="co2">280 ppm</b>
+            <span>Methane</span><b id="ch4">700 ppb</b>
+          </div>
+        </div>
+      </div>
+      <p class="note">Gas levels are approximate: about 280 ppm CO<sub>2</sub> and 700 ppb CH<sub>4</sub> before the industrial revolution.</p>
+    </div>
+
+    <div class="card">
+      <h2>Where the infrared goes</h2>
+      <div class="split" aria-hidden="true"><i id="spBack"></i><s></s></div>
+      <div class="lv"><span class="r" id="backTxt">sent back to the surface</span><b id="escTxt">escapes to space</b></div>
+    </div>
+  </section>
+
+  <section class="card wide">
+    <h2>Possible effects of climate change</h2>
+    <ul class="fx">
+      <li>Sea level rise, flooding and coastal erosion</li>
+      <li>More frequent and severe storms</li>
+      <li>Changes in the amount, timing and distribution of rainfall</li>
+      <li>Temperature and water stress for humans and wildlife</li>
+      <li>Changes in the food-producing capacity of some regions</li>
+      <li>Changes to where wildlife species can live</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+(function(){
+"use strict";
+var $=function(id){return document.getElementById(id)};
+var W=1000,H=600,cv=$("cv"),ctx=cv.getContext("2d"),sc=1;
+function R(a,b){return a+Math.random()*(b-a)}
+function clamp(v,a,b){return v<a?a:(v>b?b:v)}
+function lerpC(a,b,t){return "rgb("+a.map(function(v,i){return Math.round(v+(b[i]-v)*t)}).join(",")+")"}
+
+var ACTS=[
+ {k:"fossil",  name:"Burning fossil fuels", gas:"CO2", n:7, x:290, text:"Power stations, vehicles and industry burn coal, oil and gas, releasing carbon dioxide."},
+ {k:"deforest",name:"Deforestation",        gas:"CO2", n:3, x:110, text:"Fewer trees take in carbon dioxide for photosynthesis, and burning the trees releases more."},
+ {k:"cattle",  name:"Cattle farming",       gas:"CH4", n:3, x:425, text:"Cattle release methane as they digest their food."},
+ {k:"rice",    name:"Rice paddy fields",    gas:"CH4", n:2, x:525, text:"Bacteria in the waterlogged soil release methane."},
+ {k:"landfill",name:"Landfill",             gas:"CH4", n:2, x:612, text:"Waste decomposing without oxygen releases methane."}
+];
+var mode="natural",on={},aA={},timers={};
+ACTS.forEach(function(a){on[a.k]=false;aA[a.k]=0;timers[a.k]=0});
+var mols=[],phot=[],flashes=[],emits=[],ev=[];
+var T=15,tNow=0,playing=true,speed=1,sunAcc=0,showSun=true,showIR=true,showLab=true;
+var stars=[];for(var i=0;i<46;i++)stars.push([R(120,W),R(4,84),R(.4,1.3)]);
+
+// ---------- geometry ----------
+function warm(){return clamp((T-15)/1.2,0,1)}
+function seaY(){return 500-9*warm()}
+function iceScale(){return T<15?1+1.2*clamp((15-T)/33,0,1):1-0.5*warm()}
+function iceL(){return W-150*iceScale()}
+function landY(x){var xx=Math.min(x,640);var y=468+7*Math.sin(xx/85)+4*Math.sin(xx/37+1);return x>640?y+(x-640)*1.1:y}
+function iceTop(x){var h=14+22*Math.min(1.2,iceScale());return seaY()-h*Math.min(1,(x-iceL())/45)*(0.85+0.15*Math.sin(x/9))}
+function surfY(x){if(x>iceL())return iceTop(x);return Math.min(landY(x),seaY())}
+
+// ---------- molecules ----------
+function addMol(type,src,x,y,alpha){mols.push({type:type,src:src,x:x,y:y,tx:R(40,960),ty:type==="H2O"?R(230,420):R(125,410),rot:R(0,6.28),vr:R(-.5,.5),w:R(0,6.28),alpha:alpha,dying:false,ex:0,pend:false})}
+function addNatural(alpha){var set=[["H2O",6],["CO2",7],["CH4",2]];set.forEach(function(s){for(var i=0;i<s[1];i++){var m;addMol(s[0],"nat",0,0,alpha);m=mols[mols.length-1];m.x=m.tx;m.y=m.ty}})}
+function count(f){var n=0;mols.forEach(function(m){if(!m.dying&&f(m))n++});return n}
+
+// ---------- simulation ----------
+function step(dt){
+  tNow+=dt;
+  // sunlight
+  sunAcc+=dt*3.4;
+  while(sunAcc>=1){sunAcc-=1;phot.push({kind:"sun",x:R(-170,900),y:-12,dx:0.287,dy:0.958,d:R(0,20),v:150})}
+  // human sources
+  ACTS.forEach(function(a){
+    aA[a.k]+=((on[a.k]?1:0)-aA[a.k])*Math.min(1,dt*2.5);
+    var have=count(function(m){return m.src===a.k});timers[a.k]-=dt;
+    if(on[a.k]&&have<a.n&&timers[a.k]<=0){timers[a.k]=1.6;addMol(a.gas,a.k,a.x+R(-18,18),landY(a.x)-28,1)}
+    if(!on[a.k]&&have>0&&timers[a.k]<=0){timers[a.k]=0.6;for(var i=0;i<mols.length;i++)if(mols[i].src===a.k&&!mols[i].dying){mols[i].dying=true;break}}
+  });
+  // natural gases follow the mode
+  var nat=count(function(m){return m.src==="nat"});
+  if(mode==="none"&&nat>0)mols.forEach(function(m){if(m.src==="nat")m.dying=true});
+  if(mode!=="none"&&nat===0)addNatural(0);
+  // molecules
+  for(var i=mols.length-1;i>=0;i--){var m=mols[i];
+    m.alpha+=((m.dying?0:1)-m.alpha)*Math.min(1,dt*(m.dying?2.2:1.2));
+    if(m.dying&&m.alpha<0.04){mols.splice(i,1);continue}
+    m.tx=clamp(m.tx+R(-1,1)*26*dt,40,960);m.ty=clamp(m.ty+R(-1,1)*18*dt,120,425);
+    m.x+=(m.tx-m.x)*0.45*dt;m.y+=(m.ty-m.y)*0.45*dt;m.rot+=m.vr*dt;
+    if(m.ex>0){m.ex-=dt;if(m.ex<=0&&m.pend){m.pend=false;var a=R(0,6.283);phot.push({kind:"ir",x:m.x,y:m.y,dx:Math.cos(a),dy:Math.sin(a),d:0,v:88,skip:m})}}
+  }
+  // surface re-emission
+  for(i=emits.length-1;i>=0;i--){var e=emits[i];e.t-=dt;if(e.t<=0){var x=clamp(e.x,15,985),an=-Math.PI/2+R(-0.95,0.95);
+    phot.push({kind:"ir",x:x,y:surfY(x)-4,dx:Math.cos(an),dy:Math.sin(an),d:0,v:88});emits.splice(i,1)}}
+  // photons
+  for(i=phot.length-1;i>=0;i--){var p=phot[i];p.x+=p.dx*p.v*dt;p.y+=p.dy*p.v*dt;p.d+=p.v*dt;
+    if(p.kind==="sun"){
+      if(p.y>=surfY(p.x)){
+        if(p.x>iceL()+10&&Math.random()<0.8){p.kind="ref";p.dy=-p.dy;p.y=surfY(p.x)-2}
+        else{flashes.push({x:p.x,y:surfY(p.x),t:1});emits.push({x:p.x,t:R(.4,1.1)});phot.splice(i,1)}
+      }else if(p.x>W+40)phot.splice(i,1);
+    }else if(p.kind==="ref"){if(p.y<-40||p.x>W+40)phot.splice(i,1)}
+    else{
+      if(p.x<-30||p.x>W+30){phot.splice(i,1);continue}
+      if(p.y<75&&!p.out){p.out=true;ev.push(0)}
+      if(p.y<-40){phot.splice(i,1);continue}
+      if(p.y>=surfY(p.x)&&p.dy>0){ev.push(1);flashes.push({x:p.x,y:surfY(p.x),t:1,ir:true});emits.push({x:p.x,t:R(.4,1)});phot.splice(i,1);continue}
+      if(!p.out)for(var j=0;j<mols.length;j++){var q=mols[j];if(q===p.skip||q.ex>0||q.alpha<0.6)continue;
+        var ddx=q.x-p.x,ddy=q.y-p.y;if(ddx*ddx+ddy*ddy<256){q.ex=0.65;q.pend=true;phot.splice(i,1);break}}
+    }
+  }
+  while(ev.length>90)ev.shift();
+  for(i=flashes.length-1;i>=0;i--){flashes[i].t-=dt*1.6;if(flashes[i].t<=0)flashes.splice(i,1)}
+  // temperature
+  var g=0,f=0;mols.forEach(function(m){if(m.src==="nat")g+=m.alpha/15;else f+=m.alpha*(m.type==="CO2"?0.07:0.3/7)});
+  var target=-18+33*clamp(g,0,1)+1.2*clamp(f,0,1);
+  T+=(target-T)*Math.min(1,dt*0.55);
+}
+
+// ---------- drawing ----------
+function wave(p,col,lam,amp,len,wd){
+  ctx.beginPath();
+  for(var s=0;s<=len;s+=2){var a=amp*Math.sin((p.d-s)/lam*6.283)*Math.min(1,s/7)*Math.min(1,(len-s)/7+0.2);
+    var x=p.x-p.dx*s-p.dy*a,y=p.y-p.dy*s+p.dx*a;if(s===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)}
+  ctx.strokeStyle=col;ctx.lineWidth=wd;ctx.lineCap="round";ctx.stroke();
+  ctx.beginPath();ctx.moveTo(p.x+p.dx*7,p.y+p.dy*7);ctx.lineTo(p.x-p.dy*5,p.y+p.dx*5);ctx.lineTo(p.x+p.dy*5,p.y-p.dx*5);ctx.closePath();ctx.fillStyle=col;ctx.fill();
+}
+function atom(x,y,r,fill){ctx.beginPath();ctx.arc(x,y,r,0,6.283);ctx.fillStyle=fill;ctx.fill();ctx.lineWidth=1;ctx.strokeStyle="rgba(255,255,255,.85)";ctx.stroke()}
+function bond(x1,y1,x2,y2){ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.strokeStyle="rgba(255,255,255,.9)";ctx.lineWidth=2.4;ctx.stroke()}
+function drawMol(m){
+  var wob=5*Math.sin(tNow*0.9+m.w),x=m.x+wob,y=m.y+4*Math.cos(tNow*0.7+m.w);
+  ctx.save();ctx.globalAlpha=clamp(m.alpha,0,1);ctx.translate(x,y);
+  var st=1;
+  if(m.ex>0){st=1+0.24*Math.sin(tNow*40);var gr=ctx.createRadialGradient(0,0,2,0,0,30);gr.addColorStop(0,"rgba(255,150,60,.85)");gr.addColorStop(1,"rgba(255,120,40,0)");ctx.fillStyle=gr;ctx.beginPath();ctx.arc(0,0,30,0,6.283);ctx.fill()}
+  ctx.rotate(m.rot);
+  if(m.type==="CO2"){bond(-11*st,0,11*st,0);atom(-11*st,0,6,"#d43c2f");atom(11*st,0,6,"#d43c2f");atom(0,0,6,"#3a3a3a")}
+  else if(m.type==="CH4"){for(var k=0;k<4;k++){var a=0.785+k*1.571,d=10*st;bond(0,0,Math.cos(a)*d,Math.sin(a)*d);atom(Math.cos(a)*d,Math.sin(a)*d,3.6,"#ffffff")}atom(0,0,6,"#3a3a3a")}
+  else{[-0.91,0.91].forEach(function(a){var d=9.5*st,hx=Math.sin(a)*d,hy=Math.cos(a)*d;bond(0,0,hx,hy);atom(hx,hy,3.6,"#ffffff")});atom(0,0,6,"#d43c2f")}
+  ctx.rotate(-m.rot);
+  if(showLab){ctx.font="600 12px "+FONT;ctx.textAlign="center";ctx.fillStyle="rgba(255,255,255,.95)";ctx.fillText(m.type==="CO2"?"CO₂":(m.type==="CH4"?"CH₄":"H₂O"),0,25)}
+  ctx.restore();
+}
+var FONT='"Segoe UI",Calibri,Arial,sans-serif';
+function tag(txt,x,y){ctx.font="600 13px "+FONT;ctx.textAlign="center";var w=ctx.measureText(txt).width+12;
+  ctx.fillStyle="rgba(255,250,240,.92)";ctx.beginPath();ctx.roundRect?ctx.roundRect(x-w/2,y-14,w,19,5):ctx.rect(x-w/2,y-14,w,19);ctx.fill();
+  ctx.fillStyle="#3b2a1a";ctx.fillText(txt,x,y)}
+
+function draw(){
+  ctx.setTransform(sc,0,0,sc,0,0);
+  var frost=clamp((2-T)/14,0,1),sea=seaY();
+  // sky
+  var g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,"#060a1c");g.addColorStop(0.15,"#10285c");g.addColorStop(0.85,"#3f86c9");ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  ctx.fillStyle="#fff";stars.forEach(function(s){ctx.globalAlpha=.75;ctx.beginPath();ctx.arc(s[0],s[1],s[2],0,6.283);ctx.fill()});ctx.globalAlpha=1;
+  // sun
+  g=ctx.createRadialGradient(55,38,10,55,38,190);g.addColorStop(0,"rgba(255,240,170,1)");g.addColorStop(0.22,"rgba(255,214,80,.9)");g.addColorStop(0.3,"rgba(255,200,60,.35)");g.addColorStop(1,"rgba(255,200,60,0)");
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(55,38,190,0,6.283);ctx.fill();
+  // top of atmosphere
+  ctx.setLineDash([8,8]);ctx.strokeStyle="rgba(255,255,255,.35)";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(0,92);ctx.lineTo(W,92);ctx.stroke();ctx.setLineDash([]);
+  // sea
+  g=ctx.createLinearGradient(0,sea,0,H);g.addColorStop(0,lerpC([42,120,170],[190,220,235],frost));g.addColorStop(1,lerpC([18,62,110],[120,165,200],frost));
+  ctx.fillStyle=g;ctx.fillRect(600,sea,400,H-sea);
+  ctx.strokeStyle="rgba(255,255,255,.5)";ctx.lineWidth=1.5;ctx.beginPath();for(var x=640;x<=W;x+=6){var y=sea+1.5*Math.sin(x/14+tNow*1.5);x===640?ctx.moveTo(x,y):ctx.lineTo(x,y)}ctx.stroke();
+  // ice
+  var il=iceL();ctx.beginPath();ctx.moveTo(il,sea+8);for(x=il;x<=W;x+=5)ctx.lineTo(x,iceTop(x));ctx.lineTo(W,iceTop(W));ctx.lineTo(W,sea+16);ctx.closePath();
+  g=ctx.createLinearGradient(0,sea-45,0,sea+16);g.addColorStop(0,"#ffffff");g.addColorStop(1,"#bfe0f2");ctx.fillStyle=g;ctx.fill();ctx.strokeStyle="#9cc6de";ctx.lineWidth=1;ctx.stroke();
+  // land
+  ctx.beginPath();ctx.moveTo(0,H);for(x=0;x<=720;x+=8)ctx.lineTo(x,landY(x));ctx.lineTo(720,H);ctx.closePath();
+  g=ctx.createLinearGradient(0,455,0,H);g.addColorStop(0,lerpC([104,168,84],[232,240,246],frost));g.addColorStop(1,lerpC([58,104,52],[170,190,205],frost));ctx.fillStyle=g;ctx.fill();
+  // rice paddy
+  var a=aA.rice;if(a>0.02){ctx.globalAlpha=a;ctx.beginPath();for(x=488;x<=562;x+=6)ctx.lineTo(x,landY(x)-1);for(x=562;x>=488;x-=6)ctx.lineTo(x,landY(x)+11);ctx.closePath();ctx.fillStyle="#6fb3cf";ctx.fill();
+    ctx.strokeStyle="#2f7a35";ctx.lineWidth=1.6;for(x=492;x<560;x+=7){var gy=landY(x);ctx.beginPath();ctx.moveTo(x,gy+7);ctx.lineTo(x-2,gy-5);ctx.moveTo(x,gy+7);ctx.lineTo(x+2,gy-6);ctx.stroke()}ctx.globalAlpha=1}
+  // trees
+  var cut=aA.deforest;[25,48,70,95,118,140,163,185,205].forEach(function(tx,i){var gy=landY(tx)+2,keep=i%4===0,ca=keep?1:1-cut;
+    ctx.fillStyle="#6b4423";ctx.fillRect(tx-2.5,gy-(keep?16:6+10*(1-cut)),5,keep?16:6+10*(1-cut));
+    if(ca>0.03){ctx.globalAlpha=ca;ctx.fillStyle=lerpC([38,110,52],[214,230,236],frost);
+      [[0,-27,13],[-8,-20,9],[8,-20,9]].forEach(function(c){ctx.beginPath();ctx.arc(tx+c[0],gy+c[1],c[2],0,6.283);ctx.fill()});ctx.globalAlpha=1}});
+  // power station
+  a=aA.fossil;if(a>0.02){ctx.globalAlpha=a;var gy=landY(290)+3;
+    ctx.fillStyle="#c9ccd1";ctx.beginPath();ctx.moveTo(318,gy);ctx.lineTo(326,gy-50);ctx.lineTo(350,gy-50);ctx.lineTo(358,gy);ctx.closePath();ctx.fill();
+    ctx.fillStyle="#7d838c";ctx.fillRect(248,gy-36,62,36);ctx.fillStyle="#565b63";ctx.fillRect(262,gy-80,9,44);ctx.fillRect(284,gy-70,9,34);
+    ctx.fillStyle="#c0392b";ctx.fillRect(262,gy-80,9,5);ctx.fillRect(284,gy-70,9,5);
+    ctx.fillStyle="#ffd76a";for(var wx=254;wx<304;wx+=11)ctx.fillRect(wx,gy-26,6,7);
+    for(var k=0;k<5;k++){var ph=(tNow*0.28+k/5)%1;
+      ctx.fillStyle="rgba(70,70,75,"+(0.5*(1-ph)*a)+")";ctx.beginPath();ctx.arc(266+ph*14,gy-84-ph*46,4+ph*9,0,6.283);ctx.fill();ctx.beginPath();ctx.arc(288+ph*14,gy-74-ph*40,4+ph*8,0,6.283);ctx.fill();
+      ctx.fillStyle="rgba(255,255,255,"+(0.55*(1-ph)*a)+")";ctx.beginPath();ctx.arc(338+ph*10,gy-54-ph*40,7+ph*10,0,6.283);ctx.fill()}
+    ctx.fillStyle="#2f5d8a";ctx.fillRect(214,gy-11,24,8);ctx.fillRect(219,gy-17,13,7);ctx.fillStyle="#222";ctx.beginPath();ctx.arc(220,gy-2,3.5,0,6.283);ctx.arc(233,gy-2,3.5,0,6.283);ctx.fill();
+    ctx.globalAlpha=1}
+  // cattle
+  a=aA.cattle;if(a>0.02){ctx.globalAlpha=a;[[398,1],[428,-1],[456,1]].forEach(function(c){var cx=c[0],gy=landY(cx)-2,d=c[1];
+    ctx.strokeStyle="#222";ctx.lineWidth=2.2;[-8,-3,4,9].forEach(function(l){ctx.beginPath();ctx.moveTo(cx+l,gy-8);ctx.lineTo(cx+l,gy+2);ctx.stroke()});
+    ctx.fillStyle="#fff";ctx.beginPath();ctx.ellipse(cx,gy-12,13,7.5,0,0,6.283);ctx.fill();ctx.beginPath();ctx.ellipse(cx+d*14,gy-17,5.5,4.5,0,0,6.283);ctx.fill();
+    ctx.fillStyle="#222";ctx.beginPath();ctx.ellipse(cx-3,gy-13,4.5,3.5,0,0,6.283);ctx.fill();ctx.beginPath();ctx.ellipse(cx+6,gy-10,3,2.5,0,0,6.283);ctx.fill()});ctx.globalAlpha=1}
+  // landfill
+  a=aA.landfill;if(a>0.02){ctx.globalAlpha=a;var ly=landY(612)+4;ctx.fillStyle="#7b5a3a";ctx.beginPath();ctx.ellipse(612,ly,36,19,0,Math.PI,0);ctx.fill();
+    ["#d9534f","#f0ad4e","#5bc0de","#eeeeee","#5cb85c","#d9534f","#eeeeee","#f0ad4e","#5bc0de"].forEach(function(c,i){ctx.fillStyle=c;ctx.fillRect(586+i*6,ly-5-9*Math.abs(Math.sin(i*1.9)),4,3)});ctx.globalAlpha=1}
+  // flashes
+  flashes.forEach(function(f){var gr=ctx.createRadialGradient(f.x,f.y,1,f.x,f.y,26);gr.addColorStop(0,"rgba(255,170,60,"+(0.85*f.t)+")");gr.addColorStop(1,"rgba(255,120,40,0)");ctx.fillStyle=gr;ctx.beginPath();ctx.arc(f.x,f.y,26,0,6.283);ctx.fill()});
+  // molecules and rays
+  mols.forEach(drawMol);
+  phot.forEach(function(p){
+    if(p.kind==="ir"){if(showIR){wave(p,"rgba(120,20,10,.55)",17,5.5,34,5);wave(p,"#ff5a36",17,5.5,34,2.8)}}
+    else if(showSun)wave(p,p.kind==="ref"?"rgba(255,236,130,.75)":"#ffe14d",8,3.6,30,2.2)});
+  // labels
+  if(showLab){ctx.font="700 14px "+FONT;ctx.fillStyle="rgba(255,255,255,.85)";ctx.textAlign="right";ctx.fillText("SPACE",W-14,26);ctx.fillText("ATMOSPHERE",W-14,114);
+    ctx.textAlign="left";ctx.fillStyle="#5a3d00";ctx.fillText("Sun",40,43);
+    ACTS.forEach(function(s){if(aA[s.k]>0.5){var top={fossil:112,deforest:60,cattle:40,rice:24,landfill:38}[s.k];tag(s.name,s.x,landY(s.x)-top)}});
+    if(mode!=="human"||!on.deforest)tag("Forest",110,landY(110)-60);
+    tag(T<0?"Frozen sea":"Sea",770,sea+40);tag("Ice",clamp(il+70,700,960),sea+34);}
+}
+
+// ---------- UI ----------
+var CAP={
+ none:"No greenhouse gases: all the infrared escapes to space. The Earth's average temperature would be about −18 °C, too cold for most life.",
+ natural:"Natural greenhouse effect: water vapour, carbon dioxide and methane absorb infrared and re-emit it in all directions. This keeps the Earth at about 15 °C.",
+ human:"Human activities add extra carbon dioxide and methane. More infrared is sent back to the surface, so the average temperature rises. Switch activities on at the right."
+};
+function setMode(m){mode=m;if(m!=="human")ACTS.forEach(function(a){on[a.k]=false});syncUI()}
+function syncUI(){
+  $("mNone").setAttribute("aria-pressed",mode==="none");$("mNat").setAttribute("aria-pressed",mode==="natural");$("mHum").setAttribute("aria-pressed",mode==="human");
+  ACTS.forEach(function(a){$("a_"+a.k).checked=on[a.k]});
+  var any=ACTS.some(function(a){return on[a.k]});
+  $("caption").textContent=(mode==="human"&&any)?"Human activities add extra carbon dioxide and methane. More infrared is sent back to the surface, so the average temperature rises: this is global warming.":CAP[mode];
+}
+$("acts").innerHTML=ACTS.map(function(a){return '<label class="actrow"><input type="checkbox" id="a_'+a.k+'"><span><b>'+a.name+'<span class="gas '+(a.gas==="CO2"?"c":"m")+'">'+(a.gas==="CO2"?"CO₂":"CH₄")+'</span></b><small>'+a.text+'</small></span></label>'}).join("");
+ACTS.forEach(function(a){$("a_"+a.k).onchange=function(){on[a.k]=this.checked;if(this.checked)mode="human";timers[a.k]=0;syncUI()}});
+$("mNone").onclick=function(){setMode("none")};$("mNat").onclick=function(){setMode("natural")};$("mHum").onclick=function(){setMode("human")};
+$("allOn").onclick=function(){mode="human";ACTS.forEach(function(a){on[a.k]=true});syncUI()};
+$("allOff").onclick=function(){ACTS.forEach(function(a){on[a.k]=false});syncUI()};
+$("play").onclick=function(){playing=!playing;this.textContent=playing?"Pause":"Play"};
+$("speed").oninput=function(){speed=+this.value};
+$("sSun").onchange=function(){showSun=this.checked};$("sIR").onchange=function(){showIR=this.checked};$("sLab").onchange=function(){showLab=this.checked};
+
+function readouts(){
+  var shown=Math.abs(T)<0.05?0:T;
+  $("temp").textContent=shown.toFixed(1).replace("-","−")+" °C";
+  $("thFill").style.height=clamp((T+20)/40*100,3,100)+"%";
+  var d=T-15;$("tNote").innerHTML=d>0.05?"<em>+"+d.toFixed(1)+" °C</em> above the natural level":(d<-0.5?Math.abs(d).toFixed(0)+" °C below the natural level":"natural level about 15 °C (dashed line)");
+  var none=count(function(m){return m.src==="nat"})===0;
+  var xc=count(function(m){return m.src!=="nat"&&m.type==="CO2"}),xm=count(function(m){return m.src!=="nat"&&m.type==="CH4"});
+  $("co2").textContent=none?"none":(280+14*xc)+" ppm";$("ch4").textContent=none?"none":(700+170*xm)+" ppb";
+  var back=ev.length?ev.reduce(function(a,b){return a+b},0)/ev.length:0,pc=Math.round(back*100);
+  $("spBack").style.width=pc+"%";$("backTxt").textContent=pc+"% sent back to the surface";$("escTxt").textContent=(100-pc)+"% escapes to space";
+}
+
+function fit(){var r=cv.getBoundingClientRect(),d=window.devicePixelRatio||1;var w=Math.max(300,Math.round(r.width*d));if(cv.width!==w){cv.width=w;cv.height=Math.round(w*0.6)}sc=cv.width/W}
+window.addEventListener("resize",fit);
+
+var last=0,uiT=0;
+function frame(t){var dt=Math.min(0.05,(t-last)/1000)||0;last=t;
+  if(playing){var n=Math.ceil(speed),h=dt*speed/n;for(var i=0;i<n;i++)step(h)}
+  fit();draw();uiT+=dt;if(uiT>0.2){uiT=0;readouts()}
+  requestAnimationFrame(frame)}
+
+addNatural(1);for(var w=0;w<420;w++)step(1/30);
+if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches){playing=false;$("play").textContent="Play"}
+syncUI();fit();draw();readouts();requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
