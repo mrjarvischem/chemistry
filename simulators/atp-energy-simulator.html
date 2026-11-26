@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ATP Energy Simulator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gabarito:wght@500;700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Layout: molecules in water on the left, energy profile and step card on the right.
+     Same stained-slide palette as the Cell Explorer; red = energy in, green = energy out. */
+  --bg:#f4f0f6; --panel:#ffffff; --soft:#f1ebf4; --ink:#2b1b3f; --muted:#6c5d7e; --line:#dfd5e6; --accent:#c4317c;
+  --in:#c23b30; --out:#1f8a5f; --pP:#d98a1f; --pO:#b0447f; --wat:#3f7fc4; --base:#5a48b0; --sugar:#1a8f89;
+  --display:"Gabarito","Figtree",system-ui,sans-serif; --body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif; --r:14px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;
+  --bg:#130e1d; --panel:#1c152a; --soft:#251b37; --ink:#f0e9f8; --muted:#ab9bbf; --line:#372a4e; --accent:#ff6fb1;
+  --in:#ff8a7d; --out:#5fd3a3; --pP:#ffb347; --pO:#ff7fbd; --wat:#7fb6ee; --base:#a898ff; --sugar:#3fd6cc;}}
+:root[data-theme="dark"]{color-scheme:dark;
+  --bg:#130e1d; --panel:#1c152a; --soft:#251b37; --ink:#f0e9f8; --muted:#ab9bbf; --line:#372a4e; --accent:#ff6fb1;
+  --in:#ff8a7d; --out:#5fd3a3; --pP:#ffb347; --pO:#ff7fbd; --wat:#7fb6ee; --base:#a898ff; --sugar:#3fd6cc;}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45;display:flex;flex-direction:column}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 22px 10px}
+.brand{display:flex;align-items:baseline;gap:10px;margin-right:auto}
+.brand h1{font-family:var(--display);font-weight:700;font-size:26px;margin:0}
+.brand span{color:var(--muted);font-size:14px;font-weight:500}
+.seg{display:inline-flex;background:var(--soft);border:1px solid var(--line);border-radius:999px;padding:3px}
+.seg button{border:0;background:none;border-radius:999px;padding:7px 14px;font-weight:600;font-size:14.5px;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--panel)}
+.icon{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--panel);display:grid;place-items:center;padding:0}
+.icon svg{width:18px;height:18px}
+main{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1.5fr) minmax(350px,1fr);gap:16px;padding:0 22px 18px}
+.left{min-width:0;min-height:0;display:flex;flex-direction:column;gap:12px}
+.stage{flex:1;min-height:0;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;display:flex}
+#mol{width:100%;height:100%;display:block}
+.rule{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:12px 16px;display:grid;grid-template-columns:1fr 1fr;gap:14px;font-size:15.5px}
+.rule b{display:block;font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px}
+.rule .no b{color:var(--in)} .rule .yes b{color:var(--out)}
+.rule .no span{text-decoration:line-through;text-decoration-color:var(--in);text-decoration-thickness:2px}
+.panel{min-height:0;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px 20px;display:flex;flex-direction:column;gap:13px}
+.k{font-size:12.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.panel h2{font-family:var(--display);font-size:26px;line-height:1.12;margin:4px 0 0;text-wrap:balance}
+.panel ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:5px}
+.ctl{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:8px 16px;font-weight:600;font-size:15px}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+:root[data-theme="dark"] .btn.pri{color:#130e1d}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn.pri{color:#130e1d}}
+.btn:disabled{opacity:.4;cursor:default}
+figure{margin:0;background:var(--soft);border-radius:12px;overflow:hidden}
+.panel>*{flex:none}
+#prof{display:block;width:100%;aspect-ratio:42/23}
+figcaption{padding:6px 12px 8px;font-size:13px;color:var(--muted);border-top:1px solid var(--line)}
+.why h3{font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
+.why ol{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px}
+.why li{border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:15px;transition:border-color .3s,background .3s}
+.why li b{display:block}
+.why.on li{border-color:var(--out);background:color-mix(in srgb,var(--out) 9%,transparent)}
+.tip{margin:0;border-left:3px solid var(--accent);padding:2px 0 2px 12px;font-size:15px}
+.tip b{color:var(--accent)}
+@media (max-width:900px){
+  html,body{height:auto} body{display:block}
+  .top{padding:12px 16px 8px;gap:8px} .brand{width:100%} .brand h1{font-size:22px}
+  main{display:block;padding:0 16px 20px}
+  .stage{overflow-x:auto}
+  #mol{width:640px;min-width:640px;height:342px}
+  .rule{grid-template-columns:1fr;margin-top:12px}
+  .panel{overflow:visible;margin-top:12px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><h1>ATP Energy Simulator</h1><span>A-level Biology · why ATP hydrolysis releases energy</span></div>
+  <div class="seg" id="mode" role="group" aria-label="Reaction">
+    <button type="button" data-m="hyd">Hydrolysis</button>
+    <button type="button" data-m="con">Condensation</button>
+  </div>
+  <button type="button" class="icon" id="theme" aria-label="Switch between light and dark" title="Light or dark">
+    <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10 2.5a7.5 7.5 0 0 1 0 15z" fill="currentColor"/></svg>
+  </button>
+</header>
+<main>
+  <div class="left">
+    <div class="stage"><canvas id="mol" aria-label="ATP, water, ADP and inorganic phosphate drawn as atoms, animated through the reaction"></canvas></div>
+    <div class="rule">
+      <div class="no"><b>Not this</b><span>Energy is released when the bond in ATP breaks.</span></div>
+      <div class="yes"><b>Say this</b>Breaking bonds takes energy in. Hydrolysis of ATP releases energy overall because more is released when new bonds and interactions form.</div>
+    </div>
+  </div>
+  <aside class="panel" aria-live="polite">
+    <div><span class="k" id="kick"></span><h2 id="ttl"></h2></div>
+    <ul id="pts"></ul>
+    <div class="ctl">
+      <button type="button" class="btn" id="back">Back</button>
+      <button type="button" class="btn pri" id="next">Next step</button>
+      <button type="button" class="btn" id="play">Play</button>
+      <button type="button" class="btn" id="reset">Reset</button>
+    </div>
+    <figure><canvas id="prof" aria-label="Energy profile for the reaction with a marker at the current step"></canvas>
+      <figcaption>Sketch of the energy change. The shape is not to scale; the overall change is 30.5 kJ mol⁻¹.</figcaption></figure>
+    <div class="why" id="why">
+      <h3>Why ADP + Pi is lower in energy than ATP</h3>
+      <ol>
+        <li><b>Stronger interactions with water</b>ADP and the phosphate ion are surrounded and held by water more strongly than ATP was.</li>
+        <li><b>Less repulsion</b>The negative charges crowded together on ATP are further apart in the products.</li>
+        <li><b>A more stable phosphate ion</b>The charge on the released phosphate is spread over its oxygen atoms.</li>
+      </ol>
+    </div>
+    <p class="tip" id="tip"></p>
+  </aside>
+</main>
+<script>
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id);
+const STEPS={
+hyd:[
+ {t:'ATP in water',p:['ATP is adenine, ribose and three phosphate groups','The phosphates carry negative charges packed close together, so they repel each other','Water molecules surround ATP and are weakly attracted to it'],
+  tip:'ATP is a nucleotide derivative: the same base and sugar as an RNA nucleotide, with three phosphates.'},
+ {t:'A water molecule approaches',p:['Hydrolysis means using water to break a molecule apart','Water collides with the end phosphate group','The enzyme ATP hydrolase catalyses the reaction'],
+  tip:'Equation: ATP + H₂O → ADP + Pi'},
+ {t:'Bonds break: energy is taken in',p:['The bond between the second and third phosphate breaks','An O–H bond in the water molecule breaks','Breaking a bond always needs energy, so the energy of the system rises'],
+  tip:'Nothing has been released yet. If the reaction stopped here it would have cost energy.'},
+ {t:'New bonds form: energy is released',p:['The OH from water bonds to the phosphate, making inorganic phosphate (Pi)','The H bonds to the oxygen left on ADP','Making bonds always releases energy'],
+  tip:'The oxygen in Pi came from the water molecule. Follow the blue atom.'},
+ {t:'The products are held by water: more energy is released',p:['ADP and Pi move apart, so their negative charges repel less','Water molecules crowd in and are attracted strongly to both ions','Altogether more energy is given out than was taken in: 30.5 kJ per mole of ATP'],
+  tip:'The energy comes from the whole change, ATP + water becoming ADP + Pi in solution, not from the breaking bond.'}],
+con:[
+ {t:'ADP and Pi in water',p:['Both ions are surrounded by water and strongly attracted to it','Their negative charges are well separated','This is the lower-energy, more stable state'],
+  tip:'Equation: ADP + Pi → ATP + H₂O. A condensation reaction.'},
+ {t:'Pi is pushed against ADP: energy is needed',p:['Water has to be pulled away from the two ions','Negative charges are forced close together','Both changes take energy in'],
+  tip:'In a cell this happens inside ATP synthase, which holds ADP and Pi together.'},
+ {t:'Bonds break: more energy is taken in',p:['An O–H bond on ADP breaks','The bond between phosphorus and OH in Pi breaks','Breaking bonds always needs energy'],
+  tip:'The energy of the system is now at its highest.'},
+ {t:'New bonds form: some energy is released',p:['A new bond joins the third phosphate to ADP','The H and OH join to make a water molecule','Bond making releases energy, but less than has been taken in'],
+  tip:'A condensation reaction joins two molecules and removes water.'},
+ {t:'ATP: energy has been stored',p:['Overall 30.5 kJ per mole has been taken in','The energy comes from respiration or from light in photosynthesis','ATP synthase uses the flow of protons to drive the reaction'],
+  tip:'ATP is an immediate energy source: it is re-made as fast as it is used and is not stored in large amounts.'}]
+};
+const S={mode:'hyd',k:0,playing:false};
+const cl=(x,a=0,b=1)=>Math.max(a,Math.min(b,x)),lerp=(a,b,k)=>a+(b-a)*k,ez=k=>k*k*(3-2*k);
+const still=matchMedia('(prefers-reduced-motion:reduce)').matches;
+let v=0,T=0,last=0,timer=0,C={};
+const target=()=>S.mode==='hyd'?S.k:4-S.k;
+function colours(){const cs=getComputedStyle(document.documentElement);for(const k of['ink','muted','panel','soft','line','accent','in','out','pP','pO','wat','base','sugar'])C[k]=cs.getPropertyValue('--'+k).trim()}
+
+/* ---------- molecule canvas (900 x 480 units) ---------- */
+const cv=$('mol'),g=cv.getContext('2d');
+const fit=(c,x,W,H)=>{const w=c.clientWidth,h=c.clientHeight,d=Math.min(2.5,devicePixelRatio||1);if(!w||!h)return 0;
+  if(c.width!==Math.round(w*d)||c.height!==Math.round(h*d)){c.width=Math.round(w*d);c.height=Math.round(h*d)}
+  const s=Math.min(c.width/W,c.height/H);x.setTransform(s,0,0,s,(c.width-W*s)/2,(c.height-H*s)/2);x.clearRect(-2000,-2000,5000,5000);return 1};
+const circ=(x,X,Y,r,f,s,lw)=>{x.beginPath();x.arc(X,Y,r,0,6.2832);if(f){x.fillStyle=f;x.fill()}if(s){x.strokeStyle=s;x.lineWidth=lw||2;x.stroke()}};
+const txt=(x,s,X,Y,col,size,al,b)=>{x.font=(b?'700 ':'500 ')+size+'px Figtree,system-ui,sans-serif';x.fillStyle=col;x.textAlign=al||'center';x.textBaseline='middle';x.fillText(s,X,Y)};
+const pill=(x,s,X,Y,bg,size=15)=>{x.font='700 '+size+'px Figtree,system-ui,sans-serif';const w=x.measureText(s).width+20,h=size+13;x.beginPath();x.roundRect(X-w/2,Y-h/2,w,h,h/2);x.fillStyle=bg;x.fill();x.fillStyle=C.panel;x.textAlign='center';x.textBaseline='middle';x.fillText(s,X,Y+.5)};
+function bond(a,b,st,kind){if(st<=.02)return;g.save();g.globalAlpha=cl(st*1.4);g.beginPath();g.moveTo(a[0],a[1]);g.lineTo(b[0],b[1]);
+  if(st<.98){g.setLineDash([7,7]);g.strokeStyle=kind==='in'?C.in:C.out;g.lineWidth=6}else{g.strokeStyle=C.ink;g.lineWidth=5}g.lineCap='round';g.stroke();g.restore()}
+const SH=[[300,112],[440,112],[300,372],[440,372],[372,384],[506,148],[508,332],...[-160,-100,-10,35,80,125,170].map(a=>[680+108*Math.cos(a*Math.PI/180),240+108*Math.sin(a*Math.PI/180)])];
+const HOME=SH.map((s,i)=>[cl(s[0]+(s[0]-470)*.6+Math.sin(i*2.7)*26,40,860),cl(s[1]+(s[1]-240)*.62+Math.cos(i*1.9)*18,92,416)]);
+const FREE=[[64,120],[112,404],[846,410],[842,96]];
+function water(O,dir,spread=.9){const h1=[O[0]+14*Math.cos(dir-spread),O[1]+14*Math.sin(dir-spread)],h2=[O[0]+14*Math.cos(dir+spread),O[1]+14*Math.sin(dir+spread)];
+  g.strokeStyle=C.ink;g.lineWidth=3;g.beginPath();g.moveTo(h1[0],h1[1]);g.lineTo(O[0],O[1]);g.lineTo(h2[0],h2[1]);g.stroke();
+  circ(g,h1[0],h1[1],6,C.panel,C.muted,1.6);circ(g,h2[0],h2[1],6,C.panel,C.muted,1.6);circ(g,O[0],O[1],11,C.wat)}
+function drawMol(){
+  if(!fit(cv,g,900,480))return;
+  const hyd=S.mode==='hyd',a=ez(cl(v)),b=ez(cl(v-1)),f=ez(cl(v-2)),p=ez(cl(v-3));
+  const k1=hyd?'in':'out',k2=hyd?'out':'in';
+  const P1=[310,240],P2=[430,240],P3=[550+16*b+130*p,240],O12=[370,240],O23=[490,240],Or=[258,240];
+  const rad=d=>d*Math.PI/180,at=(c,ang,r=58)=>[c[0]+r*Math.cos(rad(ang)),c[1]+r*Math.sin(rad(ang))];
+  const t1=[at(P1,-90),at(P1,90)],t2=[at(P2,-90),at(P2,90)],t3=[at(P3,-90-45*p),at(P3,90+45*p),at(P3,45*p)];
+  const wN=[628+16*b,162],wB=at(P3,-45),W=[lerp(lerp(700,wN[0],a),wB[0],f),lerp(lerp(96,wN[1],a),wB[1],f)];
+  const H1=[W[0]+15,W[1]-9],H2s=[W[0]-15-11*b,W[1]-9+7*b],H2t=[O23[0]+5,O23[1]-27],H2=[lerp(H2s[0],H2t[0],f),lerp(H2s[1],H2t[1],f)];
+  const oxy=[...t1,...t2,...t3,O23,W];
+  // hydration: waters drift from far and weak to close and strong
+  SH.forEach((s,i)=>{const jx=still?0:Math.sin(T*1.3+i*1.7)*3,jy=still?0:Math.cos(T*1.1+i*2.3)*3,pos=[lerp(HOME[i][0],s[0],p)+jx,lerp(HOME[i][1],s[1],p)+jy];
+    let best=oxy[0],bd=1e9;for(const o of oxy){const d=Math.hypot(o[0]-pos[0],o[1]-pos[1]);if(d<bd){bd=d;best=o}}
+    g.save();g.globalAlpha=.16+.74*p;g.setLineDash([3,6]);g.strokeStyle=p>.5?C.out:C.muted;g.lineWidth=1.6+1.6*p;g.beginPath();g.moveTo(pos[0],pos[1]);g.lineTo(best[0],best[1]);g.stroke();g.restore();
+    water(pos,Math.atan2(best[1]-pos[1],best[0]-pos[0])-.9)});
+  FREE.forEach((s,i)=>water([s[0]+(still?0:Math.sin(T+i)*5),s[1]+(still?0:Math.cos(T*.8+i)*5)],i*1.4+T*.2));
+  // backbone
+  g.lineCap='round';
+  bond([150,240],[178,240],1);bond([232,240],Or,1);bond(Or,P1,1);bond(P1,O12,1);bond(O12,P2,1);bond(P2,O23,1);
+  [[P1,t1],[P2,t2],[P3,t3]].forEach(([c,ts])=>ts.forEach(o=>bond(c,o,1)));
+  bond(O23,P3,1-b,k1);bond(W,H2,(1-b)*(1-f),k1);bond(W,P3,f,k2);bond(H2,O23,f,k2);bond(W,H1,1);
+  // charge spread on the freed phosphate
+  if(p>.05){g.save();g.globalAlpha=p*.7;g.setLineDash([2,7]);circ(g,P3[0],P3[1],80,null,C.pP,3);g.restore()}
+  // adenine, ribose
+  g.beginPath();g.roundRect(40,206,110,68,16);g.fillStyle=C.base;g.fill();txt(g,'adenine',95,240,C.panel,17,'center',1);
+  g.beginPath();for(let i=0;i<5;i++){const an=rad(-90+i*72);g.lineTo(205+36*Math.cos(an),242+36*Math.sin(an))}g.closePath();g.fillStyle=C.sugar;g.fill();txt(g,'ribose',205,244,C.panel,14,'center',1);
+  // atoms
+  const O=(q,ch)=>{circ(g,q[0],q[1],14,C.pO);if(ch)txt(g,'−',q[0],q[1],C.panel,18,'center',1)};
+  O(Or);O(O12);O(O23);O(t1[0]);O(t1[1],1);O(t2[0]);O(t2[1],1);O(t3[0]);O(t3[1],1);O(t3[2],1);
+  [P1,P2,P3].forEach(q=>{circ(g,q[0],q[1],21,C.pP);txt(g,'P',q[0],q[1]+1,C.panel,18,'center',1)});
+  // the reacting water
+  g.strokeStyle=C.ink;circ(g,H1[0],H1[1],7,C.panel,C.muted,1.8);circ(g,H2[0],H2[1],7,C.panel,C.muted,1.8);circ(g,W[0],W[1],13,C.wat);
+  if(v<1.2)txt(g,'water',W[0]+34,W[1]-26,C.wat,15,'left',1);
+  // repulsion between crowded negative charges
+  const rep=(x0,x1,al)=>{if(al<.05)return;const y=330+(still?0:Math.sin(T*3)*2),m=(x0+x1)/2;g.save();g.globalAlpha=al;g.strokeStyle=C.in;g.fillStyle=C.in;g.lineWidth=3;
+    g.beginPath();g.moveTo(x0+22,y);g.lineTo(x1-22,y);g.stroke();for(const[x,d]of[[x0+22,1],[x1-22,-1]]){g.beginPath();g.moveTo(x-d*2,y);g.lineTo(x+d*9,y-7);g.lineTo(x+d*9,y+7);g.fill()}
+    txt(g,'repel',m,y+16,C.in,13,'center',1);g.restore()};
+  rep(310,430,.9);rep(430,550,1-cl(b*.5+p*2));
+  // names
+  txt(g,hyd?'ATP + H₂O → ADP + Pi':'ADP + Pi → ATP + H₂O',28,34,C.ink,20,'left',1);
+  g.save();g.globalAlpha=1-cl(f*2);txt(g,'ATP',330,64,C.ink,22,'center',1);g.restore();
+  g.save();g.globalAlpha=cl(f*2-.6);txt(g,'ADP',270,66,C.ink,22,'center',1);txt(g,'Pi',P3[0],66,C.ink,22,'center',1);g.restore();
+  // energy flags
+  const flag=(s,x,y,col,al)=>{if(al<.05)return;g.save();g.globalAlpha=cl(al);pill(g,s,x,y,col);g.restore()};
+  const tri=(x,lo,hi)=>cl(Math.min(x-lo,hi-x)*4);
+  if(hyd){flag('energy IN: bonds break',548,404,C.in,tri(v,1.1,2.4));flag('energy OUT: new bonds form',548,404,C.out,tri(v,2.45,3.3));flag('energy OUT: stronger attraction to water',600,440,C.out,cl((v-3.3)*3))}
+  else{flag('energy IN: water pulled away, charges pushed together',560,440,C.in,tri(v,2.95,3.95));flag('energy IN: bonds break',548,404,C.in,tri(v,1.95,2.9));flag('energy OUT: new bonds form',548,404,C.out,tri(v,.6,1.9))}
+  // key
+  circ(g,36,452,8,C.pP);txt(g,'phosphorus',50,453,C.muted,13,'left');circ(g,138,452,8,C.pO);txt(g,'oxygen',152,453,C.muted,13,'left');
+  circ(g,214,452,8,C.wat);txt(g,'oxygen from water',228,453,C.muted,13,'left');circ(g,356,452,6,C.panel,C.muted,1.6);txt(g,'hydrogen',368,453,C.muted,13,'left');
+}
+
+/* ---------- energy profile (420 x 230 units) ---------- */
+const pc=$('prof'),h=pc.getContext('2d');
+const EP=[.56,.6,.95,.44,.14];
+const E=u=>{const x=cl(u)*4,i=Math.min(3,Math.floor(x));return lerp(EP[i],EP[i+1],ez(x-i))};
+function drawProf(){
+  if(!fit(pc,h,420,230))return;
+  const hyd=S.mode==='hyd',X=u=>62+u*262,Y=e=>202-e*176,ev=u=>E(hyd?u:1-u),uu=hyd?v/4:1-v/4;
+  h.strokeStyle=C.muted;h.lineWidth=1.5;h.beginPath();h.moveTo(44,18);h.lineTo(44,208);h.lineTo(404,208);h.stroke();
+  h.save();h.translate(22,112);h.rotate(-Math.PI/2);txt(h,'energy',0,0,C.muted,13);h.restore();txt(h,'progress of reaction',224,220,C.muted,12);
+  for(const u of[0,1]){h.save();h.setLineDash([4,5]);h.strokeStyle=C.line;h.lineWidth=1.5;h.beginPath();h.moveTo(48,Y(ev(u)));h.lineTo(372,Y(ev(u)));h.stroke();h.restore()}
+  // curve, coloured by slope
+  for(let i=0;i<80;i++){const u0=i/80,u1=(i+1)/80,up=ev(u1)>ev(u0)+1e-4,flat=Math.abs(ev(u1)-ev(u0))<1e-4;
+    h.beginPath();h.moveTo(X(u0),Y(ev(u0)));h.lineTo(X(u1),Y(ev(u1)));h.strokeStyle=flat?C.muted:up?C.in:C.out;h.lineWidth=4;h.lineCap='round';h.stroke()}
+  txt(h,hyd?'ATP + H₂O':'ADP + Pi',X(0)-8,Y(ev(0))-13,C.ink,13,'left',1);txt(h,hyd?'ADP + Pi':'ATP + H₂O',X(1)+6,Y(ev(1))+(hyd?14:-13),C.ink,13,'right',1);
+  txt(h,'in',X(hyd?.36:.3)-16,Y(.8),C.in,13,'center',1);txt(h,'out',X(hyd?.74:.68)+18,Y(hyd?.62:.8),C.out,13,'center',1);
+  // net change
+  const y0=Y(ev(0)),y1=Y(ev(1)),ax=388,col=hyd?C.out:C.in;h.strokeStyle=col;h.fillStyle=col;h.lineWidth=2.5;h.beginPath();h.moveTo(ax,y0);h.lineTo(ax,y1);h.stroke();
+  const d=y1>y0?1:-1;h.beginPath();h.moveTo(ax,y1);h.lineTo(ax-6,y1-d*10);h.lineTo(ax+6,y1-d*10);h.fill();
+  h.save();h.translate(404,(y0+y1)/2);h.rotate(-Math.PI/2);txt(h,hyd?'30.5 kJ mol⁻¹ released':'30.5 kJ mol⁻¹ taken in',0,0,col,12,'center',1);h.restore();
+  circ(h,X(uu),Y(ev(uu)),8,C.accent,C.panel,3);
+}
+
+/* ---------- state ---------- */
+function render(){
+  const st=STEPS[S.mode][S.k];
+  document.querySelectorAll('#mode button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.m===S.mode));
+  $('kick').textContent=(S.mode==='hyd'?'Hydrolysis':'Condensation')+' · step '+(S.k+1)+' of 5';
+  $('ttl').textContent=st.t;$('pts').innerHTML=st.p.map(x=>`<li>${x}</li>`).join('');$('tip').innerHTML='<b>Exam point.</b> '+st.tip;
+  $('back').disabled=S.k===0;$('next').disabled=S.k===4;$('play').textContent=S.playing?'Pause':'Play';$('play').disabled=S.k===4&&!S.playing;
+  $('why').classList.toggle('on',target()>=4);
+  if(still){v=target();drawMol();drawProf()}
+}
+function loop(ts){const dt=Math.min(.05,(ts-last)/1000||0);last=ts;T+=dt;const tg=target();
+  if(Math.abs(tg-v)>.001)v+=Math.sign(tg-v)*Math.min(Math.abs(tg-v),dt*.75);else v=tg;
+  drawMol();drawProf();requestAnimationFrame(loop)}
+const stop=()=>{S.playing=false;clearTimeout(timer)};
+const queue=()=>{clearTimeout(timer);if(!S.playing)return;if(S.k===4){S.playing=false;return render()}timer=setTimeout(()=>{S.k++;render();queue()},3600)};
+$('next').onclick=()=>{stop();if(S.k<4)S.k++;render()};
+$('back').onclick=()=>{stop();if(S.k>0)S.k--;render()};
+$('reset').onclick=()=>{stop();S.k=0;render()};
+$('play').onclick=()=>{if(S.playing){stop();return render()}S.playing=true;if(S.k<4)S.k++;render();queue()};
+document.querySelectorAll('#mode button').forEach(b=>b.onclick=()=>{stop();S.mode=b.dataset.m;S.k=0;v=target();render()});
+$('theme').onclick=()=>{const r=document.documentElement,dark=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme: dark)').matches;r.dataset.theme=dark?'light':'dark'};
+document.addEventListener('keydown',e=>{if(e.target.closest('button'))return;if(e.key==='ArrowRight')$('next').click();else if(e.key==='ArrowLeft')$('back').click()});
+new MutationObserver(()=>{colours();drawMol();drawProf()}).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{colours();drawMol();drawProf()});
+colours();render();
+if(still){new ResizeObserver(()=>{drawMol();drawProf()}).observe(cv)}else requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

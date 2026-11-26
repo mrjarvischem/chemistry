@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Acceleration Practical Simulator</title>
+<style>
+/* Layout idea: runway and controls on the left, graph and results on the right. Single light blue theme for projectors. */
+:root{
+  color-scheme: light;
+  --bg:#eaf2f8;
+  --paper:#f8fbfe;
+  --ink:#1b2c3d;
+  --accent:#2b5f8f;
+  --line:#bfd3e4;
+  --soft:#dbe8f3;
+  --good:#0f7a4f;
+  --warn:#9a3b1f;
+  --display: Georgia, "Times New Roman", serif;
+  --body: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.45}
+header{padding:16px 20px 8px;display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline}
+h1{font-family:var(--display);font-size:1.6rem;margin:0;text-wrap:balance}
+header p{margin:0;color:var(--accent)}
+main{display:grid;gap:16px;padding:8px 16px 24px;grid-template-columns:1fr}
+@media (min-width:980px){main{grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);align-items:start}}
+.col{display:flex;flex-direction:column;gap:16px;min-width:0}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+h2{font-family:var(--display);font-size:1.1rem;margin:0 0 10px}
+.row{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+.row + .row{margin-top:10px}
+.lab{font-weight:600;min-width:7.5em}
+.seg{display:flex;flex-wrap:wrap;gap:4px}
+button{font:inherit;color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:7px;padding:6px 12px;cursor:pointer;min-height:38px}
+button:hover{border-color:var(--accent)}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600;padding:8px 20px}
+button:disabled{opacity:.45;cursor:not-allowed}
+
+.bench svg{width:100%;max-width:680px;height:auto;display:block;margin:0 auto}
+.meters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:10px}
+@media (max-width:520px){.meters{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.meter{background:#18283a;color:#cfe6fb;border-radius:8px;padding:6px 8px;text-align:center}
+.meter b{display:block;font-family:"Courier New",monospace;font-size:1.4rem;font-variant-numeric:tabular-nums;white-space:nowrap}
+.meter span{font-size:.78rem;opacity:.85}
+.status{min-height:3.1em;padding:8px 12px;border-left:5px solid var(--accent);background:var(--soft);border-radius:4px}
+.status.good{border-color:var(--good)}
+.status.warn{border-color:var(--warn)}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:center}
+th{background:var(--soft);font-weight:600;font-size:.9rem}
+tbody tr{cursor:pointer}
+tbody tr.sel td{background:#cfe0f0}
+button.x{min-height:30px;padding:2px 9px}
+.graphwrap{overflow-x:auto}
+.graphwrap svg{width:100%;min-width:320px;height:auto;display:block}
+details summary{cursor:pointer;font-family:var(--display);font-size:1.1rem;font-weight:700}
+details ul{margin:8px 0 0;padding-left:1.2em}
+details li{margin:4px 0;max-width:68ch}
+details h3{font-size:1rem;margin:12px 0 0}
+.note{font-size:.85rem;color:var(--accent);margin:8px 0 0}
+</style>
+</head>
+<body>
+<header>
+  <h1>Acceleration</h1>
+  <p>AQA GCSE Physics required practical 7: effect of force and mass on acceleration</p>
+</header>
+
+<main>
+  <div class="col">
+    <section class="panel" aria-label="Apparatus">
+      <h2>Trolley, pulley and light gates</h2>
+      <div class="bench">
+        <svg viewBox="0 0 540 270" role="img" aria-label="Trolley on a runway pulled by a string over a pulley to hanging masses, passing through two light gates" font-family="system-ui,Arial">
+          <!-- bench and runway -->
+          <rect x="14" y="130" width="466" height="10" rx="2" fill="#b7a78c"/>
+          <rect x="30" y="140" width="10" height="118" fill="#c9bca4"/><rect x="440" y="140" width="10" height="118" fill="#c9bca4"/>
+          <!-- light gates -->
+          <g id="gateA">
+            <path d="M146 130 V52 H160 V130" fill="none" stroke="#4d5b69" stroke-width="4"/>
+            <circle id="ledA" cx="153" cy="46" r="5" fill="#8fa3b5" stroke="#4d5b69" stroke-width="1.5"/>
+            <text x="153" y="34" font-size="12" font-weight="700" fill="#1b2c3d" text-anchor="middle">gate A</text>
+          </g>
+          <g id="gateB">
+            <path d="M383 130 V52 H397 V130" fill="none" stroke="#4d5b69" stroke-width="4"/>
+            <circle id="ledB" cx="390" cy="46" r="5" fill="#8fa3b5" stroke="#4d5b69" stroke-width="1.5"/>
+            <text x="390" y="34" font-size="12" font-weight="700" fill="#1b2c3d" text-anchor="middle">gate B</text>
+          </g>
+          <!-- string -->
+          <line id="strH" x1="94" y1="111" x2="478" y2="111" stroke="#1b2c3d" stroke-width="1.5"/>
+          <line id="strV" x1="486" y1="119" x2="486" y2="150" stroke="#1b2c3d" stroke-width="1.5"/>
+          <!-- pulley -->
+          <path d="M470 132 L478 119" stroke="#4d5b69" stroke-width="4"/>
+          <circle cx="478" cy="119" r="8" fill="#e3ecf4" stroke="#4d5b69" stroke-width="2"/>
+          <!-- trolley -->
+          <g id="trolley">
+            <rect x="30" y="100" width="64" height="22" rx="3" fill="#2b5f8f"/>
+            <circle cx="44" cy="125" r="5.5" fill="#1b2c3d"/><circle cx="80" cy="125" r="5.5" fill="#1b2c3d"/>
+            <rect x="84" y="80" width="8" height="20" fill="#1b2c3d"/>
+            <g id="load"></g>
+          </g>
+          <!-- hanger -->
+          <g id="hanger"></g>
+        </svg>
+      </div>
+      <div class="meters">
+        <div class="meter"><b id="mV1">–</b><span>speed at A (m/s)</span></div>
+        <div class="meter"><b id="mV2">–</b><span>speed at B (m/s)</span></div>
+        <div class="meter"><b id="mT">–</b><span>time A to B (s)</span></div>
+        <div class="meter"><b id="mA">–</b><span>acceleration (m/s²)</span></div>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <button class="primary" id="goBtn">Release trolley</button>
+        <button id="resetBtn">Reset</button>
+        <span>Playback</span><div class="seg" id="speedSeg"></div>
+      </div>
+      <div class="status" id="status" aria-live="polite" style="margin-top:12px"></div>
+    </section>
+
+    <section class="panel" aria-label="Set up">
+      <h2>Set up the run</h2>
+      <div class="row"><span class="lab">Investigate</span><div class="seg" id="modeSeg"></div></div>
+      <div class="row"><span class="lab" id="ivLab">Force (N)</span><div class="seg" id="ivSeg"></div></div>
+      <div class="row"><span class="lab">Runway</span><div class="seg" id="fricSeg"></div></div>
+      <div class="row"><span class="lab">Variation</span>
+        <div class="seg"><button id="varyBtn" aria-pressed="true">Run-to-run variation on</button></div>
+      </div>
+      <p class="note" id="fixedNote"></p>
+      <p class="note">Changing the runway clears the results, so the two conditions are not mixed.</p>
+    </section>
+  </div>
+
+  <div class="col">
+    <section class="panel" aria-label="Graph">
+      <div class="row" style="justify-content:space-between">
+        <h2 style="margin:0">Graph</h2>
+        <div class="row" style="margin:0">
+          <div class="seg" id="xSeg"></div>
+          <button id="fitBtn" aria-pressed="false">Line of best fit</button>
+        </div>
+      </div>
+      <div class="graphwrap" id="graph" style="margin-top:8px"></div>
+    </section>
+
+    <section class="panel" aria-label="Results">
+      <h2>Results: acceleration (m/s²)</h2>
+      <div class="tablewrap"><table>
+        <thead><tr><th id="ivHead">Force (N)</th><th>Trial 1</th><th>Trial 2</th><th>Trial 3</th><th>Mean</th><th><span aria-hidden="true">Clear</span></th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table></div>
+      <div class="row">
+        <button id="fillBtn">Fill table instantly</button>
+        <button id="clearBtn">Clear all results</button>
+      </div>
+      <p class="note">Tap a row to select that value. Acceleration = (speed at B − speed at A) ÷ time from A to B.</p>
+    </section>
+
+    <section class="panel">
+      <details>
+        <summary>Teacher notes</summary>
+        <h3>Effect of force</h3>
+        <ul>
+          <li>Independent: the resultant force (weight of the hanging masses, mass × 9.8 N/kg). Dependent: acceleration. Control: the total mass of the system.</li>
+          <li>Five 100 g masses are shared between the trolley and the hanger. Moving a mass from the trolley to the hanger increases the force but keeps the total mass at 1.0 kg.</li>
+          <li>Why move masses across instead of just adding to the hanger? The hanging masses accelerate too, so adding to the hanger would change the mass as well as the force.</li>
+        </ul>
+        <h3>Effect of mass</h3>
+        <ul>
+          <li>Independent: total mass of the system. Dependent: acceleration. Control: the force (200 g hanging, 1.96 N).</li>
+          <li>Switch the x-axis to 1 ÷ mass: why does the curve become a straight line through the origin?</li>
+        </ul>
+        <h3>Questions to draw out</h3>
+        <ul>
+          <li>Set the runway to level. Why does the line of best fit no longer pass through the origin? What does the intercept on the force axis tell you?</li>
+          <li>Why is the runway tilted slightly in the standard method? To compensate for friction.</li>
+          <li>Why are light gates better than a stopwatch here? Look at the times involved.</li>
+          <li>Does the data support acceleration ∝ force and acceleration ∝ 1 ÷ mass?</li>
+        </ul>
+        <p class="note">The data are simulated. Light gates are 0.20 m and 1.00 m from the release point. On the level runway the model adds a constant 0.15 N of friction.</p>
+      </details>
+    </section>
+  </div>
+</main>
+
+<script>
+(function(){
+  "use strict";
+  var G=9.8, XA=0.2, XB=1.0, XE=1.2, PX=296, FRIC=0.15;
+  var IV = {
+    force:{head:"Force (N)", lab:"Force (N)", values:[1,2,3,4,5]},
+    mass:{head:"Total mass (kg)", lab:"Total mass (kg)", values:[0,1,2,3,4]}
+  };
+  var st = {mode:"force", sel:{force:1, mass:0}, fric:"comp", vary:true, speed:1, fit:false, inv:"mass",
+            results:{force:{}, mass:{}}};
+  var run=null, last=0;
+
+  function $(id){return document.getElementById(id);}
+  function params(mode,v){
+    if(mode==="force") return {F:v*0.1*G, M:1.0, hang:v, small:5-v, slabs:0};
+    return {F:0.2*G, M:1.0+0.5*v, hang:2, small:0, slabs:v};
+  }
+  function ivText(mode,v){ var p=params(mode,v); return mode==="force" ? p.F.toFixed(2) : p.M.toFixed(1); }
+  function ivX(mode,v){ var p=params(mode,v); return mode==="force" ? p.F : (st.inv==="inv" ? 1/p.M : p.M); }
+  function trueA(mode,v){
+    var p=params(mode,v), f = st.fric==="level" ? FRIC : 0;
+    return Math.max(0.02,(p.F-f)/p.M);
+  }
+  function trial(mode,v){
+    var a=trueA(mode,v);
+    if(st.vary) a*=1+(Math.random()-0.5)*0.05;
+    var tA=Math.sqrt(2*XA/a), tB=Math.sqrt(2*XB/a), n=function(){return st.vary?1+(Math.random()-0.5)*0.012:1;};
+    var v1=Number((a*tA*n()).toFixed(2)), v2=Number((a*tB*n()).toFixed(2)), t=Number((tB-tA).toFixed(3));
+    return {a:a, tA:tA, tB:tB, tE:Math.sqrt(2*XE/a), v1:v1, v2:v2, t:t, am:Number(((v2-v1)/t).toFixed(2))};
+  }
+  function trials(){ var r=st.results[st.mode], v=st.sel[st.mode]; if(!r[v]) r[v]=[]; return r[v]; }
+  function setStatus(msg,cls){ var el=$("status"); el.textContent=msg; el.className="status"+(cls?" "+cls:""); }
+  function idleStatus(){
+    var p=params(st.mode,st.sel[st.mode]);
+    setStatus("Ready: "+(p.hang*100)+" g hanging ("+p.F.toFixed(2)+" N), total mass "+p.M.toFixed(1)+" kg. Release the trolley from rest.");
+  }
+
+  function drawLoad(){
+    var p=params(st.mode,st.sel[st.mode]), s="", i;
+    for(i=0;i<p.small;i++) s+='<rect x="'+(34+i*9.6)+'" y="91" width="8" height="9" rx="1" fill="#c9a23a" stroke="#7d6420" stroke-width="1"/>';
+    for(i=0;i<p.slabs;i++) s+='<rect x="34" y="'+(92-i*8)+'" width="44" height="7" rx="1" fill="#8d949c" stroke="#4d5b69" stroke-width="1"/>';
+    $("load").innerHTML=s;
+    var h='<line x1="486" y1="0" x2="486" y2="8" stroke="#1b2c3d" stroke-width="2"/>';
+    for(i=0;i<p.hang;i++) h+='<rect x="474" y="'+(8+i*7)+'" width="24" height="6" rx="1" fill="#c9a23a" stroke="#7d6420" stroke-width="1"/>';
+    h+='<rect x="471" y="'+(8+p.hang*7)+'" width="30" height="3" fill="#1b2c3d"/>';
+    $("hanger").innerHTML=h;
+  }
+  function renderScene(){
+    var x = run ? Math.min(XE, run.x) : 0;
+    $("trolley").setAttribute("transform","translate("+(x*PX).toFixed(1)+" 0)");
+    $("strH").setAttribute("x1",(94+x*PX).toFixed(1));
+    var hy=150+x*60;
+    $("strV").setAttribute("y2",hy.toFixed(1));
+    $("hanger").setAttribute("transform","translate(0 "+hy.toFixed(1)+")");
+    var pa = run && run.x>=XA, pb = run && run.x>=XB;
+    $("ledA").setAttribute("fill", pa?"#3fbf6b":"#8fa3b5");
+    $("ledB").setAttribute("fill", pb?"#3fbf6b":"#8fa3b5");
+    $("mV1").textContent = pa ? run.d.v1.toFixed(2) : "–";
+    $("mV2").textContent = pb ? run.d.v2.toFixed(2) : "–";
+    $("mT").textContent  = pb ? run.d.t.toFixed(3) : "–";
+    $("mA").textContent  = pb ? run.d.am.toFixed(2) : "–";
+  }
+  function resetRun(){ run=null; $("goBtn").disabled=false; drawLoad(); renderScene(); idleStatus(); }
+  function release(){
+    if(run && run.moving) return;
+    if(trials().length>=3){ setStatus("This row already has 3 trials. Clear the row to repeat it.","warn"); return; }
+    run={d:trial(st.mode,st.sel[st.mode]), t:0, x:0, moving:true, logged:false};
+    $("goBtn").disabled=true; last=performance.now();
+    setStatus("Trolley released from rest.");
+    requestAnimationFrame(tick);
+  }
+  function tick(now){
+    if(!run || !run.moving) return;
+    var dt=Math.min(0.1,(now-last)/1000); last=now;
+    run.t+=dt*st.speed; run.x=0.5*run.d.a*run.t*run.t;
+    if(run.x>=XB && !run.logged){
+      run.logged=true; trials().push(run.d.am);
+      renderTable(); renderGraph();
+      setStatus("Speed "+run.d.v1.toFixed(2)+" m/s at A and "+run.d.v2.toFixed(2)+" m/s at B, "+run.d.t.toFixed(3)+" s apart. Acceleration = "+run.d.am.toFixed(2)+" m/s².","good");
+    }
+    if(run.x>=XE){ run.x=XE; run.moving=false; $("goBtn").disabled=false; $("goBtn").textContent="Release again"; }
+    renderScene();
+    if(run.moving) requestAnimationFrame(tick);
+  }
+
+  function mean(arr){ return arr && arr.length ? arr.reduce(function(a,b){return a+b;},0)/arr.length : null; }
+  function renderTable(){
+    var iv=IV[st.mode], res=st.results[st.mode], html="";
+    iv.values.forEach(function(v){
+      var arr=res[v]||[], m=mean(arr);
+      html+='<tr data-v="'+v+'"'+(v===st.sel[st.mode]?' class="sel"':'')+'><td><strong>'+ivText(st.mode,v)+'</strong></td>';
+      for(var i=0;i<3;i++) html+='<td>'+(i<arr.length?arr[i].toFixed(2):'')+'</td>';
+      html+='<td>'+(m===null?'':m.toFixed(2))+'</td>';
+      html+='<td>'+(arr.length?'<button class="x" data-clear="'+v+'" aria-label="Clear row '+ivText(st.mode,v)+'">×</button>':'')+'</td></tr>';
+    });
+    $("tbody").innerHTML=html;
+  }
+
+  function renderGraph(){
+    var mode=st.mode, res=st.results[mode], vals=IV[mode].values, inv = mode==="mass" && st.inv==="inv";
+    var W=560,Hh=350,L=52,R=545,T=16,B=292;
+    var x1 = mode==="force" ? 5 : (inv ? 1 : 3), xs = mode==="force" ? 1 : (inv ? 0.2 : 0.5);
+    var y1 = mode==="force" ? 6 : 2.5, ys = mode==="force" ? 1 : 0.5;
+    function X(x){return L+x/x1*(R-L);}
+    function Y(y){return B-y/y1*(B-T);}
+    var xlab = mode==="force" ? "Force (N)" : (inv ? "1 ÷ total mass (1/kg)" : "Total mass (kg)");
+    var s='<svg viewBox="0 0 '+W+' '+Hh+'" role="img" aria-label="Graph of acceleration against '+xlab+'">';
+    s+='<defs><clipPath id="pc"><rect x="'+L+'" y="'+T+'" width="'+(R-L)+'" height="'+(B-T)+'"/></clipPath></defs>';
+    var i,n=Math.round(y1/ys),v;
+    for(i=0;i<=n;i++){ v=i*ys;
+      s+='<line x1="'+L+'" x2="'+R+'" y1="'+Y(v)+'" y2="'+Y(v)+'" stroke="#d3e2ef" stroke-width="1"/>';
+      s+='<text x="'+(L-7)+'" y="'+(Y(v)+5)+'" text-anchor="end" font-size="14" fill="#1b2c3d">'+(ys<1?v.toFixed(1):v)+'</text>';
+    }
+    n=Math.round(x1/xs);
+    for(i=0;i<=n;i++){ v=i*xs;
+      s+='<line x1="'+X(v)+'" x2="'+X(v)+'" y1="'+T+'" y2="'+B+'" stroke="#e2ecf5" stroke-width="1"/>';
+      s+='<text x="'+X(v)+'" y="'+(B+20)+'" text-anchor="middle" font-size="14" fill="#1b2c3d">'+(xs<1?v.toFixed(1):v)+'</text>';
+    }
+    s+='<line x1="'+L+'" x2="'+R+'" y1="'+B+'" y2="'+B+'" stroke="#1b2c3d" stroke-width="2"/>';
+    s+='<line x1="'+L+'" x2="'+L+'" y1="'+T+'" y2="'+B+'" stroke="#1b2c3d" stroke-width="2"/>';
+    s+='<text x="'+((L+R)/2)+'" y="'+(Hh-12)+'" text-anchor="middle" font-size="15" font-weight="600" fill="#1b2c3d">'+xlab+'</text>';
+    s+='<text transform="translate(15 '+((T+B)/2)+') rotate(-90)" text-anchor="middle" font-size="15" font-weight="600" fill="#1b2c3d">Acceleration (m/s²)</text>';
+    var pts=[], means=[];
+    vals.forEach(function(val){
+      var arr=res[val]||[], x=ivX(mode,val), m=mean(arr);
+      arr.forEach(function(a){ pts.push([x,a]); });
+      if(m!==null) means.push([x,m,params(mode,val).M]);
+    });
+    if(st.fit && means.length>=3){
+      if(mode==="mass" && !inv){
+        var k=mean(means.map(function(q){return q[1]*q[2];})), d="";
+        for(v=0.3; v<=3.001; v+=0.05) d+=X(v).toFixed(1)+","+Y(k/v).toFixed(1)+" ";
+        s+='<polyline clip-path="url(#pc)" fill="none" stroke="#2b5f8f" stroke-width="2.2" points="'+d+'"/>';
+      } else {
+        var sx=0,sy=0,sxx=0,sxy=0,nn=means.length;
+        means.forEach(function(q){ sx+=q[0]; sy+=q[1]; sxx+=q[0]*q[0]; sxy+=q[0]*q[1]; });
+        var mm=(nn*sxy-sx*sy)/(nn*sxx-sx*sx), bb=(sy-mm*sx)/nn;
+        s+='<line clip-path="url(#pc)" x1="'+X(0)+'" y1="'+Y(bb).toFixed(1)+'" x2="'+X(x1)+'" y2="'+Y(bb+mm*x1).toFixed(1)+'" stroke="#2b5f8f" stroke-width="2.2"/>';
+      }
+    }
+    pts.forEach(function(p){ s+='<circle cx="'+X(p[0]).toFixed(1)+'" cy="'+Y(p[1]).toFixed(1)+'" r="4" fill="none" stroke="#7fa3c4" stroke-width="1.5"/>'; });
+    means.forEach(function(p){
+      var cx=X(p[0]), cy=Y(p[1]), r=5.5;
+      s+='<path d="M'+(cx-r)+' '+(cy-r)+' L'+(cx+r)+' '+(cy+r)+' M'+(cx+r)+' '+(cy-r)+' L'+(cx-r)+' '+(cy+r)+'" stroke="#2b5f8f" stroke-width="2.6" stroke-linecap="round"/>';
+    });
+    if(!pts.length) s+='<text x="'+((L+R)/2)+'" y="'+(T+40)+'" text-anchor="middle" font-size="15" fill="#2b5f8f">Release the trolley to plot the first point</text>';
+    $("graph").innerHTML=s+'</svg>';
+  }
+
+  var redraw={};
+  function seg(id, items, get, set){
+    var el=$(id);
+    function draw(){
+      el.innerHTML=items().map(function(it){
+        return '<button data-v="'+it[0]+'" aria-pressed="'+(String(get())===String(it[0]))+'">'+it[1]+'</button>';
+      }).join("");
+    }
+    el.addEventListener("click",function(e){
+      var b=e.target.closest("button"); if(!b) return;
+      set(b.getAttribute("data-v")); draw();
+    });
+    draw(); redraw[id]=draw;
+  }
+  function refreshSetup(){
+    var iv=IV[st.mode];
+    $("ivLab").textContent=iv.lab; $("ivHead").textContent=iv.head;
+    $("fixedNote").textContent = st.mode==="force"
+      ? "Total mass stays at 1.0 kg: each 100 g mass moved from the trolley to the hanger adds 0.98 N of force."
+      : "Force stays at 1.96 N (200 g hanging). Each 0.5 kg slab added to the trolley increases the total mass.";
+    $("xSeg").style.display = st.mode==="mass" ? "" : "none";
+    $("fitBtn").textContent = (st.mode==="mass" && st.inv==="mass") ? "Curve of best fit" : "Line of best fit";
+    redraw.ivSeg(); renderTable(); renderGraph(); resetRun(); $("goBtn").textContent="Release trolley";
+  }
+
+  seg("modeSeg", function(){return [["force","Effect of force"],["mass","Effect of mass"]];},
+      function(){return st.mode;}, function(v){st.mode=v; refreshSetup();});
+  seg("ivSeg", function(){return IV[st.mode].values.map(function(v){return [v,ivText(st.mode,v)];});},
+      function(){return st.sel[st.mode];}, function(v){st.sel[st.mode]=Number(v); renderTable(); resetRun(); $("goBtn").textContent="Release trolley";});
+  seg("fricSeg", function(){return [["comp","Tilted to compensate for friction"],["level","Level (friction acts)"]];},
+      function(){return st.fric;}, function(v){st.fric=v; st.results={force:{},mass:{}}; renderTable(); renderGraph(); resetRun(); $("goBtn").textContent="Release trolley";});
+  seg("speedSeg", function(){return [[1,"Real time"],[0.25,"Slow motion"]];},
+      function(){return st.speed;}, function(v){st.speed=Number(v);});
+  seg("xSeg", function(){return [["mass","Mass"],["inv","1 ÷ mass"]];},
+      function(){return st.inv;}, function(v){st.inv=v; $("fitBtn").textContent = v==="mass" ? "Curve of best fit" : "Line of best fit"; renderGraph();});
+
+  $("goBtn").addEventListener("click",release);
+  $("resetBtn").addEventListener("click",function(){ resetRun(); $("goBtn").textContent="Release trolley"; });
+  $("varyBtn").addEventListener("click",function(){
+    st.vary=!st.vary; this.setAttribute("aria-pressed",st.vary);
+    this.textContent="Run-to-run variation "+(st.vary?"on":"off");
+  });
+  $("fitBtn").addEventListener("click",function(){ st.fit=!st.fit; this.setAttribute("aria-pressed",st.fit); renderGraph(); });
+  $("tbody").addEventListener("click",function(e){
+    var c=e.target.closest("[data-clear]");
+    if(c){ delete st.results[st.mode][c.getAttribute("data-clear")]; renderTable(); renderGraph(); return; }
+    var tr=e.target.closest("tr"); if(!tr) return;
+    st.sel[st.mode]=Number(tr.getAttribute("data-v")); redraw.ivSeg(); renderTable(); resetRun(); $("goBtn").textContent="Release trolley";
+  });
+  $("fillBtn").addEventListener("click",function(){
+    var res=st.results[st.mode];
+    IV[st.mode].values.forEach(function(v){
+      var arr=res[v]||(res[v]=[]);
+      while(arr.length<3) arr.push(trial(st.mode,v).am);
+    });
+    renderTable(); renderGraph();
+    setStatus("Table filled with 3 trials for every value.");
+  });
+  $("clearBtn").addEventListener("click",function(){ st.results[st.mode]={}; renderTable(); renderGraph(); });
+
+  refreshSetup();
+})();
+</script>
+</body>
+</html>

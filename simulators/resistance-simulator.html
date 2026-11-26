@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Resistance Practical Simulator</title>
+<style>
+/* Layout idea: apparatus and controls on the left, graph and results on the right. Single light blue theme for projectors. */
+:root{
+  color-scheme: light;
+  --bg:#eaf2f8;
+  --paper:#f8fbfe;
+  --ink:#1b2c3d;
+  --accent:#2b5f8f;
+  --line:#bfd3e4;
+  --soft:#dbe8f3;
+  --good:#0f7a4f;
+  --warn:#9a3b1f;
+  --display: Georgia, "Times New Roman", serif;
+  --body: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.45}
+header{padding:16px 20px 8px;display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline}
+h1{font-family:var(--display);font-size:1.6rem;margin:0;text-wrap:balance}
+header p{margin:0;color:var(--accent)}
+main{display:grid;gap:16px;padding:8px 16px 24px;grid-template-columns:1fr}
+@media (min-width:980px){main{grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);align-items:start}}
+.col{display:flex;flex-direction:column;gap:16px;min-width:0}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+h2{font-family:var(--display);font-size:1.1rem;margin:0 0 10px}
+.row{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+.row + .row{margin-top:10px}
+.lab{font-weight:600;min-width:7.5em}
+.seg{display:flex;flex-wrap:wrap;gap:4px}
+button{font:inherit;color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:7px;padding:6px 12px;cursor:pointer;min-height:38px}
+button:hover{border-color:var(--accent)}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600;padding:8px 20px}
+button:disabled{opacity:.45;cursor:not-allowed}
+
+.bench svg{width:100%;max-width:640px;height:auto;display:block;margin:0 auto}
+.meters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}
+.meter{background:#18283a;color:#cfe6fb;border-radius:8px;padding:6px 8px;text-align:center}
+.meter b{display:block;font-family:"Courier New",monospace;font-size:1.45rem;font-variant-numeric:tabular-nums;white-space:nowrap}
+.meter span{font-size:.78rem;opacity:.85}
+.slider{display:flex;align-items:center;gap:10px;margin-top:12px}
+.slider input{flex:1;min-width:0;height:38px;accent-color:var(--accent)}
+.slider output{font-weight:700;min-width:4.6em;text-align:right;font-variant-numeric:tabular-nums}
+.status{min-height:3.1em;padding:8px 12px;border-left:5px solid var(--accent);background:var(--soft);border-radius:4px}
+.status.warn{border-color:var(--warn)}
+.tablewrap{overflow:auto;max-height:440px}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:center}
+th{background:var(--soft);font-weight:600;font-size:.9rem;position:sticky;top:0}
+td.dim{color:#7d93a8;font-size:.85rem}
+tr.sel td{background:#cfe0f0}
+button.x{min-height:30px;padding:2px 9px}
+.sw{display:inline-block;width:13px;height:13px;border-radius:50%;vertical-align:-1px;margin-right:6px}
+.legend{display:flex;flex-direction:column;gap:2px;font-size:.9rem;margin-top:6px}
+.graphwrap{overflow-x:auto}
+.graphwrap svg{width:100%;min-width:320px;height:auto;display:block}
+details summary{cursor:pointer;font-family:var(--display);font-size:1.1rem;font-weight:700}
+details ul{margin:8px 0 0;padding-left:1.2em}
+details li{margin:4px 0;max-width:68ch}
+details h3{font-size:1rem;margin:12px 0 0}
+.note{font-size:.85rem;color:var(--accent);margin:8px 0 0}
+</style>
+</head>
+<body>
+<header>
+  <h1>Resistance</h1>
+  <p>AQA GCSE Physics required practical 3: length of a wire, and resistors in series and parallel</p>
+</header>
+
+<main>
+  <div class="col">
+    <section class="panel" aria-label="Apparatus">
+      <h2 id="sceneHead">Wire on a metre rule</h2>
+      <div class="bench" id="scene"></div>
+      <div class="meters">
+        <div class="meter"><b id="mV">0.00</b><span>voltmeter (V)</span></div>
+        <div class="meter"><b id="mI">0.00</b><span>ammeter (A)</span></div>
+      </div>
+      <div id="wireCtl">
+        <div class="slider">
+          <label for="len" class="lab" style="min-width:0">Length of wire</label>
+          <input type="range" id="len" min="5" max="100" step="1" value="50">
+          <output id="lenOut" for="len">50 cm</output>
+        </div>
+        <div class="row">
+          <button id="downBtn">−10 cm</button>
+          <button id="upBtn">+10 cm</button>
+          <button class="primary" id="recBtn">Record reading</button>
+        </div>
+      </div>
+      <div id="combCtl" style="display:none">
+        <div class="row" style="margin-top:12px"><span class="lab">Connect</span><div class="seg" id="arrSeg"></div></div>
+        <div class="row"><button class="primary" id="recBtn2">Record reading</button></div>
+      </div>
+      <div class="status" id="status" aria-live="polite" style="margin-top:12px"></div>
+    </section>
+
+    <section class="panel" aria-label="Set up">
+      <h2>Set up</h2>
+      <div class="row"><span class="lab">Investigate</span><div class="seg" id="modeSeg"></div></div>
+      <div class="row" id="wireRow"><span class="lab">Wire</span><div class="seg" id="wireSeg"></div></div>
+      <div class="row" id="r1Row"><span class="lab">Resistor R1</span><div class="seg" id="r1Seg"></div></div>
+      <div class="row" id="r2Row"><span class="lab">Resistor R2</span><div class="seg" id="r2Seg"></div></div>
+      <div class="row"><span class="lab">Variation</span>
+        <div class="seg"><button id="varyBtn" aria-pressed="true">Measurement variation on</button></div>
+      </div>
+      <p class="note" id="setNote"></p>
+    </section>
+  </div>
+
+  <div class="col">
+    <section class="panel" aria-label="Graph" id="graphPanel">
+      <div class="row" style="justify-content:space-between">
+        <h2 style="margin:0">Graph of resistance against length</h2>
+        <button id="fitBtn" aria-pressed="false">Line of best fit</button>
+      </div>
+      <div class="graphwrap" id="graph" style="margin-top:8px"></div>
+      <div class="legend" id="legend"></div>
+    </section>
+
+    <section class="panel" aria-label="Results">
+      <div class="row" style="justify-content:space-between">
+        <h2 style="margin:0" id="resHead">Results</h2>
+        <button id="showRBtn" aria-pressed="false">Show resistance</button>
+      </div>
+      <div class="tablewrap" style="margin-top:10px"><table>
+        <thead id="thead"></thead>
+        <tbody id="tbody"></tbody>
+      </table></div>
+      <div class="row">
+        <button id="fillBtn">Fill table instantly</button>
+        <button id="clearBtn">Clear these results</button>
+      </div>
+      <p class="note" id="resNote"></p>
+    </section>
+
+    <section class="panel">
+      <details>
+        <summary>Teacher notes</summary>
+        <h3>Length of a wire</h3>
+        <ul>
+          <li>Independent: length of wire between the crocodile clips. Dependent: resistance (p.d. ÷ current). Control: the wire's material and thickness, and its temperature.</li>
+          <li>Method: connect the ammeter in series and the voltmeter in parallel with the wire. Move the flying lead along the wire, recording p.d. and current at each length.</li>
+          <li>Why does the line of best fit miss the origin? The clips and leads add a small contact resistance, a zero error.</li>
+          <li>Why keep the current small and switch off between readings? Try the thick wire at 10 cm and watch the current.</li>
+          <li>Compare the three thicknesses: which has the steepest line, and why?</li>
+          <li>Why do the readings scatter about the line? The meters only read to two decimal places.</li>
+        </ul>
+        <h3>Series and parallel</h3>
+        <ul>
+          <li>Measure each resistor alone, then the pair in series, then in parallel, and calculate the resistance each time.</li>
+          <li>Series: the total is the sum of the two resistances.</li>
+          <li>Parallel: the total is less than the smaller of the two resistances, because there are now two paths for the current.</li>
+        </ul>
+        <p class="note">The data are simulated. The wire is modelled on constantan (0.27, 0.38 and 0.56 mm diameter) with a 1.5 V cell and about 0.25 Ω of contact resistance.</p>
+      </details>
+    </section>
+  </div>
+</main>
+
+<script>
+(function(){
+  "use strict";
+  var WIRES = {
+    thin:{name:"Thin (0.27 mm)", rpm:8.56, w:2, col:"#2b5f8f"},
+    mid:{name:"Medium (0.38 mm)", rpm:4.32, w:3.2, col:"#c2571a"},
+    thick:{name:"Thick (0.56 mm)", rpm:1.99, w:4.6, col:"#2f7d4f"}
+  };
+  var ARR = {r1:"R1 alone", r2:"R2 alone", series:"R1 and R2 in series", parallel:"R1 and R2 in parallel"};
+  var CONTACT=0.25;
+  var st = {mode:"wire", wire:"thin", L:50, vary:true, fit:false, showR:false, r1:10, r2:20, arr:"r1"};
+  var data = {wire:{thin:[], mid:[], thick:[]}, comb:{}};
+
+  function $(id){return document.getElementById(id);}
+  function isW(){ return st.mode==="wire"; }
+  function combR(a){
+    return a==="r1" ? st.r1 : a==="r2" ? st.r2 : a==="series" ? st.r1+st.r2 : st.r1*st.r2/(st.r1+st.r2);
+  }
+  function model(){
+    var R, emf, ri;
+    if(isW()){ R=WIRES[st.wire].rpm*st.L/100+CONTACT; emf=1.5; ri=0.6; }
+    else { R=combR(st.arr); emf=3.0; ri=0.3; }
+    var I=emf/(R+ri); return {V:I*R, I:I};
+  }
+  function idp(){ return isW() ? 2 : 3; }
+  function measure(){
+    var m=model(), V=m.V, I=m.I;
+    if(st.vary){ V*=1+(Math.random()-0.5)*0.02; I*=1+(Math.random()-0.5)*0.02; }
+    return {V:Number(V.toFixed(2)), I:Number(I.toFixed(idp()))};
+  }
+  function rOf(p){ return p.I>0 ? p.V/p.I : null; }
+  function fmtR(r){ return r===null ? "" : (r>=10 ? r.toFixed(1) : r.toFixed(2)); }
+  function setStatus(msg,cls){ var el=$("status"); el.textContent=msg; el.className="status"+(cls?" "+cls:""); }
+  function statusNow(){
+    var m=model();
+    if(isW()){
+      if(m.I>1) setStatus("The current is "+m.I.toFixed(2)+" A, large enough to heat the wire. Its temperature is no longer constant: use a longer length or switch off between readings.","warn");
+      else setStatus("Clip at "+st.L+" cm. Record the voltmeter and ammeter readings, then move the clip.");
+    } else setStatus(ARR[st.arr]+" connected. Record the voltmeter and ammeter readings.");
+  }
+
+  function wireScene(){
+    var w=WIRES[st.wire], xc=40+4.4*st.L, hot=model().I>1;
+    var s='<svg viewBox="0 0 520 232" role="img" aria-label="Wire along a metre rule with a fixed clip at 0 centimetres and a moving clip, in a circuit with a cell, ammeter and voltmeter" font-family="system-ui,Arial" fill="none" stroke="#1b2c3d" stroke-width="2.3" stroke-linecap="round">';
+    s+='<rect x="40" y="178" width="440" height="24" fill="#f3e3b3" stroke="#a88f4f" stroke-width="1.5"/>';
+    for(var c=0;c<=100;c+=5){
+      var x=40+4.4*c;
+      s+='<line x1="'+x+'" x2="'+x+'" y1="178" y2="'+(c%10?183:187)+'" stroke="#6b5a2c" stroke-width="1.2"/>';
+      if(c%10===0) s+='<text x="'+x+'" y="198" font-size="10" fill="#3d3418" stroke="none" text-anchor="middle">'+c+'</text>';
+    }
+    s+='<line x1="34" x2="486" y1="170" y2="170" stroke="#b9773f" stroke-width="'+w.w+'"/>';
+    s+='<line x1="40" x2="'+xc+'" y1="170" y2="170" stroke="'+(hot?"#e2541b":"#8a4f22")+'" stroke-width="'+w.w+'"/>';
+    s+='<path d="M40 160 V40 H112 M120 40 H204 M236 40 H474 Q 494 40 494 60 V104 C 494 150, '+(xc+50)+' 118, '+xc+' 160"/>';
+    s+='<line x1="112" y1="24" x2="112" y2="56"/><line x1="120" y1="32" x2="120" y2="48" stroke-width="5"/>';
+    s+='<text x="116" y="16" font-size="12" font-weight="700" fill="#1b2c3d" stroke="none" text-anchor="middle">1.5 V cell</text>';
+    s+='<circle cx="220" cy="40" r="16" fill="#f8fbfe"/><text x="220" y="46" font-size="17" font-weight="700" fill="#1b2c3d" stroke="none" text-anchor="middle">A</text>';
+    s+='<path d="M184 108 C 120 108, 50 112, 45 160 M216 108 C 262 108, '+(xc-6)+' 112, '+(xc-5)+' 160" stroke-width="1.8"/>';
+    s+='<circle cx="200" cy="108" r="16" fill="#f8fbfe"/><text x="200" y="114" font-size="17" font-weight="700" fill="#1b2c3d" stroke="none" text-anchor="middle">V</text>';
+    s+='<rect x="35" y="158" width="11" height="16" rx="2" fill="#1b2c3d" stroke="none"/>';
+    s+='<rect x="'+(xc-6)+'" y="158" width="11" height="16" rx="2" fill="#b03a2e" stroke="none"/>';
+    var lx=Math.max(70,Math.min(450,xc));
+    s+='<text x="'+lx+'" y="222" font-size="13" font-weight="700" fill="#b03a2e" stroke="none" text-anchor="middle">length = '+st.L+' cm</text>';
+    return s+'</svg>';
+  }
+  function resBox(x,y,label){
+    return '<rect x="'+(x-28)+'" y="'+(y-11)+'" width="56" height="22" fill="#f8fbfe"/>'
+         + '<text x="'+x+'" y="'+(y-17)+'" font-size="12" font-weight="700" fill="#1b2c3d" stroke="none" text-anchor="middle">'+label+'</text>';
+  }
+  function combScene(){
+    var a=st.arr, l1="R1 "+st.r1+" Ω", l2="R2 "+st.r2+" Ω";
+    var s='<svg viewBox="0 0 520 240" role="img" aria-label="Circuit with a battery, an ammeter and '+ARR[a]+', with a voltmeter across the resistors" font-family="system-ui,Arial" fill="none" stroke="#1b2c3d" stroke-width="2.3" stroke-linecap="round">';
+    s+='<path d="M240 40 H80 V140 H150 M370 140 H440 V106 M440 74 V40 H280"/>';
+    s+='<line x1="240" y1="24" x2="240" y2="56"/><line x1="248" y1="32" x2="248" y2="48" stroke-width="5"/><line x1="248" y1="40" x2="272" y2="40" stroke-dasharray="3 5"/><line x1="272" y1="24" x2="272" y2="56"/><line x1="280" y1="32" x2="280" y2="48" stroke-width="5"/>';
+    s+='<text x="260" y="16" font-size="12" font-weight="700" fill="#1b2c3d" stroke="none" text-anchor="middle">3 V battery</text>';
+    s+='<circle cx="440" cy="90" r="16" fill="#f8fbfe"/><text x="440" y="96" font-size="17" font-weight="700" fill="#1b2c3d" stroke="none" text-anchor="middle">A</text>';
+    if(a==="r1"||a==="r2") s+='<path d="M150 140 H232 M288 140 H370"/>'+resBox(260,140,a==="r1"?l1:l2);
+    else if(a==="series") s+='<path d="M150 140 H177 M233 140 H287 M343 140 H370"/>'+resBox(205,140,l1)+resBox(315,140,l2);
+    else s+='<path d="M150 112 V168 M370 112 V168 M150 112 H232 M288 112 H370 M150 168 H232 M288 168 H370"/>'+resBox(260,112,l1)+resBox(260,168,l2);
+    s+='<path d="M150 '+(a==="parallel"?168:140)+' V214 H244 M276 214 H370 V'+(a==="parallel"?168:140)+'" stroke-width="1.8"/>';
+    s+='<circle cx="150" cy="140" r="3.5" fill="#1b2c3d"/><circle cx="370" cy="140" r="3.5" fill="#1b2c3d"/>';
+    s+='<circle cx="260" cy="214" r="16" fill="#f8fbfe"/><text x="260" y="220" font-size="17" font-weight="700" fill="#1b2c3d" stroke="none" text-anchor="middle">V</text>';
+    return s+'</svg>';
+  }
+  function renderScene(){
+    var m=model();
+    $("scene").innerHTML = isW() ? wireScene() : combScene();
+    $("mV").textContent=m.V.toFixed(2);
+    $("mI").textContent=m.I.toFixed(idp());
+    $("lenOut").textContent=st.L+" cm"; $("len").value=st.L;
+  }
+
+  function renderTable(){
+    var html="", rc=function(r){ return st.showR ? '<td>'+fmtR(r)+'</td>' : '<td class="dim">hidden</td>'; };
+    if(isW()){
+      $("thead").innerHTML='<tr><th>Length (cm)</th><th>Potential difference (V)</th><th>Current (A)</th><th>Resistance, V ÷ I (Ω)</th><th><span aria-hidden="true">Clear</span></th></tr>';
+      var rows=data.wire[st.wire].slice().sort(function(a,b){return a.L-b.L;});
+      rows.forEach(function(p){
+        html+='<tr><td>'+p.L+'</td><td>'+p.V.toFixed(2)+'</td><td>'+p.I.toFixed(2)+'</td>'+rc(rOf(p))
+            +'<td><button class="x" data-l="'+p.L+'" aria-label="Clear reading at '+p.L+' centimetres">×</button></td></tr>';
+      });
+      if(!rows.length) html='<tr><td colspan="5" class="dim">No readings yet</td></tr>';
+      $("resHead").textContent="Results: "+WIRES[st.wire].name.toLowerCase()+" wire";
+      $("resNote").textContent="Readings for each wire are kept, so the three lines can be compared on the graph.";
+    } else {
+      $("thead").innerHTML='<tr><th>Arrangement</th><th>Potential difference (V)</th><th>Current (A)</th><th>Resistance, V ÷ I (Ω)</th></tr>';
+      Object.keys(ARR).forEach(function(a){
+        var p=data.comb[a];
+        html+='<tr data-a="'+a+'"'+(a===st.arr?' class="sel"':'')+'><td style="text-align:left">'+ARR[a]+'</td><td>'+(p?p.V.toFixed(2):'')+'</td><td>'+(p?p.I.toFixed(3):'')+'</td>'+(p?rc(rOf(p)):'<td></td>')+'</tr>';
+      });
+      $("resHead").textContent="Results: R1 = "+st.r1+" Ω, R2 = "+st.r2+" Ω";
+      $("resNote").textContent="Tap a row to connect that arrangement. Changing R1 or R2 clears this table.";
+    }
+    $("tbody").innerHTML=html;
+  }
+
+  function fitLine(p){
+    var n=p.length, sx=0, sy=0, sxx=0, sxy=0;
+    p.forEach(function(q){ sx+=q[0]; sy+=q[1]; sxx+=q[0]*q[0]; sxy+=q[0]*q[1]; });
+    var d=n*sxx-sx*sx; if(n<3 || !d) return null;
+    var m=(n*sxy-sx*sy)/d; return {m:m, b:(sy-m*sx)/n};
+  }
+  function renderGraph(){
+    if(!isW()){ return; }
+    var W=560,Hh=350,L=52,R=545,T=16,B=292, ymaxv=2, leg="", any=false;
+    Object.keys(WIRES).forEach(function(k){ data.wire[k].forEach(function(p){ var r=rOf(p); if(r!==null) ymaxv=Math.max(ymaxv,r); }); });
+    var ys = ymaxv<=4 ? 1 : 2, y1=Math.ceil((ymaxv+0.01)/ys)*ys;
+    function X(x){return L+x/100*(R-L);}
+    function Y(y){return B-y/y1*(B-T);}
+    var s='<svg viewBox="0 0 '+W+' '+Hh+'" role="img" aria-label="Graph of resistance against length of wire">';
+    s+='<defs><clipPath id="pc"><rect x="'+L+'" y="'+T+'" width="'+(R-L)+'" height="'+(B-T)+'"/></clipPath></defs>';
+    for(var y=0;y<=y1+0.01;y+=ys){
+      s+='<line x1="'+L+'" x2="'+R+'" y1="'+Y(y)+'" y2="'+Y(y)+'" stroke="#d3e2ef" stroke-width="1"/>';
+      s+='<text x="'+(L-7)+'" y="'+(Y(y)+5)+'" text-anchor="end" font-size="14" fill="#1b2c3d">'+y+'</text>';
+    }
+    for(var x=0;x<=100;x+=10){
+      s+='<line x1="'+X(x)+'" x2="'+X(x)+'" y1="'+T+'" y2="'+B+'" stroke="#e2ecf5" stroke-width="1"/>';
+      s+='<text x="'+X(x)+'" y="'+(B+20)+'" text-anchor="middle" font-size="14" fill="#1b2c3d">'+x+'</text>';
+    }
+    s+='<line x1="'+L+'" x2="'+R+'" y1="'+B+'" y2="'+B+'" stroke="#1b2c3d" stroke-width="2"/>';
+    s+='<line x1="'+L+'" x2="'+L+'" y1="'+T+'" y2="'+B+'" stroke="#1b2c3d" stroke-width="2"/>';
+    s+='<text x="'+((L+R)/2)+'" y="'+(Hh-12)+'" text-anchor="middle" font-size="15" font-weight="600" fill="#1b2c3d">Length of wire (cm)</text>';
+    s+='<text transform="translate(15 '+((T+B)/2)+') rotate(-90)" text-anchor="middle" font-size="15" font-weight="600" fill="#1b2c3d">Resistance (Ω)</text>';
+    Object.keys(WIRES).forEach(function(k){
+      var pts=data.wire[k].map(function(p){return [p.L,rOf(p)];}).filter(function(q){return q[1]!==null;}), c=WIRES[k].col;
+      if(!pts.length) return; any=true;
+      var f = st.fit ? fitLine(pts) : null;
+      if(f) s+='<line clip-path="url(#pc)" x1="'+X(0)+'" y1="'+Y(f.b).toFixed(1)+'" x2="'+X(100)+'" y2="'+Y(f.b+100*f.m).toFixed(1)+'" stroke="'+c+'" stroke-width="2.2"/>';
+      var strong=k===st.wire;
+      pts.forEach(function(p){
+        var cx=X(p[0]), cy=Y(p[1]), r=strong?5.5:4.5;
+        s+='<path d="M'+(cx-r)+' '+(cy-r)+' L'+(cx+r)+' '+(cy+r)+' M'+(cx+r)+' '+(cy-r)+' L'+(cx-r)+' '+(cy+r)+'" stroke="'+c+'" stroke-width="'+(strong?2.6:2)+'" stroke-linecap="round"/>';
+      });
+      leg+='<span><span class="sw" style="background:'+c+'"></span>'+WIRES[k].name+(f?': gradient '+(f.m*100).toFixed(2)+' Ω per metre, intercept '+f.b.toFixed(2)+' Ω':'')+'</span>';
+    });
+    if(!any) s+='<text x="'+((L+R)/2)+'" y="'+(T+40)+'" text-anchor="middle" font-size="15" fill="#2b5f8f">Record a reading to plot the first point</text>';
+    $("graph").innerHTML=s+'</svg>';
+    $("legend").innerHTML=leg;
+  }
+
+  function renderSetup(){
+    var w=isW();
+    $("wireRow").style.display = w ? "" : "none";
+    $("r1Row").style.display = $("r2Row").style.display = w ? "none" : "";
+    $("wireCtl").style.display = w ? "" : "none";
+    $("combCtl").style.display = w ? "none" : "";
+    $("graphPanel").style.display = w ? "" : "none";
+    $("fillBtn").style.display = "";
+    $("sceneHead").textContent = w ? "Wire on a metre rule" : "Resistors in series and parallel";
+    $("setNote").textContent = w ? "One clip stays at 0 cm. The flying lead moves along the wire to change the length in the circuit."
+                                 : "Measure each resistor alone first, then the pair in series and in parallel.";
+  }
+  function renderAll(){ renderSetup(); renderScene(); renderTable(); renderGraph(); statusNow(); }
+
+  function setLen(v){ st.L=Math.max(5,Math.min(100,Math.round(v))); renderScene(); statusNow(); }
+  function record(){
+    var p=measure();
+    if(isW()){
+      var arr=data.wire[st.wire]; p.L=st.L;
+      data.wire[st.wire]=arr.filter(function(q){return q.L!==st.L;}); data.wire[st.wire].push(p);
+      setStatus("Recorded at "+st.L+" cm: "+p.V.toFixed(2)+" V, "+p.I.toFixed(2)+" A. Move the clip and record the next reading.", model().I>1?"warn":"");
+    } else {
+      data.comb[st.arr]=p;
+      setStatus("Recorded for "+ARR[st.arr]+": "+p.V.toFixed(2)+" V, "+p.I.toFixed(3)+" A.");
+    }
+    renderTable(); renderGraph();
+  }
+
+  var redraw={};
+  function seg(id, items, get, set){
+    var el=$(id);
+    function draw(){
+      el.innerHTML=items.map(function(it){
+        return '<button data-v="'+it[0]+'" aria-pressed="'+(String(get())===String(it[0]))+'">'+it[1]+'</button>';
+      }).join("");
+    }
+    el.addEventListener("click",function(e){
+      var b=e.target.closest("button"); if(!b) return;
+      set(b.getAttribute("data-v")); draw();
+    });
+    draw(); redraw[id]=draw;
+  }
+  seg("modeSeg", [["wire","Length of a wire"],["comb","Series and parallel"]],
+      function(){return st.mode;}, function(v){st.mode=v; renderAll();});
+  seg("wireSeg", Object.keys(WIRES).map(function(k){return [k,WIRES[k].name];}),
+      function(){return st.wire;}, function(v){st.wire=v; renderAll();});
+  var RV=[[5,"5 Ω"],[10,"10 Ω"],[20,"20 Ω"],[30,"30 Ω"]];
+  seg("r1Seg", RV, function(){return st.r1;}, function(v){st.r1=Number(v); data.comb={}; renderAll();});
+  seg("r2Seg", RV, function(){return st.r2;}, function(v){st.r2=Number(v); data.comb={}; renderAll();});
+  seg("arrSeg", [["r1","R1 alone"],["r2","R2 alone"],["series","Series"],["parallel","Parallel"]],
+      function(){return st.arr;}, function(v){st.arr=v; renderAll();});
+
+  $("len").addEventListener("input",function(){ setLen(Number(this.value)); });
+  $("downBtn").addEventListener("click",function(){ setLen(st.L-10); });
+  $("upBtn").addEventListener("click",function(){ setLen(st.L+10); });
+  $("recBtn").addEventListener("click",record);
+  $("recBtn2").addEventListener("click",record);
+  $("varyBtn").addEventListener("click",function(){
+    st.vary=!st.vary; this.setAttribute("aria-pressed",st.vary);
+    this.textContent="Measurement variation "+(st.vary?"on":"off");
+  });
+  $("fitBtn").addEventListener("click",function(){ st.fit=!st.fit; this.setAttribute("aria-pressed",st.fit); renderGraph(); });
+  $("showRBtn").addEventListener("click",function(){
+    st.showR=!st.showR; this.setAttribute("aria-pressed",st.showR);
+    this.textContent=(st.showR?"Hide":"Show")+" resistance"; renderTable();
+  });
+  $("tbody").addEventListener("click",function(e){
+    var b=e.target.closest("[data-l]");
+    if(b){ var l=Number(b.getAttribute("data-l")); data.wire[st.wire]=data.wire[st.wire].filter(function(p){return p.L!==l;}); renderTable(); renderGraph(); return; }
+    var tr=e.target.closest("tr[data-a]");
+    if(tr){ st.arr=tr.getAttribute("data-a"); redraw.arrSeg(); renderAll(); }
+  });
+  $("fillBtn").addEventListener("click",function(){
+    var keepL=st.L, keepA=st.arr;
+    if(isW()){
+      data.wire[st.wire]=[];
+      for(var l=10;l<=100;l+=10){ st.L=l; var p=measure(); p.L=l; data.wire[st.wire].push(p); }
+      st.L=keepL; setStatus("Table filled with readings every 10 cm for the "+WIRES[st.wire].name.toLowerCase()+" wire.");
+    } else {
+      Object.keys(ARR).forEach(function(a){ st.arr=a; data.comb[a]=measure(); });
+      st.arr=keepA; setStatus("Table filled for all four arrangements.");
+    }
+    renderTable(); renderGraph();
+  });
+  $("clearBtn").addEventListener("click",function(){
+    if(isW()) data.wire[st.wire]=[]; else data.comb={};
+    renderTable(); renderGraph();
+  });
+
+  renderAll();
+})();
+</script>
+</body>
+</html>

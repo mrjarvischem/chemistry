@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bond Energy Simulator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Instrument-bench layout shared with the other chemistry simulators: numbered steps across the top,
+     equation stage and working tables on the left, reaction and data rail on the right.
+     Blue = energy taken in (endothermic), orange = energy given out (exothermic), as in the Reaction Energy Simulator. */
+  --bg:#EDF0F5; --surface:#FFFFFF; --soft:#E6EAF2; --ink:#0D1424; --muted:#566076; --line:#D7DDE8;
+  --accent:#2348F5; --accent-ink:#FFFFFF;
+  --stage:#FAFBFE; --stage2:#E3E8F2; --stage-line:#93A0B8;
+  --hot:#D9481C; --cold:#1F74D6; --energy:#F2A100; --good:#15803D;
+  --cN:#1D55D0; --cO:#D2321A; --cX:#15803D;
+  --font-display:"Bricolage Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;
+  --font-body:"Instrument Sans","Segoe UI",system-ui,-apple-system,sans-serif;
+  --r:14px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#080C15; --surface:#111828; --soft:#1A2337; --ink:#EDF1FA; --muted:#98A3BA; --line:#242E46;
+    --accent:#8198FF; --accent-ink:#0A0F1C;
+    --stage:#0E1527; --stage2:#05080F; --stage-line:#5A6884;
+    --hot:#FF7A4D; --cold:#5FA8FF; --energy:#FFC233; --good:#4ADE80;
+    --cN:#7FA8FF; --cO:#FF7A66; --cX:#5FD98A;
+    color-scheme:dark;
+  }
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.45;
+  display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+button:disabled{cursor:default;opacity:.4}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3,p,ul{margin:0}
+[hidden]{display:none!important}
+
+.top{display:flex;align-items:center;gap:12px;padding:12px 18px 8px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto}
+.brand svg{width:30px;height:30px;flex:none}
+.brand h1{font-family:var(--font-display);font-weight:700;font-size:24px;letter-spacing:-.02em;line-height:1}
+.spec{font-size:12.5px;font-weight:600;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:4px 12px}
+.seg{display:inline-flex;background:var(--soft);border-radius:999px;padding:3px;gap:2px}
+.seg button{border:0;background:transparent;padding:6px 14px;border-radius:999px;font-weight:600;font-size:13.5px;color:var(--muted);white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(10,20,40,.18)}
+
+.timeline{display:flex;gap:6px;padding:4px 18px 12px;overflow-x:auto;scrollbar-width:none}
+.timeline::-webkit-scrollbar{display:none}
+.timeline button{flex:1 0 auto;min-width:128px;text-align:left;border:1px solid var(--line);background:var(--surface);
+  border-radius:12px;padding:8px 12px 9px;display:flex;flex-direction:column;gap:1px}
+.timeline .yr{font-size:11.5px;font-weight:600;color:var(--muted);letter-spacing:.04em}
+.timeline .nm{font-family:var(--font-display);font-weight:700;font-size:15.5px;letter-spacing:-.01em;line-height:1.15}
+.timeline button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.timeline button[aria-pressed="true"] .yr{color:inherit;opacity:.7}
+
+.bench{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 350px;gap:14px;padding:0 18px 16px}
+.stagewrap{position:relative;display:flex;flex-direction:column;min-height:0;border-radius:var(--r);overflow:hidden;border:1px solid var(--line);background:var(--surface)}
+.stagebox{position:relative;flex:1;min-height:210px;
+  background:radial-gradient(circle at 1px 1px,color-mix(in srgb,var(--stage-line) 22%,transparent) 1px,transparent 1.5px) 0 0/22px 22px,
+             radial-gradient(ellipse at 50% 45%,var(--stage),var(--stage2))}
+#stage{position:absolute;inset:44px 8px 6px;width:calc(100% - 16px);height:calc(100% - 50px);display:block;user-select:none;-webkit-user-select:none}
+.ov{position:absolute;display:flex;gap:8px;align-items:center;flex-wrap:wrap;pointer-events:none}
+.ov>*{pointer-events:auto}
+.ov.tl{top:10px;left:12px;right:12px}
+.pill{border:1px solid var(--line);background:color-mix(in srgb,var(--surface) 82%,transparent);backdrop-filter:blur(8px);
+  border-radius:999px;padding:5px 12px;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+button.pill[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.pill.eq{font-family:var(--font-display);font-size:15.5px;font-weight:700}
+.pill.bad{border-color:var(--hot);color:var(--hot)}
+.sp{flex:1}
+
+.tables{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line)}
+.tb{padding:10px 14px 12px;min-width:0}
+.tb+.tb{border-left:1px solid var(--line)}
+.tbh{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.tbh h3{font-family:var(--font-display);font-size:16px;font-weight:700;letter-spacing:-.01em}
+.tbh small{font-size:12.5px;color:var(--muted);font-weight:600}
+.tag{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:3px 10px;margin-left:auto;white-space:nowrap}
+.tag.in{background:color-mix(in srgb,var(--cold) 14%,transparent);color:var(--cold)}
+.tag.out{background:color-mix(in srgb,var(--hot) 14%,transparent);color:var(--hot)}
+table.calc{width:100%;border-collapse:collapse;font-size:15px;font-variant-numeric:tabular-nums}
+table.calc th{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;text-align:right;color:var(--muted);padding:2px 0 4px 10px;border-bottom:1px solid var(--line)}
+table.calc th:first-child{text-align:left;padding-left:0}
+table.calc td{padding:4px 0 4px 10px;text-align:right;white-space:nowrap;height:31px}
+table.calc td:first-child{text-align:left;padding-left:0;font-weight:700}
+table.calc tbody tr{cursor:pointer}
+table.calc tbody tr:hover td{background:color-mix(in srgb,var(--soft) 60%,transparent)}
+table.calc tbody tr.sel td{background:color-mix(in srgb,var(--accent) 12%,transparent)}
+table.calc tr.wait td{opacity:0}
+table.calc tfoot td{border-top:2px solid var(--ink);font-weight:700;font-size:16px}
+table.calc tfoot td:first-child{font-weight:600;font-size:14px;white-space:normal}
+.in table.calc tfoot td:last-child{color:var(--cold)} .out table.calc tfoot td:last-child{color:var(--hot)}
+.q{border:1.5px dashed var(--stage-line);background:var(--soft);border-radius:8px;min-width:40px;padding:1px 10px;font-weight:700;color:var(--muted)}
+.empty{font-size:14px;color:var(--muted);padding:6px 0}
+
+#overall{border-top:1px solid var(--line);padding:10px 14px 12px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:18px;align-items:center}
+.bars{display:grid;gap:6px}
+.bar{display:grid;grid-template-columns:150px 1fr;gap:10px;align-items:center;font-size:13.5px;font-weight:600}
+.bar .trk{height:22px;border-radius:6px;background:var(--soft);position:relative;overflow:hidden}
+.bar .trk i{position:absolute;inset:0 auto 0 0;border-radius:6px;transition:width .5s}
+.bar.in i{background:var(--cold)} .bar.out i{background:var(--hot)}
+.bar .trk b{position:absolute;left:8px;top:0;line-height:22px;font-size:13px;color:#fff;font-variant-numeric:tabular-nums;text-shadow:0 1px 2px rgba(0,0,0,.35)}
+.verdict{display:grid;gap:4px}
+.verdict .big{font-family:var(--font-display);font-size:24px;font-weight:700;letter-spacing:-.02em;line-height:1.1}
+.verdict .big.exo{color:var(--hot)} .verdict .big.endo{color:var(--cold)}
+.verdict .calc2{font-size:16px;font-weight:600;font-variant-numeric:tabular-nums}
+.verdict .why{font-size:14px;color:var(--muted)}
+
+.caption{padding:10px 14px 12px;font-size:15.5px;display:flex;gap:14px;align-items:center;border-top:1px solid var(--line)}
+.caption #caption{flex:1;min-height:66px}
+.caption b{font-weight:700}
+.caption .in{color:var(--cold);font-weight:700} .caption .out{color:var(--hot);font-weight:700}
+.caption .warn{color:var(--hot);font-weight:600}
+.nav{display:flex;gap:6px;flex:none}
+.nav button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 16px;font-weight:600;font-size:14px;white-space:nowrap}
+.nav #next{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+
+.rail{display:flex;flex-direction:column;gap:12px;overflow-y:auto;min-height:0;padding-right:2px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.card h2{font-size:11.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.cardhead{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.cardhead h2{margin:0 auto 0 0}
+.cardhead .seg button{padding:4px 10px;font-size:12.5px}
+.chips{display:grid;gap:5px;max-height:318px;overflow-y:auto;padding-right:2px}
+.chips button{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:7px 10px;font-weight:600;font-size:14px;text-align:left;line-height:1.25}
+.chips button small{display:block;font-size:12px;font-weight:500;color:var(--muted)}
+.chips button:hover{border-color:var(--ink)}
+.chips button[aria-pressed="true"]{background:var(--soft);border-color:var(--ink)}
+.note{font-size:13.5px;color:var(--muted)}
+.note b{color:var(--ink);font-weight:600}
+.side{font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin:10px 0 5px}
+.side:first-child{margin-top:0}
+.row{display:flex;gap:5px;align-items:center;margin-bottom:5px}
+.row .stp{border:1px solid var(--line);background:var(--surface);width:30px;height:32px;border-radius:8px;font-weight:700;flex:none}
+.row output{width:22px;text-align:center;font-weight:700;font-size:16px;flex:none}
+.row select{flex:1;min-width:0;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:5px 6px;height:32px}
+.row .del{border:0;background:transparent;color:var(--muted);width:26px;height:32px;font-size:18px;flex:none}
+.add{border:1px dashed var(--stage-line);background:transparent;border-radius:8px;padding:5px 10px;font-size:13px;font-weight:600;color:var(--muted)}
+.bal{margin-top:10px;font-size:13.5px;font-weight:600;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.bal.ok{color:var(--good)} .bal.no{color:var(--hot)}
+.bal button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 12px;font-size:13px;font-weight:600;color:var(--ink)}
+.en{display:grid;grid-template-columns:1fr 1fr;gap:5px 12px}
+.en label{display:flex;align-items:center;justify-content:space-between;gap:6px;font-weight:700;font-size:14.5px}
+.en input{width:68px;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:4px 6px;text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+details summary{cursor:pointer;font-size:12.5px;font-weight:600;color:var(--muted);margin:10px 0 8px}
+.linkbtn{border:0;background:transparent;color:var(--accent);font-weight:600;font-size:13px;padding:0;margin-top:8px}
+
+/* stage drawing */
+#stage text{font-family:var(--font-body)}
+.at{font-weight:700;font-size:25px;text-anchor:middle;dominant-baseline:central;fill:var(--ink)}
+.aN{fill:var(--cN)} .aO{fill:var(--cO)} .aF,.aCl,.aBr,.aI{fill:var(--cX)}
+.bd{stroke:var(--ink);stroke-width:3;stroke-linecap:round}
+.bd.brk{stroke:var(--cold);stroke-dasharray:2 7}
+.bd.mk{stroke:var(--hot);stroke-width:4}
+.bd.hl{stroke:var(--accent);stroke-width:5}
+.coef{font-family:var(--font-display);font-weight:700;font-size:46px;text-anchor:middle;dominant-baseline:central;fill:var(--accent)}
+.op{font-family:var(--font-display);font-weight:700;font-size:34px;text-anchor:middle;dominant-baseline:central;fill:var(--muted)}
+.arrow{stroke:var(--muted);stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.cnt{font-size:16px;font-weight:700;text-anchor:middle;dominant-baseline:central;fill:var(--ink)}
+.cnt tspan.c{fill:var(--accent)}
+.box{fill:color-mix(in srgb,var(--accent) 5%,transparent);stroke:color-mix(in srgb,var(--accent) 45%,transparent);stroke-width:1.5;stroke-dasharray:4 5}
+.box.sel{fill:color-mix(in srgb,var(--accent) 13%,transparent);stroke:var(--accent);stroke-dasharray:none;stroke-width:2}
+.hit{fill:transparent;cursor:pointer}
+.sidel{font-size:13px;font-weight:700;letter-spacing:.08em;text-anchor:middle;dominant-baseline:central;fill:var(--muted)}
+
+@media (max-width:980px){
+  html,body{height:auto}
+  body{display:block}
+  .bench{display:block;padding:0 12px 16px}
+  .top{padding:12px 12px 8px}.timeline{padding:4px 12px 12px}
+  .stagebox{height:64vw;min-height:250px;flex:none}
+  .rail{overflow:visible;margin-top:12px}
+  .caption{flex-direction:column;align-items:stretch}
+  .caption #caption{min-height:0}
+  .nav{justify-content:flex-end}
+}
+@media (max-width:640px){
+  .tables{grid-template-columns:1fr}
+  .tb+.tb{border-left:0;border-top:1px solid var(--line)}
+  #overall{grid-template-columns:1fr}
+  .bar{grid-template-columns:118px 1fr}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><circle cx="9" cy="16" r="4" fill="var(--energy)"/><circle cx="23" cy="16" r="4" fill="var(--energy)"/><path d="M13 16h6" stroke="var(--energy)" stroke-width="2.6" stroke-linecap="round"/></svg>
+    <h1>Bond Energy Simulator</h1>
+  </div>
+  <span class="spec">GCSE Chemistry · Energy changes</span>
+</header>
+
+<nav class="timeline" id="steps" aria-label="Steps"></nav>
+
+<main class="bench">
+  <section class="stagewrap">
+    <div class="stagebox">
+      <svg id="stage" role="img" aria-label="Equation drawn with displayed formulae" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="ov tl"><span class="pill eq" id="eq"></span><span class="pill bad" id="unbal" hidden>Not balanced</span><span class="sp"></span>
+        <button class="pill" id="predict" aria-pressed="false">Class predicts</button></div>
+    </div>
+    <div class="tables" id="tables"></div>
+    <div id="overall" hidden></div>
+    <div class="caption"><div id="caption" aria-live="polite"></div>
+      <div class="nav"><button id="prev">Back</button><button id="next">Next</button></div></div>
+  </section>
+  <aside class="rail">
+    <div class="card">
+      <div class="cardhead"><h2>Reaction</h2>
+        <div class="seg" id="src" role="group" aria-label="Reaction source"><button data-v="common" aria-pressed="true">Common</button><button data-v="build" aria-pressed="false">Build your own</button></div></div>
+      <div id="common" class="chips"></div>
+      <div id="builder" hidden></div>
+    </div>
+    <div class="card">
+      <h2>Bond energies (kJ/mol)</h2>
+      <div class="en" id="enUsed"></div>
+      <details><summary>All bonds</summary><div class="en" id="enAll"></div></details>
+      <p class="note">Values differ slightly between exam questions. Type over any value to match the question you are using.</p>
+      <button class="linkbtn" id="enReset">Reset values</button>
+    </div>
+  </aside>
+</main>
+
+<script>
+(function(){
+"use strict";
+const NS='http://www.w3.org/2000/svg',U=46;
+const $=s=>document.querySelector(s);
+const svg=$('#stage');
+const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v)),lerp=(a,b,t)=>a+(b-a)*t;
+const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+function E(tag,at,par){const e=document.createElementNS(NS,tag);for(const k in at)e.setAttribute(k,at[k]);(par||svg).appendChild(e);return e;}
+let raf=0;
+function tween(dur,fn,done){cancelAnimationFrame(raf);if(reduce)dur=1;const t0=performance.now();
+  (function f(now){const t=clamp((now-t0)/dur);fn(t);if(t<1)raf=requestAnimationFrame(f);else if(done)done();})(t0);}
+
+/* ---------- data ---------- */
+const DEFAULTS={'H–H':436,'C–H':413,'C–C':347,'C=C':612,'C–O':358,'C=O':805,'O–H':464,'O=O':498,'O–O':146,'N≡N':945,'N–H':391,'N–N':158,
+  'Cl–Cl':242,'H–Cl':431,'Br–Br':193,'H–Br':366,'I–I':151,'H–I':298,'F–F':158,'H–F':568,'C–Cl':339,'C–Br':276};
+const EN=Object.assign({},DEFAULTS);
+const SYM=['–','=','≡'];
+function bkey(a,b,o){const k=a+SYM[o-1]+b;return k in DEFAULTS?k:b+SYM[o-1]+a;}
+const MOL={};
+/* backbone: [element, above, below] along a row; l / r = atoms on the ends; b = bond orders along the row */
+function M(id,t,bb,o){
+  o=o||{};const atoms=[],bonds=[],n=bb.length;
+  bb.forEach((v,i)=>atoms.push({el:v[0],x:i,y:0}));
+  for(let i=0;i<n-1;i++)bonds.push([i,i+1,o.b?o.b[i]:1]);
+  bb.forEach((v,i)=>{[[v[1],1],[v[2],-1]].forEach(s=>{if(!s[0])return;
+    let x=i,y=s[1];if(o.diag){x=i+(i===0?-.62:.62);y=s[1]*.8;}
+    atoms.push({el:s[0],x,y});bonds.push([i,atoms.length-1,1]);});});
+  if(o.l){atoms.push({el:o.l,x:-1,y:0});bonds.push([0,atoms.length-1,1]);}
+  if(o.r){atoms.push({el:o.r,x:n,y:0});bonds.push([n-1,atoms.length-1,1]);}
+  const xs=atoms.map(a=>a.x),ys=atoms.map(a=>a.y),x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+  const counts={},order=[],els={};
+  bonds.forEach(b=>{const k=bkey(atoms[b[0]].el,atoms[b[1]].el,b[2]);b.push(k);if(!(k in counts)){counts[k]=0;order.push(k);}counts[k]++;});
+  atoms.forEach(a=>{els[a.el]=(els[a.el]||0)+1;});
+  MOL[id]={id,t,atoms,bonds,counts,order,els,cx:(x0+x1)/2,cy:(y0+y1)/2,w:x1-x0+1.05,h:y1-y0+.95};
+}
+const CH=['C','H','H'];
+M('H2','H₂',[['H'],['H']]);M('O2','O₂',[['O'],['O']],{b:[2]});M('N2','N₂',[['N'],['N']],{b:[3]});
+M('F2','F₂',[['F'],['F']]);M('Cl2','Cl₂',[['Cl'],['Cl']]);M('Br2','Br₂',[['Br'],['Br']]);M('I2','I₂',[['I'],['I']]);
+M('HF','HF',[['H'],['F']]);M('HCl','HCl',[['H'],['Cl']]);M('HBr','HBr',[['H'],['Br']]);M('HI','HI',[['H'],['I']]);
+M('H2O','H₂O',[['O']],{l:'H',r:'H'});M('H2O2','H₂O₂',[['O'],['O']],{l:'H',r:'H'});
+M('NH3','NH₃',[['N',null,'H']],{l:'H',r:'H'});M('N2H4','N₂H₄',[['N','H','H'],['N','H','H']]);
+M('CO2','CO₂',[['O'],['C'],['O']],{b:[2,2]});
+M('CH4','CH₄',[CH],{l:'H',r:'H'});M('C2H6','C₂H₆',[CH,CH],{l:'H',r:'H'});M('C3H8','C₃H₈',[CH,CH,CH],{l:'H',r:'H'});
+M('C2H4','C₂H₄',[CH,CH],{b:[2],diag:true});
+M('CH3OH','CH₃OH',[CH,['O']],{l:'H',r:'H'});M('C2H5OH','C₂H₅OH',[CH,CH,['O']],{l:'H',r:'H'});
+M('CH3Cl','CH₃Cl',[CH],{l:'H',r:'Cl'});M('C2H5Br','C₂H₅Br',[CH,CH],{l:'H',r:'Br'});M('C2H4Br2','C₂H₄Br₂',[['C','H','Br'],['C','H','Br']],{l:'H',r:'H'});
+const NAMES={H2:'hydrogen',O2:'oxygen',N2:'nitrogen',F2:'fluorine',Cl2:'chlorine',Br2:'bromine',I2:'iodine',HF:'hydrogen fluoride',HCl:'hydrogen chloride',
+  HBr:'hydrogen bromide',HI:'hydrogen iodide',H2O:'water',H2O2:'hydrogen peroxide',NH3:'ammonia',N2H4:'hydrazine',CO2:'carbon dioxide',CH4:'methane',
+  C2H6:'ethane',C3H8:'propane',C2H4:'ethene',CH3OH:'methanol',C2H5OH:'ethanol',CH3Cl:'chloromethane',C2H5Br:'bromoethane',C2H4Br2:'dibromoethane'};
+const COMMON=[
+ ['Hydrogen and chlorine',[[1,'H2'],[1,'Cl2']],[[2,'HCl']]],
+ ['Hydrogen and oxygen',[[2,'H2'],[1,'O2']],[[2,'H2O']]],
+ ['Burning methane',[[1,'CH4'],[2,'O2']],[[1,'CO2'],[2,'H2O']]],
+ ['Making ammonia (Haber process)',[[1,'N2'],[3,'H2']],[[2,'NH3']]],
+ ['Hydrogen and bromine',[[1,'H2'],[1,'Br2']],[[2,'HBr']]],
+ ['Ethene and hydrogen',[[1,'C2H4'],[1,'H2']],[[1,'C2H6']]],
+ ['Ethene and bromine',[[1,'C2H4'],[1,'Br2']],[[1,'C2H4Br2']]],
+ ['Ethene and steam',[[1,'C2H4'],[1,'H2O']],[[1,'C2H5OH']]],
+ ['Burning propane',[[1,'C3H8'],[5,'O2']],[[3,'CO2'],[4,'H2O']]],
+ ['Burning ethanol',[[1,'C2H5OH'],[3,'O2']],[[2,'CO2'],[3,'H2O']]],
+ ['Decomposing hydrogen peroxide',[[2,'H2O2']],[[2,'H2O'],[1,'O2']]],
+ ['Splitting water',[[2,'H2O']],[[2,'H2'],[1,'O2']]],
+ ['Decomposing ammonia',[[2,'NH3']],[[1,'N2'],[3,'H2']]],
+ ['Decomposing hydrogen iodide',[[2,'HI']],[[1,'H2'],[1,'I2']]]
+];
+const eqText=rx=>['r','p'].map(s=>rx[s].map(t=>(t[0]>1?t[0]:'')+MOL[t[1]].t).join(' + ')).join(' → ');
+
+/* ---------- state ---------- */
+const st={src:'common',ci:2,rx:null,custom:{r:[[1,'CH4'],[1,'Cl2']],p:[[1,'CH3Cl'],[1,'HCl']]},step:0,e:0,p3:0,p4:0,sel:null,hl:null,predict:false,shown:new Set()};
+const STEPS=[['Equation','Start with the balanced equation'],['Big numbers','Count the molecules'],['Bonds broken','Energy taken in'],['Bonds made','Energy given out'],['Overall','Exothermic or endothermic?']];
+
+function sideRows(side){
+  const rows=[],ix={};
+  st.rx[side].forEach(t=>{const m=MOL[t[1]];m.order.forEach(k=>{
+    if(!(k in ix)){ix[k]=rows.length;rows.push({key:k,parts:[],n:0});}
+    const r=rows[ix[k]];r.parts.push([t[0],m.counts[k]]);r.n+=t[0]*m.counts[k];});});
+  rows.forEach(r=>{r.each=EN[r.key];r.total=r.n*r.each;
+    const w=r.parts.map(p=>p[0]>1?`${p[0]} × ${p[1]}`:`${p[1]}`).join(' + ');
+    r.work=(r.parts.length===1&&r.parts[0][0]===1)?`${r.n}`:`${w} = ${r.n}`;});
+  return rows;
+}
+const sum=rows=>rows.reduce((a,r)=>a+r.total,0);
+function balance(rx){
+  const tot={};[['r',1],['p',-1]].forEach(s=>rx[s[0]].forEach(t=>{const e=MOL[t[1]].els;for(const k in e)tot[k]=(tot[k]||0)+s[1]*t[0]*e[k];}));
+  const off=Object.keys(tot).filter(k=>tot[k]!==0);return {ok:off.length===0&&rx.r.length>0&&rx.p.length>0,off};
+}
+function autoBalance(rx){
+  const sp=rx.r.map(t=>[1,t[1]]).concat(rx.p.map(t=>[-1,t[1]])),n=sp.length,els=[...new Set(sp.flatMap(s=>Object.keys(MOL[s[1]].els)))];
+  let best=null,bs=1e9;const c=new Array(n).fill(1);
+  (function rec(i,s){if(s>=bs)return;if(i===n){if(els.every(e=>sp.reduce((a,x,j)=>a+x[0]*c[j]*(MOL[x[1]].els[e]||0),0)===0)){best=c.slice();bs=s;}return;}
+    for(let v=1;v<=9;v++){c[i]=v;rec(i+1,s+v);}})(0,0);
+  if(!best)return false;rx.r.forEach((t,i)=>t[0]=best[i]);rx.p.forEach((t,i)=>t[0]=best[rx.r.length+i]);return true;
+}
+
+/* ---------- stage ---------- */
+function layout(e){
+  const terms=[];let x=0,H=0,lines=0;
+  ['r','p'].forEach(side=>st.rx[side].forEach((t,i)=>{
+    const m=MOL[t[1]],n=t[0],py=m.h+.18,rmax=Math.max(1,Math.floor(3.6/py)),cols=Math.ceil(n/rmax),rows=Math.ceil(n/cols),px=m.w+.3;
+    const w=lerp(m.w,cols*px-.3,e),h=lerp(m.h,rows*py-.18,e);
+    let op=null;if(i>0){op={t:'+',x:x+.6};x+=1.2;}else if(side==='p'){op={t:'→',x:x+1.1};x+=2.2;}
+    if(n>1)x+=.95;
+    terms.push({side,i,id:side+i,m,n,x0:x,w,h,rows,px,py,op,coefX:x-.5});
+    x+=w;H=Math.max(H,h);lines=Math.max(lines,m.order.length);
+  }));
+  return {terms,W:x,H,lines};
+}
+function bondClass(side,key){
+  const rows=sideRows(side),i=rows.findIndex(r=>r.key===key),n=rows.length;
+  if(st.hl)return (st.hl.side===side&&st.hl.key===key)?['hl',1]:['',.25];
+  if(st.step===2)return side==='r'?(st.p3*(n+1)>i+.5?['brk',1]:['',1]):['',.3];
+  if(st.step===3)return side==='r'?['brk',.45]:(st.p4*(n+1)>i+.5?['mk',1]:['',.3]);
+  if(st.step===4)return side==='r'?['brk',.8]:['mk',1];
+  return ['',1];
+}
+function drawMol(g,m,X,Y,side,op,forceHl){
+  for(const b of m.bonds){
+    const A=m.atoms[b[0]],B=m.atoms[b[1]],ax=X+(A.x-m.cx)*U,ay=Y-(A.y-m.cy)*U,bx=X+(B.x-m.cx)*U,by=Y-(B.y-m.cy)*U;
+    const d=Math.hypot(bx-ax,by-ay),ux=(bx-ax)/d,uy=(by-ay)/d,ta=(A.el.length>1?.4:.31)*U,tb=(B.el.length>1?.4:.31)*U;
+    const bc=forceHl?['hl',1]:bondClass(side,b[3]);
+    const offs=b[2]===1?[0]:b[2]===2?[-4.5,4.5]:[-7.5,0,7.5];
+    offs.forEach(o=>E('line',{class:'bd '+bc[0],x1:ax+ux*ta-uy*o,y1:ay+uy*ta+ux*o,x2:bx-ux*tb-uy*o,y2:by-uy*tb+ux*o,opacity:bc[1]*op},g));
+  }
+  const dim=(!forceHl&&!st.hl&&((st.step===2&&side==='p')||(st.step===3&&side==='r')))?.45:1;
+  for(const a of m.atoms){const t=E('text',{class:'at a'+a.el,x:X+(a.x-m.cx)*U,y:Y-(a.y-m.cy)*U,opacity:op*dim},g);t.textContent=a.el;}
+}
+function draw(){
+  svg.replaceChildren();
+  const e=ease(st.e),L=layout(e),top=-(L.H/2+.75),bot=L.H/2+.35+e*(L.lines*.5+.45);
+  svg.setAttribute('viewBox',`${-.5*U} ${top*U} ${(L.W+1)*U} ${(bot-top)*U}`);
+  const mid={r:[1e9,-1e9],p:[1e9,-1e9]};
+  for(const t of L.terms){
+    const g=E('g',{'data-term':t.id});
+    if(t.op){if(t.op.t==='+'){const o=E('text',{class:'op',x:t.op.x*U,y:0});o.textContent='+';}
+      else E('path',{class:'arrow',d:`M${(t.op.x-.65)*U} 0H${(t.op.x+.65)*U}m-11 -9l11 9l-11 9`});}
+    if(t.n>1){const c=E('text',{class:'coef',x:t.coefX*U,y:0},g);c.textContent=t.n;}
+    const sel=st.sel===t.id;
+    if(e>0.02||sel)E('rect',{class:'box'+(sel?' sel':''),x:(t.x0-.08)*U,y:(-t.h/2-.08)*U,width:(t.w+.16)*U,height:(t.h+.16)*U,rx:12,opacity:sel?1:e},g);
+    for(let k=0;k<t.n;k++){
+      const c=Math.floor(k/t.rows),r=k%t.rows;
+      const X=lerp(t.x0+t.m.w/2,t.x0+c*t.px+t.m.w/2,e)*U,Y=e*(r-(Math.min(t.rows,t.n-c*t.rows)-1)/2)*t.py*U;
+      drawMol(g,t.m,X,Y,t.side,k===0?1:e,sel);
+    }
+    if(e>0.02)t.m.order.forEach((k,j)=>{
+      const per=t.m.counts[k],tx=E('text',{class:'cnt',x:(t.x0+t.w/2)*U,y:(L.H/2+.6+j*.5)*U,opacity:e},g);
+      if(t.n>1){const a=E('tspan',{class:'c'},tx);a.textContent=t.n;const b=E('tspan',{},tx);b.textContent=` × ${per} = ${t.n*per} ${k}`;}
+      else tx.textContent=`${per} ${k}`;});
+    E('rect',{class:'hit',x:(t.coefX-(t.n>1?.45:0))*U,y:top*U,width:(t.w+(t.n>1?.95:0)+.1)*U,height:(bot-top)*U},g);
+    mid[t.side][0]=Math.min(mid[t.side][0],t.x0-(t.n>1?.95:0));mid[t.side][1]=Math.max(mid[t.side][1],t.x0+t.w);
+  }
+  [['r','REACTANTS'],['p','PRODUCTS']].forEach(s=>{if(mid[s[0]][0]>1e8)return;const t=E('text',{class:'sidel',x:(mid[s[0]][0]+mid[s[0]][1])/2*U,y:(top+.28)*U});t.textContent=s[1];});
+}
+
+/* ---------- tables and text ---------- */
+const cell=(id,val)=>(st.predict&&!st.shown.has(id))?`<button class="q" data-q="${id}" aria-label="Reveal">?</button>`:val;
+function tableHTML(side){
+  const rows=sideRows(side),p=side==='r'?(st.step>2?1:st.step===2?st.p3:0):(st.step>3?1:st.step===3?st.p4:0),n=rows.length;
+  const reached=st.step>=(side==='r'?2:3);
+  const head=side==='r'?['Bonds broken','in the reactants','in','Endothermic','Total energy taken in']:['Bonds made','in the products','out','Exothermic','Total energy given out'];
+  let h=`<div class="tb ${head[2]}"><div class="tbh"><h3>${head[0]}</h3><small>${head[1]}</small>${reached?`<span class="tag ${head[2]}">${head[3]}</span>`:''}</div>`;
+  if(!reached)return h+`<p class="empty">Filled in at step ${side==='r'?3:4}.</p></div>`;
+  h+='<table class="calc"><thead><tr><th>Bond</th><th>How many</th><th>Energy each</th><th>Total / kJ</th></tr></thead><tbody>';
+  rows.forEach((r,i)=>{const on=p*(n+1)>i+.5,sel=st.hl&&st.hl.side===side&&st.hl.key===r.key;
+    h+=`<tr class="${on?'':'wait'}${sel?' sel':''}" data-hl="${side}|${r.key}"><td>${r.key}</td><td>${cell(side+r.key+'n',r.work)}</td><td>${r.each}</td><td>${cell(side+r.key+'t',`${r.n} × ${r.each} = ${r.total}`)}</td></tr>`;});
+  h+=`</tbody><tfoot><tr class="${p>=1?'':'wait'}"><td colspan="3">${head[4]}</td><td>${cell(side+'T',sum(rows)+' kJ')}</td></tr></tfoot></table></div>`;
+  return h;
+}
+function overallHTML(){
+  const a=sum(sideRows('r')),b=sum(sideRows('p')),mx=Math.max(a,b,1),d=Math.abs(a-b);
+  const bars=`<div class="bars"><div class="bar in"><span>Taken in breaking bonds</span><div class="trk"><i style="width:${a/mx*100}%"></i><b>${a} kJ</b></div></div>
+    <div class="bar out"><span>Given out making bonds</span><div class="trk"><i style="width:${b/mx*100}%"></i><b>${b} kJ</b></div></div></div>`;
+  if(st.predict&&!st.shown.has('res'))return `<div class="verdict"><div class="why">Work out both totals first, then compare them.</div></div><div class="verdict"><div class="why">Is the reaction exothermic or endothermic overall, and by how much?</div><div><button class="q" data-q="res" style="padding:6px 16px">Reveal answer</button></div></div>`;
+  let v;
+  if(b>a)v=`<div class="big exo">Exothermic overall</div><div class="calc2">${b} − ${a} = <b>${d} kJ/mol given out</b></div><div class="why">More energy is given out making bonds than is taken in breaking bonds.</div>`;
+  else if(a>b)v=`<div class="big endo">Endothermic overall</div><div class="calc2">${a} − ${b} = <b>${d} kJ/mol taken in</b></div><div class="why">More energy is taken in breaking bonds than is given out making bonds.</div>`;
+  else v=`<div class="big">No overall energy change</div><div class="why">The energy taken in equals the energy given out.</div>`;
+  return bars+`<div class="verdict">${v}</div>`;
+}
+function termText(t){
+  const m=t.m,list=m.order.map(k=>`${m.counts[k]} ${k}`).join(', ').replace(/, ([^,]*)$/,' and $1');
+  if(t.n===1)return `<b>${m.t}</b> has no number in front, so there is 1 molecule. It contains ${list} bond${m.bonds.length>1?'s':''}.`;
+  const tot=m.order.map(k=>`${t.n} × ${m.counts[k]} = <b>${t.n*m.counts[k]} ${k}</b>`).join(', ');
+  return `<b>${t.n}${m.t}</b> means ${t.n} whole molecules of ${NAMES[m.id]}. One molecule contains ${list} bond${m.bonds.length>1?'s':''}, so altogether: ${tot}.`;
+}
+const CAP=[
+ '<b>Start with the balanced equation.</b> Each molecule is drawn as a displayed formula so that every bond can be seen. Each line is one covalent bond. A double line (=) is one double bond and has its own bond energy.',
+ '<b>The big numbers.</b> A number in front of a molecule tells you how many of that whole molecule there are. Multiply the bonds in one molecule by the number in front. Tap a molecule to count its bonds.',
+ '<b>Bonds broken.</b> Every bond in the reactants is broken. Breaking bonds <span class="in">takes energy in: it is endothermic</span>. Multiply each bond energy by the number of bonds, then add them up.',
+ '<b>Bonds made.</b> New bonds form to make the products. Making bonds <span class="out">gives energy out: it is exothermic</span>. Multiply each bond energy by the number of bonds, then add them up.',
+ '<b>Compare the two totals.</b> The overall energy change is the difference between them: take the smaller total from the bigger one. Then say whether that energy is given out (exothermic) or taken in (endothermic).'
+];
+function render(){
+  draw();
+  $('#tables').innerHTML=tableHTML('r')+tableHTML('p');
+  const ov=$('#overall');ov.hidden=st.step<4;if(st.step===4)ov.innerHTML=overallHTML();
+  const bal=balance(st.rx);$('#unbal').hidden=bal.ok;$('#eq').textContent=eqText(st.rx);
+  let c=CAP[st.step];
+  if(st.sel&&st.step>=1){const t=layout(1).terms.find(t=>t.id===st.sel);if(t)c=termText(t);}
+  if(st.hl){const r=sideRows(st.hl.side).find(r=>r.key===st.hl.key);if(r)c=`<b>${r.key} bonds ${st.hl.side==='r'?'broken':'made'}.</b> The highlighted bonds are the ${r.n} ${r.key} bond${r.n>1?'s':''} in the ${st.hl.side==='r'?'reactants':'products'}. Each one is ${r.each} kJ/mol, so ${r.n} × ${r.each} = ${r.total} kJ.`;}
+  if(!bal.ok)c+=`<div class="warn">This equation is not balanced (${bal.off.join(', ')||'add a reactant and a product'}), so the totals will not be right. Balance it first.</div>`;
+  $('#caption').innerHTML=c;
+  document.querySelectorAll('#steps button').forEach((b,i)=>b.setAttribute('aria-pressed',i===st.step));
+  $('#prev').disabled=st.step===0;$('#next').disabled=st.step===STEPS.length-1;
+}
+function go(n){
+  n=clamp(n,0,STEPS.length-1);const from=st.step;st.step=n;st.sel=null;st.hl=null;
+  const fin=()=>{st.e=n>=1?1:0;st.p3=n>=2?1:0;st.p4=n>=3?1:0;};
+  if(n===1&&from===0){st.p3=st.p4=0;tween(800,t=>{st.e=t;render();});}
+  else if(n===0&&from===1){tween(500,t=>{st.e=1-t;render();});}
+  else if(n===2&&from<2){st.e=1;st.p4=0;tween(450*(sideRows('r').length+1),t=>{st.p3=t;render();});}
+  else if(n===3&&from<3){st.e=1;st.p3=1;tween(450*(sideRows('p').length+1),t=>{st.p4=t;render();});}
+  else{cancelAnimationFrame(raf);fin();render();}
+}
+function setReaction(rx){cancelAnimationFrame(raf);st.rx=rx;st.step=0;st.e=0;st.p3=0;st.p4=0;st.sel=null;st.hl=null;st.shown=new Set();energies();render();}
+
+/* ---------- rail ---------- */
+function energies(){
+  const used=[...new Set(['r','p'].flatMap(s=>sideRows(s).map(r=>r.key)))];
+  const inp=k=>`<label>${k}<input type="number" inputmode="numeric" min="0" step="1" data-k="${k}" value="${EN[k]}" aria-label="${k} bond energy"></label>`;
+  $('#enUsed').innerHTML=used.map(inp).join('')||'<p class="note">Add molecules to see the bonds.</p>';
+  $('#enAll').innerHTML=Object.keys(DEFAULTS).filter(k=>!used.includes(k)).map(inp).join('');
+}
+function builder(){
+  const rx=st.custom,opts=id=>Object.keys(MOL).map(k=>`<option value="${k}"${k===id?' selected':''}>${MOL[k].t}  ${NAMES[k]}</option>`).join('');
+  const rows=s=>rx[s].map((t,i)=>`<div class="row"><button class="stp" data-a="dec" data-s="${s}" data-i="${i}" aria-label="Fewer">−</button><output>${t[0]}</output>
+    <button class="stp" data-a="inc" data-s="${s}" data-i="${i}" aria-label="More">+</button><select data-s="${s}" data-i="${i}" aria-label="Molecule">${opts(t[1])}</select>
+    <button class="del" data-a="del" data-s="${s}" data-i="${i}" aria-label="Remove">×</button></div>`).join('')+
+    (rx[s].length<3?`<button class="add" data-a="add" data-s="${s}">+ Add ${s==='r'?'reactant':'product'}</button>`:'');
+  const b=balance(rx);
+  $('#builder').innerHTML=`<div class="side">Reactants</div>${rows('r')}<div class="side">Products</div>${rows('p')}
+    <div class="bal ${b.ok?'ok':'no'}">${b.ok?'Balanced':'Not balanced'+(b.off.length?': '+b.off.join(', '):'')}${b.ok?'':'<button data-a="bal">Balance for me</button>'}</div><div class="note" id="balmsg" style="margin-top:6px"></div>`;
+}
+$('#builder').addEventListener('click',e=>{
+  const b=e.target.closest('[data-a]');if(!b)return;const rx=st.custom,s=b.dataset.s,i=+b.dataset.i,a=b.dataset.a;let msg='';
+  if(a==='inc')rx[s][i][0]=Math.min(9,rx[s][i][0]+1);else if(a==='dec')rx[s][i][0]=Math.max(1,rx[s][i][0]-1);
+  else if(a==='del')rx[s].splice(i,1);else if(a==='add')rx[s].push([1,s==='r'?'O2':'H2O']);
+  else if(a==='bal'&&!autoBalance(rx))msg='These molecules cannot be balanced. Check the reactants and products.';
+  builder();if(msg)$('#balmsg').textContent=msg;setReaction(rx);
+});
+$('#builder').addEventListener('change',e=>{const s=e.target.closest('select');if(!s)return;st.custom[s.dataset.s][+s.dataset.i][1]=s.value;builder();setReaction(st.custom);});
+function commons(){$('#common').innerHTML=COMMON.map((c,i)=>`<button data-i="${i}" aria-pressed="${i===st.ci}">${eqText({r:c[1],p:c[2]})}<small>${c[0]}</small></button>`).join('');}
+$('#common').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;st.ci=+b.dataset.i;commons();setReaction({r:COMMON[st.ci][1],p:COMMON[st.ci][2]});});
+$('#src').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;st.src=b.dataset.v;
+  document.querySelectorAll('#src button').forEach(x=>x.setAttribute('aria-pressed',x===b));
+  $('#common').hidden=st.src!=='common';$('#builder').hidden=st.src!=='build';
+  if(st.src==='build'){builder();setReaction(st.custom);}else setReaction({r:COMMON[st.ci][1],p:COMMON[st.ci][2]});});
+document.querySelector('.rail').addEventListener('input',e=>{const i=e.target.closest('input[data-k]');if(!i)return;const v=parseFloat(i.value);if(isFinite(v)&&v>=0){EN[i.dataset.k]=v;render();}});
+$('#enReset').onclick=()=>{Object.assign(EN,DEFAULTS);energies();render();};
+
+/* ---------- wiring ---------- */
+$('#steps').innerHTML=STEPS.map((s,i)=>`<button data-i="${i}"><span class="yr">STEP ${i+1}</span><span class="nm">${s[0]}</span></button>`).join('');
+$('#steps').addEventListener('click',e=>{const b=e.target.closest('button');if(b)go(+b.dataset.i);});
+$('#prev').onclick=()=>go(st.step-1);$('#next').onclick=()=>go(st.step+1);
+document.addEventListener('keydown',e=>{if(e.target.closest('input,select'))return;if(e.key==='ArrowRight')go(st.step+1);if(e.key==='ArrowLeft')go(st.step-1);});
+$('#predict').onclick=()=>{st.predict=!st.predict;st.shown=new Set();$('#predict').setAttribute('aria-pressed',st.predict);render();};
+svg.addEventListener('click',e=>{const g=e.target.closest('[data-term]');if(!g||st.step<1)return;st.hl=null;st.sel=st.sel===g.dataset.term?null:g.dataset.term;render();});
+$('#tables').addEventListener('click',e=>{
+  const q=e.target.closest('[data-q]');if(q){st.shown.add(q.dataset.q);render();return;}
+  const r=e.target.closest('[data-hl]');if(!r||r.classList.contains('wait'))return;const v=r.dataset.hl.split('|');
+  st.sel=null;st.hl=(st.hl&&st.hl.side===v[0]&&st.hl.key===v[1])?null:{side:v[0],key:v[1]};render();});
+$('#overall').addEventListener('click',e=>{const q=e.target.closest('[data-q]');if(q){st.shown.add(q.dataset.q);render();}});
+commons();setReaction({r:COMMON[st.ci][1],p:COMMON[st.ci][2]});
+})();
+</script>
+</body>
+</html>

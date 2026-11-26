@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NPK Fertilisers</title>
+<style>
+/* Layout idea: four tabs, each one a single animated process diagram with a particle key above it,
+   teacher controls below it and numbered stage cards that spotlight one part of the plant. Single light theme for projectors. */
+:root{
+  color-scheme:light;
+  --bg:#eef1f6; --panel:#ffffff; --ink:#131c2b; --muted:#56637a; --line:#d3dae6;
+  --accent:#2a4fc9; --accent-soft:#e3e9fb;
+  --font:"Avenir Next","Segoe UI Variable","Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:17px;line-height:1.45}
+.wrap{max-width:1360px;margin:0 auto;padding:16px 16px 32px;display:flex;flex-direction:column;gap:14px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 16px}
+header a{color:var(--accent);font-size:.9rem;text-decoration:none;flex-basis:100%}
+header a:hover{text-decoration:underline}
+h1{font-size:1.6rem;margin:0;letter-spacing:-.01em;text-wrap:balance}
+header p{margin:0;color:var(--muted)}
+button{font:inherit;color:var(--ink);cursor:pointer}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}
+.tabs button{flex:0 0 auto;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 14px;text-align:left;display:flex;flex-direction:column;min-width:150px}
+.tabs button b{font-size:1rem}
+.tabs button span{font-size:.82rem;color:var(--muted)}
+.tabs button[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.tabs button[aria-selected="true"] span{color:#fff;opacity:.85}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px}
+.head{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 14px;margin-bottom:8px}
+.head h2{margin:0;font-size:1.3rem;text-wrap:balance}
+.head p{margin:0;color:var(--muted)}
+.key{display:flex;flex-wrap:wrap;gap:4px 20px;margin:0 0 8px;padding:0;list-style:none;font-size:.92rem}
+.key li{display:flex;align-items:center;gap:7px}
+.key i{width:13px;height:13px;border-radius:50%;flex:none;display:block}
+.key i.sq{border-radius:3px}
+.scroll{overflow-x:auto}
+canvas{display:block;width:100%;min-width:760px;height:auto;aspect-ratio:1200/540;border-radius:10px;background:#f7f9fc}
+.controls{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;margin-top:10px}
+.seg{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.seg .lab{font-weight:600;margin-right:4px}
+.controls button{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:6px 13px;min-height:38px}
+.controls button:hover{border-color:var(--accent)}
+.controls button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.controls button.primary{font-weight:650;min-width:92px}
+.controls input[type=range]{width:220px;accent-color:var(--accent)}
+.hint{color:var(--muted);font-size:.88rem;margin:8px 0 0}
+.stages{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;list-style:none;margin:0;padding:0}
+.stages button{text-align:left;width:100%;height:100%;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:5px}
+.stages button:hover{border-color:var(--accent)}
+.stages button[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 2px var(--accent);background:var(--accent-soft)}
+.stages .num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--ink);color:#fff;font-weight:700;font-size:.9rem;flex:none}
+.stages .hd{display:flex;align-items:center;gap:8px;font-weight:650;font-size:1.02rem}
+.stages .tx{font-size:.93rem}
+
+.el{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;color:#fff;font-weight:700;font-size:.85rem;margin-right:4px}
+.elN{background:#2a78d6}.elP{background:#eb6834}.elK{background:#6250d6}
+h3{margin:0 0 8px;font-size:1.1rem}
+.tscroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.95rem}
+th,td{padding:7px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-size:.82rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+details{border-bottom:1px solid var(--line);padding:9px 0}
+details:last-child{border-bottom:0}
+summary{cursor:pointer;font-weight:600}
+summary:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+details p{margin:8px 0 2px;padding:8px 12px;background:var(--accent-soft);border-radius:8px}
+.src{display:inline-block;font-size:.78rem;font-weight:600;color:var(--accent);background:var(--accent-soft);border-radius:99px;padding:1px 9px;margin-left:6px;white-space:nowrap}
+.mix label{display:flex;align-items:center;gap:6px;font-weight:600}
+.mix input{width:110px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a href="index.html">&larr; Simulators</a>
+    <h1>NPK fertilisers</h1>
+    <p>AQA GCSE Chemistry 4.10.4.2 (chemistry only) &middot; four animations built around past paper questions</p>
+  </header>
+  <div class="tabs" role="tablist" id="tabs"></div>
+  <section class="card">
+    <div class="head"><h2 id="title"></h2><p id="sub"></p></div>
+    <ul class="key" id="key"></ul>
+    <div class="scroll"><canvas id="cv" width="1200" height="540"></canvas></div>
+    <div class="controls">
+      <button type="button" class="primary" id="play">Pause</button>
+      <div class="seg" id="speed"><span class="lab">Speed</span>
+        <button type="button" data-v="0.5" aria-pressed="false">Slow</button>
+        <button type="button" data-v="1" aria-pressed="true">Normal</button>
+        <button type="button" data-v="2" aria-pressed="false">Fast</button>
+      </div>
+      <div class="seg mix" id="mixctl" hidden><span class="lab">Parts in the mix</span>
+        <label for="pa">Potassium chloride <input type="range" id="pa" min="0" max="3" step="1" value="1"></label>
+        <label for="pb">Ammonium nitrate <input type="range" id="pb" min="0" max="3" step="1" value="1"></label>
+        <label for="pc">Diammonium hydrogen phosphate <input type="range" id="pc" min="0" max="3" step="1" value="1"></label>
+      </div>
+      <div class="seg" id="acid" hidden><span class="lab">Acid</span>
+        <button type="button" data-v="nitric" aria-pressed="true">Nitric acid</button>
+        <button type="button" data-v="sulfuric" aria-pressed="false">Sulfuric acid</button>
+        <button type="button" data-v="phosphoric" aria-pressed="false">Phosphoric acid</button>
+      </div>
+    </div>
+    <p class="hint" id="hint"></p>
+  </section>
+  <ol class="stages" id="stages"></ol>
+  <section class="card" id="extra" hidden></section>
+  <section class="card"><h3>Past paper questions</h3><p class="hint" style="margin:0 0 6px">Reworded from AQA Paper 2 questions, with answers based on the mark schemes. Click a question to show the answer.</p><div id="qs"></div></section>
+</div>
+<script>
+(function(){
+"use strict";
+var W=1200,H=540,cv=document.getElementById("cv"),ctx=cv.getContext("2d");
+var C={water:"#3d8fd9",solid:"#8a5a2b",micro:"#3aa83a",salt:"#f2a13a",vap:"#a9cdf0",big:"#6f6258",grit:"#3b3632",org:"#9a6a34",
+       chem:"#d6339a",gas:"#f5c33b",dig:"#4a3524",wall:"#56637a",pipe:"#d9e8f4",pipeEdge:"#6b7890",ink:"#131c2b",muted:"#56637a",tank:"#dcedf9"};
+function R(a,b){return a+Math.random()*(b-a);}
+function clamp(v,a,b){return v<a?a:v>b?b:v;}
+
+/* ---------- paths: points are [x,y,halfWidthX,halfWidthY] ---------- */
+function mk(pts){
+  var P=pts.map(function(a){var wx=a[2]==null?4:a[2];return {x:a[0],y:a[1],wx:wx,wy:a[3]==null?wx:a[3]};}),L=[0],i;
+  for(i=1;i<P.length;i++)L.push(L[i-1]+Math.hypot(P[i].x-P[i-1].x,P[i].y-P[i-1].y));
+  return {P:P,L:L,total:L[L.length-1]};
+}
+function at(p,s){
+  var L=p.L,P=p.P,i=1;s=clamp(s,0,p.total);
+  while(i<L.length-1&&s>L[i])i++;
+  var a=P[i-1],b=P[i],t=(L[i]-L[i-1])?(s-L[i-1])/(L[i]-L[i-1]):0;
+  return {x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t,wx:a.wx+(b.wx-a.wx)*t,wy:a.wy+(b.wy-a.wy)*t};
+}
+function part(kind,path,v,o){
+  var p={kind:kind,path:path,s:0,v:v*R(.85,1.15),ox:R(-1,1),oy:R(-1,1),a:1,ph:R(0,6.28),x:0,y:0};
+  if(o)for(var k in o)p[k]=o[k];
+  return p;
+}
+function stepParts(sc,dt){
+  var ps=sc.ps,i,p,c;
+  for(i=0;i<ps.length;i++){
+    p=ps[i];
+    if(p.fade){p.a-=dt*(p.fadeRate||1.1);if(p.a<=0)p.dead=true;}
+    if(p.stuck)continue;
+    c=at(p.path,p.s);
+    p.s+=p.v*dt*clamp(9/Math.max(c.wx,c.wy),.2,1);
+    if(p.on)p.on(p,sc);
+    if(p.s>=p.path.total){if(p.end)p.end(p,sc);else p.dead=true;}
+    c=at(p.path,p.s);
+    p.x=c.x+p.ox*c.wx+Math.sin(sc.t*2.2+p.ph)*1.2;p.y=c.y+p.oy*c.wy+Math.cos(sc.t*1.9+p.ph)*1.2;
+  }
+  sc.ps=ps.filter(function(q){return !q.dead;});
+}
+/* ---------- drawing helpers ---------- */
+function rr(x,y,w,h,r){ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x,y,w,h,r);else ctx.rect(x,y,w,h);}
+function pipe(pts,w,col){
+  w=w||12;ctx.lineJoin="round";ctx.lineCap="butt";
+  ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);for(var i=1;i<pts.length;i++)ctx.lineTo(pts[i][0],pts[i][1]);
+  ctx.strokeStyle=C.pipeEdge;ctx.lineWidth=w+4;ctx.stroke();ctx.strokeStyle=col||C.pipe;ctx.lineWidth=w;ctx.stroke();
+}
+function tank(x,y,w,h,fill,level){
+  ctx.fillStyle="#fff";ctx.fillRect(x,y,w,h);
+  ctx.fillStyle=fill||C.tank;ctx.fillRect(x,y+(level||10),w,h-(level||10));
+  ctx.strokeStyle=C.wall;ctx.lineWidth=5;ctx.lineJoin="round";ctx.beginPath();ctx.moveTo(x,y-6);ctx.lineTo(x,y+h);ctx.lineTo(x+w,y+h);ctx.lineTo(x+w,y-6);ctx.stroke();
+}
+function txt(s,x,y,o){
+  o=o||{};ctx.font=(o.b?"700 ":"500 ")+(o.size||15)+"px "+getComputedStyle(document.body).fontFamily;
+  ctx.textAlign=o.al||"center";ctx.textBaseline="alphabetic";ctx.fillStyle=o.col||C.ink;
+  String(s).split("\n").forEach(function(l,i){
+    if(o.halo){ctx.strokeStyle=o.halo;ctx.lineWidth=5;ctx.lineJoin="round";ctx.strokeText(l,x,y+i*(o.size||15)*1.2);}
+    ctx.fillText(l,x,y+i*(o.size||15)*1.2);});
+}
+function pin(n,x,y){ctx.fillStyle=C.ink;ctx.beginPath();ctx.arc(x,y,14,0,6.3);ctx.fill();ctx.strokeStyle="#fff";ctx.lineWidth=2;ctx.stroke();txt(n,x,y+5.5,{b:1,size:15,col:"#fff"});}
+function arrow(x1,y1,x2,y2,col,w){
+  var a=Math.atan2(y2-y1,x2-x1),h=9;ctx.strokeStyle=col;ctx.lineWidth=w||3;ctx.lineCap="round";
+  ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.moveTo(x2-h*Math.cos(a-.5),y2-h*Math.sin(a-.5));ctx.lineTo(x2,y2);ctx.lineTo(x2-h*Math.cos(a+.5),y2-h*Math.sin(a+.5));ctx.stroke();
+}
+function ground(y,col){ctx.fillStyle=col||"#dfe6dc";ctx.fillRect(0,y,W,H-y);}
+function waves(x0,x1,y,t,col){
+  ctx.strokeStyle=col||"#ffffff";ctx.lineWidth=2;ctx.globalAlpha=.7;ctx.beginPath();
+  for(var x=x0;x<=x1;x+=6){var yy=y+Math.sin(x*.05+t*1.5)*2.5;if(x===x0)ctx.moveTo(x,yy);else ctx.lineTo(x,yy);}ctx.stroke();ctx.globalAlpha=1;
+}
+function flame(x,y,h,t,ph){
+  var k=1+Math.sin(t*9+ph)*.15;
+  ctx.fillStyle="#ff8a2e";ctx.beginPath();ctx.moveTo(x-h*.3,y);ctx.quadraticCurveTo(x-h*.35,y-h*.5*k,x,y-h*k);ctx.quadraticCurveTo(x+h*.35,y-h*.5*k,x+h*.3,y);ctx.fill();
+  ctx.fillStyle="#ffd27a";ctx.beginPath();ctx.moveTo(x-h*.15,y);ctx.quadraticCurveTo(x-h*.16,y-h*.3*k,x,y-h*.55*k);ctx.quadraticCurveTo(x+h*.16,y-h*.3*k,x+h*.15,y);ctx.fill();
+}
+function cloud(x,y,s,col){ctx.fillStyle=col;ctx.beginPath();ctx.arc(x,y,16*s,0,6.3);ctx.arc(x+20*s,y-8*s,20*s,0,6.3);ctx.arc(x+44*s,y,16*s,0,6.3);ctx.fill();rr(x-6*s,y-2*s,56*s,18*s,9*s);ctx.fill();}
+function capStuck(sc,kind,max){
+  var st=sc.ps.filter(function(q){return q.stuck&&q.kind===kind&&!q.fade;});
+  for(var i=0;i<st.length-max;i++)st[i].fade=true;
+}
+
+/* ---------- kinds ---------- */
+var EL={N:"#2a78d6",P:"#eb6834",K:"#6250d6"};
+var KIND={
+  gA:{c:EL.K,r:4.6,o:"#fff"},gB:{c:EL.N,r:4.6,o:"#fff"},gC:{c:EL.N,c2:EL.P,r:4.8,o:"#fff"},
+  nh3:{c:"#63b0ea",r:3.3},hno3:{c:"#d6455d",r:3.3},h2so4:{c:"#d9a400",r:3.3},h3po4:{c:"#b0622a",r:3.3},
+  rock:{c:"#8d8377",r:4.4,sq:1},an:{c:EL.N,r:4.4,o:"#fff"},as:{c:"#39a3c7",r:4.4,o:"#fff"},ks:{c:EL.K,r:4.4,o:"#fff"},
+  ps:{c:EL.P,r:4.4,o:"#fff"},cp:{c:EL.P,r:4.6,o:"#fff"},cs:{c:"#d8d2c6",r:4.6,o:"#8d8377"},can:{c:"#3fae7f",r:4.6,o:"#fff"},
+  amp:{c:EL.N,c2:EL.P,r:4.8,o:"#fff"},sol:{c:"#63b0ea",r:3.2},cry:{c:"#ffffff",r:3.6,sq:1,o:"#4b6c93"}
+};
+function drawPart(p){
+  var k=KIND[p.kind]||{c:"#888"},x=p.x,y=p.y,r=k.r||3.6;
+  ctx.globalAlpha=clamp(p.a,0,1);ctx.fillStyle=k.c;
+  if(k.sq){ctx.save();ctx.translate(x,y);ctx.rotate(p.ph);ctx.fillRect(-r,-r,2*r,2*r);if(k.o){ctx.strokeStyle=k.o;ctx.lineWidth=1.2;ctx.strokeRect(-r,-r,2*r,2*r);}ctx.restore();}
+  else{ctx.beginPath();ctx.arc(x,y,r,0,6.3);ctx.fill();
+    if(k.c2){ctx.fillStyle=k.c2;ctx.beginPath();ctx.arc(x,y,r,p.ph,p.ph+3.1416);ctx.fill();}
+    if(k.o){ctx.strokeStyle=k.o;ctx.lineWidth=1;ctx.beginPath();ctx.arc(x,y,r,0,6.3);ctx.stroke();}}
+  ctx.globalAlpha=1;
+}
+function chip(l,x,y,r){r=r||11;ctx.fillStyle=EL[l];ctx.beginPath();ctx.arc(x,y,r,0,6.3);ctx.fill();txt(l,x,y+r*.42,{b:1,size:r*1.2,col:"#fff"});}
+function vessel(x,y,w,h,fill,stroke){ctx.fillStyle=fill||"#fff";rr(x,y,w,h,10);ctx.fill();ctx.strokeStyle=stroke||C.wall;ctx.lineWidth=3.5;ctx.stroke();}
+function stick(max){return function(p,sc){p.stuck=true;capStuck(sc,p.kind,max);};}
+var BELT="#cfc6b8";
+
+/* =====================================================================
+   1. WHAT IS IN AN NPK FERTILISER
+   ===================================================================== */
+var S1=(function(){
+  var HX=[130,330,530],KD=["gA","gB","gC"];
+  var paths=HX.map(function(hx){return mk([[hx,150,42,28],[hx,222,7,5],[hx,300,5,3],[hx+14,308,3,2],[690,308,5,2],[770,312,34,34],[822,352,5],[1040,398,6],[1040,452,34,20]]);});
+  var CMP=[{n:"Potassium chloride",f:"KCl",N:0,P:0,K:52},{n:"Ammonium nitrate",f:"NH₄NO₃",N:35,P:0,K:0},{n:"Diammonium hydrogen\nphosphate",f:"(NH₄)₂HPO₄",N:21,P:23,K:0}];
+  return {
+    id:"whats-in-npk",tab:"What is in NPK?",tabsub:"salts, elements, percentages",
+    title:"What is in an NPK fertiliser?",sub:"Three salts from a past paper, mixed into one formulation",
+    key:[["gA","Potassium chloride"],["gB","Ammonium nitrate"],["gC","Diammonium hydrogen phosphate"]],
+    hint:"Set how many parts of each salt go into the mix and watch the percentages of N, P and K change. Try the 2023 question: the soil needs N and K but has enough P.",
+    stages:[
+      {title:"Three elements",tx:"Plants need nitrogen (N), phosphorus (P) and potassium (K). Compounds of these elements are used as fertilisers to improve agricultural productivity.",box:[930,372,210,160],pin:[956,450]},
+      {title:"Salts supply the elements",tx:"Fertilisers contain compounds, not the elements themselves. Each salt supplies one or two of N, P and K. The name and formula tell you which.",box:[20,14,616,282],pin:[38,150]},
+      {title:"Formulation",tx:"An NPK fertiliser is a formulation: a mixture of salts in fixed proportions, chosen to give the percentages of N, P and K that a crop needs.",box:[36,282,850,100],pin:[58,350]},
+      {title:"Percentages",tx:"The percentages of N, P and K never add up to 100% because the salts also contain other elements, such as hydrogen, oxygen and chlorine.",box:[892,14,296,300],pin:[910,34]}
+    ],
+    parts:[1,1,1],ps:[],t:0,acc:0,
+    mix:function(){var p=this.parts,s=p[0]+p[1]+p[2];if(!s)return {N:0,P:0,K:0};var o={};["N","P","K"].forEach(function(e){o[e]=(CMP[0][e]*p[0]+CMP[1][e]*p[1]+CMP[2][e]*p[2])/s;});return o;},
+    spawn:function(dt){
+      var p=this.parts,s=p[0]+p[1]+p[2];this.acc+=dt;
+      while(this.acc>.06){this.acc-=.06;if(!s)continue;
+        var r=Math.random()*s,i=r<p[0]?0:r<p[0]+p[1]?1:2;this.ps.push(part(KD[i],paths[i],100));}
+    },
+    draw:function(t){
+      var i,self=this;
+      ctx.fillStyle="#f7f9fc";ctx.fillRect(0,0,W,H);ground(500,"#e4e8ee");
+      /* conveyor */
+      ctx.fillStyle="#5b6577";rr(70,317,650,15,7);ctx.fill();
+      ctx.fillStyle="#aeb7c4";for(i=0;i<22;i++){var bx=78+((i*30+t*100)%634);ctx.fillRect(bx,321,10,7);}
+      ctx.fillStyle="#8d98a5";for(i=0;i<6;i++){ctx.beginPath();ctx.arc(95+i*120,342,8,0,6.3);ctx.fill();}
+      /* hoppers */
+      CMP.forEach(function(c,k){
+        var hx=HX[k],on=self.parts[k]>0;
+        ctx.fillStyle="#eef2f7";ctx.beginPath();ctx.moveTo(hx-62,102);ctx.lineTo(hx+62,102);ctx.lineTo(hx+12,214);ctx.lineTo(hx+12,232);ctx.lineTo(hx-12,232);ctx.lineTo(hx-12,214);ctx.closePath();ctx.fill();
+        ctx.strokeStyle=C.wall;ctx.lineWidth=4;ctx.lineJoin="round";ctx.beginPath();ctx.moveTo(hx-62,102);ctx.lineTo(hx-12,214);ctx.lineTo(hx-12,232);ctx.moveTo(hx+62,102);ctx.lineTo(hx+12,214);ctx.lineTo(hx+12,232);ctx.stroke();
+        if(!on){ctx.strokeStyle="#c0392b";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(hx-18,226);ctx.lineTo(hx+18,226);ctx.stroke();}
+        var two=c.n.indexOf("\n")>0;
+        txt(c.n,hx,two?36:54,{b:1,size:15});txt(c.f,hx,two?78:76,{size:15,col:C.muted});
+        var yy=252;["N","P","K"].forEach(function(e){if(c[e]){chip(e,hx+38,yy);txt(c[e]+"%",hx+54,yy+5,{al:"left",b:1,size:15});yy+=28;}});
+        txt(self.parts[k]+(self.parts[k]===1?" part":" parts"),hx-22,262,{al:"right",size:14,col:C.muted});
+      });
+      /* mixer */
+      ctx.fillStyle="#dfe6ee";ctx.beginPath();ctx.arc(770,312,52,0,6.3);ctx.fill();ctx.strokeStyle=C.wall;ctx.lineWidth=4;ctx.stroke();
+      ctx.strokeStyle="#b3bdcb";ctx.lineWidth=5;for(i=0;i<3;i++){var a=t*1.6+i*2.094;ctx.beginPath();ctx.moveTo(770,312);ctx.lineTo(770+Math.cos(a)*44,312+Math.sin(a)*44);ctx.stroke();}
+      txt("Mixer",770,246,{b:1,size:16});
+      pipe([[815,346],[1040,394]],12,"#eef2f7");
+      /* bag */
+      ctx.fillStyle="#f3ead7";rr(985,398,110,98,10);ctx.fill();ctx.strokeStyle="#a08a5a";ctx.lineWidth=3;ctx.stroke();
+      /* chart */
+      var m=this.mix(),bx0=[945,1025,1105];
+      txt("Percentage by mass in the mix",1040,42,{b:1,size:15});
+      [0,20,40,60].forEach(function(v){var y=250-v*3;ctx.strokeStyle=v?"#e1e6ee":C.wall;ctx.lineWidth=v?1:2;ctx.beginPath();ctx.moveTo(925,y);ctx.lineTo(1170,y);ctx.stroke();txt(v,918,y+5,{al:"right",size:13,col:C.muted});});
+      ["N","P","K"].forEach(function(e,k){
+        var h=m[e]*3;ctx.fillStyle=EL[e];if(h>0.5){rr(bx0[k],250-h,50,h,[4,4,0,0]);ctx.fill();}
+        txt(Math.round(m[e])+"%",bx0[k]+25,250-h-8,{b:1,size:16});chip(e,bx0[k]+25,270,11);
+      });
+      txt("The rest is other elements (H, O, Cl)",1040,306,{size:13.5,col:C.muted});
+    },
+    fg:function(){
+      var m=this.mix();
+      txt("NPK",1040,440,{b:1,size:22,col:"#5b4a2a",halo:"#f3ead7"});
+      txt("N "+Math.round(m.N)+" : P "+Math.round(m.P)+" : K "+Math.round(m.K),1040,524,{b:1,size:16});
+    },
+    extra:'<h3>The names you need</h3><div class="tscroll"><table><tr><th>Salt</th><th>Formula</th><th>Supplies</th><th>Where it comes from</th></tr>'+
+      [["Ammonium nitrate","NH₄NO₃","N","ammonia + nitric acid"],["Ammonium sulfate","(NH₄)₂SO₄","N","ammonia + sulfuric acid"],["Ammonium phosphate","(NH₄)₃PO₄","NP","ammonia + phosphoric acid"],
+       ["Potassium chloride","KCl","K","mined"],["Potassium sulfate","K₂SO₄","K","mined"],["Potassium nitrate","KNO₃","NK","contains two of the three elements"],
+       ["Calcium nitrate","Ca(NO₃)₂","N","phosphate rock + nitric acid"],["Calcium phosphate (triple superphosphate)","","P","phosphate rock + phosphoric acid"],["Single superphosphate: calcium phosphate + calcium sulfate","","P","phosphate rock + sulfuric acid"]]
+      .map(function(r){return "<tr><td>"+r[0]+"</td><td>"+r[1]+"</td><td>"+r[2].split("").map(function(e){return '<span class="el el'+e+'">'+e+"</span>";}).join("")+"</td><td>"+r[3]+"</td></tr>";}).join("")+"</table></div>",
+    qs:[
+      ["Which two of these compounds each contain two of the elements N, P and K? Ammonium nitrate, ammonium phosphate, calcium chloride, calcium phosphate, potassium chloride, potassium nitrate.","Ammonium phosphate (N and P) and potassium nitrate (K and N).","2H 2021 Q5.1"],
+      ["Which two of these compounds contain nitrogen? Ca(NO₃)₂, Ca₃(PO₄)₂, KCl, K₂SO₄, (NH₄)₂SO₄.","Ca(NO₃)₂ and (NH₄)₂SO₄. Look for N in the formula.","2F 2025 Q4.7"],
+      ["A fertiliser has the formula K₂NH₄PO₄. How many nitrogen atoms are in the formula? Apart from nitrogen and potassium, which element in it is important for crop growth?","One nitrogen atom. Phosphorus.","2F 2022 Q7.4 and Q7.5"],
+      ["What name is given to a mixture of different compounds in fixed proportions?","A formulation.","2F 2022 Q7.6"],
+      ["A fertiliser contains 22% phosphorus and 25% potassium. Why do these percentages not add up to 100%?","The fertiliser contains other elements as well.","2F 2020 Q1.5"],
+      ["A soil is low in nitrogen and potassium but has enough phosphorus. Evaluate using potassium chloride (K 52%, £0.24/kg), ammonium nitrate (N 35%, £0.23/kg) and diammonium hydrogen phosphate (N 21%, P 23%, £0.35/kg). [4 marks]","Potassium chloride is the only source of potassium, so it is needed. Ammonium nitrate contains only nitrogen, more of it than the phosphate, and is cheaper, so it is more cost effective. The phosphate contains phosphorus, which is not needed. Judgement: no single compound contains both N and K, so use a mixture of potassium chloride and ammonium nitrate.","2H 2023 Q10.1"]
+    ]
+  };
+})();
+
+/* =====================================================================
+   2. MAKING THE SALTS
+   ===================================================================== */
+var S2=(function(){
+  var TAIL=[[1040,270],[1060,270],[1115,270,36,36],[1115,326,5],[1115,440,24,28]];
+  var P={
+    conv:mk([[110,160,50,32],[180,160],[240,160],[240,80],[300,80],[370,80,48,16],[440,70],[560,70],[640,80,58,24]]),
+    a1:mk([[110,160,50,32],[180,160],[240,160],[500,160],[500,100],[560,100],[640,80,58,24]]),
+    a2:mk([[110,160,50,32],[180,160],[240,160],[500,160],[500,200],[560,200],[640,222,58,26]]),
+    sa:mk([[370,245,48,16],[440,245],[560,245],[640,222,58,26]]),
+    an:mk([[640,80,58,24],[720,80],[840,80],[920,80,60,16],[1000,80],[1040,80]].concat(TAIL)),
+    as:mk([[640,222,58,26],[720,222],[840,222],[920,222,60,16],[1000,222],[1040,222]].concat(TAIL)),
+    rock:mk([[110,385,40,16],[180,350],[560,350],[640,350,55,20]]),
+    ps:mk([[640,350,55,20],[720,350],[840,350],[920,350,60,16],[1000,350],[1040,350]].concat(TAIL)),
+    ks:mk([[110,445,40,16],[180,460],[840,460],[920,460,60,16],[1000,460],[1040,460]].concat(TAIL))
+  };
+  var sw=P.conv.L[5];
+  return {
+    id:"making-the-salts",tab:"Making the salts",tabsub:"raw materials to fertiliser",
+    title:"Making the salts",sub:"Several linked processes turn raw materials into the salts in the bag",
+    key:[["nh3","Ammonia"],["hno3","Nitric acid"],["h2so4","Sulfuric acid"],["rock","Phosphate rock","sq"],["an","Nitrogen salts"],["ps","Phosphorus salts"],["ks","Potassium salts"]],
+    hint:"Follow the blue ammonia: it makes nitric acid and both ammonium salts. The next tab shows the acid treatment of phosphate rock.",
+    stages:[
+      {title:"Ammonia",tx:"Ammonia from the Haber process is used to manufacture ammonium salts and nitric acid.",box:[24,92,236,150],pin:[42,108]},
+      {title:"Nitric acid",tx:"Some of the ammonia is used to produce nitric acid.",box:[282,26,262,104],pin:[462,112]},
+      {title:"Ammonium salts",tx:"Ammonia neutralises acids. With nitric acid it makes ammonium nitrate. With sulfuric acid it makes ammonium sulfate.",box:[282,26,736,264],pin:[770,150]},
+      {title:"Mining",tx:"Potassium chloride, potassium sulfate and phosphate rock are all obtained by mining.",box:[24,318,236,190],pin:[42,334]},
+      {title:"Phosphate rock",tx:"Phosphate rock is insoluble, so it cannot be used directly. It is treated with acid to make soluble salts.",box:[24,304,994,96],pin:[300,326]},
+      {title:"Potassium salts",tx:"Potassium chloride and potassium sulfate are soluble, so they are used as mined.",box:[24,416,994,92],pin:[300,438]},
+      {title:"Blend",tx:"The salts are mixed in fixed proportions to make the NPK fertiliser.",box:[1024,180,172,326],pin:[1180,198]}
+    ],
+    ps:[],t:0,acc:0,
+    spawn:function(dt){
+      this.acc+=dt;
+      while(this.acc>.05){this.acc-=.05;var r=Math.random(),ps=this.ps;
+        if(r<.14)ps.push(part("nh3",P.conv,95,{on:function(p){if(p.s>sw)p.kind="hno3";}}));
+        else if(r<.27)ps.push(part("nh3",P.a1,95));
+        else if(r<.40)ps.push(part("nh3",P.a2,95));
+        else if(r<.52)ps.push(part("h2so4",P.sa,95));
+        else if(r<.62)ps.push(part("an",P.an,80));
+        else if(r<.72)ps.push(part("as",P.as,80));
+        else if(r<.82)ps.push(part("rock",P.rock,70));
+        else if(r<.91)ps.push(part("ps",P.ps,80));
+        else ps.push(part("ks",P.ks,80));
+      }
+    },
+    draw:function(t){
+      ctx.fillStyle="#f7f9fc";ctx.fillRect(0,0,W,H);
+      /* pipes */
+      pipe([[180,160],[240,160],[240,80],[300,80]]);pipe([[240,160],[500,160],[500,100],[560,100]]);pipe([[500,160],[500,200],[560,200]]);
+      pipe([[440,70],[560,70]],12,"#f6d9de");pipe([[440,245],[560,245]],12,"#f6ecc4");
+      pipe([[720,80],[840,80]],12,"#eef2f7");pipe([[720,222],[840,222]],12,"#eef2f7");
+      pipe([[180,350],[560,350]],12,BELT);pipe([[720,350],[840,350]],12,"#eef2f7");pipe([[180,460],[840,460]],12,BELT);
+      pipe([[1000,80],[1040,80],[1040,460],[1000,460]],12,"#eef2f7");pipe([[1000,222],[1040,222]],12,"#eef2f7");pipe([[1000,350],[1040,350]],12,"#eef2f7");pipe([[1040,270],[1062,270]],12,"#eef2f7");pipe([[1115,322],[1115,402]],12,"#eef2f7");
+      /* ammonia */
+      vessel(40,110,140,100,"#e3f1fc");txt("Ammonia",110,226+4,{b:1,size:15});txt("from the Haber process",122,248,{size:13.5,col:C.muted});
+      /* converter, acid tank */
+      vessel(300,50,140,60,"#fbeef0");txt("ammonia → nitric acid",370,42,{b:1,size:14});
+      vessel(300,215,140,60,"#fbf5dc");txt("Sulfuric acid",370,296,{b:1,size:15});
+      txt("nitric acid",500,56,{size:13.5,col:"#a8324a",b:1});
+      /* reactors */
+      vessel(560,40,160,80,"#eef4fa");txt("Neutralise",640,32,{b:1,size:14});
+      vessel(560,180,160,85,"#eef4fa");txt("Neutralise",640,284,{b:1,size:14});
+      /* acid treatment */
+      vessel(560,315,160,70,"#fdf0e6");txt("Acid treatment",640,306,{b:1,size:14});
+      /* bins */
+      vessel(840,50,160,60,"#fff");vessel(840,192,160,60,"#fff");vessel(840,320,160,60,"#fff");vessel(840,430,160,60,"#fff");
+      /* mine */
+      ctx.fillStyle="#b9ad9c";ctx.beginPath();ctx.moveTo(30,500);ctx.lineTo(60,400);ctx.lineTo(105,350);ctx.lineTo(150,395);ctx.lineTo(190,500);ctx.fill();
+      ctx.fillStyle="#3b3632";ctx.beginPath();ctx.moveTo(88,500);ctx.lineTo(88,455);ctx.quadraticCurveTo(110,425,132,455);ctx.lineTo(132,500);ctx.fill();
+      txt("Mined",110,524,{b:1,size:15});
+      txt("phosphate rock",370,336,{size:13.5,col:C.muted});txt("potassium chloride and potassium sulfate",470,446,{size:13.5,col:C.muted});
+      /* blender, bag */
+      ctx.fillStyle="#dfe6ee";ctx.beginPath();ctx.arc(1115,270,52,0,6.3);ctx.fill();ctx.strokeStyle=C.wall;ctx.lineWidth=4;ctx.stroke();
+      ctx.strokeStyle="#b3bdcb";ctx.lineWidth=5;for(var i=0;i<3;i++){var a=t*1.6+i*2.094;ctx.beginPath();ctx.moveTo(1115,270);ctx.lineTo(1115+Math.cos(a)*44,270+Math.sin(a)*44);ctx.stroke();}
+      txt("Blend",1115,206,{b:1,size:15});
+      ctx.fillStyle="#f3ead7";rr(1070,402,90,86,10);ctx.fill();ctx.strokeStyle="#a08a5a";ctx.lineWidth=3;ctx.stroke();
+    },
+    fg:function(){
+      function lab(s,x,y,e){txt(s,x,y,{b:1,size:14,halo:"#fff"});e.split("").forEach(function(c,i){chip(c,x+92-i*24+0,y-40+0,10);});}
+      lab("Ammonium nitrate",920,132,"N");lab("Ammonium sulfate",920,274,"N");lab("Phosphate salts",920,402,"P");lab("Potassium salts",920,512,"K");
+      txt("NPK",1115,452,{b:1,size:20,col:"#5b4a2a",halo:"#f3ead7"});
+    },
+    qs:[
+      ["Ammonium nitrate is produced by reacting ammonia with which acid: hydrochloric, nitric or sulfuric?","Nitric acid.","2F 2022 Q7.1"],
+      ["Nitric acid is needed to produce ammonium nitrate. Name a compound needed to produce nitric acid.","Ammonia (water is also allowed).","2H 2023 Q10.4"],
+      ["How is potassium chloride obtained from the Earth?","Mining (quarrying is allowed).","2H 2023 Q10.2"],
+      ["Name one other compound that could be used instead of potassium chloride to give a similar improvement in agricultural productivity.","Potassium sulfate. Potassium nitrate or any other named potassium salt is allowed.","2H 2023 Q10.3"],
+      ["Ammonia and nitric acid react to produce ammonium nitrate. Suggest one use of ammonium nitrate.","As a fertiliser.","2H 2024 Q2.6"],
+      ["Ammonium nitrate is sold in 600 kg bags. A farmer spreads 40 bags on 800 000 m² of land. Calculate the mass spread per m².","40 × 600 = 24 000 kg. 24 000 ÷ 800 000 = 0.03 kg/m².","2F 2022 Q7.2"]
+    ]
+  };
+})();
+
+/* =====================================================================
+   3. PHOSPHATE ROCK AND ACIDS
+   ===================================================================== */
+var S3=(function(){
+  var ROCK=mk([[100,196,40,10],[165,172,6,3],[332,172,6,3],[380,262,40,18],[410,330,88,48]]);
+  var ACID=mk([[425,76,52,18],[425,112,4],[425,208,4],[410,322,88,50]]);
+  var OUT=mk([[410,320,88,50],[520,300,5],[660,300],[810,302,128,46]]);
+  var CAN=mk([[410,320,88,50],[520,240,5],[580,240],[580,185],[620,185],[720,186,82,20]]);
+  var H3=mk([[410,330,88,48],[520,350,5],[620,350],[720,362,82,34]]);
+  var NH=mk([[720,470,62,10],[720,446,4],[720,414,4],[720,366,82,32]]);
+  var AMP=mk([[720,360,82,34],[820,355,5],[900,355],[1010,358,92,22]]);
+  var M={
+    nitric:{acid:"Nitric acid",k:"hno3",tint:"#fbeef0",eq:"phosphate rock + nitric acid → phosphoric acid + calcium nitrate\nthen phosphoric acid + ammonia → ammonium phosphate"},
+    sulfuric:{acid:"Sulfuric acid",k:"h2so4",tint:"#fbf5dc",eq:"phosphate rock + sulfuric acid → single superphosphate (calcium phosphate + calcium sulfate)"},
+    phosphoric:{acid:"Phosphoric acid",k:"h3po4",tint:"#fdf0e6",eq:"phosphate rock + phosphoric acid → triple superphosphate (calcium phosphate)"}
+  };
+  var rocks=[];for(var i=0;i<14;i++)rocks.push([R(72,178),R(452,472),R(0,3)]);
+  var pile=[];for(i=0;i<40;i++)pile.push([R(50,160),R(180,222),R(0,3)]);
+  var sc={
+    id:"phosphate-rock",tab:"Phosphate rock",tabsub:"three acids, three products",
+    title:"Phosphate rock and acids",sub:"The acid you choose decides the name of the product",
+    key:[["rock","Phosphate rock","sq"],["hno3","Nitric acid"],["h2so4","Sulfuric acid"],["h3po4","Phosphoric acid"],["nh3","Ammonia"],["can","Calcium nitrate"],["cp","Calcium phosphate"],["cs","Calcium sulfate"],["amp","Ammonium phosphate"]],
+    hint:"Choose an acid, or click cards 3 to 5. Sulfuric gives single superphosphate, phosphoric gives triple superphosphate.",
+    stages:[
+      {title:"Insoluble rock",tx:"Phosphate rock is mined. It is insoluble in water, so plants cannot absorb it and it cannot be used directly as a fertiliser.",box:[20,120,262,386],pin:[38,138]},
+      {title:"Treat with acid",tx:"The rock is reacted with an acid to produce soluble salts that can be used as fertilisers.",box:[290,24,250,392],pin:[308,42]},
+      {title:"Nitric acid",tx:"Makes phosphoric acid and calcium nitrate. The phosphoric acid is then neutralised with ammonia to make ammonium phosphate.",box:[556,128,610,378],pin:[574,146],mode:"nitric"},
+      {title:"Sulfuric acid",tx:"Makes single superphosphate: a mixture of calcium phosphate and calcium sulfate.",box:[556,210,470,236],pin:[574,228],mode:"sulfuric"},
+      {title:"Phosphoric acid",tx:"Makes triple superphosphate: calcium phosphate.",box:[556,210,470,236],pin:[574,228],mode:"phosphoric"}
+    ],
+    mode:"nitric",ps:[],t:0,acc:0,
+    setMode:function(m){this.mode=m;this.ps=[];this.acc=0;for(var k=0;k<700;k++){this.t+=.04;this.spawn(.04);stepParts(this,.04);}},
+    spawn:function(dt){
+      this.acc+=dt;var m=this.mode,ps=this.ps;
+      while(this.acc>.07){this.acc-=.07;var r=Math.random();
+        if(r<.22)ps.push(part("rock",ROCK,80,{end:function(p){p.stuck=true;p.fade=true;p.fadeRate=.7;}}));
+        else if(r<.5)ps.push(part(M[m].k,ACID,90));
+        else if(m==="nitric"){
+          if(r<.62)ps.push(part("can",CAN,75,{end:stick(46)}));
+          else if(r<.74)ps.push(part("h3po4",H3,80));
+          else if(r<.87)ps.push(part("nh3",NH,70));
+          else ps.push(part("amp",AMP,75,{end:stick(50)}));
+        }else if(m==="sulfuric")ps.push(part(r<.75?"cp":"cs",OUT,75,{end:stick(60)}));
+        else if(r<.8)ps.push(part("cp",OUT,75,{end:stick(110)}));
+      }
+    },
+    draw:function(t){
+      var m=M[this.mode],i;
+      ctx.fillStyle="#f7f9fc";ctx.fillRect(0,0,W,H);
+      /* rock pile and conveyor */
+      ctx.fillStyle="#b9ad9c";ctx.beginPath();ctx.moveTo(36,232);ctx.quadraticCurveTo(100,150,176,232);ctx.fill();
+      pile.forEach(function(q){ctx.save();ctx.translate(q[0],q[1]);ctx.rotate(q[2]);ctx.fillStyle="#8d8377";ctx.fillRect(-4,-4,8,8);ctx.restore();});
+      ctx.fillStyle="#5b6577";rr(150,180,190,12,6);ctx.fill();ctx.fillStyle="#8d98a5";for(i=0;i<4;i++){ctx.beginPath();ctx.arc(168+i*52,200,7,0,6.3);ctx.fill();}
+      txt("Phosphate rock",105,258,{b:1,size:15});txt("mined",105,277,{size:14,col:C.muted});
+      /* beaker: rock in water */
+      ctx.fillStyle="#e3f1fc";ctx.fillRect(62,372,126,108);ctx.strokeStyle=C.wall;ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(60,340);ctx.lineTo(60,482);ctx.lineTo(190,482);ctx.lineTo(190,340);ctx.stroke();
+      rocks.forEach(function(q){ctx.save();ctx.translate(q[0],q[1]);ctx.rotate(q[2]);ctx.fillStyle="#8d8377";ctx.fillRect(-4.5,-4.5,9,9);ctx.restore();});
+      txt("Rock in water:",125,318,{size:14,col:C.muted});txt("does not dissolve",125,504,{b:1,size:14,col:"#c0392b"});
+      /* acid tank + reactor */
+      vessel(350,40,150,70,m.tint);pipe([[425,110],[425,200]],10,m.tint);txt(m.acid,425,32,{b:1,size:16});
+      tank(300,200,220,200,m.tint,26);txt("Reactor",410,424,{b:1,size:15});
+      /* soluble beaker */
+      ctx.fillStyle="#e3f1fc";ctx.fillRect(1032,72,126,58);ctx.strokeStyle=C.wall;ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(1030,44);ctx.lineTo(1030,132);ctx.lineTo(1160,132);ctx.lineTo(1160,44);ctx.stroke();
+      for(i=0;i<7;i++){var k=(t*.22+i/7)%1;ctx.globalAlpha=1-k;ctx.fillStyle=EL.P;ctx.beginPath();ctx.arc(1048+i*16,80+k*40,4.5*(1-k*.6),0,6.3);ctx.fill();}ctx.globalAlpha=1;
+      txt("Products in water:",1095,30,{size:14,col:C.muted});txt("dissolve",1095,154,{b:1,size:14,col:"#0f7a4f"});
+      if(this.mode==="nitric"){
+        pipe([[520,240],[580,240],[580,185],[620,185]],12,"#e6f5ee");pipe([[520,350],[620,350]],12,"#fdf0e6");
+        vessel(620,150,200,70,"#fff");
+        tank(620,300,200,110,"#fdf0e6",20);
+        vessel(645,446,150,48,"#e3f1fc");pipe([[720,446],[720,412]],10,"#e3f1fc");
+        pipe([[820,355],[900,355]],12,"#eef2f7");vessel(900,320,220,76,"#fff");
+        txt("phosphoric\nacid",570,378,{size:13.5,col:"#8a4a1c",b:1});
+        txt("Neutralise",720,292,{b:1,size:14});txt("Ammonia",634,476,{b:1,size:15,al:"right"});
+      }else{
+        pipe([[520,300],[660,300]],12,"#eef2f7");vessel(660,240,300,124,"#fff");
+      }
+      txt(m.eq,600,this.mode==="nitric"?514:480,{size:14.5,b:1,col:C.ink});
+    },
+    fg:function(){
+      if(this.mode==="nitric"){
+        txt("Calcium nitrate",720,142,{b:1,size:16,halo:"#f7f9fc"});chip("N",806,134,10);
+        txt("Ammonium phosphate",1010,422,{b:1,size:16,halo:"#f7f9fc"});chip("N",1090,304,10);chip("P",1114,304,10);
+      }else if(this.mode==="sulfuric"){
+        txt("Single superphosphate",810,392,{b:1,size:18,halo:"#f7f9fc"});txt("calcium phosphate + calcium sulfate",810,414,{size:15,col:C.muted});chip("P",946,224,10);
+      }else{
+        txt("Triple superphosphate",810,392,{b:1,size:18,halo:"#f7f9fc"});txt("calcium phosphate",810,414,{size:15,col:C.muted});chip("P",946,224,10);
+      }
+    },
+    extra:'<h3>Acid in, product out</h3><div class="tscroll"><table><tr><th>Phosphate rock treated with</th><th>Products</th><th>Also called</th></tr>'+
+      '<tr><td>Nitric acid</td><td>phosphoric acid + calcium nitrate</td><td>the phosphoric acid is neutralised with ammonia to make ammonium phosphate</td></tr>'+
+      '<tr><td>Sulfuric acid</td><td>calcium phosphate + calcium sulfate</td><td>single superphosphate</td></tr>'+
+      '<tr><td>Phosphoric acid</td><td>calcium phosphate</td><td>triple superphosphate</td></tr></table></div>',
+    qs:[
+      ["Plants absorb phosphorus from compounds dissolved in rainwater. Suggest why phosphate rock cannot be used directly as a fertiliser.","Phosphate rock is insoluble in water. (Allowed: it cannot be absorbed as a solid.)","2H 2023 Q10.5"],
+      ["Name the soluble salts produced when calcium phosphate reacts with nitric acid, and with phosphoric acid.","Nitric acid: calcium nitrate. Phosphoric acid: (calcium) triple superphosphate, or calcium dihydrogenphosphate.","2H 2021 Q5.2"],
+      ["Name the salts produced by treating phosphate rock with sulfuric acid, and with phosphoric acid.","Sulfuric acid: calcium sulfate (single superphosphate is allowed). Phosphoric acid: calcium phosphate (triple superphosphate is allowed).","2H 2023 Q10.6"]
+    ]
+  };
+  return sc;
+})();
+
+/* =====================================================================
+   4. LABORATORY AND INDUSTRY
+   ===================================================================== */
+var S4=(function(){
+  var FA=mk([[625,150],[690,150],[755,176,48,30]]),FB=mk([[625,200],[690,200],[755,176,48,30]]);
+  var PR=mk([[755,176,48,30],[820,176],[872,176],[872,112],[904,112],[940,140,26,8],[940,385,26,8],[940,424,6,3],[1085,424,6,3],[1128,474,34,12]]);
+  var cut=PR.L[5]+140;
+  var LX=[75,195,315,430,535],BY=330,LAB=["1 React in a\nconical flask","2 Evaporate until\ncrystals start","3 Cool and\ncrystallise","4 Filter","5 Dry between\nfilter paper"];
+  function line(a){ctx.beginPath();ctx.moveTo(a[0],a[1]);for(var i=2;i<a.length;i+=2)ctx.lineTo(a[i],a[i+1]);ctx.stroke();}
+  function crystal(x,y,s){ctx.save();ctx.translate(x,y);ctx.rotate(.785);ctx.fillStyle="#fff";ctx.fillRect(-s,-s,2*s,2*s);ctx.strokeStyle="#4b6c93";ctx.lineWidth=1.2;ctx.strokeRect(-s,-s,2*s,2*s);ctx.restore();}
+  function flask(cx,by,sc,fill){
+    var w=30*sc,h=70*sc;ctx.fillStyle=fill;ctx.beginPath();ctx.moveTo(cx-w*.8,by-h*.2);ctx.lineTo(cx-w,by);ctx.lineTo(cx+w,by);ctx.lineTo(cx+w*.8,by-h*.2);ctx.fill();
+    ctx.strokeStyle=C.wall;ctx.lineWidth=3;ctx.lineJoin="round";line([cx-8*sc,by-h,cx-8*sc,by-h*.62,cx-w,by,cx+w,by,cx+8*sc,by-h*.62,cx+8*sc,by-h]);
+  }
+  function basin(cx,y,fill){ctx.fillStyle=fill;ctx.beginPath();ctx.ellipse(cx,y,34,20,0,0,3.1416);ctx.fill();ctx.strokeStyle=C.wall;ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(cx,y,34,20,0,0,3.1416);ctx.stroke();line([cx-36,y,cx+36,y]);}
+  return {
+    id:"lab-and-industry",tab:"Lab and industry",tabsub:"making ammonium sulfate",
+    title:"Laboratory and industry",sub:"The same salt, ammonium sulfate, made two ways",
+    key:[["nh3","Ammonia solution"],["h2so4","Sulfuric acid"],["sol","Ammonium sulfate solution"],["cry","Ammonium sulfate crystals","sq"]],
+    hint:"Watch the two bars at the bottom. The laboratory method makes one small batch, then every step has to be repeated.",
+    stages:[
+      {title:"Laboratory: batch",tx:"React ammonia solution and sulfuric acid in a conical flask. Evaporate until crystals start to form, cool to crystallise, filter, then dry the crystals between filter paper.",box:[10,52,588,424],pin:[30,72]},
+      {title:"Industry: continuous",tx:"Streams of ammonia solution and sulfuric acid react together. The water evaporates as the solution passes down a warm column. Dry crystals are collected continuously at the bottom.",box:[604,52,588,424],pin:[624,72]},
+      {title:"Compare",tx:"The industrial process is on a larger scale, is quicker and is continuous, so it does not need repeating. That makes it better for producing a large mass.",box:[10,478,1182,58],pin:[594,507]}
+    ],
+    ps:[],t:0,acc:0,lab:0,batches:0,ind:0,
+    spawn:function(dt){
+      this.lab+=dt;if(this.lab>=15){this.lab-=15;this.batches++;}
+      this.ind+=dt/40;if(this.ind>=1){this.ind=0;this.batches=0;}
+      this.acc+=dt;
+      while(this.acc>.06){this.acc-=.06;var r=Math.random();
+        if(r<.25)this.ps.push(part("nh3",FA,90));else if(r<.5)this.ps.push(part("h2so4",FB,90));
+        else this.ps.push(part("sol",PR,85,{on:function(p){if(p.s>cut)p.kind="cry";},end:stick(46)}));}
+    },
+    draw:function(t){
+      var ph=Math.floor(this.lab/3),k=(this.lab%3)/3,i,cx;
+      ctx.fillStyle="#f7f9fc";ctx.fillRect(0,0,W,H);
+      ctx.strokeStyle=C.line||"#d3dae6";ctx.lineWidth=2;line([600,56,600,470]);
+      txt("Laboratory: batch process",300,44,{b:1,size:18});txt("Industry: continuous process",900,44,{b:1,size:18});
+      ctx.fillStyle="#e4e8ee";ctx.fillRect(20,BY,570,10);
+      for(i=0;i<5;i++){
+        cx=LX[i];var on=i===ph,kk=on?k:(i<ph?1:0);ctx.globalAlpha=on?1:.5;
+        if(i===0){
+          ctx.strokeStyle=C.wall;ctx.lineWidth=3;line([cx+34,BY,cx+34,BY-250]);line([cx+34,BY-200,cx,BY-200]);
+          ctx.fillStyle="#fbf5dc";ctx.fillRect(cx-5,BY-240+kk*90,10,140-kk*90);ctx.strokeRect(cx-5,BY-240,10,140);line([cx,BY-100,cx,BY-84]);
+          if(on){ctx.fillStyle="#d9a400";ctx.beginPath();ctx.arc(cx,BY-80+((t*60)%12),3,0,6.3);ctx.fill();}
+          flask(cx,BY,1,"#cfe6f8");
+        }else if(i===1){
+          ctx.strokeStyle=C.wall;ctx.lineWidth=3;line([cx-34,BY-62,cx-26,BY]);line([cx+34,BY-62,cx+26,BY]);line([cx-38,BY-62,cx+38,BY-62]);
+          basin(cx,BY-84,"#cfe6f8");
+          if(on){flame(cx,BY-4,40,t,0);ctx.strokeStyle="#9fb7c9";ctx.lineWidth=2.5;for(var s=0;s<3;s++){var sy=BY-100-((t*30+s*18)%50);ctx.beginPath();ctx.moveTo(cx-16+s*16,sy);ctx.quadraticCurveTo(cx-10+s*16,sy-8,cx-16+s*16,sy-16);ctx.stroke();}}
+          ctx.fillStyle="#6b7890";ctx.fillRect(cx-6,BY-18,12,18);
+        }else if(i===2){
+          basin(cx,BY-22,"#cfe6f8");var n=Math.round(kk*7);for(var c=0;c<n;c++)crystal(cx-21+c*7,BY-14-(c%2)*5,3.2);
+        }else if(i===3){
+          flask(cx,BY,.8,"#cfe6f8");ctx.fillStyle="#fff";ctx.beginPath();ctx.moveTo(cx-30,BY-112);ctx.lineTo(cx+30,BY-112);ctx.lineTo(cx,BY-72);ctx.fill();
+          ctx.strokeStyle=C.wall;ctx.lineWidth=3;line([cx-30,BY-112,cx,BY-72,cx+30,BY-112]);line([cx,BY-72,cx,BY-50]);
+          for(c=0;c<5;c++)crystal(cx-12+c*6,BY-100+(c%2)*5,3);
+          if(on){ctx.fillStyle="#63b0ea";ctx.beginPath();ctx.arc(cx,BY-46+((t*50)%22),2.6,0,6.3);ctx.fill();}
+        }else{
+          ctx.fillStyle="#fff";ctx.strokeStyle="#aeb7c4";ctx.lineWidth=2;rr(cx-36,BY-22,72,10,2);ctx.fill();ctx.stroke();
+          for(c=0;c<6;c++)crystal(cx-22+c*9,BY-28,3.2);
+          rr(cx-36,BY-44+kk*8,72,10,2);ctx.fill();ctx.stroke();
+        }
+        txt(LAB[i],cx,BY+34,{size:14,b:on,col:on?C.ink:C.muted});ctx.globalAlpha=1;
+      }
+      txt("Batches finished: "+this.batches,300,430,{b:1,size:16});txt("then start again from step 1",300,452,{size:14,col:C.muted});
+      /* industry */
+      pipe([[625,150],[692,150]],12,"#e3f1fc");pipe([[625,200],[692,200]],12,"#fbf5dc");
+      txt("ammonia\nsolution",626,112,{al:"left",size:13.5,col:C.muted});txt("sulfuric\nacid",626,228,{al:"left",size:13.5,col:C.muted});
+      vessel(690,128,130,96,"#eef4fa");txt("Reactor",755,246,{b:1,size:14});
+      pipe([[820,176],[872,176],[872,112],[906,112]],12,"#e3f1fc");
+      var g=ctx.createLinearGradient(0,100,0,400);g.addColorStop(0,"#fde9d6");g.addColorStop(1,"#f9c9a0");ctx.fillStyle=g;rr(904,92,72,308,10);ctx.fill();ctx.strokeStyle=C.wall;ctx.lineWidth=4;ctx.stroke();
+      ctx.fillStyle=C.wall;ctx.beginPath();ctx.moveTo(906,398);ctx.lineTo(974,398);ctx.lineTo(950,416);ctx.lineTo(930,416);ctx.fill();
+      txt("Warm column",1042,180,{b:1,size:15});txt("water evaporates",1046,200,{size:14,col:C.muted});
+      ctx.strokeStyle="#9fb7c9";ctx.lineWidth=2.5;for(i=0;i<3;i++){var yy=84-((t*30+i*16)%40);ctx.beginPath();ctx.moveTo(924+i*16,yy);ctx.quadraticCurveTo(930+i*16,yy-7,924+i*16,yy-14);ctx.stroke();}
+      ctx.fillStyle="#5b6577";rr(915,432,180,12,6);ctx.fill();ctx.fillStyle="#8d98a5";for(i=0;i<4;i++){ctx.beginPath();ctx.arc(932+i*48,452,7,0,6.3);ctx.fill();}
+      ctx.strokeStyle=C.wall;ctx.lineWidth=4;line([1088,452,1096,490,1162,490,1170,452]);
+      txt("dry crystals collected",1010,412,{al:"left",size:14,col:C.muted});
+      /* bars */
+      function bar(x,f,label){ctx.fillStyle="#e1e6ee";rr(x,500,400,16,8);ctx.fill();if(f>0.01){ctx.fillStyle="#2a78d6";rr(x,500,Math.max(16,400*f),16,8);ctx.fill();}txt(label,x+410,514,{al:"left",size:14,b:1});}
+      bar(30,Math.min(1,this.batches*.03),"mass made");bar(630,this.ind,"mass made");
+    },
+    extra:'<h3>Comparing the two methods</h3><div class="tscroll"><table><tr><th></th><th>Laboratory</th><th>Industry</th></tr>'+
+      '<tr><td>Scale</td><td>small</td><td>large</td></tr><tr><td>Type of process</td><td>batch: repeat every step for more product</td><td>continuous: no need to repeat</td></tr>'+
+      '<tr><td>Speed</td><td>slow</td><td>quick</td></tr><tr><td>Getting the crystals</td><td>crystallise, filter, then dry between filter paper</td><td>evaporate in a warm column and collect dry crystals at the bottom</td></tr></table></div>',
+    qs:[
+      ["Ammonium sulfate can be made in an industrial process (react streams of ammonia solution and sulfuric acid, evaporate the water down a warm column, collect dry crystals continuously) or in the laboratory (react in a conical flask, evaporate until crystals start to form, cool and crystallise, filter, dry between filter paper). Evaluate the two methods for producing a large mass of ammonium sulfate. [4 marks]","The industrial process is on a larger scale. It is quicker. It is a continuous process, so it does not need to be repeated. Plus a reasoned judgement, for example that the industrial process is better for producing a large mass. The converse points for the laboratory method are allowed. References to cost or energy are ignored, and so is “large mass produced”.","2H 2021 Q5.3"],
+      ["A scientist who works for a company that makes ammonium nitrate fertiliser concludes that it improves crop growth more than other fertilisers. Suggest one reason why this conclusion might not be valid.","The scientist may be biased, because they work for the company that makes the fertiliser.","2F 2022 Q7.3"]
+    ]
+  };
+})();
+
+/* ---------- shell ---------- */
+var SC=[S1,S2,S3,S4],cur=0,playing=!matchMedia("(prefers-reduced-motion: reduce)").matches,speed=1,hl=-1,last=0;
+var el=function(id){return document.getElementById(id);};
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;");}
+function stepScene(sc,dt){sc.t+=dt;sc.spawn(dt);stepParts(sc,dt);}
+function render(){
+  var sc=SC[cur];
+  ctx.setTransform(cv.width/W,0,0,cv.height/H,0,0);
+  sc.draw(sc.t);sc.ps.forEach(function(p){drawPart(p);});if(sc.fg)sc.fg(sc.t);
+  if(hl>=0){var b=sc.stages[hl].box;
+    ctx.fillStyle="rgba(238,241,246,.8)";ctx.beginPath();ctx.rect(0,0,W,H);ctx.rect(b[0],b[1],b[2],b[3]);ctx.fill("evenodd");
+    ctx.strokeStyle="#2a4fc9";ctx.lineWidth=3;rr(b[0],b[1],b[2],b[3],10);ctx.stroke();}
+  sc.stages.forEach(function(s,i){if(hl===i||(hl<0&&!(s.mode&&s.mode!==sc.mode)))pin(i+1,s.pin[0],s.pin[1]);});
+}
+function frame(ts){var dt=Math.min(.05,(ts-last)/1000||0);last=ts;if(playing)stepScene(SC[cur],dt*speed);render();requestAnimationFrame(frame);}
+function press(id,test){[].forEach.call(el(id).querySelectorAll("button"),function(x,k){x.setAttribute("aria-pressed",test(x,k)?"true":"false");});}
+function show(i){
+  cur=i;hl=-1;var sc=SC[i];
+  el("title").textContent=sc.title;el("sub").textContent=sc.sub;el("hint").textContent=sc.hint;
+  el("key").innerHTML=sc.key.map(function(k){var d=KIND[k[0]];return '<li><i class="'+(k[2]||"")+'" style="background:'+(d.c2?"linear-gradient(90deg,"+d.c+" 50%,"+d.c2+" 50%)":d.c)+(d.o&&d.o!=="#fff"?";outline:1.5px solid "+d.o:"")+'"></i>'+esc(k[1])+'</li>';}).join("");
+  el("stages").innerHTML=sc.stages.map(function(s,n){return '<li><button type="button" data-n="'+n+'" aria-pressed="false"><span class="hd"><span class="num">'+(n+1)+'</span>'+esc(s.title)+'</span><span class="tx">'+esc(s.tx)+'</span></button></li>';}).join("");
+  el("mixctl").hidden=i!==0;el("acid").hidden=i!==2;
+  el("extra").hidden=!sc.extra;el("extra").innerHTML=sc.extra||"";
+  el("qs").innerHTML=sc.qs.map(function(q){return '<details><summary>'+esc(q[0])+' <span class="src">'+esc(q[2])+'</span></summary><p>'+esc(q[1])+'</p></details>';}).join("");
+  [].forEach.call(el("tabs").children,function(b,n){b.setAttribute("aria-selected",n===i?"true":"false");});
+  render();
+}
+el("tabs").innerHTML=SC.map(function(s,i){return '<button type="button" role="tab" data-i="'+i+'"><b>'+(i+1)+'. '+esc(s.tab)+'</b><span>'+esc(s.tabsub)+'</span></button>';}).join("");
+el("tabs").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;var i=+b.dataset.i;try{history.replaceState(null,"","#"+SC[i].id);}catch(_){}show(i);});
+el("stages").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;var n=+b.dataset.n,sc=SC[cur],s=sc.stages[n];
+  hl=hl===n?-1:n;
+  if(s.mode&&sc.mode!==s.mode){sc.setMode(s.mode);hl=n;press("acid",function(x){return x.dataset.v===s.mode;});}
+  press("stages",function(x,k){return k===hl;});render();});
+el("play").addEventListener("click",function(){playing=!playing;el("play").textContent=playing?"Pause":"Play";});
+function segs(id,fn){el(id).addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;press(id,function(x){return x===b;});fn(b.dataset.v);});}
+segs("speed",function(v){speed=+v;});
+segs("acid",function(v){S3.setMode(v);if(hl>=2){hl=-1;press("stages",function(){return false;});}render();});
+["pa","pb","pc"].forEach(function(id,k){el(id).addEventListener("input",function(){S1.parts[k]=+this.value;render();});});
+function fromHash(){var h=location.hash.replace("#",""),i=SC.findIndex(function(s){return s.id===h;});show(i<0?0:i);}
+addEventListener("hashchange",fromHash);
+SC.forEach(function(sc){for(var k=0;k<900;k++)stepScene(sc,.04);});
+S4.lab=1;S4.batches=1;S4.ind=.45;
+el("play").textContent=playing?"Pause":"Play";
+function size(){var d=Math.min(2,window.devicePixelRatio||1),w=Math.max(760,cv.clientWidth||1200);cv.width=Math.round(w*d);cv.height=Math.round(w*d*H/W);render();}
+addEventListener("resize",size);
+fromHash();size();
+requestAnimationFrame(frame);
+})();
+
+</script>
+</body>
+</html>

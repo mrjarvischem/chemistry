@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Electrophilic Addition Mechanism</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Layout: instrument bench, matching Atom Viewer and Bonding Simulator. Six step chips across the top,
+     3D stage over the written curly-arrow mechanism on the left, an explain rail on the right. */
+  --bg:#EDF0F5; --surface:#FFFFFF; --soft:#E6EAF2; --ink:#0D1424; --muted:#566076; --line:#D7DDE8;
+  --accent:#2348F5; --accent-ink:#FFFFFF;
+  --stage:#FAFBFE; --stage2:#E3E8F2; --stage-line:#93A0B8;
+  --dot:#E23B2E; --pair:#F5A700; --bond:#6A7488; --bond-hi:#C3CAD8;
+  --font-display:"Bricolage Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;
+  --font-body:"Instrument Sans","Segoe UI",system-ui,-apple-system,sans-serif;
+  --r:14px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#080C15; --surface:#111828; --soft:#1A2337; --ink:#EDF1FA; --muted:#98A3BA; --line:#242E46;
+    --accent:#8198FF; --accent-ink:#0A0F1C;
+    --stage:#0E1527; --stage2:#05080F; --stage-line:#5A6884;
+    --dot:#FF6A5C; --pair:#FFC53D; --bond:#8E99B0; --bond-hi:#DCE2EE;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#080C15; --surface:#111828; --soft:#1A2337; --ink:#EDF1FA; --muted:#98A3BA; --line:#242E46;
+  --accent:#8198FF; --accent-ink:#0A0F1C;
+  --stage:#0E1527; --stage2:#05080F; --stage-line:#5A6884;
+  --dot:#FF6A5C; --pair:#FFC53D; --bond:#8E99B0; --bond-hi:#DCE2EE;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.45;
+  display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+button:disabled{cursor:default;opacity:.4}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3,p,ul{margin:0}
+[hidden]{display:none!important}
+
+.top{display:flex;align-items:center;gap:10px 14px;padding:12px 18px 8px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto}
+.brand svg{width:30px;height:30px;flex:none}
+.brand h1{font-family:var(--font-display);font-weight:700;font-size:24px;letter-spacing:-.02em;line-height:1}
+.pick{display:flex;align-items:center;gap:7px}
+.pick>span{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.seg{display:inline-flex;background:var(--soft);border-radius:999px;padding:3px;gap:2px}
+.seg button{border:0;background:transparent;padding:6px 14px;border-radius:999px;font-weight:600;font-size:13.5px;color:var(--muted);white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(10,20,40,.18)}
+.seg.strong button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+
+.timeline{display:flex;gap:6px;padding:4px 18px 12px;overflow-x:auto;scrollbar-width:none}
+.timeline::-webkit-scrollbar{display:none}
+.timeline button{flex:1 0 auto;min-width:128px;text-align:left;border:1px solid var(--line);background:var(--surface);
+  border-radius:12px;padding:8px 12px 9px;display:flex;flex-direction:column;gap:1px}
+.timeline .yr{font-size:11.5px;font-weight:600;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.timeline .nm{font-family:var(--font-display);font-weight:700;font-size:15.5px;letter-spacing:-.01em;line-height:1.15}
+.timeline button.done{background:var(--soft)}
+.timeline button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.timeline button[aria-pressed="true"] .yr{color:inherit;opacity:.7}
+
+.bench{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 370px;gap:14px;padding:0 18px 16px}
+.col{display:flex;flex-direction:column;gap:10px;min-height:0;min-width:0}
+.panel{position:relative;border-radius:var(--r);overflow:hidden;border:1px solid var(--line);background:var(--surface)}
+.stagebox{flex:1.7 1 0;min-height:260px;
+  background:radial-gradient(circle at 1px 1px,color-mix(in srgb,var(--stage-line) 22%,transparent) 1px,transparent 1.5px) 0 0/22px 22px,
+             radial-gradient(ellipse at 50% 45%,var(--stage),var(--stage2))}
+#stage{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+#stage:active{cursor:grabbing}
+.ov{position:absolute;display:flex;gap:8px;align-items:center;flex-wrap:wrap;pointer-events:none}
+.ov>*{pointer-events:auto}
+.ov.tl{top:12px;left:12px}.ov.tr{top:12px;right:12px}.ov.bl{bottom:12px;left:12px}
+.pill{border:1px solid var(--line);background:color-mix(in srgb,var(--surface) 82%,transparent);backdrop-filter:blur(8px);
+  border-radius:999px;padding:5px 12px;font-size:13px;font-weight:600}
+.pill[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.pill.sq{width:34px;height:34px;padding:0;display:grid;place-items:center;font-size:17px;line-height:1}
+.tag{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:5px 10px;border-radius:999px;
+  background:color-mix(in srgb,var(--surface) 78%,transparent)}
+.key{display:flex;gap:12px;font-size:12.5px;font-weight:600;color:var(--muted);padding:5px 12px;border-radius:999px;
+  background:color-mix(in srgb,var(--surface) 78%,transparent);flex-wrap:wrap}
+.key i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+
+.ctrl{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 16px;font-weight:600;font-size:14px;
+  display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+.btn svg{width:14px;height:14px;fill:currentColor}
+.btn.go{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);min-width:118px;justify-content:center}
+.ctrl .sp{margin-left:auto;display:flex;align-items:center;gap:8px}
+.ctrl .sp>span{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+
+.mechbox{flex:1 1 0;min-height:210px;display:flex}
+#mech{width:100%;height:100%;display:block}
+#mech .at{font:600 23px var(--font-body);fill:var(--ink);dominant-baseline:central}
+#mech .rg{fill:var(--accent)}
+#mech .ch{font:700 20px var(--font-body);fill:var(--dot);dominant-baseline:central}
+#mech .dl{font:700 17px var(--font-body);fill:var(--muted);dominant-baseline:central}
+#mech .cap{font:600 15.5px var(--font-body);fill:var(--muted)}
+#mech .cap.b{fill:var(--ink)}
+#mech .bd{stroke:var(--ink);stroke-width:2.2;stroke-linecap:round}
+#mech .ca{stroke:var(--dot);stroke-width:2.8;fill:none;stroke-linecap:round}
+#mech .lp{fill:var(--dot)}
+
+.rail{display:flex;flex-direction:column;gap:12px;min-height:0;overflow-y:auto}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px}
+.card .eyebrow{font-size:11.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--accent)}
+.card h2{font-family:var(--font-display);font-weight:700;font-size:25px;letter-spacing:-.02em;line-height:1.1;margin:4px 0 10px;text-wrap:balance}
+.card p{font-size:16.5px;line-height:1.5}
+.card p+p{margin-top:9px}
+.card h3{font-size:11.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.pts{list-style:none;padding:0;display:flex;flex-direction:column;gap:8px}
+.pts li{font-size:15.5px;line-height:1.4;padding-left:16px;border-left:3px solid var(--dot)}
+.eq{font-size:18px;font-weight:600;line-height:1.5}
+.eq small{display:block;font-size:14px;font-weight:500;color:var(--muted)}
+.badge{display:inline-block;margin-top:8px;font-size:12.5px;font-weight:700;padding:3px 10px;border-radius:999px;background:var(--soft);color:var(--ink)}
+.badge.maj{background:var(--accent);color:var(--accent-ink)}
+.note{font-size:13px;color:var(--muted)}
+
+@media (max-width:980px){
+  html,body{height:auto}
+  .bench{grid-template-columns:1fr}
+  .stagebox{flex:none;height:380px}
+  .mechbox{flex:none;height:auto;overflow-x:auto}
+  #mech{min-width:760px;height:auto}
+  .rail{overflow:visible}
+}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="brand">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="9" cy="20" r="6" fill="var(--ink)"/><circle cx="23" cy="20" r="6" fill="var(--ink)"/><path d="M9 11 C12 3 21 3 23 10" fill="none" stroke="var(--dot)" stroke-width="2.4" stroke-linecap="round"/><path d="M24.6 5.6 L23.2 11 L18.6 8.2Z" fill="var(--dot)"/></svg>
+    <h1>Electrophilic Addition</h1>
+  </div>
+  <div class="pick"><span>Alkene</span>
+    <div class="seg" id="segAlk">
+      <button data-v="ethene" id="alkEthene">Ethene · symmetrical</button>
+      <button data-v="propene" id="alkPropene">Propene · unsymmetrical</button>
+    </div>
+  </div>
+  <div class="pick"><span>Electrophile</span>
+    <div class="seg" id="segRe">
+      <button data-v="HBr" id="reHBr">HBr</button>
+      <button data-v="H2SO4" id="reH2SO4">H₂SO₄</button>
+      <button data-v="Br2" id="reBr2">Br₂</button>
+    </div>
+  </div>
+  <div class="pick"><span>Route</span>
+    <div class="seg strong" id="segRt">
+      <button data-v="major" id="rtMajor">Major</button>
+      <button data-v="minor" id="rtMinor">Minor</button>
+    </div>
+  </div>
+</div>
+
+<div class="timeline" id="tl"></div>
+
+<div class="bench">
+  <div class="col">
+    <div class="panel stagebox">
+      <canvas id="stage" aria-label="3D model of the reaction. Drag to rotate."></canvas>
+      <div class="ov tl"><span class="tag">3D model · drag to rotate</span></div>
+      <div class="ov tr">
+        <button class="pill" id="tgPairs" aria-pressed="true">Electron pairs</button>
+        <button class="pill" id="tgSym" aria-pressed="true">Symbols</button>
+        <button class="pill sq" id="zOut" aria-label="Zoom out">−</button>
+        <button class="pill sq" id="zIn" aria-label="Zoom in">+</button>
+        <button class="pill" id="vReset">Reset view</button>
+      </div>
+      <div class="ov bl"><div class="key">
+        <span><i style="background:var(--pair)"></i>electron pair</span>
+        <span><i style="background:var(--accent);opacity:.45"></i>π bond</span>
+        <span><i style="border:2px dashed var(--dot);width:11px;height:11px"></i>empty p orbital</span>
+      </div></div>
+    </div>
+
+    <div class="ctrl">
+      <button class="btn" id="bRestart"><svg viewBox="0 0 16 16"><path d="M2 2h2v12H2zM14 2v12L5 8z"/></svg>Restart</button>
+      <button class="btn" id="bBack"><svg viewBox="0 0 16 16"><path d="M12 2v12L3 8z"/></svg>Back</button>
+      <button class="btn go" id="bPlay"></button>
+      <button class="btn" id="bNext">Next step<svg viewBox="0 0 16 16"><path d="M4 2v12l9-6z"/></svg></button>
+      <div class="sp"><span>Speed</span>
+        <div class="seg" id="segSp">
+          <button data-v="0.4" id="sp04">Slow</button>
+          <button data-v="1" id="sp1">Normal</button>
+          <button data-v="2" id="sp2">Fast</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel mechbox">
+      <div class="ov tl"><span class="tag">Curly arrow mechanism</span></div>
+      <svg id="mech" viewBox="0 0 1170 306" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Curly arrow mechanism"></svg>
+    </div>
+  </div>
+
+  <aside class="rail">
+    <div class="card" id="explain"></div>
+    <div class="card" id="points"></div>
+    <div class="card" id="overall"></div>
+    <p class="note">Keys: → next step, ← back, space to play or pause.</p>
+  </aside>
+</div>
+
+<script>
+(function(){
+"use strict";
+/* ---------- vectors ---------- */
+const add=(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]], sub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]],
+ mul=(a,s)=>[a[0]*s,a[1]*s,a[2]*s], len=a=>Math.hypot(a[0],a[1],a[2]), norm=a=>mul(a,1/(len(a)||1)),
+ cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]],
+ lerp=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t], mid=(a,b)=>lerp(a,b,.5);
+const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+
+const EL={C:{r:.40,c:['#939DB3','#3F4759','#1A1F2B'],t:'#fff'},H:{r:.25,c:['#FFFFFF','#E7EBF3','#A3ADC0'],t:'#1a2030'},
+ Br:{r:.60,c:['#EBA28B','#B04A2F','#66220F'],t:'#fff'},O:{r:.37,c:['#FF9C92','#E0392B','#8A180F'],t:'#fff'},
+ S:{r:.48,c:['#FFF3A8','#E9C31C','#94770A'],t:'#2a2200'}};
+
+/* ---------- state ---------- */
+const cfg={alkene:'ethene',reagent:'HBr',route:'major'};
+let M=null, step=0, anim=null, playing=false, dwellUntil=0, speed=1, dirty=true;
+let yaw=-.45, pitch=.18, zoom=1, showPairs=true, showSym=true;
+const STAGE_OF=[0,1,2,3,4,4], DUR=[0,2.2,2.8,2.4,2.6,1.0];
+const VIA=[3.9,.5,0];
+
+/* ---------- model ---------- */
+function build(){
+  const R=cfg.reagent, prop=cfg.alkene==='propene';
+  if(!prop||R==='Br2') cfg.route='major';
+  const minor=prop&&cfg.route==='minor', m=minor?-1:1;
+  const meSlot=prop?(minor?'a1':'b1'):null;
+  const eEl=R==='Br2'?'Br':'H', yEl=R==='H2SO4'?'O':'Br';
+  const LEY={HBr:1.41,H2SO4:.97,Br2:2.28}[R], LEC=eEl==='H'?1.09:1.94, LYC=yEl==='O'?1.43:1.94;
+  const el={Ca:'C',Cb:'C',E:eEl,Y:yEl};
+  ['a1','a2','b1','b2'].forEach(s=>el[s]=s===meSlot?'C':'H');
+  if(meSlot)['m1','m2','m3'].forEach(s=>el[s]='H');
+  const grp=[];
+  if(R==='H2SO4'){
+    const S=[0,1.2,.9], u=norm(mul(S,-1)), v=norm(cross(u,[1,0,0])), w=cross(u,v);
+    const d=[90,210,330].map(a=>{a*=Math.PI/180;return add(mul(u,-1/3),add(mul(v,.943*Math.cos(a)),mul(w,.943*Math.sin(a))))});
+    const O4=add(S,mul(d[2],1.57));
+    grp.push(['S',S],['O2',add(S,mul(d[0],1.43))],['O3',add(S,mul(d[1],1.43))],['O4',O4],
+      ['H4',add(O4,mul(norm(add(mul(d[2],.35),[0,1,0])),.97))]);
+    Object.assign(el,{S:'S',O2:'O',O3:'O',O4:'O',H4:'H'});
+  }
+  const tilt=norm([.8,.6,0]), up=[-1/3,.943,0], dn=[1/3,-.943,0];
+  const stages=[];
+  for(let i=0;i<5;i++){
+    const P={}, h=i<2?.67:.76;
+    P.Ca=[-h,0,0];P.Cb=[h,0,0];
+    const aD=i<2?[[-.5,0,.866],[-.5,0,-.866]]:[[-1/3,-.471,.816],[-1/3,-.471,-.816]];
+    const bD=i<4?[[.5,0,.866],[.5,0,-.866]]:[[1/3,.471,.816],[1/3,.471,-.816]];
+    const put=(par,slot,d)=>{const me=slot===meSlot;P[slot]=add(P[par],mul(d,me?1.51:1.09));
+      if(me){const v=norm(cross(d,[0,1,0])),w=cross(d,v);
+        [90,210,330].forEach((a,k)=>{a*=Math.PI/180;
+          P['m'+(k+1)]=add(P[slot],mul(add(mul(d,1/3),add(mul(v,.943*Math.cos(a)),mul(w,.943*Math.sin(a)))),1.09));});}};
+    put('Ca','a1',aD[0]);put('Ca','a2',aD[1]);put('Cb','b1',bD[0]);put('Cb','b2',bD[1]);
+    let fr;
+    if(i===0){P.E=[-.15,2.8,0];fr={pos:add(P.E,mul(tilt,LEY)),dir:tilt};}
+    else if(i===1){P.E=[-.4,eEl==='H'?1.85:2.4,0];fr={pos:add(P.E,mul(tilt,LEY)),dir:tilt};}
+    else{P.E=add(P.Ca,mul(up,LEC));
+      fr=i===2?{pos:[2.5,2.9,0],dir:tilt}:i===3?{pos:add(P.Cb,mul(dn,LYC+1.2)),dir:dn}:{pos:add(P.Cb,mul(dn,LYC)),dir:dn};}
+    stages.push({P,fr});
+  }
+  const bonds=i=>{
+    const b=[['Ca','a1',1],['Ca','a2',1],['Cb','b1',1],['Cb','b2',1],['Ca','Cb',i<2?2:1]];
+    if(meSlot)['m1','m2','m3'].forEach(s=>b.push([meSlot,s,1]));
+    if(i<2)b.push(['E','Y',1]);else b.push(['Ca','E',1]);
+    if(i===4)b.push(['Cb','Y',1]);
+    if(R==='H2SO4')b.push(['Y','S',1],['S','O2',2],['S','O3',2],['S','O4',1],['O4','H4',1]);
+    return b;};
+  const labels=[{},{E:'δ+',Y:'δ−'},{Cb:'+',Y:'−'},{Cb:'+',Y:'−'},{}];
+  const frac=i=>R==='Br2'?(i===0?.5:.66):.64;
+  const p1=(i,P)=>i<2?add(mid(P.Ca,P.Cb),[0,.55,0]):mid(P.Ca,P.E);
+  const p2=(i,P,dir)=>i<2?lerp(P.E,P.Y,frac(i)):i<4?sub(P.Y,mul(dir,EL[yEl].r+.2)):mid(P.Y,P.Cb);
+  M={R,prop,minor,m,meSlot,eEl,yEl,el,grp,stages,bonds,labels,p1,p2};
+}
+
+function scene(){
+  let a=STAGE_OF[step], b=a, e=0;
+  if(anim){a=STAGE_OF[anim.from];b=STAGE_OF[anim.to];e=a===b?0:ease(anim.f);}
+  const A=M.stages[a], B=M.stages[b], P={};
+  for(const k in A.P) P[k]=lerp(A.P[k],B.P[k],e);
+  let pos;
+  if(a===2&&b===3){const u=1-e;pos=add(add(mul(A.fr.pos,u*u),mul(VIA,2*u*e)),mul(B.fr.pos,e*e));}
+  else pos=lerp(A.fr.pos,B.fr.pos,e);
+  const dir=norm(lerp(A.fr.dir,B.fr.dir,e));
+  const xp=norm(cross(dir,[0,0,1])), zp=cross(xp,dir);
+  P.Y=pos;
+  M.grp.forEach(([id,l])=>P[id]=add(pos,add(mul(xp,l[0]),add(mul(dir,l[1]),mul(zp,l[2])))));
+  const bm=new Map();
+  M.bonds(a).forEach(([x,y,o])=>bm.set(x+'|'+y,{a:x,b:y,o0:o,o1:0}));
+  M.bonds(b).forEach(([x,y,o])=>{const k=x+'|'+y;if(bm.has(k))bm.get(k).o1=o;else bm.set(k,{a:x,b:y,o0:0,o1:o});});
+  const bonds=[...bm.values()].map(q=>({a:q.a,b:q.b,o:q.o0+(q.o1-q.o0)*e}));
+  const pairs=[lerp(M.p1(a,P),M.p1(b,P),e),lerp(M.p2(a,P,dir),M.p2(b,P,dir),e)];
+  const al=(i,on)=>on(i)?1:0;
+  const pi=al(a,i=>i<2)*(1-e)+al(b,i=>i<2)*e, porb=al(a,i=>i===2||i===3)*(1-e)+al(b,i=>i===2||i===3)*e;
+  const labels=[], LA=M.labels[a], LB=M.labels[b];
+  new Set([...Object.keys(LA),...Object.keys(LB)]).forEach(id=>{
+    if(LA[id]&&LA[id]===LB[id])labels.push({id,t:LA[id],a:1});
+    else{if(LA[id])labels.push({id,t:LA[id],a:Math.max(0,1-2*e)});if(LB[id])labels.push({id,t:LB[id],a:Math.max(0,2*e-1)});}
+  });
+  const cloud={pi:[[add(P.Ca,[0,.62,0]),add(P.Cb,[0,.62,0])],[add(P.Ca,[0,-.62,0]),add(P.Cb,[0,-.62,0])]],
+               porb:[add(P.Cb,[0,.74,0]),add(P.Cb,[0,-.74,0])]};
+  if(M.m<0){const fx=p=>{p[0]=-p[0];};
+    for(const k in P){P[k]=P[k].slice();fx(P[k]);}
+    pairs.forEach(fx);cloud.pi.forEach(s=>s.forEach(fx));cloud.porb.forEach(fx);}
+  return {P,bonds,pairs,pi,porb,labels,cloud};
+}
+
+/* ---------- 3D drawing ---------- */
+const cv=document.getElementById('stage'), ctx=cv.getContext('2d');
+function css(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim();}
+function draw(){
+  const W=cv.width,H=cv.height,dpr=W/(cv.clientWidth||1);
+  ctx.clearRect(0,0,W,H);
+  if(!W||!H)return;
+  const S=scene(), sc=Math.min(W/8.4,H/8.7)*zoom, cy=Math.cos(yaw),sy=Math.sin(yaw),cp=Math.cos(pitch),sp=Math.sin(pitch);
+  const ox=.7*M.m, oy=.6, D=26;
+  const pr=p=>{const x=p[0]-ox,y=p[1]-oy,z=p[2];const x1=x*cy+z*sy,z1=-x*sy+z*cy;const y2=y*cp-z1*sp,z2=y*sp+z1*cp;
+    const k=D/(D-z2);return {x:W/2+x1*sc*k,y:H/2-y2*sc*k,z:z2,k:k*sc};};
+  const col={bond:css('--bond'),hi:css('--bond-hi'),acc:css('--accent'),dot:css('--dot'),pair:css('--pair'),
+    ink:css('--ink'),surf:css('--surface'),line:css('--stage-line')};
+  const items=[];
+  for(const id in S.P){const e=EL[M.el[id]],q=pr(S.P[id]);
+    items.push({z:q.z,f(){const r=e.r*q.k,g=ctx.createRadialGradient(q.x-r*.35,q.y-r*.4,r*.08,q.x,q.y,r);
+      g.addColorStop(0,e.c[0]);g.addColorStop(.55,e.c[1]);g.addColorStop(1,e.c[2]);
+      ctx.beginPath();ctx.arc(q.x,q.y,r,0,7);ctx.fillStyle=g;ctx.fill();
+      ctx.lineWidth=Math.max(1,dpr);ctx.strokeStyle=col.line;ctx.globalAlpha=.55;ctx.stroke();ctx.globalAlpha=1;
+      if(showSym&&r>7*dpr){ctx.fillStyle=e.t;ctx.font='700 '+Math.round(Math.min(r*1.05,22*dpr))+'px "Instrument Sans",system-ui,sans-serif';
+        ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(M.el[id],q.x,q.y+r*.04);}}});
+    S.P[id]._q=q;}
+  S.bonds.forEach(b=>{if(b.o<=.02)return;
+    const A=S.P[b.a],B=S.P[b.b],u=norm(sub(B,A));
+    const p=pr(add(A,mul(u,EL[M.el[b.a]].r*.7))),q=pr(sub(B,mul(u,EL[M.el[b.b]].r*.7)));
+    items.push({z:(p.z+q.z)/2,f(){const w=.17*(p.k+q.k)/2;let dx=q.x-p.x,dy=q.y-p.y;const L=Math.hypot(dx,dy)||1;
+      const off=.15*(p.k+q.k)/2*Math.max(0,Math.min(1,b.o-1)),nx=-dy/L*off,ny=dx/L*off;
+      ctx.save();ctx.globalAlpha=Math.min(1,b.o<1?.25+.75*b.o:1);
+      if(b.o<.98){ctx.setLineDash([w*.9,w*.9]);ctx.lineCap='butt';}else ctx.lineCap='round';
+      (off>.5?[1,-1]:[0]).forEach(s=>{
+        ctx.beginPath();ctx.moveTo(p.x+nx*s,p.y+ny*s);ctx.lineTo(q.x+nx*s,q.y+ny*s);
+        ctx.strokeStyle=col.bond;ctx.lineWidth=w;ctx.stroke();
+        ctx.strokeStyle=col.hi;ctx.lineWidth=w*.38;ctx.stroke();});
+      ctx.restore();}});});
+  if(S.pi>.01)S.cloud.pi.forEach(s=>{const p=pr(s[0]),q=pr(s[1]);
+    items.push({z:(p.z+q.z)/2-.05,f(){ctx.save();ctx.globalAlpha=.26*S.pi;ctx.lineCap='round';ctx.strokeStyle=col.acc;
+      ctx.lineWidth=.66*(p.k+q.k)/2;ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);ctx.stroke();ctx.restore();}});});
+  if(S.porb>.01)S.cloud.porb.forEach(c=>{const q=pr(c);
+    items.push({z:q.z-.05,f(){ctx.save();ctx.beginPath();ctx.ellipse(q.x,q.y,.36*q.k,.46*q.k,0,0,7);
+      ctx.globalAlpha=.13*S.porb;ctx.fillStyle=col.dot;ctx.fill();
+      ctx.globalAlpha=.85*S.porb;ctx.setLineDash([5*dpr,4*dpr]);ctx.lineWidth=1.6*dpr;ctx.strokeStyle=col.dot;ctx.stroke();ctx.restore();}});});
+  if(showPairs)S.pairs.forEach(c=>{const q=pr(c);
+    items.push({z:q.z+.45,f(){const r=.13*q.k;ctx.save();ctx.shadowColor=col.pair;ctx.shadowBlur=r*2.2;
+      [-1,1].forEach(s=>{ctx.beginPath();ctx.arc(q.x+s*r*1.25,q.y,r,0,7);ctx.fillStyle=col.pair;ctx.fill();});
+      ctx.shadowBlur=0;ctx.lineWidth=dpr;ctx.strokeStyle='rgba(60,35,0,.7)';
+      [-1,1].forEach(s=>{ctx.beginPath();ctx.arc(q.x+s*r*1.25,q.y,r,0,7);ctx.stroke();});ctx.restore();}});});
+  items.sort((a,b)=>a.z-b.z).forEach(i=>i.f());
+  S.labels.forEach(l=>{if(l.a<=.01)return;const q=S.P[l.id]._q,r=EL[M.el[l.id]].r*q.k,fs=17*dpr;
+    const x=q.x+r*.72+fs*.75,y=q.y-r*.72-fs*.55;
+    ctx.save();ctx.globalAlpha=l.a;ctx.font='700 '+fs+'px "Instrument Sans",system-ui,sans-serif';
+    const tw=ctx.measureText(l.t).width+fs*.7,th=fs*1.35;
+    ctx.fillStyle=col.surf;ctx.strokeStyle=col.dot;ctx.lineWidth=1.5*dpr;
+    ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x-tw/2,y-th/2,tw,th,th/2);else ctx.rect(x-tw/2,y-th/2,tw,th);ctx.fill();ctx.stroke();
+    ctx.fillStyle=col.dot;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(l.t,x,y+fs*.04);ctx.restore();});
+}
+function fit(){const d=Math.min(window.devicePixelRatio||1,2),w=cv.clientWidth,h=cv.clientHeight;
+  if(cv.width!==Math.round(w*d)||cv.height!==Math.round(h*d)){cv.width=Math.round(w*d);cv.height=Math.round(h*d);}dirty=true;}
+if(window.ResizeObserver)new ResizeObserver(fit).observe(cv);window.addEventListener('resize',fit);
+let drag=null;
+cv.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY};try{cv.setPointerCapture(e.pointerId);}catch(_){}});
+cv.addEventListener('pointermove',e=>{if(!drag)return;yaw+=(e.clientX-drag.x)*.01;pitch=Math.max(-1.3,Math.min(1.3,pitch+(e.clientY-drag.y)*.01));
+  drag={x:e.clientX,y:e.clientY};dirty=true;});
+['pointerup','pointercancel'].forEach(n=>cv.addEventListener(n,()=>drag=null));
+cv.addEventListener('wheel',e=>{e.preventDefault();zoom=Math.max(.6,Math.min(2.4,zoom*(e.deltaY<0?1.08:.93)));dirty=true;},{passive:false});
+
+/* ---------- 2D mechanism ---------- */
+const mech=document.getElementById('mech');
+function renderMech(){
+  const st=anim?anim.to:step, f=anim?anim.f:1, m=M.m, y0=200;
+  const op=k=>st>k?1:st===k?f:0;
+  const T=(x,y,t,an,cls)=>'<text x="'+x+'" y="'+y+'" text-anchor="'+an+'" class="'+cls+'">'+t+'</text>';
+  const lab=(x,y,k,dx,cls)=>{
+    if(k==='E')k=M.eEl; if(k==='Y')k=M.yEl==='Br'?'Br':'OS';
+    if(k==='Me')return dx<0?T(x+9,y,'H₃C','end',cls):T(x-9,y,'CH₃','start',cls);
+    if(k==='OS')return dx<0?T(x+9,y,'HOSO₂O','end',cls):T(x-9,y,'OSO₂OH','start',cls);
+    return T(x,y,k,'middle',cls);};
+  const gap=k=>(k==='Br'||(k==='E'&&M.eEl==='Br')||(k==='Y'&&M.yEl==='Br'))?17:13;
+  const ln=(x1,y1,x2,y2,g1,g2)=>{const dx=x2-x1,dy=y2-y1,L=Math.hypot(dx,dy);
+    return '<line class="bd" x1="'+(x1+dx/L*g1)+'" y1="'+(y1+dy/L*g1)+'" x2="'+(x2-dx/L*g2)+'" y2="'+(y2-dy/L*g2)+'"/>';};
+  const sk=s=>s===M.meSlot?'Me':'H';
+  const arrow=(d,p)=>p<=0?'':'<path class="ca" d="'+d+'" pathLength="1" stroke-dasharray="1" stroke-dashoffset="'+(1-p)+'"'+(p>.97?' marker-end="url(#ah)"':'')+'/>';
+  const rxn=(x,o)=>'<g opacity="'+o+'"><line class="bd" x1="'+x+'" y1="'+y0+'" x2="'+(x+46)+'" y2="'+y0+'" marker-end="url(#rh)"/></g>';
+  const gE=gap('E'), gY=gap('Y');
+  let s='<defs><marker id="ah" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5.4" markerHeight="5.4" orient="auto"><path d="M0 0L10 5L0 10Z" style="fill:var(--dot)"/></marker>'+
+        '<marker id="rh" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10Z" style="fill:var(--ink)"/></marker></defs>';
+
+  /* Block A: alkene + electrophile */
+  {const xc=150,ax=xc-35*m,bx=xc+35*m,ex=xc-10*m;
+   s+=T(ax,y0,'C','middle','at')+T(bx,y0,'C','middle','at');
+   s+='<line class="bd" x1="'+(xc-22)+'" y1="'+(y0-4.5)+'" x2="'+(xc+22)+'" y2="'+(y0-4.5)+'"/><line class="bd" x1="'+(xc-22)+'" y1="'+(y0+4.5)+'" x2="'+(xc+22)+'" y2="'+(y0+4.5)+'"/>';
+   [['a1',ax,-m,-1],['a2',ax,-m,1],['b1',bx,m,-1],['b2',bx,m,1]].forEach(([sl,cx,dx,dy])=>{
+     s+=ln(cx,y0,cx+42*dx,y0+42*dy,13,13)+lab(cx+42*dx,y0+42*dy,sk(sl),dx,'at');});
+   s+=lab(ex,y0-82,'E',0,'at rg')+lab(ex,y0-146,'Y',m,'at rg')+ln(ex,y0-82,ex,y0-146,13,13);
+   const o1=op(1);
+   if(o1>0)s+='<g opacity="'+o1+'">'+T(ex-(gE+13)*m,y0-83,'δ+','middle','dl')+T(ex-4*m,y0-173,'δ−','middle','dl')+'</g>';
+   const p=op(2);
+   s+=arrow('M'+(xc+6*m)+' '+(y0-11)+' C'+(xc+44*m)+' '+(y0-28)+' '+(xc+36*m)+' '+(y0-64)+' '+(ex+(gE+1)*m)+' '+(y0-76),p);
+   s+=arrow('M'+(ex-4*m)+' '+(y0-114)+' C'+(ex-40*m)+' '+(y0-112)+' '+(ex-44*m)+' '+(y0-140)+' '+(ex-(gY+3)*m)+' '+(y0-146),p);
+   s+=T(xc,292,alkName()+' + '+reName(),'middle','cap');}
+
+  /* Block B: carbocation + anion */
+  const oB=op(3);
+  if(oB>0){const L=350,ax=m>0?L+92:L+290,bx=ax+70*m,yx=bx+125*m;
+   s+=rxn(282,oB)+'<g opacity="'+oB+'">';
+   s+=T(ax,y0,'C','middle','at')+T(bx,y0,'C','middle','at')+ln(ax,y0,bx,y0,13,13);
+   s+=ln(ax,y0,ax,y0-54,13,gE>13?15:13)+lab(ax,y0-54,'E',0,'at rg');
+   s+=ln(ax,y0,ax-54*m,y0,13,13)+lab(ax-54*m,y0,sk('a1'),-m,'at');
+   s+=ln(ax,y0,ax,y0+54,13,13)+lab(ax,y0+54,sk('a2'),m,'at');
+   s+=ln(bx,y0,bx,y0-54,13,13)+lab(bx,y0-54,sk('b1'),m,'at');
+   s+=ln(bx,y0,bx,y0+54,13,13)+lab(bx,y0+54,sk('b2'),m,'at');
+   s+=T(bx+15*m,y0-14,'+','middle','ch');
+   s+=lab(yx,y0,'Y',m,'at rg')+T(yx,y0-21,'−','middle','ch');
+   s+='<circle class="lp" cx="'+(yx-(gY+5)*m)+'" cy="'+(y0-5)+'" r="2.7"/><circle class="lp" cx="'+(yx-(gY+5)*m)+'" cy="'+(y0+5)+'" r="2.7"/>';
+   s+=T(L+191,292,cationClass()+' carbocation intermediate','middle','cap');
+   s+='</g>';
+   s+=arrow('M'+(yx-(gY+9)*m)+' '+(y0+9)+' C'+(yx-48*m)+' '+(y0+52)+' '+(bx+48*m)+' '+(y0+50)+' '+(bx+11*m)+' '+(y0+14),op(4));}
+
+  /* Block C: product */
+  const oC=op(5);
+  if(oC>0){const L=838,ax=m>0?L+92:L+221,bx=ax+70*m,yx=bx+58*m;
+   s+=rxn(770,oC)+'<g opacity="'+oC+'">';
+   s+=T(ax,y0,'C','middle','at')+T(bx,y0,'C','middle','at')+ln(ax,y0,bx,y0,13,13);
+   s+=ln(ax,y0,ax,y0-54,13,gE>13?15:13)+lab(ax,y0-54,'E',0,'at rg');
+   s+=ln(ax,y0,ax-54*m,y0,13,13)+lab(ax-54*m,y0,sk('a1'),-m,'at');
+   s+=ln(ax,y0,ax,y0+54,13,13)+lab(ax,y0+54,sk('a2'),m,'at');
+   s+=ln(bx,y0,bx,y0-54,13,13)+lab(bx,y0-54,sk('b1'),m,'at');
+   s+=ln(bx,y0,bx,y0+54,13,13)+lab(bx,y0+54,sk('b2'),m,'at');
+   s+=ln(bx,y0,yx,y0,13,gY)+lab(yx,y0,'Y',m,'at rg');
+   const pr=product();
+   s+=T(L+156,292,pr.name+(pr.tag?' · '+pr.tag.toLowerCase():''),'middle','cap b');
+   s+='</g>';}
+  mech.innerHTML=s;
+}
+
+/* ---------- words ---------- */
+const alkName=()=>cfg.alkene, reName=()=>({HBr:'HBr',H2SO4:'H₂SO₄',Br2:'Br₂'})[cfg.reagent];
+const cationClass=()=>M.prop&&!M.minor?'Secondary (2°)':'Primary (1°)';
+function product(){
+  const R=cfg.reagent;
+  if(!M.prop)return {HBr:{name:'bromoethane',eq:'CH₂=CH₂ + HBr → CH₃CH₂Br'},
+    H2SO4:{name:'ethyl hydrogensulfate',eq:'CH₂=CH₂ + H₂SO₄ → CH₃CH₂OSO₂OH',alc:'ethanol'},
+    Br2:{name:'1,2-dibromoethane',eq:'CH₂=CH₂ + Br₂ → CH₂BrCH₂Br'}}[R];
+  if(R==='Br2')return {name:'1,2-dibromopropane',eq:'CH₃CH=CH₂ + Br₂ → CH₃CHBrCH₂Br'};
+  if(!M.minor)return {HBr:{name:'2-bromopropane',eq:'CH₃CH=CH₂ + HBr → CH₃CHBrCH₃',tag:'Major product'},
+    H2SO4:{name:'propan-2-yl hydrogensulfate',eq:'CH₃CH=CH₂ + H₂SO₄ → CH₃CH(OSO₂OH)CH₃',tag:'Major product',alc:'propan-2-ol'}}[R];
+  return {HBr:{name:'1-bromopropane',eq:'CH₃CH=CH₂ + HBr → CH₃CH₂CH₂Br',tag:'Minor product'},
+    H2SO4:{name:'propyl hydrogensulfate',eq:'CH₃CH=CH₂ + H₂SO₄ → CH₃CH₂CH₂OSO₂OH',tag:'Minor product',alc:'propan-1-ol'}}[R];
+}
+const CHIP_TOP=['Start','Approach','Step 1','Intermediate','Step 2','Finish'];
+const chipName=i=>['Reactants',cfg.reagent==='Br2'?'Polarisation':'Dipole','Electrophilic attack','Carbocation',
+  cfg.reagent==='H2SO4'?'Hydrogensulfate attacks':'Bromide attacks','Product'][i];
+function words(i){
+  const R=cfg.reagent, A=alkName(), pr=product();
+  const eAt=M.eEl, yAt=M.yEl==='Br'?'Br':'O', bond=R==='HBr'?'H–Br':R==='H2SO4'?'H–O':'Br–Br';
+  const ion=R==='H2SO4'?'hydrogensulfate ion':'bromide ion', ionF=R==='H2SO4'?'⁻OSO₂OH':'Br⁻';
+  switch(i){
+  case 0:return {h:'Reactants',p:['<b>'+A[0].toUpperCase()+A.slice(1)+'</b> is '+(M.prop?'an unsymmetrical':'a symmetrical')+
+     ' alkene. Its C=C bond is a region of high electron density: the π bond lies above and below the plane of the molecule.',
+     '<b>'+reName()+'</b> is the electrophile, an electron pair acceptor.'+(R==='H2SO4'?' Concentrated sulfuric acid is drawn as H–OSO₂OH.':'')],pts:[]};
+  case 1:
+    if(R==='Br2')return {h:'Polarisation of Br₂',p:['Br₂ is non-polar on its own. As it approaches, the electron-rich C=C bond <b>repels the electron pair</b> in the Br–Br bond.',
+      'This <b>induces a dipole</b>: the nearer Br becomes δ+ and the further Br becomes δ−.'],pts:['Say the dipole is induced by the high electron density of the C=C bond','Label δ+ on the Br nearest the double bond']};
+    return {h:'Permanent dipole',p:[(R==='HBr'?'Br':'O')+' is more electronegative than H, so the bonding pair sits closer to '+(R==='HBr'?'Br':'O')+'. H is δ+ and '+(R==='HBr'?'Br':'O')+' is δ−.',
+      'The δ+ H is attracted to the electron-rich C=C bond.'],pts:['Show δ+ on H and δ− on '+(R==='HBr'?'Br':'O')]};
+  case 2:return {h:'Step 1: electrophilic attack',p:['An electron pair from the C=C bond forms a new C–'+eAt+' bond.',
+     'The '+bond+' bond breaks and both of its electrons move onto '+yAt+' (heterolytic fission).',
+     M.prop?(M.minor?'On this route the '+eAt+' joins the <b>middle carbon</b>, leaving the positive charge on the end carbon.'
+       :'The '+eAt+' joins the <b>CH₂ carbon</b>, leaving the positive charge on the middle carbon.'):''].filter(Boolean),
+     pts:['First arrow starts at the C=C bond and goes to the δ+ '+eAt,'Second arrow starts at the '+bond+' bond and goes to '+yAt]};
+  case 3:return {h:'Carbocation intermediate',p:['One carbon now has only three bonds and a positive charge. It is planar, with an empty p orbital. The '+ion+' has a lone pair and a negative charge.',
+     !M.prop?'This is a primary carbocation. Ethene is symmetrical, so only one carbocation can form.'
+     :M.minor?'This is a <b>primary</b> carbocation. Only one alkyl group pushes electron density towards C⁺, so it is less stable than the secondary alternative. It forms less often and leads to the minor product.'
+     :'This is a <b>secondary</b> carbocation. Two alkyl groups push electron density towards C⁺ (positive inductive effect), so it is more stable than the primary alternative. It forms more often and leads to the major product.'],
+     pts:['Show the + charge on the carbon atom','Show the lone pair and the − charge on '+ionF]};
+  case 4:return {h:'Step 2: '+ion+' attacks',p:['The lone pair on the '+ion+' is attracted to C⁺ and forms a new covalent bond.',
+     'The carbocation is planar, so the ion can approach from either face.'],pts:['Arrow starts at the lone pair and goes to C⁺']};
+  default:{
+    const p=['The product is <b>'+pr.name+'</b>. The π bond has gone and two new σ bonds have formed, so this is an addition reaction.'];
+    if(R==='H2SO4')p.push('Adding water hydrolyses it to '+pr.alc+' and re-forms H₂SO₄, so overall the acid catalyses hydration of the alkene.');
+    if(R==='Br2')p.push('Bromine water turns from orange to colourless. This is the test for a C=C bond.');
+    if(M.prop&&R==='Br2')p.push('Each carbon gains a Br, so there is one product. The reaction goes through the more stable secondary carbocation, as shown.');
+    else if(M.prop)p.push(M.minor?'<b>Minor product</b>: it forms through the less stable primary carbocation.':'<b>Major product</b>: it forms through the more stable secondary carbocation.');
+    return {h:'Product',p,pts:M.prop&&R!=='Br2'?['Explain major and minor products by the relative stability of the carbocations, not the products']:[]};}
+  }
+}
+
+/* ---------- UI ---------- */
+const $=id=>document.getElementById(id);
+const ICON_PLAY='<svg viewBox="0 0 16 16"><path d="M4 2v12l9-6z"/></svg>', ICON_PAUSE='<svg viewBox="0 0 16 16"><path d="M3 2h4v12H3zM9 2h4v12H9z"/></svg>';
+function syncUI(){
+  const st=anim?anim.to:step, w=words(st), pr=product();
+  $('tl').innerHTML=CHIP_TOP.map((t,i)=>'<button id="chip'+i+'" data-i="'+i+'" aria-pressed="'+(i===st)+'" class="'+(i<st?'done':'')+'"><span class="yr">'+t+'</span><span class="nm">'+chipName(i)+'</span></button>').join('');
+  $('explain').innerHTML='<div class="eyebrow">'+CHIP_TOP[st]+' · '+(st+1)+' of 6</div><h2>'+w.h+'</h2>'+w.p.map(x=>'<p>'+x+'</p>').join('');
+  $('points').hidden=!w.pts.length;
+  $('points').innerHTML='<h3>On the exam paper</h3><ul class="pts">'+w.pts.map(x=>'<li>'+x+'</li>').join('')+'</ul>';
+  $('overall').innerHTML='<h3>Overall reaction</h3><div class="eq">'+pr.eq+'<small>'+pr.name+'</small></div>'+
+    (pr.tag?'<span class="badge '+(M.minor?'':'maj')+'">'+pr.tag+'</span>':
+     M.prop?'<span class="badge">One product by either route</span>':'<span class="badge">Symmetrical alkene: one product</span>');
+  $('bPlay').innerHTML=playing?ICON_PAUSE+'Pause':ICON_PLAY+(st===5&&!anim?'Replay':'Play all');
+  $('bBack').disabled=st===0&&!anim; $('bNext').disabled=st===5&&!anim; $('bRestart').disabled=st===0&&!anim;
+  [['segAlk',cfg.alkene],['segRe',cfg.reagent],['segRt',cfg.route],['segSp',String(speed)]].forEach(([id,v])=>
+    $(id).querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===v)));
+  const canRoute=M.prop&&cfg.reagent!=='Br2';
+  $('segRt').querySelectorAll('button').forEach(b=>b.disabled=!canRoute);
+  $('segRt').title=canRoute?'':(M.prop?'Br₂ gives the same product by either route':'A symmetrical alkene gives one product');
+  $('tgPairs').setAttribute('aria-pressed',showPairs);$('tgSym').setAttribute('aria-pressed',showSym);
+  dirty=true;
+}
+function start(to,ts){anim={from:step,to,t0:ts||performance.now(),dur:DUR[to]/speed*1000,f:0};syncUI();}
+function settle(){if(anim){step=anim.to;anim=null;}}
+function next(){playing=false;if(anim)settle();else if(step<5){start(step+1);return;}syncUI();}
+function back(){playing=false;if(anim){step=anim.from;anim=null;}else step=Math.max(0,step-1);syncUI();}
+function restart(){playing=false;anim=null;step=0;syncUI();}
+function play(){if(playing)playing=false;else{if(step===5&&!anim)step=0;playing=true;dwellUntil=performance.now()+(step===0?500:0);}syncUI();}
+function reconfig(){build();playing=false;anim=null;step=0;syncUI();}
+
+$('tl').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const i=+b.dataset.i;
+  playing=false;anim=null;if(i===step+1){start(i);return;}step=i;syncUI();});
+$('segAlk').addEventListener('click',e=>{const b=e.target.closest('button');if(b){cfg.alkene=b.dataset.v;reconfig();}});
+$('segRe').addEventListener('click',e=>{const b=e.target.closest('button');if(b){cfg.reagent=b.dataset.v;reconfig();}});
+$('segRt').addEventListener('click',e=>{const b=e.target.closest('button');if(b&&!b.disabled){cfg.route=b.dataset.v;reconfig();}});
+$('segSp').addEventListener('click',e=>{const b=e.target.closest('button');if(b){speed=+b.dataset.v;syncUI();}});
+$('bPlay').onclick=play;$('bNext').onclick=next;$('bBack').onclick=back;$('bRestart').onclick=restart;
+$('tgPairs').onclick=()=>{showPairs=!showPairs;syncUI();};$('tgSym').onclick=()=>{showSym=!showSym;syncUI();};
+$('zIn').onclick=()=>{zoom=Math.min(2.4,zoom*1.15);dirty=true;};$('zOut').onclick=()=>{zoom=Math.max(.6,zoom/1.15);dirty=true;};
+$('vReset').onclick=()=>{yaw=-.45;pitch=.18;zoom=1;dirty=true;};
+document.addEventListener('keydown',e=>{
+  if(e.target.matches&&e.target.matches('input,textarea'))return;
+  if(e.key==='ArrowRight'){e.preventDefault();next();}
+  else if(e.key==='ArrowLeft'){e.preventDefault();back();}
+  else if(e.key===' '&&(e.target===document.body||e.target===document.documentElement)){e.preventDefault();play();}
+});
+if(window.matchMedia)window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change',()=>dirty=true);
+new MutationObserver(()=>dirty=true).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>dirty=true);
+
+function tick(ts){
+  if(anim){anim.f=Math.min(1,(ts-anim.t0)/anim.dur);
+    if(anim.f>=1){step=anim.to;anim=null;dwellUntil=ts+1500/speed;if(playing&&step===5)playing=false;syncUI();}
+    dirty=true;}
+  else if(playing&&ts>=dwellUntil){if(step<5)start(step+1,ts);else{playing=false;syncUI();}}
+  if(dirty){dirty=false;draw();renderMech();}
+  requestAnimationFrame(tick);
+}
+build();fit();syncUI();requestAnimationFrame(tick);
+window.__sim={go(i){playing=false;anim=null;step=i;syncUI();},set(a,r,rt){cfg.alkene=a;cfg.reagent=r;cfg.route=rt||'major';reconfig();}};
+})();
+</script>
+</body>
+</html>
