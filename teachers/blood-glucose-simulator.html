@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="gate.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Blood Glucose Control Simulator</title>
+<style>
+:root{
+  --bg:#eef6ea; --panel:#fbfdf9; --line:#c9dec3; --ink:#1f3324; --muted:#5b7361;
+  --green:#2f6b3f; --green2:#dcefd6; --glu:#e0a020; --ins:#2b6cb0; --gcn:#7b4bb0;
+  --red:#c0392b; --blood:#f6d1cc;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",system-ui,-apple-system,Helvetica,Arial,sans-serif;font-size:16px;line-height:1.4}
+header{padding:14px 18px 6px;display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 16px}
+h1{font-size:1.45rem;margin:0;color:var(--green)}
+header span{color:var(--muted);font-size:.95rem}
+.wrap{padding:8px 14px 18px;max-width:1500px;margin:0 auto}
+.bar{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:10px}
+.grp{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.grp>b{font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-right:2px}
+button{font:inherit;font-weight:600;border:1.5px solid var(--green);background:#fff;color:var(--green);border-radius:9px;padding:8px 12px;cursor:pointer;min-height:42px}
+button:hover{background:var(--green2)}
+button.on{background:var(--green);color:#fff}
+button:disabled{opacity:.35;cursor:not-allowed;background:#fff}
+button.act{border-color:#b9770a;color:#7a4e05;background:#fff8e6}
+button.act:hover{background:#fdecc2}
+button.inj{border-color:var(--ins);color:var(--ins);background:#eef5fc}
+label.chk{display:flex;align-items:center;gap:6px;font-weight:600;color:var(--green);cursor:pointer}
+label.chk input{width:20px;height:20px;accent-color:var(--green)}
+.main{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:10px}
+@media(max-width:980px){.main{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px}
+.panel h2{font-size:1rem;margin:0 0 6px;color:var(--green)}
+canvas{display:block;width:100%}
+#scene{height:auto;border-radius:8px;background:#f7fbf4}
+#graph{height:380px}
+.legend{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.9rem;color:var(--muted);margin-top:6px}
+.legend i{display:inline-block;width:12px;height:12px;margin-right:5px;vertical-align:-1px}
+.read{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:8px}
+@media(max-width:560px){.read{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.tile{background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 10px;min-width:0}
+.tile small{display:block;color:var(--muted);font-size:.78rem;text-transform:uppercase;letter-spacing:.04em}
+.tile .v{font-size:1.5rem;font-weight:700;font-variant-numeric:tabular-nums}
+.tile .v small{display:inline;font-size:.75rem;text-transform:none;letter-spacing:0;font-weight:500}
+.meter{height:10px;background:#e7efe3;border-radius:6px;overflow:hidden;margin-top:9px}
+.meter div{height:100%;width:0;border-radius:6px}
+.tag{display:inline-block;font-size:.8rem;font-weight:700;border-radius:6px;padding:1px 7px;margin-left:4px;vertical-align:3px}
+.tag.ok{background:var(--green2);color:var(--green)}
+.tag.hi{background:#fde3df;color:var(--red)}
+.tag.lo{background:#e6ddf5;color:#5a3391}
+.fb{margin-top:10px}
+#now{font-size:1.08rem;background:#fff;border-left:6px solid var(--green);border-radius:8px;padding:10px 12px;margin-bottom:10px;min-height:4.4em}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:stretch;margin-bottom:8px}
+.flow .t{flex:0 0 100%;font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.chip{flex:1 1 130px;background:#fff;border:1.5px solid var(--line);border-radius:9px;padding:7px 9px;font-size:.92rem;color:#8a9a8d;position:relative}
+.chip:not(:last-child)::after{content:"→";position:absolute;right:-11px;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:700;z-index:1;font-size:.9rem}
+.flow.hi .chip.lit{border-color:var(--ins);background:#eaf3fc;color:#173f6b;font-weight:600}
+.flow.lo .chip.lit{border-color:var(--gcn);background:#f1eafa;color:#45246f;font-weight:600}
+.flow .chip.fail{border-color:var(--red);background:#fdecea;color:#8c2318;font-weight:700}
+.hide{display:none!important}
+</style>
+</head>
+<body>
+<header><h1>Blood Glucose Control Simulator</h1><span>GCSE Biology · Homeostasis · negative feedback</span></header>
+<div class="wrap">
+  <div class="bar">
+    <div class="grp" id="modes"><b>Person</b>
+      <button data-m="h" class="on">Healthy</button>
+      <button data-m="t1">Type 1 diabetes</button>
+      <button data-m="t2">Type 2 diabetes</button>
+    </div>
+    <div class="grp"><b>Events</b>
+      <button class="act" id="bMeal">High-carb meal</button>
+      <button class="act" id="bLow">Low-carb meal</button>
+      <button class="act" id="bEx">Exercise (30 min)</button>
+      <button class="inj" id="bInj" disabled>Inject insulin</button>
+    </div>
+    <div class="grp"><b>Run</b>
+      <button id="bPlay">Pause</button>
+      <button id="bSpd">Speed ×1</button>
+      <button id="bReset">Reset</button>
+    </div>
+    <label class="chk"><input type="checkbox" id="cHT" checked>Higher tier (glucagon)</label>
+  </div>
+
+  <div class="main">
+    <div class="panel">
+      <h2>Inside the body</h2>
+      <canvas id="scene" width="1400" height="880"></canvas>
+      <div class="legend">
+        <span><i style="background:var(--glu);clip-path:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%)"></i>Glucose</span>
+        <span><i style="background:var(--ins);border-radius:50%"></i>Insulin</span>
+        <span class="ht"><i style="background:var(--gcn);clip-path:polygon(50% 0,100% 100%,0 100%)"></i>Glucagon</span>
+        <span><i style="background:#8a5a3c;border-radius:3px"></i>Glycogen (stored)</span>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="read">
+        <div class="tile"><small>Blood glucose</small><div class="v"><span id="rG">4.9</span> <small>mmol/dm³</small></div><span class="tag ok" id="rTag" style="margin-left:0">Normal</span></div>
+        <div class="tile"><small>Insulin</small><div class="v" id="rI">Low</div><div class="meter"><div id="mI" style="background:var(--ins)"></div></div></div>
+        <div class="tile ht"><small>Glucagon</small><div class="v" id="rN">Low</div><div class="meter"><div id="mN" style="background:var(--gcn)"></div></div></div>
+        <div class="tile"><small>Liver glycogen</small><div class="v"><span id="rS">60</span><small>% full</small></div><div class="meter"><div id="mS" style="background:#8a5a3c"></div></div></div>
+      </div>
+      <canvas id="graph"></canvas>
+    </div>
+  </div>
+
+  <div class="panel fb">
+    <h2>What is happening now? <span id="clock" style="color:var(--muted);font-weight:500"></span></h2>
+    <div id="now"></div>
+    <div class="flow hi" id="fHi"><div class="t">When blood glucose is too high</div>
+      <div class="chip">Blood glucose rises above normal</div>
+      <div class="chip">Pancreas detects the change</div>
+      <div class="chip">Pancreas releases insulin</div>
+      <div class="chip">Glucose moves from blood into cells; liver and muscles store it as glycogen</div>
+      <div class="chip">Blood glucose falls back to normal</div>
+    </div>
+    <div class="flow lo ht" id="fLo"><div class="t">When blood glucose is too low (Higher tier)</div>
+      <div class="chip">Blood glucose falls below normal</div>
+      <div class="chip">Pancreas detects the change</div>
+      <div class="chip">Pancreas releases glucagon</div>
+      <div class="chip">Liver converts glycogen into glucose and releases it</div>
+      <div class="chip">Blood glucose rises back to normal</div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+var $=function(id){return document.getElementById(id)};
+var clamp=function(v,a,b){return v<a?a:v>b?b:v};
+var C={glu:'#e0a020',ins:'#2b6cb0',gcn:'#7b4bb0',green:'#2f6b3f',ink:'#1f3324',muted:'#5b7361',red:'#c0392b'};
+
+/* ---------- model ---------- */
+var mode='h', higher=true, running=true, speeds=[1,2,4], spdI=0;
+var S, glu=[], ins=[], gcn=[];
+function reset(){
+  S={t:0,G:4.9,Q:0,I:0,Iinj:0,Gn:0.1,gly:60,ex:0,dG:0,hist:[],ev:[],lastSample:-1};
+  glu=[];ins=[];gcn=[];
+  for(var i=0;i<Math.round(S.G*5);i++) glu.push(bloodP(Math.random()*W));
+}
+function step(dt){
+  var cap=mode==='t1'?0.05:1, sens=mode==='t2'?0.2:1, imax=mode==='t2'?2:1.5;
+  var absorb=S.Q*0.03; S.Q-=absorb*dt; if(S.Q<0.01)S.Q=0;
+  var It=cap*clamp((S.G-5.2)/3,0,imax);
+  S.I+=(It-S.I)/8*dt;
+  S.Iinj-=S.Iinj/60*dt; if(S.Iinj<0.005)S.Iinj=0;
+  var Ieff=(S.I+S.Iinj)*sens;
+  var Gt=clamp((5.0-S.G),0,1.5);
+  S.Gn+=(Gt-S.Gn)/6*dt;
+  var uptake=0.0075*Ieff*S.G;
+  var release=S.gly>0.5?0.05*S.Gn:0;
+  var exUse=S.ex>0?0.035:0; S.ex=Math.max(0,S.ex-dt);
+  S.dG=absorb-uptake+release-0.004-exUse;
+  S.G=clamp(S.G+S.dG*dt,1.5,30);
+  S.gly=clamp(S.gly+(uptake*0.7-release)*3*dt,0,100);
+  S.absorb=absorb; S.Ieff=Ieff; S.release=release;
+  S.t+=dt;
+  if(Math.floor(S.t)>S.lastSample){S.lastSample=Math.floor(S.t);S.hist.push({t:S.t,G:S.G,I:S.I+S.Iinj,N:S.Gn});if(S.hist.length>2000)S.hist.shift();}
+}
+function ev(label){S.ev.push({t:S.t,l:label})}
+
+/* ---------- scene ---------- */
+var sc=$('scene'), cx=sc.getContext('2d'), W=700, H=440;
+var VY0=178, VY1=258;
+var PAN={x:218,y:78}, LIV={x:540,y:84}, GUT={x:95,y:362};
+var CELLS=[]; for(var i=0;i<5;i++) CELLS.push({x:262+i*98,y:362});
+function bloodP(x){return {s:'b',x:x,y:VY0+12+Math.random()*(VY1-VY0-24),v:22+Math.random()*22,ph:Math.random()*6.3,a:1}}
+function enterP(from){var p=bloodP(from.x+(Math.random()-.5)*260);p.s='in';p.fx=from.x+(Math.random()-.5)*30;p.fy=from.y;p.tx=p.x;p.ty=p.y;p.k=0;p.x=p.fx;p.y=p.fy;return p}
+function leave(p,to){p.s='out';p.fx=p.x;p.fy=p.y;p.tx=to.x+(Math.random()-.5)*36;p.ty=to.y+(Math.random()-.5)*20;p.k=0}
+function nearest(arr,x){var b=null,d=1e9;for(var i=0;i<arr.length;i++){var p=arr[i];if(p.s!=='b')continue;var dd=Math.abs(p.x-x);if(dd<d){d=dd;b=p}}return b}
+function live(arr){var n=0;for(var i=0;i<arr.length;i++)if(arr[i].s!=='out')n++;return n}
+var acc={g:0,i:0,n:0};
+function sync(rdt){
+  var rate=0.05/speeds[spdI];
+  acc.g+=rdt;acc.i+=rdt;acc.n+=rdt;
+  if(acc.g>rate){acc.g=0;
+    var tg=Math.round(S.G*5), n=live(glu);
+    if(n<tg){
+      var src=S.absorb>0.008?{x:GUT.x+10,y:GUT.y-50}:{x:LIV.x-20,y:LIV.y+50};
+      glu.push(enterP(src));
+    }else if(n>tg){
+      var toLiver=S.Ieff>0.05&&Math.random()<0.45&&S.gly<99.5;
+      var dest=toLiver?{x:LIV.x,y:LIV.y+10}:CELLS[Math.floor(Math.random()*CELLS.length)];
+      var p=nearest(glu,dest.x); if(p)leave(p,dest);
+    }
+  }
+  if(acc.i>rate*2){acc.i=0;
+    var ti=Math.min(22,Math.round((S.I+S.Iinj)*9)), ni=live(ins);
+    if(ni<ti){ins.push(enterP(S.Iinj>S.I?{x:52,y:150}:{x:PAN.x,y:PAN.y+26}))}
+    else if(ni>ti){var d=Math.random()<0.4?{x:LIV.x,y:LIV.y+30}:{x:CELLS[Math.floor(Math.random()*5)].x,y:322};var q=nearest(ins,d.x);if(q)leave(q,d)}
+  }
+  if(acc.n>rate*2){acc.n=0;
+    var tn=Math.min(16,Math.round(S.Gn*9)), nn=live(gcn);
+    if(nn<tn){gcn.push(enterP({x:PAN.x+40,y:PAN.y+26}))}
+    else if(nn>tn){var r=nearest(gcn,LIV.x);if(r)leave(r,{x:LIV.x,y:LIV.y+30})}
+  }
+}
+function move(arr,rdt){
+  for(var i=arr.length-1;i>=0;i--){var p=arr[i];
+    if(p.s==='b'){p.x+=p.v*rdt;p.ph+=rdt*2;if(p.x>W+8)p.x=-8}
+    else{p.k+=rdt/1.1;var k=Math.min(1,p.k),e=k*k*(3-2*k);
+      p.x=p.fx+(p.tx-p.fx)*e;p.y=p.fy+(p.ty-p.fy)*e;
+      if(k>=1){if(p.s==='in'){p.s='b'}else{arr.splice(i,1)}}
+      else if(p.s==='out')p.a=1-Math.max(0,(k-.7)/.3)}
+  }
+}
+function hex(x,y,r){cx.beginPath();for(var i=0;i<6;i++){var a=Math.PI/3*i;cx[i?'lineTo':'moveTo'](x+r*Math.cos(a),y+r*Math.sin(a))}cx.closePath()}
+function label(t,x,y,col,size,align){cx.font='600 '+(size||14)+'px "Segoe UI",system-ui,sans-serif';cx.textAlign=align||'center';cx.fillStyle=col||C.ink;cx.fillText(t,x,y)}
+function rr(x,y,w,h,r){cx.beginPath();cx.moveTo(x+r,y);cx.arcTo(x+w,y,x+w,y+h,r);cx.arcTo(x+w,y+h,x,y+h,r);cx.arcTo(x,y+h,x,y,r);cx.arcTo(x,y,x+w,y,r);cx.closePath()}
+function arrow(x1,y1,x2,y2,col,a){cx.save();cx.globalAlpha=a;cx.strokeStyle=col;cx.fillStyle=col;cx.lineWidth=3;cx.setLineDash([6,5]);cx.lineDashOffset=-performance.now()/60;cx.beginPath();cx.moveTo(x1,y1);cx.lineTo(x2,y2);cx.stroke();cx.setLineDash([]);var an=Math.atan2(y2-y1,x2-x1);cx.beginPath();cx.moveTo(x2,y2);cx.lineTo(x2-11*Math.cos(an-.45),y2-11*Math.sin(an-.45));cx.lineTo(x2-11*Math.cos(an+.45),y2-11*Math.sin(an+.45));cx.closePath();cx.fill();cx.restore()}
+
+function drawScene(){
+  cx.setTransform(2,0,0,2,0,0);cx.clearRect(0,0,W,H);
+  var iAll=S.I+S.Iinj, gn=higher?S.Gn:0;
+  /* vessel */
+  var g=cx.createLinearGradient(0,VY0,0,VY1);g.addColorStop(0,'#f3bdb6');g.addColorStop(.5,'#fbe3df');g.addColorStop(1,'#f3bdb6');
+  cx.fillStyle=g;cx.fillRect(0,VY0,W,VY1-VY0);
+  cx.fillStyle='#d98880';cx.fillRect(0,VY0-4,W,4);cx.fillRect(0,VY1,W,4);
+  label('BLOOD',W-12,VY0+17,'#a8554c',12,'right');
+  /* pancreas */
+  cx.save();
+  var pg=cx.createLinearGradient(PAN.x-100,0,PAN.x+100,0);
+  if(mode==='t1'){pg.addColorStop(0,'#d9d6cf');pg.addColorStop(1,'#c4c0b8')}else{pg.addColorStop(0,'#f6d9a8');pg.addColorStop(1,'#eab676')}
+  cx.fillStyle=pg;cx.strokeStyle=mode==='t1'?'#9a958b':'#c08a45';cx.lineWidth=2;
+  if(iAll-S.Iinj>0.15||gn>0.25){cx.shadowColor=(S.I>gn?C.ins:C.gcn);cx.shadowBlur=18}
+  cx.beginPath();cx.moveTo(PAN.x-105,PAN.y-6);
+  cx.bezierCurveTo(PAN.x-95,PAN.y-40,PAN.x-30,PAN.y-30,PAN.x+10,PAN.y-22);
+  cx.bezierCurveTo(PAN.x+60,PAN.y-12,PAN.x+110,PAN.y-22,PAN.x+112,PAN.y-2);
+  cx.bezierCurveTo(PAN.x+112,PAN.y+16,PAN.x+50,PAN.y+16,PAN.x+5,PAN.y+18);
+  cx.bezierCurveTo(PAN.x-40,PAN.y+22,PAN.x-110,PAN.y+34,PAN.x-105,PAN.y-6);cx.closePath();cx.fill();cx.shadowBlur=0;cx.stroke();cx.restore();
+  label('PANCREAS',PAN.x,PAN.y+3,'#6b4a1c',14);
+  label(mode==='t1'?'makes little or no insulin':'monitors blood glucose',PAN.x,PAN.y-40,mode==='t1'?C.red:C.muted,13);
+  /* liver */
+  cx.save();var lg=cx.createLinearGradient(0,LIV.y-50,0,LIV.y+50);lg.addColorStop(0,'#c98a78');lg.addColorStop(1,'#a8604f');
+  cx.fillStyle=lg;cx.strokeStyle='#7d4435';cx.lineWidth=2;
+  cx.beginPath();cx.moveTo(LIV.x-125,LIV.y+8);
+  cx.bezierCurveTo(LIV.x-125,LIV.y-50,LIV.x-20,LIV.y-56,LIV.x+60,LIV.y-48);
+  cx.bezierCurveTo(LIV.x+130,LIV.y-42,LIV.x+140,LIV.y+5,LIV.x+110,LIV.y+30);
+  cx.bezierCurveTo(LIV.x+60,LIV.y+56,LIV.x-125,LIV.y+62,LIV.x-125,LIV.y+8);cx.closePath();cx.fill();cx.stroke();cx.restore();
+  label('LIVER — glycogen store',LIV.x-88,LIV.y-20,'#fff',14,'left');
+  var n=Math.round(S.gly/100*36);
+  for(var i=0;i<36;i++){var gx=LIV.x-86+(i%12)*15,gy=LIV.y-8+Math.floor(i/12)*15;
+    cx.fillStyle=i<n?'#5e3a22':'rgba(255,255,255,.22)';rr(gx,gy,11,11,3);cx.fill()}
+  /* gut */
+  cx.fillStyle='#f3e3d3';cx.strokeStyle='#c9a98a';cx.lineWidth=2;rr(GUT.x-75,GUT.y-42,150,84,26);cx.fill();cx.stroke();
+  label('SMALL INTESTINE',GUT.x,GUT.y+58,C.muted,12);
+  var food=Math.min(14,Math.round(S.Q*2.4));
+  for(var f=0;f<food;f++){cx.fillStyle=C.glu;hex(GUT.x-52+(f%7)*17.5,GUT.y-10+Math.floor(f/7)*20,5.5);cx.fill()}
+  if(!food)label('no food',GUT.x,GUT.y+5,'#b09a85',13);
+  /* cells */
+  for(var c=0;c<CELLS.length;c++){var q=CELLS[c];
+    cx.fillStyle='#f9dfe0';cx.strokeStyle=S.Ieff>0.08?C.ins:'#d49aa0';cx.lineWidth=S.Ieff>0.08?3.5:2;
+    rr(q.x-42,q.y-40,84,80,22);cx.fill();cx.stroke();
+    cx.fillStyle='#c9869a';cx.beginPath();cx.ellipse(q.x+8,q.y+6,13,10,0,0,6.3);cx.fill();
+    if(mode==='t2'){label('✕',q.x-18,q.y-14,C.red,20)}
+  }
+  label(mode==='t2'?'BODY CELLS — no longer respond properly to insulin':'BODY CELLS (e.g. muscle)',CELLS[2].x,GUT.y+58,mode==='t2'?C.red:C.muted,12);
+  /* flow arrows */
+  if(S.absorb>0.008)arrow(GUT.x+10,GUT.y-46,GUT.x+10,VY1+10,C.glu,.9);
+  if(S.I>0.1)arrow(PAN.x-10,PAN.y+26,PAN.x-10,VY0-8,C.ins,.9);
+  if(gn>0.2)arrow(PAN.x+45,PAN.y+24,PAN.x+45,VY0-8,C.gcn,.9);
+  if(S.Ieff>0.08){arrow(LIV.x-10,VY0-8,LIV.x-10,LIV.y+62,C.glu,.9);arrow(CELLS[2].x,VY1+8,CELLS[2].x,CELLS[2].y-46,C.glu,.9)}
+  if(gn>0.2&&S.release>0)arrow(LIV.x+40,LIV.y+56,LIV.x+40,VY0-8,C.glu,.9);
+  if(S.Iinj>0.05){cx.save();cx.translate(30,128);cx.rotate(.6);cx.fillStyle='#fff';cx.strokeStyle=C.ins;cx.lineWidth=2;rr(-6,-34,12,40,3);cx.fill();cx.stroke();cx.fillStyle=C.ins;cx.fillRect(-4,-14,8,18);cx.fillRect(-1,6,2,16);cx.fillRect(-9,-40,18,4);cx.restore();label('injected insulin',6,82,C.ins,12,'left')}
+  if(S.ex>0)label('Exercising: muscles use more glucose for respiration',CELLS[2].x,300,C.green,13);
+  /* particles */
+  var k;
+  for(k=0;k<glu.length;k++){var p=glu[k];cx.globalAlpha=p.a;cx.fillStyle=C.glu;cx.strokeStyle='#a87008';cx.lineWidth=1;hex(p.x,p.y+(p.s==='b'?Math.sin(p.ph)*3:0),6);cx.fill();cx.stroke()}
+  for(k=0;k<ins.length;k++){p=ins[k];cx.globalAlpha=p.a;cx.fillStyle=C.ins;cx.beginPath();cx.arc(p.x,p.y+(p.s==='b'?Math.sin(p.ph)*3:0),5,0,6.3);cx.fill()}
+  if(higher)for(k=0;k<gcn.length;k++){p=gcn[k];cx.globalAlpha=p.a;cx.fillStyle=C.gcn;var yy=p.y+(p.s==='b'?Math.sin(p.ph)*3:0);cx.beginPath();cx.moveTo(p.x,yy-6);cx.lineTo(p.x+6,yy+5);cx.lineTo(p.x-6,yy+5);cx.closePath();cx.fill()}
+  cx.globalAlpha=1;
+}
+
+/* ---------- graph ---------- */
+var gc=$('graph'), gx=gc.getContext('2d'), GW=600, GH=380;
+function sizeGraph(){var r=gc.getBoundingClientRect(),d=window.devicePixelRatio||1;GW=Math.max(280,r.width);GH=r.height||380;gc.width=GW*d;gc.height=GH*d;gx.setTransform(d,0,0,d,0,0)}
+function drawGraph(){
+  var g=gx;g.clearRect(0,0,GW,GH);
+  var L=46,R=24,T=20,split=Math.round(GH*0.62),B=GH-30;
+  var win=360,t1=Math.max(win,S.t),t0=t1-win;
+  var X=function(t){return L+(t-t0)/win*(GW-L-R)};
+  var mx=12;for(var i=0;i<S.hist.length;i++){var h=S.hist[i];if(h.t>=t0&&h.G+1>mx)mx=Math.ceil((h.G+1)/2)*2}
+  var Y=function(v){return split-10-(v/mx)*(split-10-T)};
+  g.font='12px "Segoe UI",system-ui,sans-serif';
+  /* normal band */
+  g.fillStyle='rgba(120,190,120,.22)';g.fillRect(L,Y(7),GW-L-R,Y(4)-Y(7));
+  g.fillStyle=C.green;g.textAlign='right';g.fillText('normal range',GW-R-4,Y(7)+13);
+  /* axes */
+  g.strokeStyle='#dbe8d6';g.lineWidth=1;g.fillStyle=C.muted;
+  for(var v=0;v<=mx;v+=2){g.beginPath();g.moveTo(L,Y(v));g.lineTo(GW-R,Y(v));g.stroke();g.textAlign='right';g.fillText(v,L-6,Y(v)+4)}
+  var hY=function(v){return B-(clamp(v,0,2)/2)*(B-split-22)};
+  for(var hr=Math.ceil(t0/60);hr*60<=t1;hr++){var x=X(hr*60);g.beginPath();g.moveTo(x,T);g.lineTo(x,B);g.stroke();g.textAlign='center';g.fillText(clock(hr*60),x,GH-10)}
+  g.strokeStyle=C.muted;g.beginPath();g.moveTo(L,T);g.lineTo(L,B);g.lineTo(GW-R,B);g.stroke();
+  g.save();g.translate(13,(T+split)/2);g.rotate(-Math.PI/2);g.textAlign='center';g.fillStyle=C.ink;g.fillText('Blood glucose (mmol/dm³)',0,0);g.restore();
+  g.save();g.translate(13,(split+B)/2+6);g.rotate(-Math.PI/2);g.textAlign='center';g.fillText('Hormones',0,0);g.restore();
+  /* events */
+  for(i=0;i<S.ev.length;i++){var e=S.ev[i];if(e.t<t0)continue;var ex=X(e.t);g.strokeStyle='#b9770a';g.setLineDash([4,4]);g.beginPath();g.moveTo(ex,T);g.lineTo(ex,B);g.stroke();g.setLineDash([]);g.fillStyle='#7a4e05';g.textAlign=ex>GW-90?'right':'left';g.fillText(e.l,ex+(ex>GW-90?-4:4),T-6+((i%2)*13)+ (i%2?13:0))}
+  /* lines */
+  function line(key,Yf,col,w){g.strokeStyle=col;g.lineWidth=w;g.lineJoin='round';g.beginPath();var st=false;for(var j=0;j<S.hist.length;j++){var p=S.hist[j];if(p.t<t0)continue;var px=X(p.t),py=Yf(p[key]);if(st)g.lineTo(px,py);else{g.moveTo(px,py);st=true}}g.stroke()}
+  line('I',hY,C.ins,2.5); if(higher)line('N',hY,C.gcn,2.5);
+  line('G',Y,C.glu,3.5);
+  g.textAlign='left';g.fillStyle=C.ins;g.fillText('insulin',L+8,split+16);
+  if(higher){g.fillStyle=C.gcn;g.fillText('glucagon',L+62,split+16)}
+  var last=S.hist[S.hist.length-1];if(last){g.fillStyle=C.glu;g.strokeStyle='#fff';g.lineWidth=2;g.beginPath();g.arc(X(last.t),Y(last.G),5.5,0,6.3);g.fill();g.stroke()}
+}
+function clock(t){var m=Math.floor(8*60+t)%1440,h=Math.floor(m/60),mm=m%60;return (h<10?'0':'')+h+':'+(mm<10?'0':'')+mm}
+
+/* ---------- readouts & explanation ---------- */
+function word(v){return v<0.1?'Low':v<0.6?'Rising':v<1.1?'High':'Very high'}
+var hiC=$('fHi').querySelectorAll('.chip'), loC=$('fLo').querySelectorAll('.chip');
+function setLit(chips,arr){for(var i=0;i<chips.length;i++){chips[i].classList.toggle('lit',!!arr[i])}}
+function updateUI(){
+  var G=S.G,iAll=S.I+S.Iinj,hi=G>5.6,lo=G<4.6;
+  $('rG').textContent=G.toFixed(1);
+  var tag=$('rTag');tag.className='tag '+(G>7?'hi':G<4?'lo':'ok');tag.textContent=G>7?'Too high':G<4?'Too low':'Normal';
+  $('rI').textContent=word(iAll);$('mI').style.width=clamp(iAll/2*100,0,100)+'%';
+  $('rN').textContent=word(S.Gn);$('mN').style.width=clamp(S.Gn/1.5*100,0,100)+'%';
+  $('rS').textContent=Math.round(S.gly);$('mS').style.width=S.gly+'%';
+  $('clock').textContent='· time '+clock(S.t);
+  var falling=S.dG<-0.004,rising=S.dG>0.003;
+  setLit(hiC,[hi,hi,hi&&iAll>0.1,hi&&S.Ieff>0.08,hi&&S.Ieff>0.08&&falling]);
+  hiC[2].classList.toggle('fail',mode==='t1'&&hi&&iAll<0.1);
+  hiC[3].classList.toggle('fail',mode==='t2'&&hi);
+  setLit(loC,[lo,lo,lo&&S.Gn>0.2,lo&&S.Gn>0.2&&S.release>0,lo&&S.Gn>0.2&&rising]);
+  var t;
+  if(hi){
+    if(mode==='t1'){
+      t=S.Iinj>0.1?'<b>Injected insulin is now doing the job the pancreas cannot.</b> Glucose moves from the blood into cells, and the liver and muscles store the excess as glycogen, so blood glucose falls.'
+        :'<b>Blood glucose is too high and it is staying high.</b> In Type 1 diabetes the pancreas does not produce enough insulin, so glucose is not taken out of the blood. An insulin injection is needed.';
+    }else if(mode==='t2'){
+      t='<b>Blood glucose is too high.</b> The pancreas is releasing plenty of insulin, but in Type 2 diabetes body cells no longer respond to it properly. Glucose leaves the blood only slowly. A carbohydrate-controlled diet and regular exercise help to control it.';
+    }else{
+      t=iAll<0.1?'<b>Blood glucose is rising</b> as glucose from digested carbohydrate is absorbed into the blood. The pancreas detects the rise.'
+        :falling?'<b>Insulin is bringing blood glucose back down.</b> Glucose is moving from the blood into cells. In the liver and muscles, excess glucose is converted into glycogen for storage.'
+        :'<b>Blood glucose is too high, so the pancreas is releasing insulin.</b> Insulin causes glucose to move from the blood into cells, and the liver and muscles to store it as glycogen.';
+    }
+  }else if(lo){
+    t=higher?'<b>Blood glucose is too low, so the pancreas is releasing glucagon.</b> Glucagon causes the liver to convert stored glycogen into glucose, which is released into the blood. Blood glucose rises back towards normal.'
+      :'<b>Blood glucose has fallen</b> because cells are using glucose for respiration. Stored glycogen in the liver is converted back into glucose and released into the blood.';
+    if(S.Iinj>0.3)t+=' <b>Too much insulin</b> for the glucose in the blood can cause it to drop too low.';
+  }else{
+    t='<b>Blood glucose is in the normal range.</b> Cells take glucose from the blood all the time for respiration, so the pancreas keeps monitoring the concentration and adjusting.'+(higher?' Insulin and glucagon work together in a <b>negative feedback</b> cycle.':'');
+  }
+  if(S.ex>0)t+=' <b>Exercise:</b> muscle cells are respiring faster and using more glucose.';
+  if($('now').innerHTML!==t)$('now').innerHTML=t;
+}
+
+/* ---------- controls ---------- */
+function setMode(m){mode=m;var b=$('modes').querySelectorAll('button');for(var i=0;i<b.length;i++)b[i].classList.toggle('on',b[i].dataset.m===m);
+  $('bInj').disabled=m!=='t1';
+  hiC[2].textContent=m==='t1'?'Pancreas releases too little insulin':'Pancreas releases insulin';
+  hiC[3].textContent=m==='t2'?'Cells do not respond properly, so glucose leaves the blood slowly':'Glucose moves from blood into cells; liver and muscles store it as glycogen';
+  reset();ev(m==='h'?'Healthy':m==='t1'?'Type 1':'Type 2')}
+$('modes').addEventListener('click',function(e){if(e.target.dataset.m)setMode(e.target.dataset.m)});
+$('bMeal').onclick=function(){S.Q+=6;ev('Meal')};
+$('bLow').onclick=function(){S.Q+=2;ev('Low-carb')};
+$('bEx').onclick=function(){S.ex=30;ev('Exercise')};
+$('bInj').onclick=function(){S.Iinj+=1.2;ev('Insulin')};
+$('bPlay').onclick=function(){running=!running;this.textContent=running?'Pause':'Play';this.classList.toggle('on',!running)};
+$('bSpd').onclick=function(){spdI=(spdI+1)%speeds.length;this.textContent='Speed ×'+speeds[spdI]};
+$('bReset').onclick=function(){setMode(mode)};
+$('cHT').onchange=function(){higher=this.checked;var h=document.querySelectorAll('.ht');for(var i=0;i<h.length;i++)h[i].classList.toggle('hide',!higher)};
+
+/* ---------- loop ---------- */
+var lastT=0;
+function frame(now){
+  var rdt=Math.min(0.05,(now-lastT)/1000||0);lastT=now;
+  if(running){
+    var simMin=rdt*10*speeds[spdI];
+    while(simMin>0){var d=Math.min(0.5,simMin);step(d);simMin-=d}
+    sync(rdt);move(glu,rdt);move(ins,rdt);move(gcn,rdt);
+  }
+  drawScene();drawGraph();updateUI();
+  requestAnimationFrame(frame);
+}
+window.addEventListener('resize',sizeGraph);
+sizeGraph();setMode('h');requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
