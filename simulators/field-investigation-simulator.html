@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Field Investigation Practical Simulator</title>
+<style>
+/* Layout idea: lab bench on the left (apparatus you operate), lab book on the right (set-up, results table, graph, teacher notes). Light green biology palette, single light theme for projectors. */
+:root{color-scheme:light;--cream:#eef5ea;--paper:#fafdf7;--ink:#1f3324;--brown:#2f6b46;--line:#c3d9c0;--soft:#dfeeda;--good:#0f7a4f;--warn:#9a3b1f;
+  --display:Georgia,"Times New Roman",serif;--body:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--cream);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.45}
+header{padding:16px 20px 8px;display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline}
+h1{font-family:var(--display);font-size:1.6rem;margin:0;text-wrap:balance}
+header p{margin:0;color:var(--brown)}
+main{display:grid;gap:16px;padding:8px 16px 24px;grid-template-columns:1fr}
+@media (min-width:980px){main{grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);align-items:start}}
+.col{display:flex;flex-direction:column;gap:16px;min-width:0}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+h2{font-family:var(--display);font-size:1.1rem;margin:0 0 10px}
+.row{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+.row + .row{margin-top:10px}
+.lab{font-weight:600;min-width:7.5em}
+.seg{display:flex;flex-wrap:wrap;gap:4px}
+button{font:inherit;color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:7px;padding:6px 12px;cursor:pointer;min-height:38px}
+button:hover{border-color:var(--brown)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--brown);outline-offset:2px}
+button[aria-pressed="true"]{background:var(--brown);border-color:var(--brown);color:#fff}
+button.primary{background:var(--brown);border-color:var(--brown);color:#fff;font-weight:600;padding:8px 20px}
+button:disabled{opacity:.45;cursor:not-allowed}
+input[type=range]{flex:1;min-width:140px;accent-color:var(--brown)}
+input[type=number],input[type=text]{font:inherit;padding:6px 8px;border:1px solid var(--line);border-radius:7px;width:8em;background:#fff;color:var(--ink)}
+.status{min-height:3.1em;padding:8px 12px;border-left:5px solid var(--brown);background:var(--soft);border-radius:4px;margin-top:12px}
+.status.good{border-color:var(--good)}
+.status.warn{border-color:var(--warn)}
+.clock{font-family:"Courier New",monospace;font-weight:700;font-size:2.4rem;letter-spacing:.06em;background:#1c2b20;color:#d6f0c8;border-radius:8px;padding:6px 12px;text-align:center;font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:center}
+th{background:var(--soft);font-weight:600;font-size:.9rem}
+tr.sel td{background:#cfe6c8}
+tr.sum td{font-weight:700;background:#f0f7ec}
+td.none{color:var(--warn);font-size:.85rem}
+.graphwrap{overflow-x:auto}
+.graphwrap svg{width:100%;min-width:320px;height:auto;display:block}
+.bench svg,.bench canvas{max-width:100%;height:auto;display:block;margin:0 auto}
+details summary{cursor:pointer;font-family:var(--display);font-size:1.1rem;font-weight:700}
+details ul{margin:8px 0 0;padding-left:1.2em}
+details li{margin:4px 0;max-width:68ch}
+details h3{font-size:1rem;margin:12px 0 0}
+.note{font-size:.85rem;color:var(--brown);margin:8px 0 0}
+.big{font-family:var(--display);font-size:1.5rem;font-weight:700}
+.chip{display:inline-block;width:16px;height:16px;border-radius:50%;vertical-align:-3px;margin-right:6px;border:1px solid rgba(0,0,0,.25)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Field investigations</h1>
+  <p>AQA GCSE Biology required practical 9: measuring the population size of a common species with quadrats and a transect</p>
+</header>
+<main>
+  <div class="col">
+<section class="panel bench" aria-label="Field">
+  <h2 id="fieldTitle">School field, 10 m × 10 m</h2>
+  <canvas id="field" width="460" height="460" role="img" aria-label="Map of the field with plants and quadrats" style="border:2px solid #6f8a73;border-radius:6px;width:100%;max-width:460px;touch-action:manipulation"></canvas>
+  <div class="row" id="randRow" style="margin-top:10px"><button class="primary" id="oneBtn">Place a quadrat at random coordinates</button><button id="tenBtn">Place 10 at random</button><button id="pickBtn" aria-pressed="false">Let me choose where</button></div>
+  <div class="row" id="tranRow" style="margin-top:10px" hidden><button class="primary" id="nextBtn">Place the next quadrat</button><button id="lineBtn">Complete the transect</button></div>
+  <div class="status" id="status" aria-live="polite"></div>
+</section>
+<section class="panel bench" aria-label="Quadrat close-up">
+  <h2>Inside the last quadrat (0.5 m × 0.5 m)</h2>
+  <canvas id="zoom" width="240" height="240" role="img" aria-label="Close-up of the plants inside the quadrat" style="border:4px solid #b3261e;border-radius:4px"></canvas>
+  <p class="note" id="zoomNote" style="text-align:center"></p>
+</section></div>
+  <div class="col">
+<section class="panel" aria-label="Set up">
+  <h2>Set up the investigation</h2>
+  <div class="row"><span class="lab">Method</span><div class="seg" id="modeSeg"></div></div>
+  <div class="row" id="spRow"><span class="lab">Count</span><div class="seg" id="spSeg"></div></div>
+  <div class="row" id="stepRow" hidden><span class="lab">Quadrat every</span><div class="seg" id="stepSeg"></div></div>
+  <div class="row"><button id="clearBtn">Clear quadrats</button><button id="newBtn">New field</button></div>
+</section>
+<section class="panel" aria-label="Results">
+  <h2 id="resTitle">Results</h2>
+  <div class="tablewrap" style="max-height:330px;overflow-y:auto"><table><thead id="thead"></thead><tbody id="tbody"></tbody></table></div>
+  <div id="est" style="margin-top:10px"></div>
+  <div class="row" id="revRow"><button id="revBtn">Reveal the actual population</button></div>
+</section>
+<section class="panel" aria-label="Graph"><h2 id="gTitle">Graph</h2><div class="graphwrap" id="graph"></div></section><section class="panel"><details><summary>Teacher notes</summary>
+<h3>Method this models</h3>
+<ul><li>Random sampling: lay two tape measures at right angles, use random numbers as coordinates, and count the plants in a 0.25 m² quadrat at each point.</li>
+<li>Estimated population = mean number per quadrat × (total area ÷ area of one quadrat).</li>
+<li>Transect: lay a tape from the base of a tree into open ground, place the quadrat at regular intervals and record the count and the light intensity.</li></ul>
+<h3>Questions to draw out</h3>
+<ul><li>Take 5 quadrats and estimate the population, then take 20. Which estimate is closer to the real value, and why?</li>
+<li>Use “Let me choose where” and aim for the daisy patches. What happens to the estimate? Why must sampling be random?</li>
+<li>Daisies grow in clumps here and dandelions are spread evenly. Which species needs more quadrats for a reliable mean?</li>
+<li>On the transect, how does the number of daisies change with distance from the tree? Which abiotic factors could explain it?</li>
+<li>Why is a transect used here and not random sampling?</li></ul><p class="note">The data are simulated. Each new field has a different random arrangement of plants. Daisies are clumped, dandelions are spread evenly and plantain follows a trampled path.</p></details></section></div>
+</main>
+<script>
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id);
+const el=(t,c,s)=>{const e=document.createElement(t);if(c)e.className=c;if(s!=null)e.textContent=s;return e};
+function seg(id,opts,get,set){const box=$(id);box.textContent='';opts.forEach(o=>{const v=Array.isArray(o)?o[0]:o,l=Array.isArray(o)?o[1]:String(o);const b=el('button','',l);b.type='button';b.setAttribute('aria-pressed',String(get()===v));b.onclick=()=>{set(v);seg(id,opts,get,set)};box.appendChild(b)})}
+const gauss=()=>{let u=0;for(let i=0;i<6;i++)u+=Math.random();return(u-3)/.7071};
+const mean=a=>a.reduce((x,y)=>x+y,0)/a.length;
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const reduced=matchMedia('(prefers-reduced-motion:reduce)').matches;
+function status(msg,cls){const s=$('status');s.textContent=msg;s.className='status'+(cls?' '+cls:'')}
+function ticks(a,b,n){const raw=(b-a)/(n||5),st=Math.pow(10,Math.floor(Math.log10(raw))),e=raw/st,s=st*(e>=5?5:e>=2?2:1),r=[];for(let v=Math.ceil(a/s-1e-9)*s;v<=b+1e-9;v+=s)r.push(+v.toFixed(6));return r}
+const COLS=['#2f6b46','#c4781e','#3a6ea5','#9a3b1f'];
+function plot(id,o){
+  const W=520,H=300,L=62,R=16,T=o.series.length>1?34:14,B=48;let xs=[],ys=[];
+  o.series.forEach(s=>s.pts.forEach(p=>{xs.push(p[0]);ys.push(p[1])}));
+  let x0=o.xmin!=null?o.xmin:Math.min.apply(null,xs.concat(0)),x1=o.xmax!=null?o.xmax:Math.max.apply(null,xs.concat(1)),y0=o.ymin||0,y1=o.ymax!=null?o.ymax:Math.max.apply(null,ys.concat(o.yfloor||1))*1.12;
+  if(o.cats){x0=-.6;x1=o.cats.length-.4}
+  const X=v=>L+(v-x0)/(x1-x0)*(W-L-R),Y=v=>H-B-(v-y0)/(y1-y0)*(H-T-B);
+  let s='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Graph of '+o.yl+' against '+o.xl+'" font-family="system-ui,Arial" font-size="12" fill="#1f3324">';
+  ticks(y0,y1,5).forEach(v=>{s+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+Y(v)+'" y2="'+Y(v)+'" stroke="#dbe8d6"/><text x="'+(L-7)+'" y="'+(Y(v)+4)+'" text-anchor="end">'+v+'</text>'});
+  if(o.cats)o.cats.forEach((c,i)=>{s+='<text x="'+X(i)+'" y="'+(H-B+17)+'" text-anchor="middle">'+c+'</text>'});
+  else ticks(x0,x1,6).forEach(v=>{s+='<line x1="'+X(v)+'" x2="'+X(v)+'" y1="'+T+'" y2="'+(H-B)+'" stroke="#e7f0e3"/><text x="'+X(v)+'" y="'+(H-B+17)+'" text-anchor="middle">'+v+'</text>'});
+  s+='<path d="M'+L+' '+T+'V'+(H-B)+'H'+(W-R)+'" fill="none" stroke="#1f3324" stroke-width="1.6"/>';
+  s+='<text x="'+((L+W-R)/2)+'" y="'+(H-8)+'" text-anchor="middle" font-size="13" font-weight="600">'+o.xl+'</text><text transform="translate(15 '+((T+H-B)/2)+') rotate(-90)" text-anchor="middle" font-size="13" font-weight="600">'+o.yl+'</text>';
+  o.series.forEach((se,i)=>{const col=se.color||COLS[i%4];
+    if(o.cats){const bw=(W-L-R)/o.cats.length*.55;se.pts.forEach(p=>{s+='<rect x="'+(X(p[0])-bw/2)+'" y="'+Y(p[1])+'" width="'+bw+'" height="'+(Y(y0)-Y(p[1]))+'" fill="'+col+'" rx="3"/>'})}
+    else{if(se.line!==false&&se.pts.length>1)s+='<polyline points="'+se.pts.map(p=>X(p[0])+','+Y(p[1])).join(' ')+'" fill="none" stroke="'+col+'" stroke-width="2.4"'+(se.dash?' stroke-dasharray="6 5"':'')+'/>';
+      if(!se.dash)se.pts.forEach(p=>{s+='<circle cx="'+X(p[0])+'" cy="'+Y(p[1])+'" r="4.5" fill="'+col+'" stroke="#fff" stroke-width="1.5"/>'})}
+    if(o.series.length>1){const lx=L+8+i*((W-L-R)/o.series.length);s+='<rect x="'+lx+'" y="8" width="14" height="14" rx="3" fill="'+col+'"/><text x="'+(lx+20)+'" y="20">'+se.name+'</text>'}});
+  if(!xs.length)s+='<text x="'+((L+W-R)/2)+'" y="'+((T+H-B)/2)+'" text-anchor="middle" fill="#2f6b46" font-size="14">Collect results to plot the graph</text>';
+  $(id).innerHTML=s+'</svg>';
+}
+
+const SPN=['Daisy','Dandelion','Plantain'],S=460,M=46;
+let mode='rand',sp=0,quads=[],pick=false,revealed=false,step=1,plants=[],speck=[];
+const fc=$('field'),g=fc.getContext('2d'),zc=$('zoom'),z=zc.getContext('2d');
+const light=x=>Math.round(100*clamp(.15+(x-1)/6*.85,.15,1));
+function gen(){plants=[];speck=[];for(let i=0;i<900;i++)speck.push([Math.random()*S,Math.random()*S,Math.random()]);
+  const add=(x,y,s)=>{if(x>=0&&x<10&&y>=0&&y<10)plants.push({x,y,s})};
+  if(mode==='rand'){for(let c=0;c<7;c++){const cx=1+Math.random()*8,cy=1+Math.random()*8;for(let i=0;i<70;i++)add(cx+gauss()*.9,cy+gauss()*.9,0)}
+    for(let i=0;i<150;i++)add(Math.random()*10,Math.random()*10,0);
+    for(let i=0;i<190;i++)add(Math.random()*10,Math.random()*10,1);
+    for(let i=0;i<230;i++){const t=Math.random()*10;add(t+gauss()*.6,10-t+gauss()*.6,2)}}
+  else for(let i=0;i<2600;i++){const x=Math.random()*10,y=Math.random()*10;if(Math.random()<clamp((x-1.2)/6.5,.02,1)*.85)add(x,y,0)}
+  quads=[];revealed=false}
+function plant(c,x,y,s,r){
+  if(s===0){c.fillStyle='#fff';for(let k=0;k<8;k++){const a=k*.785;c.beginPath();c.ellipse(x+Math.cos(a)*r*.55,y+Math.sin(a)*r*.55,r*.5,r*.24,a,0,7);c.fill()}c.fillStyle='#f2c318';c.beginPath();c.arc(x,y,r*.34,0,7);c.fill()}
+  else if(s===1){c.fillStyle='#f5cf1a';c.beginPath();c.arc(x,y,r*.8,0,7);c.fill();c.fillStyle='#d9a400';c.beginPath();c.arc(x,y,r*.35,0,7);c.fill()}
+  else{c.fillStyle='#2f6b2f';for(let k=0;k<5;k++){const a=k*1.257;c.beginPath();c.ellipse(x+Math.cos(a)*r*.6,y+Math.sin(a)*r*.6,r*.6,r*.28,a,0,7);c.fill()}}}
+const count=(q,s)=>plants.filter(p=>p.s===s&&p.x>=q.x&&p.x<q.x+.5&&p.y>=q.y&&p.y<q.y+.5).length;
+function draw(){
+  g.fillStyle='#8fc06a';g.fillRect(0,0,S,S);speck.forEach(p=>{g.fillStyle=p[2]>.5?'rgba(60,120,50,.35)':'rgba(190,220,140,.4)';g.fillRect(p[0],p[1],3,3)});
+  if(mode==='tran'){const gr=g.createLinearGradient(0,0,S*.45,0);gr.addColorStop(0,'rgba(20,50,25,.55)');gr.addColorStop(1,'rgba(20,50,25,0)');g.fillStyle=gr;g.fillRect(0,0,S*.45,S)}
+  plants.forEach(p=>plant(g,p.x*M,p.y*M,p.s,p.s===0?3.2:3.6));
+  if(mode==='tran'){g.fillStyle='#24552c';g.beginPath();g.arc(-20,S/2,125,0,7);g.fill();g.fillStyle='rgba(60,110,60,.9)';g.beginPath();g.arc(-30,S/2-20,90,0,7);g.fill();
+    g.strokeStyle='#fff';g.lineWidth=2;g.setLineDash([8,5]);g.beginPath();g.moveTo(0,S/2);g.lineTo(S,S/2);g.stroke();g.setLineDash([]);
+    g.fillStyle='#fff';g.font='600 12px system-ui,Arial';g.textAlign='center';for(let m=0;m<=10;m+=2)g.fillText(m+' m',clamp(m*M,14,S-16),S/2+40)}
+  quads.forEach((q,i)=>{g.strokeStyle=q.chosen?'#1d4fb3':'#b3261e';g.lineWidth=2.5;g.strokeRect(q.x*M,q.y*M,M/2,M/2);if(mode==='rand'){g.fillStyle='#fff';g.font='700 11px system-ui,Arial';g.textAlign='left';g.fillText(i+1,q.x*M+M/2+2,q.y*M+10)}});
+  const q=quads[quads.length-1];z.fillStyle='#8fc06a';z.fillRect(0,0,240,240);
+  if(q){plants.forEach(p=>{if(p.x>=q.x-.05&&p.x<q.x+.55&&p.y>=q.y-.05&&p.y<q.y+.55)plant(z,(p.x-q.x)*480,(p.y-q.y)*480,p.s,p.s===0?13:14)});
+    $('zoomNote').textContent=mode==='rand'?SPN.map((n,i)=>count(q,i)+' '+n.toLowerCase()).join(', '):count(q,0)+' daisies, light '+light(q.x+.25)+'% of full sunlight'}
+  else $('zoomNote').textContent='Place a quadrat to see inside it.';
+}
+function table(){const th=$('thead'),tb=$('tbody');th.textContent='';tb.textContent='';const h=el('tr');
+  if(mode==='rand'){['Quadrat','x (m)','y (m)',SPN[sp]+' count'].forEach(t=>h.appendChild(el('th','',t)));th.appendChild(h);
+    const cs=quads.map(q=>count(q,sp));quads.forEach((q,i)=>{const tr=el('tr');tr.append(el('td','',(i+1)+(q.chosen?' (chosen)':'')),el('td','',q.x.toFixed(1)),el('td','',q.y.toFixed(1)),el('td','',String(cs[i])));tb.appendChild(tr)});
+    const e=$('est');e.textContent='';const run=[];let sum=0;cs.forEach((c,i)=>{sum+=c;run.push([i+1,+(sum/(i+1)).toFixed(2)])});
+    const actual=plants.filter(p=>p.s===sp).length;
+    if(cs.length){const m=mean(cs),est=Math.round(m*400);e.append(el('p','','Mean per quadrat = '+m.toFixed(2)),el('p','','Estimated population = '+m.toFixed(2)+' × (100 m² ÷ 0.25 m²) = '+est));e.lastChild.style.fontWeight='700';
+      if(revealed){const d=actual?Math.round((est-actual)/actual*100):0;e.appendChild(el('p','','Actual population = '+actual+'. The estimate is '+(d===0?'spot on':Math.abs(d)+'% too '+(d>0?'high':'low'))+'.'))}
+      e.querySelectorAll('p').forEach(p=>p.style.margin='2px 0')}
+    const se=[{name:'Running mean',pts:run}];if(revealed)se.push({name:'True mean',pts:[[0,actual/400],[Math.max(10,cs.length),actual/400]],dash:true});
+    plot('graph',{series:se,xl:'Number of quadrats',yl:'Mean '+SPN[sp].toLowerCase()+' count per quadrat',xmin:0,xmax:Math.max(10,cs.length),yfloor:3})}
+  else{['Distance from tree (m)','Daisy count','Light (% of full sunlight)'].forEach(t=>h.appendChild(el('th','',t)));th.appendChild(h);const pts=[];
+    quads.forEach(q=>{const c=count(q,0),tr=el('tr');tr.append(el('td','',String(q.x)),el('td','',String(c)),el('td','',String(light(q.x+.25))));tb.appendChild(tr);pts.push([q.x,c])});
+    $('est').textContent='';plot('graph',{series:[{pts}],xl:'Distance from tree (m)',yl:'Number of daisies in quadrat',xmin:0,xmax:10,yfloor:6})}}
+function place(x,y,chosen){quads.push({x,y,chosen});draw();table()}
+$('oneBtn').onclick=()=>{const x=Math.floor(Math.random()*20)/2,y=Math.floor(Math.random()*20)/2;place(x,y);status('Random coordinates ('+x.toFixed(1)+', '+y.toFixed(1)+'): '+count(quads[quads.length-1],sp)+' '+SPN[sp].toLowerCase()+' plants in the quadrat.','good')};
+$('tenBtn').onclick=()=>{for(let i=0;i<10;i++)quads.push({x:Math.floor(Math.random()*20)/2,y:Math.floor(Math.random()*20)/2});draw();table();status('Ten more quadrats placed at random coordinates.','good')};
+$('pickBtn').onclick=e=>{pick=!pick;e.currentTarget.setAttribute('aria-pressed',pick);fc.style.cursor=pick?'crosshair':'default';status(pick?'Tap the field to place quadrats where you choose. Chosen quadrats are outlined in blue.':'Back to random coordinates.')};
+fc.onclick=e=>{if(mode!=='rand'||!pick)return;const r=fc.getBoundingClientRect(),x=clamp(Math.floor((e.clientX-r.left)/r.width*20)/2,0,9.5),y=clamp(Math.floor((e.clientY-r.top)/r.height*20)/2,0,9.5);place(x,y,true);status('You chose ('+x.toFixed(1)+', '+y.toFixed(1)+'). Choosing where to sample introduces bias.','warn')};
+function nextT(){const x=quads.length*step;if(x>9.5)return false;quads.push({x,y:4.75});return true}
+$('nextBtn').onclick=()=>{if(!nextT()){status('The transect is complete.','good');return}draw();table();const q=quads[quads.length-1];status(q.x+' m from the tree: '+count(q,0)+' daisies, light '+light(q.x+.25)+'%.','good')};
+$('lineBtn').onclick=()=>{while(nextT());draw();table();status('Transect complete. Look at how the count changes with distance from the tree.','good')};
+$('revBtn').onclick=()=>{revealed=true;table()};
+$('clearBtn').onclick=()=>{quads=[];revealed=false;draw();table()};
+$('newBtn').onclick=()=>{gen();draw();table()};
+function setMode(){const r=mode==='rand';$('randRow').hidden=!r;$('tranRow').hidden=r;$('spRow').hidden=!r;$('stepRow').hidden=r;$('revRow').hidden=!r;
+  $('fieldTitle').textContent=r?'School field, 10 m × 10 m':'Transect from under a tree into open ground';$('resTitle').textContent=r?'Results: random quadrats':'Results: transect';$('gTitle').textContent=r?'Graph: how the mean settles as you sample more':'Graph';
+  gen();draw();table();status(r?'Estimate the population of a plant species by random sampling.':'Place quadrats along the tape, starting at the tree.')}
+seg('modeSeg',[['rand','Random quadrats'],['tran','Transect']],()=>mode,v=>{mode=v;setMode()});
+seg('spSeg',SPN.map((n,i)=>[i,n]),()=>sp,v=>{sp=v;revealed=false;draw();table()});
+seg('stepSeg',[[.5,'0.5 m'],[1,'1 m'],[2,'2 m']],()=>step,v=>{step=v;quads=[];draw();table()});
+setMode();
+})();
+</script>
+</body>
+</html>

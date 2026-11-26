@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Enzymes in Action</title>
+<style>
+:root{
+  /* Layout: tabs on top, large canvas left with its controls beneath, teaching panel right. Same system as Catalysts in Action. */
+  --paper:#F4EDE0; --panel:#FFFBF3; --ink:#2B2118; --muted:#6C5C4C; --line:#D9CBB3;
+  --accent:#8A4B14; --accent-soft:#F1DFC6; --eq:#1E5670;
+  --display:"Trebuchet MS","Segoe UI",system-ui,sans-serif;
+  --body:"Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.45}
+.wrap{max-width:1500px;margin:0 auto;padding:16px 20px 28px;display:flex;flex-direction:column;gap:14px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px}
+h1{font-family:var(--display);font-size:1.7rem;margin:0;letter-spacing:.2px;text-wrap:balance}
+.sub{color:var(--muted);font-size:.95rem;margin:2px 0 0}
+.tabs{display:flex;flex-wrap:wrap;gap:8px}
+.tabs button{font:inherit;font-weight:600;padding:9px 16px;border-radius:10px;border:2px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+main{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:16px;align-items:start}
+.stage{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.canvasBox{border-radius:10px;overflow:hidden;border:1px solid var(--line);background:#FBF7EE}
+#cv{display:block;width:100%;height:auto;aspect-ratio:1000/600}
+.steps{display:flex;flex-wrap:wrap;gap:6px;list-style:none;margin:0;padding:0}
+.steps button{font:inherit;font-size:.86rem;font-weight:600;display:flex;align-items:center;gap:7px;padding:6px 11px 6px 6px;border-radius:999px;border:1.5px solid var(--line);background:#fff;color:var(--muted);cursor:pointer}
+.steps .n{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-variant-numeric:tabular-nums}
+.steps button.done{color:var(--ink)}
+.steps button.on{border-color:var(--accent);color:var(--ink);background:var(--accent-soft)}
+.steps button.on .n{background:var(--accent);color:#fff}
+.controls{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.controls button,.controls select{font:inherit;font-weight:600;padding:9px 15px;border-radius:10px;border:2px solid var(--line);background:#fff;color:var(--ink);cursor:pointer}
+.controls .primary{background:var(--accent);border-color:var(--accent);color:#fff;padding-inline:22px}
+.controls button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.controls button:disabled{opacity:.45;cursor:default}
+.controls .sp{margin-left:auto;display:flex;align-items:center;gap:8px;color:var(--muted);font-size:.9rem}
+.slider{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px}
+.slider label{font-weight:700}
+.slider output{font-family:var(--display);font-weight:700;font-size:1.5rem;min-width:5.2ch;font-variant-numeric:tabular-nums;color:var(--accent)}
+.slider input[type=range]{flex:1 1 260px;min-width:200px;accent-color:var(--accent);height:28px}
+.hint{color:var(--muted);font-size:.82rem}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid #2F6DB3;outline-offset:2px}
+aside{display:flex;flex-direction:column;gap:12px;min-width:0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.card h2{font-family:var(--display);font-size:1.25rem;margin:0 0 6px;text-wrap:balance}
+.card h3{font-family:var(--display);font-size:.8rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+.count{font-size:.8rem;font-weight:700;color:var(--accent);letter-spacing:.08em;text-transform:uppercase}
+#stepText{margin:0;min-height:7.4em}
+.type{color:var(--muted);font-size:.92rem;margin:0}
+.lead{font-weight:700;font-size:1.05rem;margin:0 0 4px}
+#pf{display:block;width:100%;height:auto;aspect-ratio:340/190}
+ul.facts{margin:0;padding-left:1.1em}
+ul.facts li{margin:0 0 5px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin:0;padding:0;list-style:none;font-size:.88rem}
+.legend li{display:flex;align-items:center;gap:6px}
+.legend i{width:15px;height:15px;border:1px solid rgba(0,0,0,.35);display:inline-block}
+[hidden]{display:none!important}
+@media (max-width:1020px){main{grid-template-columns:minmax(0,1fr)}#stepText{min-height:0}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Enzymes in action</h1>
+      <p class="sub">A-level Chemistry · stereospecific active sites, temperature and pH</p>
+    </div>
+    <div class="tabs" role="tablist" aria-label="Choose a topic" id="tabs"></div>
+  </header>
+  <main>
+    <section class="stage">
+      <div class="canvasBox"><canvas id="cv" width="1000" height="600" role="img" aria-label="Animation of an enzyme and its substrate"></canvas></div>
+      <div id="stepUI">
+        <ol class="steps" id="steps"></ol>
+        <div class="controls" style="margin-top:12px">
+          <button id="back" type="button">◀ Back</button>
+          <button id="next" type="button" class="primary">Next step ▶</button>
+          <button id="replay" type="button">↻ Replay step</button>
+          <button id="auto" type="button" aria-pressed="false">Play all</button>
+          <span class="sp"><label for="speed">Speed</label>
+            <select id="speed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="1.75">1.75×</option></select>
+          </span>
+        </div>
+        <div class="hint" style="margin-top:8px">Keyboard: → next step · ← back · R replay · P play all</div>
+      </div>
+      <div id="simUI" hidden>
+        <div class="slider">
+          <label for="rng" id="rngLabel">Temperature</label>
+          <input type="range" id="rng" min="0" max="80" step="1" value="40">
+          <output id="rngOut" for="rng">40 °C</output>
+        </div>
+        <div class="controls" style="margin-top:12px">
+          <span id="presets" style="display:contents"></span>
+          <button id="fresh" type="button" class="primary" style="margin-left:auto">Fresh enzyme</button>
+        </div>
+        <div class="hint" style="margin-top:8px" id="simHint"></div>
+      </div>
+    </section>
+    <aside>
+      <div class="card">
+        <h3 id="sceneName"></h3>
+        <p class="lead" id="lead"></p>
+        <p class="type" id="sceneType"></p>
+      </div>
+      <div class="card" aria-live="polite">
+        <div class="count" id="count"></div>
+        <h2 id="stepTitle"></h2>
+        <p id="stepText"></p>
+      </div>
+      <div class="card" id="graphCard" hidden>
+        <h3 id="graphTitle">Rate</h3>
+        <canvas id="pf" width="340" height="190" role="img" aria-label="Graph of rate of reaction"></canvas>
+      </div>
+      <div class="card">
+        <h3>Key</h3>
+        <ul class="legend" id="legend"></ul>
+      </div>
+      <div class="card">
+        <h3>Key points</h3>
+        <ul class="facts" id="facts"></ul>
+      </div>
+    </aside>
+  </main>
+</div>
+<script>
+"use strict";
+const W=1000,H=600,CX=500,TY=380,DOCK=TY-14;
+const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const lerp=(a,b,t)=>a+(b-a)*t, clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+const $=id=>document.getElementById(id);
+const cv=$('cv'),ctx=cv.getContext('2d'),pf=$('pf'),pctx=pf.getContext('2d');
+const FONT='"Segoe UI",system-ui,Arial,sans-serif';
+function fit(){
+  const d=Math.min(window.devicePixelRatio||1,2.5),w=cv.clientWidth||W;cv.width=Math.round(w*d);cv.height=Math.round(w*.6*d);
+  const pw=pf.clientWidth||340;pf.width=Math.round(pw*d);pf.height=Math.round(pw*190/340*d);
+}
+window.addEventListener('resize',fit);
+
+/* ---------- drawing: pills, enzyme, substrate ---------- */
+function pill(x,y,txt,alpha,style){
+  if(alpha<=.01)return;
+  ctx.save();ctx.globalAlpha*=alpha;ctx.font='700 15px '+FONT;
+  const w=ctx.measureText(txt).width+18,h=26;
+  const bg={dark:'rgba(43,33,24,.85)',good:'#2E7D4F',bad:'#B83A2B',warn:'#B36B00'}[style]||'rgba(255,253,247,.94)';
+  ctx.fillStyle=bg;ctx.strokeStyle=style?'transparent':'rgba(110,90,65,.55)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.roundRect(x-w/2,y-h/2,w,h,13);ctx.fill();ctx.stroke();
+  ctx.fillStyle=style?'#fff':'#2B2118';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(txt,x,y+1);ctx.restore();
+}
+/* pocket geometry depends on distortion d (0 = native shape, 1 = fully denatured) */
+function pockets(d){
+  return {sl:-62-10*d,sr:-26-20*d,sb:34-14*d, cc:8*d,cr:18-7*d,cd:30-12*d, tl:26+10*d,tax:44+20*d,tay:36-16*d,tr:62+18*d};
+}
+function drawEnzyme(d,jit,T,chips){
+  const p=pockets(d),n=i=>d*26*Math.sin(i*2.4+1.3);
+  const ox=jit*Math.sin(T*31),oy=jit*Math.cos(T*27);
+  ctx.save();ctx.translate(ox,oy);
+  ctx.beginPath();
+  ctx.moveTo(CX-225+n(1),TY+70+n(2));
+  ctx.quadraticCurveTo(CX-215+n(3),TY+4,CX-150+n(4),TY);
+  ctx.lineTo(CX+p.sl,TY);ctx.lineTo(CX+p.sl+6*d,TY+p.sb);ctx.lineTo(CX+p.sr,TY+p.sb);ctx.lineTo(CX+p.sr,TY);
+  ctx.lineTo(CX+p.cc-p.cr,TY);ctx.lineTo(CX+p.cc-p.cr,TY+p.cd);ctx.arc(CX+p.cc,TY+p.cd,p.cr,Math.PI,0,true);ctx.lineTo(CX+p.cc+p.cr,TY);
+  ctx.lineTo(CX+p.tl,TY);ctx.lineTo(CX+p.tax,TY+p.tay);ctx.lineTo(CX+p.tr,TY);
+  ctx.lineTo(CX+150+n(6),TY);
+  ctx.quadraticCurveTo(CX+215+n(7),TY+4,CX+225+n(8),TY+70+n(9));
+  ctx.quadraticCurveTo(CX+245,TY+190,CX+120+n(10),TY+240);ctx.lineTo(CX-120+n(11),TY+240);
+  ctx.quadraticCurveTo(CX-245,TY+190,CX-225+n(1),TY+70+n(2));ctx.closePath();
+  const g=ctx.createLinearGradient(0,TY,0,H);g.addColorStop(0,'#8CC3B8');g.addColorStop(1,'#4F8F86');
+  ctx.save();ctx.shadowColor='rgba(40,25,10,.25)';ctx.shadowBlur=14;ctx.shadowOffsetY=4;ctx.fillStyle=g;ctx.fill();ctx.restore();
+  ctx.lineWidth=3;ctx.strokeStyle='#2F6A63';ctx.lineJoin='round';ctx.stroke();
+  ctx.fillStyle='rgba(255,255,255,.92)';ctx.font='700 22px '+FONT;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('Enzyme',CX,TY+170);
+  if(chips){
+    const chip=(x,y,tx,ty,txt,col)=>{ctx.strokeStyle='rgba(255,255,255,.8)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(tx,ty);ctx.lineTo(x,y-12);ctx.stroke();
+      ctx.font='700 15px '+FONT;const w=ctx.measureText(txt).width+16;ctx.fillStyle=col;ctx.beginPath();ctx.roundRect(x-w/2,y-13,w,26,8);ctx.fill();ctx.fillStyle='#fff';ctx.fillText(txt,x,y+1);};
+    chip(CX-92,TY+78,CX+(p.sl+p.sr)/2,TY+p.sb+3,chips.a?'COO⁻':'COOH',chips.a?'#B83A2B':'#7B766E');
+    chip(CX+26,TY+104,CX+p.cc,TY+p.cd+p.cr+3,chips.b?'NH₃⁺':'NH₂',chips.b?'#2F4FB0':'#7B766E');
+  }
+  ctx.restore();
+}
+const SLOT=[[-44,30],[0,44],[44,30]];
+const GRP={S:{c:'#3558C0',t:'+'},C:{c:'#D2402F',t:'−'},T:{c:'#E0A21A',t:'R'}};
+function drawGroup(kind,x,y,sc,col){
+  ctx.save();ctx.translate(x,y);ctx.scale(sc,sc);
+  ctx.fillStyle=col||GRP[kind].c;ctx.strokeStyle='rgba(30,20,10,.55)';ctx.lineWidth=1.5;ctx.beginPath();
+  if(kind==='S')ctx.roundRect(-15,-15,30,30,3);else if(kind==='C')ctx.arc(0,0,16,0,7);else{ctx.moveTo(-15,-12);ctx.lineTo(15,-12);ctx.lineTo(0,15);ctx.closePath();}
+  ctx.fill();ctx.stroke();
+  ctx.fillStyle=kind==='T'?'#3a2c00':'#fff';ctx.font='700 17px '+FONT;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(GRP[kind].t,0,kind==='T'?-2:1);
+  ctx.restore();
+}
+function dot(x,y,r,col,txt,tc){
+  ctx.fillStyle=col;ctx.strokeStyle='rgba(30,20,10,.6)';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill();ctx.stroke();
+  ctx.fillStyle=tc;ctx.font='700 '+(r*1.1).toFixed(0)+'px '+FONT;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(txt,x,y+1);
+}
+/* o.pos: {S:[dx,dy,scale],C:[..],T:[..]} ; o.part: 'all' | 'main' | 'T' ; o.tb: alpha of the C–T bond ; o.drug */
+function drawSub(x,y,o){
+  const a=o.alpha??1;if(a<=.01)return;
+  const pos=o.pos||{S:[...SLOT[0],1],C:[...SLOT[1],1],T:[...SLOT[2],1]},part=o.part||'all';
+  ctx.save();ctx.globalAlpha*=a;ctx.lineCap='round';
+  const kinds=part==='T'?['T']:part==='main'?['S','C']:['S','C','T'];
+  const order=kinds.slice().sort((p,q)=>pos[p][2]-pos[q][2]);
+  ctx.strokeStyle='#4A3D30';ctx.lineWidth=4.5;
+  if(part!=='T'){
+    for(const k of order){if(k==='T'&&(o.tb??1)<1){ctx.save();ctx.globalAlpha*=(o.tb??1);ctx.setLineDash([5,5]);}
+      ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+pos[k][0],y+pos[k][1]);ctx.stroke();if(k==='T'&&(o.tb??1)<1)ctx.restore();}
+    if(!o.drug){ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y-32);ctx.stroke();}
+  }
+  for(const k of order)drawGroup(k,x+pos[k][0],y+pos[k][1],pos[k][2],o.drug?'#8B78AE':null);
+  if(part!=='T'){
+    if(o.drug){ctx.fillStyle='#5B4688';ctx.strokeStyle='rgba(30,20,10,.6)';ctx.lineWidth=1.5;ctx.beginPath();
+      for(let i=0;i<6;i++){const an=Math.PI/6+i*Math.PI/3;ctx.lineTo(x+26*Math.cos(an),y-8+26*Math.sin(an));}ctx.closePath();ctx.fill();ctx.stroke();
+      ctx.fillStyle='#fff';ctx.font='700 13px '+FONT;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('drug',x,y-7);}
+    else{dot(x,y-32,9,'#F3F0E8','H','#333');dot(x,y,13,'#4A4A4A','C','#fff');}
+  }
+  ctx.restore();
+}
+function mark(k,ok,alpha){
+  if(alpha<=.01)return;const x=CX+SLOT[k][0],y=TY+(k===1?80:66);
+  ctx.save();ctx.globalAlpha*=alpha;ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(x,y,13,0,7);ctx.fill();
+  ctx.strokeStyle=ok?'#2E7D4F':'#B83A2B';ctx.lineWidth=4;ctx.lineCap='round';ctx.beginPath();
+  if(ok){ctx.moveTo(x-6,y);ctx.lineTo(x-2,y+5);ctx.lineTo(x+7,y-5);}else{ctx.moveTo(x-5,y-5);ctx.lineTo(x+5,y+5);ctx.moveTo(x+5,y-5);ctx.lineTo(x-5,y+5);}
+  ctx.stroke();ctx.restore();
+}
+function backdrop(warm){
+  const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#F1F6F4');g.addColorStop(1,'#DDEBE8');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  if(warm){ctx.fillStyle=warm;ctx.fillRect(0,0,W,H);}
+}
+
+/* ---------- tab 1: stereochemistry step-through ---------- */
+const STEREO={
+  id:'stereo',tab:'Stereochemistry',kind:'steps',name:'Why enzymes are stereospecific',
+  lead:'Only one enantiomer fits the active site',type:'The active site has binding points in fixed 3D positions',
+  legend:[['#8CC3B8','Enzyme (a protein)','4px'],['#3558C0','Group with a + charge','3px'],['#D2402F','Group with a − charge','50%'],['#E0A21A','R group','0'],['#8B78AE','Drug molecule','4px']],
+  facts:['The shape of the active site comes from the way the protein chain folds (its tertiary structure).',
+    'A substrate binds only if its groups line up with the binding points in the active site.',
+    'Enzymes are stereospecific: the active site usually binds only one enantiomer of a chiral substrate.',
+    'Many drugs work by blocking the active site of an enzyme. Often only one enantiomer of the drug is active.',
+    'This is a flat picture of a 3D molecule. Think of the three lower groups as the legs of a tripod, with H pointing away from the enzyme.'],
+  init:{ax:250,ay:150,aa:1,s:0,bx:620,by:170,ba:0,rot:0,mkA:0,mkB:0,mir:0,dx:800,dy:130,da:0,site:1,blk:0},
+  stages:[
+   {label:'Active site',title:'The enzyme and its active site',
+    text:'Enzymes are proteins. The way the chain folds gives the active site a specific 3D shape, with binding points in fixed positions. This substrate has a carbon atom with four different groups attached, so it is chiral.',frames:[{}]},
+   {label:'Substrate fits',title:'The substrate fits',
+    text:'This enantiomer has its three groups in the right positions. Each one lines up with its matching binding point, so an enzyme–substrate complex forms.',
+    frames:[{ax:500,ay:290,site:0},{ay:DOCK,mkA:1}]},
+   {label:'Products leave',title:'Reaction and release',
+    text:'Held in the active site, a bond in the substrate is weakened and breaks. The products leave, and the active site is free to accept another substrate molecule. The enzyme is unchanged.',
+    frames:[{s:.12,mkA:0},{s:1}]},
+   {label:'Mirror image',title:'The mirror image',
+    text:'The other enantiomer has the same four groups, but arranged as a non-superimposable mirror image. Most chemical tests cannot tell the two apart. An enzyme can.',
+    frames:[{aa:0},{ax:380,ay:170,s:0},{aa:1,ba:1,mir:1}]},
+   {label:'Does not fit',title:'The other enantiomer does not fit',
+    text:'Only one group lines up with its binding point. The other two are in the wrong places, so the enzyme–substrate complex does not form and there is no reaction.',
+    frames:[{ax:170,ay:150,mir:0,bx:500,by:270},{by:330,mkB:1}]},
+   {label:'Rotating',title:'Rotating does not help',
+    text:'However the molecule turns, only one group at a time can match its binding point. This is why enzymes are stereospecific: they catalyse the reaction of only one enantiomer.',
+    frames:[{mkB:0,by:285},{rot:1},{by:330,mkB:1},{mkB:0,by:285},{rot:2},{by:330,mkB:1},{mkB:0,bx:820,by:150}]},
+   {label:'Drug',title:'Drugs that block the active site',
+    text:'A drug molecule with the right shape can bind to the active site and stay there, so the substrate cannot get in. Because the active site is stereospecific, often only one enantiomer of a drug works. Computers are used to help design molecules that fit.',
+    frames:[{ba:0,da:1,dx:500,dy:280},{dy:DOCK},{ax:440,ay:262,blk:1},{ax:260,ay:150,blk:0}]}
+  ]
+};
+(function build(){let cur=Object.assign({},STEREO.init);STEREO.initState=cur;
+  for(const st of STEREO.stages)st.keys=st.frames.map(f=>(cur=Object.assign({},cur,f)));})();
+function posB(rot){ // mirror-image enantiomer: T on the left, C in the middle, S on the right at rot 0
+  const out={},base={T:0,C:1,S:2};
+  for(const k in base){let p=(base[k]+rot)%3,i=Math.floor(p),f=p-i;
+    if(i<2)out[k]=[lerp(SLOT[i][0],SLOT[i+1][0],f),lerp(SLOT[i][1],SLOT[i+1][1],f),1];
+    else out[k]=[lerp(SLOT[2][0],SLOT[0][0],f),lerp(SLOT[2][1],SLOT[0][1],f)-46*Math.sin(Math.PI*f),1-.28*Math.sin(Math.PI*f)];}
+  return out;
+}
+function renderStereo(A,B,u,T,stageIdx){
+  const p={};for(const k in B)p[k]=lerp(A[k],B[k],u);
+  backdrop();drawEnzyme(0,0,T,null);
+  const bob=reduce?0:1,wob=(x,y)=>{const g=clamp((330-y)/70,0,1)*bob;return[x+3*Math.sin(T*.9+x*.01)*g,y+4*Math.sin(T*1.2+x*.013)*g];};
+  if(p.site>.01){pill(CX,TY-34,'Active site',p.site,'dark');
+    ctx.save();ctx.globalAlpha=p.site;ctx.strokeStyle='#2B2118';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(CX-66,TY-8);ctx.lineTo(CX-66,TY-16);ctx.lineTo(CX+66,TY-16);ctx.lineTo(CX+66,TY-8);ctx.stroke();ctx.restore();}
+  for(let k=0;k<3;k++)mark(k,true,p.mkA);
+  const r=Math.round(p.rot)%3,want=['S','C','T'],at=['T','C','S'];
+  for(let k=0;k<3;k++)mark(k,at[((k-r)%3+3)%3]===want[k],p.mkB);
+  // drug
+  if(p.da>.01){const [x,y]=wob(p.dx,p.dy);drawSub(x,y,{alpha:p.da,drug:true});if(p.dy<DOCK-40)pill(x,y-52,'Drug molecule',p.da);}
+  // correct enantiomer and its products
+  if(p.aa>.01){
+    const [x,y]=wob(p.ax,p.ay),s=p.s;
+    if(s<=0){drawSub(x,y,{alpha:p.aa});if(y<DOCK-60)pill(x,y-62,stageIdx>=3?'Enantiomer that fits':'Substrate',p.aa);}
+    else{const e=clamp((s-.12)/.88,0,1);
+      const [mx,my]=wob(p.ax-170*e,p.ay-200*e),[tx,ty]=wob(p.ax+150*e,p.ay-190*e);
+      drawSub(mx,my,{alpha:p.aa,part:'main'});
+      if(e<=0)drawSub(x,y,{alpha:p.aa,part:'all',tb:1-s/.12});else drawSub(tx,ty,{alpha:p.aa,part:'T'});
+      if(e>.6){const al=p.aa*(e-.6)/.4;pill(mx,my-62,'Product',al);pill(tx+44,ty-6,'Product',al);}
+    }
+  }
+  if(p.blk>.01)pill(CX-150,TY-96,'Active site blocked',p.blk,'bad');
+  // mirror-image enantiomer
+  if(p.ba>.01){const [x,y]=wob(p.bx,p.by);drawSub(x,y,{alpha:p.ba,pos:posB(p.rot)});if(y<DOCK-80)pill(x,y-62,'Mirror image',p.ba);}
+  if(p.mir>.01){ctx.save();ctx.globalAlpha=p.mir;ctx.setLineDash([8,7]);ctx.strokeStyle='#6C5C4C';ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(500,70);ctx.lineTo(500,270);ctx.stroke();ctx.restore();pill(500,56,'Mirror',p.mir);}
+}
+
+/* ---------- tabs 2 and 3: live simulations ---------- */
+const kT=T=>Math.pow(2,(T-40)/10), dT=T=>clamp((T-40)/25,0,1), sig=T=>1/(1+Math.exp((T-44)/2.5));
+const fA=p=>1/(1+Math.pow(10,5.5-p)), fB=p=>1/(1+Math.pow(10,p-8.5));
+const dP=p=>Math.max(clamp((4.5-p)/3,0,1),clamp((p-9.5)/3,0,1));
+const shape=d=>Math.pow(clamp(1-2*d,0,1),2);
+const TEMP={
+  id:'temperature',tab:'Temperature',kind:'sim',name:'The effect of temperature',
+  lead:'Kinetic energy against the shape of the active site',type:'Move the slider and watch the collisions and the active site',
+  min:0,max:80,step:1,start:40,unit:v=>v+' °C',label:'Temperature',graph:'Rate against temperature',
+  presets:[['5 °C',5],['40 °C (optimum)',40],['50 °C',50],['70 °C',70]],
+  hint:'Heat the enzyme above 50 °C, then cool it again: the active site does not recover. Press Fresh enzyme to start again.',
+  legend:[['#8CC3B8','Enzyme','4px'],['#4A4A4A','Substrate','50%'],['#E0A21A','Product fragment','0']],
+  facts:['Low temperature: particles have less kinetic energy, so there are fewer successful collisions. The enzyme is not denatured.',
+    'Up to the optimum, the rate rises as the temperature rises.',
+    'Above the optimum, vibration breaks the hydrogen bonds and other weak interactions that hold the tertiary structure.',
+    'The active site changes shape, so the substrate no longer fits: the enzyme is denatured.',
+    'Denaturing by heat is usually permanent.'],
+  curve:T=>kT(T)*sig(T),norm:kT(40)*sig(40)
+};
+const PH={
+  id:'ph',tab:'pH',kind:'sim',name:'The effect of pH',
+  lead:'Charged groups in the active site depend on pH',type:'Temperature is fixed at 37 °C. Move the slider to change the pH',
+  min:1,max:13,step:.5,start:7,unit:v=>'pH '+(+v).toFixed(1),label:'pH',graph:'Rate against pH',
+  presets:[['pH 2',2],['pH 5',5],['pH 7 (optimum)',7],['pH 9',9],['pH 12',12]],
+  hint:'Small changes in pH are reversible. Extreme pH denatures the enzyme permanently: press Fresh enzyme to start again.',
+  legend:[['#B83A2B','COO⁻ in the active site','4px'],['#2F4FB0','NH₃⁺ in the active site','4px'],['#7B766E','Uncharged: COOH or NH₂','4px'],['#3558C0','Substrate + group','3px'],['#D2402F','Substrate − group','50%']],
+  facts:['Amino acid side chains in the active site can carry charges, such as COO⁻ and NH₃⁺. These attract oppositely charged groups on the substrate.',
+    'Low pH (high [H⁺]): COO⁻ + H⁺ → COOH. The negative charge is lost.',
+    'High pH (low [H⁺]): NH₃⁺ → NH₂ + H⁺. The positive charge is lost.',
+    'Away from the optimum, the substrate is no longer held in the active site, so the rate falls.',
+    'At extreme pH so many ionic and hydrogen bonds are disrupted that the tertiary structure changes: the enzyme is denatured.',
+    'Changing the pH can also change the charges on the substrate itself. That is left out here to keep the picture simple.'],
+  curve:p=>fA(p)*fB(p)*shape(dP(p)),norm:fA(7)*fB(7)
+};
+const TABS=[STEREO,TEMP,PH];
+const sim={subs:[],frags:[],busy:null,count:0,times:[],clock:0,Dperm:0,dShow:0,val:40,flash:0,regime:''};
+function newSub(edge){const a=Math.random()*6.283;return{x:80+Math.random()*840,y:edge?70:70+Math.random()*220,ang:edge?.4+Math.random()*2.3:a,a:edge?0:1,st:'free',tm:0};}
+function resetSim(keepVal){
+  const tb=tab();sim.subs=[];for(let i=0;i<6;i++)sim.subs.push(newSub(false));
+  sim.frags=[];sim.busy=null;sim.count=0;sim.times=[];sim.Dperm=0;sim.Tmax=0;sim.flash=0;sim.regime='';
+  if(!keepVal){sim.val=tb.start;$('rng').value=tb.start;}
+  sim.dShow=0;$('rngOut').textContent=tb.unit(sim.val);
+}
+function simState(){
+  const tb=tab(),v=sim.val;let d,p,speed,charges=null,act;
+  if(tb===TEMP){d=dT(v);sim.Dperm=Math.max(sim.Dperm,d);sim.Tmax=Math.max(sim.Tmax,v);const de=sim.Dperm;p=sig(sim.Tmax);speed=60+5*v;act=kT(v)*p;return{d:de,p,speed,charges,act,raw:d};}
+  d=dP(v);if(d>=.8)sim.Dperm=Math.max(sim.Dperm,d);const de=Math.max(d,sim.Dperm),a=fA(v),b=fB(v);
+  p=shape(de)*a*b;return{d:de,p,speed:245,charges:{a:a>.5,b:b>.5},act:p/PH.norm,raw:d,fa:a,fb:b};
+}
+function regimeText(st){
+  const tb=tab(),v=sim.val;
+  if(tb===TEMP){
+    if(st.p<.25&&v<=44)return['den2','Denatured: cooling does not help','This enzyme was denatured by heating. Cooling it down does not restore the shape of the active site, so the substrate still cannot bind. Press Fresh enzyme to start again.'];
+    if(v<25)return['low','Low temperature: slow, but not denatured','The molecules have little kinetic energy and move slowly. Substrate molecules reach the active site less often, so the rate is low. The active site still has the right shape: warm the enzyme up and it works normally.'];
+    if(v<=42)return['opt','Near the optimum temperature','The molecules move quickly, so substrate molecules collide with the active site often, and the active site still has the right shape. The rate is at its highest.'];
+    if(st.p>=.1)return['hot','Above the optimum: starting to denature','Stronger vibration is breaking the hydrogen bonds and other weak interactions that hold the tertiary structure. The active site is changing shape, so fewer substrate molecules fit.'];
+    return['den','Denatured','The active site has lost its shape, so it is no longer complementary to the substrate. Collisions are very frequent, but nothing binds and the rate falls to zero.'];
+  }
+  if(sim.Dperm>=.8&&st.raw<.8)return['den2','Denatured: the change is permanent','Extreme pH disrupted so many bonds that the protein has lost its tertiary structure. Returning to pH 7 does not bring the active site back. Press Fresh enzyme to start again.'];
+  if(st.raw>=.5)return['den','Denatured by extreme pH','So many ionic and hydrogen bonds in the protein have been disrupted that the tertiary structure has changed. The active site no longer has the right shape.'];
+  if(v<5.5)return['lowp','Low pH: COO⁻ becomes COOH','There are many H⁺ ions. The COO⁻ group in the active site accepts H⁺ and becomes COOH, so it no longer attracts the positive group on the substrate. Fewer substrate molecules are held in the active site.'+(st.raw>0?' The shape of the active site is also starting to change.':'')];
+  if(v>8.5)return['highp','High pH: NH₃⁺ becomes NH₂','There are few H⁺ ions. The NH₃⁺ group in the active site loses H⁺ and becomes NH₂, so it no longer attracts the negative group on the substrate. Fewer substrate molecules are held in the active site.'+(st.raw>0?' The shape of the active site is also starting to change.':'')];
+  return['opt','Near the optimum pH','The active site has both of its charged groups, COO⁻ and NH₃⁺. Each attracts the oppositely charged group on the substrate, holding it in exactly the right position to react.'];
+}
+function stepSim(dt,T){
+  const st=simState();sim.clock+=dt;sim.dShow+=(st.d-sim.dShow)*Math.min(1,dt*5);sim.flash=Math.max(0,sim.flash-dt);
+  const rg=regimeText(st);if(rg[0]!==sim.regime){sim.regime=rg[0];$('stepTitle').textContent=rg[1];$('stepText').textContent=rg[2];}
+  for(const s of sim.subs){
+    s.a=Math.min(1,s.a+dt*1.5);
+    if(s.st==='free'){
+      s.ang+=(Math.random()-.5)*dt*2.2;s.x+=Math.cos(s.ang)*st.speed*dt;s.y+=Math.sin(s.ang)*st.speed*dt;
+      if(s.x<70){s.x=70;s.ang=Math.PI-s.ang;}if(s.x>930){s.x=930;s.ang=Math.PI-s.ang;}
+      if(s.y<70){s.y=70;s.ang=-s.ang;}
+      if(s.y>300){s.y=300;
+        if(!sim.busy&&Math.abs(s.x-CX)<115&&s.a>=1){
+          if(Math.random()<st.p){s.st='dock';s.tm=0;s.fx=s.x;s.fy=s.y;sim.busy=s;}
+          else{s.ang=-Math.abs(s.ang%6.283);if(Math.sin(s.ang)>0)s.ang=-s.ang;sim.flash=.9;}
+        }else{s.ang=-s.ang;if(Math.sin(s.ang)>0)s.ang=-s.ang;}
+      }
+    }else if(s.st==='dock'){s.tm+=dt/.35;const e=ease(Math.min(1,s.tm));s.x=lerp(s.fx,CX,e);s.y=lerp(s.fy,DOCK,e);if(s.tm>=1){s.st='bound';s.tm=0;}}
+    else if(s.st==='bound'){s.tm+=dt/.6;if(s.tm>=1){s.st='gone';sim.busy=null;sim.count++;sim.times.push(sim.clock);
+      sim.frags.push({x:CX,y:DOCK,vx:-70-Math.random()*40,vy:-150,part:'main',life:0},{x:CX,y:DOCK,vx:80+Math.random()*40,vy:-140,part:'T',life:0});}}
+  }
+  for(let i=0;i<sim.subs.length;i++)for(let j=i+1;j<sim.subs.length;j++){const a=sim.subs[i],b=sim.subs[j];if(a.st!=='free'||b.st!=='free')continue;
+    const dx=b.x-a.x,dy=b.y-a.y,dd=Math.hypot(dx,dy)||1;if(dd<96){const k=(96-dd)/2/dd;a.x-=dx*k;a.y-=dy*k;b.x+=dx*k;b.y+=dy*k;const t=a.ang;a.ang=b.ang;b.ang=t;}}
+  sim.subs=sim.subs.filter(s=>s.st!=='gone');while(sim.subs.length<6)sim.subs.push(newSub(true));
+  for(const f of sim.frags){f.x+=f.vx*dt;f.y+=f.vy*dt;f.vy*=1-dt*.6;f.life+=dt/1.8;}
+  sim.frags=sim.frags.filter(f=>f.life<1);sim.times=sim.times.filter(t=>t>sim.clock-20);
+  // draw
+  const hot=tab()===TEMP?clamp((sim.val-25)/55,0,1):0,cold=tab()===TEMP?clamp((25-sim.val)/25,0,1):0;
+  backdrop(hot>0?'rgba(214,96,40,'+(.16*hot).toFixed(3)+')':cold>0?'rgba(70,130,210,'+(.14*cold).toFixed(3)+')':null);
+  drawEnzyme(sim.dShow,reduce?0:(tab()===TEMP?.4+sim.val/26:.8),T,st.charges);
+  for(const f of sim.frags)drawSub(f.x,f.y,{alpha:1-f.life,part:f.part});
+  for(const s of sim.subs)drawSub(s.x,s.y,{alpha:s.a,tb:s.st==='bound'?1-s.tm:1});
+  if(sim.flash>0)pill(CX,TY-150,st.d>0?'Does not fit':'Not held in the active site',Math.min(1,sim.flash*2),'bad');
+  pill(118,34,'Products formed: '+sim.count,1,'dark');pill(104,68,'Rate: '+(sim.times.length*3)+' per min',1);
+  const stat=(tab()===TEMP?st.p<.1:st.d>=.5)?['Enzyme denatured','bad']:st.d>0?['Active site changing shape','warn']:st.p<.5?['Charge lost in active site','warn']:(tab()===TEMP&&sim.val<25)?['Low kinetic energy','warn']:['Enzyme working','good'];
+  pill(W-130,34,stat[0],1,stat[1]);
+  drawGraph(st);
+}
+function drawGraph(st){
+  const tb=tab(),c=pctx,s=pf.width/340;c.setTransform(s,0,0,s,0,0);c.clearRect(0,0,340,190);
+  const x0=34,x1=326,y0=152,y1=16,X=v=>lerp(x0,x1,(v-tb.min)/(tb.max-tb.min)),Y=r=>lerp(y0,y1,clamp(r/tb.norm,0,1.02));
+  c.strokeStyle='#6C5C4C';c.lineWidth=1.5;c.beginPath();c.moveTo(x0,y1-6);c.lineTo(x0,y0);c.lineTo(x1+6,y0);c.stroke();
+  c.fillStyle='#6C5C4C';c.font='600 11px '+FONT;c.textAlign='center';c.textBaseline='alphabetic';
+  const ticks=tb===TEMP?[0,20,40,60,80]:[1,3,5,7,9,11,13];for(const t of ticks){c.fillText(t,X(t),y0+14);c.beginPath();c.moveTo(X(t),y0);c.lineTo(X(t),y0+4);c.stroke();}
+  c.fillText(tb===TEMP?'Temperature / °C':'pH',(x0+x1)/2,186);
+  c.save();c.translate(13,(y0+y1)/2);c.rotate(-Math.PI/2);c.fillText('Rate of reaction',0,0);c.restore();
+  c.beginPath();for(let i=0;i<=160;i++){const v=lerp(tb.min,tb.max,i/160);i?c.lineTo(X(v),Y(tb.curve(v))):c.moveTo(X(v),Y(tb.curve(v)));}
+  c.lineTo(x1,y0);c.lineTo(x0,y0);c.closePath();c.fillStyle='rgba(138,75,20,.12)';c.fill();
+  c.beginPath();for(let i=0;i<=160;i++){const v=lerp(tb.min,tb.max,i/160);i?c.lineTo(X(v),Y(tb.curve(v))):c.moveTo(X(v),Y(tb.curve(v)));}
+  c.strokeStyle='#8A4B14';c.lineWidth=3;c.stroke();
+  const mx=X(sim.val),my=Y(tb===TEMP?st.act:st.act*tb.norm);
+  c.setLineDash([3,4]);c.strokeStyle='#6C5C4C';c.lineWidth=1.5;c.beginPath();c.moveTo(mx,y0);c.lineTo(mx,my);c.stroke();c.setLineDash([]);
+  c.fillStyle='#fff';c.strokeStyle='#1E5670';c.lineWidth=3.5;c.beginPath();c.arc(mx,my,6.5,0,7);c.fill();c.stroke();
+}
+
+/* ---------- state machine and UI ---------- */
+const S={tab:0,stage:0,t:1,auto:false,hold:0,speed:1,T:0};
+const tab=()=>TABS[S.tab];
+function buildTabs(){TABS.forEach((tb,i)=>{const b=document.createElement('button');b.type='button';b.role='tab';b.textContent=tb.tab;b.addEventListener('click',()=>setTab(i,true));$('tabs').appendChild(b);});}
+function setTab(i,push){
+  S.tab=i;S.auto=false;const tb=tab(),isSim=tb.kind==='sim';
+  [...$('tabs').children].forEach((b,j)=>b.setAttribute('aria-selected',j===i?'true':'false'));
+  $('sceneName').textContent=tb.name;$('lead').textContent=tb.lead;$('sceneType').textContent=tb.type;
+  $('facts').innerHTML='';tb.facts.forEach(f=>{const li=document.createElement('li');li.textContent=f;$('facts').appendChild(li);});
+  $('legend').innerHTML='';tb.legend.forEach(([c,n,r])=>{const li=document.createElement('li'),d=document.createElement('i');d.style.background=c;d.style.borderRadius=r;li.appendChild(d);li.appendChild(document.createTextNode(n));$('legend').appendChild(li);});
+  $('stepUI').hidden=isSim;$('simUI').hidden=!isSim;$('graphCard').hidden=!isSim;
+  if(isSim){
+    const r=$('rng');r.min=tb.min;r.max=tb.max;r.step=tb.step;$('rngLabel').textContent=tb.label;$('graphTitle').textContent=tb.graph;$('simHint').textContent=tb.hint;
+    $('presets').innerHTML='';tb.presets.forEach(([n,v])=>{const b=document.createElement('button');b.type='button';b.textContent=n;b.addEventListener('click',()=>{sim.val=v;r.value=v;$('rngOut').textContent=tb.unit(v);});$('presets').appendChild(b);});
+    $('count').textContent='What is happening';resetSim(false);fit();
+  }else{
+    const ol=$('steps');ol.innerHTML='';
+    tb.stages.forEach((st,k)=>{const li=document.createElement('li'),b=document.createElement('button'),n=document.createElement('span');b.type='button';n.className='n';n.textContent=k+1;b.appendChild(n);b.appendChild(document.createTextNode(st.label));b.addEventListener('click',()=>{S.auto=false;go(k,true);});li.appendChild(b);ol.appendChild(li);});
+    go(0,false);
+  }
+  if(push){try{history.replaceState(null,'','#'+tb.id);}catch(e){}}
+}
+function go(k,anim){
+  const tb=STEREO;S.stage=clamp(k,0,tb.stages.length-1);S.t=(anim&&S.stage>0&&!reduce)?0:1;S.hold=0;
+  const st=tb.stages[S.stage];
+  $('count').textContent='Step '+(S.stage+1)+' of '+tb.stages.length;$('stepTitle').textContent=st.title;$('stepText').textContent=st.text;
+  [...$('steps').querySelectorAll('button')].forEach((b,j)=>{b.classList.toggle('on',j===S.stage);b.classList.toggle('done',j<S.stage);if(j===S.stage)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current');});
+  $('back').disabled=S.stage===0;
+  $('next').textContent=S.stage===tb.stages.length-1?'Start again ⟲':'Next step ▶';
+  $('auto').setAttribute('aria-pressed',S.auto?'true':'false');$('auto').textContent=S.auto?'Pause':'Play all';
+}
+function next(){go(S.stage===STEREO.stages.length-1?0:S.stage+1,true);}
+$('next').addEventListener('click',()=>{S.auto=false;next();});
+$('back').addEventListener('click',()=>{S.auto=false;go(S.stage-1,true);});
+$('replay').addEventListener('click',()=>go(S.stage,true));
+$('auto').addEventListener('click',()=>{S.auto=!S.auto;if(S.auto&&S.t>=1)next();else go(S.stage,false);});
+$('speed').addEventListener('change',e=>{S.speed=parseFloat(e.target.value)||1;});
+$('rng').addEventListener('input',e=>{sim.val=parseFloat(e.target.value);$('rngOut').textContent=tab().unit(sim.val);});
+$('fresh').addEventListener('click',()=>resetSim(true));
+window.addEventListener('keydown',e=>{
+  if(tab().kind!=='steps'||(e.target&&/^(SELECT|INPUT|TEXTAREA)$/.test(e.target.tagName)))return;
+  if(e.key==='ArrowRight'){S.auto=false;next();e.preventDefault();}
+  else if(e.key==='ArrowLeft'){S.auto=false;go(S.stage-1,true);e.preventDefault();}
+  else if(e.key==='r'||e.key==='R')go(S.stage,true);
+  else if(e.key==='p'||e.key==='P')$('auto').click();
+});
+window.addEventListener('hashchange',()=>{const i=TABS.findIndex(s=>'#'+s.id===location.hash);if(i>=0&&i!==S.tab)setTab(i,false);});
+
+let last=0;
+function frame(now){
+  const dt=Math.min(.05,(now-last)/1000||0);last=now;S.T+=dt;
+  const s=cv.width/W;ctx.setTransform(s,0,0,s,0,0);
+  if(tab().kind==='sim')stepSim(dt,S.T);
+  else{
+    const st=STEREO.stages[S.stage],n=st.keys.length;
+    if(S.t<1)S.t=Math.min(1,S.t+dt*S.speed/(1.2+1.35*n));
+    else if(S.auto){S.hold+=dt*S.speed;if(S.hold>(S.stage===STEREO.stages.length-1?2.8:1.6))next();}
+    const start=S.stage>0?STEREO.stages[S.stage-1].keys.at(-1):STEREO.initState;
+    const seq=[start,...st.keys],v=S.t*n,seg=Math.min(n-1,Math.floor(v)),u=ease(clamp(v-seg,0,1));
+    renderStereo(seq[seg],seq[seg+1],u,S.T,S.stage);
+  }
+  requestAnimationFrame(frame);
+}
+buildTabs();fit();
+setTab(Math.max(0,TABS.findIndex(s=>'#'+s.id===location.hash)),false);
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

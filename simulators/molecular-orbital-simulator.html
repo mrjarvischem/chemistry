@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Molecular Orbital Simulator</title>
+<style>
+:root{
+  /* Layout: molecule picker and step strip on top; energy diagram left, overlap view and explanation right; one column on phones. */
+  --bg:#f2f4f7; --panel:#ffffff; --stage:#fafbfc; --ink:#17212b; --muted:#566473; --line:#d3dae2;
+  --accent:#b3261e; --accent-ink:#ffffff; --pos:#e2622a; --neg:#2f6fd6;
+  --font:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#11151a; --panel:#1a2028; --stage:#141a21; --ink:#e8edf2; --muted:#9ba8b5; --line:#2e3844;
+    --accent:#ff7a6e; --accent-ink:#1a0d0b; --pos:#ff8a4c; --neg:#5b9bff; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#11151a; --panel:#1a2028; --stage:#141a21; --ink:#e8edf2; --muted:#9ba8b5; --line:#2e3844;
+  --accent:#ff7a6e; --accent-ink:#1a0d0b; --pos:#ff8a4c; --neg:#5b9bff; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.45}
+.wrap{max-width:1180px;margin:0 auto;padding:18px 16px 28px;display:flex;flex-direction:column;gap:14px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 16px}
+h1{font-size:1.45rem;margin:0;letter-spacing:-0.01em}
+header p{margin:0;color:var(--muted);font-size:.95rem}
+.row{display:flex;flex-wrap:wrap;gap:6px}
+button{font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 12px;cursor:pointer;min-height:40px}
+button:hover{border-color:var(--muted)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--neg);outline-offset:2px}
+button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+.mol button{min-width:52px;font-weight:600}
+.steps button{padding:6px 10px;min-height:36px;font-size:.95rem}
+.steps button.done{border-color:var(--muted)}
+.steps button.todo{color:var(--muted);border-style:dashed}
+.grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:14px;align-items:start}
+.col{display:flex;flex-direction:column;gap:14px;min-width:0}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+.panel h2{font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 8px;font-weight:600}
+#diagram{width:100%;height:auto;display:block}
+canvas{width:100%;height:auto;display:block;background:var(--stage);border:1px solid var(--line);border-radius:8px}
+.eq{font-size:1.2rem;font-weight:600;margin:0 0 8px;display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center}
+.dot{display:inline-block;width:.8em;height:.8em;border-radius:50%;vertical-align:-.05em}
+.dot.p{background:var(--pos)} .dot.n{background:var(--neg)}
+.controls{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;margin-top:10px}
+.controls label{display:flex;flex-direction:column;gap:2px;flex:1 1 200px;font-size:.85rem;color:var(--muted)}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+.legend{font-size:.85rem;color:var(--muted);margin:8px 0 0}
+#explain h3{margin:0 0 6px;font-size:1.1rem}
+#explain p{margin:0 0 8px;max-width:65ch}
+#explain p:last-child{margin-bottom:0}
+.note{border-left:3px solid var(--accent);padding-left:10px;color:var(--ink)}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+.stat{border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.stat b{display:block;font-size:1.25rem;font-variant-numeric:tabular-nums}
+.stat span{font-size:.78rem;color:var(--muted)}
+.nav{display:flex;gap:8px;justify-content:space-between}
+.nav button{flex:1}
+.config{font-size:1.1rem;font-weight:600;word-spacing:.15em}
+/* diagram */
+.lv{stroke:var(--ink);stroke-width:2.5;stroke-linecap:round}
+.lv.cur{stroke:var(--accent);stroke-width:4}
+.lv.ao{stroke:var(--muted)}
+.co{stroke:var(--muted);stroke-width:1;stroke-dasharray:4 4;fill:none}
+.el{stroke:var(--ink);stroke-width:1.6;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.el.ao{stroke:var(--muted)}
+.t{fill:var(--ink);font-family:var(--font);font-size:15px}
+.t.m{fill:var(--muted);font-size:13px}
+.t.h{font-weight:600;font-size:15px}
+.t.cur{fill:var(--accent);font-weight:700}
+.halo{paint-order:stroke;stroke:var(--panel);stroke-width:5;stroke-linejoin:round}
+.ax{stroke:var(--muted);stroke-width:1.2;fill:none}
+@media (max-width:820px){
+  .grid{grid-template-columns:minmax(0,1fr)}
+  .col.right{order:-1}
+  h1{font-size:1.25rem}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Molecular Orbital Simulator</h1>
+    <p>Homonuclear diatomics, H<sub>2</sub> to Ne<sub>2</sub>. Build each orbital one step at a time.</p>
+  </header>
+
+  <div class="row mol" id="mol" role="group" aria-label="Choose a molecule"></div>
+  <div class="row steps" id="steps" role="group" aria-label="Steps"></div>
+
+  <div class="grid">
+    <div class="col left">
+      <section class="panel">
+        <h2>Energy level diagram</h2>
+        <svg id="diagram" viewBox="0 0 460 570" role="img" aria-label="Molecular orbital energy level diagram"></svg>
+        <div class="stats">
+          <div class="stat"><b id="sB">0</b><span>bonding electrons</span></div>
+          <div class="stat"><b id="sA">0</b><span>antibonding electrons</span></div>
+          <div class="stat"><b id="sO">0</b><span>bond order so far</span></div>
+        </div>
+        <p class="legend">Energies are schematic and not to scale. The 1s levels really lie far below the 2s and 2p levels.</p>
+      </section>
+    </div>
+
+    <div class="col right">
+      <section class="panel">
+        <h2>Orbital overlap</h2>
+        <p class="eq" id="eq"></p>
+        <canvas id="cv" width="840" height="420" role="img" aria-label="Animated orbital overlap"></canvas>
+        <div class="controls">
+          <button class="primary" id="play" type="button">Bring the atoms together</button>
+          <label for="sep">Distance between nuclei: far apart to bond length
+            <input type="range" id="sep" min="0" max="1000" value="0">
+          </label>
+        </div>
+        <p class="legend"><span class="dot p"></span> and <span class="dot n"></span> show the two phases of the wave function. Same colours add where they overlap. Opposite colours cancel. Cross-section through both nuclei.</p>
+      </section>
+
+      <section class="panel" id="explain" aria-live="polite"></section>
+
+      <div class="nav">
+        <button id="prev" type="button">Previous step</button>
+        <button id="next" type="button" class="primary">Next step</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------- chemistry logic (no DOM) ---------- */
+const ELS=[['H',1],['He',2],['Li',3],['Be',4],['B',5],['C',6],['N',7],['O',8],['F',9],['Ne',10]];
+function moList(Z){
+  const m=(sym,sub,kind,anti,cap)=>({sym,sub,ao:sub,kind,anti,cap,id:sym+(anti?'*':'')+sub});
+  const L=[m('σ','1s','1s',false,2),m('σ','1s','1s',true,2)];
+  if(Z>=3) L.push(m('σ','2s','2s',false,2),m('σ','2s','2s',true,2));
+  if(Z>=5){
+    const s=m('σ','2p','pz',false,2),p=m('π','2p','px',false,4),ps=m('π','2p','px',true,4),ss=m('σ','2p','pz',true,2);
+    if(Z<=7) L.push(p,s,ps,ss); else L.push(s,p,ps,ss);
+  }
+  return L;
+}
+function fill(Z){let n=2*Z;return moList(Z).map(o=>{const e=Math.min(n,o.cap);n-=e;return e;});}
+function tally(Z,upto){ // upto = number of orbitals counted
+  const L=moList(Z),occ=fill(Z);let nb=0,na=0,un=0;
+  for(let i=0;i<Math.min(upto,L.length);i++){
+    if(L[i].anti) na+=occ[i]; else nb+=occ[i];
+    if(L[i].cap===4){ if(occ[i]===2) un+=2; else if(occ[i]%2) un+=1; } else if(occ[i]===1) un+=1;
+  }
+  return {nb,na,un,order:(nb-na)/2};
+}
+function psi(kind,anti,R,x,y){
+  const xa=-R/2,xb=R/2,ra=Math.hypot(x-xa,y),rb=Math.hypot(x-xb,y);let a,b;
+  if(kind==='1s'){a=Math.exp(-1.3*ra);b=Math.exp(-1.3*rb);}
+  else if(kind==='2s'){a=Math.exp(-0.85*ra);b=Math.exp(-0.85*rb);}
+  else if(kind==='pz'){a=2.2*(x-xa)*Math.exp(-1.3*ra);b=-2.2*(x-xb)*Math.exp(-1.3*rb);}
+  else {a=2.2*y*Math.exp(-1.3*ra);b=2.2*y*Math.exp(-1.3*rb);}
+  return anti?a-b:a+b;
+}
+const RBOND={'1s':1.5,'2s':2.4,'pz':2.8,'px':2.4},RFAR=8;
+if(typeof module!=='undefined') module.exports={ELS,moList,fill,tally,psi};
+</script>
+
+<script>
+/* ---------- interface ---------- */
+const $=id=>document.getElementById(id);
+let Z=1,el='H',mos=moList(1),occ=fill(1),cur=0,prog=0,raf=0;
+
+const labH=o=>`${o.sym}${o.anti?'*':''}<sub>${o.sub}</sub>`;
+const labS=o=>`${o.sym}${o.anti?'*':''}<tspan dy="4" font-size="11">${o.sub}</tspan>`;
+const aoH=o=>o.kind==='pz'?'2p<sub>z</sub>':o.kind==='px'?'2p<sub>x</sub>':o.ao;
+const X2=()=>`${el}<sub>2</sub>`;
+
+function yMap(){
+  if(Z<=2) return {ao:{'1s':300},mo:{'σ1s':405,'σ*1s':195}};
+  if(Z<=4) return {ao:{'1s':500,'2s':250},mo:{'σ1s':522,'σ*1s':478,'σ2s':335,'σ*2s':165}};
+  const mo={'σ1s':537,'σ*1s':505,'σ2s':442,'σ*2s':378,'π*2p':150,'σ*2p':82};
+  if(Z<=7){mo['π2p']=290;mo['σ2p']=252;}else{mo['σ2p']=292;mo['π2p']=256;}
+  return {ao:{'1s':521,'2s':410,'2p':212},mo};
+}
+function arrows(cx,y,n,cls){
+  const up=x=>`M${x},${y+9}V${y-9}M${x-3},${y-5}L${x},${y-9}L${x+3},${y-5}`;
+  const dn=x=>`M${x},${y-9}V${y+9}M${x-3},${y+5}L${x},${y+9}L${x+3},${y+5}`;
+  if(n<=0) return '';
+  return `<path class="el ${cls||''}" d="${n===1?up(cx):up(cx-5)+dn(cx+5)}"/>`;
+}
+function drawDiagram(){
+  const ym=yMap(),cxL=82,cxR=378,cxM=230,summary=cur>=mos.length;let s='';
+  s+=`<path class="ax" d="M16,548V44M11,52L16,44L21,52"/><text class="t m" transform="translate(11,300) rotate(-90)" text-anchor="middle">Energy</text>`;
+  s+=`<text class="t h" x="${cxL}" y="22" text-anchor="middle">${el} atom</text><text class="t h" x="${cxR}" y="22" text-anchor="middle">${el} atom</text>`;
+  s+=`<text class="t h" x="${cxM}" y="22" text-anchor="middle">${el}<tspan dy="4" font-size="11">2</tspan><tspan dy="-4"> molecule</tspan></text>`;
+  // atomic orbitals on both sides
+  const aoE={'1s':Math.min(Z,2),'2s':Math.max(0,Math.min(Z-2,2)),'2p':Math.max(0,Z-4)};
+  for(const k in ym.ao){const y=ym.ao[k];
+    for(const cx of [cxL,cxR]){
+      if(k==='2p'){for(let i=0;i<3;i++){const x=cx-42+i*30;
+        s+=`<line class="lv ao" x1="${x}" x2="${x+24}" y1="${y}" y2="${y}"/>`+arrows(x+12,y,(aoE[k]>i?1:0)+(aoE[k]>i+3?1:0),'ao');}}
+      else s+=`<line class="lv ao" x1="${cx-22}" x2="${cx+22}" y1="${y}" y2="${y}"/>`+arrows(cx,y,aoE[k],'ao');
+      s+=`<text class="t m" x="${cx}" y="${y+25}" text-anchor="middle">${k}</text>`;
+    }
+  }
+  // molecular orbitals formed so far
+  mos.forEach((o,i)=>{
+    if(i>cur&&!summary) return;
+    const isCur=i===cur&&!summary,p=isCur?prog:1,y0=ym.ao[o.ao],y=y0+(ym.mo[o.id]-y0)*p*p;
+    const half=o.ao==='2p'?42:22,x1=o.cap===4?cxM-42:cxM-22,x2=o.cap===4?cxM+42:cxM+22;
+    s+=`<path class="co" d="M${cxL+half},${y0}L${x1-4},${y}M${cxR-half},${y0}L${x2+4},${y}"/>`;
+    const e=(isCur&&prog<1)?0:occ[i],c=isCur?' cur':'';
+    if(o.cap===4){
+      s+=`<line class="lv${c}" x1="${cxM-42}" x2="${cxM-4}" y1="${y}" y2="${y}"/><line class="lv${c}" x1="${cxM+4}" x2="${cxM+42}" y1="${y}" y2="${y}"/>`;
+      s+=arrows(cxM-23,y,(e>=1?1:0)+(e>=3?1:0))+arrows(cxM+23,y,(e>=2?1:0)+(e>=4?1:0));
+    }else s+=`<line class="lv${c}" x1="${x1}" x2="${x2}" y1="${y}" y2="${y}"/>`+arrows(cxM,y,e);
+    s+=`<text class="t halo${c}" x="${x2+9}" y="${y+5}">${labS(o)}</text>`;
+  });
+  $('diagram').innerHTML=s;
+  const done=summary?mos.length:cur+(prog>=1?1:0),t=tally(Z,done);
+  $('sB').textContent=t.nb;$('sA').textContent=t.na;$('sO').textContent=t.order;
+}
+
+/* overlap canvas */
+const cv=$('cv'),ctx=cv.getContext('2d'),GW=280,GH=140,off=document.createElement('canvas');
+off.width=GW;off.height=GH;const octx=off.getContext('2d'),img=octx.createImageData(GW,GH);
+function tok(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim();}
+function rgb(h){h=h.replace('#','');return [0,2,4].map(i=>parseInt(h.substr(i,2),16));}
+function viewOrbital(){ // which orbital the canvas shows, and how far along
+  if(cur<mos.length) return {o:mos[cur],p:prog};
+  let h=0;occ.forEach((e,i)=>{if(e>0)h=i;});return {o:mos[h],p:1};
+}
+function drawCanvas(){
+  const {o,p}=viewOrbital(),R=RFAR+(RBOND[o.kind]-RFAR)*p,s=14/GW,ISO=0.2;
+  const P=rgb(tok('--pos')),N=rgb(tok('--neg')),d=img.data;let k=0;
+  for(let j=0;j<GH;j++){const y=(GH/2-j-0.5)*s;
+    for(let i=0;i<GW;i++){const x=(i+0.5-GW/2)*s,v=psi(o.kind,o.anti,R,x,y),a=Math.abs(v)/ISO,c=v>0?P:N;
+      let al=a>=1?235:(a<0.05?0:235*Math.pow(a,1.7)),f=1;
+      if(a>0.9&&a<1.12) f=0.72; else if(a>=1.12) f=1+Math.min(0.22,(a-1.12)*0.05);
+      d[k++]=Math.min(255,c[0]*f);d[k++]=Math.min(255,c[1]*f);d[k++]=Math.min(255,c[2]*f);d[k++]=al;
+    }}
+  octx.putImageData(img,0,0);
+  ctx.clearRect(0,0,840,420);ctx.imageSmoothingEnabled=true;ctx.drawImage(off,0,0,840,420);
+  const ink=tok('--ink'),mut=tok('--muted'),xa=420-R/2*60,xb=420+R/2*60;
+  ctx.strokeStyle=mut;ctx.lineWidth=1.5;ctx.setLineDash([3,7]);ctx.beginPath();ctx.moveTo(20,210);ctx.lineTo(820,210);ctx.stroke();
+  if(o.anti&&p>0.35){ctx.globalAlpha=Math.min(1,(p-0.35)/0.4);ctx.strokeStyle=ink;ctx.lineWidth=2.5;ctx.setLineDash([10,8]);
+    ctx.beginPath();ctx.moveTo(420,34);ctx.lineTo(420,372);ctx.stroke();
+    ctx.setLineDash([]);ctx.fillStyle=ink;ctx.font='600 24px '+tok('--font');ctx.textAlign='center';ctx.fillText('nodal plane',420,26);ctx.globalAlpha=1;}
+  ctx.setLineDash([]);ctx.fillStyle=ink;
+  for(const x of [xa,xb]){ctx.beginPath();ctx.arc(x,210,6,0,7);ctx.fill();}
+  ctx.font='600 26px '+tok('--font');ctx.textAlign='center';
+  if(xb-xa<70){ctx.fillText(el,xa-14,408);ctx.fillText(el,xb+14,408);}else{ctx.fillText(el,xa,408);ctx.fillText(el,xb,408);}
+  cv.setAttribute('aria-label',`Two ${o.kind==='pz'?'2pz':o.kind==='px'?'2px':o.ao} orbitals ${o.anti?'out of phase':'in phase'}, ${p>=1?'overlapped at bond length':'approaching'}`);
+}
+
+/* text */
+function explainHTML(){
+  const n=mos.length;
+  if(cur>=n){
+    const t=tally(Z,n),cfg=mos.map((o,i)=>occ[i]?`(${labH(o)})<sup>${occ[i]}</sup>`:'').join(' ');
+    const notes={H:'A single bond. Both electrons sit in the bonding σ<sub>1s</sub> orbital.',
+      He:'Bonding and antibonding effects cancel, so He<sub>2</sub> does not form a stable molecule.',
+      Li:'A single bond from the 2s electrons. Li<sub>2</sub> exists in lithium vapour.',
+      Be:'Bond order 0 in this simple model. Real Be<sub>2</sub> is only very weakly bound.',
+      B:'A single bond with two unpaired electrons, so B<sub>2</sub> is paramagnetic. This is evidence that π<sub>2p</sub> lies below σ<sub>2p</sub>.',
+      C:'Bond order 2. In this model both bonds are π bonds. C<sub>2</sub> is found in flames and carbon vapour.',
+      N:'A triple bond: one σ and two π. Every bonding 2p orbital is full and every antibonding one is empty, which is why the N≡N bond is so strong.',
+      O:'A double bond with two unpaired electrons in π*<sub>2p</sub>. MO theory correctly predicts that O<sub>2</sub> is paramagnetic, which a dot and cross diagram cannot explain.',
+      F:'A single bond. The filled π* orbitals cancel both π bonds, leaving one σ bond.',
+      Ne:'Every bonding orbital is cancelled by a full antibonding orbital, so Ne<sub>2</sub> does not form.'};
+    return `<h3>Summary for ${X2()}</h3><p class="config">${cfg}</p>
+      <p>Bond order = (bonding − antibonding) ÷ 2 = (${t.nb} − ${t.na}) ÷ 2 = <b>${t.order}</b></p>
+      <p>${t.un?`<b>Paramagnetic</b>: ${t.un} unpaired electrons.`:'<b>Diamagnetic</b>: all electrons are paired.'}</p>
+      <p class="note">${notes[el]}</p>`;
+  }
+  const o=mos[cur],ao=aoH(o);let t;
+  if(o.kind==='1s'||o.kind==='2s'){
+    t=!o.anti?`Each atom brings one ${ao} orbital. Here they overlap <b>in phase</b> (same colour), so the two waves add together between the nuclei. Electron density builds up there and attracts both nuclei, so the energy falls below the ${ao} level. This is a <b>bonding</b> σ orbital.`
+      :`Two atomic orbitals always make two molecular orbitals. The same ${ao} orbitals can also combine <b>out of phase</b> (opposite colours). The waves cancel halfway between the nuclei, leaving a <b>nodal plane</b> with zero electron density. The nuclei are less shielded from each other, so the energy rises above the ${ao} level. This is an <b>antibonding</b> σ* orbital.`;
+  }else if(o.kind==='pz'){
+    t=!o.anti?`The 2p orbital that points along the bond (${ao}) overlaps <b>head-on</b> with its partner. The facing lobes have the same phase, so they add and build up electron density on the axis between the nuclei. This is a <b>bonding</b> σ orbital.`
+      :`Head-on overlap again, but the facing lobes have <b>opposite phases</b>. They cancel between the nuclei, giving a nodal plane and pushing electron density to the outside. This is the <b>antibonding</b> σ* orbital, the highest in energy.`;
+  }else{
+    t=!o.anti?`The ${ao} orbitals stand at right angles to the bond and overlap <b>sideways</b>. Electron density builds up above and below the axis, with none on the axis itself. The 2p<sub>y</sub> pair does exactly the same in front of and behind the screen, so <b>two π orbitals of equal energy</b> form.`
+      :`Sideways overlap <b>out of phase</b>. The lobes cancel between the nuclei, leaving four separate lobes and a nodal plane between the atoms. The 2p<sub>y</sub> pair gives a matching orbital, so there are two π* orbitals of equal energy.`;
+  }
+  const e=occ[cur];
+  let fillT=e===0?`This orbital is empty in ${X2()}.`:`${X2()} puts <b>${e} electron${e>1?'s':''}</b> here`+
+    (o.cap===4&&e===2?', one in each orbital with parallel spins (Hund\'s rule).':o.cap===4&&e===4?', two in each orbital.':'.');
+  let order='';
+  if(cur===4) order=Z<=7?`<p class="note">In B<sub>2</sub>, C<sub>2</sub> and N<sub>2</sub> the π<sub>2p</sub> orbitals come below σ<sub>2p</sub>. The 2s and 2p levels are close in energy, so σ<sub>2s</sub> and σ<sub>2p</sub> mix (s–p mixing). This pushes σ<sub>2p</sub> up.</p>`
+    :`<p class="note">In O<sub>2</sub>, F<sub>2</sub> and Ne<sub>2</sub> the 2s and 2p levels are far apart, so there is little s–p mixing and σ<sub>2p</sub> comes below π<sub>2p</sub>.</p>`;
+  return `<h3>Step ${cur+1} of ${n}: ${labH(o)} (${o.anti?'antibonding':'bonding'})</h3><p>${t}</p><p>${fillT}</p>${order}`;
+}
+function eqHTML(){
+  const {o}=viewOrbital(),ao=aoH(o),pre=cur>=mos.length?'Highest occupied orbital: ':'';
+  return `${pre}<span><span class="dot p"></span> ${ao}</span><span>${o.anti?'−':'+'}</span><span><span class="dot ${o.anti?'n':'p'}"></span> ${ao}</span><span>→</span><span>${labH(o)}</span>`;
+}
+
+function renderFrame(){drawDiagram();drawCanvas();$('sep').value=Math.round(prog*1000);
+  $('play').textContent=prog>=1?'Replay':'Bring the atoms together';}
+function renderAll(){
+  $('mol').innerHTML=ELS.map(([s,z])=>`<button type="button" data-z="${z}" aria-pressed="${z===Z}">${s}<sub>2</sub></button>`).join('');
+  $('steps').innerHTML=mos.map((o,i)=>`<button type="button" data-i="${i}" class="${i<cur?'done':i>cur?'todo':''}" aria-pressed="${i===cur}">${labH(o)}</button>`).join('')+
+    `<button type="button" data-i="${mos.length}" class="${cur<mos.length?'todo':''}" aria-pressed="${cur===mos.length}">Summary</button>`;
+  $('explain').innerHTML=explainHTML();$('eq').innerHTML=eqHTML();
+  const sum=cur>=mos.length;$('play').disabled=sum;$('sep').disabled=sum;
+  $('prev').disabled=cur===0;$('next').disabled=sum;
+  $('next').textContent=cur===mos.length-1?'Show summary':'Next step';
+  renderFrame();
+}
+function stop(){cancelAnimationFrame(raf);raf=0;}
+function goStep(i){stop();cur=Math.max(0,Math.min(mos.length,i));prog=0;renderAll();}
+function setMol(z){stop();Z=z;el=ELS[z-1][0];mos=moList(z);occ=fill(z);cur=0;prog=0;renderAll();}
+function play(){
+  stop();const t0=performance.now(),dur=4500;prog=0;
+  const tick=t=>{const u=Math.min(1,(t-t0)/dur);prog=u<.5?2*u*u:1-Math.pow(-2*u+2,2)/2;if(u>=1)prog=1;renderFrame();if(u<1)raf=requestAnimationFrame(tick);else raf=0;};
+  raf=requestAnimationFrame(tick);
+}
+$('mol').addEventListener('click',e=>{const b=e.target.closest('button');if(b)setMol(+b.dataset.z);});
+$('steps').addEventListener('click',e=>{const b=e.target.closest('button');if(b)goStep(+b.dataset.i);});
+$('prev').addEventListener('click',()=>goStep(cur-1));
+$('next').addEventListener('click',()=>goStep(cur+1));
+$('play').addEventListener('click',play);
+$('sep').addEventListener('input',e=>{stop();prog=e.target.value/1000;renderFrame();});
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.target.tagName==='BUTTON') return;
+  if(e.key==='ArrowRight') goStep(cur+1); else if(e.key==='ArrowLeft') goStep(cur-1);
+  else if(e.key===' '&&cur<mos.length){e.preventDefault();play();}
+});
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',renderFrame);
+new MutationObserver(renderFrame).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+renderAll();
+</script>
+</body>
+</html>

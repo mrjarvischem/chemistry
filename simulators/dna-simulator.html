@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DNA Simulator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Instrument-bench layout shared with the other chemistry simulators: parts across the top,
+     wide stage on the left, read-and-check rail on the right. */
+  --bg:#EDF0F5; --surface:#FFFFFF; --soft:#E6EAF2; --ink:#0D1424; --muted:#566076; --line:#D7DDE8;
+  --accent:#2348F5; --accent-ink:#FFFFFF;
+  --stage:#FAFBFE; --stage2:#E3E8F2; --stage-line:#93A0B8;
+  --hot:#D9481C; --cold:#1F74D6; --energy:#E08A00; --good:#15803D;
+  --cN:#1D55D0; --cO:#D2321A; --cP:#B86A00; --cCl:#15803D; --cPt:#6D3FD1;
+  --font-display:"Bricolage Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;
+  --font-body:"Instrument Sans","Segoe UI",system-ui,-apple-system,sans-serif;
+  --r:14px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#080C15; --surface:#111828; --soft:#1A2337; --ink:#EDF1FA; --muted:#98A3BA; --line:#242E46;
+    --accent:#8198FF; --accent-ink:#0A0F1C;
+    --stage:#0E1527; --stage2:#05080F; --stage-line:#5A6884;
+    --hot:#FF7A4D; --cold:#5FA8FF; --energy:#FFC233; --good:#4ADE80;
+    --cN:#7FA8FF; --cO:#FF7A66; --cP:#FFB84D; --cCl:#5FD98A; --cPt:#B79CFF;
+    color-scheme:dark;
+  }
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.45;
+  display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+button:disabled{cursor:default;opacity:.4}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3,p,ul{margin:0}
+[hidden]{display:none!important}
+
+.top{display:flex;align-items:center;gap:12px;padding:12px 18px 8px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto}
+.brand svg{width:30px;height:30px;flex:none}
+.brand h1{font-family:var(--font-display);font-weight:700;font-size:24px;letter-spacing:-.02em;line-height:1}
+.spec{font-size:12.5px;font-weight:600;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:4px 12px}
+.seg{display:inline-flex;background:var(--soft);border-radius:999px;padding:3px;gap:2px}
+.seg button{border:0;background:transparent;padding:6px 14px;border-radius:999px;font-weight:600;font-size:13.5px;color:var(--muted);white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(10,20,40,.18)}
+
+.timeline{display:flex;gap:6px;padding:4px 18px 12px;overflow-x:auto;scrollbar-width:none}
+.timeline::-webkit-scrollbar{display:none}
+.timeline button{flex:1 0 auto;min-width:150px;text-align:left;border:1px solid var(--line);background:var(--surface);
+  border-radius:12px;padding:8px 12px 9px;display:flex;flex-direction:column;gap:1px}
+.timeline .yr{font-size:11.5px;font-weight:600;color:var(--muted);letter-spacing:.04em}
+.timeline .nm{font-family:var(--font-display);font-weight:700;font-size:15.5px;letter-spacing:-.01em;line-height:1.15}
+.timeline button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.timeline button[aria-pressed="true"] .yr{color:inherit;opacity:.7}
+
+.bench{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:14px;padding:0 18px 16px}
+.stagewrap{position:relative;display:flex;flex-direction:column;min-height:0;border-radius:var(--r);overflow:hidden;border:1px solid var(--line);background:var(--surface)}
+.stagebox{position:relative;flex:1;min-height:360px;
+  background:radial-gradient(circle at 1px 1px,color-mix(in srgb,var(--stage-line) 22%,transparent) 1px,transparent 1.5px) 0 0/22px 22px,
+             radial-gradient(ellipse at 50% 45%,var(--stage),var(--stage2))}
+#stage{position:absolute;inset:0;width:100%;height:100%;display:block;user-select:none;-webkit-user-select:none}
+#stage.touch{touch-action:none}
+.ov{position:absolute;display:flex;gap:8px;align-items:center;flex-wrap:wrap;pointer-events:none}
+.ov>*{pointer-events:auto}
+.ov.tl{top:12px;left:12px;right:12px}.ov.bl{bottom:12px;left:12px;right:12px}
+.ov .seg{background:color-mix(in srgb,var(--surface) 82%,transparent);backdrop-filter:blur(8px);border:1px solid var(--line)}
+.ov .seg button{padding:5px 12px;font-size:13px}
+.ov .seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg);box-shadow:none}
+.pill{border:1px solid var(--line);background:color-mix(in srgb,var(--surface) 82%,transparent);backdrop-filter:blur(8px);
+  border-radius:999px;padding:5px 12px;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+button.pill[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.pill.big{padding:8px 14px;font-size:14px}
+.pill.formula{font-family:var(--font-display);font-size:15px;font-weight:700}
+.sp{flex:1}
+.caption{padding:10px 14px 12px;font-size:15.5px;display:flex;gap:14px;align-items:center;border-top:1px solid var(--line)}
+.caption #caption{flex:1;min-height:68px}
+.caption b{font-weight:700}
+.caption .warn{color:var(--hot);font-weight:600}
+.caption .ok{color:var(--good);font-weight:700}
+.nav{display:flex;gap:6px;flex:none;flex-wrap:wrap;justify-content:flex-end}
+.nav button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 16px;font-weight:600;font-size:14px;white-space:nowrap}
+.nav button.go{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+
+.rail{display:flex;flex-direction:column;gap:12px;overflow-y:auto;min-height:0;padding-right:2px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.card h2{font-size:11.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.note{font-size:14px;color:var(--muted)}
+.note b{color:var(--ink);font-weight:600}
+.note+.note{margin-top:8px}
+.check{list-style:none;padding:0;display:grid;gap:7px}
+.check li{display:flex;gap:9px;align-items:flex-start;font-size:14.5px;font-weight:500;line-height:1.3}
+.check li::before{content:"";flex:none;width:18px;height:18px;border-radius:50%;border:2px solid var(--line);margin-top:1px}
+.check li.on{font-weight:600}
+.check li.on::before{border-color:var(--good);background:var(--good) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 18'%3E%3Cpath d='M4 9.5l3 3 6-7' fill='none' stroke='white' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/14px no-repeat}
+.count{font-family:var(--font-display);font-weight:700;font-size:40px;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.count small{font-size:15px;font-family:var(--font-body);font-weight:600;color:var(--muted);letter-spacing:0;margin-left:6px}
+.facts{list-style:none;padding:0;display:grid;gap:6px;font-size:14.5px}
+.facts li{display:grid;grid-template-columns:118px 1fr;gap:8px}
+.facts span{color:var(--muted);font-weight:600;font-size:13px;padding-top:1px}
+.model{font-size:14.5px;border-left:3px solid var(--accent);padding:2px 0 2px 11px}
+.model+.model{margin-top:9px}
+.mini{display:grid;grid-template-columns:1fr 1fr;gap:8px;text-align:center;font-size:13px;font-weight:600;color:var(--muted)}
+.mini svg{width:100%;height:auto;display:block}
+
+/* molecule drawing */
+#stage text{font-family:var(--font-body)}
+.bd{stroke:var(--ink);stroke-width:2.3;stroke-linecap:round;fill:none}
+.bd.thin{stroke:var(--muted);stroke-width:1.4}
+.bd.new{stroke:var(--accent);stroke-width:3}
+.at{font-weight:700;font-size:17px;text-anchor:middle;dominant-baseline:central;fill:var(--ink);
+  paint-order:stroke;stroke:var(--stage);stroke-width:4px;stroke-linejoin:round}
+.aN{fill:var(--cN)} .aO{fill:var(--cO)} .aP{fill:var(--cP)} .aCl{fill:var(--cCl)} .aPt{fill:var(--cPt);font-size:19px}
+.aH{fill:var(--muted);font-size:15px}
+.at.sm{font-size:12px;font-weight:600}
+.at.leave{fill:var(--hot)}
+.lp{fill:var(--ink)}
+.lbl{font-size:13px;font-weight:600;fill:var(--muted);text-anchor:middle;dominant-baseline:central;
+  paint-order:stroke;stroke:var(--stage);stroke-width:4px;stroke-linejoin:round}
+.lbl.strong{fill:var(--ink);font-size:14.5px;font-weight:700}
+.lbl.acc{fill:var(--accent)} .lbl.hot{fill:var(--hot)} .lbl.good{fill:var(--good)}
+.num{font-size:11px;font-weight:700;fill:var(--accent);text-anchor:middle;dominant-baseline:central}
+.water{font-family:var(--font-display);font-size:19px;font-weight:700;fill:var(--cold);text-anchor:middle;dominant-baseline:central;
+  paint-order:stroke;stroke:var(--stage);stroke-width:5px}
+.tgt{fill:color-mix(in srgb,var(--accent) 12%,transparent);stroke:var(--accent);stroke-width:2.5;stroke-dasharray:6 5;cursor:pointer;
+  animation:pulse 1.4s ease-in-out infinite}
+.tgt:hover{fill:color-mix(in srgb,var(--accent) 26%,transparent)}
+.tgt.bad{stroke:var(--hot);fill:color-mix(in srgb,var(--hot) 22%,transparent);animation:none}
+@keyframes pulse{50%{stroke-opacity:.35}}
+.hb{stroke:var(--energy);stroke-width:3.2;stroke-dasharray:3 6;stroke-linecap:round}
+.hb.other{stroke:var(--muted)}
+.dl{font-size:13px;font-weight:700;fill:var(--energy);text-anchor:middle;dominant-baseline:central;
+  paint-order:stroke;stroke:var(--stage);stroke-width:4px}
+.halo{fill:color-mix(in srgb,var(--accent) 5%,transparent);stroke:var(--accent);stroke-width:1.5;stroke-dasharray:3 6;cursor:grab}
+.halo.off{fill:transparent;stroke:transparent}
+.handle{fill:var(--accent);stroke:var(--stage);stroke-width:3;cursor:grab}
+.stub{fill:var(--soft);stroke:var(--stage-line);stroke-width:1.2}
+.stubt{font-size:11.5px;font-weight:700;fill:var(--muted);text-anchor:middle;dominant-baseline:central}
+.bb{stroke:var(--stage-line);stroke-width:7;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.sug{fill:var(--soft);stroke:var(--stage-line);stroke-width:2}
+.pho{fill:color-mix(in srgb,var(--cP) 22%,var(--surface));stroke:var(--cP);stroke-width:2}
+.strandA{stroke:var(--cold);stroke-width:5;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.strandB{stroke:var(--stage-line);stroke-width:5;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.rung{stroke:var(--stage-line);stroke-width:2.2;opacity:.8}
+.rung.g{stroke:var(--cPt);stroke-width:4;opacity:1}
+.ptdot{fill:var(--cPt)}
+.cell{fill:color-mix(in srgb,var(--surface) 70%,transparent);stroke:var(--stage-line);stroke-width:2.5}
+.nuc{fill:var(--soft);stroke:var(--stage-line);stroke-width:2}
+
+@media (max-width:980px){
+  html,body{height:auto}
+  body{display:block}
+  .bench{display:block;padding:0 12px 16px}
+  .top{padding:12px 12px 8px}.timeline{padding:4px 12px 12px}
+  .stagebox{height:78vw;min-height:360px;flex:none}
+  .rail{overflow:visible;margin-top:12px}
+  .caption{flex-direction:column;align-items:stretch}
+  .caption #caption{min-height:0}
+  .stagebox{display:flex;flex-direction:column;height:auto;min-height:0}
+  #stage{position:relative;inset:auto;height:80vw;min-height:300px;order:1}
+  .ov{position:static;padding:10px}.ov.tl{order:0}.ov.bl{order:2}
+  .ov .seg{flex-wrap:wrap;border-radius:16px}
+  .sp{display:none}
+}
+@media (prefers-reduced-motion:reduce){.tgt{animation:none}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--ink)"/><path d="M10 5c0 8 12 8 12 14s-12 4-12 9M22 5c0 8-12 8-12 14s12 4 12 9" fill="none" stroke="var(--energy)" stroke-width="2.4" stroke-linecap="round"/></svg>
+    <h1>DNA Simulator</h1>
+  </div>
+  <span class="spec">AQA A-level Chemistry · 3.3.13</span>
+</header>
+
+<nav class="timeline" id="modes" aria-label="Parts">
+  <button data-m="build" aria-pressed="true"><span class="yr">PART 1</span><span class="nm">Build a nucleotide</span></button>
+  <button data-m="pair" aria-pressed="false"><span class="yr">PART 2</span><span class="nm">Base pairing</span></button>
+  <button data-m="cis" aria-pressed="false"><span class="yr">PART 3</span><span class="nm">How cisplatin works</span></button>
+</nav>
+
+<main class="bench">
+  <section class="stagewrap">
+    <div class="stagebox">
+      <svg id="stage" role="img" aria-label="Simulation stage" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="ov tl" id="ovTop"></div>
+      <div class="ov bl" id="ovBot"></div>
+    </div>
+    <div class="caption"><div id="caption" aria-live="polite"></div><div class="nav" id="nav"></div></div>
+  </section>
+  <aside class="rail" id="rail"></aside>
+</main>
+
+<script>
+(function(){
+"use strict";
+const NS='http://www.w3.org/2000/svg', S=34;
+const $=s=>document.querySelector(s);
+const svg=$('#stage'), ovTop=$('#ovTop'), ovBot=$('#ovBot'), cap=$('#caption'), nav=$('#nav'), rail=$('#rail');
+const rad=d=>d*Math.PI/180, deg=r=>r*180/Math.PI;
+const cos=d=>Math.cos(rad(d)), sin=d=>Math.sin(rad(d));
+const pol=(r,d)=>[r*cos(d),r*sin(d)];
+const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+const lerp=(a,b,t)=>a+(b-a)*t;
+const dist=(p,q)=>Math.hypot(p[0]-q[0],p[1]-q[1]);
+const X=x=>+(x*S).toFixed(2), Y=y=>+(-y*S).toFixed(2);
+const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+function E(tag,at,par){const e=document.createElementNS(NS,tag);for(const k in at)e.setAttribute(k,at[k]);(par||svg).appendChild(e);return e;}
+function T(par,cls,p,str,at){const t=E('text',Object.assign({class:cls,x:X(p[0]),y:Y(p[1])},at||{}),par);t.textContent=str;return t;}
+function L(par,cls,p,q,at){return E('line',Object.assign({class:cls,x1:X(p[0]),y1:Y(p[1]),x2:X(q[0]),y2:Y(q[1])},at||{}),par);}
+function setVB(x0,y0,x1,y1){svg.setAttribute('viewBox',`${X(x0)} ${Y(y1)} ${X(x1-x0)} ${X(y1-y0)}`);}
+let raf=0;
+function tween(dur,fn,done){cancelAnimationFrame(raf);if(reduce)dur=1;const t0=performance.now();
+  (function f(now){const t=clamp((now-t0)/dur);fn(t);if(t<1)raf=requestAnimationFrame(f);else if(done)done();})(t0);}
+
+/* ---------- molecules ---------- */
+class Mol{
+  constructor(){this.a={};this.b=[];this.lp=[];}
+  add(id,el,x,y,o){this.a[id]=Object.assign({id,el,x,y},o||{});return this;}
+  radial(from,id,el,len,o,c){const f=this.a[from],cx=c?c[0]:0,cy=c?c[1]:0,d=Math.hypot(f.x-cx,f.y-cy);
+    return this.add(id,el,f.x+(f.x-cx)/d*len,f.y+(f.y-cy)/d*len,o);}
+  at(from,id,el,len,d,o){const f=this.a[from];return this.add(id,el,f.x+len*cos(d),f.y+len*sin(d),o);}
+  bond(a,b,n,o){this.b.push(Object.assign({a,b,n:n||1},o||{}));return this;}
+  lone(atom,d){const f=this.a[atom];this.lp.push({atom,x:f.x+.5*cos(d),y:f.y+.5*sin(d)});return this;}
+}
+const NAMES={A:'Adenine',G:'Guanine',C:'Cytosine',T:'Thymine'};
+function makeBase(k){
+  const m=new Mol(),R=1.4,H=[0,0];m.kind=k;m.pur=(k==='A'||k==='G');
+  if(m.pur){
+    const ring={N1:0,C6:60,C5:120,C4:180,N3:240,C2:300};
+    for(const id in ring){const p=pol(R,ring[id]);m.add(id,id[0],p[0],p[1]);}
+    const C5=m.a.C5,C4=m.a.C4,mx=(C5.x+C4.x)/2,my=(C5.y+C4.y)/2,Lm=Math.hypot(mx,my);
+    const ap=1.4/(2*Math.tan(rad(36))),Rp=1.4/(2*Math.sin(rad(36)));
+    const px=mx+mx/Lm*ap,py=my+my/Lm*ap,a0=deg(Math.atan2(C5.y-py,C5.x-px)),P=[px,py];
+    [['N7',72],['C8',144],['N9',216]].forEach(v=>m.add(v[0],v[0][0],px+Rp*cos(a0+v[1]),py+Rp*sin(a0+v[1])));
+    m.radial('N9','Hs','H',1,null,P);
+    m.bond('N1','C2').bond('C2','N3',2,{c:H}).bond('N3','C4').bond('C4','C5',2,{c:H}).bond('C5','C6')
+     .bond('C6','N1',k==='A'?2:1,{c:H}).bond('C5','N7').bond('N7','C8',2,{c:P}).bond('C8','N9').bond('N9','C4').bond('N9','Hs');
+    if(k==='A'){
+      m.radial('C6','N6','N',1.35).at('N6','H61','H',1,0).at('N6','H62','H',1,120);
+      m.bond('C6','N6').bond('N6','H61').bond('N6','H62');
+      m.lone('N1',0);
+      m.groups=[{ids:['N9','Hs'],ok:true},{ids:['N6','H61','H62'],r:1.25,msg:'Not that one. The NH₂ group is needed for hydrogen bonding to thymine. Look for the N⁠–⁠H in the five-membered ring.'}];
+    }else{
+      m.radial('N1','H1','H',1).radial('C6','O6','O',1.25).radial('C2','N2','N',1.35).at('N2','H21','H',1,0).at('N2','H22','H',1,240);
+      m.bond('N1','H1').bond('C6','O6',2).bond('C2','N2').bond('N2','H21').bond('N2','H22');
+      m.lone('O6',0).lone('O6',120);
+      m.groups=[{ids:['N9','Hs'],ok:true},{ids:['N1','H1'],msg:'Not that one. This N⁠–⁠H, next to the C=O, hydrogen bonds to cytosine. Look for the N⁠–⁠H in the five-membered ring.'},
+        {ids:['N2','H21','H22'],r:1.25,msg:'Not that one. The NH₂ group is needed for hydrogen bonding to cytosine. Look for the N⁠–⁠H in the five-membered ring.'}];
+    }
+    m.lone('N3',240).lone('N7',a0+72);
+    m.sugarN='N9';m.cen=[(px+0)/2,(py+0)/2];m.P=P;
+  }else{
+    const ring={N3:0,C2:60,N1:120,C6:180,C5:240,C4:300};
+    for(const id in ring){const p=pol(R,ring[id]);m.add(id,id[0],p[0],p[1]);}
+    m.radial('N1','Hs','H',1).radial('C2','O2','O',1.25);
+    m.bond('N3','C2').bond('C2','N1').bond('N1','C6').bond('C6','C5',2,{c:H}).bond('C5','C4')
+     .bond('C4','N3',k==='C'?2:1,{c:H}).bond('N1','Hs').bond('C2','O2',2);
+    m.lone('O2',0).lone('O2',120);
+    if(k==='T'){
+      m.radial('N3','H3','H',1).radial('C4','O4','O',1.25).radial('C5','M5','C',1.5,{label:'CH₃',alt:'H₃C',from:'C5'});
+      m.bond('N3','H3').bond('C4','O4',2).bond('C5','M5');
+      m.lone('O4',0).lone('O4',240);
+      m.groups=[{ids:['N1','Hs'],ok:true},{ids:['N3','H3'],msg:'Not that one. The N⁠–⁠H between the two C=O groups hydrogen bonds to adenine. Use the N⁠–⁠H that is next to only one C=O.'}];
+    }else{
+      m.radial('C4','N4','N',1.35).at('N4','H41','H',1,0).at('N4','H42','H',1,240);
+      m.bond('C4','N4').bond('N4','H41').bond('N4','H42');
+      m.lone('N3',0);
+      m.groups=[{ids:['N1','Hs'],ok:true},{ids:['N4','H41','H42'],r:1.25,msg:'Not that one. The NH₂ group is needed for hydrogen bonding to guanine. Use the N⁠–⁠H in the ring.'}];
+    }
+    m.sugarN='N1';m.cen=[0,0];
+  }
+  m.donors=m.b.filter(b=>m.a[b.b].el==='H'&&b.b!=='Hs'&&m.a[b.a].el==='N').map(b=>[b.b,b.a]);
+  m.acceptors=[...new Set(m.lp.map(l=>l.atom))];
+  return m;
+}
+const BASES={A:makeBase('A'),G:makeBase('G'),C:makeBase('C'),T:makeBase('T')};
+const stdPose=m=>({flip:m.pur,rot:150});  /* orientation as printed on the data sheet */
+
+function tf(pose){
+  const c=cos(pose.rot),s=sin(pose.rot),ax=pose.anchor?pose.anchor[0]:0,ay=pose.anchor?pose.anchor[1]:0;
+  return (lx,ly)=>{let dx=lx-ax,dy=ly-ay;if(pose.flip)dy=-dy;return [pose.x+dx*c-dy*s,pose.y+dx*s+dy*c];};
+}
+function positions(m,pose){const f=tf(pose),P={};for(const id in m.a)P[id]=f(m.a[id].x,m.a[id].y);return P;}
+function trimOf(a){if(a.el==='H')return a.small?.24:.3;if(a.label)return a.label.length>1?.56:.38;if(a.el==='C')return 0;if(a.el==='Pt')return .5;if(a.el==='Cl')return .5;return .38;}
+function drawMol(g,m,pose,o){
+  o=o||{};const f=tf(pose),P=positions(m,pose);
+  const al=id=>(o.alpha&&id in o.alpha)?o.alpha[id]:1;
+  const hid=id=>o.hide&&o.hide.has(id);
+  for(const b of m.b){
+    if(hid(b.a)||hid(b.b))continue;
+    const op=Math.min(al(b.a),al(b.b));if(op<.02)continue;
+    const A=m.a[b.a],B=m.a[b.b],p=P[b.a],q=P[b.b],d=dist(p,q),ux=(q[0]-p[0])/d,uy=(q[1]-p[1])/d,nx=-uy,ny=ux;
+    const ta=trimOf(A),tb=trimOf(B),p1=[p[0]+ux*ta,p[1]+uy*ta],q1=[q[0]-ux*tb,q[1]-uy*tb];
+    const cls='bd'+((A.small||B.small)?' thin':''),at={opacity:op};
+    if(b.n===2&&!b.c){const k=.1;L(g,cls,[p1[0]+nx*k,p1[1]+ny*k],[q1[0]+nx*k,q1[1]+ny*k],at);L(g,cls,[p1[0]-nx*k,p1[1]-ny*k],[q1[0]-nx*k,q1[1]-ny*k],at);continue;}
+    L(g,cls,p1,q1,at);
+    if(b.n===2){const C=f(b.c[0],b.c[1]),sg=((C[0]-(p[0]+q[0])/2)*nx+(C[1]-(p[1]+q[1])/2)*ny)>0?1:-1,k=.21*sg,sa=Math.max(ta,.2),sb=Math.max(tb,.2);
+      L(g,cls,[p[0]+ux*sa+nx*k,p[1]+uy*sa+ny*k],[q[0]-ux*sb+nx*k,q[1]-uy*sb+ny*k],at);}
+  }
+  if(o.lp)for(const l of m.lp){
+    if(o.lpOnly&&!o.lpOnly.has(l.atom))continue;if(o.lpHide&&o.lpHide.has(l.atom))continue;
+    const a=P[l.atom],w=f(l.x,l.y),d=dist(a,w),ux=(w[0]-a[0])/d,uy=(w[1]-a[1])/d;
+    for(const s of[-1,1])E('circle',{class:'lp',cx:X(a[0]+ux*.5-uy*.12*s),cy:Y(a[1]+uy*.5+ux*.12*s),r:2.4},g);
+  }
+  for(const id in m.a){
+    const a=m.a[id];if(hid(id))continue;const op=al(id);if(op<.02)continue;
+    if(a.el==='C'&&!a.label)continue;
+    let str=a.label||a.el,at={opacity:op},p=P[id];
+    if(a.alt&&a.from){if(P[id][0]<P[a.from][0]-.15){str=a.alt;at['text-anchor']='end';p=[p[0]+.2,p[1]];}else{at['text-anchor']='start';p=[p[0]-.2,p[1]];}}
+    const cls='at a'+a.el+(a.small?' sm':'')+((o.cls&&o.cls[id])?' '+o.cls[id]:'');
+    T(g,cls,p,str,at);
+  }
+  if(o.stub){const n=P[m.sugarN],h=P.Hs,ux=h[0]-n[0],uy=h[1]-n[1];
+    L(g,'bd',[n[0]+ux*.38,n[1]+uy*.38],[n[0]+ux*1.05,n[1]+uy*1.05]);
+    const c=[n[0]+ux*1.55,n[1]+uy*1.55];
+    E('rect',{class:'stub',x:X(c[0])-25,y:Y(c[1])-11,width:50,height:22,rx:11},g);T(g,'stubt',c,'sugar');}
+  return P;
+}
+function seg(id,items,cur,label){return `<div class="seg" id="${id}" role="group" aria-label="${label}">`+
+  items.map(i=>`<button data-v="${i[0]}" aria-pressed="${i[0]===cur}">${i[1]}</button>`).join('')+'</div>';}
+function wireSeg(id,fn){const s=document.getElementById(id);s.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+  s.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));fn(b.dataset.v);});}
+function wireToggle(id,get,set){const b=document.getElementById(id);b.setAttribute('aria-pressed',get());
+  b.addEventListener('click',()=>{set(!get());b.setAttribute('aria-pressed',get());});}
+
+/* =====================================================================
+   PART 1  Build a nucleotide
+   ===================================================================== */
+const SUGAR=(function(){const m=new Mol();
+  m.add('C1','C',1.5,.2).add('C2','C',.95,-1.1).add('C3','C',-.95,-1.1).add('C4','C',-1.5,.2).add('Or','O',0,1.1)
+   .add('C5','C',-1.9,1.5,{label:'CH₂'}).add('O5','O',-3.2,1.5).add('H5','H',-4.05,1.5)
+   .add('O1','O',2.75,1.1).add('H1','H',3.6,1.1).add('O3','O',-.95,-2.35).add('H3','H',-.95,-3.2)
+   .add('h1','H',1.75,-.6,{small:true}).add('h4','H',-1.75,-.6,{small:true})
+   .add('h2a','H',.95,-.35,{small:true}).add('h2b','H',.95,-1.85,{small:true}).add('h3','H',-.95,-.35,{small:true});
+  m.bond('C1','C2').bond('C2','C3').bond('C3','C4').bond('C4','Or').bond('Or','C1').bond('C4','C5').bond('C5','O5').bond('O5','H5')
+   .bond('C1','O1').bond('O1','H1').bond('C3','O3').bond('O3','H3')
+   .bond('C1','h1').bond('C4','h4').bond('C2','h2a').bond('C2','h2b').bond('C3','h3');
+  m.ringH=['h1','h4','h2a','h2b','h3'];return m;})();
+const PHOS=(function(){const m=new Mol();
+  m.add('P','P',-4.7,1.5).add('Od','O',-4.7,2.9).add('Om','O',-6.1,1.5,{label:'O⁻'}).add('Oh','O',-4.7,.1).add('Hh','H',-4.7,-.75)
+   .add('Ox','O',-3.2,1.5).add('Hx','H',-2.35,1.5);
+  m.bond('P','Od',2).bond('P','Om').bond('P','Oh').bond('Oh','Hh').bond('P','Ox').bond('Ox','Hx');return m;})();
+const PHOS2=(function(){const m=new Mol();
+  m.add('P','P',-.95,-3.85).add('Od','O',-2.35,-3.85).add('Om','O',.45,-3.85,{label:'O⁻'}).add('Ol','O',-.95,-5.2)
+   .add('Cn','C',-.95,-6.4,{label:'CH₂'}).add('Ox','O',-.95,-2.35).add('Hx','H',-.1,-2.35);
+  m.bond('P','Od',2).bond('P','Om').bond('P','Ol').bond('Ol','Cn').bond('P','Ox').bond('Ox','Hx');return m;})();
+const ID={x:0,y:0,rot:0,flip:false};
+const bd={base:'A',phos:0,baseJ:0,next:0,q:'q1',msg:'',bad:null,nums:true,ringH:true,vb:0,vc:0,anim:null};
+const VBs=[[-9.7,-4.3,10.7,9.3],[-8.2,-4.5,8.2,7.6],[-8.2,-7.9,8.2,7.6]];
+const fade=t=>1-clamp((t-.1)/.22), mv=t=>ease(clamp((t-.3)/.55)), appear=t=>clamp((t-.72)/.25);
+function basePoses(){
+  const m=BASES[bd.base],st=stdPose(m),N=m.a[m.sugarN];
+  const start={x:m.pur?8.7:6.6,y:m.pur?3.7:2.7,rot:st.rot,flip:st.flip,anchor:[N.x,N.y]};
+  const P=positions(m,start),th0=deg(Math.atan2(P.Hs[1]-P[m.sugarN][1],P.Hs[0]-P[m.sugarN][0]));
+  const th=deg(Math.atan2(.2-1.1,1.5-2.75));
+  return {start,end:{x:2.75,y:1.1,rot:st.rot+(th-th0),flip:st.flip,anchor:[N.x,N.y]}};
+}
+function bdTargets(){
+  const m=BASES[bd.base],name=NAMES[bd.base].toLowerCase();
+  const bg=ok=>m.groups.filter(g=>ok||!g.ok).map(g=>({mol:'base',ids:g.ids,r:g.r,ok:!!g.ok&&ok,msg:g.msg||'Groups on the base are kept for hydrogen bonding to the other strand. Tap the –OH on this sugar.'}));
+  if(bd.q==='q1')return [{mol:'sugar',ids:['O5','H5'],ok:true},
+    {mol:'sugar',ids:['O1','H1'],msg:'Not that one. The –OH on carbon 1 is where the base attaches.'},
+    {mol:'sugar',ids:['O3','H3'],msg:'Not that one. The –OH on carbon 3 is used later, to link to the next nucleotide. In a nucleotide the phosphate bonds to the CH₂OH group (carbon 5).'}];
+  if(bd.q==='q2a')return [{mol:'sugar',ids:['O1','H1'],ok:true},
+    {mol:'sugar',ids:['O3','H3'],msg:'Not that one. The base joins carbon 1, the carbon next to the oxygen in the ring. The carbon 3 –OH is kept for linking nucleotides together.'}];
+  if(bd.q==='q2b')return bg(true);
+  if(bd.q==='q3')return [{mol:'sugar',ids:['O3','H3'],ok:true},
+    {mol:'phos',ids:['Oh','Hh'],msg:'Not that one. That phosphate –OH links to the sugar of the nucleotide before this one. Tap the group on this sugar.'}].concat(bg(false));
+  return [];
+}
+const BDQ={
+  q1:'<b>Step 1.</b> Tap the –OH group on 2-deoxyribose that bonds to the phosphate.',
+  q2a:'<b>Step 2.</b> Tap the –OH group on the sugar that is replaced by the base.',
+  q2b:()=>`<b>Step 3.</b> Tap the N⁠–⁠H group on ${NAMES[bd.base].toLowerCase()} that bonds to the sugar.`,
+  done1:'<span class="ok">Nucleotide complete.</span> Phosphate, then 2-deoxyribose, then base, joined by two condensation reactions (two H₂O released). The base has been turned so its N points at carbon 1; its structure is unchanged.',
+  q3:'<b>Step 4.</b> A strand forms when the phosphate of the next nucleotide bonds to this sugar. Tap where it joins.',
+  done2:'<span class="ok">Sugar–phosphate backbone.</span> Each phosphate links carbon 3 of one sugar to the CH₂ (carbon 5) of the next by covalent bonds, giving a sugar–phosphate–sugar–phosphate chain with the bases attached to the sugars.'
+};
+function drawBuild(){
+  svg.replaceChildren();
+  const a=VBs[0],b=VBs[1],c=VBs[2],u=ease(bd.vb),w=ease(bd.vc);
+  setVB(...a.map((v,i)=>lerp(lerp(v,b[i],u),c[i],w)));
+  const g=E('g',{}),m=BASES[bd.base],anim=bd.anim;
+  /* sugar */
+  const sa={H5:fade(bd.phos),O1:fade(bd.baseJ),H1:fade(bd.baseJ),H3:fade(bd.next)},sc={};
+  if(anim==='phos')sc.H5='leave';if(anim==='base'){sc.O1='leave';sc.H1='leave';}if(anim==='next')sc.H3='leave';
+  const sP=drawMol(g,SUGAR,ID,{alpha:sa,cls:sc,hide:bd.ringH?null:new Set(SUGAR.ringH)});
+  if(bd.nums)[['1',[1.98,.12]],['2',[1.38,-1.32]],['3',[-1.38,-1.32]],['4',[-1.98,.12]],['5',[-1.9,2.05]]].forEach(n=>T(g,'num',n[1],n[0]));
+  /* phosphate */
+  const pp={x:-2.6*(1-mv(bd.phos)),y:0,rot:0,flip:false};
+  const pP=drawMol(g,PHOS,pp,{alpha:{Ox:fade(bd.phos),Hx:fade(bd.phos)},cls:anim==='phos'?{Ox:'leave',Hx:'leave'}:null});
+  if(bd.phos>0)L(g,'bd',[pP.P[0]+.38,pP.P[1]],[sP.O5[0]-.38,sP.O5[1]],{opacity:appear(bd.phos)});
+  /* base */
+  const bp=basePoses(),t=mv(bd.baseJ);
+  const pose={x:lerp(bp.start.x,bp.end.x,t),y:lerp(bp.start.y,bp.end.y,t),rot:lerp(bp.start.rot,bp.end.rot,t),flip:bp.start.flip,anchor:bp.start.anchor};
+  const bP=drawMol(g,m,pose,{alpha:{Hs:fade(bd.baseJ)},cls:anim==='base'?{Hs:'leave'}:null});
+  if(bd.baseJ>0){const n=bP[m.sugarN],c1=sP.C1,d=dist(n,c1);L(g,'bd',c1,[n[0]+(c1[0]-n[0])/d*.38,n[1]+(c1[1]-n[1])/d*.38],{opacity:appear(bd.baseJ)});}
+  /* next phosphate */
+  let nP=null;
+  if(bd.q==='q3'||bd.next>0){
+    const k=mv(bd.next);
+    nP=drawMol(g,PHOS2,{x:0,y:-1.9*(1-k),rot:0,flip:false},{alpha:{Ox:fade(bd.next),Hx:fade(bd.next),Cn:k},cls:anim==='next'?{Ox:'leave',Hx:'leave'}:null});
+    if(bd.next>0)L(g,'bd',[sP.O3[0],sP.O3[1]-.38],[nP.P[0],nP.P[1]+.38],{opacity:appear(bd.next)});
+    T(g,'lbl',[2.9,nP.P[1]-.9],'phosphate of the',{opacity:1-k});T(g,'lbl',[2.9,nP.P[1]-1.45],'next nucleotide',{opacity:1-k});
+    T(g,'lbl',[1.6,-6.4],'next sugar and base',{opacity:k});
+  }
+  /* part labels */
+  if(bd.phos<1)T(g,'lbl strong',[pP.P[0]-.3,-1.7],'phosphate',{opacity:1-bd.phos});
+  if(bd.baseJ<1){T(g,'lbl strong',[3.1,-2.3],'2-deoxyribose',{opacity:1-bd.baseJ});
+    let lo=1e9,cx=0,n=0;for(const id in bP){lo=Math.min(lo,bP[id][1]);cx+=bP[id][0];n++;}
+    T(g,'lbl strong',[cx/n+(m.pur?-1.2:0),lo-(m.pur?.2:.7)],NAMES[bd.base].toLowerCase(),{opacity:1-clamp(bd.baseJ*4)});}
+  /* water */
+  if(anim){const tt=bd[anim==='base'?'baseJ':anim],site=anim==='phos'?[-4.3,1.5]:anim==='base'?[3.3,1.1]:[-.2,-3.0];
+    if(tt>.22)T(g,'water',[site[0],site[1]+.9+2.2*ease(clamp((tt-.22)/.7))],'H₂O',{opacity:clamp((tt-.22)/.12)*(1-clamp((tt-.85)/.15))});}
+  /* targets */
+  if(!anim)bdTargets().forEach((tg,i)=>{
+    const P=tg.mol==='sugar'?sP:tg.mol==='phos'?pP:bP;let x=0,y=0;tg.ids.forEach(id=>{x+=P[id][0];y+=P[id][1];});x/=tg.ids.length;y/=tg.ids.length;
+    E('circle',{class:'tgt'+(bd.bad===i?' bad':''),'data-t':i,cx:X(x),cy:Y(y),r:(tg.r||1)*S,tabindex:0,role:'button','aria-label':'Choose this group'},g);});
+  /* text */
+  const q=BDQ[bd.q];cap.innerHTML=(typeof q==='function'?q():q)+(bd.msg?`<div class="warn">${bd.msg}</div>`:'');
+  const wn=(bd.phos>=1)+(bd.baseJ>=1)+(bd.next>=1);$('#bdWater').textContent='H₂O released: '+wn;
+  const ck=[bd.phos>=1,bd.baseJ>=1,bd.baseJ>=1,bd.next>=1];document.querySelectorAll('#bdCheck li').forEach((li,i)=>li.classList.toggle('on',ck[i]));
+  const sh=$('#bdShow'),ex=$('#bdNext');sh.hidden=!!anim||bd.q==='done1'||bd.q==='done2';ex.hidden=bd.q!=='done1'||!!anim;
+}
+function bdRun(which,dur,then){bd.anim=which;bd.msg='';bd.bad=null;const key=which==='base'?'baseJ':which;
+  tween(dur,t=>{bd[key]=t;if(which==='base')bd.vb=t;drawBuild();},()=>{bd.anim=null;then();drawBuild();});}
+function bdAnswer(i){
+  const tg=bdTargets()[i];if(!tg||bd.anim)return;
+  if(!tg.ok){bd.msg=tg.msg;bd.bad=i;drawBuild();setTimeout(()=>{if(bd.bad===i){bd.bad=null;if(mode==='build'&&!bd.anim)drawBuild();}},700);return;}
+  bd.msg='';
+  if(bd.q==='q1')bdRun('phos',1700,()=>{bd.q='q2a';});
+  else if(bd.q==='q2a'){bd.q='q2b';drawBuild();}
+  else if(bd.q==='q2b')bdRun('base',2400,()=>{bd.q='done1';});
+  else if(bd.q==='q3')bdRun('next',1700,()=>{bd.q='done2';});
+}
+function bdReset(){cancelAnimationFrame(raf);Object.assign(bd,{phos:0,baseJ:0,next:0,q:'q1',msg:'',bad:null,vb:0,vc:0,anim:null});drawBuild();}
+function initBuild(){
+  svg.classList.remove('touch');
+  ovTop.innerHTML=seg('bdBase',[['A','Adenine'],['C','Cytosine'],['G','Guanine'],['T','Thymine']],bd.base,'Base')+
+    '<span class="sp"></span><button class="pill" id="bdNums">Number carbons</button><button class="pill" id="bdH">Ring H atoms</button>';
+  ovBot.innerHTML='<span class="pill" id="bdWater"></span>';
+  nav.innerHTML='<button id="bdReset">Start again</button><button id="bdShow">Show me</button><button id="bdNext" class="go" hidden>Extend the strand</button>';
+  rail.innerHTML=`<div class="card"><h2>Checklist</h2><ul class="check" id="bdCheck">
+      <li>Phosphate bonded to the CH₂OH group (carbon 5) of the sugar</li>
+      <li>Base bonded to carbon 1 of the sugar</li>
+      <li>Correct N atom of the base used</li>
+      <li>Next phosphate bonded to carbon 3</li></ul></div>
+    <div class="card"><h2>Which N⁠–⁠H joins the sugar?</h2>
+      <p class="note"><b>Adenine and guanine</b> (two rings): the N⁠–⁠H in the five-membered ring.</p>
+      <p class="note"><b>Cytosine</b>: the only N⁠–⁠H in the ring, not the NH₂.</p>
+      <p class="note"><b>Thymine</b>: the N⁠–⁠H next to only one C=O, not the one between the two C=O groups.</p></div>
+    <div class="card"><h2>Drawing it in an exam</h2>
+      <p class="note">Each join is a <b>condensation</b>: an H and an OH are lost as water and a new covalent bond forms.</p>
+      <p class="note">Copy the three structures from the data sheet, remove the <b>H</b> and <b>OH</b> shown in orange here, and join what is left. You can turn the base to any angle; do not change its structure.</p>
+      <p class="note">Carbon atoms are numbered from the carbon bonded to the base (1) round to the CH₂ (5).</p></div>`;
+  wireSeg('bdBase',v=>{bd.base=v;bdReset();});
+  wireToggle('bdNums',()=>bd.nums,v=>{bd.nums=v;drawBuild();});
+  wireToggle('bdH',()=>bd.ringH,v=>{bd.ringH=v;drawBuild();});
+  $('#bdReset').onclick=bdReset;
+  $('#bdShow').onclick=()=>{const i=bdTargets().findIndex(t=>t.ok);if(i>=0)bdAnswer(i);};
+  $('#bdNext').onclick=()=>{bd.q='q3';bd.msg='';tween(500,t=>{bd.vc=t;drawBuild();});};
+  drawBuild();
+}
+
+/* =====================================================================
+   PART 2  Base pairing
+   ===================================================================== */
+const D=5.7;
+const WC={'A.H61>T.O4':0,'T.H3>A.N1':1,'C.H41>G.O6':0,'G.H1>C.N3':1,'G.H21>C.O2':2};
+const PAIRS={AT:{k:['A','T'],list:['N⁠–⁠H of the adenine NH₂ to the O of a thymine C=O','N⁠–⁠H of thymine to the ring N of adenine']},
+  GC:{k:['G','C'],list:['N⁠–⁠H of the cytosine NH₂ to the O of the guanine C=O','N⁠–⁠H of guanine to the ring N of cytosine','N⁠–⁠H of the guanine NH₂ to the O of the cytosine C=O']}};
+const pr={pair:'AT',b:[],sel:0,snap:true,lp:true,delta:true,drag:null,solved:false};
+const poseOf=b=>({x:b.x,y:b.y,rot:b.rot,flip:b.flip,anchor:b.m.cen});
+function prStart(){
+  cancelAnimationFrame(raf);
+  pr.b=PAIRS[pr.pair].k.map((k,i)=>{const m=BASES[k],s=stdPose(m);return {m,x:i?4.6:-4.6,y:m.pur?-.3:0,rot:s.rot,flip:s.flip};});
+  pr.sel=0;pr.solved=false;
+}
+function originPose(m,flip,rot,O){const v=tf({x:0,y:0,rot,flip})(-m.cen[0],-m.cen[1]);return {x:O[0]-v[0]+0,y:O[1]-v[1]+0,rot,flip};}
+function fixPose(m,flip,rot,O){ /* pose whose local origin sits at world point O */
+  const f=tf({x:0,y:0,rot,flip,anchor:m.cen}),o=f(0,0);return {x:O[0]-o[0],y:O[1]-o[1],rot,flip};}
+function idealFor(i){
+  const me=pr.b[i],o=pr.b[1-i],O=tf(poseOf(o))(0,0),u=pol(1,o.rot);
+  return fixPose(me.m,o.flip,o.rot+180,[O[0]+D*u[0],O[1]+D*u[1]]);
+}
+const angDiff=(a,b)=>{let d=((a-b)%360+540)%360-180;return d;};
+function hbonds(){
+  const Ps=pr.b.map(b=>positions(b.m,poseOf(b))),res=[];let clash=false;
+  for(const ia in Ps[0])for(const ib in Ps[1]){if(ia==='Hs'||ib==='Hs')continue;if(dist(Ps[0][ia],Ps[1][ib])<1.15)clash=true;}
+  for(const di of[0,1]){const Dn=pr.b[di],Ac=pr.b[1-di];
+    for(const dn of Dn.m.donors)for(const acc of Ac.m.acceptors){
+      const H=Ps[di][dn[0]],N=Ps[di][dn[1]],A=Ps[1-di][acc],r=dist(H,A);if(r<1.45||r>2.5)continue;
+      const v1=[N[0]-H[0],N[1]-H[1]],v2=[A[0]-H[0],A[1]-H[1]],an=deg(Math.acos(clamp((v1[0]*v2[0]+v1[1]*v2[1])/(Math.hypot(...v1)*Math.hypot(...v2)),-1,1)));
+      if(an<150)continue;
+      const key=`${Dn.m.kind}.${dn[0]}>${Ac.m.kind}.${acc}`;
+      res.push({H,N,A,acc,di,wc:key in WC?WC[key]:-1});
+    }}
+  return {res,clash,Ps};
+}
+function drawPair(){
+  svg.replaceChildren();setVB(-10,-6.6,10,6.6);
+  const hb=hbonds(),order=[1-pr.sel,pr.sel];
+  const mid=[(pr.b[0].x+pr.b[1].x)/2,(pr.b[0].y+pr.b[1].y)/2];
+  for(const i of order){const b=pr.b[i],g=E('g',{'data-i':i});
+    const hr=b.m.pur?3.9:3.3,ha=b.rot+(b.m.pur?(b.flip?-85:85):180);
+    E('circle',{class:'halo'+(i===pr.sel?'':' off'),cx:X(b.x),cy:Y(b.y),r:hr*S},g);
+    drawMol(g,b.m,poseOf(b),{lp:pr.lp,stub:true,hide:new Set(['Hs'])});
+    if(i===pr.sel){const h=[b.x+hr*cos(ha),b.y+hr*sin(ha)];
+      E('circle',{class:'handle','data-h':i,cx:X(h[0]),cy:Y(h[1]),r:13},g);
+      E('path',{d:`M${X(h[0])-5} ${Y(h[1])+1}a5 5 0 1 1 5 5`,fill:'none',stroke:'var(--accent-ink)','stroke-width':2,'stroke-linecap':'round','pointer-events':'none'},g);}
+  }
+  const top=E('g',{'pointer-events':'none'});
+  if(!hb.clash)for(const h of hb.res){
+    const d=dist(h.H,h.A),ux=(h.A[0]-h.H[0])/d,uy=(h.A[1]-h.H[1])/d;
+    L(top,'hb'+(h.wc<0?' other':''),[h.H[0]+ux*.34,h.H[1]+uy*.34],[h.A[0]-ux*.42,h.A[1]-uy*.42]);
+    if(pr.delta&&h.wc>=0){let nx=-uy,ny=ux;const hm=[(h.H[0]+h.A[0])/2,(h.H[1]+h.A[1])/2];
+      if(dist([hm[0]+nx,hm[1]+ny],mid)<dist([hm[0]-nx,hm[1]-ny],mid)){nx=-nx;ny=-ny;}
+      const k=.62;T(top,'dl',[h.H[0]+nx*k,h.H[1]+ny*k],'δ+');T(top,'dl',[h.A[0]+nx*k,h.A[1]+ny*k],'δ−');T(top,'dl',[h.N[0]+nx*k,h.N[1]+ny*k],'δ−');}
+  }
+  /* status */
+  const P=PAIRS[pr.pair],need=P.list.length,got=new Set(hb.clash?[]:hb.res.filter(h=>h.wc>=0).map(h=>h.wc)),other=hb.clash?0:hb.res.filter(h=>h.wc<0).length;
+  const names=P.k.map(k=>NAMES[k]);
+  $('#prCount').innerHTML=`${got.size}<small>of ${need} hydrogen bonds</small>`;
+  document.querySelectorAll('#prCheck li').forEach((li,i)=>li.classList.toggle('on',got.has(i)));
+  $('#prSel').textContent=NAMES[pr.b[pr.sel].m.kind]+' selected';
+  let msg;
+  if(hb.clash)msg='<span class="warn">Too close: atoms are overlapping.</span> Move the bases apart a little.';
+  else if(got.size===need)msg=`<span class="ok">Correct.</span> ${names[0]} pairs with ${names[1].toLowerCase()} by ${need===2?'two':'three'} hydrogen bonds. Each one runs from a δ+ H on an N⁠–⁠H to a lone pair on a δ− N or O, in a straight line. The sugars end up on the outside, where the two backbones run.`;
+  else if(got.size>0)msg=`<b>${got.size} of ${need} hydrogen bonds.</b> Keep adjusting until every N⁠–⁠H on the facing edges points straight at a lone pair.`;
+  else if(other>0)msg='<span class="warn">Hydrogen bonds could form here, but this is not the pairing found in DNA.</span> The edge of each base opposite its sugar must face the other base.';
+  else msg='<b>Line the bases up.</b> Drag a base to move it. Drag the blue handle or use the buttons to rotate it, and Flip to turn it over. Aim each N⁠–⁠H at a lone pair on the other base.';
+  cap.innerHTML=msg;
+}
+function prSnap(i){
+  if(!pr.snap)return;const me=pr.b[i],id=idealFor(i);
+  if(me.flip!==id.flip||Math.abs(angDiff(me.rot,id.rot))>16||dist([me.x,me.y],[id.x,id.y])>1.1)return;
+  const s={x:me.x,y:me.y,rot:me.rot},dr=angDiff(id.rot,me.rot);
+  tween(160,t=>{me.x=lerp(s.x,id.x,t);me.y=lerp(s.y,id.y,t);me.rot=s.rot+dr*t;drawPair();});
+}
+function prAnswer(){
+  const pi=pr.b[0].m.pur?0:1,pu=pr.b[pi],py=pr.b[1-pi];
+  pu.flip=false;py.flip=false;
+  const a=fixPose(pu.m,false,0,[-D/2,0]),b=fixPose(py.m,false,180,[D/2,0]);
+  const s=[pu,py].map(v=>({x:v.x,y:v.y,rot:v.rot})),e=[a,b];
+  tween(900,t=>{const k=ease(t);[pu,py].forEach((v,j)=>{v.x=lerp(s[j].x,e[j].x,k);v.y=lerp(s[j].y,e[j].y,k);v.rot=s[j].rot+angDiff(e[j].rot,s[j].rot)*k;});drawPair();});
+}
+function toWorld(e){const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;const q=pt.matrixTransform(svg.getScreenCTM().inverse());return [q.x/S,-q.y/S];}
+svg.addEventListener('pointerdown',e=>{
+  if(mode!=='pair')return;const h=e.target.closest('[data-h]'),g=e.target.closest('[data-i]');if(!h&&!g)return;
+  cancelAnimationFrame(raf);
+  const i=+(h?h.dataset.h:g.dataset.i),b=pr.b[i],w=toWorld(e);pr.sel=i;
+  pr.drag=h?{i,rot:true,a0:deg(Math.atan2(w[1]-b.y,w[0]-b.x))-b.rot}:{i,dx:b.x-w[0],dy:b.y-w[1]};
+  try{svg.setPointerCapture(e.pointerId);}catch(_){}
+  drawPair();e.preventDefault();
+});
+svg.addEventListener('pointermove',e=>{
+  const d=pr.drag;if(mode!=='pair'||!d)return;const b=pr.b[d.i],w=toWorld(e);
+  if(d.rot)b.rot=deg(Math.atan2(w[1]-b.y,w[0]-b.x))-d.a0;else{b.x=clamp(w[0]+d.dx,-8.2,8.2);b.y=clamp(w[1]+d.dy,-4.6,4.6);}
+  drawPair();
+});
+function endDrag(){const d=pr.drag;if(!d)return;pr.drag=null;if(mode==='pair')prSnap(d.i);}
+svg.addEventListener('pointerup',endDrag);svg.addEventListener('pointercancel',endDrag);
+svg.addEventListener('click',e=>{if(mode!=='build')return;const t=e.target.closest('[data-t]');if(t)bdAnswer(+t.dataset.t);});
+svg.addEventListener('keydown',e=>{if(mode!=='build'||(e.key!=='Enter'&&e.key!==' '))return;const t=e.target.closest('[data-t]');if(t){e.preventDefault();bdAnswer(+t.dataset.t);}});
+function initPair(){
+  svg.classList.add('touch');
+  if(!pr.b.length)prStart();
+  ovTop.innerHTML=seg('prPair',[['AT','Adenine + thymine'],['GC','Guanine + cytosine']],pr.pair,'Base pair')+
+    '<span class="sp"></span><button class="pill" id="prLp">Lone pairs</button><button class="pill" id="prDl">δ+ δ−</button><button class="pill" id="prSn">Snap</button>';
+  ovBot.innerHTML='<span class="pill" id="prSel"></span><button class="pill big" id="prL" aria-label="Rotate anticlockwise 15 degrees">⟲ 15°</button>'+
+    '<button class="pill big" id="prR" aria-label="Rotate clockwise 15 degrees">⟳ 15°</button><button class="pill big" id="prF">Flip over</button>';
+  nav.innerHTML='<button id="prReset">Reset to data sheet</button><button id="prShow" class="go">Show answer</button>';
+  rail.innerHTML=`<div class="card"><h2>Hydrogen bonds formed</h2><div class="count" id="prCount"></div>
+      <ul class="check" id="prCheck" style="margin-top:12px"></ul></div>
+    <div class="card"><h2>What a hydrogen bond needs</h2>
+      <p class="note">A <b>δ+ hydrogen</b> bonded to nitrogen (N⁠–⁠H).</p>
+      <p class="note">A <b>lone pair</b> on a δ− nitrogen or oxygen of the other base.</p>
+      <p class="note">The three atoms in a <b>straight line</b>: N⁠–⁠H···N or N⁠–⁠H···O.</p></div>
+    <div class="card"><h2>Why rotate and flip?</h2>
+      <p class="note">The data sheet prints every base the same way up, so they never line up as drawn. One base has to be <b>rotated</b>, and one <b>turned over</b>, before the N⁠–⁠H groups and lone pairs face each other.</p>
+      <p class="note">The N that joins the <b>sugar</b> cannot hydrogen bond. It ends up on the outside of the pair.</p>
+      <p class="note"><b>A with T: two</b> hydrogen bonds. <b>G with C: three</b>. This is why the two strands are complementary.</p></div>`;
+  const fill=()=>{$('#prCheck').innerHTML=PAIRS[pr.pair].list.map(s=>`<li>${s}</li>`).join('');};fill();
+  wireSeg('prPair',v=>{pr.pair=v;prStart();fill();drawPair();});
+  wireToggle('prLp',()=>pr.lp,v=>{pr.lp=v;drawPair();});
+  wireToggle('prDl',()=>pr.delta,v=>{pr.delta=v;drawPair();});
+  wireToggle('prSn',()=>pr.snap,v=>{pr.snap=v;});
+  const rot=d=>{cancelAnimationFrame(raf);pr.b[pr.sel].rot+=d;drawPair();prSnap(pr.sel);};
+  $('#prL').onclick=()=>rot(15);$('#prR').onclick=()=>rot(-15);
+  $('#prF').onclick=()=>{cancelAnimationFrame(raf);const b=pr.b[pr.sel];b.flip=!b.flip;drawPair();prSnap(pr.sel);};
+  $('#prReset').onclick=()=>{prStart();drawPair();};
+  $('#prShow').onclick=prAnswer;
+  drawPair();
+}
+
+/* =====================================================================
+   PART 3  Cisplatin
+   ===================================================================== */
+const CIS=[
+ {nm:'Cisplatin',f:'[Pt(NH₃)₂Cl₂]',t:'<b>Cisplatin, [Pt(NH₃)₂Cl₂].</b> A square planar complex of platinum(II) with bond angles of 90°. The two Cl⁻ ligands are next to each other: this is the cis isomer.'},
+ {nm:'Target',f:'[Pt(NH₃)₂Cl₂]',t:'<b>The target is guanine.</b> Guanine has a nitrogen atom with a lone pair that is not used in base pairing. Two guanines next to each other on the same strand of DNA are the usual target.'},
+ {nm:'First bond',f:'[Pt(NH₃)₂(guanine)Cl]⁺',t:'<b>Ligand replacement, first Cl⁻.</b> The lone pair on a guanine nitrogen forms a coordinate bond to platinum, and a chloride ligand leaves.'},
+ {nm:'Second bond',f:'[Pt(NH₃)₂(guanine)₂]²⁺',t:'<b>Ligand replacement, second Cl⁻.</b> The neighbouring guanine replaces the other chloride. Platinum is now bonded to nitrogen atoms on two guanines in the same strand.'},
+ {nm:'Effect on DNA',f:'DNA cannot be replicated',t:'<b>The helix is distorted.</b> Platinum pulls the two guanines together and kinks the DNA. The strands can no longer be unwound and copied, so DNA replication stops and the cell cannot divide.'},
+ {nm:'Benefit and risk',f:'Benefit against risk',t:'<b>Balancing benefit and harm.</b> Cisplatin also bonds to DNA in healthy cells. Cells that divide quickly, such as hair follicles, are affected most, causing side effects like hair loss; it can also damage the kidneys. Doses are kept as low as is effective, or the drug is targeted at the tumour.'}
+];
+const cp={step:0,p:1,speed:1,playing:false};
+const GU=BASES.G,PTF=[0,2.1];
+function drawCis(){
+  svg.replaceChildren();setVB(-9.8,-7.6,9.8,8.6);
+  if(cp.step<=3)cisScene();else if(cp.step===4)cisHelix();else cisCells();
+  cap.innerHTML=CIS[cp.step].t;$('#cpF').textContent=CIS[cp.step].f;
+  document.querySelectorAll('#cpSteps button').forEach((b,i)=>b.setAttribute('aria-pressed',i===cp.step));
+  $('#cpPrev').disabled=cp.step===0;$('#cpNext').disabled=cp.step===CIS.length-1;
+  $('#cpPlay').textContent=cp.playing?'Pause':'Play all';
+}
+function cisScene(){
+  const st=cp.step,p=ease(cp.p),ap=st===0?0:st===1?p:1,b=[st<2?0:st===2?p:1,st<3?0:st===3?p:1];
+  const Pt=[PTF[0],PTF[1]+3.3*(1-ap)],aN7=deg(Math.atan2(GU.a.N7.y-GU.P[1],GU.a.N7.x-GU.P[0]));
+  const dna=E('g',{opacity:lerp(.22,1,ap)}),Ns=[],Sg=[];
+  [225,315].forEach((th,i)=>{
+    const off=1.7*(1-b[i]),n7=[PTF[0]+(2.05+off)*cos(th),PTF[1]+(2.05+off)*sin(th)];
+    const pose={x:n7[0],y:n7[1],flip:i===0,rot:i===0?45+aN7:135-aN7,anchor:[GU.a.N7.x,GU.a.N7.y]};
+    const P=drawMol(dna,GU,pose,{lp:st>=1&&b[i]<.55,lpOnly:new Set(['N7']),hide:new Set(['Hs'])});
+    const n=P.N9,h=P.Hs,ux=h[0]-n[0],uy=h[1]-n[1],s=[n[0]+ux*1.75,n[1]+uy*1.75];
+    L(dna,'bd',[n[0]+ux*.38,n[1]+uy*.38],[n[0]+ux*1.1,n[1]+uy*1.1]);Ns.push(n7);Sg.push(s);
+    const hc=tf(pose)(0,0);T(dna,'lbl strong',[hc[0]+(i?1.5:-1.5),hc[1]-2.5],'guanine');
+  });
+  const ph=[(Sg[0][0]+Sg[1][0])/2,Math.min(Sg[0][1],Sg[1][1])-.9];
+  E('path',{class:'bb',d:`M${X(Sg[0][0]-3.6)} ${Y(Sg[0][1]-.5)}L${X(Sg[0][0])} ${Y(Sg[0][1])}L${X(ph[0])} ${Y(ph[1])}L${X(Sg[1][0])} ${Y(Sg[1][1])}L${X(Sg[1][0]+3.6)} ${Y(Sg[1][1]-.5)}`},dna);
+  Sg.forEach(s=>{const pts=[0,1,2,3,4].map(k=>`${X(s[0]+.72*cos(90+72*k))},${Y(s[1]+.72*sin(90+72*k))}`).join(' ');E('polygon',{class:'sug',points:pts},dna);});
+  [[ph[0],ph[1]],[Sg[0][0]-2.4,Sg[0][1]-.33],[Sg[1][0]+2.4,Sg[1][1]-.33]].forEach(c=>{E('circle',{class:'pho',cx:X(c[0]),cy:Y(c[1]),r:.48*S},dna);T(dna,'stubt',c,'P');});
+  T(dna,'lbl',[ph[0],ph[1]-1.15],'sugar–phosphate backbone of one DNA strand');
+  if(st===1){const ly=PTF[1]-4.3;T(dna,'lbl acc',[PTF[0],ly],'lone pair on N',{opacity:p});
+    Ns.forEach((n,i)=>{const sx=i?1:-1;L(dna,'bd thin',[PTF[0]+sx*.9,ly+.45],[n[0]-sx*.75,n[1]-.1],{opacity:p,style:'stroke:var(--accent)'});});}
+  /* complex */
+  const g=E('g',{});
+  [[135,'H₃N','end'],[45,'NH₃','start']].forEach(v=>{const q=[Pt[0]+2.1*cos(v[0]),Pt[1]+2.1*sin(v[0])];
+    L(g,'bd',[Pt[0]+.5*cos(v[0]),Pt[1]+.5*sin(v[0])],[q[0]-.42*cos(v[0]),q[1]-.42*sin(v[0])]);
+    T(g,'at aN',[q[0]+(v[2]==='end'?.2:-.2),q[1]],v[1],{'text-anchor':v[2]});});
+  [225,315].forEach((th,i)=>{
+    const k=b[i],home=[Pt[0]+2.3*cos(th),Pt[1]+2.3*sin(th)],away=[PTF[0]+(i?.9:-.9),PTF[1]-4.6],c=[lerp(home[0],away[0],k),lerp(home[1],away[1],k)];
+    if(k<.3)L(g,'bd',[Pt[0]+.5*cos(th),Pt[1]+.5*sin(th)],[home[0]-.5*cos(th),home[1]-.5*sin(th)],{opacity:1-k/.3});
+    T(g,'at aCl',c,k>.25?'Cl⁻':'Cl',{opacity:k<.7?1:1-(k-.7)/.3});
+    if(k>.55){const n=Ns[i],o=clamp((k-.55)/.4),d=dist(n,Pt),ux=(Pt[0]-n[0])/d,uy=(Pt[1]-n[1])/d,e=[Pt[0]-ux*.55,Pt[1]-uy*.55];
+      L(g,'bd new',[n[0]+ux*.4,n[1]+uy*.4],e,{opacity:o});
+      E('path',{d:`M${X(e[0]+ux*.12)} ${Y(e[1]+uy*.12)}L${X(e[0]-ux*.32-uy*.2)} ${Y(e[1]-uy*.32+ux*.2)}L${X(e[0]-ux*.32+uy*.2)} ${Y(e[1]-uy*.32-ux*.2)}Z`,fill:'var(--accent)',opacity:o},g);}
+  });
+  T(g,'at aPt',Pt,'Pt');
+  if(st===0){const o=p;
+    E('path',{d:`M${X(Pt[0]+.95*cos(225))} ${Y(Pt[1]+.95*sin(225))}A${.95*S} ${.95*S} 0 0 0 ${X(Pt[0]+.95*cos(315))} ${Y(Pt[1]+.95*sin(315))}`,fill:'none',stroke:'var(--muted)','stroke-width':1.5,opacity:o},g);
+    T(g,'lbl',[Pt[0],Pt[1]-1.35],'90°',{opacity:o});T(g,'lbl strong',[Pt[0],Pt[1]+2.6],'square planar, Pt(II)',{opacity:o});
+    T(g,'lbl',[Pt[0],Pt[1]-2.75],'Cl⁻ ligands on the same side (cis)',{opacity:o});}
+  if(st===3&&cp.p>.8)T(g,'lbl acc',[Pt[0],Pt[1]+3.0],'two coordinate bonds from N to Pt',{opacity:clamp((cp.p-.8)/.2)});
+  if(st===2&&cp.p>.8)T(g,'lbl acc',[Pt[0],Pt[1]+3.0],'coordinate bond from N to Pt',{opacity:clamp((cp.p-.8)/.2)});
+}
+function cisHelix(){
+  const p=cp.p,kink=42*ease(clamp(p/.5)),w=.95,k=2*Math.PI/6.6,g=E('g',{});
+  const pts=[];let x=0,y=0;const ds=.05,N=340,s0=-8.5;
+  for(let i=0;i<=N;i++){const s=s0+i*ds,phi=(kink/2)*Math.tanh(s/.7);pts.push({s,x,y,phi});x+=ds*cos(phi);y+=ds*sin(phi);}
+  const c=pts[N/2],ox=c.x,oy=c.y-.2;pts.forEach(q=>{q.x-=ox;q.y-=oy;});
+  const at=s=>pts[clamp(Math.round((s-s0)/ds),0,N)],side=(q,sg)=>{const o=sg*w*Math.cos(k*q.s);return [q.x-sin(q.phi)*o,q.y+cos(q.phi)*o];};
+  for(let j=-13;j<=12;j++){const q=at((j+.5)*.66);if(Math.abs(Math.cos(k*q.s))<.25)continue;L(g,'rung'+((j===-1||j===0)?' g':''),side(q,1),side(q,-1));}
+  for(const sg of[-1,1])E('polyline',{class:sg>0?'strandA':'strandB',points:pts.map(q=>{const v=side(q,sg);return X(v[0])+','+Y(v[1]);}).join(' ')},g);
+  const q0=at(0),pt=[q0.x,q0.y+w+1.3];
+  [-.33,.33].forEach(s=>L(g,'bd new',side(at(s),1),pt));
+  E('circle',{class:'ptdot',cx:X(pt[0]),cy:Y(pt[1]),r:.55*S},g);T(g,'stubt',pt,'Pt',{style:'fill:#fff;font-size:13px'});
+  T(g,'lbl strong',[pt[0],pt[1]+1.75],'Pt bonded to two guanines');T(g,'lbl strong',[pt[0],pt[1]+1.15],'next to each other on one strand');
+  if(kink>4){T(g,'lbl hot',[q0.x+2.3,q0.y-w-.9],'helix kinked here',{opacity:clamp(kink/25),'font-size':15});}
+  const e=clamp((p-.5)/.42),se=lerp(-7.6,-2.5,ease(e)),qe=at(se),o=clamp((p-.45)/.1);
+  if(p>.45){E('ellipse',{cx:X(qe.x),cy:Y(qe.y),rx:1.05*S,ry:1.55*S,fill:'color-mix(in srgb,var(--good) 20%,transparent)',stroke:'var(--good)','stroke-width':2.5,opacity:o,transform:`rotate(${-qe.phi} ${X(qe.x)} ${Y(qe.y)})`},g);
+    T(g,'lbl good',[qe.x,qe.y-2.2],'enzymes copying',{opacity:o,'font-size':14});T(g,'lbl good',[qe.x,qe.y-2.75],'the DNA',{opacity:o,'font-size':14});}
+  if(p>.92){const o2=clamp((p-.92)/.08);
+    T(g,'at',[qe.x+1.55,qe.y],'✕',{style:'fill:var(--hot);font-size:34px',opacity:o2});
+    T(g,'lbl strong',[0,q0.y-w-2.6],'The strands cannot be unwound and copied past the kink',{opacity:o2,'font-size':16});}
+}
+function cisCells(){
+  const p=cp.p,g=E('g',{});
+  [[-4.7,'Cancer cell','divides rapidly','Tumour stops growing','good','benefit'],[4.7,'Healthy cell','e.g. hair follicle: also divides rapidly','Hair loss and other side effects','hot','risk']].forEach((c,i)=>{
+    const o=clamp(p*2.2-i*.5),cx=c[0],cy=1.9,gg=E('g',{opacity:o},g);
+    E('circle',{class:'cell',cx:X(cx),cy:Y(cy),r:3.3*S},gg);E('circle',{class:'nuc',cx:X(cx),cy:Y(cy),r:1.75*S},gg);
+    E('path',{class:'strandA',d:`M${X(cx-1.2)} ${Y(cy+.55)}L${X(cx)} ${Y(cy-.35)}L${X(cx+1.2)} ${Y(cy+.55)}`},gg);
+    E('path',{class:'strandB',d:`M${X(cx-1.2)} ${Y(cy+.05)}L${X(cx)} ${Y(cy-.85)}L${X(cx+1.2)} ${Y(cy+.05)}`},gg);
+    E('circle',{class:'ptdot',cx:X(cx),cy:Y(cy+.35),r:.36*S},gg);T(gg,'stubt',[cx,cy+.35],'Pt',{style:'fill:#fff;font-size:10px'});
+    T(gg,'lbl strong',[cx,cy+4.3],c[1],{'font-size':18});T(gg,'lbl',[cx,cy+3.7],c[2]);
+    T(gg,'lbl',[cx,cy-2.45],'DNA cannot be copied');
+    const o2=clamp(p*2.2-1.1-i*.2);
+    T(g,'at',[cx,cy-4.3],'↓',{opacity:o2,fill:'var(--muted)'});
+    T(g,'lbl strong '+c[4],[cx,cy-5.2],c[3],{opacity:o2,'font-size':17});
+    T(g,'lbl '+c[4],[cx,cy-5.9],c[5].toUpperCase(),{opacity:o2,'letter-spacing':'.08em'});
+  });
+  T(g,'lbl strong',[0,2.2],'same drug,',{opacity:clamp(p*2-.8)});T(g,'lbl strong',[0,1.6],'same reaction',{opacity:clamp(p*2-.8)});
+}
+function cpGo(n,then){cp.step=clamp(n,0,CIS.length-1);const dur=(cp.step===4?3600:cp.step===0?700:2200)/cp.speed;
+  tween(dur,t=>{cp.p=t;drawCis();},then);}
+function cpPlay(){
+  if(cp.playing){cp.playing=false;cancelAnimationFrame(raf);clearTimeout(cp.to);cp.p=1;drawCis();return;}
+  cp.playing=true;const run=n=>cpGo(n,()=>{if(!cp.playing)return;if(n>=CIS.length-1){cp.playing=false;drawCis();return;}cp.to=setTimeout(()=>{if(cp.playing&&mode==='cis')run(n+1);},1500/cp.speed);});
+  run(cp.step>=CIS.length-1?0:cp.step===0&&cp.p>=1?1:cp.step);
+}
+function cpStop(){cp.playing=false;clearTimeout(cp.to);}
+function initCis(){
+  svg.classList.remove('touch');
+  ovTop.innerHTML='<div class="seg" id="cpSteps" role="group" aria-label="Step">'+CIS.map((s,i)=>`<button data-v="${i}">${i+1}. ${s.nm}</button>`).join('')+'</div>';
+  ovBot.innerHTML='<span class="pill formula" id="cpF"></span><span class="sp"></span>'+seg('cpSpeed',[['0.5','Slow'],['1','Normal'],['2','Fast']],String(cp.speed),'Speed');
+  nav.innerHTML='<button id="cpPrev">Back</button><button id="cpPlay">Play all</button><button id="cpNext" class="go">Next</button>';
+  rail.innerHTML=`<div class="card"><h2>Cisplatin</h2><ul class="facts">
+      <li><span>Formula</span><b>[Pt(NH₃)₂Cl₂]</b></li><li><span>Oxidation state</span>platinum(II)</li>
+      <li><span>Shape</span>square planar, 90°</li><li><span>Reaction with DNA</span>ligand replacement (substitution)</li>
+      <li><span>New bond</span>coordinate bond from a lone pair on a guanine N to Pt</li></ul></div>
+    <div class="card"><h2>Model answers</h2>
+      <p class="model"><b>How it works:</b> the Cl⁻ ligands are replaced by nitrogen atoms on two guanines. Each N uses its lone pair to form a coordinate bond to platinum.</p>
+      <p class="model"><b>Why it stops cancer:</b> the DNA is distorted so it cannot be replicated. The cell cannot divide.</p>
+      <p class="model"><b>Why there are side effects:</b> it also bonds to DNA in healthy cells, especially those that replicate quickly, such as hair follicles.</p></div>
+    <div class="card"><h2>Why the cis isomer?</h2><div class="mini">
+      <div><svg viewBox="0 0 120 92">${miniPt(['H₃N','NH₃','Cl','Cl'])}</svg>cisplatin: works</div>
+      <div><svg viewBox="0 0 120 92">${miniPt(['H₃N','Cl','Cl','NH₃'])}</svg>transplatin: does not</div></div>
+      <p class="note" style="margin-top:10px">With the Cl⁻ ligands 90° apart, both can be replaced by two guanines that sit next to each other. In the trans isomer they are on opposite sides, so this cross-link cannot form.</p></div>`;
+  wireSeg('cpSteps',v=>{cpStop();cpGo(+v);});
+  wireSeg('cpSpeed',v=>{cp.speed=+v;});
+  $('#cpPrev').onclick=()=>{cpStop();cp.step=Math.max(0,cp.step-1);cancelAnimationFrame(raf);cp.p=1;drawCis();};
+  $('#cpNext').onclick=()=>{cpStop();cpGo(cp.step+1);};
+  $('#cpPlay').onclick=cpPlay;
+  drawCis();
+}
+function miniPt(l){ /* TL, TR, BL, BR */
+  const c=[60,46],d=[[-1,-1],[1,-1],[-1,1],[1,1]];
+  return d.map((v,i)=>`<line x1="${c[0]+v[0]*9}" y1="${c[1]+v[1]*8}" x2="${c[0]+v[0]*24}" y2="${c[1]+v[1]*22}" stroke="var(--ink)" stroke-width="2" stroke-linecap="round"/>`+
+    `<text x="${c[0]+v[0]*29}" y="${c[1]+v[1]*31}" text-anchor="${v[0]<0?'end':'start'}" dominant-baseline="central" font-size="14" font-weight="700" font-family="var(--font-body)" fill="var(${l[i][0]==='C'?'--cCl':'--cN'})">${l[i]}</text>`).join('')+
+    `<text x="60" y="46" text-anchor="middle" dominant-baseline="central" font-size="15" font-weight="700" font-family="var(--font-body)" fill="var(--cPt)">Pt</text>`;
+}
+
+/* ---------- mode switching ---------- */
+let mode='build';
+function setMode(m){
+  cancelAnimationFrame(raf);cpStop();if(bd.anim){bd.anim=null;['phos','baseJ','next'].forEach(k=>{bd[k]=bd[k]>0&&bd[k]<1?0:bd[k];});if(bd.baseJ===0)bd.vb=0;}
+  mode=m;document.querySelectorAll('#modes button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.m===m));
+  ({build:initBuild,pair:initPair,cis:initCis})[m]();
+}
+$('#modes').addEventListener('click',e=>{const b=e.target.closest('button');if(b)setMode(b.dataset.m);});
+setMode('build');
+})();
+</script>
+</body>
+</html>

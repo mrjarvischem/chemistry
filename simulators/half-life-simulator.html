@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Radioactive Decay and Half-Life Simulator</title>
+<style>
+/* Layout idea: sample of nuclei on the left, decay curve and halving table on the right; stacks to one column on narrow screens.
+   Single light theme by choice: projector and whiteboard use, physics blue. */
+:root{
+  color-scheme: light;
+  --paper:#eaf2fa;
+  --panel:#ffffff;
+  --ink:#12263c;
+  --muted:#52657b;
+  --line:#c3d4e6;
+  --accent:#1c5aa3;
+  --accent-soft:#dbe8f6;
+  --decay:#e08a00;
+  --tag:#c2267a;
+  --body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --display: "Segoe UI Semibold", "Helvetica Neue", system-ui, -apple-system, Arial, sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45}
+.wrap{max-width:1320px;margin:0 auto;padding:18px 16px 28px;display:flex;flex-direction:column;gap:14px}
+header{display:flex;flex-wrap:wrap;gap:8px 20px;align-items:baseline;justify-content:space-between;border-bottom:3px solid var(--accent);padding-bottom:10px}
+h1{font-family:var(--display);font-size:clamp(1.35rem,2.6vw,1.9rem);margin:0;font-weight:600;letter-spacing:-.01em;text-wrap:balance}
+header p{margin:0;color:var(--muted);font-size:.95rem}
+h2{font-family:var(--display);font-size:1.05rem;margin:0;font-weight:600}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.cols{display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
+@media (min-width:920px){.cols{grid-template-columns:minmax(0,.9fr) minmax(0,1.3fr);align-items:start}}
+.stack{display:flex;flex-direction:column;gap:14px;min-width:0}
+
+/* setup row */
+.setup{display:flex;flex-wrap:wrap;gap:12px 22px;align-items:flex-end}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.field>span,.field>label{font-size:.8rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+select{font:inherit;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:8px;padding:8px 10px;max-width:100%}
+.seg{display:inline-flex;border:1.5px solid var(--accent);border-radius:8px;overflow:hidden;flex-wrap:nowrap}
+.seg button{font:inherit;font-weight:600;border:0;background:#fff;color:var(--accent);padding:8px 13px;cursor:pointer;border-right:1.5px solid var(--accent)}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--accent);color:#fff}
+.eq{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;background:var(--accent-soft);border-radius:8px;padding:10px 14px}
+.eq .equation{font-size:1.5rem;font-weight:600;display:flex;align-items:center;gap:.35em;white-space:nowrap}
+.eq .meta{font-size:.95rem;color:var(--ink)}
+.eq .meta b{color:var(--accent)}
+.nuc{display:inline-flex;align-items:center}
+.nuc .az{display:inline-flex;flex-direction:column;align-items:flex-end;font-size:.55em;line-height:1.05;margin-right:.08em;font-variant-numeric:tabular-nums}
+
+/* buttons */
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.btn{font:inherit;font-weight:600;border:1.5px solid var(--accent);background:#fff;color:var(--accent);border-radius:8px;padding:10px 14px;cursor:pointer}
+.btn.primary{background:var(--accent);color:#fff;min-width:6.5em}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn:hover:not(:disabled){filter:brightness(.95)}
+button:focus-visible,select:focus-visible,input:focus-visible,canvas:focus-visible{outline:3px solid var(--decay);outline-offset:2px}
+
+/* sample */
+#sample{width:100%;aspect-ratio:1/1;max-width:520px;align-self:center;display:block;border-radius:8px;background:#f6f9fc;border:1px solid var(--line);cursor:pointer;touch-action:manipulation}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.88rem;color:var(--muted)}
+.legend i{display:inline-block;width:.85em;height:.85em;border-radius:50%;margin-right:.4em;vertical-align:-.08em}
+.tagline{font-size:.95rem;border-left:4px solid var(--tag);padding:4px 10px;background:#fbf0f6;border-radius:0 6px 6px 0}
+
+/* readouts */
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}
+.tile{border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:#f8fbfe}
+.tile .k{font-size:.74rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.tile .v{font-size:1.45rem;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.2}
+.tile .u{font-size:.8rem;color:var(--muted)}
+
+/* graph */
+.graphhead{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between}
+#graph{width:100%;height:clamp(280px,44vh,430px);display:block;touch-action:pan-y;cursor:crosshair}
+.checks{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:.95rem}
+.checks label{display:inline-flex;gap:.45em;align-items:center;cursor:pointer}
+.checks input{width:1.1em;height:1.1em;accent-color:var(--accent)}
+.note{font-size:.92rem;color:var(--muted);margin:0;min-height:1.4em}
+
+/* table */
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:.98rem}
+th,td{padding:7px 10px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:.76rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+th:first-child,td:first-child{text-align:left}
+tr.now td{background:var(--accent-soft);font-weight:700}
+td.sim{color:var(--accent);font-weight:700}
+.points{margin:0;padding-left:1.15em;display:flex;flex-direction:column;gap:5px;font-size:.96rem;max-width:68ch}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Radioactive Decay and Half-Life</h1>
+    <p>GCSE Physics · Atomic structure</p>
+  </header>
+
+  <section class="panel" aria-label="Set up">
+    <div class="setup">
+      <div class="field">
+        <label for="iso">Isotope</label>
+        <select id="iso"></select>
+      </div>
+      <div class="field">
+        <span id="n0lab">Nuclei at the start</span>
+        <div class="seg" role="group" aria-labelledby="n0lab" id="n0seg">
+          <button type="button" data-n="64" id="n64">64</button>
+          <button type="button" data-n="256" id="n256">256</button>
+          <button type="button" data-n="1024" id="n1024">1024</button>
+        </div>
+      </div>
+      <div class="field">
+        <span id="splab">Speed</span>
+        <div class="seg" role="group" aria-labelledby="splab" id="spseg">
+          <button type="button" data-s="0.5" id="s05">½×</button>
+          <button type="button" data-s="1" id="s1">1×</button>
+          <button type="button" data-s="2" id="s2">2×</button>
+          <button type="button" data-s="4" id="s4">4×</button>
+        </div>
+      </div>
+    </div>
+    <div class="eq">
+      <div class="equation" id="equation" aria-live="polite"></div>
+      <div class="meta" id="isometa"></div>
+    </div>
+  </section>
+
+  <div class="cols">
+    <div class="stack">
+      <section class="panel" aria-label="Sample">
+        <h2>The sample</h2>
+        <canvas id="sample" tabindex="0" aria-label="Grid of nuclei. Click a nucleus to tag it."></canvas>
+        <div class="legend">
+          <span><i style="background:var(--accent)"></i>Undecayed nucleus</span>
+          <span><i style="background:var(--decay)"></i>Decaying now</span>
+          <span><i style="background:#dde6ef;border:1px solid #b4c3d3"></i>Decayed</span>
+        </div>
+        <div class="tagline" id="tagtext"></div>
+        <div class="btns">
+          <button class="btn primary" type="button" id="run">Run</button>
+          <button class="btn" type="button" id="step">Advance 1 half-life</button>
+          <button class="btn" type="button" id="again">Keep trace, run again</button>
+          <button class="btn" type="button" id="reset">Reset</button>
+        </div>
+      </section>
+
+      <section class="panel" aria-label="Readouts">
+        <div class="tiles">
+          <div class="tile"><div class="k">Time</div><div class="v" id="rTime">0</div><div class="u" id="rUnit">years</div></div>
+          <div class="tile"><div class="k">Half-lives passed</div><div class="v" id="rHL">0.00</div><div class="u">of 6</div></div>
+          <div class="tile"><div class="k">Undecayed</div><div class="v" id="rN">0</div><div class="u" id="rPct">100%</div></div>
+          <div class="tile"><div class="k">Decayed</div><div class="v" id="rD">0</div><div class="u">nuclei</div></div>
+        </div>
+      </section>
+    </div>
+
+    <div class="stack">
+      <section class="panel" aria-label="Graph">
+        <div class="graphhead">
+          <h2 id="gtitle">Undecayed nuclei against time</h2>
+          <div class="seg" role="group" aria-label="Graph shows" id="modeseg">
+            <button type="button" data-m="n" id="mN">Undecayed nuclei</button>
+            <button type="button" data-m="a" id="mA">Count rate</button>
+          </div>
+        </div>
+        <canvas id="graph" aria-label="Decay graph. Move over the graph to read values."></canvas>
+        <div class="checks">
+          <label for="cTheory"><input type="checkbox" id="cTheory">Expected curve</label>
+          <label for="cLines"><input type="checkbox" id="cLines">Halving lines from this run</label>
+        </div>
+        <p class="note" id="gnote"></p>
+      </section>
+
+      <section class="panel" aria-label="Halving table">
+        <h2>After each half-life</h2>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Half-lives</th><th id="thTime">Time</th><th>Fraction left</th><th>Expected</th><th>This run</th></tr></thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <section class="panel" aria-label="Key ideas">
+    <h2>Key ideas</h2>
+    <ul class="points">
+      <li>Decay is random. You cannot predict which nucleus will decay next, or when a particular nucleus will decay.</li>
+      <li>Half-life is the time taken for the number of undecayed nuclei in a sample to halve. It is also the time for the count rate (or activity) to fall to half its starting value.</li>
+      <li>Each isotope has its own half-life, and it stays the same however much of the sample is left.</li>
+      <li>After <i>n</i> half-lives the fraction remaining is 1 ÷ 2<sup><i>n</i></sup>. Small samples stray further from this than large ones.</li>
+    </ul>
+  </section>
+</div>
+
+<script>
+(function(){
+"use strict";
+var ISO=[
+ {name:"Carbon-14",sym:"C",A:"14",Z:6,hl:5730,unit:"years",dp:0,type:"beta",d:{sym:"N",A:"14",Z:7},use:"Used to date material that was once living."},
+ {name:"Iodine-131",sym:"I",A:"131",Z:53,hl:8,unit:"days",dp:1,type:"beta",d:{sym:"Xe",A:"131",Z:54},use:"Medical tracer and treatment for the thyroid gland."},
+ {name:"Technetium-99m",sym:"Tc",A:"99m",Z:43,hl:6,unit:"hours",dp:1,type:"gamma",d:{sym:"Tc",A:"99",Z:43},use:"The most widely used medical tracer."},
+ {name:"Radon-220",sym:"Rn",A:"220",Z:86,hl:56,unit:"seconds",dp:0,type:"alpha",d:{sym:"Po",A:"216",Z:84},use:"A gas with a half-life short enough to measure in a lesson."},
+ {name:"Protactinium-234m",sym:"Pa",A:"234m",Z:91,hl:70,unit:"seconds",dp:0,type:"beta",d:{sym:"U",A:"234",Z:92},use:"The classic school half-life demonstration."},
+ {name:"Cobalt-60",sym:"Co",A:"60",Z:27,hl:5.27,unit:"years",dp:2,type:"beta",d:{sym:"Ni",A:"60",Z:28},use:"Radiotherapy and sterilising equipment. Gamma rays are emitted as well."},
+ {name:"Americium-241",sym:"Am",A:"241",Z:95,hl:432,unit:"years",dp:0,type:"alpha",d:{sym:"Np",A:"237",Z:93},use:"The source in smoke detectors."},
+ {name:"Uranium-238",sym:"U",A:"238",Z:92,hl:4.47,unit:"billion years",dp:2,type:"alpha",d:{sym:"Th",A:"234",Z:90},use:"Used to date rocks."}
+];
+var TMAX=6,BINS=60,BASE=5; // BASE: seconds of animation per half-life at 1x
+var C={accent:"#1c5aa3",ink:"#12263c",muted:"#52657b",line:"#c3d4e6",grid:"#e3ecf5",decay:"#e08a00",tag:"#c2267a",dead:"#dde6ef",deadEdge:"#b4c3d3",ghost:"#9db9d8"};
+var reduce=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+var S={iso:0,N0:256,speed:1,running:false,t:0,n:0,alive:null,decT:null,flash:null,trace:[],bins:[],snap:[],tag:-1,step:null,ghosts:[],mode:"n",theory:false,lines:false,hover:null};
+var dirty=true,last=0;
+var $=function(id){return document.getElementById(id)};
+var sample=$("sample"),graph=$("graph");
+
+function iso(){return ISO[S.iso]}
+function fmt(v){var i=iso();return v.toLocaleString("en-GB",{minimumFractionDigits:i.dp,maximumFractionDigits:i.dp})}
+function nuc(A,Z,sym){return '<span class="nuc"><span class="az"><span>'+A+'</span><span>'+Z+'</span></span>'+sym+'</span>'}
+
+function reset(keep){
+  if(keep&&S.trace.length>1){
+    S.ghosts.push({trace:S.trace,bins:S.bins.slice(0,Math.floor(S.t*10+1e-9))});
+    if(S.ghosts.length>4)S.ghosts.shift();
+  }else if(!keep){S.ghosts=[]}
+  var N=S.N0;
+  S.alive=new Uint8Array(N).fill(1);S.decT=new Float32Array(N).fill(-1);S.flash=new Float64Array(N);
+  S.t=0;S.n=N;S.trace=[[0,N]];S.bins=new Array(BINS).fill(0);S.snap=[N];S.running=false;S.step=null;S.hover=null;
+  if(S.tag>=N)S.tag=-1;
+  dirty=true;ui();
+}
+
+function advance(dtReal,now){
+  var rate=S.step!==null?1/1.4:S.speed/BASE;
+  var boundary=Math.floor(S.t+1e-9)+1;
+  var nt=Math.min(S.t+dtReal*rate,boundary);
+  if(boundary-nt<1e-9)nt=boundary;
+  var d=nt-S.t,p=1-Math.pow(2,-d),bin=Math.min(BINS-1,Math.floor((S.t+d/2)*10));
+  for(var i=0;i<S.N0;i++){
+    if(S.alive[i]&&Math.random()<p){S.alive[i]=0;S.decT[i]=nt;S.flash[i]=now;S.n--;S.bins[bin]++}
+  }
+  S.t=nt;S.trace.push([nt,S.n]);
+  if(nt===boundary){
+    S.snap[boundary]=S.n;
+    if(S.step!==null&&boundary>=S.step){S.running=false;S.step=null}
+    if(boundary>=TMAX){S.running=false;S.step=null}
+  }
+}
+
+/* ---------- drawing ---------- */
+function fit(cv){
+  var dpr=window.devicePixelRatio||1,w=cv.clientWidth,h=cv.clientHeight;
+  if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr)}
+  var g=cv.getContext("2d");g.setTransform(dpr,0,0,dpr,0,0);return {g:g,w:w,h:h};
+}
+function drawSample(now){
+  var o=fit(sample),g=o.g,w=o.w,cols=Math.round(Math.sqrt(S.N0)),pad=8,cell=(w-2*pad)/cols,r=cell*0.37,busy=false;
+  g.clearRect(0,0,w,o.h);
+  for(var i=0;i<S.N0;i++){
+    var x=pad+(i%cols+0.5)*cell,y=pad+(Math.floor(i/cols)+0.5)*cell;
+    g.beginPath();g.arc(x,y,r,0,6.2832);
+    if(S.alive[i]){g.fillStyle=C.accent;g.fill()}
+    else{
+      var age=now-S.flash[i];
+      if(!reduce&&age<600){busy=true;g.fillStyle=C.decay;g.fill();
+        g.beginPath();g.arc(x,y,r+ (age/600)*cell*0.5,0,6.2832);g.strokeStyle="rgba(224,138,0,"+(1-age/600).toFixed(2)+")";g.lineWidth=1.5;g.stroke()}
+      else{g.fillStyle=C.dead;g.fill();if(r>3){g.strokeStyle=C.deadEdge;g.lineWidth=1;g.stroke()}}
+    }
+  }
+  if(S.tag>=0){
+    var tx=pad+(S.tag%cols+0.5)*cell,ty=pad+(Math.floor(S.tag/cols)+0.5)*cell;
+    g.beginPath();g.arc(tx,ty,r+3.5,0,6.2832);g.strokeStyle="#fff";g.lineWidth=5;g.stroke();
+    g.strokeStyle=C.tag;g.lineWidth=3;g.stroke();
+  }
+  return busy;
+}
+function niceMax(v){var s=[5,10,20,40,50,80,100,150,200];for(var i=0;i<s.length;i++)if(v<=s[i])return s[i];return Math.ceil(v/50)*50}
+function crossings(){
+  var out=[],k=1,tr=S.trace;
+  for(var i=0;i<tr.length&&k<=3;i++){while(k<=3&&tr[i][1]<=S.N0/Math.pow(2,k)){out.push(tr[i][0]);k++}}
+  return out;
+}
+function drawGraph(){
+  var o=fit(graph),g=o.g,w=o.w,h=o.h,L=52,R=14,T=14,B=48,narrow=w<430;
+  var act=S.mode==="a",f=1-Math.pow(2,-0.1);
+  var ymax=act?niceMax(S.N0*f*1.7):S.N0;
+  function X(t){return L+t/TMAX*(w-L-R)}
+  function Y(v){return T+(1-v/ymax)*(h-T-B)}
+  g.clearRect(0,0,w,h);g.font="12px system-ui,-apple-system,Segoe UI,Arial,sans-serif";g.lineWidth=1;
+  // grid + axes labels
+  g.textAlign="right";g.textBaseline="middle";
+  for(var j=0;j<=4;j++){var v=ymax*j/4;g.strokeStyle=C.grid;g.beginPath();g.moveTo(L,Y(v));g.lineTo(w-R,Y(v));g.stroke();g.fillStyle=C.muted;g.fillText(String(Math.round(v*10)/10),L-7,Y(v))}
+  g.textAlign="center";g.textBaseline="top";
+  for(var k=0;k<=TMAX;k++){g.strokeStyle=C.grid;g.beginPath();g.moveTo(X(k),T);g.lineTo(X(k),h-B);g.stroke();
+    if(!narrow||k%2===0||iso().hl<1000){g.fillStyle=C.muted;g.fillText(fmt(k*iso().hl),X(k),h-B+7)}}
+  g.strokeStyle=C.ink;g.lineWidth=1.5;g.beginPath();g.moveTo(L,T);g.lineTo(L,h-B);g.lineTo(w-R,h-B);g.stroke();
+  g.fillStyle=C.ink;g.font="600 13px system-ui,-apple-system,Segoe UI,Arial,sans-serif";
+  g.fillText("Time in "+iso().unit,L+(w-L-R)/2,h-20);
+  g.save();g.translate(13,T+(h-T-B)/2);g.rotate(-Math.PI/2);g.textBaseline="middle";g.fillText(act?"Decays counted per interval":"Number of undecayed nuclei",0,0);g.restore();
+
+  var i,q,p;
+  if(act){
+    // ghosts
+    g.fillStyle=C.ghost;
+    for(q=0;q<S.ghosts.length;q++){var gb=S.ghosts[q].bins;for(i=0;i<gb.length;i++){g.beginPath();g.arc(X(i/10+0.05),Y(Math.min(gb[i],ymax)),2.5,0,6.2832);g.fill()}}
+    if(S.theory){g.strokeStyle=C.ink;g.setLineDash([6,5]);g.lineWidth=1.5;g.beginPath();
+      for(i=0;i<=120;i++){var tt=i/120*TMAX,vv=S.N0*Math.pow(2,-(tt-0.05))*f;if(i)g.lineTo(X(tt),Y(vv));else g.moveTo(X(tt),Y(Math.min(vv,ymax)))}
+      g.stroke();g.setLineDash([])}
+    var done=Math.floor(S.t*10+1e-9);
+    g.strokeStyle=C.accent;g.lineWidth=1.5;g.beginPath();
+    for(i=0;i<done;i++){p=[X(i/10+0.05),Y(Math.min(S.bins[i],ymax))];if(i)g.lineTo(p[0],p[1]);else g.moveTo(p[0],p[1])}
+    g.stroke();g.fillStyle=C.accent;
+    for(i=0;i<done;i++){g.beginPath();g.arc(X(i/10+0.05),Y(Math.min(S.bins[i],ymax)),3.5,0,6.2832);g.fill()}
+  }else{
+    g.lineWidth=1.5;g.strokeStyle=C.ghost;
+    for(q=0;q<S.ghosts.length;q++){var tr=S.ghosts[q].trace;g.beginPath();for(i=0;i<tr.length;i++){if(i)g.lineTo(X(tr[i][0]),Y(tr[i][1]));else g.moveTo(X(tr[i][0]),Y(tr[i][1]))}g.stroke()}
+    if(S.theory){g.strokeStyle=C.ink;g.setLineDash([6,5]);g.beginPath();
+      for(i=0;i<=120;i++){var t2=i/120*TMAX;if(i)g.lineTo(X(t2),Y(S.N0*Math.pow(2,-t2)));else g.moveTo(X(t2),Y(S.N0))}
+      g.stroke();g.setLineDash([])}
+    if(S.lines){var cr=crossings();g.strokeStyle=C.decay;g.lineWidth=1.5;g.setLineDash([4,4]);
+      for(i=0;i<cr.length;i++){var lv=S.N0/Math.pow(2,i+1);g.beginPath();g.moveTo(L,Y(lv));g.lineTo(X(cr[i]),Y(lv));g.lineTo(X(cr[i]),h-B);g.stroke()}
+      g.setLineDash([])}
+    g.strokeStyle=C.accent;g.lineWidth=2.5;g.lineJoin="round";g.beginPath();
+    for(i=0;i<S.trace.length;i++){if(i)g.lineTo(X(S.trace[i][0]),Y(S.trace[i][1]));else g.moveTo(X(S.trace[i][0]),Y(S.trace[i][1]))}
+    g.stroke();
+    var e=S.trace[S.trace.length-1];g.fillStyle=C.accent;g.beginPath();g.arc(X(e[0]),Y(e[1]),4.5,0,6.2832);g.fill();
+  }
+  // hover readout
+  if(S.hover!==null){
+    var ht=Math.max(0,Math.min(S.t,(S.hover-L)/(w-L-R)*TMAX)),hv,label;
+    if(act){var b=Math.min(Math.floor(S.t*10+1e-9)-1,Math.floor(ht*10));if(b<0)return;ht=b/10+0.05;hv=S.bins[b];label=fmt(ht*iso().hl)+" "+iso().unit+":  "+hv+" decays"}
+    else{hv=S.trace[0][1];for(i=0;i<S.trace.length&&S.trace[i][0]<=ht;i++)hv=S.trace[i][1];label=fmt(ht*iso().hl)+" "+iso().unit+":  "+hv+" undecayed"}
+    var hx=X(ht),hy=Y(Math.min(hv,ymax));
+    g.strokeStyle=C.tag;g.lineWidth=1;g.beginPath();g.moveTo(hx,T);g.lineTo(hx,h-B);g.moveTo(L,hy);g.lineTo(w-R,hy);g.stroke();
+    g.fillStyle=C.tag;g.beginPath();g.arc(hx,hy,4.5,0,6.2832);g.fill();
+    g.font="600 13px system-ui,-apple-system,Segoe UI,Arial,sans-serif";
+    var tw=g.measureText(label).width+14,bx=Math.min(Math.max(hx+10,L+4),w-R-tw),by=Math.max(T+2,hy-32);
+    g.fillStyle="rgba(255,255,255,.95)";g.strokeStyle=C.tag;g.beginPath();g.rect(bx,by,tw,24);g.fill();g.stroke();
+    g.fillStyle=C.ink;g.textAlign="left";g.textBaseline="middle";g.fillText(label,bx+7,by+12);
+  }
+}
+
+/* ---------- interface ---------- */
+function setPressed(seg,attr,val){var b=$(seg).querySelectorAll("button");for(var i=0;i<b.length;i++)b[i].setAttribute("aria-pressed",String(b[i].getAttribute(attr)===String(val)))}
+function frac(n){return n===0?"1":"1/"+Math.pow(2,n)}
+function buildStatic(){
+  var i=iso(),part=i.type==="alpha"?nuc(4,2,"He"):i.type==="beta"?nuc(0,"−1","e"):"γ";
+  $("equation").innerHTML=nuc(i.A,i.Z,i.sym)+"<span>→</span>"+nuc(i.d.A,i.d.Z,i.d.sym)+"<span>+</span>"+part;
+  var kind=i.type==="alpha"?"Alpha decay":i.type==="beta"?"Beta decay":"Gamma emission";
+  $("isometa").innerHTML="<b>"+kind+"</b> · half-life <b>"+fmt(i.hl)+" "+i.unit+"</b><br>"+i.use;
+  $("rUnit").textContent=i.unit;$("thTime").textContent="Time ("+i.unit+")";
+  var rows="";
+  for(var n=0;n<=TMAX;n++){rows+='<tr id="row'+n+'"><td>'+n+'</td><td>'+fmt(n*i.hl)+'</td><td>'+frac(n)+'</td><td>'+(S.N0/Math.pow(2,n))+'</td><td class="sim" id="sim'+n+'"></td></tr>'}
+  $("tbody").innerHTML=rows;
+  setPressed("n0seg","data-n",S.N0);setPressed("spseg","data-s",S.speed);setPressed("modeseg","data-m",S.mode);
+}
+function ui(){
+  var i=iso(),done=S.t>=TMAX;
+  $("rTime").textContent=fmt(S.t*i.hl);$("rHL").textContent=S.t.toFixed(2);
+  $("rN").textContent=S.n;$("rD").textContent=S.N0-S.n;$("rPct").textContent=(100*S.n/S.N0).toFixed(1)+"% of the start";
+  for(var n=0;n<=TMAX;n++){var c=$("sim"+n);if(c){c.textContent=S.snap[n]===undefined?"":S.snap[n];$("row"+n).className=(S.snap[n]!==undefined&&S.snap[n+1]===undefined)?"now":""}}
+  $("run").textContent=S.running&&S.step===null?"Pause":"Run";
+  $("run").disabled=done||S.step!==null;$("step").disabled=done||S.step!==null;
+  $("again").disabled=S.trace.length<2;
+  var tt;
+  if(S.tag<0)tt="Click any nucleus to tag it, then predict when it will decay.";
+  else if(S.alive[S.tag])tt="Tagged nucleus: still undecayed after "+S.t.toFixed(2)+" half-lives.";
+  else tt="Tagged nucleus: decayed after "+S.decT[S.tag].toFixed(2)+" half-lives ("+fmt(S.decT[S.tag]*i.hl)+" "+i.unit+").";
+  $("tagtext").textContent=tt;
+  $("gtitle").textContent=S.mode==="a"?"Count rate against time":"Undecayed nuclei against time";
+  $("cLines").disabled=S.mode==="a";
+  var note="";
+  if(S.mode==="a")note="Each point is the number of decays counted in one tenth of a half-life, like repeated Geiger counter readings.";
+  else if(S.lines){var cr=crossings(),nm=["start → ½","½ → ¼","¼ → ⅛"],bits=[];
+    for(var k=0;k<cr.length;k++)bits.push(nm[k]+" took "+fmt((cr[k]-(k?cr[k-1]:0))*i.hl)+" "+i.unit);
+    note=bits.length?"This run: "+bits.join("; ")+". Accepted half-life: "+fmt(i.hl)+" "+i.unit+".":"Run the sample to measure its halving times.";}
+  else if(S.ghosts.length)note="Pale lines are earlier runs. Every run is different, yet the half-life stays the same.";
+  $("gnote").textContent=note;
+}
+
+$("iso").innerHTML=ISO.map(function(x,k){return '<option value="'+k+'">'+x.name+"</option>"}).join("");
+$("iso").addEventListener("change",function(e){S.iso=+e.target.value;buildStatic();reset(false)});
+$("n0seg").addEventListener("click",function(e){var n=e.target.getAttribute("data-n");if(!n)return;S.N0=+n;S.tag=-1;buildStatic();reset(false)});
+$("spseg").addEventListener("click",function(e){var s=e.target.getAttribute("data-s");if(!s)return;S.speed=+s;setPressed("spseg","data-s",S.speed)});
+$("modeseg").addEventListener("click",function(e){var m=e.target.getAttribute("data-m");if(!m)return;S.mode=m;S.hover=null;setPressed("modeseg","data-m",m);dirty=true;ui()});
+$("cTheory").addEventListener("change",function(e){S.theory=e.target.checked;dirty=true});
+$("cLines").addEventListener("change",function(e){S.lines=e.target.checked;dirty=true;ui()});
+$("run").addEventListener("click",function(){if(S.t>=TMAX)return;S.running=!S.running;dirty=true;ui()});
+$("step").addEventListener("click",function(){if(S.t>=TMAX)return;S.step=Math.floor(S.t+1e-9)+1;S.running=true;dirty=true;ui()});
+$("again").addEventListener("click",function(){reset(true)});
+$("reset").addEventListener("click",function(){reset(false)});
+sample.addEventListener("click",function(e){
+  var r=sample.getBoundingClientRect(),cols=Math.round(Math.sqrt(S.N0)),pad=8,cell=(r.width-2*pad)/cols;
+  var cx=Math.floor((e.clientX-r.left-pad)/cell),cy=Math.floor((e.clientY-r.top-pad)/cell);
+  if(cx<0||cy<0||cx>=cols||cy>=cols)return;
+  var idx=cy*cols+cx;S.tag=S.tag===idx?-1:idx;dirty=true;ui();
+});
+function hov(e){var r=graph.getBoundingClientRect();S.hover=e.clientX-r.left;dirty=true}
+graph.addEventListener("pointermove",hov);graph.addEventListener("pointerdown",hov);
+graph.addEventListener("pointerleave",function(e){if(e.pointerType==="mouse"){S.hover=null;dirty=true}});
+if(window.ResizeObserver){new ResizeObserver(function(){dirty=true}).observe(document.body)}
+window.addEventListener("resize",function(){dirty=true});
+
+function loop(now){
+  var dt=Math.min(0.05,(now-last)/1000);last=now;
+  if(S.running){advance(dt,now);dirty=true;ui()}
+  if(dirty){dirty=false;if(drawSample(now))dirty=true;drawGraph()}
+  requestAnimationFrame(loop);
+}
+buildStatic();reset(false);
+requestAnimationFrame(function(t){last=t;loop(t)});
+})();
+</script>
+</body>
+</html>

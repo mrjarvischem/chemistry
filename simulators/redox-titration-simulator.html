@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manganate(VII) Redox Titration</title>
+<style>
+:root{
+  /* Layout: apparatus on the left, teacher controls and working on the right. Cream and brown house palette, purple reserved for manganate. */
+  --paper:#f6efe0;
+  --card:#fffaf0;
+  --ink:#3b2a1a;
+  --soft:#7a634b;
+  --line:#d9c7a8;
+  --brown:#6b4423;
+  --mn:#6a1b7a;
+  --mn-pale:#f3c1dc;
+  --good:#2f6b3a;
+  --warn:#a3341f;
+  --font:"Segoe UI",Calibri,"Helvetica Neue",Arial,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--font);font-size:17px;line-height:1.4}
+header{padding:14px 20px 6px;display:flex;flex-wrap:wrap;gap:8px 20px;align-items:baseline;justify-content:space-between}
+h1{font-size:1.55rem;margin:0;color:var(--brown);text-wrap:balance}
+h2{font-size:1rem;margin:0 0 8px;color:var(--brown);text-transform:uppercase;letter-spacing:.05em}
+.seg{display:inline-flex;border:2px solid var(--brown);border-radius:8px;overflow:hidden}
+.seg button{border:0;background:var(--card);color:var(--brown);font:inherit;font-weight:600;padding:8px 16px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--brown);color:#fff}
+main{display:grid;grid-template-columns:minmax(300px,1fr) minmax(320px,1fr);gap:16px;padding:8px 20px 24px;max-width:1300px;margin:0 auto}
+@media (max-width:800px){main{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.stack{display:flex;flex-direction:column;gap:14px;min-width:0}
+#rig{width:100%;height:auto;max-height:82vh;display:block}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+button.act{font:inherit;font-weight:600;padding:10px 14px;border-radius:8px;border:2px solid var(--mn);background:#fff;color:var(--mn);cursor:pointer;touch-action:manipulation;user-select:none}
+button.act.fill{background:var(--mn);color:#fff}
+button.act.plain{border-color:var(--brown);color:var(--brown)}
+button.act:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible,input:focus-visible{outline:3px solid #1d6fd1;outline-offset:2px}
+.read{display:flex;flex-wrap:wrap;gap:12px;align-items:stretch}
+.big{flex:1 1 150px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:8px 12px}
+.big span{display:block;font-size:.8rem;color:var(--soft);text-transform:uppercase;letter-spacing:.04em}
+.big b{font-size:1.9rem;font-variant-numeric:tabular-nums}
+.big small{font-size:1rem;font-weight:400;color:var(--soft)}
+#status{border-radius:8px;padding:10px 12px;font-weight:600;border:2px solid var(--line);background:#fff}
+#status.end{border-color:var(--good);background:#e9f4e6;color:var(--good)}
+#status.over{border-color:var(--warn);background:#fbe9e4;color:var(--warn)}
+.eq{font-size:1.08rem;line-height:1.9;overflow-x:auto;white-space:nowrap}
+.eq .half{color:var(--soft);font-size:.95rem}
+.ratio{display:inline-block;margin-top:4px;padding:3px 10px;border-radius:999px;background:var(--brown);color:#fff;font-weight:600;font-size:.95rem}
+.row{display:grid;grid-template-columns:8.5em 1fr 4.6em;gap:8px;align-items:center;margin:5px 0;font-size:.95rem}
+.bar{height:16px;background:#efe4cd;border-radius:4px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;border-radius:4px}
+.row output{text-align:right;font-variant-numeric:tabular-nums}
+.note{font-size:.85rem;color:var(--soft);margin:6px 0 0}
+label.sl{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;font-size:.95rem}
+input[type=range]{flex:1 1 160px;accent-color:var(--brown)}
+#calc ol{margin:8px 0 0;padding-left:1.3em}
+#calc li{margin:6px 0;font-variant-numeric:tabular-nums}
+#calc .ans{font-weight:700;color:var(--good)}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:.95rem}
+th,td{border-bottom:1px solid var(--line);padding:5px 6px;text-align:left}
+td.c{color:var(--good);font-weight:700}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:520px){.two{grid-template-columns:1fr}}
+svg text{font-family:var(--font)}
+</style>
+</head>
+<body>
+<header>
+  <h1>Manganate(VII) redox titration</h1>
+  <div class="seg" role="group" aria-label="Solution in the flask">
+    <button id="pickFe" aria-pressed="true">Fe<sup>2+</sup> in the flask</button>
+    <button id="pickOx" aria-pressed="false">C<sub>2</sub>O<sub>4</sub><sup>2−</sup> in the flask</button>
+  </div>
+</header>
+
+<main>
+  <section class="card">
+    <svg id="rig" viewBox="0 0 470 632" role="img" aria-label="Burette of purple potassium manganate(VII) clamped above a conical flask on a white tile">
+      <defs>
+        <clipPath id="flaskClip"><path d="M285,487 L285,520 L227,590 Q223,597 232,597 L368,597 Q377,597 373,590 L315,520 L315,487 Z"/></clipPath>
+        <radialGradient id="flashG"><stop offset="0" stop-color="#6a1b7a" stop-opacity=".95"/><stop offset="1" stop-color="#6a1b7a" stop-opacity="0"/></radialGradient>
+      </defs>
+      <!-- stand -->
+      <rect x="190" y="608" width="262" height="14" rx="3" fill="#6b4423"/>
+      <rect x="427" y="26" width="7" height="584" fill="#8a8178"/>
+      <rect x="311" y="199" width="118" height="7" fill="#8a8178"/>
+      <rect x="421" y="192" width="19" height="21" rx="3" fill="#5d564f"/>
+      <rect x="283" y="194" width="34" height="17" rx="3" fill="#5d564f"/>
+      <!-- white tile -->
+      <rect x="205" y="599" width="190" height="9" fill="#ffffff" stroke="#b9a98c"/>
+      <!-- burette liquid -->
+      <rect id="bLiq" x="291" y="60" width="18" height="360" fill="#6a1b7a"/>
+      <path d="M291,418 L309,418 L303,434 L303,468 L297,468 L297,434 Z" fill="#6a1b7a"/>
+      <!-- burette glass -->
+      <path d="M290,34 L290,418 L296,434 L296,468 M310,34 L310,418 L304,434 L304,468" fill="none" stroke="#5a4a3a" stroke-width="1.6"/>
+      <path d="M287,34 L313,34" stroke="#5a4a3a" stroke-width="2"/>
+      <g id="scale"></g>
+      <!-- tap -->
+      <rect x="282" y="436" width="36" height="8" rx="3" fill="#2f5d8a"/>
+      <rect id="tapH" x="296" y="428" width="8" height="24" rx="3" fill="#2f5d8a"/>
+      <!-- flask contents -->
+      <g clip-path="url(#flaskClip)">
+        <rect id="fLiq" x="215" y="572" width="170" height="40" fill="#cde4be"/>
+        <ellipse id="flash" cx="300" cy="580" rx="46" ry="15" fill="url(#flashG)" opacity="0"/>
+      </g>
+      <g id="drops"></g>
+      <!-- flask glass -->
+      <path d="M285,487 L285,520 L227,590 Q223,597 232,597 L368,597 Q377,597 373,590 L315,520 L315,487" fill="none" stroke="#5a4a3a" stroke-width="2"/>
+      <path d="M281,487 L319,487" stroke="#5a4a3a" stroke-width="2.4"/>
+      <!-- labels -->
+      <g font-size="14" fill="#3b2a1a">
+        <text x="14" y="96" font-weight="700" fill="#6a1b7a" font-size="15">BURETTE</text>
+        <text x="14" y="116">Potassium manganate(VII)</text>
+        <text x="14" y="135">KMnO₄(aq), purple</text>
+        <text x="14" y="154">0.0200 mol dm⁻³</text>
+        <text x="14" y="173" fill="#7a634b">The oxidising agent, MnO₄⁻</text>
+        <path d="M196,130 L286,130" stroke="#6a1b7a" stroke-width="1.5"/>
+        <circle cx="288" cy="130" r="3" fill="#6a1b7a"/>
+
+        <text x="14" y="500" font-weight="700" fill="#6b4423" font-size="15">CONICAL FLASK</text>
+        <text id="lab1" x="14" y="520"></text>
+        <text id="lab2" x="14" y="539"></text>
+        <text id="lab3" x="14" y="558" fill="#7a634b"></text>
+        <path d="M150,576 L244,576" stroke="#6b4423" stroke-width="1.5"/>
+        <circle cx="246" cy="576" r="3" fill="#6b4423"/>
+
+        <text x="14" y="608" fill="#7a634b">White tile shows the pink</text>
+        <path d="M176,604 L203,604" stroke="#7a634b" stroke-width="1.2"/>
+      </g>
+    </svg>
+  </section>
+
+  <section class="stack">
+    <div class="card">
+      <h2>Add manganate(VII) from the burette</h2>
+      <div class="btns">
+        <button class="act fill" id="hold">Hold to run</button>
+        <button class="act" id="add1">Add 1.00 cm³</button>
+        <button class="act" id="add01">Add 0.10 cm³</button>
+        <button class="act" id="addDrop">Add 1 drop</button>
+        <button class="act plain" id="reset">Refill and reset</button>
+      </div>
+      <div class="read" style="margin-top:12px">
+        <div class="big"><span>Burette reading</span><b id="reading">0.00</b> <small>cm³</small></div>
+        <div class="big" style="flex:2 1 220px;padding:6px">
+          <svg id="zoom" viewBox="0 0 250 120" style="width:100%;height:auto;display:block" role="img" aria-label="Magnified view of the burette scale at the liquid level"></svg>
+        </div>
+      </div>
+      <p class="note">KMnO<sub>4</sub> is too dark to see the bottom of the meniscus, so read the top.</p>
+      <div id="status" style="margin-top:10px" aria-live="polite"></div>
+    </div>
+
+    <div class="card">
+      <h2>Equation</h2>
+      <div class="eq" id="eq"></div>
+      <label class="sl" style="margin-top:10px">
+        <span id="concLab"></span>
+        <input type="range" id="conc">
+        <span><input type="checkbox" id="hide"> <label for="hide">Random unknown</label></span>
+      </label>
+    </div>
+
+    <div class="two">
+      <div class="card">
+        <h2>In the flask / mmol</h2>
+        <div id="species"></div>
+        <p class="note" id="spNote"></p>
+      </div>
+      <div class="card">
+        <h2>Titres</h2>
+        <div class="btns"><button class="act plain" id="record">Record titre and refill</button></div>
+        <table style="margin-top:8px"><thead><tr><th>Run</th><th>Titre / cm³</th><th></th></tr></thead><tbody id="log"></tbody></table>
+        <p class="note" id="mean"></p>
+      </div>
+    </div>
+
+    <div class="card" id="calc">
+      <div class="btns"><button class="act plain" id="showCalc" aria-expanded="false">Show calculation</button></div>
+      <div id="calcBody" hidden></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function(){
+"use strict";
+var $=function(id){return document.getElementById(id)};
+var NS="http://www.w3.org/2000/svg";
+var C_MN=0.0200, V_PIP=25.0, DROP=0.05;
+var Y0=60, PX=6.8;                       // burette scale: 0.00 at y=60, 6.8 px per cm3
+var SYS={
+  fe:{name:"Fe²⁺", html:"Fe<sup>2+</sup>", min:0.060,max:0.140,step:0.002,def:0.094, per:5,
+      eq:'MnO<sub>4</sub><sup>−</sup> + 8H<sup>+</sup> + 5Fe<sup>2+</sup> → Mn<sup>2+</sup> + 4H<sub>2</sub>O + 5Fe<sup>3+</sup>',
+      half:'Fe<sup>2+</sup> → Fe<sup>3+</sup> + e<sup>−</sup>',
+      ratio:'1 MnO<sub>4</sub><sup>−</sup> : 5 Fe<sup>2+</sup>',
+      lab:["25.0 cm³ Fe²⁺(aq) by pipette","+ excess dilute H₂SO₄","Pale green at the start"],
+      prod:"Fe³⁺ formed", prodPer:5},
+  ox:{name:"C₂O₄²⁻", html:"C<sub>2</sub>O<sub>4</sub><sup>2−</sup>", min:0.030,max:0.070,step:0.001,def:0.048, per:2.5,
+      eq:'2MnO<sub>4</sub><sup>−</sup> + 16H<sup>+</sup> + 5C<sub>2</sub>O<sub>4</sub><sup>2−</sup> → 2Mn<sup>2+</sup> + 8H<sub>2</sub>O + 10CO<sub>2</sub>',
+      half:'C<sub>2</sub>O<sub>4</sub><sup>2−</sup> → 2CO<sub>2</sub> + 2e<sup>−</sup>',
+      ratio:'2 MnO<sub>4</sub><sup>−</sup> : 5 C<sub>2</sub>O<sub>4</sub><sup>2−</sup>',
+      lab:["25.0 cm³ C₂O₄²⁻(aq) by pipette","+ excess dilute H₂SO₄","Colourless, warmed to 60 °C"],
+      prod:"CO₂ formed", prodPer:5}
+};
+var key="fe", conc=SYS.fe.def, hidden=false;
+var added=0, queue=0, holding=false, flash=0, drops=[], log=[], calcOpen=false;
+var reduce=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+function titre(){var s=SYS[key];return conc*V_PIP/s.per/C_MN}     // cm3
+function titreDrops(){return Math.round(titre()/DROP)}
+function vol(){return added*DROP}
+function sup(n){var m={"-":"⁻","0":"⁰","1":"¹","2":"²","3":"³","4":"⁴","5":"⁵","6":"⁶","7":"⁷","8":"⁸","9":"⁹"};return String(n).split("").map(function(c){return m[c]}).join("")}
+function sci(x){var e=Math.floor(Math.log10(x)+1e-9);return (x/Math.pow(10,e)).toFixed(2)+" × 10"+sup(e)}
+function el(n,a){var e=document.createElementNS(NS,n);for(var k in a)e.setAttribute(k,a[k]);return e}
+function mix(a,b,t){return "rgb("+a.map(function(v,i){return Math.round(v+(b[i]-v)*t)}).join(",")+")"}
+
+// static burette scale
+(function(){var g=$("scale");for(var v=0;v<=50;v++){var y=Y0+v*PX,len=v%10===0?14:(v%5===0?10:6);
+  g.appendChild(el("line",{x1:290-len,y1:y,x2:290,y2:y,stroke:"#5a4a3a","stroke-width":v%10===0?1.4:.9}));
+  if(v%10===0){var t=el("text",{x:272,y:y+4.5,"text-anchor":"end","font-size":12,fill:"#3b2a1a"});t.textContent=v;g.appendChild(t)}}})();
+
+function setup(){
+  var s=SYS[key];
+  $("pickFe").setAttribute("aria-pressed",key==="fe");$("pickOx").setAttribute("aria-pressed",key==="ox");
+  var r=$("conc");r.min=s.min;r.max=s.max;r.step=s.step;r.value=conc;r.disabled=hidden;
+  $("lab1").textContent=s.lab[0];$("lab2").textContent=s.lab[1];$("lab3").textContent=s.lab[2];
+  $("eq").innerHTML=s.eq+'<br><span class="half">MnO<sub>4</sub><sup>−</sup> + 8H<sup>+</sup> + 5e<sup>−</sup> → Mn<sup>2+</sup> + 4H<sub>2</sub>O &nbsp;&nbsp;|&nbsp;&nbsp; '+s.half+'</span><br><span class="ratio">'+s.ratio+'</span>';
+  $("concLab").innerHTML=s.html+" concentration: <b>"+(hidden?"unknown":conc.toFixed(3)+" mol dm<sup>−3</sup>")+"</b>";
+  var rows=[["MnO₄⁻ unreacted","var(--mn)"],[s.name+" left","#7c9a5a"],[s.prod,"#c9a23a"],["Mn²⁺ formed","#b98aa6"]];
+  $("species").innerHTML=rows.map(function(x,i){return '<div class="row"><span>'+x[0]+'</span><div class="bar"><i id="b'+i+'" style="background:'+x[1]+'"></i></div><output id="o'+i+'"></output></div>'}).join("");
+  $("spNote").textContent="No indicator needed: MnO₄⁻ is purple, Mn²⁺ is almost colourless.";
+}
+function resetRun(){added=0;queue=0;holding=false;flash=0;drops=[];render()}
+function resetAll(){log=[];resetRun();renderLog()}
+
+function render(){
+  var s=SYS[key],td=titreDrops(),v=vol();
+  // burette
+  var ly=Y0+v*PX;$("bLiq").setAttribute("y",ly);$("bLiq").setAttribute("height",Math.max(0,420-ly));
+  $("reading").textContent=v.toFixed(2);
+  $("tapH").setAttribute("transform",(holding||queue>0)?"":"rotate(90 300 440)");
+  // flask
+  var lev=572-v*0.5;$("fLiq").setAttribute("y",lev);$("fLiq").setAttribute("height",612-lev);
+  var col;
+  if(added>=td&&td>0){var t=Math.pow(Math.min(1,(added-td)/40),0.6);col=mix([247,184,214],[112,36,122],t)}
+  else col=key==="fe"?mix([205,228,190],[238,229,178],added/td):"rgb(232,239,243)";
+  $("fLiq").setAttribute("fill",col);
+  $("flash").setAttribute("cy",lev+12);$("flash").setAttribute("opacity",added>=td?0:(flash*0.9).toFixed(3));
+  // status
+  var st=$("status"),left=td-added;st.className="";
+  if(added===0)st.textContent=key==="fe"?"Ready. The flask holds pale green Fe²⁺(aq) in excess acid.":"Ready. The flask holds colourless C₂O₄²⁻(aq) in excess acid, warmed to about 60 °C.";
+  else if(left>0){
+    if(key==="ox"&&added<=20)st.textContent="Purple fades slowly at first. The Mn²⁺ produced catalyses the reaction, so it speeds up.";
+    else if(left<=20)st.textContent="Purple is taking longer to fade. Close to the end point: add drop by drop.";
+    else st.textContent="Purple disappears on swirling. MnO₄⁻ is reduced to almost colourless Mn²⁺.";}
+  else if(added-td<=1){st.className="end";st.textContent="END POINT at "+v.toFixed(2)+" cm³. First permanent pale pink: one drop of MnO₄⁻ with no "+s.name+" left to reduce it."}
+  else{st.className="over";st.textContent="Overshot by "+((added-td)*DROP).toFixed(2)+" cm³. Excess MnO₄⁻ is turning the flask purple."}
+  // species (mmol)
+  var nEq=td*DROP*C_MN,nAdd=v*C_MN,re=Math.min(nAdd,nEq),n0=conc*V_PIP;
+  var vals=[nAdd-re,Math.max(0,n0-s.per*re),s.prodPer*re,re],maxs=[nEq,n0,s.prodPer*nEq,nEq];
+  for(var i=0;i<4;i++){$("b"+i).style.width=Math.min(100,100*vals[i]/maxs[i]).toFixed(1)+"%";
+    $("o"+i).textContent=(hidden&&i===1&&added<td)?"?":vals[i].toFixed(3)}
+  $("record").disabled=added<td;
+  ["hold","add1","add01","addDrop"].forEach(function(id){$(id).disabled=added>=1000});
+  renderZoom(v);if(calcOpen)renderCalc();
+}
+
+function renderZoom(v){
+  var z=$("zoom"),P=50,YL=52;z.textContent="";
+  z.appendChild(el("rect",{x:80,y:0,width:80,height:120,fill:"#fbf7ee"}));
+  z.appendChild(el("path",{d:"M80,"+YL+" Q120,"+(YL+12)+" 160,"+YL+" L160,120 L80,120 Z",fill:"#6a1b7a"}));
+  z.appendChild(el("path",{d:"M80,0 L80,120 M160,0 L160,120",stroke:"#5a4a3a","stroke-width":2,fill:"none"}));
+  var k0=Math.ceil((v-1.1)*10),k1=Math.floor((v+1.4)*10);
+  for(var k=k0;k<=k1;k++){if(k<0||k>500)continue;var y=YL+(k/10-v)*P,len=k%10===0?34:(k%5===0?24:15);
+    z.appendChild(el("line",{x1:80,y1:y,x2:80+len,y2:y,stroke:y>YL+3?"#f1dff3":"#3b2a1a","stroke-width":k%10===0?1.8:1}));
+    if(k%10===0&&y>8&&y<116){var t=el("text",{x:72,y:y+5,"text-anchor":"end","font-size":15,fill:"#3b2a1a"});t.textContent=k/10;z.appendChild(t)}}
+  z.appendChild(el("line",{x1:60,y1:YL,x2:176,y2:YL,stroke:"#a3341f","stroke-width":1.5,"stroke-dasharray":"5 3"}));
+  var r=el("text",{x:180,y:YL+6,"font-size":17,"font-weight":700,fill:"#a3341f"});r.textContent=v.toFixed(2);z.appendChild(r);
+}
+
+function renderLog(){
+  var tb=$("log");tb.innerHTML="";
+  var conc2=log.map(function(a){return log.filter(function(b){return Math.abs(a-b)<=0.1001}).length>=2});
+  log.forEach(function(t,i){var tr=document.createElement("tr");
+    tr.innerHTML="<td>"+(i+1)+"</td><td>"+t.toFixed(2)+"</td><td class='c'>"+(conc2[i]?"concordant":"")+"</td>";tb.appendChild(tr)});
+  var c=log.filter(function(t,i){return conc2[i]});
+  $("mean").textContent=c.length?"Mean of concordant titres: "+(c.reduce(function(a,b){return a+b},0)/c.length).toFixed(2)+" cm³":(log.length?"Concordant titres are within 0.10 cm³.":"Titrate to the end point, then record.");
+}
+
+function renderCalc(){
+  var s=SYS[key],td=titreDrops(),b=$("calcBody");
+  if(added<td){b.innerHTML="<p class='note'>Titrate to the end point first.</p>";return}
+  var v=vol(),nMn=C_MN*v/1000,nA=nMn*s.per,cA=nA/(V_PIP/1000);
+  var mult=key==="fe"?"5 ×":"<sup>5</sup>⁄<sub>2</sub> ×";
+  b.innerHTML="<ol>"+
+    "<li>n(MnO<sub>4</sub><sup>−</sup>) = c × V = 0.0200 × "+v.toFixed(2)+" ÷ 1000 = <b>"+sci(nMn)+" mol</b></li>"+
+    "<li>Ratio "+s.ratio+", so n("+s.html+") = "+mult+" "+sci(nMn)+" = <b>"+sci(nA)+" mol</b></li>"+
+    "<li>c("+s.html+") = n ÷ V = "+sci(nA)+" ÷ (25.0 ÷ 1000) = <span class='ans'>"+cA.toFixed(4)+" mol dm<sup>−3</sup></span></li></ol>"+
+    (added-td>1?"<p class='note'>This titre is overshot, so the answer is too high.</p>":"");
+}
+
+// animation loop
+var last=0,acc=0;
+function release(){
+  if(added>=1000)return;added++;
+  if(added<titreDrops())flash=1;
+  if(!reduce&&drops.length<14)drops.push({y:470});
+}
+function frame(t){
+  var dt=Math.min(0.05,(t-last)/1000)||0;last=t;var dirty=false;
+  if((holding||queue>0)&&added<1000){acc+=dt;var iv=holding?0.03:0.04;
+    while(acc>=iv&&(holding||queue>0)&&added<1000){acc-=iv;release();if(queue>0)queue--;dirty=true}
+    if(!holding&&queue===0)dirty=true;
+  }else{acc=0;if(queue>0){queue=0;dirty=true}}
+  if(flash>0.004){var left=titreDrops()-added,tau=(key==="ox"&&added<=20)?2.0:(left<=20?1.0:0.3);
+    flash*=Math.exp(-dt/tau);if(flash<=0.004)flash=0;dirty=true}
+  if(drops.length){var lev=572-vol()*0.5;drops.forEach(function(d){d.y+=420*dt});
+    drops=drops.filter(function(d){return d.y<lev});dirty=true}
+  var g=$("drops");
+  if(g.childNodes.length!==drops.length){g.textContent="";drops.forEach(function(){g.appendChild(el("ellipse",{cx:300,rx:2.6,ry:3.6,fill:"#6a1b7a"}))})}
+  for(var i=0;i<drops.length;i++)g.childNodes[i].setAttribute("cy",drops[i].y);
+  if(dirty)render();
+  requestAnimationFrame(frame);
+}
+
+// controls
+$("add1").onclick=function(){queue+=20;render()};
+$("add01").onclick=function(){queue+=2;render()};
+$("addDrop").onclick=function(){queue+=1;render()};
+var h=$("hold");
+function hOn(e){if(e)e.preventDefault();holding=true;render()}
+function hOff(){if(holding){holding=false;render()}}
+h.addEventListener("pointerdown",hOn);
+["pointerup","pointerleave","pointercancel","blur"].forEach(function(n){h.addEventListener(n,hOff)});
+h.addEventListener("keydown",function(e){if((e.key===" "||e.key==="Enter")&&!e.repeat)hOn(e);else if(e.key===" "||e.key==="Enter")e.preventDefault()});
+h.addEventListener("keyup",function(e){if(e.key===" "||e.key==="Enter")hOff()});
+h.addEventListener("contextmenu",function(e){e.preventDefault()});
+$("reset").onclick=resetRun;
+$("record").onclick=function(){if(added>=titreDrops()){log.push(vol());renderLog();resetRun()}};
+$("pickFe").onclick=function(){pick("fe")};$("pickOx").onclick=function(){pick("ox")};
+function pick(k){key=k;if(hidden)randomise();else conc=SYS[k].def;setup();resetAll()}
+function randomise(){var s=SYS[key],n=Math.round((s.max-s.min)/s.step);conc=+(s.min+s.step*Math.floor(Math.random()*(n+1))).toFixed(3)}
+$("conc").oninput=function(){conc=+this.value;setup();resetAll()};
+$("hide").onchange=function(){hidden=this.checked;if(hidden)randomise();setup();resetAll()};
+$("showCalc").onclick=function(){calcOpen=!calcOpen;this.setAttribute("aria-expanded",calcOpen);this.textContent=calcOpen?"Hide calculation":"Show calculation";$("calcBody").hidden=!calcOpen;if(calcOpen)renderCalc()};
+
+setup();render();renderLog();requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

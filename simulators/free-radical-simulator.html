@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Free Radical Mechanisms</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Layout: instrument bench, matching Atom Viewer and Bonding Simulator. Six step chips across the top,
+     3D stage over the written curly-arrow mechanism on the left, an explain rail on the right. */
+  --bg:#EDF0F5; --surface:#FFFFFF; --soft:#E6EAF2; --ink:#0D1424; --muted:#566076; --line:#D7DDE8;
+  --accent:#2348F5; --accent-ink:#FFFFFF;
+  --stage:#FAFBFE; --stage2:#E3E8F2; --stage-line:#93A0B8;
+  --dot:#E23B2E; --pair:#F5A700; --bond:#6A7488; --bond-hi:#C3CAD8;
+  --font-display:"Bricolage Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;
+  --font-body:"Instrument Sans","Segoe UI",system-ui,-apple-system,sans-serif;
+  --r:14px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#080C15; --surface:#111828; --soft:#1A2337; --ink:#EDF1FA; --muted:#98A3BA; --line:#242E46;
+    --accent:#8198FF; --accent-ink:#0A0F1C;
+    --stage:#0E1527; --stage2:#05080F; --stage-line:#5A6884;
+    --dot:#FF6A5C; --pair:#FFC53D; --bond:#8E99B0; --bond-hi:#DCE2EE;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#080C15; --surface:#111828; --soft:#1A2337; --ink:#EDF1FA; --muted:#98A3BA; --line:#242E46;
+  --accent:#8198FF; --accent-ink:#0A0F1C;
+  --stage:#0E1527; --stage2:#05080F; --stage-line:#5A6884;
+  --dot:#FF6A5C; --pair:#FFC53D; --bond:#8E99B0; --bond-hi:#DCE2EE;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.45;
+  display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+button:disabled{cursor:default;opacity:.4}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3,p,ul{margin:0}
+[hidden]{display:none!important}
+
+.top{display:flex;align-items:center;gap:10px 14px;padding:12px 18px 8px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto}
+.brand svg{width:30px;height:30px;flex:none}
+.brand h1{font-family:var(--font-display);font-weight:700;font-size:24px;letter-spacing:-.02em;line-height:1}
+.pick{display:flex;align-items:center;gap:7px}
+.pick>span{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.seg{display:inline-flex;background:var(--soft);border-radius:999px;padding:3px;gap:2px}
+.seg button{border:0;background:transparent;padding:6px 14px;border-radius:999px;font-weight:600;font-size:13.5px;color:var(--muted);white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(10,20,40,.18)}
+.seg.strong button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+
+.timeline{display:flex;gap:6px;padding:4px 18px 12px;overflow-x:auto;scrollbar-width:none}
+.timeline::-webkit-scrollbar{display:none}
+.timeline button{flex:1 0 auto;min-width:112px;text-align:left;border:1px solid var(--line);background:var(--surface);
+  border-radius:12px;padding:8px 12px 9px;display:flex;flex-direction:column;gap:1px}
+.timeline .yr{font-size:11.5px;font-weight:600;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.timeline .nm{font-family:var(--font-display);font-weight:700;font-size:15.5px;letter-spacing:-.01em;line-height:1.15}
+.timeline button.done{background:var(--soft)}
+.timeline button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.timeline button[aria-pressed="true"] .yr{color:inherit;opacity:.7}
+
+.bench{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 370px;gap:14px;padding:0 18px 16px}
+.col{display:flex;flex-direction:column;gap:10px;min-height:0;min-width:0}
+.panel{position:relative;border-radius:var(--r);overflow:hidden;border:1px solid var(--line);background:var(--surface)}
+.stagebox{flex:1.7 1 0;min-height:260px;
+  background:radial-gradient(circle at 1px 1px,color-mix(in srgb,var(--stage-line) 22%,transparent) 1px,transparent 1.5px) 0 0/22px 22px,
+             radial-gradient(ellipse at 50% 45%,var(--stage),var(--stage2))}
+#stage{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+#stage:active{cursor:grabbing}
+.ov{position:absolute;display:flex;gap:8px;align-items:center;flex-wrap:wrap;pointer-events:none}
+.ov>*{pointer-events:auto}
+.ov.tl{top:12px;left:12px}.ov.tr{top:12px;right:12px}.ov.bl{bottom:12px;left:12px}
+.pill{border:1px solid var(--line);background:color-mix(in srgb,var(--surface) 82%,transparent);backdrop-filter:blur(8px);
+  border-radius:999px;padding:5px 12px;font-size:13px;font-weight:600}
+.pill[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.pill.sq{width:34px;height:34px;padding:0;display:grid;place-items:center;font-size:17px;line-height:1}
+.tag{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:5px 10px;border-radius:999px;
+  background:color-mix(in srgb,var(--surface) 78%,transparent)}
+.key{display:flex;gap:12px;font-size:12.5px;font-weight:600;color:var(--muted);padding:5px 12px;border-radius:999px;
+  background:color-mix(in srgb,var(--surface) 78%,transparent);flex-wrap:wrap}
+.key i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+
+.ctrl{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 16px;font-weight:600;font-size:14px;
+  display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+.btn svg{width:14px;height:14px;fill:currentColor}
+.btn.go{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);min-width:118px;justify-content:center}
+.ctrl .sp{margin-left:auto;display:flex;align-items:center;gap:8px}
+.ctrl .sp>span{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+
+.mechbox{flex:1 1 0;min-height:210px;display:flex}
+#mech{width:100%;height:100%;display:block}
+#mech .at{font:600 23px var(--font-body);fill:var(--ink);dominant-baseline:central}
+#mech .rg{fill:var(--accent)}
+#mech .ch{font:700 20px var(--font-body);fill:var(--dot);dominant-baseline:central}
+#mech .dl{font:700 17px var(--font-body);fill:var(--muted);dominant-baseline:central}
+#mech .cap{font:600 15.5px var(--font-body);fill:var(--muted)}
+#mech .cap.b{fill:var(--ink)}
+#mech .bd{stroke:var(--ink);stroke-width:2.2;stroke-linecap:round}
+#mech .ca{stroke:var(--dot);stroke-width:2.8;fill:none;stroke-linecap:round}
+#mech .lp{fill:var(--dot)}
+
+.rail{display:flex;flex-direction:column;gap:12px;min-height:0;overflow-y:auto}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px}
+.card .eyebrow{font-size:11.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--accent)}
+.card h2{font-family:var(--font-display);font-weight:700;font-size:25px;letter-spacing:-.02em;line-height:1.1;margin:4px 0 10px;text-wrap:balance}
+.card p{font-size:16.5px;line-height:1.5}
+.card p+p{margin-top:9px}
+.card h3{font-size:11.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.pts{list-style:none;padding:0;display:flex;flex-direction:column;gap:8px}
+.pts li{font-size:15.5px;line-height:1.4;padding-left:16px;border-left:3px solid var(--dot)}
+.eq{font-size:18px;font-weight:600;line-height:1.5}
+.eq small{display:block;font-size:14px;font-weight:500;color:var(--muted)}
+.badge{display:inline-block;margin-top:8px;font-size:12.5px;font-weight:700;padding:3px 10px;border-radius:999px;background:var(--soft);color:var(--ink)}
+.badge.maj{background:var(--accent);color:var(--accent-ink)}
+.note{font-size:13px;color:var(--muted)}
+
+@media (max-width:980px){
+  html,body{height:auto}
+  .bench{grid-template-columns:1fr}
+  .stagebox{flex:none;height:380px}
+  .mechbox{flex:none;height:auto;overflow-x:auto}
+  #mech{min-width:760px;height:auto}
+  .rail{overflow:visible}
+}
+
+.eqs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px 26px;padding:44px 22px 16px;width:100%;align-content:start}
+.eqs.two{grid-template-columns:minmax(0,.7fr) minmax(0,1.3fr)}
+.eqs h3{font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.eq1{font-size:clamp(15px,1.45vw,21px);font-weight:600;line-height:1.2;padding:5px 10px;border-radius:10px;border:1px solid transparent;white-space:nowrap;
+  opacity:.16;transition:opacity .4s, background .3s;margin-bottom:3px;cursor:pointer;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.eq1.on{opacity:1}
+.eq1.cur{background:var(--soft);border-color:var(--line)}
+.eq1 i{font-style:normal;color:var(--dot);font-weight:700}
+.eq1 small{font-size:12.5px;font-weight:700;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.eqs .all{border-top:1px solid var(--line);padding-top:10px;margin-top:14px}
+.eqs .all .eq1{cursor:default;white-space:normal}
+@media (max-width:980px){.eqs,.eqs.two{grid-template-columns:1fr}.mechbox{overflow:visible}}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="brand">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="10" cy="19" r="7" fill="var(--ink)"/><circle cx="24" cy="19" r="4.5" fill="var(--ink)"/><circle cx="19.5" cy="9.5" r="2.6" fill="var(--dot)"/></svg>
+    <h1>Free Radical Mechanisms</h1>
+  </div>
+  <div class="pick"><span>Reaction</span>
+    <div class="seg strong" id="segRx">
+      <button data-v="CH4" id="rxCH4">Methane</button>
+      <button data-v="C3H8" id="rxC3H8">Propane</button>
+      <button data-v="O3" id="rxO3">Ozone and CFCs</button>
+    </div>
+  </div>
+  <div class="pick" id="pickX"><span>Halogen</span>
+    <div class="seg" id="segX">
+      <button data-v="Cl" id="xCl">Cl₂</button>
+      <button data-v="Br" id="xBr">Br₂</button>
+    </div>
+  </div>
+  <div class="pick" id="pickRt"><span>Hydrogen removed</span>
+    <div class="seg" id="segRt">
+      <button data-v="sec" id="rtSec">Middle C · 2° radical</button>
+      <button data-v="pri" id="rtPri">End C · 1° radical</button>
+    </div>
+  </div>
+</div>
+
+<div class="timeline" id="tl"></div>
+
+<div class="bench">
+  <div class="col">
+    <div class="panel stagebox">
+      <canvas id="stage" aria-label="3D model of the reaction. Drag to rotate."></canvas>
+      <div class="ov tl"><span class="tag">3D model · drag to rotate</span></div>
+      <div class="ov tr">
+        <button class="pill" id="tgPairs" aria-pressed="true">Electrons</button>
+        <button class="pill" id="tgSym" aria-pressed="true">Symbols</button>
+        <button class="pill sq" id="zOut" aria-label="Zoom out">−</button>
+        <button class="pill sq" id="zIn" aria-label="Zoom in">+</button>
+        <button class="pill" id="vReset">Reset view</button>
+      </div>
+      <div class="ov bl"><div class="key">
+        <span><i style="background:var(--pair)"></i>electron</span>
+        <span><i style="background:#8A4DFF"></i>UV light</span>
+      </div></div>
+    </div>
+
+    <div class="ctrl">
+      <button class="btn" id="bRestart"><svg viewBox="0 0 16 16"><path d="M2 2h2v12H2zM14 2v12L5 8z"/></svg>Restart</button>
+      <button class="btn" id="bBack"><svg viewBox="0 0 16 16"><path d="M12 2v12L3 8z"/></svg>Back</button>
+      <button class="btn go" id="bPlay"></button>
+      <button class="btn" id="bNext">Next step<svg viewBox="0 0 16 16"><path d="M4 2v12l9-6z"/></svg></button>
+      <button class="btn" id="bAgain">Replay step</button>
+      <div class="sp"><span>Speed</span>
+        <div class="seg" id="segSp">
+          <button data-v="0.4" id="sp04">Slow</button>
+          <button data-v="1" id="sp1">Normal</button>
+          <button data-v="2" id="sp2">Fast</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel mechbox">
+      <div class="ov tl"><span class="tag">Mechanism equations</span></div>
+      <div class="eqs" id="eqs"></div>
+    </div>
+  </div>
+
+  <aside class="rail">
+    <div class="card" id="explain"></div>
+    <div class="card" id="points"></div>
+    <p class="note">Keys: → next step, ← back, space to play or pause. Click an equation or a step to replay it.</p>
+  </aside>
+</div>
+
+<script>
+(function(){
+"use strict";
+const add=(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]], sub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]],
+ mul=(a,s)=>[a[0]*s,a[1]*s,a[2]*s], len=a=>Math.hypot(a[0],a[1],a[2]), norm=a=>mul(a,1/(len(a)||1)),
+ cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]],
+ lerp=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t], mid=(a,b)=>lerp(a,b,.5);
+const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2, clamp=t=>Math.max(0,Math.min(1,t)), rad=a=>a*Math.PI/180;
+
+const EL={C:{r:.40,c:['#939DB3','#3F4759','#1A1F2B'],t:'#fff'},H:{r:.25,c:['#FFFFFF','#E7EBF3','#A3ADC0'],t:'#1a2030'},
+ Br:{r:.60,c:['#EBA28B','#B04A2F','#66220F'],t:'#fff'},Cl:{r:.52,c:['#A6F0A0','#2FA83A','#14601C'],t:'#fff'},
+ O:{r:.37,c:['#FF9C92','#E0392B','#8A180F'],t:'#fff'},F:{r:.33,c:['#F2FFC2','#B9D94A','#6F8A14'],t:'#26300a'}};
+
+const cfg={rx:'CH4',x:'Cl',route:'sec'};
+let M=null, step=0, anim=null, playing=false, dwellUntil=0, speed=1, dirty=true;
+let yaw=-.3, pitch=.22, zoom=1, showPairs=true, showSym=true;
+
+/* three positions around an axis: k=1/3 tetrahedral, k=0 planar */
+function ring(a,k,rot){const v=norm(Math.abs(a[1])>.9?cross(a,[1,0,0]):cross(a,[0,1,0])),w=cross(a,v),s=Math.sqrt(1-k*k);
+  return [90,210,330].map(d=>{const t=rad(d+(rot||0));return add(mul(a,-k),add(mul(v,s*Math.cos(t)),mul(w,s*Math.sin(t))));});}
+function Shot(){this.atoms=[];this.b0=[];this.b1=[];this.es=[];this.photon=null;}
+Shot.prototype.at=function(id,el,p0,p1){this.atoms.push({id,el,p0,p1:p1||p0});return this;};
+Shot.prototype.bond=function(a,b,o0,o1){if(o0)this.b0.push([a,b,o0]);if(o1===undefined?o0:o1)this.b1.push([a,b,o1===undefined?o0:o1]);return this;};
+Shot.prototype.grp=function(id,els,Ls,c0,c1,a,k0,k1,rot){this.at(id,'C',c0,c1);
+  const r0=ring(a,k0,rot),r1=ring(a,k1,rot);
+  els.forEach((e,i)=>{this.at(id+'r'+i,e,add(c0,mul(r0[i],Ls[i])),add(c1,mul(r1[i],Ls[i])));this.bond(id,id+'r'+i,1);});return this;};
+Shot.prototype.e=function(s0,s1){this.es.push({s0,s1:s1||s0});return this;};
+const H3=['H','H','H'], L3=[1.09,1.09,1.09], T=1/3;
+
+Shot.prototype.methyl=function(id,par,c0,c1,d0,d1){this.at(id,'C',c0,c1).bond(par,id,1);
+  const r0=ring(mul(d0,-1),T),r1=ring(mul(d1,-1),T);
+  r0.forEach((r,i)=>{this.at(id+'h'+i,'H',add(c0,mul(r,1.09)),add(c1,mul(r1[i],1.09)));this.bond(id,id+'h'+i,1);});return this;};
+/* propane skeleton around the reacting carbon 'C'; a = direction of the reacting position */
+Shot.prototype.propyl=function(c0,c1,a,k0,k1,sec){this.at('C','C',c0,c1);const r0=ring(a,k0),r1=ring(a,k1);
+  const Hh=(id,i)=>{this.at(id,'H',add(c0,mul(r0[i],1.09)),add(c1,mul(r1[i],1.09)));this.bond('C',id,1);};
+  if(sec){[0,1].forEach(i=>this.methyl('M'+i,'C',add(c0,mul(r0[i],1.53)),add(c1,mul(r1[i],1.53)),r0[i],r1[i]));Hh('Hs',2);}
+  else{Hh('Hp1',1);Hh('Hp2',2);
+    const m0=add(c0,mul(r0[0],1.53)),m1=add(c1,mul(r1[0],1.53));this.at('Cm','C',m0,m1).bond('C','Cm',1);
+    const q0=ring(mul(r0[0],-1),T),q1=ring(mul(r1[0],-1),T);
+    [1,2].forEach(i=>{this.at('Hm'+i,'H',add(m0,mul(q0[i],1.09)),add(m1,mul(q1[i],1.09)));this.bond('Cm','Hm'+i,1);});
+    this.methyl('Ce','Cm',add(m0,mul(q0[0],1.53)),add(m1,mul(q1[0],1.53)),q0[0],q1[0]);}
+  return this;};
+
+function build(){
+  const shots=[];
+  const X=cfg.x, LXX=X==='Cl'?1.99:2.28, LCX=X==='Cl'?1.77:1.94, LHX=X==='Cl'?1.27:1.41;
+  const init=()=>{const s=new Shot();s.photon=[0,0,0];
+    s.at('Xa',X,[-LXX/2,0,0],[-2.3,0,0]).at('Xb',X,[LXX/2,0,0],[2.3,0,0]).bond('Xa','Xb',1,0)
+     .e(['b','Xa','Xb',1],['a','Xa',[1,0,0]]).e(['b','Xa','Xb',-1],['a','Xb',[-1,0,0]]);return s;};
+  const abstr=(els,Ls)=>{const s=new Shot();
+    s.at('X',X,[-3.3,0,0],[-2.9,0,0]).at('Hx','H',[.11,0,0],[-2.9+LHX,0,0])
+     .grp('C',els,Ls,[1.2,0,0],[1.6,0,0],[-1,0,0],T,0).bond('C','Hx',1,0).bond('X','Hx',0,1)
+     .e(['a','X',[1,0,0]],['b','X','Hx',1]).e(['b','Hx','C',1],['b','X','Hx',-1]).e(['b','Hx','C',-1],['a','C',[-1,0,0]]);return s;};
+  const attack=(els,Ls)=>{const s=new Shot();
+    s.grp('C',els,Ls,[-3.0,0,0],[-1.9,0,0],[1,0,0],0,T).at('Xc',X,[.3,0,0],[-1.9+LCX,0,0]).at('Xd',X,[.3+LXX,0,0],[3.3,0,0])
+     .bond('Xc','Xd',1,0).bond('C','Xc',0,1)
+     .e(['a','C',[1,0,0]],['b','C','Xc',1]).e(['b','Xc','Xd',1],['b','C','Xc',-1]).e(['b','Xc','Xd',-1],['a','Xd',[-1,0,0]]);return s;};
+  if(cfg.rx==='CH4'){
+    let s=new Shot();
+    s.grp('C',H3,L3,[-1.9,0,0],[-1.9,0,0],[0,1,0],T,T).at('H4','H',[-1.9,1.09,0]).bond('C','H4',1)
+     .at('Xa',X,[1.1,0,0]).at('Xb',X,[1.1+LXX,0,0]).bond('Xa','Xb',1);shots.push(s);
+    shots.push(init(),abstr(H3,L3),attack(H3,L3));
+    s=new Shot();
+    s.at('X',X,[-2.9,0,0],[.6-LCX,0,0]).grp('C',H3,L3,[2.2,0,0],[.6,0,0],[-1,0,0],0,T).bond('X','C',0,1)
+     .e(['a','X',[1,0,0]],['b','X','C',1]).e(['a','C',[-1,0,0]],['b','X','C',-1]);shots.push(s);
+    s=new Shot();
+    s.grp('C',H3,L3,[-2.5,0,0],[-.77,0,0],[1,0,0],0,T).grp('D',H3,L3,[2.5,0,0],[.77,0,0],[-1,0,0],0,T,60).bond('C','D',0,1)
+     .e(['a','C',[1,0,0]],['b','C','D',1]).e(['a','D',[-1,0,0]],['b','C','D',-1]);shots.push(s);
+    s=new Shot();
+    s.at('Xa',X,[-2.6,0,0],[-LXX/2,0,0]).at('Xb',X,[2.6,0,0],[LXX/2,0,0]).bond('Xa','Xb',0,1)
+     .e(['a','Xa',[1,0,0]],['b','Xa','Xb',1]).e(['a','Xb',[-1,0,0]],['b','Xa','Xb',-1]);shots.push(s);
+    shots.push(abstr([X,'H','H'],[LCX,1.09,1.09]),attack([X,'H','H'],[LCX,1.09,1.09]));
+    M={shots,dur:[.6,3.4,2.8,2.8,2.6,2.6,2.6,2.8,2.8]};
+  }else if(cfg.rx==='C3H8'){
+    const sec=cfg.route==='sec';
+    let s=new Shot();
+    s.propyl([-1.9,.3,0],[-1.9,.3,0],[0,1,0],T,T,true).at('Hx','H',[-1.9,1.39,0]).bond('C','Hx',1)
+     .at('Xa',X,[1.5,0,0]).at('Xb',X,[1.5+LXX,0,0]).bond('Xa','Xb',1);shots.push(s);
+    shots.push(init());
+    s=new Shot();
+    s.at('X',X,[-3.5,0,0],[-3.1,0,0]).at('Hx','H',[-.29,0,0],[-3.1+LHX,0,0])
+     .propyl([.8,0,0],[1.1,0,0],[-1,0,0],T,0,sec).bond('C','Hx',1,0).bond('X','Hx',0,1)
+     .e(['a','X',[1,0,0]],['b','X','Hx',1]).e(['b','Hx','C',1],['b','X','Hx',-1]).e(['b','Hx','C',-1],['a','C',[-1,0,0]]);if(!sec)s.off=1.1;shots.push(s);
+    s=new Shot();if(!sec)s.off=1.1;
+    s.propyl([1.6,0,0],[1.1,0,0],[-1,0,0],0,T,sec).at('Xc',X,[-1.2,0,0],[1.1-LCX,0,0]).at('Xd',X,[-1.2-LXX,0,0],[-3.5,0,0])
+     .bond('Xc','Xd',1,0).bond('C','Xc',0,1)
+     .e(['a','C',[-1,0,0]],['b','C','Xc',1]).e(['b','Xc','Xd',1],['b','C','Xc',-1]).e(['b','Xc','Xd',-1],['a','Xd',[1,0,0]]);shots.push(s);
+    /* comparison: 2° radical on the left, 1° radical on the right */
+    s=new Shot();
+    const A=new Shot().propyl([0,0,0],[0,0,0],[0,1,0],0,0,true), B=new Shot().propyl([0,0,0],[0,0,0],[0,1,0],0,0,false);
+    A.atoms.forEach(a=>s.at('A'+a.id,a.el,add(a.p0,[-2.7,0,0])));A.b0.forEach(b=>s.bond('A'+b[0],'A'+b[1],1));
+    B.atoms.forEach(a=>s.at('B'+a.id,a.el,[1.2-a.p0[0],a.p0[1],a.p0[2]]));B.b0.forEach(b=>s.bond('B'+b[0],'B'+b[1],1));
+    s.e(['a','AC',[0,1,0]]).e(['a','BC',[0,1,0]]);shots.push(s);
+    M={shots,dur:[.6,3.4,2.8,2.8,.6]};
+  }else{
+    const CF=['F','Cl','Cl'], LF=[1.35,1.77,1.77];
+    const o3=(s,p,x,y)=>{s.at(p+'a','O',[x,y,0]).at(p+'b','O',[x+1.11,y+.64,0]).at(p+'c','O',[x+2.18,y-.06,0]);return s;};
+    let s=new Shot();
+    s.grp('C',CF,LF,[-2.6,0,0],[-2.6,0,0],[1,0,0],T,T).at('L','Cl',[-.83,0,0]).bond('C','L',1);
+    o3(s,'O',1.2,-.3).bond('Oa','Ob',1.5).bond('Ob','Oc',1.5);shots.push(s);
+    s=new Shot();s.photon=[0,0,0];
+    s.grp('C',CF,LF,[-.9,0,0],[-1.7,0,0],[1,0,0],T,.12).at('L','Cl',[.87,0,0],[2.6,0,0]).bond('C','L',1,0)
+     .e(['b','C','L',1],['a','C',[1,0,0]]).e(['b','C','L',-1],['a','L',[-1,0,0]]);shots.push(s);
+    s=new Shot();
+    s.at('L','Cl',[-3.3,0,0],[-3.0,0,0]).at('Oa','O',[-.5,0,0],[-1.43,0,0]).at('Ob','O',[.61,.64,0],[1.1,.3,0]).at('Oc','O',[1.68,-.06,0],[2.31,.3,0])
+     .bond('Oa','Ob',1.5,0).bond('Ob','Oc',1.5,2).bond('L','Oa',0,1).e(['a','L',[1,0,0]],['a','Oa',[0,1,0]]);shots.push(s);
+    s=new Shot();
+    s.at('L','Cl',[-3.5,0,0],[-3.4,-1.3,0]).at('Oa','O',[-1.93,0,0],[-1.9,.5,0]).at('Od','O',[-.3,0,0],[-.69,.5,0])
+     .at('Oe','O',[.81,.64,0],[1.3,.2,0]).at('Of','O',[1.88,-.06,0],[2.51,.2,0])
+     .bond('L','Oa',1,0).bond('Od','Oe',1.5,0).bond('Oe','Of',1.5,2).bond('Oa','Od',0,2).e(['a','Oa',[0,1,0]],['a','L',[1,0,0]]);shots.push(s);
+    s=new Shot();
+    s.at('L','Cl',[-3.2,-.9,0]).e(['a','L',[1,0,0]]);
+    [[-1.7,.7],[.4,-.6],[2.2,.8]].forEach((p,i)=>{s.at('P'+i,'O',[p[0],p[1],0]).at('Q'+i,'O',[p[0]+1.21,p[1],0]).bond('P'+i,'Q'+i,2);});shots.push(s);
+    M={shots,dur:[.6,3.4,2.8,2.8,.6]};
+  }
+  M.last=M.shots.length-1;
+}
+
+function scene(){
+  const sh=M.shots[anim?anim.to:step], f=anim?anim.f:1, e=sh.photon?ease(clamp((f-.32)/.68)):ease(f);
+  const P={},el={};
+  sh.atoms.forEach(a=>{P[a.id]=add(lerp(a.p0,a.p1,e),[0,sh.off||0,0]);el[a.id]=a.el;});
+  const bm=new Map();
+  sh.b0.forEach(([x,y,o])=>bm.set(x+'|'+y,{a:x,b:y,o0:o,o1:0}));
+  sh.b1.forEach(([x,y,o])=>{const k=x+'|'+y;if(bm.has(k))bm.get(k).o1=o;else bm.set(k,{a:x,b:y,o0:0,o1:o});});
+  const bonds=[...bm.values()].map(q=>({a:q.a,b:q.b,o:q.o0+(q.o1-q.o0)*e}));
+  const ev=s=>s[0]==='a'?add(P[s[1]],mul(s[2],EL[el[s[1]]].r+.2)):add(mid(P[s[1]],P[s[2]]),[0,.17*s[3],0]);
+  const es=sh.es.map(x=>lerp(ev(x.s0),ev(x.s1),e));
+  return {P,el,bonds,es,photon:sh.photon,f:anim?f:1};
+}
+
+const cv=document.getElementById('stage'), ctx=cv.getContext('2d');
+function css(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim();}
+function draw(){
+  const W=cv.width,H=cv.height,dpr=W/(cv.clientWidth||1);
+  ctx.clearRect(0,0,W,H);
+  if(!W||!H)return;
+  const S=scene(), sc=Math.min(W/9.6,H/5.4)*zoom, cy=Math.cos(yaw),sy=Math.sin(yaw),cp=Math.cos(pitch),sp=Math.sin(pitch), D=26;
+  const pr=p=>{const x=p[0],y=p[1],z=p[2];const x1=x*cy+z*sy,z1=-x*sy+z*cy;const y2=y*cp-z1*sp,z2=y*sp+z1*cp;
+    const k=D/(D-z2);return {x:W/2+x1*sc*k,y:H/2-y2*sc*k,z:z2,k:k*sc};};
+  const col={bond:css('--bond'),hi:css('--bond-hi'),pair:css('--pair'),line:css('--stage-line')};
+  const items=[];
+  for(const id in S.P){const e=EL[S.el[id]],q=pr(S.P[id]);
+    items.push({z:q.z,f(){const r=e.r*q.k,g=ctx.createRadialGradient(q.x-r*.35,q.y-r*.4,r*.08,q.x,q.y,r);
+      g.addColorStop(0,e.c[0]);g.addColorStop(.55,e.c[1]);g.addColorStop(1,e.c[2]);
+      ctx.save();ctx.beginPath();ctx.arc(q.x,q.y,r,0,7);ctx.fillStyle=g;ctx.fill();
+      ctx.lineWidth=Math.max(1,dpr);ctx.strokeStyle=col.line;ctx.globalAlpha=.55;ctx.stroke();ctx.globalAlpha=1;
+      if(showSym&&r>7*dpr){ctx.fillStyle=e.t;ctx.font='700 '+Math.round(Math.min(r*(S.el[id].length>1?.95:1.05),22*dpr))+'px "Instrument Sans",system-ui,sans-serif';
+        ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(S.el[id],q.x,q.y+r*.04);}ctx.restore();}});}
+  S.bonds.forEach(b=>{if(b.o<=.02)return;
+    const A=S.P[b.a],B=S.P[b.b],u=norm(sub(B,A));
+    const p=pr(add(A,mul(u,EL[S.el[b.a]].r*.7))),q=pr(sub(B,mul(u,EL[S.el[b.b]].r*.7)));
+    items.push({z:(p.z+q.z)/2,f(){const k=(p.k+q.k)/2,w=.17*k;let dx=q.x-p.x,dy=q.y-p.y;const L=Math.hypot(dx,dy)||1;
+      const off=.15*k*clamp(b.o-1),nx=-dy/L*off,ny=dx/L*off;
+      ctx.save();ctx.globalAlpha=Math.min(1,b.o<1?.25+.75*b.o:1);
+      if(b.o<.98){ctx.setLineDash([w*.9,w*.9]);ctx.lineCap='butt';}else ctx.lineCap='round';
+      (off>.5?[1,-1]:[0]).forEach(s=>{
+        ctx.beginPath();ctx.moveTo(p.x+nx*s,p.y+ny*s);ctx.lineTo(q.x+nx*s,q.y+ny*s);
+        ctx.strokeStyle=col.bond;ctx.lineWidth=w;ctx.stroke();
+        ctx.strokeStyle=col.hi;ctx.lineWidth=w*.38;ctx.stroke();});
+      ctx.restore();}});});
+  if(showPairs)S.es.forEach(c=>{const q=pr(c);
+    items.push({z:q.z+.5,f(){const r=.14*q.k;ctx.save();ctx.shadowColor=col.pair;ctx.shadowBlur=r*2.4;
+      ctx.beginPath();ctx.arc(q.x,q.y,r,0,7);ctx.fillStyle=col.pair;ctx.fill();
+      ctx.shadowBlur=0;ctx.lineWidth=dpr;ctx.strokeStyle='rgba(60,35,0,.7)';ctx.stroke();ctx.restore();}});});
+  items.sort((a,b)=>a.z-b.z).forEach(i=>i.f());
+  if(S.photon&&S.f<.6){const q=pr(S.photon),sx=q.x-W*.2,sy0=q.y-H*.42,g=clamp(S.f/.3),a=S.f<.3?1:clamp((.6-S.f)/.3);
+    const dx=q.x-sx,dy=q.y-sy0,L=Math.hypot(dx,dy),ux=dx/L,uy=dy/L,amp=7*dpr,wl=26*dpr;
+    ctx.save();ctx.globalAlpha=a;ctx.strokeStyle='#8A4DFF';ctx.lineWidth=3*dpr;ctx.lineCap='round';ctx.beginPath();
+    for(let d=0;d<=L*g;d+=2){const o=Math.sin(d/wl*2*Math.PI)*amp*Math.min(1,(L-d)/40/dpr),x=sx+ux*d-uy*o,y=sy0+uy*d+ux*o;d?ctx.lineTo(x,y):ctx.moveTo(x,y);}
+    ctx.stroke();
+    ctx.fillStyle='#8A4DFF';ctx.font='700 '+16*dpr+'px "Instrument Sans",system-ui,sans-serif';ctx.textAlign='center';ctx.fillText('UV',sx-4*dpr,sy0-12*dpr);
+    if(g>=1){ctx.globalAlpha=a*.35;ctx.beginPath();ctx.arc(q.x,q.y,(.5+(S.f-.3)*3)*q.k,0,7);ctx.fill();}
+    ctx.restore();}
+}
+function fit(){const d=Math.min(window.devicePixelRatio||1,2),w=cv.clientWidth,h=cv.clientHeight;
+  if(cv.width!==Math.round(w*d)||cv.height!==Math.round(h*d)){cv.width=Math.round(w*d);cv.height=Math.round(h*d);}dirty=true;}
+if(window.ResizeObserver)new ResizeObserver(fit).observe(cv);window.addEventListener('resize',fit);
+let drag=null;
+cv.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY};try{cv.setPointerCapture(e.pointerId);}catch(_){}});
+cv.addEventListener('pointermove',e=>{if(!drag)return;yaw+=(e.clientX-drag.x)*.01;pitch=Math.max(-1.3,Math.min(1.3,pitch+(e.clientY-drag.y)*.01));
+  drag={x:e.clientX,y:e.clientY};dirty=true;});
+['pointerup','pointercancel'].forEach(n=>cv.addEventListener(n,()=>drag=null));
+cv.addEventListener('wheel',e=>{e.preventDefault();zoom=Math.max(.6,Math.min(2.4,zoom*(e.deltaY<0?1.08:.93)));dirty=true;},{passive:false});
+
+/* ---------- words ---------- */
+const oz=()=>cfg.rx==='O3', pp=()=>cfg.rx==='C3H8';
+function names(){return cfg.x==='Cl'?{X:'Cl',hal:'chlorine',pre:'chloro',hx:'hydrogen chloride'}:{X:'Br',hal:'bromine',pre:'bromo',hx:'hydrogen bromide'};}
+function chips(){
+  if(oz())return [['Start','Upper atmosphere'],['Initiation','UV breaks C–Cl'],['Propagation 1','Cl• attacks ozone'],['Propagation 2','ClO• attacks ozone'],['Overall','Cl• is a catalyst']];
+  const X=names().X;
+  if(pp())return [['Start','Reactants'],['Initiation','UV breaks '+X+'–'+X],['Propagation 1',X+'• attacks propane'],['Propagation 2','Radical attacks '+X+'₂'],['Explanation','Why the 2° product?']];
+  return [['Start','Reactants'],['Initiation','UV breaks '+X+'–'+X],['Propagation 1',X+'• attacks CH₄'],['Propagation 2','•CH₃ attacks '+X+'₂'],
+    ['Termination',X+'• + •CH₃'],['Termination','•CH₃ + •CH₃'],['Termination',X+'• + '+X+'•'],['Further 1',X+'• attacks CH₃'+X],['Further 2','•CH₂'+X+' attacks '+X+'₂']];
+}
+function eqData(){
+  if(oz())return {two:true,cols:[
+    [['Initiation',[[1,'CCl₃F → •CCl₂F + Cl•','UV light']]]],
+    [['Propagation',[[2,'Cl• + O₃ → ClO• + O₂'],[3,'ClO• + O₃ → 2O₂ + Cl•']]]]],
+    all:[4,'2O₃ → 3O₂','Overall']};
+  const X=names().X;
+  if(pp()){const sec=cfg.route==='sec',R=sec?'(CH₃)₂CH•':'CH₃CH₂CH₂•',P=sec?'CH₃CH'+X+'CH₃':'CH₃CH₂CH₂'+X;
+    return {two:true,cols:[
+    [['Initiation',[[1,X+'₂ → 2'+X+'•','UV light']]]],
+    [['Propagation',[[2,X+'• + CH₃CH₂CH₃ → '+R+' + H'+X],[3,R+' + '+X+'₂ → '+P+' + '+X+'•']]],
+     ['Radical stability',[[4,'(CH₃)₂CH•  &gt;  CH₃CH₂CH₂•','2° more stable than 1°']]]]],
+    all:[3,'C₃H₈ + '+X+'₂ → '+P+' + H'+X,sec?'Overall · major':'Overall · minor']};}
+  return {cols:[
+    [['Initiation',[[1,X+'₂ → 2'+X+'•','UV light']]]],
+    [['Propagation',[[2,X+'• + CH₄ → •CH₃ + H'+X],[3,'•CH₃ + '+X+'₂ → CH₃'+X+' + '+X+'•']]],
+     ['Further substitution',[[7,X+'• + CH₃'+X+' → •CH₂'+X+' + H'+X],[8,'•CH₂'+X+' + '+X+'₂ → CH₂'+X+'₂ + '+X+'•']]]],
+    [['Termination',[[4,X+'• + •CH₃ → CH₃'+X],[5,'•CH₃ + •CH₃ → C₂H₆'],[6,X+'• + '+X+'• → '+X+'₂']]]]],
+    all:[3,'CH₄ + '+X+'₂ → CH₃'+X+' + H'+X,'Overall']};
+}
+function words(i){
+  if(oz())return [
+   {h:'Ozone and CFCs',p:['Ozone, O₃, in the upper atmosphere absorbs harmful ultraviolet radiation.','<b>CFCs</b> such as trichlorofluoromethane, CCl₃F, are unreactive in the lower atmosphere, so they survive long enough to reach the ozone layer.'],pts:[]},
+   {h:'Initiation',p:['In the upper atmosphere, ultraviolet light breaks a <b>C–Cl bond</b> in the CFC.','The bond breaks by homolytic fission: one electron goes to each atom. This makes a chlorine atom, which is a free radical, Cl•.'],
+    pts:['State that UV light breaks the C–Cl bond','The C–F bond is stronger and does not break']},
+   {h:'Propagation 1',p:['The chlorine radical takes an oxygen atom from an ozone molecule.','This makes a <b>ClO•</b> radical and an oxygen molecule, O₂.'],pts:['Cl• + O₃ → ClO• + O₂']},
+   {h:'Propagation 2',p:['The ClO• radical reacts with a second ozone molecule.','This makes two oxygen molecules and <b>regenerates Cl•</b>, which can attack another ozone molecule.'],pts:['ClO• + O₃ → 2O₂ + Cl•']},
+   {h:'Cl• is a catalyst',p:['Adding the two propagation steps gives the overall equation: <b>2O₃ → 3O₂</b>.','Cl• is used in the first step and regenerated in the second, so it is a catalyst. One chlorine radical can destroy many thousands of ozone molecules.',
+    'This is why CFCs were banned. Replacements such as HFCs contain no C–Cl bonds, so they do not release chlorine radicals.'],
+    pts:['Cl• does not appear in the overall equation','Say it is regenerated, or not used up, to justify calling it a catalyst']}][i];
+  const n=names(),X=n.X;
+  if(pp()){const sec=cfg.route==='sec',prod=(sec?'2-':'1-')+n.pre+'propane';
+   return [
+   {h:'Reactants',p:['Propane has two kinds of hydrogen: <b>six</b> on the two end carbons and <b>two</b> on the middle carbon.','So free radical substitution can give two products: 1-'+n.pre+'propane or 2-'+n.pre+'propane. Use the switch at the top to follow each route.'],pts:[]},
+   {h:'Initiation',p:['Ultraviolet light breaks the <b>'+X+'–'+X+' bond</b> by homolytic fission, making two '+n.hal+' radicals.'],pts:['Write UV light as the condition']},
+   {h:'Propagation 1',p:[sec?'A '+n.hal+' radical takes a hydrogen from the <b>middle carbon</b>. The unpaired electron is left on a carbon with two alkyl groups attached: a <b>secondary radical</b>.'
+      :'A '+n.hal+' radical takes a hydrogen from an <b>end carbon</b>. The unpaired electron is left on a carbon with only one alkyl group attached: a <b>primary radical</b>.',
+     'This step decides which product forms.'],pts:['Put the dot on the carbon that lost the hydrogen']},
+   {h:'Propagation 2',p:['The propyl radical takes a '+n.hal+' atom from '+X+'₂.','This makes <b>'+prod+'</b>, the '+(sec?'major':'minor')+' product, and regenerates '+X+'•.'],pts:['The halogen ends up on the carbon that carried the unpaired electron']},
+   {h:'Why the 2° product?',p:['Left: the secondary radical. Right: the primary radical.',
+     'Alkyl groups release electron density towards the carbon with the unpaired electron (positive inductive effect). The secondary radical has <b>two</b> alkyl groups doing this and the primary radical has <b>one</b>, so the secondary radical is <b>more stable</b>. This is the same argument as for carbocations.',
+     'A more stable radical forms more easily, because the C–H bond on the middle carbon is weaker. So more of the secondary radical forms and 2-'+n.pre+'propane is the major product, even though there are three times as many end hydrogens.',
+     X==='Br'?'Bromine radicals are less reactive and so very selective: the product is almost all 2-bromopropane.'
+       :'Chlorine radicals are very reactive and not very selective: the product is a mixture, with a little more than half 2-chloropropane. Switch to Br₂, where almost all the product is 2-bromopropane.'],
+    pts:['Compare the stability of the two radicals, not the products','Secondary radical: two alkyl groups. Primary radical: one']}][i];}
+  const prod=n.pre+'methane';
+  return [
+   {h:'Reactants',p:['Methane and '+n.hal+' do not react in the dark. In <b>ultraviolet light</b> they react by free radical substitution to give '+prod+' and '+n.hx+'.',
+     'A free radical is a species with an unpaired electron, shown by a dot.'],pts:[]},
+   {h:'Initiation',p:['Ultraviolet light provides the energy to break the <b>'+X+'–'+X+' bond</b>.','The bond breaks by homolytic fission: one electron goes to each atom, making two '+n.hal+' radicals.'],
+    pts:['Write UV light as the condition','No radicals on the left, two on the right']},
+   {h:'Propagation 1',p:['A '+n.hal+' radical takes a hydrogen atom from methane.','This makes '+n.hx+' and a <b>methyl radical</b>, •CH₃.'],
+    pts:['One radical in, one radical out','Put the dot on the carbon of •CH₃']},
+   {h:'Propagation 2',p:['The methyl radical takes a '+n.hal+' atom from a '+X+'₂ molecule.','This makes <b>'+prod+'</b> and regenerates a '+n.hal+' radical, which can attack another methane molecule. This is a chain reaction.'],
+    pts:['The '+X+'• made here feeds back into propagation 1','Adding the two propagation steps gives the overall equation']},
+   {h:'Termination',p:['Two radicals collide and their unpaired electrons pair up to form a covalent bond. The chain stops because no radical is left.','Here '+X+'• and •CH₃ make '+prod+'.'],
+    pts:['Two radicals on the left, none on the right']},
+   {h:'Termination',p:['Two methyl radicals combine to make <b>ethane</b>.','This is why a trace of ethane is found in the products.'],pts:['Ethane in the product mixture is evidence for the •CH₃ radical']},
+   {h:'Termination',p:['Two '+n.hal+' radicals combine to re-form '+X+'₂.'],pts:[]},
+   {h:'Further substitution 1',p:['A '+n.hal+' radical can meet a molecule of the <b>product</b> instead of methane.','It takes a hydrogen from '+prod+' in the same way, making H'+X+' and a •CH₂'+X+' radical.'],
+    pts:['This is another propagation step: one radical in, one radical out']},
+   {h:'Further substitution 2',p:['The •CH₂'+X+' radical takes a '+n.hal+' atom from '+X+'₂, making <b>di'+n.pre+'methane</b>, CH₂'+X+'₂, and regenerating '+X+'•.',
+     'The same two steps repeat to give CH'+X+'₃ and then C'+X+'₄, so the product is a mixture.','Using <b>excess methane</b> makes a '+n.hal+' radical far more likely to meet CH₄ than CH₃'+X+', which limits further substitution.'],
+    pts:['Excess methane limits further substitution','Excess '+n.hal+' favours C'+X+'₄']}][i];
+}
+
+/* ---------- UI ---------- */
+const $=id=>document.getElementById(id);
+const dot=t=>t.replace(/•/g,'<i>•</i>');
+const ICON_PLAY='<svg viewBox="0 0 16 16"><path d="M4 2v12l9-6z"/></svg>', ICON_PAUSE='<svg viewBox="0 0 16 16"><path d="M3 2h4v12H3zM9 2h4v12H9z"/></svg>';
+function syncUI(){
+  const st=anim?anim.to:step, w=words(st), ch=chips(), L=M.last, E=eqData();
+  $('tl').innerHTML=ch.map((c,i)=>'<button id="chip'+i+'" data-i="'+i+'" aria-pressed="'+(i===st)+'" class="'+(i<st?'done':'')+'"><span class="yr">'+c[0]+'</span><span class="nm">'+dot(c[1])+'</span></button>').join('');
+  $('explain').innerHTML='<div class="eyebrow">'+ch[st][0]+' · '+(st+1)+' of '+(L+1)+'</div><h2>'+w.h+'</h2>'+w.p.map(x=>'<p>'+dot(x)+'</p>').join('');
+  $('points').hidden=!w.pts.length;
+  $('points').innerHTML='<h3>On the exam paper</h3><ul class="pts">'+w.pts.map(x=>'<li>'+dot(x)+'</li>').join('')+'</ul>';
+  const row=(q,cls)=>'<div class="eq1 '+(st>=q[0]?'on ':'')+(st===q[0]&&cls!=='x'?'cur':'')+'" data-i="'+(cls==='x'?'':q[0])+'">'+(cls==='x'?'<small>'+q[2]+'</small>':'')+'<span>'+dot(q[1])+'</span>'+(q[2]&&cls!=='x'?'<small>'+q[2]+'</small>':'')+'</div>';
+  $('eqs').className='eqs'+(E.two?' two':'');
+  $('eqs').innerHTML=E.cols.map((c,k)=>'<div>'+c.map((g,j)=>'<h3'+(j?' style="margin-top:10px"':'')+'>'+g[0]+'</h3>'+g[1].map(q=>row(q)).join('')).join('')+(k?'':'<div class="all">'+row(E.all,'x')+'</div>')+'</div>').join('');
+  $('pickX').hidden=oz();$('pickRt').hidden=!pp();
+  $('bPlay').innerHTML=playing?ICON_PAUSE+'Pause':ICON_PLAY+(st===L&&!anim?'Replay all':'Play all');
+  $('bBack').disabled=st===0&&!anim; $('bNext').disabled=st===L&&!anim; $('bRestart').disabled=st===0&&!anim; $('bAgain').disabled=st===0;
+  [['segRx',cfg.rx],['segX',cfg.x],['segRt',cfg.route],['segSp',String(speed)]].forEach(([id,v])=>
+    $(id).querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===v)));
+  $('tgPairs').setAttribute('aria-pressed',showPairs);$('tgSym').setAttribute('aria-pressed',showSym);
+  dirty=true;
+}
+function start(to,ts){anim={from:step,to,t0:ts||performance.now(),dur:M.dur[to]/speed*1000,f:0};syncUI();}
+function next(){playing=false;if(anim){step=anim.to;anim=null;}else if(step<M.last){start(step+1);return;}syncUI();}
+function back(){playing=false;if(anim){step=anim.from;anim=null;}else step=Math.max(0,step-1);syncUI();}
+function restart(){playing=false;anim=null;step=0;syncUI();}
+function play(){if(playing)playing=false;else{if(step===M.last&&!anim)step=0;playing=true;dwellUntil=performance.now()+(step===0?500:0);}syncUI();}
+function replay(i){playing=false;anim=null;step=i;if(i>0)start(i);else syncUI();}
+function reconfig(){build();playing=false;anim=null;step=0;syncUI();}
+
+$('tl').addEventListener('click',e=>{const b=e.target.closest('button');if(b)replay(+b.dataset.i);});
+$('eqs').addEventListener('click',e=>{const b=e.target.closest('.eq1');if(b&&b.dataset.i)replay(+b.dataset.i);});
+$('segRx').addEventListener('click',e=>{const b=e.target.closest('button');if(b){cfg.rx=b.dataset.v;reconfig();}});
+$('segX').addEventListener('click',e=>{const b=e.target.closest('button');if(b){cfg.x=b.dataset.v;reconfig();}});
+$('segRt').addEventListener('click',e=>{const b=e.target.closest('button');if(b){cfg.route=b.dataset.v;const k=anim?anim.to:step;build();playing=false;anim=null;step=Math.min(k,M.last);syncUI();}});
+$('segSp').addEventListener('click',e=>{const b=e.target.closest('button');if(b){speed=+b.dataset.v;syncUI();}});
+$('bPlay').onclick=play;$('bNext').onclick=next;$('bBack').onclick=back;$('bRestart').onclick=restart;
+$('bAgain').onclick=()=>replay(anim?anim.to:step);
+$('tgPairs').onclick=()=>{showPairs=!showPairs;syncUI();};$('tgSym').onclick=()=>{showSym=!showSym;syncUI();};
+$('zIn').onclick=()=>{zoom=Math.min(2.4,zoom*1.15);dirty=true;};$('zOut').onclick=()=>{zoom=Math.max(.6,zoom/1.15);dirty=true;};
+$('vReset').onclick=()=>{yaw=-.3;pitch=.22;zoom=1;dirty=true;};
+document.addEventListener('keydown',e=>{
+  if(e.target.matches&&e.target.matches('input,textarea'))return;
+  if(e.key==='ArrowRight'){e.preventDefault();next();}
+  else if(e.key==='ArrowLeft'){e.preventDefault();back();}
+  else if(e.key===' '&&(e.target===document.body||e.target===document.documentElement)){e.preventDefault();play();}
+});
+if(window.matchMedia)window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change',()=>dirty=true);
+new MutationObserver(()=>dirty=true).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>dirty=true);
+
+function tick(ts){
+  if(anim){anim.f=Math.min(1,(ts-anim.t0)/anim.dur);
+    if(anim.f>=1){step=anim.to;anim=null;dwellUntil=ts+1700/speed;if(playing&&step===M.last)playing=false;syncUI();}
+    dirty=true;}
+  else if(playing&&ts>=dwellUntil){if(step<M.last)start(step+1,ts);else{playing=false;syncUI();}}
+  if(dirty){dirty=false;draw();}
+  requestAnimationFrame(tick);
+}
+build();fit();syncUI();requestAnimationFrame(tick);
+window.__sim={go(i){playing=false;anim=null;step=i;syncUI();},set(r,x,t){cfg.rx=r;cfg.x=x||'Cl';cfg.route=t||'sec';reconfig();},mid(i,f){playing=false;step=i-1;anim={from:i-1,to:i,t0:1e15,dur:1,f:f};anim.t0=performance.now()-f;anim.dur=1e9;anim.f=f;syncUI();}};
+})();
+</script>
+</body>
+</html>
