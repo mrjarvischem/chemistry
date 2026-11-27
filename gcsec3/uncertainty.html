@@ -1,0 +1,512 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Uncertainty in measurements</title>
+<style>
+
+:root{
+  --paper:#efe6d6; --panel:#faf6ee; --stage:#fcf9f3; --ink:#33241a; --muted:#7a6553;
+  --line:#dccfb9; --chip:#f2e8d8; --accent:#c4621a; --btn:#8c4a1c; --accent-ink:#fff8ef;
+  --good:#3f7d3a; --warn:#b8402e; --minus:#2b4f8f; --weak:#c8691f; --soft:#efe3cc;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#1a1410; --panel:#241c16; --stage:#15100c; --ink:#efe4d3; --muted:#b39f88;
+    --line:#43362b; --chip:#30261e; --accent:#f0954a; --btn:#d9955a; --accent-ink:#1a1410;
+    --good:#8bc47f; --warn:#e67a63; --minus:#6fa3f0; --weak:#f0a050; --soft:#30261e; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#1a1410; --panel:#241c16; --stage:#15100c; --ink:#efe4d3; --muted:#b39f88;
+  --line:#43362b; --chip:#30261e; --accent:#f0954a; --btn:#d9955a; --accent-ink:#1a1410;
+  --good:#8bc47f; --warn:#e67a63; --minus:#6fa3f0; --weak:#f0a050; --soft:#30261e; color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:18px 16px 28px}
+[hidden]{display:none!important}
+.wrap{max-width:1360px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 20px}
+h1{font-family:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;font-weight:600;font-size:clamp(1.45rem,2.5vw,2.05rem);letter-spacing:-.01em;margin:0;text-wrap:balance}
+header p{margin:0;color:var(--muted);font-size:.95rem}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;border-bottom:1px solid var(--line)}
+.tab{background:none;border:none;border-bottom:3px solid transparent;border-radius:0;padding:8px 12px;font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;font-size:1.08rem;font-weight:600;color:var(--muted);margin-bottom:-1px}
+.tab:hover:not(:disabled){border-color:transparent;color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--btn)}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 350px;gap:16px;align-items:start}
+@media (max-width:920px){.layout{grid-template-columns:1fr}}
+.stage{background:var(--stage);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.canvas-box{position:relative;width:100%;aspect-ratio:16/10}
+@media (max-width:600px){.canvas-box{aspect-ratio:4/5}}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+.ov{position:absolute;top:10px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.ov.l{left:12px}.ov.r{right:12px}
+.pill{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:3px 11px;font-size:.82rem;font-weight:650}
+.small{font-size:.8rem;padding:5px 10px}
+.toast{position:absolute;left:12px;bottom:12px;max-width:calc(100% - 24px);background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:.88rem;pointer-events:none;transition:opacity .3s;opacity:0}
+.caption{border-top:1px solid var(--line);padding:12px 16px 14px;font-size:1.04rem;line-height:1.55;min-height:6.4em}
+.panel{display:flex;flex-direction:column;gap:12px}
+.group{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.group h2{margin:0;font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.btns{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button{font:inherit;font-weight:600;font-size:.92rem;padding:8px 12px;border-radius:7px;border:1px solid var(--line);background:var(--chip);color:var(--ink);cursor:pointer}
+button:hover:not(:disabled){border-color:var(--btn)}
+button.primary{background:var(--btn);border-color:var(--btn);color:var(--accent-ink)}
+button[aria-pressed="true"]{background:var(--good);border-color:var(--good);color:var(--accent-ink)}
+button:disabled{opacity:.42;cursor:not-allowed}
+:focus-visible{outline:2px solid var(--btn);outline-offset:2px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{padding:6px 10px}
+.seg button.right{background:var(--good);border-color:var(--good);color:var(--accent-ink);opacity:1}
+.seg button.wrong{background:var(--warn);border-color:var(--warn);color:var(--accent-ink);opacity:1}
+.tog{display:flex;gap:8px;align-items:center;font-size:.9rem;cursor:pointer}
+input[type=checkbox]{accent-color:var(--btn);width:16px;height:16px}
+input[type=range]{width:100%;accent-color:var(--btn)}
+.speed{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;font-size:.88rem}
+.fb{margin:0;font-size:.92rem}
+.note{margin:0;font-size:.85rem;color:var(--muted)}
+.tally{display:grid;grid-template-columns:1fr auto;gap:3px 12px;font-size:.9rem;font-variant-numeric:tabular-nums}
+.tally b{text-align:right}
+ul.pts{margin:0;padding-left:18px;font-size:.88rem;display:flex;flex-direction:column;gap:4px}
+.key{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px 10px;font-size:.86rem}
+.dot{display:inline-block;width:13px;height:13px;border-radius:50%;margin-right:7px;vertical-align:-2px;border:1px solid rgba(0,0,0,.3)}
+.stubkey{display:inline-block;width:26px;height:5px;margin-right:7px;vertical-align:2px;border-radius:3px;background:linear-gradient(90deg,#8e8a84,rgba(142,138,132,0))}
+
+.cmpbox{display:none;padding:16px;overflow:auto}
+.stage.cmpmode .canvas-box,.stage.cmpmode .caption{display:none}
+.stage.cmpmode .cmpbox:not([hidden]){display:block}
+table.cmp{width:100%;border-collapse:collapse;font-size:clamp(13px,1.15vw,16px);line-height:1.35}
+table.cmp th,table.cmp td{border:1px solid var(--line);padding:10px 10px;vertical-align:top;text-align:left}
+table.cmp thead th{background:var(--btn);color:#fff;font-weight:700}
+table.cmp tbody th{background:var(--soft);font-weight:700;width:15%}
+table.cmp td.hid{color:transparent;cursor:pointer;background:repeating-linear-gradient(45deg,var(--soft),var(--soft) 8px,transparent 8px,transparent 16px)}
+table.cmp td.hid *{color:transparent}
+.seg button.right{background:var(--good);color:#fff;border-color:var(--good)}
+.seg button.wrong{background:var(--warn);color:#fff;border-color:var(--warn)}
+
+.stepper .steps{list-style:none;margin:8px 0;padding:0;counter-reset:st}
+.stepper .steps li{counter-increment:st;border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:0 0 6px;line-height:1.4}
+.stepper .steps li::before{content:"Step " counter(st);display:block;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.stepper .steps li.done{border-color:var(--good);background:color-mix(in srgb,var(--good) 9%,transparent)}
+.stepper .steps li.done>b{display:block}
+.stepper .steps li.cur{border-color:var(--btn)}
+.stepper .ans{display:flex;gap:6px;align-items:center;margin:6px 0 2px;flex-wrap:wrap}
+.stepper .ans input{width:96px;padding:7px 8px;border:1px solid var(--line);border-radius:8px;background:var(--stage);color:var(--ink);font:inherit;font-weight:600}
+.stepper .ans input.no{border-color:var(--warn)}
+.stepper .msg{margin:4px 0 0;font-size:13px;color:var(--warn)}
+.stepper .ans.opts button{text-align:left}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><h1>Uncertainty in measurements</h1><p>AQA GCSE 4.3.1.4 / Trilogy 5.3.1.4</p></header>
+<nav class="tabs" role="tablist">
+<button class="tab" role="tab" data-mode="vary" aria-selected="true">1 · Why results vary</button>
+<button class="tab" role="tab" data-mode="mean" aria-selected="false">2 · Mean and anomalous results</button>
+<button class="tab" role="tab" data-mode="unc" aria-selected="false">3 · Range and uncertainty</button>
+<button class="tab" role="tab" data-mode="prec" aria-selected="false">4 · Precise or accurate?</button>
+</nav>
+<div class="layout">
+<section class="stage"><div class="canvas-box"><canvas id="cv" aria-label="Model"></canvas><div class="ov l"><span class="pill" id="pill"></span><span class="pill" id="pill2" hidden></span></div><div class="toast" id="toast"></div></div><div class="caption" id="caption"></div></section>
+<aside>
+<div class="panel" data-for="vary">
+<div class="group"><h2>Repeat the experiment</h2><div class="btns"><button class="primary" id="vOne">Take a reading</button><button id="vTen">Take 10</button><button id="vReset">Reset</button></div>
+<label class="tog"><input type="checkbox" id="vTrue"> Show the true value</label>
+<div class="tally" id="vTally"></div></div>
+<div class="group"><h2>Key points</h2><ul class="pts">
+<li>Whenever a measurement is made there is <b>always some uncertainty</b> about the result.</li>
+<li><b>Random errors</b> make each reading slightly too high or too low, so repeats are not identical.</li>
+<li>Repeating and calculating a <b>mean</b> reduces the effect of random errors.</li>
+<li>A result is written as <b>mean ± uncertainty</b>, for example 48 ± 2 cm³. The true value is likely to be between 46 and 50 cm³.</li></ul></div>
+</div>
+<div class="panel" data-for="mean" hidden>
+<div class="group stepper" id="st_mean"></div>
+<div class="group"><h2>Method</h2><ul class="pts">
+<li>An <b>anomalous result</b> does not fit the pattern of the other results.</li>
+<li><b>Leave out</b> any anomalous result.</li>
+<li>Mean = sum of the results you are keeping ÷ how many results you are keeping.</li></ul></div>
+</div>
+<div class="panel" data-for="unc" hidden>
+<div class="group stepper" id="st_unc"></div>
+<div class="group"><h2>Method</h2><ul class="pts">
+<li>Calculate the <b>mean</b> (leave out any anomalous result).</li>
+<li><b>Range</b> = highest value − lowest value.</li>
+<li><b>Uncertainty</b> = ± range ÷ 2 (half the range).</li>
+<li>Write the result as <b>mean ± uncertainty</b>, with the unit.</li></ul></div>
+</div>
+<div class="panel" data-for="prec" hidden>
+<div class="group stepper" id="st_prec"></div>
+<div class="group"><h2>Key points</h2><ul class="pts">
+<li><b>Precise</b> results are close together: a small range, so a small uncertainty.</li>
+<li><b>Accurate</b> results are close to the true value.</li>
+<li>Results can be precise but <b>not</b> accurate. If every result is too high (or too low) by a similar amount there is a <b>systematic error</b>, for example a balance that was not set to zero.</li>
+<li>To reduce uncertainty: repeat and calculate a mean, and use apparatus with smaller scale divisions (a burette instead of a measuring cylinder).</li></ul></div>
+</div>
+</aside>
+</div>
+</div>
+
+<script>
+(() => {
+const $=id=>document.getElementById(id);
+const cv=$('cv'), ctx=cv.getContext('2d');
+let cw=800, ch=500;
+function resize(){
+  const r=cv.getBoundingClientRect(), d=Math.min(2,window.devicePixelRatio||1);
+  cw=Math.max(50,r.width); ch=Math.max(50,r.height);
+  cv.width=Math.round(cw*d); cv.height=Math.round(ch*d); ctx.setTransform(d,0,0,d,0,0);
+}
+new ResizeObserver(resize).observe(cv); resize();
+const TH={};
+function readTheme(){const s=getComputedStyle(document.documentElement);['stage','ink','muted','line','accent','good','warn','minus','weak','soft','panel'].forEach(k=>TH[k]=s.getPropertyValue('--'+k).trim()||'#888');}
+readTheme(); matchMedia('(prefers-color-scheme: dark)').addEventListener('change',readTheme);
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const TAU=Math.PI*2, PI=Math.PI, s3=Math.sqrt(3), clamp=(v,a,b)=>Math.max(a,Math.min(b,v)), lerp=(a,b,t)=>a+(b-a)*t;
+const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+function rgb(h){h=h.replace('#','');if(h.length===3)h=h.split('').map(c=>c+c).join('');const n=parseInt(h,16);return [n>>16&255,n>>8&255,n&255];}
+function mix(a,b,t){const A=rgb(a),B=rgb(b);return `rgb(${A.map((v,i)=>Math.round(v+(B[i]-v)*t)).join(',')})`;}
+function rgba(c,a){ if(c.startsWith('#')){const [r,g,b]=rgb(c);return `rgba(${r},${g},${b},${a})`;} const m=c.match(/[\d.]+/g); return `rgba(${m[0]},${m[1]},${m[2]},${a})`; }
+function sprite(hex){
+  const S=96,c=document.createElement('canvas');c.width=c.height=S;const g=c.getContext('2d');
+  const gr=g.createRadialGradient(S*.36,S*.32,S*.03,S*.5,S*.5,S*.5);
+  gr.addColorStop(0,mix(hex,'#ffffff',.75));gr.addColorStop(.28,mix(hex,'#ffffff',.18));
+  gr.addColorStop(.72,hex);gr.addColorStop(1,mix(hex,'#000000',.5));
+  g.fillStyle=gr;g.beginPath();g.arc(S/2,S/2,S/2-1,0,TAU);g.fill();return c;
+}
+const EL={C:{col:'#5a5a5a',br:.27},Si:{col:'#c9a36b',br:.36},O:{col:'#d6452f',br:.27},H:{col:'#eeeae0',br:.2},Cl:{col:'#4f9e3f',br:.32},X:{col:'#3d8fd1',br:.22}};
+const SPR={}; for(const k in EL) SPR[k]=sprite(EL[k].col);
+const STICK='#8e8a84', ELEC='#f2c230';
+let toastT=0; function toast(t){$('toast').textContent=t;$('toast').style.opacity=1;toastT=4.5;}
+function setPressed(el,v){el.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===v));}
+function elecDot(x,y,r,a=1){ctx.globalAlpha=a*.3;ctx.fillStyle=ELEC;ctx.beginPath();ctx.arc(x,y,r*2,0,TAU);ctx.fill();ctx.globalAlpha=a;ctx.strokeStyle='#7a5a00';ctx.lineWidth=1;ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.fill();ctx.stroke();ctx.globalAlpha=1;}
+
+/* ===== reusable step-by-step fill-in engine ===== */
+function makeStepper(el,gen,title='Work it out'){
+  const S={q:null,i:0,score:0,done:0,helped:false,msg:'',tries:0,el,onchange:null};
+  const fin=()=>S.i>=S.q.steps.length;
+  function render(focus){
+    const q=S.q; let h=`<h2>${title}</h2><p class="fb">${q.text}</p><ol class="steps">`;
+    q.steps.forEach((s,k)=>{
+      if(k<S.i) h+=`<li class="done"><span>${s.p}</span><b>✓ ${s.work??s.a}</b></li>`;
+      else if(k===S.i&&s.opts) h+=`<li class="cur"><span>${s.p}</span><div class="ans opts">${s.opts.map((o,j)=>`<button data-act="opt" data-v="${j}">${o}</button>`).join('')}<button data-act="show">Show me</button></div>${S.msg?`<p class="msg">${S.msg}</p>`:''}</li>`;
+      else if(k===S.i) h+=`<li class="cur"><span>${s.p}</span><div class="ans"><input autocomplete="off" inputmode="${typeof s.a==='number'?'decimal':'text'}" aria-label="Your answer">${s.unit?`<span>${s.unit}</span>`:''}<button class="primary" data-act="check">Check</button><button data-act="show">Show me</button></div>${S.msg?`<p class="msg">${S.msg}</p>`:''}</li>`;
+    });
+    h+='</ol>';
+    if(fin()) h+=`<p class="fb">${q.end||'✓ Finished.'}</p>`;
+    h+=`<div class="btns"><button data-act="next"${fin()?' class="primary"':''}>New question ▶</button><span class="note">${S.done?`Without help: ${S.score} of ${S.done}`:''}</span></div>`;
+    el.innerHTML=h; if(focus){const inp=el.querySelector('input');if(inp)inp.focus({preventScroll:true});}
+    if(S.onchange) S.onchange(S);
+  }
+  function ok(s,raw){
+    let t=raw.trim(); if(!t) return null;
+    if(typeof s.a==='number'){t=t.replace(/^(±|\+\/?-)\s*/,'').replace(/\s*[a-zA-Z°%]+[³²]?$/,'').replace(/[⁻⁰¹²³⁴-⁹]+$/,m=>'^'+[...m].map(c=>c==='⁻'?'-':'⁰¹²³⁴⁵⁶⁷⁸⁹'.indexOf(c)).join('')).replace(/\s/g,'').replace(',','.').replace(/[%a-zA-Z°³²\/]+$/,'');let v;
+      const m=t.match(/^(-?[\d.]+)[x×*]10\^?(-?\d+)$/i); v=m?parseFloat(m[1])*Math.pow(10,+m[2]):Number(t);
+      if(!isFinite(v)) return false; return Math.abs(v-s.a)<=(s.tol??Math.abs(s.a)*.006+1e-12);}
+    const u=t.toLowerCase(); return [s.a,...(s.alt||[])].some(a=>String(a).toLowerCase()===u);
+  }
+  function advance(){S.i++;S.msg='';S.tries=0;if(fin()){S.done++;if(!S.helped)S.score++;}render(true);}
+  function check(){const s=S.q.steps[S.i], inp=el.querySelector('input'), r=ok(s,inp.value); if(r===null)return;
+    if(r) advance(); else {S.tries++;S.msg=(S.tries>1&&s.hint)?s.hint:(S.tries>1?'Not quite. Try again, or press Show me.':(s.hint1||'Not quite. Try again.'));render(true);const i2=el.querySelector('input');if(i2)i2.className='no';}}
+  el.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const a=b.dataset.act;
+    if(a==='check')check(); else if(a==='opt'){const st=S.q.steps[S.i];if(st.opts[+b.dataset.v]===st.a)advance();else{S.tries++;S.msg=st.hint||'Not quite. Try again.';render(false);}} else if(a==='show'){S.helped=true;advance();} else if(a==='next')S.next(true);});
+  el.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.tagName==='INPUT'){e.preventDefault();check();}});
+  S.next=(focus)=>{S.q=gen();S.i=0;S.helped=false;S.msg='';S.tries=0;render(!!focus);};
+  S.fin=fin; S.next(false); return S;
+}
+function drawWork(S,x,y,lh,fs,maxW){
+  ctx.textAlign='left'; ctx.textBaseline='top';
+  S.q.steps.forEach((s,k)=>{ if(k>=S.i) return; ctx.font=`600 ${fs}px system-ui,sans-serif`; let f=fs; const t=s.work??String(s.a); while(maxW&&ctx.measureText(t).width>maxW&&f>10){f-=1;ctx.font=`600 ${f}px system-ui,sans-serif`;}
+    ctx.fillStyle=TH.good; ctx.fillText('✓',x,y+k*lh); ctx.fillStyle=TH.ink; ctx.fillText(t,x+fs*1.3,y+k*lh); });
+}
+function bigText(t,x,y,fs,col,align='center',w=700){ctx.fillStyle=col||TH.ink;ctx.font=`${w} ${fs}px system-ui,sans-serif`;ctx.textAlign=align;ctx.textBaseline='middle';ctx.fillText(t,x,y);}
+const FS=()=>clamp(cw/52,13,18);
+const ST={};
+function stp(key,gen,title){return ST[key]=makeStepper($('st_'+key),gen,title);}
+/* app shell: T = {key:{draw(dt),cap(),pill()->[a,b],click(x,y),over(x,y)}} */
+function runApp(T){
+  let mode=Object.keys(T)[0], lastCap='', uiT=1, last=performance.now();
+  document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{mode=t.dataset.mode;
+    document.querySelectorAll('.tab').forEach(x=>x.setAttribute('aria-selected',x===t));
+    document.querySelectorAll('.panel').forEach(p=>p.hidden=p.dataset.for!==mode); lastCap=''; uiT=1;});
+  const xy=e=>{const r=cv.getBoundingClientRect();return [e.clientX-r.left,e.clientY-r.top];};
+  cv.addEventListener('pointerdown',e=>{if(T[mode].click)T[mode].click(...xy(e));});
+  cv.addEventListener('pointermove',e=>{cv.style.cursor=T[mode].over&&T[mode].over(...xy(e))?'pointer':'default';});
+  function frame(now){const dt=Math.min(.04,(now-last)/1000); last=now;
+    ctx.fillStyle=TH.stage; ctx.fillRect(0,0,cw,ch); T[mode].draw(dt);
+    uiT+=dt; if(uiT>.15){uiT=0;const c=T[mode].cap();if(c!==lastCap){$('caption').textContent=c;lastCap=c;}
+      const P=T[mode].pill?T[mode].pill():['',null]; $('pill').textContent=P[0]; $('pill').hidden=!P[0]; $('pill2').hidden=!P[1]; if(P[1])$('pill2').textContent=P[1];}
+    if(toastT>0){toastT-=dt;if(toastT<=0)$('toast').style.opacity=0;}
+    requestAnimationFrame(frame);}
+  window.__st=ST; requestAnimationFrame(frame);
+}
+/* ===== uncertainty walkthrough ===== */
+const nf=x=>String(+(+x).toFixed(4));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+function pickNew(a,last){let v;do{v=pick(a);}while(a.length>1&&v===last);return v;}
+const ri=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const CTXS=[
+ {n:'the volume of gas collected in one minute',u:'cm³',d:1,dp:0,b:[30,80]},
+ {n:'the temperature rise in a reaction',u:'°C',d:.1,dp:1,b:[45,150]},
+ {n:'the time taken for a cross to disappear',u:'s',d:1,dp:0,b:[25,90]},
+ {n:'the mass of product made',u:'g',d:.01,dp:2,b:[150,420]},
+ {n:'the volume of acid needed to neutralise an alkali',u:'cm³',d:.1,dp:1,b:[180,270]}];
+const fk=(c,k)=>(k*c.d).toFixed(c.dp);
+const fh=(c,h)=>(h*c.d/2).toFixed(c.dp+(h%2?1:0));
+const fu=(c,k)=>fk(c,k)+' '+c.u;
+const NW=['zero','one','two','three','four','five'];
+function genSet(n,c,even){for(;;){const b=ri(c.b[0],c.b[1]),sp=pick([2,3,4,5,6]),ks=Array.from({length:n},()=>b+ri(0,sp));
+  const mx=Math.max(...ks),mn=Math.min(...ks),sum=ks.reduce((a,v)=>a+v,0); if(mx-mn<2||sum%n) continue; if(even&&(mx-mn)%2&&c.d!==1) continue; return {ks,mx,mn,sum,mean:sum/n};}}
+function axis(R,lo,hi,c){
+  const span=hi-lo, fs=clamp(cw/60,11,15), X=k=>R.x+(k-lo)/span*R.w;
+  ctx.font=`600 ${fs}px system-ui,sans-serif`; const lw=ctx.measureText(fk(c,hi)).width+10; const st=[1,2,5,10,20].find(s=>span/s*lw<=R.w)||20;
+  ctx.strokeStyle=TH.ink; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(R.x,R.y); ctx.lineTo(R.x+R.w,R.y); ctx.stroke();
+  for(let k=lo;k<=hi;k++){const x=X(k), big=k%st===0; ctx.lineWidth=big?2:1; ctx.beginPath(); ctx.moveTo(x,R.y); ctx.lineTo(x,R.y+(big?8:4)); ctx.stroke(); if(big) bigText(fk(c,k),x,R.y+10+fs*.7,fs,TH.muted,'center',600);}
+  bigText(c.u,R.x+R.w+8,R.y,fs,TH.muted,'left',600); return X;
+}
+function dots(X,ks,y,r,col,ringI){const seen={};
+  ks.forEach((k,i)=>{const s=seen[k]=(seen[k]||0)+1, x=X(k), yy=y-r-3-(s-1)*(2*r+2), an=i===ringI;
+    ctx.fillStyle=an?TH.warn:col; ctx.strokeStyle=TH.ink; ctx.lineWidth=1.2; ctx.beginPath(); ctx.arc(x,yy,r,0,TAU); ctx.fill(); ctx.stroke();
+    if(an){ctx.strokeStyle=TH.warn;ctx.lineWidth=2;ctx.setLineDash([4,3]);ctx.beginPath();ctx.arc(x,yy,r*2,0,TAU);ctx.stroke();ctx.setLineDash([]);bigText('anomalous',clamp(x,cw*.11,cw*.89),yy-r*2-10,clamp(cw/64,11,14),TH.warn);}});}
+function vline(x,y0,y1,col,dash){ctx.strokeStyle=col;ctx.lineWidth=2.5;if(dash)ctx.setLineDash([6,5]);ctx.beginPath();ctx.moveTo(x,y0);ctx.lineTo(x,y1);ctx.stroke();ctx.setLineDash([]);}
+function band(x0,x1,y0,y1,col){ctx.fillStyle=rgba(col,.16);ctx.fillRect(x0,y0,x1-x0,y1-y0);ctx.strokeStyle=rgba(col,.7);ctx.lineWidth=1.5;ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x0,y1);ctx.moveTo(x1,y0);ctx.lineTo(x1,y1);ctx.stroke();ctx.setLineDash([]);}
+function bracket(x0,x1,y,col,label,fs){ctx.strokeStyle=col;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x0,y+7);ctx.lineTo(x0,y);ctx.lineTo(x1,y);ctx.lineTo(x1,y+7);ctx.stroke();bigText(label,(x0+x1)/2,y-fs*.8,fs,col);}
+function cells(c,ks,y,h,cross){const n=ks.length, w=Math.min(cw*.72/n,130), x0=cw*.2+(cw*.74-w*n)/2, fs=FS();
+  ks.forEach((k,i)=>{const x=x0+i*w; ctx.fillStyle=rgba(TH.muted,.08); ctx.strokeStyle=TH.line; ctx.lineWidth=1.5; ctx.fillRect(x+2,y,w-4,h); ctx.strokeRect(x+2,y,w-4,h);
+    bigText(String(i+1),x+w/2,y+h*.26,fs*.8,TH.muted,'center',600); bigText(fk(c,k),x+w/2,y+h*.67,fs*1.15,i===cross?TH.warn:TH.ink);
+    if(i===cross){ctx.strokeStyle=TH.warn;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(x+10,y+h-8);ctx.lineTo(x+w-10,y+8);ctx.stroke();}});
+  bigText('Experiment',x0-6,y+h*.26,fs*.8,TH.muted,'right',600); bigText(c.u,x0-6,y+h*.67,fs*.8,TH.muted,'right',600);}
+let lastQ={};
+/* ---- tab 1: why results vary ---- */
+const V={ks:[],show:false,sig:''}, VT=48;
+function reading(){let g=0;for(let i=0;i<6;i++)g+=Math.random();g=(g-3)/Math.sqrt(.5);return clamp(Math.round(VT+g*1.5),42,54);}
+function take(n){for(let i=0;i<n&&V.ks.length<40;i++)V.ks.push(reading()); if(V.ks.length>=40)toast('40 readings is plenty. Press Reset to start again.');}
+$('vOne').onclick=()=>take(1); $('vTen').onclick=()=>take(10); $('vReset').onclick=()=>{V.ks=[];}; $('vTrue').onchange=e=>{V.show=e.target.checked;};
+function vStats(){const n=V.ks.length; if(!n)return null; const sum=V.ks.reduce((a,v)=>a+v,0),mx=Math.max(...V.ks),mn=Math.min(...V.ks);return {n,mean:sum/n,mx,mn,u:(mx-mn)/2};}
+function drawVary(){
+  const c=CTXS[0], fs=FS(), R={x:cw*.08,y:ch*.76,w:cw*.8}, X=axis(R,40,56,c), s=vStats(), top=ch*.24;
+  bigText('Volume of gas collected in one minute',cw*.5,ch*.15,fs,TH.muted,'center',600);
+  if(s){
+    const cnt={}; V.ks.forEach(k=>cnt[k]=(cnt[k]||0)+1); const mc=Math.max(...Object.values(cnt)), r=Math.min(clamp(cw/85,5,9),(R.y-top-10)/(mc*2.25));
+    if(s.n>1&&s.u>0) band(X(s.mean-s.u),X(s.mean+s.u),top,R.y,TH.good);
+    dots(X,V.ks,R.y,r,rgba(TH.accent,.85),-1);
+    vline(X(s.mean),top,R.y,TH.accent); bigText('mean',X(s.mean),top-fs*.8,fs*.95,TH.accent);
+  }
+  if(V.show){vline(X(VT),top,R.y+2,TH.minus,true); bigText('true value',X(VT),R.y+fs*3.1,fs*.95,TH.minus);}
+  const sig=V.ks.length+'|'+V.show; if(sig!==V.sig){V.sig=sig; $('vTally').innerHTML=s?`<span>Number of readings</span><b>${s.n}</b><span>Mean</span><b>${s.mean.toFixed(1)} cm³</b><span>Range</span><b>${s.n>1?(s.mx-s.mn)+' cm³':'–'}</b><span>Uncertainty</span><b>${s.n>1?'± '+nf(s.u)+' cm³':'–'}</b>`:'<span>Number of readings</span><b>0</b>';}
+}
+/* ---- tab 2: mean and anomalous results ---- */
+stp('mean',()=>{const c=pickNew(CTXS,lastQ.m);lastQ.m=c;let S,an;
+  for(;;){S=genSet(4,c,false);const off=ri(10,17)*(Math.random()<.65?1:-1);an=S.ks[0]+off;if(an>5&&Math.abs(an-S.mx)>=8&&Math.abs(an-S.mn)>=8)break;}
+  const pos=ri(0,4), all=S.ks.slice(); all.splice(pos,0,an); const opts=[...new Set(all)].map(k=>fu(c,k));
+  return {c,all,pos,S,text:`A student measured ${c.n}. They repeated the experiment five times:<br><b>${all.map(k=>fk(c,k)).join(', ')}</b> ${c.u}`,end:`✓ Mean = ${fu(c,S.mean)}. The anomalous result was not used.`,steps:[
+    {p:'Which result is anomalous?',opts,a:fu(c,an),work:`Anomalous result: ${fu(c,an)} (leave it out)`,hint:'Look for the result that is a long way from all the others.'},
+    {p:'Add up the <b>four</b> results you are keeping',a:S.sum*c.d,tol:c.d*.02,unit:c.u,work:`${S.ks.map(k=>fk(c,k)).join(' + ')} = ${fk(c,S.sum)}`,hint:'Do not include the anomalous result in the total.'},
+    {p:'Calculate the mean',a:S.mean*c.d,tol:c.d*.02,unit:c.u,work:`Mean = ${fk(c,S.sum)} ÷ 4 = ${fu(c,S.mean)}`,hint:'Divide the total by 4, because you kept four results. Do not divide by 5.'}]};},'Find the mean');
+function drawMean(){
+  const s=ST.mean,q=s.q,c=q.c,fs=FS(), h=clamp(ch*.13,46,64), lo=Math.min(...q.all)-2, hi=Math.max(...q.all)+2, R={x:cw*.08,y:ch*.58,w:cw*.8};
+  cells(c,q.all,ch*.14,h,s.i>0?q.pos:-1);
+  const X=axis(R,lo,hi,c), r=clamp(cw/85,5,8); dots(X,q.all,R.y,r,rgba(TH.accent,.85),s.i>0?q.pos:-1);
+  if(s.fin()){vline(X(q.S.mean),R.y-ch*.17,R.y,TH.good); bigText('mean = '+fu(c,q.S.mean),clamp(X(q.S.mean),cw*.2,cw*.8),R.y-ch*.17-fs*.8,fs,TH.good);}
+  drawWork(s,cw*.07,ch*.71,clamp(ch/20,22,29),clamp(cw/56,12,16),cw*.86);
+}
+/* ---- tab 3: range and uncertainty ---- */
+stp('unc',()=>{const c=pickNew(CTXS,lastQ.u);lastQ.u=c;const n=pick([3,4,4,5]), S=genSet(n,c,true), rg=S.mx-S.mn, U=rg*c.d/2;
+  return {c,S,rg,text:`A student measured ${c.n} ${NW[n]} times:<br><b>${S.ks.map(k=>fk(c,k)).join(', ')}</b> ${c.u}<br>There are no anomalous results.`,end:`✓ Result: <b>${fk(c,S.mean)} ± ${fh(c,rg)} ${c.u}</b>`,steps:[
+    {p:`Calculate the mean: (${S.ks.map(k=>fk(c,k)).join(' + ')}) ÷ ${n}`,a:S.mean*c.d,tol:c.d*.02,unit:c.u,work:`Mean = ${fk(c,S.sum)} ÷ ${n} = ${fu(c,S.mean)}`,hint:`Add up all ${NW[n]} results, then divide by ${n}.`},
+    {p:'Calculate the range (highest value − lowest value)',a:rg*c.d,tol:c.d*.02,unit:c.u,work:`Range = ${fk(c,S.mx)} − ${fk(c,S.mn)} = ${fu(c,rg)}`,hint:`The highest value is ${fk(c,S.mx)} and the lowest is ${fk(c,S.mn)}.`},
+    {p:'Calculate the uncertainty (range ÷ 2)',a:U,tol:c.d*.02,unit:'± '+c.u,work:`Uncertainty = ${fk(c,rg)} ÷ 2 = ± ${fh(c,rg)} ${c.u}`,hint:'Halve the range.'}]};},'Find the uncertainty');
+function drawUnc(){
+  const s=ST.unc,q=s.q,c=q.c,S=q.S,fs=FS(), h=clamp(ch*.13,46,64), R={x:cw*.08,y:ch*.62,w:cw*.8};
+  cells(c,S.ks,ch*.14,h,-1);
+  const X=axis(R,S.mn-2,S.mx+2,c), r=clamp(cw/85,5,8), top=R.y-ch*.2;
+  if(s.i>2) band(X(S.mean-q.rg/2),X(S.mean+q.rg/2),top,R.y,TH.good);
+  dots(X,S.ks,R.y,r,rgba(TH.accent,.85),-1);
+  if(s.i>0) vline(X(S.mean),top,R.y,TH.accent);
+  if(s.i>1) bracket(X(S.mn),X(S.mx),top-6,TH.minus,s.i>2?`${fk(c,S.mean)} ± ${fh(c,q.rg)} ${c.u}`:`range = ${fu(c,q.rg)}`,fs);
+  else if(s.i>0) bigText('mean = '+fu(c,S.mean),X(S.mean),top-fs*.8,fs,TH.accent);
+  drawWork(s,cw*.07,ch*.75,clamp(ch/20,22,29),clamp(cw/56,12,16),cw*.86);
+}
+/* ---- tab 4: precise or accurate ---- */
+stp('prec',()=>{const c=pickNew(CTXS,lastQ.p);lastQ.p=c;const T=ri(c.b[0]+10,c.b[1]), sc=pick([1,2,2]);
+  const tight=pick([[-1,0,1],[-1,1,0],[0,-1,1],[1,-1,0]]), wide=pick([[-4,1,3],[3,-5,2],[-3,4,-1],[5,-2,-3],[-4,4,0]]);
+  const sh=sc===1?pick([-3,3,-2,2]):pick([-6,-5,5,6]);
+  const P=tight.map(v=>T+v+(sc===2?sh:0)), W=wide.map(v=>T+v+(sc===1?sh:0)), aP=Math.random()<.5, A=aP?P:W, B=aP?W:P;
+  const rg=a=>Math.max(...a)-Math.min(...a), mean=a=>a.reduce((t,v)=>t+v,0)/3, nP='Student '+(aP?'A':'B'), nW='Student '+(aP?'B':'A'), acc=sc===1?nP:nW;
+  const rs=(l,a)=>({p:`Calculate the range of student ${l}'s results`,a:rg(a)*c.d,tol:c.d*.02,unit:c.u,work:`Student ${l}: range = ${fk(c,Math.max(...a))} − ${fk(c,Math.min(...a))} = ${fu(c,rg(a))}`,hint:'Range = highest value − lowest value.'});
+  return {c,T,A,B,mA:mean(A),mB:mean(B),text:`Two students measured ${c.n}. The true value is <b>${fu(c,T)}</b>.<br>Student A: <b>${A.map(k=>fk(c,k)).join(', ')}</b> ${c.u}<br>Student B: <b>${B.map(k=>fk(c,k)).join(', ')}</b> ${c.u}`,
+    end:sc===1?`✓ ${nP}'s results are both precise and accurate.`:`✓ ${nP}'s results are precise but not accurate. Every result is too ${sh>0?'high':'low'}, which suggests a systematic error.`,steps:[rs('A',A),rs('B',B),
+    {p:'Whose results are more <b>precise</b>?',opts:['Student A','Student B'],a:nP,work:`${nP} is more precise: smaller range`,hint:'Precise results are close together. Compare the two ranges.'},
+    {p:`The mean for student A is ${fu(c,mean(A))}. The mean for student B is ${fu(c,mean(B))}. Whose results are more <b>accurate</b>?`,opts:['Student A','Student B'],a:acc,work:`${acc} is more accurate: mean closer to true value`,hint:`Accurate results are close to the true value, ${fu(c,T)}.`}]};},'Compare the results');
+function drawPrec(){
+  const s=ST.prec,q=s.q,c=q.c,fs=FS(), all=[...q.A,...q.B,q.T], lo=Math.min(...all)-2, hi=Math.max(...all)+2, R={x:cw*.2,y:ch*.6,w:cw*.62};
+  const X=axis(R,lo,hi,c), r=clamp(cw/85,5,8), yA=ch*.37, yB=ch*.52;
+  const ty=cw<520?ch*.27:ch*.2; vline(X(q.T),ty,R.y,TH.good,true); bigText('true value',clamp(X(q.T),cw*.2,cw*.8),ty-fs*.8,fs*.95,TH.good);
+  [['A',q.A,yA,q.mA,0],['B',q.B,yB,q.mB,1]].forEach(([l,a,y,m,k])=>{
+    ctx.strokeStyle=TH.line; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(R.x,y); ctx.lineTo(R.x+R.w,y); ctx.stroke();
+    bigText('Student '+l,R.x-10,y-r-2,fs*.9,TH.ink,'right',600);
+    if(s.i>k){ctx.strokeStyle=TH.minus;ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(X(Math.min(...a)),y);ctx.lineTo(X(Math.max(...a)),y);ctx.stroke();bigText('range '+fk(c,Math.max(...a)-Math.min(...a)),cw*.985,y-r-2,fs*.82,TH.minus,'right');}
+    dots(X,a,y,r,rgba(TH.accent,.85),-1);
+    if(s.i>2){const x=X(m);ctx.fillStyle=TH.ink;ctx.beginPath();ctx.moveTo(x,y+3);ctx.lineTo(x-6,y+13);ctx.lineTo(x+6,y+13);ctx.fill();}
+  });
+  if(s.i>2) bigText('▲ = mean',cw*.985,R.y+fs*2.9,fs*.82,TH.ink,'right',600);
+  drawWork(s,cw*.07,ch*.73,clamp(ch/21,21,28),clamp(cw/58,12,16),cw*.88);
+}
+runApp({
+ vary:{draw:drawVary,pill:()=>{const s=vStats();return ['Readings: '+V.ks.length,s&&s.n>1?`${s.mean.toFixed(1)} ± ${nf(s.u)} cm³`:null];},cap:()=>{const n=V.ks.length;return n===0?'Press Take a reading. Each dot is one result from the same experiment, done in exactly the same way each time.':n===1?'One reading on its own does not tell you how much to trust it. Repeat the experiment and see whether you get the same value.':n<5?'The results are not all the same. Small random errors make each reading slightly too high or too low. This is why there is always some uncertainty in a measurement.':'The results are spread around the mean. The shaded band shows the uncertainty: from the mean minus half the range to the mean plus half the range. The true value is likely to lie inside this band.'+(V.show?' The mean of many readings is usually closer to the true value than a single reading is.':'');}},
+ mean:{draw:drawMean,pill:()=>['Leave out anomalous results',null],cap:()=>{const s=ST.mean;return s.fin()?'The mean sits in the middle of the four results that fit the pattern. If the anomalous result had been included, the mean would have been pulled away from the other results.':s.i===0?'Each dot on the number line is one result. Look for a result that is a long way from the rest: it does not fit the pattern.':'The anomalous result is crossed out. Use only the other four results: add them up, then divide by 4.';}},
+ unc:{draw:drawUnc,pill:()=>['Uncertainty = ± range ÷ 2',null],cap:()=>{const s=ST.unc;return s.fin()?'The shaded band is the mean ± the uncertainty. It is as wide as the range, centred on the mean. The true value is likely to lie inside it.':s.i===0?'Start with the mean: add up the results and divide by how many there are.':s.i===1?'The mean is marked on the number line. Now find the range: how far apart are the highest and lowest results?':'The bracket shows the range. The uncertainty is half of the range.';}},
+ prec:{draw:drawPrec,pill:()=>['Precise = close together','Accurate = close to the true value'],cap:()=>{const s=ST.prec;return s.fin()?'Precision is about how close the results are to each other. Accuracy is about how close they are to the true value. Results can be precise without being accurate.':s.i<2?'Each row of dots is one student\'s results. The dashed line is the true value. Start by finding the range of each set of results.':s.i===2?'The thick bars show the ranges. A smaller range means the results are closer together.':'The triangles mark each mean. Compare each mean with the true value.';}}
+});
+})();
+</script>
+<style>
+.mcq{border-color:var(--good)}
+.mcq-q{margin:0;font-weight:600;font-size:.95rem}
+.mcq-opts{display:flex;flex-direction:column;gap:6px}
+.mcq-opts button{display:flex;gap:9px;align-items:flex-start;text-align:left;font-weight:500;line-height:1.35;padding:7px 10px;opacity:1}
+.mcq-opts button:disabled{cursor:default;opacity:.75}
+.mcq-opts button.right,.mcq-opts button.wrong{opacity:1;color:#fff}
+.mcq-opts button.right{background:var(--good);border-color:var(--good)}
+.mcq-opts button.wrong{background:var(--warn);border-color:var(--warn)}
+.mcq-l{flex:none;font-weight:800;width:1.2em}
+.mcq-fb{margin:0;font-size:.9rem;padding:8px 10px;border-radius:7px;border:1px solid var(--line);background:var(--chip)}
+.mcq-fb.ok b{color:var(--good)} .mcq-fb.no b{color:var(--warn)}
+.mcq-score{margin:0;font-size:1rem}
+.fq{padding:22px 26px 26px;display:flex;flex-direction:column;gap:14px;min-height:560px}
+.fq-head{display:flex;justify-content:space-between;font-weight:700;color:var(--muted);font-size:.9rem;letter-spacing:.04em;text-transform:uppercase}
+.fq-bar{height:8px;border-radius:4px;background:var(--chip);border:1px solid var(--line);overflow:hidden}
+.fq-bar span{display:block;height:100%;background:var(--good);transition:width .3s}
+.fq-q{margin:6px 0 0;font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;font-size:clamp(1.25rem,2.2vw,1.6rem);font-weight:600;line-height:1.3}
+.fq-opts button{font-size:1.08rem;padding:12px 14px}
+.fq .mcq-fb{font-size:1.02rem}
+.fq-big{margin:20px 0 0;font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;font-size:clamp(1.6rem,3vw,2.2rem)}
+.fq-msg{margin:0;font-size:1.05rem;color:var(--muted)}
+.fq-h{margin:8px 0 0;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.fq-review{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:10px}
+.fq-review p{margin:0}
+
+</style>
+<script>
+window.MCQ={n:10,tabs:{
+vary:[
+{q:"Why is there always some uncertainty in a measurement?",o:["No instrument or person can measure perfectly, so results vary slightly","Scientists always make big mistakes","The true value keeps changing","Only digital instruments have uncertainty"],a:0,e:"Every measurement has some uncertainty, however carefully it is made."},
+{q:"A student repeats an experiment in the same way and gets slightly different results each time. What causes this?",o:["Random errors","Anomalous results","The law of conservation of mass","Using the wrong units"],a:0,e:"Random errors make each reading slightly too high or too low."},
+{q:"Why do scientists repeat measurements and calculate a mean?",o:["It reduces the effect of random errors","It removes all uncertainty","It makes the experiment quicker","It means anomalous results can be included"],a:0,e:"The mean of several readings is usually closer to the true value than one reading."},
+{q:"A result is written as 48 ± 2 cm³. What does this mean?",o:["The true value is likely to be between 46 and 50 cm³","The true value is exactly 48 cm³","The true value is between 48 and 50 cm³","The experiment was done twice"],a:0,e:"48 − 2 = 46 and 48 + 2 = 50."},
+{q:"Which result has the smallest uncertainty?",o:["25.0 ± 0.1 cm³","25.0 ± 0.5 cm³","25.0 ± 1.0 cm³","25.0 ± 2.0 cm³"],a:0,e:"The smaller the number after ±, the smaller the uncertainty."}],
+mean:[
+{q:"What is the mean of 4.0, 4.2 and 4.4?",o:["4.2","12.6","4.0","0.4"],a:0,e:"(4.0 + 4.2 + 4.4) ÷ 3 = 12.6 ÷ 3 = 4.2."},
+{q:"What is an anomalous result?",o:["A result that does not fit the pattern of the others","The highest result","The mean of the results","A result measured in the wrong unit"],a:0,e:"It is a long way from the other results."},
+{q:"The results are 45, 48, 46, 61 and 47 cm³. Which result is anomalous?",o:["61 cm³","45 cm³","48 cm³","47 cm³"],a:0,e:"61 is far from the other results, which are all between 45 and 48."},
+{q:"The results are 45, 48, 46, 61 and 47 cm³. What is the mean, leaving out the anomalous result?",o:["46.5 cm³","49.4 cm³","37.2 cm³","186 cm³"],a:0,e:"(45 + 48 + 46 + 47) ÷ 4 = 186 ÷ 4 = 46.5 cm³. Divide by 4, not 5."},
+{q:"What should you do with an anomalous result when calculating a mean?",o:["Leave it out","Count it twice","Change it to match the others","Use it as the mean"],a:0,e:"Including it would pull the mean away from the true value."}],
+unc:[
+{q:"The times are 32, 35, 33 and 34 s. What is the range?",o:["3 s","33.5 s","35 s","1.5 s"],a:0,e:"Range = highest − lowest = 35 − 32 = 3 s."},
+{q:"The range of a set of results is 3 s. What is the uncertainty?",o:["± 1.5 s","± 3 s","± 6 s","± 0.5 s"],a:0,e:"Uncertainty = range ÷ 2 = 3 ÷ 2 = ± 1.5 s."},
+{q:"The temperature rises are 6.2, 6.6 and 6.4 °C. What is the uncertainty?",o:["± 0.2 °C","± 0.4 °C","± 6.4 °C","± 0.1 °C"],a:0,e:"Range = 6.6 − 6.2 = 0.4 °C. Half of 0.4 is 0.2."},
+{q:"The mean is 46.5 cm³ and the range is 3 cm³. How should the result be written?",o:["46.5 ± 1.5 cm³","46.5 ± 3 cm³","3 ± 46.5 cm³","48 ± 1.5 cm³"],a:0,e:"Write mean ± half the range."},
+{q:"The volumes are 22.4, 22.8 and 22.6 cm³. What are the mean and the uncertainty?",o:["22.6 ± 0.2 cm³","22.6 ± 0.4 cm³","22.8 ± 0.2 cm³","67.8 ± 0.4 cm³"],a:0,e:"Mean = 67.8 ÷ 3 = 22.6. Range = 0.4, so uncertainty = ± 0.2."}],
+prec:[
+{q:"What does 'precise' mean?",o:["The results are close together","The results are close to the true value","The results were measured quickly","There is one anomalous result"],a:0,e:"Precise results have a small range."},
+{q:"What does 'accurate' mean?",o:["The result is close to the true value","The results are close together","The result has many decimal places","The experiment was repeated"],a:0,e:"Accuracy is about how close a result is to the true value."},
+{q:"Student A's results have a range of 0.04 g. Student B's results have a range of 0.22 g. Whose results are more precise?",o:["Student A, because the range is smaller","Student B, because the range is bigger","Both are equally precise","You cannot tell from the range"],a:0,e:"A smaller range means the results are closer together."},
+{q:"A balance reads 0.05 g when nothing is on it. Every mass measured is 0.05 g too high. What type of error is this?",o:["A systematic error","A random error","An anomalous result","A rounding error"],a:0,e:"A systematic error shifts every result in the same direction by the same amount."},
+{q:"Which change would reduce the uncertainty when measuring 25 cm³ of a solution?",o:["Use a burette instead of a beaker","Use a larger beaker","Measure it only once","Warm the solution first"],a:0,e:"A burette has much smaller scale divisions, so each reading has a smaller uncertainty."}]},
+final:[
+{q:"How is uncertainty estimated from a set of repeated results?",o:["± range ÷ 2","± range × 2","± mean ÷ 2","± highest value − mean"],a:0,e:"The uncertainty is half the range."},
+{q:"The times are 12, 15, 13 and 16 s. What is the result with its uncertainty?",o:["14 ± 2 s","14 ± 4 s","13.5 ± 2 s","56 ± 4 s"],a:0,e:"Mean = 56 ÷ 4 = 14 s. Range = 16 − 12 = 4 s, so uncertainty = ± 2 s."},
+{q:"The masses are 2.30, 2.52 and 2.48 g. What is the uncertainty?",o:["± 0.11 g","± 0.22 g","± 0.04 g","± 2.43 g"],a:0,e:"Range = 2.52 − 2.30 = 0.22 g. Half of 0.22 is 0.11."},
+{q:"The volumes are 24.6, 24.8, 27.9 and 24.7 cm³. What is the mean, leaving out the anomalous result?",o:["24.7 cm³","25.5 cm³","24.8 cm³","74.1 cm³"],a:0,e:"27.9 is anomalous. (24.6 + 24.8 + 24.7) ÷ 3 = 74.1 ÷ 3 = 24.7 cm³."},
+{q:"A volume is given as 25.0 ± 0.5 cm³. Between which values is the true value likely to be?",o:["24.5 and 25.5 cm³","25.0 and 25.5 cm³","24.0 and 26.0 cm³","20.0 and 30.0 cm³"],a:0,e:"25.0 − 0.5 = 24.5 and 25.0 + 0.5 = 25.5."},
+{q:"A set of results are all close together but all far from the true value. The results are:",o:["Precise but not accurate","Accurate but not precise","Both precise and accurate","Neither precise nor accurate"],a:0,e:"Close together means precise. Far from the true value means not accurate."},
+{q:"Two sets of results have the same mean. Set X has a smaller range than set Y. Which statement is correct?",o:["Set X has the smaller uncertainty","Set Y has the smaller uncertainty","Both have the same uncertainty","Set X must contain an anomalous result"],a:0,e:"Uncertainty is half the range, so a smaller range gives a smaller uncertainty."},
+{q:"Why is an anomalous result left out when calculating a mean?",o:["It would move the mean away from the true value","It is always the highest result","It makes the range too small","It is always caused by the balance"],a:0,e:"It does not fit the pattern, so something probably went wrong with that reading."},
+{q:"The temperature rises are 18, 20, 22 and 20 °C. What is the result with its uncertainty?",o:["20 ± 2 °C","20 ± 4 °C","22 ± 2 °C","80 ± 4 °C"],a:0,e:"Mean = 80 ÷ 4 = 20 °C. Range = 22 − 18 = 4 °C, so uncertainty = ± 2 °C."},
+{q:"The results are 8.1, 8.5 and 8.3 g. What is the range?",o:["0.4 g","0.2 g","8.3 g","24.9 g"],a:0,e:"8.5 − 8.1 = 0.4 g."},
+{q:"A thermometer always reads 1 °C too high. How does this affect a set of results?",o:["They are less accurate but just as precise","They are less precise but just as accurate","The range gets bigger","There is no effect"],a:0,e:"A systematic error shifts every result by the same amount, so the spread does not change."}]};
+</script>
+<script>
+(() => {
+const B = window.MCQ; if (!B) return;
+const q$ = s => document.querySelector(s);
+const L = 'ABCD';
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function prep(q){const idx=shuffle(q.o.map((_,i)=>i));return {q:q.q,o:idx.map(i=>q.o[i]),a:idx.indexOf(q.a),e:q.e,src:q};}
+function optsHTML(q,ans){return q.o.map((o,k)=>{let c='';if(ans!==null){if(k===q.a)c='right';else if(k===ans)c='wrong';}return `<button data-k="${k}" class="${c}" ${ans!==null?'disabled':''}><span class="mcq-l">${L[k]}</span><span>${o}</span></button>`;}).join('');}
+function fbHTML(q,ans){return ans===null?'':`<p class="mcq-fb ${ans===q.a?'ok':'no'}"><b>${ans===q.a?'Correct.':'Not quite.'}</b> ${q.e}</p>`;}
+
+/* ---------- per-tab check questions ---------- */
+document.querySelectorAll('.panel[data-for]').forEach(p => {
+  const bank = B.tabs[p.dataset.for]; if (!bank) return;
+  const g = document.createElement('div'); g.className = 'group mcq';
+  const anchor = [...p.querySelectorAll('.group')].find(x => /^key$/i.test(x.querySelector('h2')?.textContent||''));
+  anchor ? p.insertBefore(g, anchor) : p.appendChild(g);
+  let qs, i, score, ans;
+  const start = () => { qs = shuffle(bank).map(prep); i = 0; score = 0; ans = null; render(); };
+  function render(){
+    if (i >= qs.length) {
+      g.innerHTML = `<h2>Check your understanding</h2><p class="mcq-score">You scored <b>${score} out of ${qs.length}</b>.</p><div class="btns"><button class="primary mcq-again">Try again</button></div>`;
+      g.querySelector('.mcq-again').onclick = start; return;
+    }
+    const q = qs[i];
+    g.innerHTML = `<h2>Check your understanding · ${i+1} of ${qs.length}</h2><p class="mcq-q">${q.q}</p><div class="mcq-opts">${optsHTML(q,ans)}</div>${fbHTML(q,ans)}${ans===null?'':`<div class="btns"><button class="primary mcq-next">${i+1<qs.length?'Next question':'See my score'}</button></div>`}`;
+    g.querySelectorAll('.mcq-opts button').forEach(b => b.onclick = () => { ans = +b.dataset.k; if (ans === q.a) score++; render(); });
+    const n = g.querySelector('.mcq-next'); if (n) n.onclick = () => { i++; ans = null; render(); };
+  }
+  start();
+});
+
+/* ---------- end of topic quiz ---------- */
+const nav = q$('.tabs'), stage = q$('.stage'), aside = q$('aside');
+const tab = document.createElement('button');
+tab.className = 'tab'; tab.setAttribute('role','tab'); tab.setAttribute('aria-selected','false');
+tab.textContent = `${nav.querySelectorAll('.tab').length + 1} · End of topic quiz`;
+nav.appendChild(tab);
+const panel = document.createElement('div'); panel.className = 'panel'; panel.hidden = true;
+panel.innerHTML = `<div class="group"><h2>End of topic quiz</h2><p class="fb">${B.n||10} multiple choice questions covering the whole topic. Each new quiz picks a different set of questions.</p><div class="tally" id="fqTally"></div><div class="btns"><button id="fqNew">Start a new quiz</button></div></div>`;
+aside.appendChild(panel);
+const box = document.createElement('div'); box.className = 'fq'; box.hidden = true; stage.appendChild(box);
+const hideEls = [...stage.children].filter(x => x !== box);
+let Q, qi, sc, an, wrong;
+function newQuiz(){
+  const pool = B.final.slice(), extra = Object.values(B.tabs).flat();
+  const n = B.n || 10, nf = Math.min(pool.length, Math.ceil(n*.6));
+  const pick = shuffle(pool).slice(0, nf).concat(shuffle(extra).slice(0, n - nf));
+  Q = shuffle(pick).map(prep); qi = 0; sc = 0; an = null; wrong = []; renderQ();
+}
+function tally(){ q$('#fqTally').innerHTML = `<span>Question</span><b>${Math.min(qi+1,Q.length)} of ${Q.length}</b><span>Score so far</span><b>${sc}</b>`; }
+function renderQ(){
+  tally();
+  if (qi >= Q.length) {
+    const pc = Math.round(sc/Q.length*100), msg = pc>=80?'Excellent work.':pc>=60?'Good work: review the questions below.':'Keep going: look back at the tabs for the questions you missed.';
+    box.innerHTML = `<div class="fq-head"><span>End of topic quiz</span><span>Finished</span></div><div class="fq-bar"><span style="width:100%"></span></div>
+      <p class="fq-big">You scored <b>${sc} out of ${Q.length}</b> (${pc}%)</p><p class="fq-msg">${msg}</p>
+      ${wrong.length?`<h3 class="fq-h">Questions to review</h3><ol class="fq-review">${wrong.map(q=>`<li><p>${q.q}</p><p><b>Answer:</b> ${q.o[q.a]}. ${q.e}</p></li>`).join('')}</ol>`:''}
+      <div class="btns"><button class="primary fq-again">Try a new quiz</button></div>`;
+    box.querySelector('.fq-again').onclick = newQuiz; return;
+  }
+  const q = Q[qi];
+  box.innerHTML = `<div class="fq-head"><span>Question ${qi+1} of ${Q.length}</span><span>Score: ${sc}</span></div><div class="fq-bar"><span style="width:${qi/Q.length*100}%"></span></div>
+    <p class="fq-q">${q.q}</p><div class="mcq-opts fq-opts">${optsHTML(q,an)}</div>${fbHTML(q,an)}
+    ${an===null?'':`<div class="btns"><button class="primary fq-next">${qi+1<Q.length?'Next question ▶':'See my score'}</button></div>`}`;
+  box.querySelectorAll('.mcq-opts button').forEach(b => b.onclick = () => { an = +b.dataset.k; if (an === q.a) sc++; else wrong.push(q); renderQ(); });
+  const n = box.querySelector('.fq-next'); if (n) n.onclick = () => { qi++; an = null; renderQ(); };
+}
+function showQuiz(on){
+  box.hidden = !on; hideEls.forEach(x => x.hidden = on); panel.hidden = !on;
+  if (on) {
+    nav.querySelectorAll('.tab').forEach(x => x.setAttribute('aria-selected', x === tab));
+    aside.querySelectorAll('.panel').forEach(p => { if (p !== panel) p.hidden = true; });
+    if (!Q) newQuiz();
+  }
+}
+tab.onclick = () => showQuiz(true);
+nav.querySelectorAll('.tab').forEach(t => { if (t !== tab) t.addEventListener('click', () => showQuiz(false)); });
+q$('#fqNew').onclick = newQuiz;
+})();
+
+</script>
+</body>
+</html>
