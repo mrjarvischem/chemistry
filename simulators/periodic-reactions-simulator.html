@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Periodic Table Reactions Simulator</title>
+<style>
+/* Layout idea: cream page, one dark "fume cupboard" stage so flames, fumes and white precipitates show clearly; observations sit beside it. */
+:root{
+  --paper:#f6efe1; --card:#fffaf0; --ink:#3b2a1c; --soft:#7a634d; --line:#dccfb8;
+  --brown:#6b4423; --brown-d:#4f3118; --accent:#a8541f; --stage:#26211d; --good:#2f6b3a;
+  --font:"Gill Sans","Gill Sans MT",Calibri,"Trebuchet MS",Verdana,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--font);font-size:17px;line-height:1.45}
+.wrap{max-width:1240px;margin:0 auto;padding:16px}
+header{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;justify-content:space-between;margin-bottom:12px}
+h1{font-size:1.55rem;margin:0;color:var(--brown-d);letter-spacing:.01em;text-wrap:balance}
+h1 small{display:block;font-size:.9rem;font-weight:400;color:var(--soft)}
+h2{font-size:1.25rem;margin:0;color:var(--brown-d);text-wrap:balance}
+h3{font-size:1.05rem;margin:0 0 6px;color:var(--brown-d)}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,summary:focus-visible,input:focus-visible{outline:3px solid #e2a23b;outline-offset:2px}
+.seg{display:inline-flex;border:2px solid var(--brown);border-radius:10px;overflow:hidden}
+.seg button{border:0;background:var(--card);padding:8px 18px;font-weight:600}
+.seg button[aria-pressed="true"]{background:var(--brown);color:#fff8ea}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;border-bottom:2px solid var(--brown);margin-bottom:10px}
+.tabs button{border:2px solid var(--line);border-bottom:0;background:#ece1cc;padding:8px 16px;border-radius:9px 9px 0 0;font-weight:600;color:var(--soft)}
+.tabs button[aria-pressed="true"]{background:var(--brown);border-color:var(--brown);color:#fff8ea}
+.pills{display:flex;flex-wrap:wrap;gap:7px}
+.pills button{border:1.5px solid var(--line);background:var(--card);padding:6px 13px;border-radius:999px}
+.pills button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+#exps{margin-bottom:12px}
+.main{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:860px){.main{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:14px}
+.setup{margin:4px 0 10px;color:var(--soft)}
+.row{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;margin:10px 0}
+.stage{background:var(--stage);border-radius:10px;overflow:hidden;line-height:0}
+canvas{display:block;width:100%}
+.act{border:0;background:var(--brown);color:#fff8ea;padding:10px 16px;border-radius:9px;font-weight:600}
+.act:hover:not(:disabled){background:var(--brown-d)}
+.act:disabled{opacity:.38;cursor:not-allowed}
+.act.ghost{background:transparent;color:var(--brown);border:2px solid var(--brown)}
+label.chk{display:inline-flex;gap:6px;align-items:center;cursor:pointer;user-select:none}
+label.chk input{width:18px;height:18px;accent-color:var(--accent)}
+.cards{display:grid;gap:10px}
+.card{border:1.5px solid var(--line);border-left:6px solid var(--accent);border-radius:9px;padding:10px 12px;background:#fff}
+.card ul{margin:0;padding-left:20px}
+.card li{margin:2px 0}
+.card .step{list-style:none;margin:8px 0 2px -20px;font-size:.82rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--accent)}
+.card .start{color:var(--soft)}
+.eq{margin-top:8px;padding:7px 10px;background:#f4ead6;border-radius:7px;font-size:1.02rem;overflow-x:auto;white-space:nowrap}
+.eq div+div{margin-top:3px}
+.note{margin:8px 0 0;color:var(--soft);font-size:.95rem}
+.wait{color:var(--soft);font-style:italic;margin:0}
+.hideObs .card ul,.hideObs .card .wait{display:none}
+.hideEq .eq,.hideEq .note{display:none}
+details{margin-top:12px;border:1.5px solid var(--line);border-radius:9px;background:#fff;padding:8px 12px}
+summary{cursor:pointer;font-weight:700;color:var(--brown-d)}
+details p{margin:8px 0 2px}
+sub,sup{line-height:0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Periodic Table Reactions Simulator<small>Observations and equations for AQA chemistry</small></h1>
+    <div class="seg" id="level" role="group" aria-label="Level">
+      <button data-l="gcse" aria-pressed="true">GCSE</button><button data-l="alevel" aria-pressed="false">A-level</button>
+    </div>
+  </header>
+  <nav class="tabs" id="topics" aria-label="Topic"></nav>
+  <div class="pills" id="exps" aria-label="Experiment"></div>
+  <div class="main">
+    <section class="panel">
+      <h2 id="expTitle"></h2>
+      <p class="setup" id="setup"></p>
+      <div class="row">
+        <div class="pills" id="vars"></div>
+        <label class="chk"><input type="checkbox" id="compare"> Compare all side by side</label>
+      </div>
+      <div class="stage" id="stage"><canvas id="cv" aria-label="Animated apparatus"></canvas></div>
+      <div class="row" id="actions"></div>
+    </section>
+    <section class="panel" id="info">
+      <div class="row" style="margin-top:0">
+        <h2 style="flex:1">Observations</h2>
+        <label class="chk"><input type="checkbox" id="showObs" checked> Observations</label>
+        <label class="chk"><input type="checkbox" id="showEq" checked> Equations</label>
+      </div>
+      <div class="cards" id="cards"></div>
+      <details id="whyBox"><summary>Explain the trend</summary><p id="why"></p></details>
+    </section>
+  </div>
+</div>
+<script>
+"use strict";
+/* ---------- helpers ---------- */
+const SUB='₀₁₂₃₄₅₆₇₈₉', SUP='⁰¹²³⁴⁵⁶⁷⁸⁹';
+const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+const arrows=s=>s.replace(/<=>/g,'⇌').replace(/->/g,'→');
+const f=s=>arrows(esc(s)).replace(/([A-Za-z\)\]])(\d+)/g,'$1<sub>$2</sub>').replace(/\^(\d*[+-])/g,(m,a)=>'<sup>'+a.replace('-','−')+'</sup>');
+const u=s=>arrows(s).replace(/([A-Za-z\)\]])(\d+)/g,(m,a,d)=>a+[...d].map(x=>SUB[x]).join('')).replace(/\^(\d*)([+-])/g,(m,d,g)=>[...d].map(x=>SUP[x]).join('')+(g=='+'?'⁺':'⁻'));
+const rgba=(c,a)=>`rgba(${c[0]|0},${c[1]|0},${c[2]|0},${a===undefined?(c[3]===undefined?1:c[3]):a})`;
+const lerp=(a,b,p)=>a+(b-a)*p, clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
+const al=c=>c[3]===undefined?1:c[3];
+const mixC=(a,b,p)=>{if(!a&&!b)return null;if(!a)a=[b[0],b[1],b[2],0];if(!b)b=[a[0],a[1],a[2],0];return [lerp(a[0],b[0],p),lerp(a[1],b[1],p),lerp(a[2],b[2],p),lerp(al(a),al(b),p)];};
+const hash=i=>{const x=Math.sin(i*127.1+311.7)*43758.5453;return x-Math.floor(x);};
+const fr=x=>x-Math.floor(x);
+const ease=p=>p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
+const env=p=>p<.08?p/.08:p>.85?Math.max(0,(1-p)/.15):1;
+const FONT='"Gill Sans","Gill Sans MT",Calibri,"Trebuchet MS",Verdana,sans-serif';
+const GLASS='rgba(235,240,245,.62)';
+
+/* ---------- colours ---------- */
+const C={W:[150,195,225,.38],CL:[190,215,235,.3],clw:[205,225,140,.55],brw:[238,150,40,.88],iod:[150,78,24,.94],
+ cl2:[185,215,90,.42],f2:[235,230,130,.3],brv:[215,100,35,.55],iv:[165,85,200,.55],
+ white:[250,250,248],cream:[238,224,180],yellow:[244,220,90],silver:[200,204,210]};
+const UI={red:[222,52,46,.88],orange:[240,132,44,.88],green:[92,180,84,.85],blue:[58,118,205,.88],indigo:[88,72,186,.9],purple:[130,62,178,.9]};
+
+/* ---------- drawing primitives ---------- */
+function flame(c,x,y,s,col,t,seed=0){
+  if(s<1)return;
+  c.save();c.globalCompositeOperation='lighter';
+  const g=c.createRadialGradient(x,y-s*.45,0,x,y-s*.45,s*1.5);g.addColorStop(0,rgba(col,.4));g.addColorStop(1,rgba(col,0));
+  c.fillStyle=g;c.fillRect(x-s*1.6,y-s*2,s*3.2,s*3.2);
+  for(let k=0;k<3;k++){
+    const q=1-k*.28,w=s*.36*q*(1+.08*Math.sin(t*13+k*2+seed)),h=s*q*(1+.1*Math.sin(t*17+k+seed*3)),sw=Math.sin(t*9+seed+k)*s*.05;
+    c.beginPath();c.moveTo(x-w,y);
+    c.bezierCurveTo(x-w,y-h*.5,x+sw-w*.2,y-h*.75,x+sw,y-h);
+    c.bezierCurveTo(x+sw+w*.2,y-h*.75,x+w,y-h*.5,x+w,y);
+    c.quadraticCurveTo(x,y+w*.5,x-w,y);
+    c.fillStyle=k==2?'rgba(255,255,255,.6)':rgba(col,k?.6:.45);c.fill();
+  }
+  c.restore();
+}
+function puffs(c,x,y,n,col,t,o={}){
+  const sp=o.sp||.35,rise=o.rise||70,spread=o.spread||50,r0=o.r||9,a=o.a||.3,dx=o.dx||0;
+  for(let i=0;i<n;i++){
+    const ph=fr(t*sp*(.6+hash(i+o.seed|0)*.7)+hash(i+50));
+    const px=x+(hash(i+9)-.5)*spread*(.25+ph)+Math.sin(t*2+i)*3+dx*ph,py=y-ph*rise;
+    c.beginPath();c.arc(px,py,r0*(.5+ph),0,7);c.fillStyle=rgba(col,a*(1-ph)*Math.min(1,ph*6));c.fill();
+  }
+}
+function sparks(c,x,y,n,len,t){
+  c.save();c.globalCompositeOperation='lighter';c.strokeStyle='rgba(255,250,220,.9)';c.lineWidth=1.3;
+  for(let i=0;i<n;i++){const k=t*3+hash(i)*5,ph=fr(k),ang=hash(i+Math.floor(k)*7)*6.283,d=ph*len;
+    c.globalAlpha=1-ph;c.beginPath();c.moveTo(x+Math.cos(ang)*d*.7,y+Math.sin(ang)*d*.7);c.lineTo(x+Math.cos(ang)*d,y+Math.sin(ang)*d);c.stroke();}
+  c.restore();
+}
+function label(c,txt,x,y,size=12,col='rgba(240,228,205,.8)',align='center'){c.fillStyle=col;c.font=size+'px '+FONT;c.textAlign=align;c.fillText(u(txt),x,y);}
+function burner(c,x,y,t,on){
+  c.fillStyle='#8a8f96';c.fillRect(x-6,y,12,50);c.fillRect(x-20,y+50,40,6);
+  if(on)flame(c,x,y,34,[70,130,255],t,2);
+}
+
+/* ---------- scenes: each draws into a 400 x 360 cell ---------- */
+const S={};
+
+S.trough=(c,cl,p,t,on)=>{
+  const s=cl.v.s,ui=cl.opts.ui!==false,ep=ease(Math.min(1,p*1.15));
+  const wc=ui?mixC(UI.green,s.uiEnd||UI.purple,on?ep:0):C.W;
+  c.fillStyle=rgba(wc);c.fillRect(52,196,296,113);
+  if(s.cloud){c.fillStyle=rgba(C.white,s.cloud*(on?ep:0));c.fillRect(52,196,296,113);}
+  c.strokeStyle='rgba(255,255,255,.35)';c.lineWidth=1;c.beginPath();c.moveTo(52,196);c.lineTo(348,196);c.stroke();
+  const banged=s.bang&&on&&p>=s.bang;
+  const gone=s.keep?0:s.bang?Math.min(1,p/s.bang)*.4:p;
+  const r=s.r*(1-gone);
+  let mx=200,my=118;
+  if(on){
+    if(s.float){const k=s.move;mx=200+(118-r)*(.6*Math.sin(t*(.8+2.6*k))+.4*Math.sin(t*(1.7+3.1*k)+1))*Math.min(1,k*1.7);my=196-r*.25+Math.sin(t*5)*1.2;}
+    else my=307-(s.ribbon?3:r);
+  }
+  if(banged&&cl.mem.bx===undefined)cl.mem.bx=mx;
+  const vis=!banged&&(s.keep||p<1||!on)&&r>.6;
+  if(on&&!banged&&(p<1||s.keep)){
+    const n=Math.round(s.fizz*46);
+    for(let i=0;i<n;i++){
+      let px,py,a,rad=1.3+hash(i)*2.2;
+      if(s.float){const ph=fr(t*2.2+hash(i)*7),ang=hash(i+3)*6.283;px=mx+Math.cos(ang)*(r+ph*20*(.5+hash(i+5)));py=my+r*.3-ph*5+(hash(i+8)-.5)*7;a=(1-ph)*.9;}
+      else{const ph=fr(t*(.5+hash(i)*.5)+hash(i+2));px=mx+(hash(i+4)-.5)*((s.ribbon?60:r*2)+ph*26);py=lerp(my-(s.ribbon?2:r),199,ph);a=.8;}
+      c.beginPath();c.arc(px,py,rad,0,7);c.strokeStyle=`rgba(255,255,255,${a})`;c.lineWidth=1;c.stroke();
+    }
+  }
+  if(vis){
+    if(!on){c.strokeStyle='#9aa0a8';c.lineWidth=2;c.beginPath();c.moveTo(mx-4,my-4);c.lineTo(mx-22,my-70);c.moveTo(mx+4,my-4);c.lineTo(mx-12,my-72);c.stroke();}
+    const g=c.createRadialGradient(mx-r*.35,my-r*.4,r*.1,mx,my,r*1.1);g.addColorStop(0,'#fff');g.addColorStop(.5,rgba(s.col||C.silver));g.addColorStop(1,'#6f747b');
+    c.fillStyle=g;c.beginPath();
+    if(s.ribbon){c.fillStyle='#b9bec5';c.rect(mx-34,my-2,68,5);}
+    else if(s.melt&&on&&p>.05)c.arc(mx,my,r,0,7);
+    else{for(let i=0;i<7;i++){const a=i/7*6.283,rr=r*(.85+.3*hash(i+s.r));c[i?'lineTo':'moveTo'](mx+Math.cos(a)*rr,my+Math.sin(a)*rr*.8);}c.closePath();}
+    c.fill();
+  }
+  if(s.flame&&on&&!banged&&p>(s.ign||0)&&p<1)flame(c,mx,my-r*.5,30+r,s.flame,t);
+  if(banged){
+    const q=(p-s.bang)/(1-s.bang),X=cl.mem.bx;
+    if(q<1){c.save();c.globalCompositeOperation='lighter';
+      const g=c.createRadialGradient(X,190,0,X,190,40+q*150);g.addColorStop(0,`rgba(255,255,255,${1-q})`);g.addColorStop(.4,rgba(s.flame||[255,220,160],(1-q)*.8));g.addColorStop(1,'rgba(0,0,0,0)');
+      c.fillStyle=g;c.fillRect(0,0,400,360);c.restore();
+      for(let i=0;i<28;i++){const ang=-Math.PI*hash(i),d=q*(50+hash(i+1)*130);c.beginPath();c.arc(X+Math.cos(ang)*d,190+Math.sin(ang)*d+q*q*110,2+hash(i+2)*2.5,0,7);c.fillStyle=rgba(wc,(1-q)*.95);c.fill();}
+    }
+  }
+  c.strokeStyle=GLASS;c.lineWidth=3;c.lineJoin='round';c.beginPath();c.moveTo(50,150);c.lineTo(50,310);c.lineTo(350,310);c.lineTo(350,150);c.stroke();
+  label(c,ui?'water + universal indicator':'water',200,332);
+};
+
+function jarPath(c){c.beginPath();c.moveTo(125,110);c.lineTo(125,311);c.quadraticCurveTo(125,325,139,325);c.lineTo(261,325);c.quadraticCurveTo(275,325,275,311);c.lineTo(275,110);}
+S.gasjar=(c,cl,p,t,on)=>{
+  const s=cl.v.s,ep=on?ease(p):0,e=on?env(p):0;
+  c.save();jarPath(c);c.closePath();c.clip();
+  const gas=mixC(s.gas,s.gasEnd===undefined?s.gas:s.gasEnd,ep);
+  if(gas){c.fillStyle=rgba(gas);c.fillRect(120,105,160,225);}
+  if(s.smoke){c.fillStyle=rgba(s.smokeCol||C.white,s.smoke*.34*(on?Math.min(1,p*1.6):0));c.fillRect(120,105,160,225);}
+  if(s.pool){const h=lerp(s.pool.h,s.pool.hEnd,ep);c.fillStyle=rgba(s.pool.col);c.fillRect(120,325-h,160,h);}
+  if(s.cryst){const n=Math.round(26*lerp(1,s.cryst.end,ep));for(let i=0;i<n;i++){const x=136+hash(i)*128,y=320-hash(i+3)*10,z=4+hash(i+6)*5;
+    c.fillStyle=rgba(s.cryst.col);c.beginPath();c.moveTo(x,y-z);c.lineTo(x+z,y);c.lineTo(x,y+z*.6);c.lineTo(x-z,y);c.fill();
+    c.fillStyle='rgba(255,255,255,.35)';c.beginPath();c.moveTo(x,y-z);c.lineTo(x+z,y);c.lineTo(x,y-z*.2);c.fill();}}
+  if(s.coat){c.fillStyle=rgba(s.prod||C.white,s.coat*ep*.75);c.fillRect(125,110,5,215);c.fillRect(270,110,5,215);c.fillRect(125,316,150,9);}
+  if(on&&s.smoke&&p<.97)puffs(c,200,236,Math.round(s.smoke*30),s.smokeCol||C.white,t,{rise:120,spread:110,r:11,a:.35*e});
+  if(s.flash&&on){const fp=s.fp||.12,fw=s.fw||.3,q=(p-fp)/fw;if(q>0&&q<1){c.globalCompositeOperation='lighter';
+    const g=c.createRadialGradient(200,215,0,200,215,150);g.addColorStop(0,`rgba(255,255,255,${s.flash*Math.sin(q*3.1416)})`);g.addColorStop(1,rgba(s.flashCol||[255,220,150],s.flash*.6*Math.sin(q*3.1416)));
+    c.fillStyle=g;c.fillRect(120,105,160,225);c.globalCompositeOperation='source-over';}}
+  c.restore();
+  if(!s.noSpoon){
+    c.strokeStyle='#9aa0a8';c.lineWidth=3;c.beginPath();c.moveTo(200,40);c.lineTo(200,232);c.stroke();
+    c.fillStyle='#9aa0a8';c.beginPath();c.arc(200,238,15,0,3.1416);c.fill();
+    const lump=mixC(s.metal||C.silver,s.prod||C.white,ep);
+    if(!(s.vanish&&p>=1&&on)){c.fillStyle=rgba(lump,s.vanish?1-ep:1);c.beginPath();c.ellipse(200,237,9,5,0,0,7);c.fill();}
+    if(on&&s.fl){flame(c,200,236,s.fl*72*e,s.flame,t);if(s.spark&&e>.1)sparks(c,200,222,16,58*s.fl,t);}
+  }
+  c.strokeStyle=GLASS;c.lineWidth=3;jarPath(c);c.stroke();
+  c.fillStyle='rgba(215,222,230,.75)';c.fillRect(110,103,180,7);
+  if(s.glab)label(c,s.glab,200,345);
+};
+
+S.tubeH=(c,cl,p,t,on)=>{
+  const s=cl.v.s,ep=on?ease(p):0,e=on?env(p):0;
+  if(s.gas){c.fillStyle=rgba(s.gas,al(s.gas)*(on?1:.35));c.fillRect(82,172,236,32);}
+  c.strokeStyle=GLASS;c.lineWidth=2;c.beginPath();c.moveTo(30,188);c.lineTo(74,188);c.stroke();
+  if(s.steam){
+    c.fillStyle='rgba(225,235,245,.9)';for(let i=0;i<9;i++){c.beginPath();c.arc(96+hash(i)*30,180+hash(i+4)*16,8,0,7);c.fill();}
+    label(c,'wet mineral wool',112,150,12);
+    if(on)puffs(c,130,188,10,C.white,t,{rise:0,dx:150,spread:20,r:5,a:.22,sp:.5});
+    burner(c,112,232,t,on&&p<1);
+  }else label(c,s.glab+' →',40,178,12);
+  const sc=mixC(s.c0,s.c1,ep);
+  if(s.wool){c.strokeStyle=rgba(sc);c.lineWidth=1.6;for(let i=0;i<34;i++){c.beginPath();c.arc(186+hash(i)*50,180+hash(i+7)*16,4+hash(i+2)*7,hash(i+1)*6,hash(i+1)*6+3.6);c.stroke();}}
+  else{c.fillStyle=rgba(sc);if(ep<.5)c.fillRect(178,196,64,4);else for(let i=0;i<16;i++){c.beginPath();c.arc(180+i*4,199-hash(i)*3,3+hash(i+3)*2,0,7);c.fill();}}
+  if(on&&s.glowI){c.save();c.globalCompositeOperation='lighter';const R=24+60*s.glowI,g=c.createRadialGradient(210,190,0,210,190,R);
+    g.addColorStop(0,rgba(s.glow,.95*s.glowI*e*(.85+.15*Math.sin(t*11))));g.addColorStop(1,rgba(s.glow,0));c.fillStyle=g;c.fillRect(210-R,190-R,R*2,R*2);c.restore();}
+  if(on&&s.inFlame)flame(c,210,200,30*e,[255,255,240],t,5);
+  if(on&&s.smoke&&p<.98){c.save();c.beginPath();c.rect(82,172,236,32);c.clip();puffs(c,222,188,22,s.smoke,t,{rise:0,dx:120,spread:26,r:6,a:.5*e,sp:.5});c.restore();}
+  c.strokeStyle=GLASS;c.lineWidth=3;c.strokeRect(80,170,240,36);
+  c.fillStyle='#8a6a4a';c.fillRect(72,168,12,40);c.fillRect(316,168,12,40);
+  c.strokeStyle=GLASS;c.lineWidth=2;c.beginPath();
+  if(s.exit){c.moveTo(328,188);c.lineTo(360,188);c.lineTo(360,160);c.stroke();if(on&&p>.15&&p<.95)flame(c,360,160,24,s.exit,t,9);label(c,'hydrogen burns',350,128,12);}
+  else{c.moveTo(328,188);c.lineTo(372,188);c.stroke();label(c,'to fume cupboard',336,224,11);}
+  burner(c,210,232,t,on&&p<(s.heatEnd||1));
+};
+
+function tubePath(c){c.beginPath();c.moveTo(170,70);c.lineTo(170,280);c.arc(200,280,30,3.1416,0,true);c.lineTo(230,70);}
+S.tube=(c,cl,p,t)=>{
+  const a=cl.prev,b=cl.look,act=cl.cur&&cl.cur.act,res=cl.cur&&cl.cur.res,ep=ease(p);
+  const lvl=lerp(a.level,b.level,ep),yT=310-lvl*232;
+  let liq=mixC(a.liq,b.liq,ep);
+  if(res&&res.via&&p<1)liq=p<.45?mixC(a.liq,res.via,ease(p/.45)):mixC(res.via,b.liq,ease((p-.45)/.55));
+  if(b.sun){c.save();c.globalCompositeOperation='lighter';const g=c.createRadialGradient(330,96,0,330,96,150);g.addColorStop(0,'rgba(255,240,170,.9)');g.addColorStop(.12,'rgba(255,225,120,.5)');g.addColorStop(1,'rgba(255,220,120,0)');c.fillStyle=g;c.fillRect(150,0,250,280);c.restore();label(c,'sunlight',330,60,12);}
+  c.save();tubePath(c);c.closePath();c.clip();
+  const fum=[...(a.fumes||[]).map(x=>[x,1-ep]),...(b.fumes||[]).map(x=>[x,ep])];
+  for(const [x,k] of fum)if(x.tint){c.fillStyle=rgba(x.col,x.amt*.4*k);c.fillRect(165,65,70,yT-65);}
+  if(liq&&lvl>0){c.fillStyle=rgba(liq);c.fillRect(165,yT,70,320-yT);}
+  const pd=lerp(a.ppt?a.ppt.d:0,b.ppt?b.ppt.d:0,ep),pc=(b.ppt||a.ppt||{}).col;
+  if(pd>.01&&pc){c.fillStyle=rgba(pc,pd*.82);c.fillRect(165,yT,70,320-yT);
+    for(let i=0;i<pd*70;i++){const x=172+hash(i)*56,y=yT+fr(hash(i+1)+t*.02*(.5+hash(i+2)))*(310-yT);c.fillStyle=rgba(pc,.9);c.beginPath();c.arc(x,y,1.2+hash(i+3)*2,0,7);c.fill();}}
+  const sd=lerp(a.solid?a.solid.amt:0,b.solid?b.solid.amt:0,ep),so=(b.solid||a.solid||{}).col;
+  if(sd>.01&&so){const h=sd*78;c.fillStyle=rgba(so);c.beginPath();c.moveTo(165,320);c.lineTo(165,310-h);for(let x=170;x<=232;x+=6)c.lineTo(x,310-h-hash(x)*5);c.lineTo(235,320);c.fill();}
+  const dd=lerp(a.dep?a.dep.amt:0,b.dep?b.dep.amt:0,ep),dc=(b.dep||a.dep||{}).col;
+  if(dd>.01&&dc)for(let i=0;i<dd*60;i++){const left=hash(i)>.5;c.fillStyle=rgba(dc);c.beginPath();c.arc(left?172+hash(i+1)*5:228-hash(i+1)*5,yT-6-hash(i+2)*70,1.5+hash(i+3)*2.4,0,7);c.fill();}
+  const bub=(b.bub||0)*ep+(res&&res.fizz&&p<1?res.fizz*Math.sin(p*3.1416):0);
+  if(bub>.01&&lvl>0)for(let i=0;i<bub*30;i++){const ph=fr(t*(.6+hash(i)*.6)+hash(i+2));c.beginPath();c.arc(175+hash(i+4)*50,lerp(306,yT+2,ph),1.4+hash(i)*2,0,7);c.strokeStyle='rgba(255,255,255,.8)';c.lineWidth=1;c.stroke();}
+  if(act&&p<1){
+    if(act.add=='solid'&&p<.35)for(let i=0;i<14;i++){c.fillStyle=rgba(act.addCol||C.white);c.beginPath();c.arc(185+hash(i)*30,60+fr(p*2.6+hash(i+1))*(250),2.2,0,7);c.fill();}
+    if(act.add=='gas'&&p<.9)for(let i=0;i<10;i++){const ph=fr(t*1.3+hash(i));c.beginPath();c.arc(206+(hash(i+2)-.3)*22,lerp(296,yT+2,ph),2.5+hash(i)*2,0,7);c.fillStyle=rgba(act.addCol||C.cl2,.75);c.fill();}
+  }
+  c.restore();
+  if(act&&p<1&&act.add=='gas'){c.strokeStyle=GLASS;c.lineWidth=2;c.beginPath();c.moveTo(203,24);c.lineTo(203,298);c.moveTo(209,24);c.lineTo(209,298);c.stroke();label(c,act.glab||'Cl2(g)',240,36,12,undefined,'left');}
+  if(act&&p<.5&&act.add=='drop'){c.strokeStyle=GLASS;c.lineWidth=2;c.beginPath();c.moveTo(194,34);c.lineTo(197,62);c.lineTo(203,62);c.lineTo(206,34);c.stroke();
+    c.fillStyle=rgba(act.addCol||C.CL,.9);c.fillRect(197,40,6,22);
+    for(let i=0;i<3;i++){const ph=fr(t*1.8+i/3);c.beginPath();c.arc(200,64+ph*(yT-64),3,0,7);c.fill();}}
+  for(const [x,k] of fum)puffs(c,200,70,Math.round(x.amt*26),x.col,t,{rise:34,spread:64,r:8,a:.34*k,seed:Math.round(x.col[0])});
+  c.strokeStyle=GLASS;c.lineWidth=3;tubePath(c);c.stroke();
+  c.lineWidth=2;c.beginPath();c.moveTo(164,70);c.lineTo(172,70);c.moveTo(228,70);c.lineTo(236,70);c.stroke();
+  const tag=p<1&&cl.cur?a.tag:b.tag;if(tag)label(c,tag,200,340,14,'#f3e9d6');
+};
+
+S.cut=(c,cl,p,t,on)=>{
+  const s=cl.v.s,tp=on?clamp(p/s.tarn):1,face=on?mixC([232,235,240],s.dull,ease(tp)):s.dull;
+  c.fillStyle='#e9e4d8';c.fillRect(70,268,260,12);
+  c.fillStyle=rgba(s.dull);c.beginPath();c.ellipse(175,205,78,50,0,0,7);c.fill();c.fillRect(175,155,50,100);
+  c.beginPath();c.ellipse(225,205,78,50,0,0,7);c.fillStyle=rgba(s.dull);c.fill();
+  c.save();c.beginPath();c.ellipse(225,205,70,43,0,0,7);c.clip();c.fillStyle=rgba(face);c.fillRect(140,150,170,110);
+  if(on){c.globalAlpha=(1-tp)*.75;c.fillStyle='#fff';c.beginPath();c.moveTo(185,260);c.lineTo(235,150);c.lineTo(262,150);c.lineTo(212,260);c.fill();}
+  c.restore();
+  if(!on){c.fillStyle='#c9ced6';c.beginPath();c.moveTo(300,70);c.lineTo(318,70);c.lineTo(306,150);c.lineTo(296,150);c.fill();c.fillStyle='#5a3d28';c.fillRect(298,36,22,36);}
+  label(c,!on?'stored under oil, dull surface':tp<1?'freshly cut: shiny':'tarnished: dull oxide layer',200,316,14,'#f3e9d6');
+};
+
+/* ---------- reaction data ---------- */
+const go=(obs,eq,note,x)=>({go:Object.assign({obs,eq,note},x||{})});
+const TREND1='Reactivity increases down Group 1. The atoms get larger, so the outer electron is further from the nucleus and more shielded by inner shells. The attraction between the nucleus and the outer electron is weaker, so the electron is lost more easily.';
+const TREND7='Reactivity decreases down Group 7. The atoms get larger, so the outer shell is further from the nucleus and more shielded. It is harder for the nucleus to attract and gain an extra electron.';
+
+const vNa={n:'Sodium',btn:'Add sodium to water',dur:10,s:{float:1,r:11,move:.6,fizz:.6,melt:1},
+  r:go(['Floats on the water','Melts into a silvery ball','Fizzes rapidly: bubbles of hydrogen','Moves quickly across the surface','Gets smaller and disappears','Universal indicator turns purple: alkaline solution, pH 13 to 14'],
+  ['sodium + water -> sodium hydroxide + hydrogen','2Na(s) + 2H2O(l) -> 2NaOH(aq) + H2(g)'],'The hydrogen may catch fire with an orange flame if the sodium is held still.')};
+const vMgCold={n:'Mg, cold water',btn:'Add magnesium to cold water',dur:9,s:{r:8,ribbon:1,keep:1,fizz:.07,uiEnd:[70,150,170,.85]},
+  r:go(['Very slow reaction','A few small bubbles of hydrogen form on the ribbon over several days','Solution becomes only weakly alkaline, about pH 9 to 10'],
+  ['Mg(s) + 2H2O(l) -> Mg(OH)2(aq) + H2(g)'],'Mg(OH)2 is only sparingly soluble.')};
+const vMgSteam={n:'Mg, steam',scene:'tubeH',btn:'Heat the magnesium, then the wool',dur:10,s:{steam:1,c0:[185,190,198],c1:C.white,glow:[255,255,235],glowI:1,inFlame:1,exit:[255,190,90]},
+  r:go(['Magnesium burns with a bright white flame','White powder of magnesium oxide is left','The hydrogen produced can be burned at the end of the tube'],
+  ['Mg(s) + H2O(g) -> MgO(s) + H2(g)'],'Much faster than with cold water. The oxide forms, not the hydroxide.')};
+
+const dv=(n,r)=>({n,look0:{liq:C.CL,level:.36},obs0:['Colourless solution'],r});
+const nr=(liq,txt)=>({look:{liq},obs:[txt,'No reaction'],eq:[]});
+
+const EXP={
+g1water:{t:'Reaction with water',scene:'trough',setup:'A small piece of each metal is added to a trough of water.',
+  toggles:[{id:'ui',label:'Universal indicator in the water'}],acts:[{id:'go',label:'Add metal to water'}],
+  why:{gcse:TREND1+' Each metal forms a metal hydroxide, which dissolves to give an alkaline solution, and hydrogen gas.'},
+  vars:[
+   {n:'Lithium',btn:'Add lithium to water',dur:14,s:{float:1,r:12,move:.22,fizz:.3},
+    r:go(['Floats on the water','Fizzes steadily: bubbles of hydrogen','Moves slowly across the surface','Slowly gets smaller and disappears','Universal indicator turns purple: an alkaline solution forms'],
+    ['lithium + water -> lithium hydroxide + hydrogen','2Li(s) + 2H2O(l) -> 2LiOH(aq) + H2(g)'])},
+   vNa,
+   {n:'Potassium',btn:'Add potassium to water',dur:7,s:{float:1,r:11,move:.95,fizz:.9,melt:1,flame:[200,130,240],ign:.04,bang:.88},
+    r:go(['Floats on the water','Melts into a ball and catches fire at once','Burns with a lilac flame','Fizzes violently and moves very quickly','Disappears quickly, often with a small explosion at the end','Universal indicator turns purple: an alkaline solution forms'],
+    ['potassium + water -> potassium hydroxide + hydrogen','2K(s) + 2H2O(l) -> 2KOH(aq) + H2(g)'])},
+   {n:'Rubidium (predicted)',btn:'Add rubidium to water',dur:3.2,s:{float:1,r:11,move:.15,fizz:1,melt:1,flame:[230,120,200],bang:.14},
+    r:go(['Prediction from the trend: more vigorous than potassium','Reacts instantly and explodes','An alkaline solution of rubidium hydroxide forms'],
+    ['2Rb(s) + 2H2O(l) -> 2RbOH(aq) + H2(g)'],'Too dangerous for a school laboratory.')},
+   {n:'Caesium (predicted)',btn:'Add caesium to water',dur:3,s:{float:1,r:11,move:.1,fizz:1,melt:1,flame:[150,140,255],bang:.08},
+    r:go(['Prediction from the trend: the most vigorous of the five','Explodes violently on contact with the water','An alkaline solution of caesium hydroxide forms'],
+    ['2Cs(s) + 2H2O(l) -> 2CsOH(aq) + H2(g)'],'Too dangerous for a school laboratory.')}]},
+
+g1air:{t:'Cutting the metal in air',scene:'cut',setup:'Each metal is stored under oil. It is cut with a knife to expose a fresh surface to the air.',acts:[{id:'go',label:'Cut the metal'}],
+  why:{gcse:TREND1+' The faster the fresh surface tarnishes, the more reactive the metal. The metals are stored under oil to keep out oxygen and water.'},
+  vars:[
+   {n:'Lithium',btn:'Cut the lithium',dur:9,s:{tarn:.95,dull:[118,116,114]},r:go(['Soft enough to cut with a knife, but the hardest of the three','Freshly cut surface is shiny and silvery','Tarnishes slowly to a dull grey'],['lithium + oxygen -> lithium oxide','4Li(s) + O2(g) -> 2Li2O(s)'])},
+   {n:'Sodium',btn:'Cut the sodium',dur:9,s:{tarn:.5,dull:[150,148,142]},r:go(['Cuts easily','Freshly cut surface is shiny and silvery','Tarnishes quickly to a dull grey-white'],['sodium + oxygen -> sodium oxide','4Na(s) + O2(g) -> 2Na2O(s)'])},
+   {n:'Potassium',btn:'Cut the potassium',dur:9,s:{tarn:.18,dull:[135,132,140]},r:go(['Very soft: cuts like cold butter','Freshly cut surface is shiny and silvery','Tarnishes almost immediately'],['potassium + oxygen -> potassium oxide','4K(s) + O2(g) -> 2K2O(s)'])}]},
+
+g1oxygen:{t:'Burning in oxygen',scene:'gasjar',setup:'A small piece of metal is heated on a combustion spoon and lowered into a gas jar of oxygen.',acts:[{id:'go',label:'Lower the hot metal into oxygen'}],
+  why:{gcse:TREND1+' Each metal forms a white, ionic metal oxide containing M^+ ions.'},
+  vars:[
+   {n:'Lithium',dur:9,s:{glab:'oxygen',flame:[230,40,60],fl:.65,smoke:.4,coat:.5},r:go(['Burns with a crimson-red flame','White solid forms: lithium oxide'],['lithium + oxygen -> lithium oxide','4Li(s) + O2(g) -> 2Li2O(s)'])},
+   {n:'Sodium',dur:8,s:{glab:'oxygen',flame:[255,190,40],fl:.85,smoke:.6,coat:.6},r:go(['Burns vigorously with a yellow-orange flame','White smoke and a white solid form: sodium oxide'],['sodium + oxygen -> sodium oxide','4Na(s) + O2(g) -> 2Na2O(s)'])},
+   {n:'Potassium',dur:7,s:{glab:'oxygen',flame:[200,130,240],fl:.95,smoke:.7,coat:.7},r:go(['Burns very vigorously with a lilac flame','White smoke and a white solid form: potassium oxide'],['potassium + oxygen -> potassium oxide','4K(s) + O2(g) -> 2K2O(s)'])}]},
+
+g1chlorine:{t:'Burning in chlorine',scene:'gasjar',setup:'A small piece of hot metal is lowered into a gas jar of chlorine.',acts:[{id:'go',label:'Lower the hot metal into chlorine'}],
+  why:{gcse:TREND1+' Each metal forms a white metal chloride. The chlorides are ionic and dissolve in water to give colourless solutions.'},
+  vars:[
+   {n:'Lithium',dur:9,s:{glab:'chlorine',gas:C.cl2,gasEnd:[185,215,90,.12],flame:[230,40,60],fl:.6,smoke:.5,coat:.6},r:go(['Burns with a red flame','White solid forms: lithium chloride','Green colour of the chlorine fades'],['lithium + chlorine -> lithium chloride','2Li(s) + Cl2(g) -> 2LiCl(s)'])},
+   {n:'Sodium',dur:8,s:{glab:'chlorine',gas:C.cl2,gasEnd:[185,215,90,.08],flame:[255,190,40],fl:.85,smoke:.85,coat:.8},r:go(['Burns vigorously with a bright yellow-orange flame','Clouds of white smoke: sodium chloride','White solid coats the inside of the jar','Green colour of the chlorine fades'],['sodium + chlorine -> sodium chloride','2Na(s) + Cl2(g) -> 2NaCl(s)'])},
+   {n:'Potassium',dur:7,s:{glab:'chlorine',gas:C.cl2,gasEnd:[185,215,90,.05],flame:[200,130,240],fl:.95,smoke:.9,coat:.85},r:go(['Burns very vigorously with a lilac flame','Clouds of white smoke: potassium chloride','Green colour of the chlorine fades'],['potassium + chlorine -> potassium chloride','2K(s) + Cl2(g) -> 2KCl(s)'])}]},
+
+halAppear:{t:'Appearance and state',scene:'gasjar',setup:'The halogens at room temperature, each in a sealed gas jar. Warm them gently to compare how easily they vaporise.',acts:[{id:'go',label:'Warm gently'}],
+  why:{gcse:'Melting and boiling points increase down Group 7. The molecules get larger, so the intermolecular forces between them are stronger and need more energy to overcome. The colours also get darker down the group.'},
+  vars:[
+   {n:'Fluorine, F2',dur:4,s:{noSpoon:1,gas:C.f2},obs0:['Pale yellow gas','Too reactive to use in school'],r:go(['No change: already a gas'],[])},
+   {n:'Chlorine, Cl2',dur:4,s:{noSpoon:1,gas:C.cl2},obs0:['Pale green gas','Poisonous: used in a fume cupboard'],r:go(['No change: already a gas'],[])},
+   {n:'Bromine, Br2',dur:6,s:{noSpoon:1,gas:[215,100,35,.2],gasEnd:[215,100,35,.62],pool:{col:[125,32,12,.97],h:24,hEnd:15}},obs0:['Dark red-brown liquid','Gives off orange-brown vapour'],r:go(['Evaporates easily','Jar fills with more orange-brown vapour'],[])},
+   {n:'Iodine, I2',dur:6,s:{noSpoon:1,gas:[165,85,200,0],gasEnd:[165,85,200,.58],cryst:{col:[112,108,130],end:.5}},obs0:['Shiny grey-black solid'],r:go(['Sublimes: turns straight from solid to gas','Purple vapour fills the jar'],[])}]},
+
+displ:{t:'Displacement reactions',scene:'tube',setup:'A few drops of a halogen solution are added to a fresh sample of each potassium halide solution.',
+  acts:[{id:'cl',label:'Add chlorine water',fresh:1,add:'drop',addCol:C.clw},{id:'br',label:'Add bromine water',fresh:1,add:'drop',addCol:C.brw},{id:'i',label:'Add iodine solution',fresh:1,add:'drop',addCol:C.iod}],
+  why:{gcse:TREND7+' A more reactive halogen displaces a less reactive halogen from a solution of its salt. Chlorine displaces bromine and iodine; bromine displaces iodine only; iodine displaces neither.',
+       alevel:'Oxidising power decreases down the group: Cl2 > Br2 > I2. Larger atoms with more shielding attract an extra electron less strongly, so the halogen is less easily reduced. Chlorine oxidises Br^- and I^-; bromine oxidises I^- only; iodine oxidises neither.'},
+  vars:[
+   dv('KCl(aq)',{cl:nr([222,232,190,.4],'Stays almost colourless (very pale green)'),br:nr([240,175,70,.75],'Yellow-orange, from the bromine water added'),i:nr([165,95,35,.9],'Brown, from the iodine solution added')}),
+   dv('KBr(aq)',{cl:{look:{liq:[240,165,55,.85]},obs:['Colourless solution turns yellow-orange','Bromine has been displaced'],eq:['chlorine + potassium bromide -> potassium chloride + bromine','Cl2(aq) + 2KBr(aq) -> 2KCl(aq) + Br2(aq)','Cl2(aq) + 2Br^-(aq) -> 2Cl^-(aq) + Br2(aq)']},
+     br:nr([240,175,70,.75],'Yellow-orange, from the bromine water added'),i:nr([165,95,35,.9],'Brown, from the iodine solution added')}),
+   dv('KI(aq)',{cl:{look:{liq:[150,80,26,.93]},obs:['Colourless solution turns brown','Iodine has been displaced'],eq:['chlorine + potassium iodide -> potassium chloride + iodine','Cl2(aq) + 2KI(aq) -> 2KCl(aq) + I2(aq)','Cl2(aq) + 2I^-(aq) -> 2Cl^-(aq) + I2(aq)']},
+     br:{look:{liq:[150,80,26,.93]},obs:['Solution turns brown','Iodine has been displaced'],eq:['bromine + potassium iodide -> potassium bromide + iodine','Br2(aq) + 2KI(aq) -> 2KBr(aq) + I2(aq)','Br2(aq) + 2I^-(aq) -> 2Br^-(aq) + I2(aq)']},
+     i:nr([165,95,35,.9],'Brown, from the iodine solution added')})]},
+
+halIron:{t:'Reaction with iron wool',scene:'tubeH',setup:'The halogen is passed over hot iron wool in a fume cupboard.',acts:[{id:'go',label:'Heat the iron wool'}],
+  why:{gcse:TREND7+' Halogens react with metals to form ionic compounds in which the halide ion has a 1- charge.'},
+  vars:[
+   {n:'Chlorine',dur:9,s:{glab:'Cl2',gas:C.cl2,wool:1,c0:[150,152,158],c1:[120,62,30],glow:[255,170,60],glowI:1,smoke:[150,85,45],heatEnd:.25},r:go(['Iron wool glows brightly','The reaction carries on without more heating','Clouds of brown smoke','Brown solid forms: iron(III) chloride'],['iron + chlorine -> iron(III) chloride','2Fe(s) + 3Cl2(g) -> 2FeCl3(s)'])},
+   {n:'Bromine',dur:10,s:{glab:'Br2',gas:C.brv,wool:1,c0:[150,152,158],c1:[110,50,28],glow:[240,90,40],glowI:.55,smoke:[130,70,40]},r:go(['Iron wool glows, but less brightly than with chlorine','Needs continued heating','Red-brown solid forms: iron(III) bromide'],['iron + bromine -> iron(III) bromide','2Fe(s) + 3Br2(g) -> 2FeBr3(s)'])},
+   {n:'Iodine',dur:11,s:{glab:'I2',gas:C.iv,wool:1,c0:[150,152,158],c1:[95,95,105],glow:[200,60,40],glowI:.22},r:go(['Reacts slowly, even with strong continuous heating','Iron wool glows only faintly','Grey solid forms: iron(II) iodide'],['iron + iodine -> iron(II) iodide','Fe(s) + I2(g) -> FeI2(s)'])}]},
+
+halH2:{t:'Reaction with hydrogen',scene:'gasjar',setup:'Each halogen is mixed with hydrogen in a sealed jar. (Teacher demonstration or video only.)',acts:[{id:'go',label:'Start the reaction'}],
+  why:{gcse:TREND7+' Halogens react with non-metals to form covalent compounds. The hydrogen halides are colourless gases that dissolve in water to form acidic solutions.'},
+  vars:[
+   {n:'Fluorine',btn:'Mix in the cold and dark',dur:4,s:{noSpoon:1,gas:C.f2,gasEnd:[235,230,130,0],flash:1,fp:.05,fw:.35},r:go(['Explodes instantly, even in the cold and dark'],['hydrogen + fluorine -> hydrogen fluoride','H2(g) + F2(g) -> 2HF(g)'])},
+   {n:'Chlorine',btn:'Expose to sunlight',dur:5,s:{noSpoon:1,gas:C.cl2,gasEnd:[185,215,90,0],flash:.9,fp:.25,fw:.35},r:go(['Explodes in sunlight or with a flame','Reacts only slowly in the dark','Pale green colour disappears'],['hydrogen + chlorine -> hydrogen chloride','H2(g) + Cl2(g) -> 2HCl(g)'])},
+   {n:'Bromine',btn:'Heat the mixture',dur:9,s:{noSpoon:1,gas:C.brv,gasEnd:[215,100,35,.06],flash:.22,fp:.1,fw:.8,flashCol:[255,160,80]},r:go(['Reacts only when heated','Steady reaction, no explosion','Orange colour fades slowly'],['hydrogen + bromine -> hydrogen bromide','H2(g) + Br2(g) -> 2HBr(g)'])},
+   {n:'Iodine',btn:'Heat strongly',dur:10,s:{noSpoon:1,gas:C.iv,gasEnd:[165,85,200,.36]},r:go(['Reacts slowly, even with strong heating','Purple colour fades only a little: the reaction is reversible and does not go to completion'],['hydrogen + iodine <=> hydrogen iodide','H2(g) + I2(g) <=> 2HI(g)'])}]},
+
+g2water:{t:'Reaction with water',scene:'trough',setup:'Each metal is added to water. Magnesium is also heated in steam.',toggles:[{id:'ui',label:'Universal indicator in the water'}],acts:[{id:'go',label:'Start'}],
+  why:{alevel:'Reactivity with water increases down Group 2. Atomic radius and shielding increase, so the first and second ionisation energies decrease and the two outer electrons are lost more easily. Each metal is oxidised from 0 to +2. The hydroxides become more soluble down the group, so the solutions become less cloudy and more alkaline.'},
+  vars:[vMgCold,vMgSteam,
+   {n:'Calcium',btn:'Add calcium to water',dur:12,s:{r:11,fizz:.5,cloud:.6,uiEnd:UI.indigo},r:go(['Sinks, then fizzes steadily: bubbles of hydrogen','Solution turns cloudy: a white precipitate of sparingly soluble calcium hydroxide','Mixture gets warm','Calcium gets smaller and disappears','About pH 12'],['Ca(s) + 2H2O(l) -> Ca(OH)2(aq) + H2(g)'],'Some of the Ca(OH)2 stays undissolved as a white solid.')},
+   {n:'Strontium',btn:'Add strontium to water',dur:9,s:{r:11,fizz:.75,cloud:.22,uiEnd:UI.purple},r:go(['Fizzes rapidly: faster than calcium','Only slightly cloudy: strontium hydroxide is more soluble','About pH 13'],['Sr(s) + 2H2O(l) -> Sr(OH)2(aq) + H2(g)'])},
+   {n:'Barium',btn:'Add barium to water',dur:7,s:{r:11,fizz:1,cloud:0,uiEnd:UI.purple},r:go(['Fizzes vigorously: the fastest of the group','Colourless solution: barium hydroxide is soluble','About pH 13 to 14'],['Ba(s) + 2H2O(l) -> Ba(OH)2(aq) + H2(g)'])}]},
+
+g2oh:{t:'Solubility of the hydroxides',scene:'tube',setup:'Sodium hydroxide solution is added to solutions containing each Group 2 ion.',acts:[{id:'oh',label:'Add NaOH(aq)',add:'drop'}],
+  why:{alevel:'Solubility of the hydroxides increases down the group. Mg(OH)2 is sparingly soluble; Ba(OH)2 is soluble and gives a strongly alkaline solution. Mg(OH)2 is used in medicine as an antacid. Ca(OH)2 is used in agriculture to neutralise acidic soil.'},
+  vars:[['Mg^2+(aq)',.85,'White precipitate of magnesium hydroxide','Mg^2+(aq) + 2OH^-(aq) -> Mg(OH)2(s)'],['Ca^2+(aq)',.38,'Slight white precipitate: calcium hydroxide is sparingly soluble','Ca^2+(aq) + 2OH^-(aq) -> Ca(OH)2(s)'],['Sr^2+(aq)',.1,'Little or no precipitate: at most a faint cloudiness',''],['Ba^2+(aq)',0,'No precipitate: the solution stays colourless','']]
+   .map(([n,d,o,e])=>({n,look0:{liq:C.CL,level:.36},obs0:['Colourless solution'],r:{oh:{look:{ppt:{col:C.white,d}},obs:[o],eq:e?[e]:[],note:e?'':'The hydroxide is soluble enough to stay in solution.'}}}))},
+
+g2so4:{t:'Solubility of the sulfates',scene:'tube',setup:'Dilute sulfuric acid is added to solutions containing each Group 2 ion.',acts:[{id:'so',label:'Add dilute H2SO4',add:'drop'}],
+  why:{alevel:'Solubility of the sulfates decreases down the group. MgSO4 is soluble; BaSO4 is insoluble. BaSO4 is used as a barium meal for X-rays of the gut: it is so insoluble that the toxic Ba^2+ ions are not absorbed.'},
+  vars:[['Mg^2+(aq)',0,'No precipitate: magnesium sulfate is soluble',''],['Ca^2+(aq)',.22,'Slight white precipitate, forming slowly: calcium sulfate is sparingly soluble','Ca^2+(aq) + SO4^2-(aq) -> CaSO4(s)'],['Sr^2+(aq)',.6,'White precipitate of strontium sulfate','Sr^2+(aq) + SO4^2-(aq) -> SrSO4(s)'],['Ba^2+(aq)',.97,'Thick white precipitate of barium sulfate forms at once','Ba^2+(aq) + SO4^2-(aq) -> BaSO4(s)']]
+   .map(([n,d,o,e])=>({n,look0:{liq:C.CL,level:.36},obs0:['Colourless solution'],r:{so:{look:{ppt:{col:C.white,d}},obs:[o],eq:e?[e]:[]}}}))},
+
+so4test:{t:'Test for sulfate ions',scene:'tube',setup:'Try the two reagents in either order to see why the test solution is acidified first.',
+  acts:[{id:'hcl',label:'Add dilute HCl',add:'drop'},{id:'ba',label:'Add BaCl2(aq)',add:'drop'}],
+  why:{alevel:'Acidified BaCl2(aq) gives a white precipitate of BaSO4 with sulfate ions. The acid (HCl or HNO3) removes carbonate ions, which would also give a white precipitate with Ba^2+. Sulfuric acid is not used, because it would add sulfate ions.'},
+  vars:[
+   {n:'Na2SO4(aq)',look0:{liq:C.CL,level:.3},obs0:['Colourless solution'],r:{hcl:{look:{},obs:['No visible change'],eq:[]},ba:{look:{ppt:{col:C.white,d:.92}},obs:['White precipitate of barium sulfate','Sulfate ions are present'],eq:['Ba^2+(aq) + SO4^2-(aq) -> BaSO4(s)']}}},
+   {n:'NaCl(aq)',look0:{liq:C.CL,level:.3},obs0:['Colourless solution'],r:{hcl:{look:{},obs:['No visible change'],eq:[]},ba:{look:{},obs:['No precipitate','No sulfate ions present'],eq:[]}}},
+   {n:'Na2CO3(aq)',look0:{liq:C.CL,level:.3},obs0:['Colourless solution'],r:{
+     hcl:{look:{ppt:null},fizz:1,obs:d=>d.includes('ba')?['Fizzing: carbon dioxide given off','The white precipitate dissolves, so it was not barium sulfate']:['Fizzing: carbon dioxide given off','The carbonate ions are removed'],eq:d=>d.includes('ba')?['BaCO3(s) + 2H^+(aq) -> Ba^2+(aq) + CO2(g) + H2O(l)']:['CO3^2-(aq) + 2H^+(aq) -> CO2(g) + H2O(l)']},
+     ba:{look:d=>d.includes('hcl')?{}:{ppt:{col:C.white,d:.85}},obs:d=>d.includes('hcl')?['No precipitate: no false positive']:['White precipitate of barium carbonate','A false positive: this is why acid is added first'],eq:d=>d.includes('hcl')?[]:['Ba^2+(aq) + CO3^2-(aq) -> BaCO3(s)']}}}]},
+
+agno3:{t:'Halide ions with silver nitrate',scene:'tube',setup:'Each sodium halide solution is acidified with dilute nitric acid, then silver nitrate solution is added. Ammonia solution confirms the result.',
+  acts:[{id:'ag',label:'Add HNO3 then AgNO3(aq)',add:'drop'},{id:'dil',label:'Add dilute NH3(aq)',add:'drop',after:'ag'},{id:'conc',label:'Add concentrated NH3(aq)',add:'drop',after:'ag'}],
+  why:{alevel:'Dilute nitric acid is added first to remove carbonate or hydroxide ions, which would also give precipitates with Ag^+. Hydrochloric acid is not used, because it would add chloride ions. The precipitate colours can be hard to tell apart, so ammonia is used to distinguish them: AgCl dissolves in dilute NH3, AgBr only in concentrated NH3, AgI in neither.'},
+  vars:[
+   {n:'NaF(aq)',look0:{liq:C.CL,level:.3},obs0:['Colourless solution'],r:{ag:{look:{},obs:['No precipitate: silver fluoride is soluble'],eq:[]},dil:{look:{},obs:['No change'],eq:[]},conc:{look:{},obs:['No change'],eq:[]}}},
+   {n:'NaCl(aq)',look0:{liq:C.CL,level:.3},obs0:['Colourless solution'],r:{ag:{look:{ppt:{col:C.white,d:.85}},obs:['White precipitate of silver chloride'],eq:['Ag^+(aq) + Cl^-(aq) -> AgCl(s)']},
+     dil:{look:{ppt:null},obs:['Precipitate dissolves: colourless solution'],eq:['AgCl(s) + 2NH3(aq) -> [Ag(NH3)2]^+(aq) + Cl^-(aq)']},conc:{look:{ppt:null},obs:d=>d.includes('dil')?['Stays dissolved']:['Precipitate dissolves: colourless solution'],eq:[]}}},
+   {n:'NaBr(aq)',look0:{liq:C.CL,level:.3},obs0:['Colourless solution'],r:{ag:{look:{ppt:{col:C.cream,d:.85}},obs:['Cream precipitate of silver bromide'],eq:['Ag^+(aq) + Br^-(aq) -> AgBr(s)']},
+     dil:{look:{},obs:d=>d.includes('conc')?['Stays dissolved']:['No change: insoluble in dilute ammonia'],eq:[]},conc:{look:{ppt:null},obs:['Precipitate dissolves: colourless solution'],eq:['AgBr(s) + 2NH3(aq) -> [Ag(NH3)2]^+(aq) + Br^-(aq)']}}},
+   {n:'NaI(aq)',look0:{liq:C.CL,level:.3},obs0:['Colourless solution'],r:{ag:{look:{ppt:{col:C.yellow,d:.85}},obs:['Yellow precipitate of silver iodide'],eq:['Ag^+(aq) + I^-(aq) -> AgI(s)']},
+     dil:{look:{},obs:['No change: insoluble in dilute ammonia'],eq:[]},conc:{look:{},obs:['No change: insoluble even in concentrated ammonia'],eq:[]}}}]},
+
+h2so4:{t:'Solid halides with concentrated H2SO4',scene:'tube',setup:'A few drops of concentrated sulfuric acid are added to each solid sodium halide in a fume cupboard.',acts:[{id:'go',label:'Add concentrated H2SO4',add:'drop',addCol:[225,225,205,.6]}],
+  why:{alevel:'Reducing power of the halide ions increases down the group. The ions get larger, so the outer electrons are further from the nucleus and more shielded, and an electron is lost more easily. F^- and Cl^- cannot reduce H2SO4. Br^- reduces sulfur from +6 to +4 (SO2). I^- reduces sulfur from +6 to +4 (SO2), 0 (S) and -2 (H2S).'},
+  vars:[
+   {n:'NaF(s)',dur:8,look0:{solid:{col:C.white,amt:.3}},obs0:['White solid'],r:go(['Steamy white fumes of hydrogen fluoride'],['NaF(s) + H2SO4(l) -> NaHSO4(s) + HF(g)'],'Acid-base reaction only. Not redox: F^- is not a strong enough reducing agent.',{look:{liq:[225,225,205,.45],level:.2,solid:{col:C.white,amt:.2},fumes:[{col:C.white,amt:.8}]}})},
+   {n:'NaCl(s)',dur:8,look0:{solid:{col:C.white,amt:.3}},obs0:['White solid'],r:go(['Steamy white fumes of hydrogen chloride'],['NaCl(s) + H2SO4(l) -> NaHSO4(s) + HCl(g)'],'Acid-base reaction only. Not redox: Cl^- is not a strong enough reducing agent.',{look:{liq:[225,225,205,.45],level:.2,solid:{col:C.white,amt:.2},fumes:[{col:C.white,amt:.8}]}})},
+   {n:'NaBr(s)',dur:9,look0:{solid:{col:C.white,amt:.3}},obs0:['White solid'],r:go(['Steamy white fumes of hydrogen bromide','Orange-brown fumes of bromine','Colourless, choking gas: sulfur dioxide'],['NaBr(s) + H2SO4(l) -> NaHSO4(s) + HBr(g)','2HBr + H2SO4 -> Br2 + SO2 + 2H2O'],'Redox: Br^- is oxidised to Br2 and sulfur is reduced from +6 to +4.',{look:{liq:[225,130,40,.85],level:.2,solid:{col:C.white,amt:.16},fumes:[{col:C.white,amt:.5},{col:[220,105,35],amt:.8,tint:1}]}})},
+   {n:'NaI(s)',dur:10,look0:{solid:{col:C.white,amt:.3}},obs0:['White solid'],r:go(['Steamy white fumes of hydrogen iodide','Purple fumes and a black solid: iodine','Yellow solid: sulfur','Smell of bad eggs: hydrogen sulfide (toxic)','Colourless, choking gas: sulfur dioxide'],
+     ['NaI(s) + H2SO4(l) -> NaHSO4(s) + HI(g)','2HI + H2SO4 -> I2 + SO2 + 2H2O','6HI + H2SO4 -> 3I2 + S + 4H2O','8HI + H2SO4 -> 4I2 + H2S + 4H2O'],'Redox: I^- is the strongest reducing agent. Sulfur is reduced from +6 to +4, 0 and -2.',{look:{liq:[70,40,50,.95],level:.2,solid:{col:[60,55,70],amt:.2},dep:{col:C.yellow,amt:.8},fumes:[{col:C.white,amt:.4},{col:[175,95,210],amt:.8,tint:1}]}})}]},
+
+cl2water:{t:'Chlorine with water and NaOH',scene:'tube',setup:'Chlorine gas is bubbled into water or cold, dilute sodium hydroxide. Chlorine water is also left in sunlight.',acts:[{id:'go',label:'Start'}],
+  why:{alevel:'Chlorine disproportionates: in the same reaction it is oxidised from 0 to +1 and reduced from 0 to -1. Chlorine is added to drinking water to kill bacteria. The benefits to health outweigh the risks from its toxicity at the low concentrations used. The reaction with cold, dilute NaOH makes bleach.'},
+  vars:[
+   {n:'Cl2 + water',btn:'Bubble chlorine through',add:'gas',dur:10,look0:{liq:UI.green,level:.5,tag:'water + universal indicator'},obs0:['Green: neutral'],
+    r:go(['Indicator turns red: an acidic solution forms','The colour is then bleached by the chloric(I) acid','Without indicator, the solution is very pale green'],['Cl2(g) + H2O(l) <=> HCl(aq) + HClO(aq)'],'Chlorine: 0 in Cl2, -1 in HCl, +1 in HClO.',{via:UI.red,look:{liq:[225,232,200,.35],tag:'bleached'}})},
+   {n:'Chlorine water, sunlight',btn:'Leave in bright sunlight',add:'light',dur:10,look0:{liq:C.clw,level:.5,tag:'chlorine water'},obs0:['Very pale green solution'],
+    r:go(['Bubbles of colourless gas: oxygen','Pale green colour fades to colourless'],['2Cl2(g) + 2H2O(l) -> 4HCl(aq) + O2(g)'],'',{look:{liq:C.CL,sun:true,bub:.5,tag:'colourless'}})},
+   {n:'Cl2 + cold, dilute NaOH',btn:'Bubble chlorine through',add:'gas',dur:9,look0:{liq:C.CL,level:.5,tag:'NaOH(aq)'},obs0:['Colourless solution'],
+    r:go(['The pale green gas dissolves','Colourless solution forms: this is bleach'],['Cl2(g) + 2NaOH(aq) -> NaCl(aq) + NaClO(aq) + H2O(l)','Cl2 + 2OH^- -> Cl^- + ClO^- + H2O'],'Chlorine: 0 in Cl2, -1 in NaCl, +1 in NaClO.',{look:{liq:[205,222,225,.34],tag:'NaCl(aq) + NaClO(aq)'}})}]},
+
+p3water:{t:'Sodium and magnesium with water',scene:'trough',setup:'Sodium and magnesium are added to cold water. Magnesium is also heated in steam.',toggles:[{id:'ui',label:'Universal indicator in the water'}],acts:[{id:'go',label:'Start'}],
+  why:{alevel:'Sodium reacts vigorously with cold water to give a strongly alkaline solution (pH 13 to 14). Magnesium reacts only very slowly with cold water, giving a weakly alkaline solution (about pH 9 to 10) because Mg(OH)2 is sparingly soluble, but it burns in steam. Sodium is the more reactive: it loses one electron, magnesium must lose two.'},
+  vars:[vNa,vMgCold,vMgSteam]},
+
+p3oxygen:{t:'Burning in oxygen',scene:'gasjar',setup:'Each element is heated and lowered into a gas jar of oxygen.',acts:[{id:'go',label:'Lower the hot element into oxygen'}],
+  why:{alevel:'Each element forms the oxide in its highest oxidation state, except sulfur, which forms SO2 (+4). Making SO3 (+6) needs a vanadium(V) oxide catalyst and excess oxygen. Oxidation states: Na +1, Mg +2, Al +3, Si +4, P +5.'},
+  vars:[
+   {n:'Sodium',dur:8,s:{glab:'oxygen',flame:[255,190,40],fl:.85,smoke:.6,coat:.6},r:go(['Burns vigorously with a yellow flame','White solid forms'],['4Na(s) + O2(g) -> 2Na2O(s)'])},
+   {n:'Magnesium',dur:8,s:{glab:'oxygen',flame:[255,255,240],fl:1,spark:1,smoke:.6,coat:.6,metal:[185,190,198]},r:go(['Burns with a brilliant white flame','White solid (white smoke and powder) forms'],['2Mg(s) + O2(g) -> 2MgO(s)'])},
+   {n:'Aluminium',dur:8,s:{glab:'oxygen',flame:[255,255,240],fl:.8,spark:1,smoke:.35,coat:.4,metal:[170,174,180]},r:go(['Powder burns with a bright white flame and sparkles','White solid forms'],['4Al(s) + 3O2(g) -> 2Al2O3(s)'],'Needs to be powdered: a lump is protected by its oxide layer.')},
+   {n:'Silicon',dur:9,s:{glab:'oxygen',flame:[255,250,230],fl:.5,spark:1,smoke:.2,coat:.3,metal:[95,98,110]},r:go(['Burns with a white flame when heated strongly','White solid forms'],['Si(s) + O2(g) -> SiO2(s)'])},
+   {n:'Phosphorus',dur:8,s:{glab:'oxygen',flame:[255,255,235],fl:.95,smoke:1,coat:.9,metal:[235,225,170]},r:go(['White phosphorus ignites spontaneously','Burns with a brilliant white flame','Dense white smoke of phosphorus(V) oxide'],['P4(s) + 5O2(g) -> P4O10(s)'])},
+   {n:'Sulfur',dur:9,s:{glab:'oxygen',flame:[70,110,255],fl:.6,smoke:.15,metal:[235,210,70],vanish:1},r:go(['Melts, then burns with a blue flame','Colourless, choking gas forms: sulfur dioxide'],['S(s) + O2(g) -> SO2(g)'])}]},
+
+oxwater:{t:'Oxides with water',scene:'tube',setup:'Each oxide is added to water containing universal indicator.',acts:[{id:'go',label:'Add the oxide'}],
+  why:{alevel:'Na2O and MgO are ionic, basic oxides: the O^2- ion reacts with water to form OH^- ions. MgO is less soluble, so its solution is less alkaline. Al2O3 (ionic with covalent character) and SiO2 (macromolecular) are insoluble. P4O10, SO2 and SO3 are simple molecular, covalent oxides that react with water to form acids.'},
+  vars:[
+   ['Na2O','solid',UI.purple,0,'pH 13 to 14',['White solid dissolves, exothermic','Colourless, strongly alkaline solution'],['Na2O(s) + H2O(l) -> 2NaOH(aq)'],'Ionic lattice. Basic oxide.'],
+   ['MgO','solid',UI.blue,.75,'pH 9 to 10',['Most of the white solid does not dissolve','Weakly alkaline: only sparingly soluble'],['MgO(s) + H2O(l) -> Mg(OH)2(aq)'],'Ionic lattice. Basic oxide.'],
+   ['Al2O3','solid',UI.green,1,'pH 7',['White solid does not dissolve','No reaction: indicator stays green'],[],'Ionic lattice with covalent character. Insoluble. Amphoteric.'],
+   ['SiO2','solid',UI.green,1,'pH 7',['White solid does not dissolve','No reaction: indicator stays green'],[],'Macromolecular (giant covalent). Insoluble. Acidic oxide.'],
+   ['P4O10','solid',UI.red,0,'pH 0 to 1',['Reacts violently: hissing, very exothermic','Colourless, strongly acidic solution'],['P4O10(s) + 6H2O(l) -> 4H3PO4(aq)'],'Simple molecular. Acidic oxide. Forms phosphoric(V) acid.',{fizz:.8}],
+   ['SO2','gas',UI.orange,0,'pH 3',['Colourless gas dissolves','Weakly acidic solution'],['SO2(g) + H2O(l) -> H2SO3(aq)'],'Simple molecular. Acidic oxide. Forms sulfuric(IV) acid, a weak acid.'],
+   ['SO3','drop',UI.red,0,'pH 0 to 1',['Reacts violently: very exothermic, misty fumes','Colourless, strongly acidic solution'],['SO3(l) + H2O(l) -> H2SO4(aq)'],'Simple molecular. Acidic oxide. Forms sulfuric(VI) acid.',{fizz:.8}]]
+   .map(([n,add,liq,rem,tag,obs,eq,note,x])=>({n,add,glab:'SO2(g)',addCol:add=='gas'?[220,225,230]:C.white,dur:8,look0:{liq:UI.green,level:.5,tag:'pH 7'},obs0:['Water with universal indicator: green'],
+     r:go(obs,eq,note,Object.assign({look:{liq,tag,solid:rem?{col:C.white,amt:.22*rem}:null,fumes:x?[{col:C.white,amt:.35}]:[]}},x||{}))}))},
+
+oxacid:{t:'Oxides with acids and bases',scene:'tube',setup:'Hydrochloric acid or sodium hydroxide solution is added to a fresh sample of each oxide.',
+  acts:[{id:'acid',label:'Add HCl(aq)',fresh:1,add:'drop'},{id:'base',label:'Add NaOH(aq)',fresh:1,add:'drop'}],
+  why:{alevel:'The basic oxides (Na2O, MgO) react with acids to form a salt and water. The acidic oxides (SiO2, P4O10, SO2, SO3) react with bases to form a salt and water. Al2O3 is amphoteric: it reacts with both acids and bases.'},
+  vars:[
+   ['Na2O',1,'basic',['White solid dissolves: colourless solution'],['Na2O(s) + 2HCl(aq) -> 2NaCl(aq) + H2O(l)'],0,['Basic oxide: no reaction with the alkali itself','It does dissolve, by reacting with the water in the solution'],[]],
+   ['MgO',1,'basic',['White solid dissolves: colourless solution'],['MgO(s) + 2HCl(aq) -> MgCl2(aq) + H2O(l)'],-1,['No reaction: the white solid remains'],[]],
+   ['Al2O3',1,'amphoteric',['White solid dissolves (on warming): colourless solution'],['Al2O3(s) + 6HCl(aq) -> 2AlCl3(aq) + 3H2O(l)'],1,['White solid dissolves (on warming): colourless solution'],['Al2O3(s) + 2NaOH(aq) + 3H2O(l) -> 2NaAl(OH)4(aq)']],
+   ['SiO2',-1,'acidic',['No reaction: the white solid remains'],[],1,['No reaction with dilute NaOH','Reacts with hot, concentrated NaOH to form sodium silicate'],['SiO2(s) + 2NaOH(aq) -> Na2SiO3(aq) + H2O(l)']],
+   ['P4O10',0,'acidic',['Acidic oxide: no reaction with the acid itself','It does dissolve, by reacting with the water in the solution'],[],1,['White solid reacts vigorously: colourless solution'],['P4O10(s) + 12NaOH(aq) -> 4Na3PO4(aq) + 6H2O(l)']],
+   ['SO2',0,'acidic',['Acidic oxide: no reaction with the acid'],[],1,['Gas dissolves: colourless solution, no visible change'],['SO2(g) + 2NaOH(aq) -> Na2SO3(aq) + H2O(l)']],
+   ['SO3',0,'acidic',['Acidic oxide: no reaction with the acid itself','It reacts with the water in the solution'],[],1,['Reacts vigorously: colourless solution'],['SO3(l) + 2NaOH(aq) -> Na2SO4(aq) + H2O(l)']]]
+   .map(([n,a,kind,ao,ae,b,bo,be])=>{const gas=n[0]=='S',l0=gas?{tag:n+(n=='SO2'?' gas':' sample')}:{solid:{col:C.white,amt:.28},tag:n+' ('+kind+')'};
+     const mk=(k,obs,eq)=>({look:{liq:C.CL,solid:k<0&&!gas?{col:C.white,amt:.28}:null,tag:k>0?'reacts':'no reaction'},obs,eq});
+     return {n,look0:l0,obs0:[gas?'Colourless, '+kind+' oxide':'White solid, '+kind+' oxide'],r:{acid:mk(a,ao,ae),base:mk(b,bo,be)}};})}
+};
+
+const TOPICS={
+  gcse:[{n:'Group 1: alkali metals',e:['g1water','g1air','g1oxygen','g1chlorine']},{n:'Group 7: halogens',e:['halAppear','displ','halIron','halH2']}],
+  alevel:[{n:'Group 2',e:['g2water','g2oh','g2so4','so4test']},{n:'Group 7',e:['displ','agno3','h2so4','cl2water']},{n:'Period 3 elements',e:['p3water','p3oxygen']},{n:'Period 3 oxides',e:['oxwater','oxacid']}]
+};
+
+/* ---------- state and engine ---------- */
+const st={level:'gcse',ti:0,ei:0,vi:0,compare:false,opts:{},cells:[]};
+const $=id=>document.getElementById(id);
+const cv=$('cv'),cx=cv.getContext('2d');
+const curExp=()=>EXP[TOPICS[st.level][st.ti].e[st.ei]];
+const look0=v=>Object.assign({liq:null,level:0,ppt:null,solid:null,fumes:[],bub:0,dep:null,tag:'',sun:false},v.look0||{});
+const newCell=v=>({v,done:[],log:[],cur:null,prev:look0(v),look:look0(v),opts:st.opts,mem:{}});
+const now=()=>performance.now()/1000;
+const busy=()=>st.cells.some(c=>c.cur);
+
+function build(){
+  const ex=curExp();
+  st.cells=(st.compare?ex.vars:[ex.vars[st.vi]]).map(newCell);
+  layout();renderUI();
+}
+function run(act){
+  if(busy())return;const t0=now();
+  for(const c of st.cells){
+    const res=c.v.r[act.id];if(!res)continue;
+    if(act.fresh){c.done=[];c.log=[];c.look=look0(c.v);}
+    const d=c.done.slice(),lk=typeof res.look=='function'?res.look(d):(res.look||{});
+    c.prev=c.look;c.look=Object.assign({},c.prev,lk);
+    const add=c.v.add||act.add;
+    if(lk.level===undefined&&add=='drop')c.look.level=c.prev.level<.05?.3:Math.min(.86,c.prev.level+.11);
+    c.mem={};
+    c.cur={act:Object.assign({},act,{add,addCol:c.v.addCol||act.addCol,glab:c.v.glab}),res,t0,dur:res.dur||c.v.dur||act.dur||5,
+      entry:{label:c.v.btn&&act.id=='go'?c.v.btn:act.label,obs:typeof res.obs=='function'?res.obs(d):res.obs,eq:typeof res.eq=='function'?res.eq(d):res.eq,note:res.note}};
+  }
+  renderUI();
+}
+function layout(){
+  const W=$('stage').clientWidth,n=st.cells.length,dpr=window.devicePixelRatio||1;
+  const maxC=Math.max(2,Math.floor(W/210)),rows=n==1?1:Math.ceil(n/maxC),cols=Math.ceil(n/rows);
+  const sc=n==1?Math.min(W/400,1.4):(W/cols)/400;
+  st.g={W,cols,rows,sc,H:rows*360*sc,ox:n==1?(W-400*sc)/2:0,dpr};
+  cv.width=Math.round(W*dpr);cv.height=Math.round(st.g.H*dpr);cv.style.height=st.g.H+'px';
+}
+function frame(){
+  const g=st.g,t=now(),ex=curExp();let finished=false;
+  cx.setTransform(g.dpr,0,0,g.dpr,0,0);cx.fillStyle='#26211d';cx.fillRect(0,0,g.W,g.H);
+  st.cells.forEach((c,i)=>{
+    let p=c.done.length?1:0,on=c.done.length>0;
+    if(c.cur){p=clamp((t-c.cur.t0)/c.cur.dur);on=true;}
+    cx.save();cx.translate(g.ox+(i%g.cols)*400*g.sc,Math.floor(i/g.cols)*360*g.sc);cx.scale(g.sc,g.sc);
+    cx.beginPath();cx.rect(0,0,400,360);cx.clip();
+    S[c.v.scene||ex.scene](cx,c,p,t,on);
+    cx.fillStyle='#f6ecd8';cx.font='600 18px '+FONT;cx.textAlign='center';cx.fillText(u(c.v.n),200,28);
+    if(st.cells.length>1){cx.strokeStyle='rgba(255,255,255,.08)';cx.lineWidth=1;cx.strokeRect(.5,.5,399,359);}
+    cx.restore();
+    if(c.cur&&p>=1){c.done.push(c.cur.act.id);c.log.push(c.cur.entry);c.prev=c.look;c.cur=null;finished=true;}
+  });
+  if(finished)renderUI();
+  requestAnimationFrame(frame);
+}
+
+/* ---------- interface ---------- */
+function pills(el,items,active,fn){
+  el.innerHTML='';items.forEach((txt,i)=>{const b=document.createElement('button');b.innerHTML=f(txt);b.setAttribute('aria-pressed',i===active);b.onclick=()=>fn(i);el.appendChild(b);});
+}
+function renderUI(){
+  const ex=curExp(),tops=TOPICS[st.level],isBusy=busy();
+  document.querySelectorAll('#level button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.l==st.level));
+  pills($('topics'),tops.map(x=>x.n),st.ti,i=>{st.ti=i;st.ei=0;st.vi=0;st.opts={};build();});
+  pills($('exps'),tops[st.ti].e.map(k=>EXP[k].t),st.ei,i=>{st.ei=i;st.vi=0;st.opts={};build();});
+  pills($('vars'),ex.vars.map(v=>v.n),st.compare?-1:st.vi,i=>{st.vi=i;st.compare=false;build();});
+  $('compare').checked=st.compare;
+  $('expTitle').innerHTML=f(ex.t);$('setup').innerHTML=f(ex.setup);
+  const A=$('actions');A.innerHTML='';const c0=st.cells[0];
+  ex.acts.forEach(a=>{
+    const b=document.createElement('button');b.className='act';
+    b.innerHTML=f(a.id=='go'?(st.compare?(ex.acts[0].label=='Start'?'Start all':a.label):(c0.v.btn||a.label)):a.label);
+    b.disabled=isBusy||(a.after&&!c0.done.includes(a.after))||(!a.fresh&&c0.done.includes(a.id));
+    b.onclick=()=>run(a);A.appendChild(b);
+  });
+  const r=document.createElement('button');r.className='act ghost';r.textContent='Reset';r.onclick=build;A.appendChild(r);
+  (ex.toggles||[]).forEach(tg=>{const l=document.createElement('label');l.className='chk';const i=document.createElement('input');i.type='checkbox';i.id='opt-'+tg.id;i.checked=st.opts[tg.id]!==false;
+    i.onchange=()=>{st.opts[tg.id]=i.checked;};l.append(i,' '+tg.label);A.appendChild(l);});
+  $('cards').innerHTML=st.cells.map(c=>{
+    let h='<article class="card"><h3>'+f(c.v.n)+'</h3>',li='';
+    (c.v.obs0||[]).forEach(o=>li+='<li class="start">'+f(o)+'</li>');
+    const multi=ex.acts.length>1;let eq=[],notes=[];
+    c.log.forEach(e=>{if(multi)li+='<li class="step">'+f(e.label)+'</li>';e.obs.forEach(o=>li+='<li>'+f(o)+'</li>');eq=eq.concat(e.eq||[]);if(e.note)notes.push(e.note);});
+    if(li)h+='<ul>'+li+'</ul>';
+    if(!c.log.length)h+='<p class="wait">'+(c.cur?'Reaction in progress…':'Run the reaction to see the observations.')+'</p>';
+    if(eq.length)h+='<div class="eq">'+eq.map(e=>'<div>'+f(e)+'</div>').join('')+'</div>';
+    notes.forEach(n=>h+='<p class="note">'+f(n)+'</p>');
+    return h+'</article>';}).join('');
+  $('why').innerHTML=f(ex.why[st.level]||ex.why.alevel||ex.why.gcse);
+}
+document.querySelectorAll('#level button').forEach(b=>b.onclick=()=>{st.level=b.dataset.l;st.ti=0;st.ei=0;st.vi=0;st.opts={};$('whyBox').open=false;build();});
+$('compare').onchange=e=>{st.compare=e.target.checked;build();};
+$('showObs').onchange=e=>$('info').classList.toggle('hideObs',!e.target.checked);
+$('showEq').onchange=e=>$('info').classList.toggle('hideEq',!e.target.checked);
+let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(layout,120);});
+build();requestAnimationFrame(frame);
+</script>
+</body>
+</html>
